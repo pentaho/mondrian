@@ -332,8 +332,24 @@ public class JDBCMetaData {
     /* get all columns of given table in schema */
     public Vector getAllColumns(String schemaName, String tableName) {
         Vector allcols = new Vector();
-
+        
         if (tableName == null) {
+                Vector allTables = getAllTables(schemaName);
+            
+                for (int i = 0; i < allTables.size(); i++) {
+                    String tab = (String)allTables.get(i);
+                    Vector cols;
+                    if (tab.indexOf("->") == -1) {
+                        cols = getAllColumns(schemaName, tab);
+                    } else {
+                        String [] names = tab.split("->");
+                        cols = getAllColumns(names[0], names[1]);
+                    }
+                    for (int j = 0; j < cols.size(); j++) {
+                        String col = (String)cols.get(j);
+                        allcols.add(tab + "->"+ col);
+                    }
+                }
             return allcols;
         } else {
             return db.getAllColumns(schemaName, tableName);

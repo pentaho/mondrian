@@ -205,6 +205,12 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                     (target instanceof MondrianGuiDef.Measure && pName.equals("column")) ||
                     (target instanceof MondrianGuiDef.Hierarchy && pName.equals("primaryKey")) ||
                     (target instanceof MondrianGuiDef.Level && pName.equals("column")) ||
+                    (target instanceof MondrianGuiDef.Level && pName.equals("nameColumn")) ||
+                    (target instanceof MondrianGuiDef.Level && pName.equals("ordinalColumn")) ||
+                    (target instanceof MondrianGuiDef.Level && pName.equals("parentColumn")) ||
+                    (target instanceof MondrianGuiDef.Level && pName.equals("captionColumn")) ||
+                    (target instanceof MondrianGuiDef.Closure && pName.equals("parentColumn")) ||
+                    (target instanceof MondrianGuiDef.Closure && pName.equals("childColumn")) ||                    
                     (target instanceof MondrianGuiDef.Property && pName.equals("column"))
                     )  {
                 // updating all column values

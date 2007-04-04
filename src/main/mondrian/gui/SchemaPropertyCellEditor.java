@@ -424,9 +424,14 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             }
             activeEditor= listEditor;
         } else if ( (targetClassz == MondrianGuiDef.Level.class && propertyName.equals("column")) ||
+                (targetClassz == MondrianGuiDef.Level.class && propertyName.equals("nameColumn")) ||
+                (targetClassz == MondrianGuiDef.Level.class && propertyName.equals("parentColumn")) ||
+                (targetClassz == MondrianGuiDef.Level.class && propertyName.equals("ordinalColumn")) ||
+                (targetClassz == MondrianGuiDef.Level.class && propertyName.equals("captionColumn")) ||
+                (targetClassz == MondrianGuiDef.Closure.class && propertyName.equals("parentColumn")) ||
+                (targetClassz == MondrianGuiDef.Closure.class && propertyName.equals("childColumn")) ||                
                 (targetClassz == MondrianGuiDef.Property.class && propertyName.equals("column"))
                 ) {
-
             MondrianGuiDef.Level lProps;
             if (targetClassz == MondrianGuiDef.Level.class) {
                 lProps = (MondrianGuiDef.Level) tableModel.getValue();
@@ -435,7 +440,12 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             }
 
             String lTable = lProps.table;
-            Vector allcols  = jdbcMetaData.getAllColumns(null, lTable); //===
+            Vector allcols;
+            if (lTable != null) {
+                allcols  = jdbcMetaData.getAllColumns(null, lTable);
+            } else {
+                allcols  = jdbcMetaData.getAllColumns(selectedFactTableSchema, null);
+            }            
             ComboBoxModel cAllcols = new DefaultComboBoxModel(allcols);
 
             listEditor.setEditable(true);
@@ -456,6 +466,26 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             listEditor.setSelectedItem((String)value);
             activeEditor= listEditor;
 
+        } else  if ((targetClassz == MondrianGuiDef.AggFactCount.class && propertyName.equals("column")) ||
+                   (targetClassz == MondrianGuiDef.AggIgnoreColumn.class && propertyName.equals("column")) ||
+                   (targetClassz == MondrianGuiDef.AggLevel.class && propertyName.equals("column")) ||
+                   (targetClassz == MondrianGuiDef.AggMeasure.class && propertyName.equals("column")) ||
+                   (targetClassz == MondrianGuiDef.AggForeignKey.class && propertyName.equals("factColumn")) ||
+                   (targetClassz == MondrianGuiDef.AggForeignKey.class && propertyName.equals("aggColumn"))
+        ) {
+            Vector allcols;
+            allcols  = jdbcMetaData.getAllColumns(null, null);
+            ComboBoxModel cAllcols = new DefaultComboBoxModel(allcols);
+            
+            listEditor.setEditable(true);
+            listEditor.setToolTipText(null);
+            listEditor.removeActionListener(al);
+            
+            listEditor.setModel(cAllcols);
+            listEditor.setSelectedItem((String)value);
+            listEditorValue = (String)value;
+            activeEditor= listEditor;
+            
         } else if (targetClassz == MondrianGuiDef.Table.class && propertyName.equals("schema")) {
             Vector allschemas  = jdbcMetaData.getAllSchemas();
             ComboBoxModel cAllschemas = new DefaultComboBoxModel(allschemas);
