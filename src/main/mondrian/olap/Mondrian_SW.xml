@@ -15,22 +15,18 @@
   == this file is a copy of mondrian.xml with equals method implementation changed to compare 
   == two objects by their references.
   -->
-
-
 <Model
-    name="mondrian"
-    dtdName="mondrian_SW.dtd"
-    className="MondrianGuiDef"
-    packageName="mondrian.gui"
-    importName="mondrian.olap.*"
-    root="Schema"
-    version="1.0">
-
-
+ name="mondrian"
+ dtdName="mondrian_SW.dtd"
+ className="MondrianGuiDef"
+ packageName="mondrian.gui"
+ importName="mondrian.olap.*:mondrian.rolap.sql.SqlQuery"
+ root="Schema"
+ version="1.0">
     <Doc>
-        This is the XML model for Mondrian schemas.
-        <p/>
-        Revision is $Id$
+This is the XML model for Mondrian schemas.
+<p/>
+Revision is $Id$
     </Doc>
 
     <!-- Schema ========================================================== -->
@@ -41,7 +37,7 @@
             cubes), named sets, roles, and declarations of
             user-defined functions.</p>
         </Doc>
-        <Attribute name="name" required="false">
+        <Attribute name="name" required="true">
             <Doc>Name of this schema</Doc>
         </Attribute>
         <Attribute name="measuresCaption" required="false">
@@ -90,21 +86,21 @@
         </Array>
         <Code><![CDATA[
             Cube getCube(String cubeName) {
-            for (int i = 0; i < cubes.length; i++) {
-            if (cubes[i].name.equals(cubeName)) {
-            return cubes[i];
-            }
-            }
-            throw Util.newInternal("Cannot find cube '" + cubeName + "'");
+                for (int i = 0; i < cubes.length; i++) {
+                    if (cubes[i].name.equals(cubeName)) {
+                        return cubes[i];
+                    }
+                }
+                throw Util.newInternal("Cannot find cube '" + cubeName + "'");
             }
             Dimension getPublicDimension(String dimensionName) {
-            for (int i = 0; i < dimensions.length; i++) {
-            if (dimensions[i].name.equals(dimensionName)) {
-            return dimensions[i];
-            }
-            }
-            throw Util.newInternal(
-            "Cannot find public dimension '" + dimensionName + "'");
+                for (int i = 0; i < dimensions.length; i++) {
+                    if (dimensions[i].name.equals(dimensionName)) {
+                        return dimensions[i];
+                    }
+                }
+                throw Util.newInternal(
+                    "Cannot find public dimension '" + dimensionName + "'");
             }]]>
         </Code>
     </Element>
@@ -115,7 +111,7 @@
             A CubeDimension is either a usage of a Dimension ('shared
             dimension', in MSOLAP parlance), or a 'private dimension'.
         </Doc>
-        <Attribute name="name" required="false"/>
+        <Attribute name="name" required="true"/>
         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the Dimension's name.
@@ -132,17 +128,17 @@
         </Attribute>
         <Code><![CDATA[
             /**
-            * Looks up the base dimension of this dimension. If this is a
-            * usage of a shared dimension, returns the referenced dimension;
-            * otherwise returns the dimension itself.
-            *
-            * <p>Never returns null; if the dimension cannot be
-            * found, throws an error.
-            *
-            * @param schema Schema, never null
-            * @pre schema != null
-            * @post return != null
-            */
+             * Looks up the base dimension of this dimension. If this is a
+             * usage of a shared dimension, returns the referenced dimension;
+             * otherwise returns the dimension itself.
+             *
+             * <p>Never returns null; if the dimension cannot be
+             * found, throws an error.
+             *
+             * @param schema Schema, never null
+             * @pre schema != null
+             * @post return != null
+             */
             public abstract Dimension getDimension(Schema schema);]]>
         </Code>
     </Class>
@@ -152,7 +148,7 @@
         <Doc>
             Definition of a cube.
         </Doc>
-        <Attribute name="name" required="false">
+        <Attribute name="name" required="true">
             <Doc>
                 Name of this cube.
             </Doc>
@@ -170,14 +166,14 @@
                 the data.
             </Doc>
         </Attribute>
-        <Attribute name="enabled" type="Boolean"  
-            required="false" default="true">
+        <Attribute name="enabled" type="Boolean"
+                    required="false" default="true">
             <Doc>
-                Whether element is enabled - if true, then the Cube is 
+                Whether element is enabled - if true, then the Cube is
                 realized otherwise it is ignored.
             </Doc>
         </Attribute>
-        <Object name="fact" type="Relation" required="false">
+        <Object name="fact" type="Relation" required="true">
             <Doc>
                 The fact table is the source of all measures in this cube. If
                 this is a <code>Table</code> and the schema name is not
@@ -198,22 +194,22 @@
         </Array>
         <Code><![CDATA[
             public boolean isEnabled() {
-            return enabled.booleanValue();
+                return enabled.booleanValue();
             }
             Dimension getDimension(Schema xmlSchema, String dimensionName) {
-            for (int i = 0; i < dimensions.length; i++) {
-            if (dimensions[i].name.equals(dimensionName)) {
-            return dimensions[i].getDimension(xmlSchema);
-            }
-            }
-            throw Util.newInternal(
-            "Cannot find dimension '" + dimensionName + "' in cube '" +
-            name + "'");
+                for (int i = 0; i < dimensions.length; i++) {
+                    if (dimensions[i].name.equals(dimensionName)) {
+                        return dimensions[i].getDimension(xmlSchema);
+                    }
+                }
+                throw Util.newInternal(
+                    "Cannot find dimension '" + dimensionName + "' in cube '" +
+                    name + "'");
             }
             public boolean equals(Object o) {
-            return (this == o);
+                return (this == o);
             }
-]]>
+            ]]>
         </Code>
     </Element>
 
@@ -223,8 +219,8 @@
             A <code>VirtualCube</code> is a set of dimensions and
             measures gleaned from other cubes.
         </Doc>
-        <Attribute name="enabled" type="Boolean"  
-            required="false" default="true">
+        <Attribute name="enabled" type="Boolean"
+                    required="false" default="true">
             <Doc>
                 Whether this element is enabled - if true, then the Virtual
                 Cube is realized otherwise it is ignored.
@@ -248,7 +244,7 @@
         </Array>
         <Code><![CDATA[
             public boolean isEnabled() {
-            return enabled.booleanValue();
+                return enabled.booleanValue();
             }]]>
         </Code>
     </Element>
@@ -272,13 +268,13 @@
         <Code><![CDATA[
             // implement CubeDimension
             public Dimension getDimension(Schema schema) {
-            Util.assertPrecondition(schema != null, "schema != null");
-            if (cubeName == null) {
-            return schema.getPublicDimension(name);
-            } else {
-            Cube cube = schema.getCube(cubeName);
-            return cube.getDimension(schema, name);
-            }
+                Util.assertPrecondition(schema != null, "schema != null");
+                if (cubeName == null) {
+                    return schema.getPublicDimension(name);
+                } else {
+                    Cube cube = schema.getCube(cubeName);
+                    return cube.getDimension(schema, name);
+                }
             }]]>
         </Code>
     </Element>
@@ -298,7 +294,7 @@
                 Unique name of the measure within its cube.
             </Doc>
         </Attribute>
-        <Attribute name="visible" type="Boolean" required="false" default="true">
+        <Attribute name="visible" type="Boolean" required="false">
             <Doc>
                 Whether this member is visible in the user-interface.
                 Default true.
@@ -312,7 +308,7 @@
             A <code>DimensionUsage</code> is usage of a shared
             Dimension within the context of a cube.
         </Doc>
-        <Attribute name="source" required="false">
+        <Attribute name="source" required="true">
             <Doc>Name of the source dimension. Must be a dimension in
             this schema. Case-sensitive.</Doc>
         </Attribute>
@@ -334,14 +330,14 @@
         <Code><![CDATA[
             // implement CubeDimension
             public Dimension getDimension(Schema schema) {
-            Util.assertPrecondition(schema != null, "schema != null");
-            for (int i = 0; i < schema.dimensions.length; i++) {
-            if (schema.dimensions[i].name.equals(source)) {
-            return schema.dimensions[i];
-            }
-            }
-            throw Util.newInternal(
-            "Cannot find shared dimension '" + source + "'");
+                Util.assertPrecondition(schema != null, "schema != null");
+                for (int i = 0; i < schema.dimensions.length; i++) {
+                    if (schema.dimensions[i].name.equals(source)) {
+                        return schema.dimensions[i];
+                    }
+                }
+                throw Util.newInternal(
+                    "Cannot find shared dimension '" + source + "'");
             }]]>
         </Code>
     </Element>
@@ -356,8 +352,8 @@
             <code>Cube</code>. The <code>foreignKey</code> field is only
             applicable to private dimensions.
         </Doc>
-        <Attribute name="name" required="false"><Doc></Doc></Attribute>
-        <Attribute name="type" required="false" default="StandardDimension">
+        <Attribute name="name" required="true"><Doc></Doc></Attribute>
+        <Attribute name="type" required="false">
             <Doc>
                 The dimension's type may be one of "Standard" or "Time". A
                 <dfn>time</dfn>
@@ -419,7 +415,7 @@
                 has the same name as its dimension.
             </Doc>
         </Attribute>
-        <Attribute name="hasAll" type="Boolean" required="false">
+        <Attribute name="hasAll" type="Boolean" required="true">
             <Doc>
                 Whether this hierarchy has an 'all' member.
             </Doc>
@@ -493,7 +489,7 @@
                 if their references are different.
             */
             public boolean equals(Object o) {
-            return (this == o);
+                return (this == o);
             }]]>
         </Code>
     </Element>
@@ -502,7 +498,7 @@
         <Attribute name="approxRowCount" required="false">
             <Doc>
                 The estimated number of members in this level.
-                Setting this property improves the performance of 
+                Setting this property improves the performance of
                 MDSCHEMA_LEVELS, MDSCHEMA_HIERARCHIES and
                 MDSCHEMA_DIMENSIONS XMLA requests
             </Doc>
@@ -528,13 +524,12 @@
                 this level.
             </Doc>
         </Attribute>
-        
+
         <Attribute name="ordinalColumn" required="false">
             <Doc>
                 The name of the column which holds member
-                ordinals. Only applicable for the last level in a
-                hierarchy. If this column is not specified, the
-                hierarchy cannot be implemented in ROLAP mode.
+                ordinals.  If this column is not specified, the
+                key column is used for ordering.
             </Doc>
         </Attribute>
         <Attribute name="parentColumn" required="false">
@@ -551,13 +546,23 @@
         </Attribute>
         <Attribute name="type" default="String">
             <Doc>
-                Indicates the type of this level's key column: String or
-                Numeric. When generating SQL statements, Mondrian
+                Indicates the type of this level's key column:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+                When generating SQL statements, Mondrian
                 encloses values for String columns in quotation marks,
-                but leaves values for Numeric columns un-quoted.
+                but leaves values for Integer and Numeric columns un-quoted.
+
+                <p/>Date, Time, and Timestamp values are quoted according to the
+                SQL dialect. For a SQL-compliant dialect, the values appear
+                prefixed by their typename, for example, "DATE '2006-06-01'".
             </Doc>
             <Value>String</Value>
             <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
         </Attribute>
         <Attribute name="uniqueMembers" type="Boolean" default="false">
             <Doc>
@@ -610,7 +615,7 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
-        
+
         <Attribute name="captionColumn" required="false">
             <Doc>
                 The name of the column which holds the caption for
@@ -643,50 +648,59 @@
         <Array name="properties" type="Property" min="0"/>
         <Code>
             public Expression getKeyExp() {
-            if (keyExp != null) {
-            return keyExp;
-            } else if (column != null) {
-            return new Column(table, column);
-            } else {
-            return null;
+                if (keyExp != null) {
+                    return keyExp;
+                } else if (column != null) {
+                    return new Column(table, column);
+                } else {
+                    return null;
+                }
             }
-            }
+
             public Expression getNameExp() {
-            if (nameExp != null) {
-            return nameExp;
-            } else if (nameColumn != null) {
-            return new Column(table, nameColumn);
-            } else {
-            return null;
+                if (nameExp != null) {
+                    return nameExp;
+                } else if (nameColumn != null) {
+                    return new Column(table, nameColumn);
+                } else {
+                    return null;
+                }
             }
-            }
+
             public Expression getCaptionExp() {
-            if (captionColumn != null) {
-            return new Column(table, captionColumn);
-            } else {
-            return null;
+                if (captionColumn != null) {
+                    return new Column(table, captionColumn);
+                } else {
+                    return null;
+                }
             }
-            }
+
             public Expression getOrdinalExp() {
-            if (ordinalExp != null) {
-            return ordinalExp;
-            } else if (ordinalColumn != null) {
-            return new Column(table, ordinalColumn);
-            } else {
-            return null;
+                if (ordinalExp != null) {
+                    return ordinalExp;
+                } else if (ordinalColumn != null) {
+                    return new Column(table, ordinalColumn);
+                } else {
+                    return null;
+                }
             }
-            }
+
             public Expression getParentExp() {
-            if (parentExp != null) {
-            return parentExp;
-            } else if (parentColumn != null) {
-            return new Column(table, parentColumn);
-            } else {
-            return null;
+                if (parentExp != null) {
+                    return parentExp;
+                } else if (parentColumn != null) {
+                    return new Column(table, parentColumn);
+                } else {
+                    return null;
+                }
             }
-            }
+
             public Expression getPropertyExp(int i) {
-            return new Column(table, properties[i].column);
+                return new Column(table, properties[i].column);
+            }
+
+            public SqlQuery.Datatype getDatatype() {
+                return SqlQuery.Datatype.valueOf(type);
             }
         </Code>
     </Element>
@@ -698,9 +712,9 @@
             The closure is provided as a set of (parent/child) pairs:
             since it is the transitive closure these are actually (ancestor/descendant) pairs.
         </Doc>
-        <Attribute name="parentColumn" required="false"/>
-        <Attribute name="childColumn" required="false"/>
-        <Object name="table" type="Table" required="false"/>
+        <Attribute name="parentColumn" required="true"/>
+        <Attribute name="childColumn" required="true"/>
+        <Object name="table" type="Table" required="true"/>
     </Element>
 
     <Element type="Property">
@@ -710,10 +724,17 @@
         <Attribute name="name"><Doc></Doc></Attribute>
         <Attribute name="column"><Doc></Doc></Attribute>
         <Attribute name="type" default="String">
-            <Doc>Data type of this property</Doc>
+            <Doc>
+                Data type of this property:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+            </Doc>
             <Value>String</Value>
             <Value>Numeric</Value>
+            <Value>Integer</Value>
             <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
@@ -732,7 +753,7 @@
     </Element>
 
     <Element type="Measure">
-        <Attribute name="name" required="false">
+        <Attribute name="name" required="true">
             <Doc>Name of this measure.</Doc>
         </Attribute>
         <Attribute name="column" required="false">
@@ -743,15 +764,20 @@
         </Attribute>
         <Attribute name="datatype" required="false">
             <Doc>
-                The datatype of this measure. 
-                Valid values are 'String', 'Numeric' and 'Integer'.
-                The default datatype of a measure is
+                The datatype of this measure:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+
+                <p/>The default datatype of a measure is
                 'Integer' if the measure's aggregator is 'Count',
                 otherwise it is 'Numeric'.
             </Doc>
+            <Value>String</Value>
             <Value>Numeric</Value>
             <Value>Integer</Value>
-            <Value>String</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
         </Attribute>
         <Attribute name="formatString">
             <Doc>
@@ -759,14 +785,19 @@
                 more details, see the <a href="api/mondrian/util/Format.html">mondrian.util.Format</a> class.
             </Doc>
         </Attribute>
-        <Attribute name="aggregator" required="false">
-            <Doc>Aggregation function.</Doc>
+        <Attribute name="aggregator" required="true">
+            <Doc>
+                Aggregation function. Allowed values are "sum", "count", "min",
+                "max", "avg", and "distinct-count". ("distinct count" is allowed
+                for backwards compatibility, but is deprecated because XML
+                enumerated attributes in a DTD cannot legally contain spaces.)
+            </Doc>
             <Value>sum</Value>
             <Value>count</Value>
             <Value>min</Value>
             <Value>max</Value>
             <Value>avg</Value>
-            <Value>distinct count</Value>
+            <Value>distinct count</Value>            
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
@@ -780,7 +811,7 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
-        <Attribute name="visible" type="Boolean" required="false" default="true">
+        <Attribute name="visible" type="Boolean" required="false">
             <Doc>
                 Whether this member is visible in the user-interface.
                 Default true.
@@ -796,7 +827,7 @@
     </Element>
 
     <Element type="CalculatedMember">
-        <Attribute name="name" required="false">
+        <Attribute name="name" required="true">
             <Doc>
                 Name of this calculated member.
             </Doc>
@@ -819,12 +850,12 @@
                 Equivalent to the Formula sub-element.
             </Doc>
         </Attribute>
-        <Attribute name="dimension" required="false">
+        <Attribute name="dimension" required="true">
             <Doc>
                 Name of the dimension which this member belongs to.
             </Doc>
         </Attribute>
-        <Attribute name="visible" type="Boolean" required="false" default="true">
+        <Attribute name="visible" type="Boolean" required="false">
             <Doc>
                 Whether this member is visible in the user-interface.
                 Default true.
@@ -838,16 +869,16 @@
         <Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
         <Code>
             /**
-            * Returns the formula, looking for a sub-element called
-            * "Formula" first, then looking for an attribute called
-            * "formula".
-            */
+              * Returns the formula, looking for a sub-element called
+              * "Formula" first, then looking for an attribute called
+              * "formula".
+              */
             public String getFormula() {
-            if (formulaElement != null) {
-            return formulaElement.cdata;
-            } else {
-            return formula;
-            }
+                if (formulaElement != null) {
+                    return formulaElement.cdata;
+                } else {
+                    return formula;
+                }
             }
         </Code>
     </Element>
@@ -857,12 +888,12 @@
             Property of a calculated member defined against a cube.
             It must have either an expression or a value.
         </Doc>
-        <Attribute name="name" required="false">
+        <Attribute name="name" required="true">
             <Doc>
                 Name of this member property.
             </Doc>
         </Attribute>
-        <Attribute name="caption" required="false">
+         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the Properties's name.
                 Can be localized from Properties file using #{propertyname}.
@@ -888,7 +919,7 @@
         <Doc><![CDATA[
             <p>Defines a named set which can be used in queries in the
             same way as a set defined using a WITH SET clause.</p>
-            
+
             <p>A named set can be defined against a particular cube,
             or can be global to a schema. If it is defined against a
             cube, it is only available to queries which use that cube.</p>
@@ -903,7 +934,7 @@
             required to make the formula valid.</p>]]>
 
         </Doc>
-        <Attribute name="name" required="false">
+        <Attribute name="name" required="true">
             <Doc>
                 Name of this named set.
             </Doc>
@@ -921,16 +952,16 @@
         </Object>
         <Code>
             /**
-            * Returns the formula, looking for a sub-element called
-            * "Formula" first, then looking for an attribute called
-            * "formula".
-            */
+              * Returns the formula, looking for a sub-element called
+              * "Formula" first, then looking for an attribute called
+              * "formula".
+              */
             public String getFormula() {
-            if (formulaElement != null) {
-            return formulaElement.cdata;
-            } else {
-            return formula;
-            }
+                if (formulaElement != null) {
+                    return formulaElement.cdata;
+                } else {
+                    return formula;
+                }
             }
         </Code>
     </Element>
@@ -951,10 +982,10 @@
             public abstract Relation find(String seekAlias);
             public abstract String getAlias();
             public boolean equals(Object o) {
-            return this == o;
+                return this == o;
             }
             public int hashCode() {
-            return System.identityHashCode(this);
+                return System.identityHashCode(this);
             }
         </Code>
     </Class>
@@ -963,23 +994,23 @@
         <Doc>
             A collection of SQL statements, one per dialect.
         </Doc>
-        <Attribute name="alias" required="false"/>
+        <Attribute name="alias" required="true"/>
         <Array name="selects" type="SQL" min="1"/>
         <Code>
             public String toString() {
-            return selects[0].cdata;
+                return selects[0].cdata;
             }
             public Relation find(String seekAlias) {
-            if (seekAlias.equals(alias)) {
-            return this;
-            } else {
-            return null;
-            }
+                if (seekAlias.equals(alias)) {
+                    return this;
+                } else {
+                    return null;
+                }
             }
             public String getAlias() {
-            return alias;
+                return alias;
             }
-        </Code>
+            </Code>
     </Element>
 
     <Element type="SQL">
@@ -998,6 +1029,9 @@
             <Value>oracle</Value>
             <Value>postgres</Value>
             <Value>sybase</Value>
+            <Value>teradata</Value>
+            <Value>ingres</Value>
+            <Value>luciddb</Value>
         </Attribute>
         <CData/>
         <Code><![CDATA[
@@ -1005,25 +1039,22 @@
                 return dialect.hashCode();
             }
             public boolean equals(Object obj) {
-                // disabled this equality operation because two sql objects may be equal if their contents are equal.
+                // disabled this equality implementation because two sql objects may be equal if their contents are equal.
                 Throwable stack = new Throwable();
                 stack.fillInStackTrace();
                 StackTraceElement [] st  = stack.getStackTrace();
-                //stack.printStackTrace();
                 for (int i=0; i<st.length ;i++){
-                    //System.out.println("classname==="+st[i].getClassName());
-                    
                     if (st[i].getClassName().equals("javax.swing.tree.TreePath"))
                         return this == obj;
                      
                 }
-            if (!(obj instanceof SQL)) {
-            return false;
-            }
-            SQL that = (SQL) obj;
-            return this.dialect.equals(that.dialect) &&
-            Util.equals(this.cdata, that.cdata);
-            
+
+                if (!(obj instanceof SQL)) {
+                    return false;
+                }
+                SQL that = (SQL) obj;
+                return this.dialect.equals(that.dialect) &&
+                        Util.equals(this.cdata, that.cdata);
             }]]>
         </Code>
     </Element>
@@ -1035,78 +1066,79 @@
                 required.
             </Doc>
         </Attribute>
-        <Attribute name="leftKey" required="false"/>
+        <Attribute name="leftKey" required="true"/>
         <Attribute name="rightAlias">
             <Doc>
                 Defaults to right's alias if right is a table, otherwise
                 required.
             </Doc>
         </Attribute>
-        <Attribute name="rightKey" required="false"/>
-        <Object name="left" type="Relation" required="false"/>
-        <Object name="right" type="Relation" required="false"/>
+        <Attribute name="rightKey" required="true"/>
+        <Object name="left" type="Relation" required="true"/>
+        <Object name="right" type="Relation" required="true"/>
         <Code>
             /** Convenience constructor. */
-            public Join(String leftAlias, String leftKey, Relation left, 
-            String rightAlias, String rightKey, Relation right) {
-            this.leftAlias = leftAlias;
-            this.leftKey = leftKey;
-            this.left = left;
-            this.rightAlias = rightAlias;
-            this.rightKey = rightKey;
-            this.right = right;
+            public Join(String leftAlias, String leftKey, Relation left,
+                String rightAlias, String rightKey, Relation right) {
+                this.leftAlias = leftAlias;
+                this.leftKey = leftKey;
+                this.left = left;
+                this.rightAlias = rightAlias;
+                this.rightKey = rightKey;
+                this.right = right;
             }
             /**
-            * Returns the alias of the left join key, defaulting to left's
-            * alias if left is a table.
-            */
+              * Returns the alias of the left join key, defaulting to left's
+              * alias if left is a table.
+              */
             public String getLeftAlias() {
-            if (leftAlias != null) {
-            return leftAlias;
-            }
-            if (left instanceof Table) {
-            return ((Table) left).getAlias();
-            }
-            throw Util.newInternal(
-            "alias is required because " + left + " is not a table");
+                if (leftAlias != null) {
+                    return leftAlias;
+                }
+                if (left instanceof Table) {
+                    return ((Table) left).getAlias();
+                }
+                throw Util.newInternal(
+                    "alias is required because " + left + " is not a table");
             }
             /**
-            * Returns the alias of the right join key, defaulting to right's
-            * alias if right is a table.
-            */
+              * Returns the alias of the right join key, defaulting to right's
+              * alias if right is a table.
+              */
             public String getRightAlias() {
-            if (rightAlias != null) {
-            return rightAlias;
-            }
-            if (right instanceof Table) {
-            return ((Table) right).getAlias();
-            }
-            throw Util.newInternal(
-            "alias is required because " + right + " is not a table");
+                if (rightAlias != null) {
+                    return rightAlias;
+                }
+                if (right instanceof Table) {
+                    return ((Table) right).getAlias();
+                }
+                throw Util.newInternal(
+                    "alias is required because " + right + " is not a table");
             }
             public String toString() {
-            return "(" + left + ") join (" + right + ") on " +
-            leftAlias + "." + leftKey + " = " +
-            rightAlias + "." + rightKey;
+                return "(" + left + ") join (" + right + ") on " +
+                    leftAlias + "." + leftKey + " = " +
+                    rightAlias + "." + rightKey;
             }
             public Relation find(String seekAlias) {
-            Relation relation = left.find(seekAlias);
-            if (relation == null) {
-            relation = right.find(seekAlias);
-            }
-            return relation;
+                Relation relation = left.find(seekAlias);
+                if (relation == null) {
+                    relation = right.find(seekAlias);
+                }
+                return relation;
             }
             public String getAlias() {
-            throw Util.newInternal("join does not have alias");
+                throw Util.newInternal("join does not have alias");
             }
-           public boolean equals(Object o) {
-            return (this == o);
+            public boolean equals(Object o) {
+                return (this == o);
             }
+            
         </Code>
     </Element>
 
     <Element type="Table" class="Relation">
-        <Attribute name="name" required="false"/>
+        <Attribute name="name" required="true"/>
         <Attribute name="schema">
             <Doc>
                 Optional qualifier for <code>table</code>.
@@ -1122,9 +1154,9 @@
             </Doc>
         </Attribute>
         <Object name="filter" type="SQL" required="false">
-            <Doc>
-                The SQL WHERE clause expression to be appended to any select statement
-            </Doc>
+        <Doc>
+          The SQL WHERE clause expression to be appended to any select statement
+        </Doc>
         </Object>
         <Array name="aggExcludes" type="AggExclude" required="false"/>
         <Array name="aggTables" type="AggTable" required="false"/>
@@ -1132,53 +1164,51 @@
         <Code><![CDATA[
             /** Convenience constructor. */
             public Table(Table table) {
-            this(table.schema, table.name, table.alias);
+                this(table.schema, table.name, table.alias);
             }
             public Table(String schema, String name, String alias) {
-            this();
-            this.schema = schema;
-            this.name = name;
-            this.alias = alias;
+                this();
+                this.schema = schema;
+                this.name = name;
+                this.alias = alias;
             }
             /** Returns the alias or, if it is null, the table name. */
             public String getAlias() {
-            return (alias != null) ? alias : name;
+                return (alias != null) ? alias : name;
             }
             public String toString() {
-            return (schema == null) ?
-            name :
-            schema + "." + name;
+                return (schema == null) ?
+                    name :
+                    schema + "." + name;
             }
             public Relation find(String seekAlias) {
-            return seekAlias.equals(name) ? this :
-            (alias != null) && seekAlias.equals(alias) ? this : 
-            null;
+                return seekAlias.equals(name) ? this :
+                    (alias != null) && seekAlias.equals(alias) ? this :
+                    null;
             }
-          public boolean equals(Object o) {
-            return (this == o);
-            }
-            /* disabled to resolve problem of disappearing schema elements from tree panel
             public boolean equals(Object o) {
-            if (o instanceof Table) {
-            Table that = (Table) o;
-            return this.name.equals(that.name) &&
-            Util.equals(this.schema, that.schema);
-            } else {
-            return false;
+                return (this == o);
+                /* disabled to resolve problem of disappearing schema elements from tree panel
+                if (o instanceof Table) {
+                    Table that = (Table) o;
+                    return this.name.equals(that.name) &&
+                        Util.equals(this.schema, that.schema);
+                } else {
+                    return false;
+                }
+                */
             }
-            }
-            */
             public int hashCode() {
-            return toString().hashCode();
+                return toString().hashCode();
             }
             public String getFilter() {
-            return (filter == null) ? null : filter.cdata;
+                return (filter == null) ? null : filter.cdata;
             }
             public AggExclude[] getAggExcludes() {
-            return aggExcludes;
+                return aggExcludes;
             }
             public AggTable[] getAggTables() {
-            return aggTables;
+                return aggTables;
             }
             ]]>
         </Code>
@@ -1198,24 +1228,24 @@
         <Object name="rows" type="Rows" required="true"/>
         <Code><![CDATA[
             public String getAlias() {
-            return alias;
+                return alias;
             }
             public String toString() {
-            return "<inline data>";
+                return "<inline data>";
             }
             public Relation find(String seekAlias) {
-            return seekAlias.equals(this) ? this : null;
+                return seekAlias.equals(this) ? this : null;
             }
             public boolean equals(Object o) {
-            if (o instanceof InlineTable) {
-            InlineTable that = (InlineTable) o;
-            return this.alias.equals(that.alias);
-            } else {
-            return false;
-            }
+                if (o instanceof InlineTable) {
+                    InlineTable that = (InlineTable) o;
+                    return this.alias.equals(that.alias);
+                } else {
+                    return false;
+                }
             }
             public int hashCode() {
-            return toString().hashCode();
+                return toString().hashCode();
             }
             ]]>
         </Code>
@@ -1237,8 +1267,16 @@
         </Attribute>
         <Attribute name="type" required="true">
             <Doc>
-                Type of the column (String or Numeric)
+                Type of the column:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
             </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
         </Attribute>
     </Element>
 
@@ -1275,13 +1313,13 @@
             This aggregate table must be in the same schema as the
             base fact table.
         </Doc>
-        <Attribute name="ignorecase" type="Boolean" required="false" 
-            default="true" >
+        <Attribute name="ignorecase" type="Boolean" required="false"
+                default="true" >
             <Doc>
                 Whether or not the match should ignore case.
             </Doc>
         </Attribute>
-        <Object name="factcount" type="AggFactCount" required="false">
+        <Object name="factcount" type="AggFactCount" required="true">
             <Doc>
                 What does the fact_count column look like.
             </Doc>
@@ -1292,39 +1330,39 @@
         <Array name="levels" type="AggLevel"/>
         <Code>
             public boolean isIgnoreCase() {
-            return ignorecase.booleanValue();
+                return ignorecase.booleanValue();
             }
             public AggFactCount getAggFactCount() {
-            return factcount;
+                return factcount;
             }
             public AggIgnoreColumn[] getAggIgnoreColumns() {
-            return ignoreColumns;
+                return ignoreColumns;
             }
             public AggForeignKey[] getAggForeignKeys() {
-            return foreignKeys;
+                return foreignKeys;
             }
             public AggMeasure[] getAggMeasures() {
-            return measures;
+                return measures;
             }
             public AggLevel[] getAggLevels() {
-            return levels;
+                return levels;
             }
         </Code>
     </Class>
     <Element type="AggName" class="AggTable">
-        <Attribute name="name" required="false">
+        <Attribute name="name" required="true">
             <Doc>
                 The Table name of a Specific aggregate table.
             </Doc>
         </Attribute>
         <Code>
             public String getNameAttribute() {
-            return name;
+                return name;
             }
         </Code>
     </Element>
     <Element type="AggPattern" class="AggTable">
-        <Attribute name="pattern" required="false">
+        <Attribute name="pattern" required="true">
             <Doc>
                 A Table pattern used to define a set of aggregate tables.
             </Doc>
@@ -1332,10 +1370,10 @@
         <Array name="excludes" type="AggExclude"/>
         <Code>
             public String getPattern() {
-            return pattern;
+                return pattern;
             }
             public AggExclude[] getAggExcludes() {
-            return excludes;
+                return excludes;
             }
         </Code>
     </Element>
@@ -1351,34 +1389,34 @@
                 The Table name not to be matched.
             </Doc>
         </Attribute>
-        <Attribute name="ignorecase" type="Boolean" required="false" 
-            default="true" >
+        <Attribute name="ignorecase" type="Boolean" required="false"
+                default="true" >
             <Doc>
                 Whether or not the match should ignore case.
             </Doc>
         </Attribute>
         <Code>
             public String getNameAttribute() {
-            return name;
+                return name;
             }
             public String getPattern() {
-            return pattern;
+                return pattern;
             }
             public boolean isIgnoreCase() {
-            return ignorecase.booleanValue();
+                return ignorecase.booleanValue();
             }
         </Code>
     </Element>
 
     <Class class="AggColumnName">
-        <Attribute name="column" required="false">
+        <Attribute name="column" required="true">
             <Doc>
                 The name of the fact count column.
             </Doc>
         </Attribute>
         <Code>
             public String getColumnName() {
-            return column;
+                return column;
             }
         </Code>
     </Class>
@@ -1392,63 +1430,63 @@
             The name of the column mapping from base fact table foreign key
             to aggregate table foreign key.
         </Doc>
-        <Attribute name="factColumn" required="false">
+        <Attribute name="factColumn" required="true">
             <Doc>
                 The name of the base fact table foreign key.
             </Doc>
         </Attribute>
-        <Attribute name="aggColumn" required="false">
+        <Attribute name="aggColumn" required="true">
             <Doc>
                 The name of the aggregate table foreign key.
             </Doc>
         </Attribute>
         <Code>
             public String getFactFKColumnName() {
-            return factColumn;
+                return factColumn;
             }
             public String getAggregateFKColumnName() {
-            return aggColumn;
+                return aggColumn;
             }
         </Code>
     </Element>
     <Element type="AggLevel">
-        <Attribute name="column" required="false">
+        <Attribute name="column" required="true">
             <Doc>
                 The name of the column mapping to the level name.
             </Doc>
         </Attribute>
-        <Attribute name="name" required="false">
+        <Attribute name="name" required="true">
             <Doc>
                 The name of the Dimension Hierarchy level.
             </Doc>
         </Attribute>
         <Code>
             public String getNameAttribute() {
-            return name;
+                return name;
             }
             public String getColumnName() {
-            return column;
+                return column;
             }
         </Code>
     </Element>
 
     <Element type="AggMeasure">
-        <Attribute name="column" required="false">
+        <Attribute name="column" required="true">
             <Doc>
                 The name of the column mapping to the measure name.
             </Doc>
         </Attribute>
-        <Attribute name="name" required="false">
+        <Attribute name="name" required="true">
             <Doc>
                 The name of the Cube measure.
             </Doc>
         </Attribute>
         <Code>
             public String getNameAttribute() {
-            return name;
+                return name;
             }
             public String getColumn() {
-            return column;
+                return column;
             }
         </Code>
     </Element>
@@ -1459,7 +1497,7 @@
 
     <Class class="Expression">
         <Code>
-            public abstract String getExpression(mondrian.rolap.sql.SqlQuery query);
+            public abstract String getExpression(SqlQuery query);
             public abstract String getGenericExpression();
             public abstract String getTableAlias();
         </Code>
@@ -1472,7 +1510,7 @@
                 the query only has one table.
             </Doc>
         </Attribute>
-        <Attribute name="name" required="false">
+        <Attribute name="name" required="true">
             <Doc>
                 Name of the column.
             </Doc>
@@ -1480,38 +1518,39 @@
         <Code><![CDATA[
             /** Convenience constructor. */
             public Column(String table, String name) {
-            this();
-            Util.assertTrue(name != null);
-            this.table = table;
-            this.name = name;
+                this();
+                Util.assertTrue(name != null);
+                this.table = table;
+                this.name = name;
             }
-            public String getExpression(mondrian.rolap.sql.SqlQuery query) {
-            return query.getDialect().quoteIdentifier(table, name);
+            public String getExpression(SqlQuery query) {
+                return "";
+                //===return query.getDialect().quoteIdentifier(table, name);
             }
             public String getGenericExpression() {
-            if (table == null) {
-            return name;
-            } else {
-            return table + "." + name;
-            }
+                if (table == null) {
+                    return name;
+                } else {
+                    return table + "." + name;
+                }
             }
             public String getColumnName() {
-            return name;
+                return name;
             }
             public String getTableAlias() {
-            return table;
+                return table;
             }
             public int hashCode() {
-            return name.hashCode() ^ (table==null ? 0 : table.hashCode());
+                return name.hashCode() ^ (table==null ? 0 : table.hashCode());
             }
 
             public boolean equals(Object obj) {
-            if (!(obj instanceof Column)) {
-            return false;
-            }
-            Column that = (Column) obj;
-            return this.name.equals(that.name) &&
-            Util.equals(this.table, that.table);
+                if (!(obj instanceof Column)) {
+                    return false;
+                }
+                Column that = (Column) obj;
+                return this.name.equals(that.name) &&
+                        Util.equals(this.table, that.table);
             }]]>
         </Code>
     </Element>
@@ -1523,45 +1562,45 @@
         <Array name="expressions" type="SQL" min="1"/>
         <Code><![CDATA[
             public String toString() {
-            return expressions[0].cdata;
+                return expressions[0].cdata;
             }
-            public String getExpression(mondrian.rolap.sql.SqlQuery query) {
-            //return query.getDialect().chooseQuery(expressions);
-            return "";  //====Change for duplicate MondrianDef.java in mondrian.gui
+            public String getExpression(SqlQuery query) {
+                return "";
+                //===return query.getDialect().chooseQuery(expressions);
             }
             public String getGenericExpression() {
-            for (int i = 0; i < expressions.length; i++) {
-            if (expressions[i].dialect.equals("generic")) {
-            return expressions[i].cdata;
-            }
-            }
-            return expressions[0].cdata;
+                for (int i = 0; i < expressions.length; i++) {
+                    if (expressions[i].dialect.equals("generic")) {
+                        return expressions[i].cdata;
+                    }
+                }
+                return expressions[0].cdata;
             }
             public String getTableAlias() {
-            return null;
+                return null;
             }
             public int hashCode() {
-            int h = 17;
-            for (int i = 0; i < expressions.length; i++) {
-            h = 37 * h + expressions[i].hashCode();
-            }
-            return h;
+                int h = 17;
+                for (int i = 0; i < expressions.length; i++) {
+                    h = 37 * h + expressions[i].hashCode();
+                }
+                return h;
             }
 
             public boolean equals(Object obj) {
-            if (!(obj instanceof ExpressionView)) {
-            return false;
-            }
-            ExpressionView that = (ExpressionView) obj;
-            if (this.expressions.length != that.expressions.length) {
-            return false;
-            }
-            for (int i = 0; i < expressions.length; i++) {
-            if (! this.expressions[i].equals(that.expressions[i])) {
-            return false;
-            }
-            }
-            return true;
+                if (!(obj instanceof ExpressionView)) {
+                    return false;
+                }
+                ExpressionView that = (ExpressionView) obj;
+                if (this.expressions.length != that.expressions.length) {
+                    return false;
+                }
+                for (int i = 0; i < expressions.length; i++) {
+                    if (! this.expressions[i].equals(that.expressions[i])) {
+                        return false;
+                    }
+                }
+                return true;
             }]]>
         </Code>
     </Class>
@@ -1579,12 +1618,12 @@
             A role defines an access-control profile. It has a series of grants
             (or denials) for schema elements.
         </Doc>
-        <Attribute name="name" required="false"/>
+        <Attribute name="name" required="true"/>
         <Array name="schemaGrants" type="SchemaGrant"/>
     </Element>
 
     <Class class="Grant">
-        <Attribute name="access" required="false">
+        <Attribute name="access" required="true">
             <Doc>Values correspond to <code>Access</code>.</Doc>
             <Value>all</Value>
             <Value>custom</Value>
@@ -1610,7 +1649,7 @@
             <code>access</code> may be "all" or "none".
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Cube, int)">mondrian.olap.Role#grant(mondrian.olap.Cube,int)</a>.
         </Doc>
-        <Attribute name="cube" required="false">
+        <Attribute name="cube" required="true">
             <Doc>The unique name of the cube</Doc>
         </Attribute>
         <Array name="dimensionGrants" type="DimensionGrant"/>
@@ -1626,7 +1665,7 @@
             See also the "all_dimensions" option of the "SchemaGrant" element.
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">mondrian.olap.Role#grant(mondrian.olap.Dimension,int)</a>.
         </Doc>
-        <Attribute name="dimension" required="false">
+        <Attribute name="dimension" required="true">
             <Doc>The unique name of the dimension</Doc>
         </Attribute>
     </Element>
@@ -1640,7 +1679,7 @@
             the member grants.
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)">mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)</a>.
         </Doc>
-        <Attribute name="hierarchy" required="false">
+        <Attribute name="hierarchy" required="true">
             <Doc>The unique name of the hierarchy</Doc>
         </Attribute>
         <Attribute name="topLevel" required="false">
@@ -1665,10 +1704,10 @@
             You can implicitly see a member if you can see any of its children.
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Member, int)">mondrian.olap.Role#grant(mondrian.olap.Member,int)</a>.
         </Doc>
-        <Attribute name="member" required="false">
+        <Attribute name="member" required="true">
             <Doc>The unique name of the member</Doc>
         </Attribute>
-        <Attribute name="access" required="false">
+        <Attribute name="access" required="true">
             <Value>all</Value>
             <Value>none</Value>
         </Attribute>
@@ -1682,10 +1721,10 @@
             class which implements the interface
             <a href="api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>.
         </Doc>
-        <Attribute name="name" required="false">
+        <Attribute name="name" required="true">
             <Doc>Name with which the user-defined function will be referenced in MDX expressions.</Doc>
         </Attribute>
-        <Attribute name="className" required="false">
+        <Attribute name="className" required="true">
             <Doc>
                 Name of the class which implemenets this user-defined function.
                 Must implement the <code>mondrian.spi.UserDefinedFunction</code>
@@ -1712,11 +1751,16 @@
         </Attribute>
         <Attribute name="type" default="String" required="true">
             <Doc>
-                Indicates the type of this parameter: String,
-                Numeric or Member.
+                Indicates the type of this parameter:
+                String, Numeric, Integer, Boolean, Date, Time, Timestamp, or Member.
             </Doc>
             <Value>String</Value>
             <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
             <Value>Member</Value>
         </Attribute>
         <Attribute name="modifiable" type="Boolean" required="false" default="true">
