@@ -152,6 +152,7 @@ the rest of the schema will be ignored.</p>
 				<span style="padding-left:20px">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</span><br>
 				<span style="padding-left:20px">&lt;<a href="#XML_Measure">Measure</a> name="Unit Sales" column="unit_sales" aggregator="sum" formatString="#,###"/&gt;</span><br>
 				<span style="padding-left:20px">&lt;<a href="#XML_Measure">Measure</a> name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.##"/&gt;</span><br>
+				<span style="padding-left:20px">&lt;<a href="#XML_Measure">Measure</a> name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/&gt;</span><br>
 				<span style="padding-left:20px">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Profit" dimension="Measures" formula="[Measures].</span><br />
 				<span style="padding-left:20px">&nbsp;[Store Sales]-[Measures].[Store Cost]"&gt;</span><br>
 					<span style="padding-left:30px">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name="FORMAT_STRING" value="$#,##0.00"/&gt;</span><br>
@@ -166,7 +167,7 @@ the rest of the schema will be ignored.</p>
 <blockquote>
   	<code>
 		SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS,<br>
-		&nbsp; {[Time].[1997].[Q1].descendants} ON ROWS<br>
+		&nbsp; {descendants([Time].[1997].[Q1])} ON ROWS<br>
 		FROM [Sales]<br>
 		WHERE [Gender].[F]
 	</code>
