@@ -10,6 +10,7 @@
 package mondrian.xmla;
 
 import mondrian.olap.Util;
+import mondrian.olap.MondrianProperties;
 import mondrian.test.TestContext;
 import mondrian.test.DiffRepository;
 import mondrian.tui.XmlUtil;
@@ -377,6 +378,9 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     }
 
     public void testDrillThrough() throws Exception {
+        if (!MondrianProperties.instance().EnableTotalCount.booleanValue()) {
+            return;
+        }
         String requestType = "EXECUTE";
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
