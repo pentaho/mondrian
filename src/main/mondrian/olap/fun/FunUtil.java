@@ -64,6 +64,8 @@ public class FunUtil extends Util {
      */
     public static final boolean BooleanNull = false;
 
+    private static final String EMPTY_STRING = "";
+
     /**
      * Creates an exception which indicates that an error has occurred while
      * executing a given function.
@@ -1845,6 +1847,41 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
     {
         final int[] argCategories = ExpBase.getTypes(args);
         return new FunDefBase(resolver, returnCategory, argCategories) {};
+    }
+
+    /**
+     * Returns a specified number of characters from a string.
+     *
+     * @param value  String expression from which characters are returned.
+     * If string contains Null, Null is returned.
+     * @param beginIndex Character position in string at which the part to be
+     * taken begins. If start is greater than the number of characters in string,
+     * Mid returns a zero-length string ("").
+     * @param length Number of characters to return. If omitted or if there are
+     * fewer than length characters in the text (including the character at start),
+     * all characters from the start position to the end of the string are returned.
+     * @return Returns a string
+     */
+    public static String mid(String value, int beginIndex, int length) {
+        if (beginIndex < 0){
+            throw new InvalidArgumentException("Invalid parameter. " +
+                    "Start parameter of Mid function can't " +
+                    "be negative");
+        }
+        if (length < 0){
+            throw new InvalidArgumentException("Invalid parameter. " +
+                    "Length parameter of Mid function can't " +
+                    "be negative");
+        }
+
+        if (beginIndex >= value.length()){
+            return EMPTY_STRING;
+        }
+
+        int endIndex = beginIndex + length;
+        return endIndex >= value.length() ?
+                value.substring(beginIndex) :
+                value.substring(beginIndex, endIndex);
     }
 
     // Inner classes

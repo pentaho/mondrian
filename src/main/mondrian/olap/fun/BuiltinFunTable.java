@@ -732,6 +732,59 @@ public class BuiltinFunTable extends FunTableImpl {
 
         });
 
+        define(new FunDefBase(
+                "IIf",
+                "IIf(<Logical Expression>, <Boolean Expression>, <Numeric Expression>)",
+                "Returns boolean determined by a logical test.",
+                "fbbbn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final BooleanCalc booleanCalc =
+                        compiler.compileBoolean(call.getArg(0));
+                final BooleanCalc booleanCalc1 = compiler.compileBoolean(call.getArg(1));
+                final Calc numericCalc = compiler.compileScalar(call.getArg(2), true);
+                Calc[] calcs = new Calc[]{booleanCalc, booleanCalc, numericCalc};
+                return new AbstractBooleanCalc(call, calcs) {
+                    public boolean evaluateBoolean(Evaluator evaluator) {
+                        final boolean condition =
+                                booleanCalc.evaluateBoolean(evaluator);
+                        final boolean firstParam =
+                                booleanCalc1.evaluateBoolean(evaluator);
+                        int value =
+                                ((Double) numericCalc.evaluate(evaluator))
+                                        .intValue();
+
+                        boolean secondParam = false;
+                        if (value > 0) {
+                            secondParam = true;
+                        }
+
+                        return condition ? firstParam : secondParam;
+
+                    }
+                };
+            }
+
+        });
+        
+        define(new FunDefBase(
+                "InStr",
+                "InStr(<String Expression1>, <String Expression2>)",
+                "Returns the position of the first occurrence of one string within another." +
+                        " Implements very basic form of InStr",
+                "fnSS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final StringCalc stringCalc1 = compiler.compileString(call.getArg(0));
+                final StringCalc stringCalc2 = compiler.compileString(call.getArg(1));
+                return new AbstractIntegerCalc(call, new Calc[] {stringCalc1, stringCalc2}) {
+                    public int evaluateInteger(Evaluator evaluator) {
+                        String value = stringCalc1.evaluateString(evaluator);
+                        String pattern = stringCalc2.evaluateString(evaluator);
+                        return value.indexOf(pattern) + 1;
+                    }
+                };
+            }
+        });
+
         define(LinReg.InterceptResolver);
         define(LinReg.PointResolver);
         define(LinReg.R2Resolver);
@@ -1942,6 +1995,119 @@ public class BuiltinFunTable extends FunTableImpl {
         define(CalculatedChildFunDef.instance);
 
         define(CastFunDef.Resolver);
+
+        define(new FunDefBase(
+                "Left",
+                "Left(<String Expression>, <Numeric Expression>)",
+                "Returns a specified number of characters " +
+                             "from the left side of a string",
+                "fSSn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final StringCalc stringCalc = compiler.compileString(call.getArg(0));
+                final Calc numericCalc = compiler.compileScalar(call.getArg(1), true);
+                return new AbstractStringCalc(call, new Calc[] {stringCalc, numericCalc}) {
+                    public String evaluateString(Evaluator evaluator) {
+                        String value = stringCalc.evaluateString(evaluator);
+
+                        int index = ((Double) numericCalc.evaluate(evaluator))
+                                .intValue();
+                        if (index < 0) {
+                            throw new InvalidArgumentException("Invalid parameter. " +
+                                    "Length parameter of Left function " +
+                                    "can't be negative");
+                        }
+
+                        return index < value.length() ?
+                                value.substring(0, index) : value;
+
+                    }
+                };
+            }
+
+        });
+
+        define(new FunDefBase(
+                "UCase",
+                "UCase(<String Expression>)",
+                "Returns a string that has been converted to uppercase",
+                "fSS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final Locale locale = compiler.getEvaluator().getConnectionLocale();
+                final StringCalc stringCalc = compiler.compileString(call.getArg(0));
+                return new AbstractStringCalc(call, new Calc[]{stringCalc}) {
+                    public String evaluateString(Evaluator evaluator) {
+                        String value = stringCalc.evaluateString(evaluator);
+                        return value.toUpperCase(locale);
+                    }
+                };
+            }
+
+        });
+
+        define(new FunDefBase(
+                "Len",
+                "Len(<String Expression>)",
+                "Returns the number of characters in a string",
+                "fnS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final StringCalc stringCalc = compiler.compileString(call.getArg(0));
+                return new AbstractIntegerCalc(call, new Calc[] {stringCalc}) {
+                    public int evaluateInteger(Evaluator evaluator) {
+                        String value = stringCalc.evaluateString(evaluator);
+                        return value.length();
+                    }
+                };
+            }
+
+        });
+
+        define(new FunDefBase(
+                "Mid",
+                "Mid(<String Expression>, <Numeric Expression1>, " +
+                        "<Numeric Expression2>)",
+                "Returns a specified number of characters from a string",
+                "fSSnn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final StringCalc stringCalc = compiler.compileString(call.getArg(0));
+                final Calc numericCalc1 = compiler.compileScalar(call.getArg(1), true);
+                final Calc numericCalc2 = compiler.compileScalar(call.getArg(2), true);
+                Calc[] calcs = new Calc[]{stringCalc, numericCalc1, numericCalc2};
+
+                return new AbstractStringCalc(call, calcs) {
+                    public String evaluateString(Evaluator evaluator) {
+                        String value = stringCalc.evaluateString(evaluator);
+                        int val = ((Double) numericCalc1.evaluate(evaluator))
+                                .intValue();
+                        int beginIndex = val == 0 ? val : val - 1;
+                        int length = ((Double) numericCalc2.evaluate(evaluator))
+                                .intValue();
+                        return mid(value, beginIndex, length);
+                    }
+                };
+            }
+        });
+
+        define(new FunDefBase(
+                "Mid",
+                "Mid(<String Expression>, <Numeric Expression>)",
+                "Returns all the characters starting from specified index from the string",
+                "fSSn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final StringCalc stringCalc = compiler.compileString(call.getArg(0));
+                final Calc numericCalc = compiler.compileScalar(call.getArg(1), true);
+                Calc[] calcs = new Calc[]{stringCalc, numericCalc};
+
+                return new AbstractStringCalc(call, calcs) {
+                    public String evaluateString(Evaluator evaluator) {
+                        String value = stringCalc.evaluateString(evaluator);
+                        int val = ((Double) numericCalc.evaluate(evaluator))
+                                .intValue();
+                        int beginIndex = val == 0 ? val : val - 1;
+                        return mid(value, beginIndex, value.length());
+                    }
+                };
+            }
+        });
     }
 
     /** Returns (creating if necessary) the singleton. */

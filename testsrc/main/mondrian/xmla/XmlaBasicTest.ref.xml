@@ -4081,6 +4081,17 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns boolean determined by a
+                            logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Logical
+                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IIf</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IIf</FUNCTION_NAME>
                         <DESCRIPTION>Returns one of two numeric values
                             determined by a logical test.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, Numeric
@@ -4107,6 +4118,17 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>IN</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>InStr</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the position of the first
+                            occurrence of one string within another.
+                            Implements very basic form of InStr</DESCRIPTION>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>InStr</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Intersect</FUNCTION_NAME>
@@ -4361,6 +4383,26 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Lead</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Left</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a specified number of
+                            characters from the left side of a string</DESCRIPTION>
+                        <PARAMETER_LIST>String, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Left</CAPTION>
+                    </row>
+                     <row>
+                        <FUNCTION_NAME>Len</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the number of characters in
+                            a string</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Len</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Level</FUNCTION_NAME>
                         <DESCRIPTION>Returns a member's level.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
@@ -4582,6 +4624,27 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Members</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Mid</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a specified number of
+                            characters from a string</DESCRIPTION>
+                        <PARAMETER_LIST>String, Numeric Expression,
+                            Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Mid</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Mid</FUNCTION_NAME>
+                        <DESCRIPTION>Returns all the characters starting
+                         from specified index from the string</DESCRIPTION>
+                        <PARAMETER_LIST>String, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Mid</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Min</FUNCTION_NAME>
@@ -5283,6 +5346,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>TupleToStr</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>UCase</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a string that has been
+                            converted to uppercase</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>UCase</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Union</FUNCTION_NAME>

@@ -6975,6 +6975,293 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         MondrianProperties.instance().MaxEvalDepth.set(origDepth);
     }
 
+    public void testLeftFunctionWithValidArguments(){
+
+        assertQueryReturns("select filter([Store].MEMBERS," +
+                "Left([Store].CURRENTMEMBER.Name, 4)=\"Bell\") on 0 from sales",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testLeftFunctionWithLengthValueZero(){
+
+        assertQueryReturns("select filter([Store].MEMBERS," +
+                "Left([Store].CURRENTMEMBER.Name, 0)=\"\" And " +
+                "[Store].CURRENTMEMBER.Name = \"Bellingham\" ) on 0 from sales",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testLeftFunctionWithLengthValueEqualToStringLength(){
+
+        assertQueryReturns("select filter([Store].MEMBERS," +
+                "Left([Store].CURRENTMEMBER.Name, 10)=\"Bellingham\") " +
+                "on 0 from sales",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testLeftFunctionWithLengthMoreThanStringLength(){
+
+        assertQueryReturns("select filter([Store].MEMBERS," +
+                "Left([Store].CURRENTMEMBER.Name, 20)=\"Bellingham\") " +
+                "on 0 from sales",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testLeftFunctionWithZeroLengthString(){
+
+        assertQueryReturns("select filter([Store].MEMBERS,Left(\"\", 20)=\"\" " +
+                "And [Store].CURRENTMEMBER.Name = \"Bellingham\" ) " +
+                "on 0 from sales",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testLeftFunctionWithNegativeLength(){
+
+        assertThrows("select filter([Store].MEMBERS," +
+                "Left([Store].CURRENTMEMBER.Name, -20)=\"Bellingham\") " +
+                "on 0 from sales",
+                "Invalid parameter. Length parameter of Left function can't " +
+                        "be negative");
+    }
+
+    public void testMidFunctionWithValidArguments(){
+
+        assertQueryReturns("select filter([Store].MEMBERS," +
+                "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
+                "And Mid(\"Bellingham\", 4, 6) = \"lingha\")" +
+                "on 0 from sales"
+                ,
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testMidFunctionWithZeroLenghtStringArgument(){
+
+        assertQueryReturns("select filter([Store].MEMBERS," +
+                "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
+                "And Mid(\"\", 4, 6) = \"\")" +
+                "on 0 from sales"
+                ,
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testMidFunctionWithLengthArgumentLargerThanStringLength(){
+
+        assertQueryReturns("select filter([Store].MEMBERS," +
+                "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
+                "And Mid(\"Bellingham\", 4, 20) = \"lingham\")" +
+                "on 0 from sales"
+                ,
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testMidFunctionWithStartIndexGreaterThanStringLength() {
+        assertQueryReturns("select filter([Store].MEMBERS," +
+                "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
+                "And Mid(\"Bellingham\", 20, 2) = \"\")" +
+                "on 0 from sales"
+                ,
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testMidFunctionWithStartIndexZero() {
+        assertQueryReturns("select filter([Store].MEMBERS," +
+                "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
+                "And Mid(\"Bellingham\", 0, 2) = \"Be\")" +
+                "on 0 from sales"
+                ,
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testMidFunctionWithNegativeStartIndex() {
+        assertThrows("select filter([Store].MEMBERS," +
+                "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
+                "And Mid(\"Bellingham\", -20, 2) = \"\")" +
+                "on 0 from sales",
+                "Invalid parameter. Start parameter of Mid function can't " +
+                        "be negative");
+    }
+
+    public void testMidFunctionWithNegativeLength() {
+        assertThrows("select filter([Store].MEMBERS," +
+                "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
+                "And Mid(\"Bellingham\", 2, -2) = \"\")" +
+                "on 0 from sales",
+                "Invalid parameter. Length parameter of Mid function can't " +
+                        "be negative");
+    }
+
+    public void testMidFunctionWithoutLength() {
+        assertQueryReturns("select filter([Store].MEMBERS," +
+                "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
+                "And Mid(\"Bellingham\", 2) = \"ellingham\")" +
+                "on 0 from sales"
+                ,
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testLenFunctionWithNonEmptyString() {
+        assertQueryReturns("select filter([Store].MEMBERS, " +
+                "Len([Store].CURRENTMEMBER.Name) = 3 ) on 0 from sales"
+                ,
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA]}\n" +
+                        "Row #0: 266,773\n"));
+
+    }
+
+    public void testLenFunctionWithAnEmptyString() {
+        assertQueryReturns("select filter([Store].MEMBERS,Len(\"\")=0 " +
+                "And [Store].CURRENTMEMBER.Name = \"Bellingham\" ) " +
+                "on 0 from sales",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testUCaseWithNonEmptyString() {
+        assertQueryReturns("select filter([Store].MEMBERS, " +
+                " UCase([Store].CURRENTMEMBER.Name) = \"BELLINGHAM\" ) " +
+                "on 0 from sales",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testUCaseWithEmptyString() {
+        assertQueryReturns("select filter([Store].MEMBERS, " +
+                " UCase(\"\") = \"\" " +
+                "And [Store].CURRENTMEMBER.Name = \"Bellingham\" ) " +
+                "on 0 from sales",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testInStrFunctionWithValidArguments() {
+        assertQueryReturns("select filter([Store].MEMBERS,InStr( \"Bellingham\", \"ingha\")=5 " +
+                "And [Store].CURRENTMEMBER.Name = \"Bellingham\" ) " +
+                "on 0 from sales",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testIIFWithBooleanBooleanAndNumericParameterForReturningTruePart() {
+        assertQueryReturns("SELECT Filter(Store.allmembers, " +
+                "iif(measures.profit < 400000," +
+                "[store].currentMember.NAME = \"USA\", 0)) on 0 FROM SALES",
+                fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[USA]}\n" +
+                "Row #0: 266,773\n"));
+    }
+
+    public void testIIFWithBooleanBooleanAndNumericParameterForReturningFalsePart() {
+        assertQueryReturns("SELECT Filter([Store].[All Stores].[USA].[CA].[Beverly Hills].children, " +
+                "iif(measures.profit > 400000," +
+                "[store].currentMember.NAME = \"USA\", 1)) on 0 FROM SALES",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n" +
+                        "Row #0: 21,333\n"));
+    }
+
+    public void testIIFWithBooleanBooleanAndNumericParameterForReturningZero() {
+        assertQueryReturns("SELECT Filter(Store.allmembers, " +
+                "iif(measures.profit > 400000," +
+                "[store].currentMember.NAME = \"USA\", 0)) on 0 FROM SALES",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n"));
+    }
+
+    public void testInStrFunctionWithEmptyString1() {
+        assertQueryReturns("select filter([Store].MEMBERS,InStr( \"\", \"ingha\")=0 " +
+                "And [Store].CURRENTMEMBER.Name = \"Bellingham\" ) " +
+                "on 0 from sales",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testInStrFunctionWithEmptyString2() {
+        assertQueryReturns("select filter([Store].MEMBERS,InStr( \"Bellingham\", \"\")=1 " +
+                "And [Store].CURRENTMEMBER.Name = \"Bellingham\" ) " +
+                "on 0 from sales",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "Row #0: 2,237\n"));
+    }
+
+    public void testGetCaptionUsingMemberDotCaption() {
+        assertQueryReturns("SELECT Filter(Store.allmembers, " +
+                "[store].currentMember.caption = \"USA\") on 0 FROM SALES",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA]}\n" +
+                        "Row #0: 266,773\n"));
+    }
+    
     private static void printHtml(PrintWriter pw, String s) {
         final String escaped = StringEscaper.htmlEscaper.escapeString(s);
         pw.print(escaped);
