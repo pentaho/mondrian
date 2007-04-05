@@ -201,7 +201,8 @@ Revision is $Id$
                 throw Util.newInternal(
                     "Cannot find dimension '" + dimensionName + "' in cube '" +
                     name + "'");
-            }]]>
+            }
+            ]]>
         </Code>
     </Element>
 
@@ -974,6 +975,7 @@ Revision is $Id$
             public String toString() {
                 return selects[0].cdata;
             }
+
             public Relation find(String seekAlias) {
                 if (seekAlias.equals(alias)) {
                     return this;
@@ -981,8 +983,27 @@ Revision is $Id$
                     return null;
                 }
             }
+
             public String getAlias() {
                 return alias;
+            }
+
+            public SqlQuery.CodeSet getCodeSet() {
+                return SQL.toCodeSet(selects);
+            }
+
+            public void addCode(String dialect, String code) {
+                if (selects == null) {
+                    selects = new SQL[1];
+                } else {
+                    SQL[] olds = selects;
+                    selects = new SQL[olds.length + 1];
+                    System.arraycopy(olds, 0, selects, 0, olds.length);
+                }
+                SQL sql = new SQL();
+                sql.dialect = dialect;
+                sql.cdata = code;
+                selects[selects.length - 1] = sql;
             }
             </Code>
     </Element>
@@ -1012,6 +1033,7 @@ Revision is $Id$
             public int hashCode() {
                 return dialect.hashCode();
             }
+
             public boolean equals(Object obj) {
                 if (!(obj instanceof SQL)) {
                     return false;
@@ -1019,7 +1041,19 @@ Revision is $Id$
                 SQL that = (SQL) obj;
                 return this.dialect.equals(that.dialect) &&
                         Util.equals(this.cdata, that.cdata);
-            }]]>
+            }
+
+            /**
+             * Converts an array of SQL to a {@link SqlQuery.CodeSet} object.
+             */
+            public static SqlQuery.CodeSet toCodeSet(SQL[] sqls) {
+                SqlQuery.CodeSet codeSet = new SqlQuery.CodeSet();
+                for (SQL sql : sqls) {
+                    codeSet.put(sql.dialect, sql.cdata);
+                }
+                return codeSet;
+            }
+            ]]>
         </Code>
     </Element>
 
@@ -1520,9 +1554,11 @@ Revision is $Id$
             public String toString() {
                 return expressions[0].cdata;
             }
+
             public String getExpression(SqlQuery query) {
-                return query.getDialect().chooseQuery(expressions);
+                return SQL.toCodeSet(expressions).chooseQuery(query.getDialect());
             }
+
             public String getGenericExpression() {
                 for (int i = 0; i < expressions.length; i++) {
                     if (expressions[i].dialect.equals("generic")) {
@@ -1531,9 +1567,11 @@ Revision is $Id$
                 }
                 return expressions[0].cdata;
             }
+
             public String getTableAlias() {
                 return null;
             }
+
             public int hashCode() {
                 int h = 17;
                 for (int i = 0; i < expressions.length; i++) {
@@ -1556,7 +1594,8 @@ Revision is $Id$
                     }
                 }
                 return true;
-            }]]>
+            }
+            ]]>
         </Code>
     </Class>
 

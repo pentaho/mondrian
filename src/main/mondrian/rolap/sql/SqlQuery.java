@@ -309,7 +309,7 @@ public class SqlQuery {
             final String viewAlias = (alias == null)
                     ? view.getAlias()
                     : alias;
-            final String sqlString = dialect.chooseQuery(view.selects);
+            final String sqlString = view.getCodeSet().chooseQuery(dialect);
 
             return addFromQuery(sqlString, viewAlias, false);
 
@@ -1180,29 +1180,6 @@ public class SqlQuery {
         }
 
         /**
-         * Chooses the variant within an array of
-         * {@link mondrian.olap.MondrianDef.SQL} which best matches the current
-         * SQL dialect.
-         */
-        public String chooseQuery(final MondrianDef.SQL[] sqls) {
-            String best = getBestName();
-
-            String generic = null;
-            for (MondrianDef.SQL sql : sqls) {
-                if (sql.dialect.equals(best)) {
-                    return sql.cdata;
-                }
-                if (sql.dialect.equals("generic")) {
-                    generic = sql.cdata;
-                }
-            }
-            if (generic == null) {
-                throw Util.newError("View has no 'generic' variant");
-            }
-            return generic;
-        }
-
-        /**
          * Generates a SQL statement to represent an inline dataset.
          *
          * <p>For example, for Oracle, generates
@@ -1584,6 +1561,34 @@ public class SqlQuery {
 
         public boolean isNumeric() {
             return false;
+        }
+    }
+
+    /**
+     * Collection of alternative code for alternative dialects.
+     */
+    public static class CodeSet {
+        private final Map<String, String> dialectCodes =
+            new HashMap<String, String>();
+
+        public String put(String dialect, String code) {
+            return dialectCodes.put(dialect, code);
+        }
+
+        /**
+         * Chooses the code variant which best matches the given Dialect.
+         */
+        public String chooseQuery(Dialect dialect) {
+            String best = dialect.getBestName();
+            String bestCode = dialectCodes.get(best);
+            if (bestCode != null) {
+                return bestCode;
+            }
+            String genericCode = dialectCodes.get("generic");
+            if (genericCode == null) {
+                throw Util.newError("View has no 'generic' variant");
+            }
+            return genericCode;
         }
     }
 }

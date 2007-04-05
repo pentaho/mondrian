@@ -11,8 +11,8 @@
   ==
   == This file defines an MMM schema for an Olap schema.
   ==
-  == To resolve equals(==) problem in mondrian.xml that causes tree breaks in Schema Workbench, 
-  == this file is a copy of mondrian.xml with equals method implementation changed to compare 
+  == To resolve equals(==) problem in mondrian.xml that causes tree breaks in Schema Workbench,
+  == this file is a copy of mondrian.xml with equals method implementation changed to compare
   == two objects by their references.
   -->
 <Model
@@ -24,9 +24,20 @@
  root="Schema"
  version="1.0">
     <Doc>
-This is the XML model for Mondrian schemas.
-<p/>
-Revision is $Id$
+        This is the XML model for Mondrian schemas as used by the Schema
+        Workbench. It is based upon the Mondrian model Mondrian.xml, but has
+        a number of differences:<ul>
+        <li>The implementation of equals method for schema objects is changed to
+            == (double equals), to compare two object references rather than
+            their contents.</li>
+        <li>The attributes of the root tag &lt;Model&gt; refers to the generated
+            file MondrianGuiDef.java and its import statements.</li>
+        <li>The 'aggregator' attribute of the Measure element requires the
+            &lt;Value&gt; tags to generate a drop-down of possible options in
+            the Schema Workbench.</li>
+        </ul>
+        <p/>
+        Revision is $Id$
     </Doc>
 
     <!-- Schema ========================================================== -->
@@ -481,16 +492,17 @@ Revision is $Id$
         <Array name="levels" type="Level"><Doc></Doc></Array>
         <Array name="memberReaderParameters" type="MemberReaderParameter"/>
         <Code><![CDATA[
-            /* implement equals required to handle cases where two different 
+            /* implement equals required to handle cases where two different
                 hierarchy objects have equal contents.
-                Resolves problem : of Hierarchy tree disappears when expanded 
-                if there are two (or more) exactly similar Hierarchy objects 
-                within a dimension. We can say two hierarchy objects are different 
+                Resolves problem : of Hierarchy tree disappears when expanded
+                if there are two (or more) exactly similar Hierarchy objects
+                within a dimension. We can say two hierarchy objects are different
                 if their references are different.
             */
             public boolean equals(Object o) {
                 return (this == o);
-            }]]>
+            }
+            ]]>
         </Code>
     </Element>
 
@@ -792,12 +804,16 @@ Revision is $Id$
                 for backwards compatibility, but is deprecated because XML
                 enumerated attributes in a DTD cannot legally contain spaces.)
             </Doc>
+            <!-- The following values are required to generate a drop-down of
+                 possible options in the Schema Workbench. They are not present
+                 in Mondrian.xml because "distinct count" is not a valid XML
+                 attribute name. -->
             <Value>sum</Value>
             <Value>count</Value>
             <Value>min</Value>
             <Value>max</Value>
             <Value>avg</Value>
-            <Value>distinct count</Value>            
+            <Value>distinct count</Value>
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
@@ -1000,6 +1016,7 @@ Revision is $Id$
             public String toString() {
                 return selects[0].cdata;
             }
+
             public Relation find(String seekAlias) {
                 if (seekAlias.equals(alias)) {
                     return this;
@@ -1007,8 +1024,27 @@ Revision is $Id$
                     return null;
                 }
             }
+
             public String getAlias() {
                 return alias;
+            }
+
+            public SqlQuery.CodeSet getCodeSet() {
+                return SQL.toCodeSet(selects);
+            }
+
+            public void addCode(String dialect, String code) {
+                if (selects == null) {
+                    selects = new SQL[1];
+                } else {
+                    SQL[] olds = selects;
+                    selects = new SQL[olds.length + 1];
+                    System.arraycopy(olds, 0, selects, 0, olds.length);
+                }
+                SQL sql = new SQL();
+                sql.dialect = dialect;
+                sql.cdata = code;
+                selects[selects.length - 1] = sql;
             }
             </Code>
     </Element>
@@ -1038,15 +1074,16 @@ Revision is $Id$
             public int hashCode() {
                 return dialect.hashCode();
             }
+
             public boolean equals(Object obj) {
-                // disabled this equality implementation because two sql objects may be equal if their contents are equal.
+                // Disabled this equality implementation because two sql objects
+                // may be equal if their contents are equal.
                 Throwable stack = new Throwable();
                 stack.fillInStackTrace();
-                StackTraceElement [] st  = stack.getStackTrace();
-                for (int i=0; i<st.length ;i++){
-                    if (st[i].getClassName().equals("javax.swing.tree.TreePath"))
+                for (StackTraceElement st : stack.getStackTrace()) {
+                    if (st.getClassName().equals("javax.swing.tree.TreePath")) {
                         return this == obj;
-                     
+                    }
                 }
 
                 if (!(obj instanceof SQL)) {
@@ -1055,7 +1092,19 @@ Revision is $Id$
                 SQL that = (SQL) obj;
                 return this.dialect.equals(that.dialect) &&
                         Util.equals(this.cdata, that.cdata);
-            }]]>
+            }
+
+            /**
+             * Converts an array of SQL to a {@link SqlQuery.CodeSet} object.
+             */
+            public static SqlQuery.CodeSet toCodeSet(SQL[] sqls) {
+                SqlQuery.CodeSet codeSet = new SqlQuery.CodeSet();
+                for (SQL sql : sqls) {
+                    codeSet.put(sql.dialect, sql.cdata);
+                }
+                return codeSet;
+            }
+            ]]>
         </Code>
     </Element>
 
@@ -1133,7 +1182,7 @@ Revision is $Id$
             public boolean equals(Object o) {
                 return (this == o);
             }
-            
+
         </Code>
     </Element>
 
@@ -1187,8 +1236,9 @@ Revision is $Id$
                     null;
             }
             public boolean equals(Object o) {
-                return (this == o);
-                /* disabled to resolve problem of disappearing schema elements from tree panel
+                if (true) return (this == o);
+                // Following code is disabled to resolve problem of disappearing
+                // schema elements from tree panel.
                 if (o instanceof Table) {
                     Table that = (Table) o;
                     return this.name.equals(that.name) &&
@@ -1196,7 +1246,6 @@ Revision is $Id$
                 } else {
                     return false;
                 }
-                */
             }
             public int hashCode() {
                 return toString().hashCode();
@@ -1524,8 +1573,7 @@ Revision is $Id$
                 this.name = name;
             }
             public String getExpression(SqlQuery query) {
-                return "";
-                //===return query.getDialect().quoteIdentifier(table, name);
+                return query.getDialect().quoteIdentifier(table, name);
             }
             public String getGenericExpression() {
                 if (table == null) {
@@ -1564,10 +1612,11 @@ Revision is $Id$
             public String toString() {
                 return expressions[0].cdata;
             }
+
             public String getExpression(SqlQuery query) {
-                return "";
-                //===return query.getDialect().chooseQuery(expressions);
+                return SQL.toCodeSet(expressions).chooseQuery(query.getDialect());
             }
+
             public String getGenericExpression() {
                 for (int i = 0; i < expressions.length; i++) {
                     if (expressions[i].dialect.equals("generic")) {
@@ -1576,9 +1625,11 @@ Revision is $Id$
                 }
                 return expressions[0].cdata;
             }
+
             public String getTableAlias() {
                 return null;
             }
+
             public int hashCode() {
                 int h = 17;
                 for (int i = 0; i < expressions.length; i++) {
@@ -1601,7 +1652,8 @@ Revision is $Id$
                     }
                 }
                 return true;
-            }]]>
+            }
+            ]]>
         </Code>
     </Class>
 
@@ -1780,4 +1832,4 @@ Revision is $Id$
 
 </Model>
 
-<!-- End Mondrian.xml -->
+<!-- End Mondrian_SW.xml -->

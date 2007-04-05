@@ -203,11 +203,7 @@ public class RolapHierarchy extends HierarchyBase {
             MondrianDef.InlineTable inlineTable) {
         MondrianDef.View view = new MondrianDef.View();
         view.alias = inlineTable.alias;
-        view.selects = new MondrianDef.SQL[1];
-        final MondrianDef.SQL select = view.selects[0] = new MondrianDef.SQL();
-        select.dialect = "generic";
-        final SqlQuery.Dialect dialect;
-        dialect = getRolapSchema().getDialect();
+        final SqlQuery.Dialect dialect = getRolapSchema().getDialect();
 
         final int columnCount = inlineTable.columnDefs.array.length;
         List<String> columnNames = new ArrayList<String>();
@@ -229,10 +225,12 @@ public class RolapHierarchy extends HierarchyBase {
             }
             valueList.add(values);
         }
-        select.cdata = dialect.generateInline(
+        view.addCode(
+            "generic",
+            dialect.generateInline(
                 columnNames,
                 columnTypes,
-                valueList);
+                valueList));
         return view;
     }
 

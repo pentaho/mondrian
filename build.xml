@@ -65,6 +65,7 @@
 ${java.dir}/mondrian/olap/Parser.java,
 ${java.dir}/mondrian/olap/ParserSym.java,
 ${java.dir}/mondrian/olap/MondrianDef.java,
+${java.dir}/mondrian/gui/MondrianGuiDef.java,
 ${java.dir}/mondrian/resource/MondrianResource*.java,
 ${java.dir}/mondrian/xmla/DataSourcesConfig*.java,
 ${etc.dir}/mondrian/web/jsp/**/*.java"/>
@@ -1144,7 +1145,7 @@ xalan.jar"/>
     <!-- check if mondrian.jar and workbench jar file exists -->
     <available file="${jar.file}" property="mondrian.jar.exists"/>
     <available file="${workbench.jar.file}" property="workbench.jar.exists"/>
-    <java  jar="${workbench.jar.file}"  fork="yes"/>  
+    <java  jar="${workbench.jar.file}"  fork="yes"/>
   </target>
 
   <!--
