@@ -623,7 +623,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         final HierarchyCalc hierarchyCalc =
                                 compiler.compileHierarchy(call.getArg(0));
                         final Calc valueCalc = new ValueCalc(call);
-                        return new AbstractCalc(call) {
+                        return new GenericCalc(call) {
                             public Object evaluate(Evaluator evaluator) {
                                 Hierarchy hierarchy =
                                         hierarchyCalc.evaluateHierarchy(evaluator);
@@ -835,7 +835,7 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
-                return new AbstractCalc(call) {
+                return new GenericCalc(call) {
                     public Object evaluate(Evaluator evaluator) {
                         Member member = memberCalc.evaluateMember(evaluator);
                         Member old = evaluator.setContext(member);

@@ -16,7 +16,7 @@ import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ListCalc;
 import mondrian.calc.impl.ValueCalc;
-import mondrian.calc.impl.AbstractCalc;
+import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
@@ -53,14 +53,10 @@ class VarFunDef extends AbstractAggregateFunDef {
         final Calc calc = call.getArgCount() > 1 ?
                 compiler.compileScalar(call.getArg(1), true) :
                 new ValueCalc(call);
-        return new AbstractCalc(call) {
-            public Object evaluate(Evaluator evaluator) {
+        return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
+            public double evaluateDouble(Evaluator evaluator) {
                 List memberList = evaluateCurrentList(listCalc, evaluator);
-                return var(evaluator.push(), memberList, calc, false);
-            }
-
-            public Calc[] getCalcs() {
-                return new Calc[] {listCalc, calc};
+                return (Double)var(evaluator.push(), memberList, calc, false);
             }
 
             public boolean dependsOn(Dimension dimension) {

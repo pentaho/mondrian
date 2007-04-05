@@ -11,7 +11,7 @@ package mondrian.olap.fun;
 
 import mondrian.olap.*;
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractCalc;
+import mondrian.calc.impl.GenericCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
 
@@ -41,7 +41,7 @@ class AggregateFunDef extends AbstractAggregateFunDef {
         final Calc calc = call.getArgCount() > 1 ?
                 compiler.compileScalar(call.getArg(1), true) :
                 new ValueCalc(call);
-        return new AbstractCalc(call) {
+        return new GenericCalc(call) {
             public Object evaluate(Evaluator evaluator) {
                 Aggregator aggregator =
                         (Aggregator) evaluator.getProperty(

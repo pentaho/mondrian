@@ -17,6 +17,7 @@ import mondrian.calc.ExpCompiler;
 import mondrian.calc.ListCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractCalc;
+import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
@@ -58,16 +59,12 @@ class CovarianceFunDef extends FunDefBase {
         final Calc calc2 = call.getArgCount() > 2 ?
                 compiler.compileScalar(call.getArg(2), true) :
                 new ValueCalc(call);
-        return new AbstractCalc(call) {
-            public Object evaluate(Evaluator evaluator) {
+        return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc1, calc2}) {
+            public double evaluateDouble(Evaluator evaluator) {
                 List memberList = listCalc.evaluateList(evaluator);
-                return covariance(
+                return (Double)covariance(
                         evaluator.push(), memberList,
                         calc1, calc2, biased);
-            }
-
-            public Calc[] getCalcs() {
-                return new Calc[] {listCalc, calc1, calc2};
             }
 
             public boolean dependsOn(Dimension dimension) {

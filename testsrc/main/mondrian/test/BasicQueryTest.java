@@ -5436,6 +5436,37 @@ public class BasicQueryTest extends FoodMartTestCase {
         );
     }
 
+    /**
+     * This tests a fix for bug #1603653
+     */
+    public void testAvgCastProblem() {
+        assertQueryReturns(
+                "with member measures.bar as " +
+                    "'iif(measures.profit>3000,min([Education Level].[Education Level].Members),min([Education Level].[Education Level].Members))' " +
+                    "select {[Store].[All Stores].[USA].[WA].children} on 0 " +
+                    "from sales where measures.bar"
+                , fold(
+                        "Axis #0:\n" +
+                        "{[Measures].[bar]}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bremerton]}\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Seattle]}\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Spokane]}\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Walla Walla]}\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Yakima]}\n" +
+                        "Row #0: $95.00\n" +
+                        "Row #0: $1,835.00\n" +
+                        "Row #0: $1,277.00\n" +
+                        "Row #0: $1,434.00\n" +
+                        "Row #0: $1,084.00\n" +
+                        "Row #0: $129.00\n" +
+                        "Row #0: $958.00\n"
+        )
+        );
+    }
+    
     public void testFormatInheritanceToPickupFormatFromSecondMeasureWhenTheFirstDoesNotHaveOne() {
         assertQueryReturns("with member measures.foo as 'measures.bar+measures.blah'" +
                 " member measures.bar as '10'" +
