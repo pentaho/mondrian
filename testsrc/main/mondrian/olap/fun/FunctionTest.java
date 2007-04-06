@@ -1896,6 +1896,19 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #2: 12,234.22\n"));
     }
 
+    public void testAggregateWithIIF() {
+        assertQueryReturns("with member store.foo as 'iif(3>1," +
+                "aggregate({[Store].[All Stores].[USA].[OR]})," +
+                "aggregate({[Store].[All Stores].[USA].[CA]}))' " +
+                "select {store.foo} on 0 from sales", fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[foo]}\n" +
+                "Row #0: 67,659\n"));
+
+    }
+
+
     public void testAggregate2AllMembers() {
         assertQueryReturns(
                     "WITH\n" +

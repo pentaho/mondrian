@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.calc.impl.ValueCalc;
+import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
@@ -41,8 +42,8 @@ class AggregateFunDef extends AbstractAggregateFunDef {
         final Calc calc = call.getArgCount() > 1 ?
                 compiler.compileScalar(call.getArg(1), true) :
                 new ValueCalc(call);
-        return new GenericCalc(call) {
-            public Object evaluate(Evaluator evaluator) {
+        return new AbstractDoubleCalc(call, new Calc[]{listCalc,calc}) {
+            public double evaluateDouble(Evaluator evaluator) {
                 Aggregator aggregator =
                         (Aggregator) evaluator.getProperty(
                                 Property.AGGREGATION_TYPE.name, null);
@@ -54,7 +55,7 @@ class AggregateFunDef extends AbstractAggregateFunDef {
                     throw newEvalException(null, "Don't know how to rollup aggregator '" + aggregator + "'");
                 }
                 final List list = evaluateCurrentList(listCalc, evaluator);
-                return rollup.aggregate(evaluator.push(), list, calc);
+                return (Double) rollup.aggregate(evaluator.push(), list, calc);
             }
 
             public Calc[] getCalcs() {
