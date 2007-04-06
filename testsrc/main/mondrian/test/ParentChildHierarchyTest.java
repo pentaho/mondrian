@@ -61,6 +61,67 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "  </Dimension>");
     }
 
+    /**
+     * Returns a TestContext in which the "HR" cube contains an extra dimension,
+     * "EmployeesSnowFlake", which is a joined hierarchy with a closure.
+     * this is almost identical to employee, except we do a join with store
+     * to validate joins with closures work
+     */
+    private TestContext getEmpSnowFlakeClosureTestContext() {
+        return TestContext.createSubstitutingCube(
+            "HR",
+            "<Dimension name=\"EmployeeSnowFlake\" foreignKey=\"employee_id\">" +
+            "<Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"" +
+            "    primaryKey=\"employee_id\" primaryKeyTable=\"employee\">" +
+            "  <Join leftKey=\"store_id\"" +  
+            "    rightAlias=\"store\" rightKey=\"store_id\">" +
+            "    <Table name=\"employee\"/>" +
+            "    <Table name=\"store\"/>" +
+            "  </Join>" +
+            "  <Level name=\"Employee Stores\" table=\"store\"" + 
+            "      column=\"store_id\" uniqueMembers=\"true\"/>" +
+            "  <Level name=\"Employee Id\" type=\"Numeric\" table=\"employee\" uniqueMembers=\"true\"" +
+            "      column=\"employee_id\" parentColumn=\"supervisor_id\"" +
+            "      nameColumn=\"full_name\" nullParentValue=\"0\">" +
+            "    <Closure parentColumn=\"supervisor_id\" childColumn=\"employee_id\">" +
+            "      <Table name=\"employee_closure\"/>" +
+            "    </Closure>" +
+            "    <Property name=\"Marital Status\" column=\"marital_status\"/>" +
+            "    <Property name=\"Position Title\" column=\"position_title\"/>" +
+            "    <Property name=\"Gender\" column=\"gender\"/>" +
+            "    <Property name=\"Salary\" column=\"salary\"/>" +
+            "    <Property name=\"Education Level\" column=\"education_level\"/>" +
+            "    <Property name=\"Management Role\" column=\"management_role\"/>" +
+            "  </Level>" +
+            "</Hierarchy>" +
+            "</Dimension>");
+    }
+    
+    /**
+     * Tests snow flake closure combination.  this is currently broken.
+     * bug #1675125
+     */
+    public void _testSnowflakeClosure() {
+        getEmpSnowFlakeClosureTestContext().assertQueryReturns(
+            "select {[Measures].[Count], [Measures].[Org Salary], \n" +
+                "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n" +
+                "{[EmployeeSnowFlake]} on rows\n" +
+                "from [HR]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Count]}\n" +
+                "{[Measures].[Org Salary]}\n" +
+                "{[Measures].[Number of Employees]}\n" +
+                "{[Measures].[Avg Salary]}\n" +
+                "Axis #2:\n" +
+                "{[EmployeeSnowFlake].[All Employees]}\n" +
+                "Row #0: 7,392\n" +
+                "Row #0: $39,431.67\n" +
+                "Row #0: 616\n" +
+                "Row #0: $64.01\n"));
+    }
+    
     public void testAll() {
         assertQueryReturns(
             "select {[Measures].[Org Salary], [Measures].[Count]} on columns,\n" +
