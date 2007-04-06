@@ -515,17 +515,7 @@ in {mondrian.foodmart.jdbcURL}.">
 
         <batchtest fork="yes" todir="junit-results">
             <fileset dir="${testclasses.dir}">
-<!--
-<include name="mondrian/test/**/BasicQueryTest.class" />
--->
-              <include name="mondrian/test/**/*Test*.class" />
-              <exclude name="mondrian/test/**/*Testable*.class" />
-              <exclude name="mondrian/test/*TestRunner.class" />
-              <exclude name="mondrian/test/**/CsvDBTestCase.class" />
-              <exclude name="mondrian/test/**/*TestContext*.class" />
-              <exclude name="mondrian/test/**/TestCaseForker.class" />
-              <exclude name="mondrian/test/**/FoodMartTestCase.class" />
-              <exclude name="mondrian/test/**/*$*.class" />
+              <include name="mondrian/test/Main.class" />
             </fileset>
         </batchtest>
     </junit>
