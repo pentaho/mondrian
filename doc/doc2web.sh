@@ -171,6 +171,7 @@ s!schema.html!../documentation/schema.php!;
     find content -name \*.htm |
     xargs perl -p -i -e '
 s! src="images/! src="../images/!g;
+s! href="images/! href="/images/!g;
 s! href="api! href="../api!g;
 s! href="cmdrunner\.html! href="command_runner.php!g;
 s! href="developer\.html! href="developers_guide.php!g;
