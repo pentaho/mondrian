@@ -53,6 +53,9 @@ package mondrian.olap;
  * </ul>
  */
 public class Property extends EnumeratedValues.BasicValue {
+
+    private static final String CAPTION_STRING = "CAPTION";
+
     public enum Datatype {
         TYPE_STRING,
         TYPE_NUMERIC,
@@ -528,11 +531,26 @@ public class Property extends EnumeratedValues.BasicValue {
      * @return Property with given name, or null if not found.
      */
     public static Property lookup(String name, boolean matchCase) {
+        name = mapIntrinsicPropertyCaption(name, matchCase);
         if (!matchCase) {
             return enumeration.getValueIgnoreCase(name, false);
         } else {
             return enumeration.getValue(name, false);
         }
+    }
+
+    private static String mapIntrinsicPropertyCaption(String name,
+                                                      boolean matchCase) {
+        if (matchCase) {
+            if (name.equals(CAPTION_STRING)) {
+                return MEMBER_CAPTION.name;
+            }
+        } else {
+            if (name.equalsIgnoreCase(CAPTION_STRING)) {
+                return MEMBER_CAPTION.name;
+            }
+        }
+        return name;
     }
 }
 

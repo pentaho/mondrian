@@ -80,6 +80,9 @@ public class PropertiesTest extends FoodMartTestCase {
         stringPropValue = (String)member.getPropertyValue("MEMBER_CAPTION");
         assertEquals(member.getCaption(), stringPropValue);
 
+        stringPropValue = (String)member.getPropertyValue("CAPTION");
+        assertEquals(member.getCaption(), stringPropValue);
+
         intPropValue = (Integer)member.getPropertyValue("MEMBER_ORDINAL");
         assertEquals(new Integer(member.getOrdinal()), intPropValue);
 

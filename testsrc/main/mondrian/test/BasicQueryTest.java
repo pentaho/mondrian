@@ -5546,6 +5546,27 @@ public class BasicQueryTest extends FoodMartTestCase {
         executeQuery(queryString);
     }
 
+    public void testGetCaptionUsingMemberDotCaption() {
+        assertQueryReturns("SELECT Filter(Store.allmembers, " +
+                "[store].currentMember.caption = \"USA\") on 0 FROM SALES",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA]}\n" +
+                        "Row #0: 266,773\n"));
+    }
+
+    public void testGetCaptionUsingMemberDotPropertiesCaption() {
+        assertQueryReturns("SELECT Filter(Store.allmembers, " +
+                "[store].currentMember.properties(\"caption\") = \"USA\") " +
+                "on 0 FROM SALES",
+                fold("Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA]}\n" +
+                        "Row #0: 266,773\n"));
+    }
+
     /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.
