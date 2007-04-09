@@ -3,6 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2007-2007 Bart Pappyn
+// Copyright (C) 2007-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,7 +26,7 @@ import mondrian.spi.impl.DataSourceChangeListenerImpl;
 import mondrian.spi.impl.DataSourceChangeListenerImpl2;
 import mondrian.spi.impl.DataSourceChangeListenerImpl3;
 import mondrian.spi.impl.DataSourceChangeListenerImpl4;
-import mondrian.util.Bug;
+
 import org.apache.log4j.Logger;
 
 import junit.framework.TestCase;
@@ -38,9 +39,9 @@ import junit.framework.TestCase;
  * @version $Id$
  */
 public class DataSourceChangeListenerTest extends FoodMartTestCase {
-    private static Logger logger =
+    private static final Logger logger =
         Logger.getLogger(DataSourceChangeListenerTest.class);
-    SqlConstraintFactory scf = SqlConstraintFactory.instance();
+    final SqlConstraintFactory scf = SqlConstraintFactory.instance();
 
 
     public DataSourceChangeListenerTest() {
@@ -52,10 +53,15 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
     }
 
     /**
-     * Test whether the data source plugin is able to tell mondrian
+     * Tests whether the data source plugin is able to tell mondrian
      * to read the hierarchy and aggregates again.
      */
     public void testDataSourceChangeListenerPlugin() {
+        final MondrianProperties properties = MondrianProperties.instance();
+        if (properties.TestExpDependencies.get() > 0) {
+            // Dependency testing produces side-effects in the cache.
+            return;
+        }
         // got to clean out the cache
         final TestContext testContext = getTestContext();
         final mondrian.olap.CacheControl cacheControl =
@@ -63,12 +69,12 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
 
         // Flush the entire cache.
         final Connection connection = testContext.getConnection();
-        final mondrian.olap.Cube salesCube = connection.getSchema().lookupCube("Sales", true);
+        final mondrian.olap.Cube salesCube =
+            connection.getSchema().lookupCube("Sales", true);
         final mondrian.olap.CacheControl.CellRegion measuresRegion =
             cacheControl.createMeasuresRegion(salesCube);
         cacheControl.flush(measuresRegion);
 
-        final MondrianProperties properties = MondrianProperties.instance();
         boolean do_caching_orig = properties.DisableCaching.get();
 
         // turn on caching
@@ -76,8 +82,9 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
 
         CachePool.instance().flush();
 
-        /* Use hard caching for testing. When using soft references, we can not test caching
-        * because things may be garbage collected during the tests. */
+        // Use hard caching for testing. When using soft references, we can not
+        // test caching because things may be garbage collected during the
+        // tests.
         SmartMemberReader smr = getSmartMemberReader("Store");
         smr.mapLevelToMembers.setCache(
             new HardSmartCache<
@@ -99,8 +106,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             String s1, s2, s3, s4, s5, s6;
 
             // Flush the cache, to ensure that the query gets executed.
-            RolapResult r1 = (RolapResult) executeQuery(
-            "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
+            Result r1 = executeQuery(
+                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r1);
             s1 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();
@@ -108,8 +115,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             assertNotSame("[]", s1);
 
             // Run query again, to make sure only cache is used
-            RolapResult r2 = (RolapResult) executeQuery(
-            "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
+            Result r2 = executeQuery(
+                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r2);
             s2 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();
@@ -119,8 +126,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             smr.changeListener = new DataSourceChangeListenerImpl();
 
             // Run query again, to make sure only cache is used
-            RolapResult r3 = (RolapResult) executeQuery(
-            "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
+            Result r3 = executeQuery(
+                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r3);
             s3 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();
@@ -131,8 +138,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             smr.mapLevelToMembers.clear();
             smr.mapMemberToChildren.clear();
             // Run query again, to make sure only cache is used
-            RolapResult r4 = (RolapResult) executeQuery(
-            "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
+            Result r4 = executeQuery(
+                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r4);
             s4 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();
@@ -142,8 +149,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             smr.changeListener = new DataSourceChangeListenerImpl2();
 
             // Run query again, to make sure only cache is used
-            RolapResult r5 = (RolapResult) executeQuery(
-            "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
+            Result r5 = executeQuery(
+                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r5);
             s5 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();
@@ -155,8 +162,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             RolapStar star = getStar("Sales");
             star.setChangeListener(smr.changeListener);
             // Run query again, to make sure only cache is used
-            RolapResult r6 = (RolapResult) executeQuery(
-            "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
+            Result r6 = executeQuery(
+                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r6);
             s6 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();
@@ -175,8 +182,9 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             }
         }
     }
+
     /**
-     * Test to see whether the flushing of the cache is thread safe.
+     * Tests whether the flushing of the cache is thread safe.
      */
     public void testParallelDataSourceChangeListenerPlugin() {
         // 5 threads, 8 cycles each
@@ -245,89 +253,88 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                 "Row #3: 175\n"),
 
             fold("Axis #0:\n" +
-                    "{}\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Unit Sales]}\n" +
-                    "{[Measures].[Units Shipped]}\n" +
-                    "{[Measures].[Shipped per Ordered]}\n" +
-                    "{[Measures].[Profit per Unit Shipped]}\n" +
-                    "Axis #2:\n" +
-                    "{[Product].[All Products].[Drink], [Time].[1997].[Q1]}\n" +
-                    "{[Product].[All Products].[Drink], [Time].[1997].[Q2]}\n" +
-                    "{[Product].[All Products].[Drink], [Time].[1997].[Q3]}\n" +
-                    "{[Product].[All Products].[Drink], [Time].[1997].[Q4]}\n" +
-                    "{[Product].[All Products].[Food], [Time].[1997].[Q1]}\n" +
-                    "{[Product].[All Products].[Food], [Time].[1997].[Q2]}\n" +
-                    "{[Product].[All Products].[Food], [Time].[1997].[Q3]}\n" +
-                    "{[Product].[All Products].[Food], [Time].[1997].[Q4]}\n" +
-                    "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q1]}\n" +
-                    "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q2]}\n" +
-                    "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q3]}\n" +
-                    "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q4]}\n" +
-                    "Row #0: 5,976\n" +
-                    "Row #0: 4637.0\n" +
-                    "Row #0: 77.59%\n" +
-                    "Row #0: $1.50\n" +
-                    "Row #1: 5,895\n" +
-                    "Row #1: 4501.0\n" +
-                    "Row #1: 76.35%\n" +
-                    "Row #1: $1.60\n" +
-                    "Row #2: 6,065\n" +
-                    "Row #2: 6258.0\n" +
-                    "Row #2: 103.18%\n" +
-                    "Row #2: $1.15\n" +
-                    "Row #3: 6,661\n" +
-                    "Row #3: 5802.0\n" +
-                    "Row #3: 87.10%\n" +
-                    "Row #3: $1.38\n" +
-                    "Row #4: 47,809\n" +
-                    "Row #4: 37153.0\n" +
-                    "Row #4: 77.71%\n" +
-                    "Row #4: $1.64\n" +
-                    "Row #5: 44,825\n" +
-                    "Row #5: 35459.0\n" +
-                    "Row #5: 79.11%\n" +
-                    "Row #5: $1.62\n" +
-                    "Row #6: 47,440\n" +
-                    "Row #6: 41545.0\n" +
-                    "Row #6: 87.57%\n" +
-                    "Row #6: $1.47\n" +
-                    "Row #7: 51,866\n" +
-                    "Row #7: 34706.0\n" +
-                    "Row #7: 66.91%\n" +
-                    "Row #7: $1.91\n" +
-                    "Row #8: 12,506\n" +
-                    "Row #8: 9161.0\n" +
-                    "Row #8: 73.25%\n" +
-                    "Row #8: $1.76\n" +
-                    "Row #9: 11,890\n" +
-                    "Row #9: 9227.0\n" +
-                    "Row #9: 77.60%\n" +
-                    "Row #9: $1.65\n" +
-                    "Row #10: 12,343\n" +
-                    "Row #10: 9986.0\n" +
-                    "Row #10: 80.90%\n" +
-                    "Row #10: $1.59\n" +
-                    "Row #11: 13,497\n" +
-                    "Row #11: 9291.0\n" +
-                    "Row #11: 68.84%\n" +
-                    "Row #11: $1.86\n"),
-
-            fold(
-                    "Axis #0:\n" +
-                        "{[Time].[1997]}\n" +
-                        "Axis #1:\n" +
-                        "{[Measures].[Profit Per Unit Shipped]}\n" +
-                        "Axis #2:\n" +
-                        "{[Store].[All Stores].[USA].[CA]}\n" +
-                        "{[Store].[All Stores].[USA].[OR]}\n" +
-                        "{[Store].[All Stores].[USA].[WA]}\n" +
-                        "Row #0: |1.6|style=red\n" +
-                        "Row #1: |2.1|style=green\n" +
-                        "Row #2: |1.5|style=red\n"),
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "{[Measures].[Units Shipped]}\n" +
+                "{[Measures].[Shipped per Ordered]}\n" +
+                "{[Measures].[Profit per Unit Shipped]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Drink], [Time].[1997].[Q1]}\n" +
+                "{[Product].[All Products].[Drink], [Time].[1997].[Q2]}\n" +
+                "{[Product].[All Products].[Drink], [Time].[1997].[Q3]}\n" +
+                "{[Product].[All Products].[Drink], [Time].[1997].[Q4]}\n" +
+                "{[Product].[All Products].[Food], [Time].[1997].[Q1]}\n" +
+                "{[Product].[All Products].[Food], [Time].[1997].[Q2]}\n" +
+                "{[Product].[All Products].[Food], [Time].[1997].[Q3]}\n" +
+                "{[Product].[All Products].[Food], [Time].[1997].[Q4]}\n" +
+                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q1]}\n" +
+                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q2]}\n" +
+                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q3]}\n" +
+                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q4]}\n" +
+                "Row #0: 5,976\n" +
+                "Row #0: 4637.0\n" +
+                "Row #0: 77.59%\n" +
+                "Row #0: $1.50\n" +
+                "Row #1: 5,895\n" +
+                "Row #1: 4501.0\n" +
+                "Row #1: 76.35%\n" +
+                "Row #1: $1.60\n" +
+                "Row #2: 6,065\n" +
+                "Row #2: 6258.0\n" +
+                "Row #2: 103.18%\n" +
+                "Row #2: $1.15\n" +
+                "Row #3: 6,661\n" +
+                "Row #3: 5802.0\n" +
+                "Row #3: 87.10%\n" +
+                "Row #3: $1.38\n" +
+                "Row #4: 47,809\n" +
+                "Row #4: 37153.0\n" +
+                "Row #4: 77.71%\n" +
+                "Row #4: $1.64\n" +
+                "Row #5: 44,825\n" +
+                "Row #5: 35459.0\n" +
+                "Row #5: 79.11%\n" +
+                "Row #5: $1.62\n" +
+                "Row #6: 47,440\n" +
+                "Row #6: 41545.0\n" +
+                "Row #6: 87.57%\n" +
+                "Row #6: $1.47\n" +
+                "Row #7: 51,866\n" +
+                "Row #7: 34706.0\n" +
+                "Row #7: 66.91%\n" +
+                "Row #7: $1.91\n" +
+                "Row #8: 12,506\n" +
+                "Row #8: 9161.0\n" +
+                "Row #8: 73.25%\n" +
+                "Row #8: $1.76\n" +
+                "Row #9: 11,890\n" +
+                "Row #9: 9227.0\n" +
+                "Row #9: 77.60%\n" +
+                "Row #9: $1.65\n" +
+                "Row #10: 12,343\n" +
+                "Row #10: 9986.0\n" +
+                "Row #10: 80.90%\n" +
+                "Row #10: $1.59\n" +
+                "Row #11: 13,497\n" +
+                "Row #11: 9291.0\n" +
+                "Row #11: 68.84%\n" +
+                "Row #11: $1.86\n"),
 
             fold("Axis #0:\n" +
-                 "{}\n" +
+                "{[Time].[1997]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Profit Per Unit Shipped]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "{[Store].[All Stores].[USA].[OR]}\n" +
+                "{[Store].[All Stores].[USA].[WA]}\n" +
+                "Row #0: |1.6|style=red\n" +
+                "Row #1: |2.1|style=green\n" +
+                "Row #2: |1.5|style=red\n"),
+
+            fold("Axis #0:\n" +
+                "{}\n" +
                  "Axis #1:\n" +
                  "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
                  "Row #0: 2,117\n")
@@ -490,4 +497,4 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
     }
 }
 
-// End NonEmptyTest.java
+// End DataSourceChangeListenerTest.java

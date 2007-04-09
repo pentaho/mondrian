@@ -1044,7 +1044,8 @@ Revision is $Id$
             }
 
             /**
-             * Converts an array of SQL to a {@link SqlQuery.CodeSet} object.
+             * Converts an array of SQL to a
+             * {@link mondrian.rolap.sql.SqlQuery.CodeSet} object.
              */
             public static SqlQuery.CodeSet toCodeSet(SQL[] sqls) {
                 SqlQuery.CodeSet codeSet = new SqlQuery.CodeSet();

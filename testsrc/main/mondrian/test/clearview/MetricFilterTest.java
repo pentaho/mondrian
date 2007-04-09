@@ -13,14 +13,16 @@ package mondrian.test.clearview;
 import junit.framework.*;
 
 import mondrian.test.*;
+import mondrian.olap.MondrianProperties;
+import mondrian.util.Bug;
 
 /**
- * <code>MetricFilterTest</code> is a test suite which tests scenarios of 
- * filtering out measures' values in the FoodMart database. 
- * MDX queries and their expected results are maintained separately in 
- * MetricFilterTest.ref.xml file.If you would prefer to see them as inlined 
- * Java string literals, run ant target "generateDiffRepositoryJUnit" and 
- * then use file MetricFilterTestJUnit.java which will be generated in 
+ * <code>MetricFilterTest</code> is a test suite which tests scenarios of
+ * filtering out measures' values in the FoodMart database.
+ * MDX queries and their expected results are maintained separately in
+ * MetricFilterTest.ref.xml file.If you would prefer to see them as inlined
+ * Java string literals, run ant target "generateDiffRepositoryJUnit" and
+ * then use file MetricFilterTestJUnit.java which will be generated in
  * this directory.
  *
  * @author Khanh Vu
@@ -48,6 +50,16 @@ public class MetricFilterTest extends ClearViewBase {
         return constructSuite(getDiffReposStatic(), MetricFilterTest.class);
     }
 
+    protected void runTest() throws Exception {
+        // Do not run the test in circumstances which hit bug 1696772. Remove
+        // this short-circuit when that bug is fixed.
+        if (getName().equals("testMetricFiltersWithNoSubtotals") &&
+            !MondrianProperties.instance().EnableNativeCrossJoin.get() &&
+            !Bug.Bug1696772Fixed) {
+            return;
+        }
+        super.runTest();
+    }
 }
 
 // End MetricFilterTest.java

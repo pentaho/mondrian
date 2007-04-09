@@ -56,7 +56,7 @@ doImg() {
 ROOT=$(cd $(dirname $0); pwd -P)
 cd $ROOT
 
-javadoc=true
+javadoc=false
 deploy=true
 scp=true
 headJavadoc=false
@@ -124,18 +124,11 @@ doHtml en optimizing_performance.html
 doHtml en roadmap.html
 doHtml en schema.html
 doHtml en xml_schema.html
+doHtml en workbench.html
 
-doImg images/aggregate_tables_1.png
-doImg images/aggregate_tables_2.png
-doImg images/aggregate_tables_3.png
-doImg images/arch_mondrian_v1_tn.png
-doImg images/arch_mondrian_sketch_tn.png
-doImg images/zoom.png
-doImg images/logo_mondrian_lrg.png
-doImg images/perforce_setup.gif
-doImg images/code_spacing.png
-doImg images/code_indentation.png
-doImg images/perforce_setup.png
+for i in images/*.png; do
+  doImg $i
+done
 
 # Remove archive.
 rm -f mondrianPentaho.tar.gz

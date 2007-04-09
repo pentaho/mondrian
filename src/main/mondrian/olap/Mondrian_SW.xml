@@ -483,9 +483,9 @@
 
         <Object name="relation" type="Relation">
             <Doc>
-                The {@link MondrianDef.Table table},
-                {@link MondrianDef.Join set of tables}, or
-                {@link MondrianDef.View SQL statement} which populates this
+                The {@link MondrianGuiDef.Table table},
+                {@link MondrianGuiDef.Join set of tables}, or
+                {@link MondrianGuiDef.View SQL statement} which populates this
                 hierarchy.
             </Doc>
         </Object>
@@ -1095,7 +1095,8 @@
             }
 
             /**
-             * Converts an array of SQL to a {@link SqlQuery.CodeSet} object.
+             * Converts an array of SQL to a
+             * {@link mondrian.rolap.sql.SqlQuery.CodeSet} object.
              */
             public static SqlQuery.CodeSet toCodeSet(SQL[] sqls) {
                 SqlQuery.CodeSet codeSet = new SqlQuery.CodeSet();

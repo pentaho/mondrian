@@ -47,6 +47,13 @@ public class Bug {
     public static final boolean Bug1530543Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1530543&group_id=35302&atid=1696772">bug 1696772</a>
+     * is fixed.
+     */
+    public static final boolean Bug1696772Fixed = false;
+
+    /**
      * Returns whether to avoid a test because the memory monitor may cause it
      * to fail.
      *
