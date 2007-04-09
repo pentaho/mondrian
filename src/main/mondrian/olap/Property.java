@@ -13,6 +13,9 @@
 
 package mondrian.olap;
 
+import java.util.Map;
+import java.util.HashMap;
+
 /**
  * <code>Property</code> is the definition of a member property.
  *
@@ -51,10 +54,11 @@ package mondrian.olap;
  * <li>{@link #SOLVE_ORDER}</li>
  * <li>{@link #VALUE}</li>
  * </ul>
+ *
+ * @version $Id$
+ * @author jhyde
  */
 public class Property extends EnumeratedValues.BasicValue {
-
-    private static final String CAPTION_STRING = "CAPTION";
 
     public enum Datatype {
         TYPE_STRING,
@@ -62,6 +66,20 @@ public class Property extends EnumeratedValues.BasicValue {
         TYPE_BOOLEAN,
         TYPE_OTHER
     }
+
+    /**
+     * For properties which have synonyms, maps from the synonym to the
+     * property.
+     */
+    private static final Map<String, Property> synonyms =
+        new HashMap<String, Property>();
+
+    /**
+     * Map of upper-case names to property definitions, for case-insensitive
+     * match. Also contains synonyms.
+     */
+    public static final Map<String, Property> mapUpperNameToProperties =
+        new HashMap<String, Property>();
 
     public static final int FORMAT_EXP_ORDINAL = 0;
     /**
@@ -224,6 +242,8 @@ public class Property extends EnumeratedValues.BasicValue {
      * Definition of the property which
      * holds the label or caption associated with the member, or the
      * member's name if no caption is defined.
+     *
+     * <p>"CAPTION" is a synonym for this property.
      */
     public static final Property MEMBER_CAPTION =
             new Property("MEMBER_CAPTION", Datatype.TYPE_STRING, MEMBER_CAPTION_ORDINAL, false, true, false, "Required. A label or caption associated with the member. Used primarily for display purposes. If a caption does not exist, MEMBER_NAME is returned.");
@@ -515,6 +535,25 @@ public class Property extends EnumeratedValues.BasicValue {
                 DATATYPE,
             });
 
+    static {
+        // Populate synonyms.
+        synonyms.put("CAPTION", MEMBER_CAPTION);
+        synonyms.put("FORMAT", FORMAT_STRING);
+
+        // Populate map of upper-case property names.
+        for (String propertyName : enumeration.getNames()) {
+            mapUpperNameToProperties.put(
+                propertyName.toUpperCase(),
+                enumeration.getValue(propertyName, true));
+        }
+
+        // Add synonyms.
+        for (Map.Entry<String,Property> entry : synonyms.entrySet()) {
+            mapUpperNameToProperties.put(
+                entry.getKey().toUpperCase(), entry.getValue());
+        }
+    }
+
     /**
      * Looks up a Property with a given ordinal.
      * Returns null if not found.
@@ -531,26 +570,16 @@ public class Property extends EnumeratedValues.BasicValue {
      * @return Property with given name, or null if not found.
      */
     public static Property lookup(String name, boolean matchCase) {
-        name = mapIntrinsicPropertyCaption(name, matchCase);
-        if (!matchCase) {
-            return enumeration.getValueIgnoreCase(name, false);
-        } else {
-            return enumeration.getValue(name, false);
-        }
-    }
-
-    private static String mapIntrinsicPropertyCaption(String name,
-                                                      boolean matchCase) {
         if (matchCase) {
-            if (name.equals(CAPTION_STRING)) {
-                return MEMBER_CAPTION.name;
+            Property property = enumeration.getValue(name, false);
+            if (property != null) {
+                return property;
             }
+            return synonyms.get(name);
         } else {
-            if (name.equalsIgnoreCase(CAPTION_STRING)) {
-                return MEMBER_CAPTION.name;
-            }
+            // No need to check synonyms separately - the map contains them.
+            return mapUpperNameToProperties.get(name.toUpperCase());
         }
-        return name;
     }
 }
 

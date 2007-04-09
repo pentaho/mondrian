@@ -259,26 +259,6 @@ public class EnumeratedValues<V extends EnumeratedValues.Value>
     }
 
     /**
-     * Returns the value associated with a name, case insensitive.
-     *
-     * @param name Name of enumerated value
-     * @param fail Whether to throw if not found
-     * @throws Error if the name is not a member of the enumeration and
-     *       <code>fail</code> is true
-     */
-    public V getValueIgnoreCase(String name, boolean fail) {
-        for (Value value : ordinalToValueMap) {
-            if (value != null && value.getName().equalsIgnoreCase(name)) {
-                return (V) value;
-            }
-        }
-        if (fail) {
-            throw new Error("Unknown enum name:  " + name);
-        }
-        return null;
-    }
-
-    /**
      * Returns the names in this enumeration, in declaration order.
      */
     public String[] getNames() {

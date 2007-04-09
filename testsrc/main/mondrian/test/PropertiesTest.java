@@ -17,6 +17,7 @@ import mondrian.olap.*;
  *
  * @author anikitin
  * @since 5 July, 2005
+ * @version $Id$
  */
 public class PropertiesTest extends FoodMartTestCase {
 
@@ -31,9 +32,11 @@ public class PropertiesTest extends FoodMartTestCase {
         Cube salesCube = getConnection().getSchema().lookupCube("Sales",true);
         SchemaReader scr = salesCube.getSchemaReader(null);
         Member member = scr.getMemberByUniqueName(new String[] {"Customers", "All Customers", "USA", "CA"}, true);
+        final boolean caseSensitive =
+            MondrianProperties.instance().CaseSensitive.get();
 
-        String stringPropValue = null;
-        Integer intPropValue = null;
+        String stringPropValue;
+        Integer intPropValue;
 
         // I'm not sure this property has to store the same value
         // getConnection().getCatalogName() returns.
@@ -51,6 +54,26 @@ public class PropertiesTest extends FoodMartTestCase {
 
         stringPropValue = (String)member.getPropertyValue("DIMENSION_UNIQUE_NAME");
         assertEquals(member.getDimension().getUniqueName(), stringPropValue);
+
+        // Case sensitivity.
+        stringPropValue = (String)member.getPropertyValue("dimension_unique_name", caseSensitive);
+        if (caseSensitive) {
+            assertNull(stringPropValue);
+        } else {
+            assertEquals(member.getDimension().getUniqueName(), stringPropValue);
+        }
+
+        // Non-existent property.
+        stringPropValue = (String)member.getPropertyValue("DIMENSION_UNIQUE_NAME_XXXX");
+        assertNull(stringPropValue);
+
+        // Leading spaces.
+        stringPropValue = (String)member.getPropertyValue(" DIMENSION_UNIQUE_NAME");
+        assertNull(stringPropValue);
+
+        // Trailing spaces.
+        stringPropValue = (String)member.getPropertyValue("DIMENSION_UNIQUE_NAME  ");
+        assertNull(stringPropValue);
 
         stringPropValue = (String)member.getPropertyValue("HIERARCHY_UNIQUE_NAME");
         assertEquals(member.getHierarchy().getUniqueName(), stringPropValue);
@@ -83,6 +106,15 @@ public class PropertiesTest extends FoodMartTestCase {
         stringPropValue = (String)member.getPropertyValue("CAPTION");
         assertEquals(member.getCaption(), stringPropValue);
 
+        // It's worth checking case-sensitivity for CAPTION because it is a
+        // synonym, not a true property.
+        stringPropValue = (String)member.getPropertyValue("caption", caseSensitive);
+        if (caseSensitive) {
+            assertNull(stringPropValue);
+        } else {
+            assertEquals(member.getCaption(), stringPropValue);
+        }
+
         intPropValue = (Integer)member.getPropertyValue("MEMBER_ORDINAL");
         assertEquals(new Integer(member.getOrdinal()), intPropValue);
 
@@ -100,6 +132,14 @@ public class PropertiesTest extends FoodMartTestCase {
 
         stringPropValue = (String)member.getPropertyValue("DESCRIPTION");
         assertEquals(member.getDescription(), stringPropValue);
+
+        // Case sensitivity.
+        stringPropValue = (String)member.getPropertyValue("desCription", caseSensitive);
+        if (caseSensitive) {
+            assertNull(stringPropValue);
+        } else {
+            assertEquals(member.getDescription(), stringPropValue);
+        }
     }
 
     public void testGetChildCardinalityPropertyValue(){
@@ -169,11 +209,32 @@ public class PropertiesTest extends FoodMartTestCase {
         assertNull(cell.getPropertyValue("FONT_SIZE"));
         assertEquals(new Integer(0), cell.getPropertyValue("FONT_FLAGS"));
         assertEquals("Standard", cell.getPropertyValue("FORMAT_STRING"));
+        // FORMAT is a synonym for FORMAT_STRING
+        assertEquals("Standard", cell.getPropertyValue("FORMAT"));
         assertEquals("135,215", cell.getPropertyValue("FORMATTED_VALUE"));
         assertNull(cell.getPropertyValue("NON_EMPTY_BEHAVIOR"));
         assertEquals(new Integer(0), cell.getPropertyValue("SOLVE_ORDER"));
         assertEquals(135215.0, ((Number) cell.getPropertyValue("VALUE")).doubleValue(), 0.1);
 
+        // Case sensitivity.
+        if (MondrianProperties.instance().CaseSensitive.get()) {
+            assertNull(cell.getPropertyValue("cell_ordinal"));
+            assertNull(cell.getPropertyValue("font_flags"));
+            assertNull(cell.getPropertyValue("format_string"));
+            assertNull(cell.getPropertyValue("format"));
+            assertNull(cell.getPropertyValue("formatted_value"));
+            assertNull(cell.getPropertyValue("solve_order"));
+            assertNull(cell.getPropertyValue("value"));
+        } else {
+            assertEquals(new Integer(y * 2 + x),
+                    cell.getPropertyValue("cell_ordinal"));
+            assertEquals(new Integer(0), cell.getPropertyValue("font_flags"));
+            assertEquals("Standard", cell.getPropertyValue("format_string"));
+            assertEquals("Standard", cell.getPropertyValue("format"));
+            assertEquals("135,215", cell.getPropertyValue("formatted_value"));
+            assertEquals(new Integer(0), cell.getPropertyValue("solve_order"));
+            assertEquals(135215.0, ((Number) cell.getPropertyValue("value")).doubleValue(), 0.1);
+        }
     }
 }
 

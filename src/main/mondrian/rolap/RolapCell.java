@@ -121,7 +121,9 @@ class RolapCell implements Cell {
     }
 
     public Object getPropertyValue(String propertyName) {
-        Property property = Property.lookup(propertyName, true);
+        final boolean matchCase =
+            MondrianProperties.instance().CaseSensitive.get();
+        Property property = Property.lookup(propertyName, matchCase);
         Object defaultValue = null;
         if (property != null) {
             switch (property.ordinal) {
