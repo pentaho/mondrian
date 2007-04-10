@@ -410,7 +410,6 @@ public class CompatibilityTest extends FoodMartTestCase {
         }
 
         // A builtin property of a member.
-
         assertExprReturns(
             "[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"LEVEL_NUMBER\")",
             "4");
@@ -424,14 +423,18 @@ public class CompatibilityTest extends FoodMartTestCase {
                 "4");
         }
 
-        // The cell property API is ALWAYS case-sensitive.
+        // Cell properties.
         Result result = executeQuery(
             "select {[Measures].[Unit Sales],[Measures].[Store Sales]} on columns,\n" +
                 " {[Gender].[M]} on rows\n" +
                 "from Sales");
         Cell cell = result.getCell(new int[]{0, 0});
         assertEquals("135,215", cell.getPropertyValue("FORMATTED_VALUE"));
-        assertNull(cell.getPropertyValue("Formatted_Value"));
+        if (caseSensitive) {
+            assertNull(cell.getPropertyValue("Formatted_Value"));
+        } else {
+            assertEquals("135,215", cell.getPropertyValue("Formatted_Value"));
+        }
     }
 }
 
