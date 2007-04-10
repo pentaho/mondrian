@@ -1596,7 +1596,16 @@ public class RolapStar {
 
                 String rightAlias = join.rightAlias;
                 if (rightAlias == null) {
-                    rightAlias = join.right.getAlias();
+                    
+                    // the right relation of a join may be a join
+                    // if so, we need to use the right relation join's 
+                    // left relation's alias.
+                    if (join.right instanceof MondrianDef.Join) {
+                        MondrianDef.Join joinright = (MondrianDef.Join)  join.right;
+                        rightAlias = joinright.left.getAlias();
+                    } else {
+                        rightAlias = join.right.getAlias();
+                    }
                     if (rightAlias == null) {
                         throw Util.newError(
                                 "missing rightKeyAlias in " + relation);

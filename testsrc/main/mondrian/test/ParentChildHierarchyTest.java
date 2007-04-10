@@ -98,10 +98,10 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
     
     /**
-     * Tests snow flake closure combination.  this is currently broken.
-     * bug #1675125
+     * Tests snow flake closure combination.
+     * bug #1675125 - now fixed.
      */
-    public void _testSnowflakeClosure() {
+    public void testSnowflakeClosure() {
         getEmpSnowFlakeClosureTestContext().assertQueryReturns(
             "select {[Measures].[Count], [Measures].[Org Salary], \n" +
                 "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n" +
