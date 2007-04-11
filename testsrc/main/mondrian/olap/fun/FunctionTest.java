@@ -348,6 +348,18 @@ public class FunctionTest extends FoodMartTestCase {
             desiredResult);
     }
 
+    public void testIsEmptyWithAggregate() {
+        assertQueryReturns(
+            "WITH MEMBER [gender].[foo] AS 'isEmpty(Aggregate({[Gender].m}))' " +
+                    "SELECT {Gender.foo} on 0 from sales",
+                fold(
+                    "Axis #0:\n" +
+                            "{}\n" +
+                            "Axis #1:\n" +
+                            "{[Gender].[foo]}\n" +
+                            "Row #0: false\n"));
+    }
+
     public void testIsEmpty()
     {
         assertBooleanExprReturns("[Gender].[All Gender].Parent IS NULL", true);

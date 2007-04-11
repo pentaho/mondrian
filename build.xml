@@ -497,7 +497,7 @@ in {mondrian.foodmart.jdbcURL}.">
 
   <target name="junit-main" depends="compile,compile.tests,set.connectString">
     <mkdir dir="junit-results"/>
-    <junit printsummary="yes" fork="yes" haltonfailure="yes" haltonerror="yes">
+    <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no">
         <classpath>
             <path refid="project.test.classpath"/>
         </classpath>
