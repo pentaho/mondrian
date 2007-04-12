@@ -38,7 +38,6 @@
     <li><a href="#Cache_management">Cache_management</a><ol>
 			<li><a href="#Schema_cache">Schema_cache</a></li>
     	</ol>
-    	</ol>
     <li><a href="#Memory_management">Memory_management</a><ol>
 			<li><a href="#Out_of_memory">Out of memory</a></li>
     	</ol>
@@ -79,7 +78,7 @@ operations of Mondrian.</p>
 example, those in the 'Testing' are only applicable if are running Mondrian's
 suite of regression tests.</p>
 
-<table   class="grayTable" width="500">
+<table class="grayTable">
     <tr>
       <td><strong>Property</strong></td>
       <td><strong>Type</strong></td>
@@ -896,16 +895,19 @@ mondrian.olap.ResultLimitExceededException</a>.</p>
 
 <p>Mondrian connect strings are a connection of property/value pairs, of the
 form 'property=value;property=value;...'.</p>
+
 <p>Values can be enclosed in single-quotes, which allows them to contain spaces
 and punctuation. See the the
 <a target="_blank" href="http://msdn.microsoft.com/library/en-us/oledb/htm/oledbconnectionstringsyntax.asp">
 OLE DB connect string syntax specification</a>.</p>
+
 <p>The supported properties are described below.</p>
+
 <h3>Connect string properties<a name="Connect_string_properties">&nbsp;</a></h3>
 
-<table border="1" id="table1">
+<table class="grayTable" width="500">
     <tr>
-        <th>Namee</th>
+        <th>Name</th>
         <th>Required?</th>
         <th>Description</th>
     </tr>
@@ -1024,13 +1026,23 @@ OLE DB connect string syntax specification</a>.</p>
     <tr>
         <td>UseContentChecksum</td>
         <td>No</td>
-        <td><p>Allows to work with dynamically changing schema. If this property
+        <td><p>Allows mondrian to work with dynamically changing schema. If this property
             is set to <code>true</code> and schema content has changed (previous
             checksum doesn't equal with current), schema would be reloaded.
-            Default is <code>false</code>.</p>
-
+            The default is <code>false</code>.</p>
             <p>Could be
             used in combination with <code>DynamicSchemaProcessor</code> property.</p></td>
+    </tr>
+    <tr>
+        <td>UseSchemaPool</td>
+        <td>No</td>
+        <td><p>Controls whether a new connection use a schema from the schema 
+        cache. If <code>true</code>, the default, a connection shares a schema 
+        definition (and hence also a cache of aggregate data retrieved by 
+        previous queries) with other connections which have a textually 
+        identical schema definition.</p>
+        <p>If <code>false</code>, the connection has a private schema definition 
+        and cache.</p></td>
     </tr>
     <tr>
         <td>DynamicSchemaProcessor</td>
@@ -1095,7 +1107,7 @@ retain their schemas.</p>
 
 <p>Java <code>OutOfMemoryError</code>s have always been an issue with
 applications. When the JVM throws an <code>Error</code> as
-oppose to an <code>Exception</code> it is telling the application
+opposed to an <code>Exception</code> it is telling the application
 that its world has ended and it has no recourse but to die.
 Prior to Java5 there was not much one could do other
 than buy 64-bit machines with lots of RAM and hope for the best.
@@ -1140,22 +1152,22 @@ bytes which is what the Java5 API actually supports)
 and some other code later on registers a level of
 90%, then it is the 90% that the JVM knows about - it knows nothing
 of the previously registered 80%. What this means is that the code
-expecting to be notified when the memory level crosses 80%, wont be
-notified!!! For many applications that don't share their JVM with
-other applications, this is not a problem. For Mondrian is it
+expecting to be notified when the memory level crosses 80%, won't be notified!<p>
+For many applications that don't share their JVM with
+other applications, this is not a problem, but for Mondrian is it
 potentially an issue. Mondrian can be running in a Webserver and
 Webservers can have more than one independent applications.
 Each such application can register a different memory threshold
 notification level.
-In general, application containing applications such as
-Webservers or Appservers are a problem with the current
+In general, application-containing applications such as
+web-servers or application-servers are a problem with the current
 Java5 memory threshold notification approach.
 At the current time, I do not know a way around this problem.
 
 
 <hr noshade size="1"/>
 <p>
-    Author: Julian Hyde; last modified August 2006.<br/>
+    Author: Julian Hyde; last modified April 2007.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/configuration.html?ac=22">log</a>)<br/>
     Copyright (C) 2006-2007 Julian Hyde

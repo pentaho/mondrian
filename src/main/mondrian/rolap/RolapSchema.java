@@ -18,7 +18,6 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -742,9 +741,19 @@ public class RolapSchema implements Schema {
                 }
             }
 
-            boolean useContentChecksum = Boolean.parseBoolean(
-                connectInfo.get(
-                    RolapConnectionProperties.UseContentChecksum.name()));
+            boolean useSchemaPool =
+                Boolean.parseBoolean(
+                    connectInfo.get(
+                        RolapConnectionProperties.UseSchemaPool.name(),
+                        "true"));
+            if (!useSchemaPool) {
+                return schema;
+            }
+
+            boolean useContentChecksum =
+                Boolean.parseBoolean(
+                    connectInfo.get(
+                        RolapConnectionProperties.UseContentChecksum.name()));
             if (useContentChecksum) {
                 // Different catalogUrls can actually yield the same
                 // catalogStr! So, we use the MD5 as the key as well as
@@ -793,7 +802,8 @@ public class RolapSchema implements Schema {
                         connectInfo,
                         dataSource);
 
-                    SoftReference<RolapSchema> ref = new SoftReference<RolapSchema>(schema);
+                    SoftReference<RolapSchema> ref =
+                        new SoftReference<RolapSchema>(schema);
                     if (md5Bytes != null) {
                         mapUrlToSchema.put(md5Bytes, ref);
                     }
@@ -962,8 +972,9 @@ public class RolapSchema implements Schema {
          */
         synchronized Iterator<RolapSchema> getRolapSchemas() {
             List<RolapSchema> list = new ArrayList<RolapSchema>();
-            for (Iterator<SoftReference<RolapSchema>> it = mapUrlToSchema.values().iterator();
-                    it.hasNext(); ) {
+            for (Iterator<SoftReference<RolapSchema>> it =
+                mapUrlToSchema.values().iterator(); it.hasNext(); )
+            {
                 SoftReference<RolapSchema> ref = it.next();
                 RolapSchema schema = ref.get();
                 // Schema is null if already garbage collected
@@ -1636,14 +1647,12 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         return nextDimensionOrdinal++;
     }
 
-
     /**
      * @return Returns the dataSourceChangeListener.
      */
     public DataSourceChangeListener getDataSourceChangeListener() {
         return dataSourceChangeListener;
     }
-
 
     /**
      * @param dataSourceChangeListener The dataSourceChangeListener to set.

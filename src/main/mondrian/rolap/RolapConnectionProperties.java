@@ -14,6 +14,14 @@ package mondrian.rolap;
 /**
  * <code>RolapConnectionProperties</code> enumerates the allowable values of
  * keywords in a Mondrian connect string.
+ *
+ * <p><b>Note to developers</b>: If you add or modify a connection-string
+ * property, you must also modify the
+ * <a target="_top" href="{@docRoot}/../configuration.html#Connect_string_properties">
+ * Configuration Specification</a>.
+ * 
+ * @version $Id$
+ * @author jhyde
  */
 public enum RolapConnectionProperties {
     /**
@@ -108,6 +116,13 @@ public enum RolapConnectionProperties {
     UseContentChecksum,
 
     /**
+     * The "UseSchemaPool" property disables the schema cache. If false, the
+     * schema is not shared with connections which have a textually identical
+     * schema. Default is "true".
+     */
+    UseSchemaPool,
+
+    /**
      * The name of a class implementing the
      * {@link mondrian.spi.DynamicSchemaProcessor} interface.
      * A dynamic schema processor is called at runtime in order to modify the
@@ -130,6 +145,7 @@ public enum RolapConnectionProperties {
      * mondrian every time the datasource is changed.
      */
     DataSourceChangeListener;
+
     /**
      * Any property beginning with this value will be added to the
      * JDBC connection properties, after removing this prefix. This
@@ -137,6 +153,6 @@ public enum RolapConnectionProperties {
      */
     public static final String JdbcPropertyPrefix = "jdbc.";
 
-    }
+}
 
 // End RolapConnectionProperties.java
