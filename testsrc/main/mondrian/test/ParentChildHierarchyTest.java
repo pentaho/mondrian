@@ -522,7 +522,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         }
     }
 
-    public void testParentChildDrillThrough() {
+    public void testParentChildDrillThrough() throws Exception {
         Result result = executeQuery(
             "select {[Measures].Members} ON columns,\n" +
                 "  {[Employees].Members} ON rows\n" +
@@ -545,7 +545,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " `salary` =as= `salary` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997 " +
-            "order by `time_by_day`.`the_year` ASC");
+            "order by `time_by_day`.`the_year` ASC",
+            7392);
 
         // Drill-through for row #1, [Employees].[All].[Sheri Nowmer]
         // Note that the SQL does not contain the employee_closure table.
@@ -567,7 +568,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " and `time_by_day`.`the_year` = 1997" +
             " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
             " and `employee_1`.`employee_id` = 1 " +
-            "order by `time_by_day`.`the_year` ASC, `employee_1`.`employee_id` ASC");
+            "order by `time_by_day`.`the_year` ASC, `employee_1`.`employee_id` ASC",
+            12);
 
         // Drill-through for row #2, [Employees].[All].[Sheri Nowmer].
         // Note that the SQL does not contain the employee_closure table.
@@ -587,10 +589,11 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " and `time_by_day`.`the_year` = 1997" +
             " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
             " and `employee_1`.`employee_id` = 2 " +
-            "order by `time_by_day`.`the_year` ASC, `employee_1`.`employee_id` ASC");
+            "order by `time_by_day`.`the_year` ASC, `employee_1`.`employee_id` ASC",
+            12);
     }
 
-    public void testParentChildDrillThroughWithContext() {
+    public void testParentChildDrillThroughWithContext() throws Exception {
         Result result = executeQuery("select {[Measures].Members} ON columns,\n" +
                     "  {[Employees].Members} ON rows\n" +
                     "from [HR]");
@@ -650,8 +653,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " `employee_1`.`position_title` ASC," +
             " `department`.`department_id` ASC," +
             " `employee_1`.`full_name` ASC," +
-            " `employee_1`.`employee_id` ASC"
-            );
+            " `employee_1`.`employee_id` ASC",
+            12);
     }
 
     private void checkDrillThroughSql(
@@ -660,8 +663,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         boolean extendedContext,
         String expectedMember,
         String expectedCell,
-        String expectedSql)
-    {
+        String expectedSql,
+        int expectedRows)
+    throws Exception {
         final Member empMember = result.getAxes()[1].getPositions().get(row).get(0);
         assertEquals(expectedMember, empMember.getUniqueName());
         // drill through member
@@ -669,7 +673,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         assertEquals(expectedCell, cell.getFormattedValue());
         String sql = cell.getDrillThroughSQL(extendedContext);
 
-        getTestContext().assertSqlEquals(expectedSql, sql);
+        getTestContext().assertSqlEquals(expectedSql, sql, expectedRows);
     }
 
     /**

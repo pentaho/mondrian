@@ -19,6 +19,7 @@ import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.Calc;
@@ -816,7 +817,8 @@ public class TestContext {
      * Performs some normalization on the actual SQL to compensate for
      * differences between dialects.
      */
-    public void assertSqlEquals(String expectedSql, String actualSql) {
+    public void assertSqlEquals(String expectedSql, String actualSql, int expectedRows) throws Exception {
+
         final String search = "fname \\+ ' ' \\+ lname";
         final SqlQuery.Dialect dialect = getDialect();
         if (dialect.isMySQL()) {
@@ -843,14 +845,12 @@ public class TestContext {
                     "CONCAT(CONCAT(fname, ' '), lname)");
         }
 
-        // DB2 does not have quotes on identifiers
-        if (dialect.isDB2()) {
-            expectedSql = expectedSql.replaceAll("`", "");
-        }
+        // the following replacement is for quoting identifiers
+        expectedSql = expectedSql.replaceAll("`", "");
+        expectedSql = expectedSql.replaceAll("\"", "");
 
-        // the following replacement is for databases in ANSI mode
-        //  using '"' to quote identifiers
-        actualSql = actualSql.replace('"', '`');
+        String transformedActualSql = actualSql.replaceAll("`", "");
+        transformedActualSql = transformedActualSql.replaceAll("\"", "");
 
         if (dialect.isOracle()) {
             // " + tableQualifier + "
@@ -859,7 +859,54 @@ public class TestContext {
             expectedSql = expectedSql.replaceAll(" =as= ", " as ");
         }
 
-        Assert.assertEquals(expectedSql, actualSql);
+        Assert.assertEquals(expectedSql, transformedActualSql);
+        
+        testSQLAgainstDatasource(actualSql, expectedRows);
+    }
+    
+    private void testSQLAgainstDatasource(String actualSQL, int expectedRows) throws Exception {
+        //System.out.println(actualSQL);
+
+        Util.PropertyList connectProperties = Util.parseConnectString(TestContext.getConnectString());
+        
+        java.sql.Connection jdbcConn = null;
+
+        try {
+            
+            String jdbcDrivers =
+                connectProperties.get(RolapConnectionProperties.JdbcDrivers.name());
+            if (jdbcDrivers != null) {
+                RolapUtil.loadDrivers(jdbcDrivers);
+            }
+            final String jdbcDriversProp =
+                MondrianProperties.instance().JdbcDrivers.get();
+            RolapUtil.loadDrivers(jdbcDriversProp);
+            
+            jdbcConn = java.sql.DriverManager.getConnection(connectProperties.get(RolapConnectionProperties.Jdbc.name()),
+                                                    connectProperties.get(RolapConnectionProperties.JdbcUser.name()),
+                                                    connectProperties.get(RolapConnectionProperties.JdbcPassword.name()));
+            Statement s = jdbcConn.createStatement();
+            ResultSet rs = s.executeQuery(actualSQL);
+
+            int rows = 0;
+
+            while (rs.next()) {
+                rows++;
+            }
+            
+            if (expectedRows != rows) {
+                throw new Exception("Expected " + expectedRows + ", but got " + rows + " rows\n" + actualSQL);
+            }
+        } catch (SQLException e) {
+            throw new Exception("ERROR in SQL - invalid for database: " + connectProperties.get(RolapConnectionProperties.Jdbc.name()) + "\n" + actualSQL, e);
+        } finally {
+            try {
+                jdbcConn.close();
+            } catch (Exception e1) {
+                // ignore
+            }
+        }
+
     }
 
     /**
