@@ -554,6 +554,7 @@ in {mondrian.foodmart.jdbcURL}.">
     <property name="path" value="${testsrc.dir}/main/mondrian/test/clearview/"/>
     <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="CVBasicTest"/>
     <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="MetricFilterTest"/>
+    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="MiscTest"/>
     <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="PredicateFilterTest"/>
     <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="SummaryTest"/>
     <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="SummaryMetricPercentTest"/>

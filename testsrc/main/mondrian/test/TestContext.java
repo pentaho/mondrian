@@ -93,13 +93,9 @@ public class TestContext {
     /**
      * Retrieves the singleton (instantiating if necessary).
      */
-    public static TestContext instance() {
+    public static synchronized TestContext instance() {
         if (instance == null) {
-            synchronized (TestContext.class) {
-                if (instance == null) {
-                    instance = new TestContext();
-                }
-            }
+            instance = new TestContext();
         }
         return instance;
     }

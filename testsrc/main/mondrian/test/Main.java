@@ -174,6 +174,7 @@ public class Main extends TestSuite {
             suite.addTest(CVBasicTest.suite());
             suite.addTest(GrandTotalTest.suite());
             suite.addTest(MetricFilterTest.suite());
+            suite.addTest(MiscTest.suite());
             suite.addTest(PredicateFilterTest.suite());
             suite.addTest(SubTotalTest.suite());
             suite.addTest(SummaryMetricPercentTest.suite());
@@ -232,7 +233,7 @@ public class Main extends TestSuite {
             if (testNonEmpty)
               suite.addTestSuite(NonEmptyTest.class);
             else
-                logger.warn("skipping NonEmptyTests");
+            logger.warn("skipping NonEmptyTests");
         }
         if (testName != null && !testName.equals("")) {
             // Filter the suite, so that only tests whose names match

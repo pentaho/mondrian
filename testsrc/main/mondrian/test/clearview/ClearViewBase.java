@@ -85,11 +85,29 @@ public abstract class ClearViewBase extends FoodMartTestCase {
     protected void runTest() throws Exception {
         DiffRepository diffRepos = getDiffRepos();
         TestContext testContext = getTestContext();
+        
+        // add calculated member to a cube if specified in the xml file
+        String cubeName = diffRepos.expand(null, "${modifiedCubeName}").trim();
+        if (! (cubeName.equals("") 
+            || cubeName.equals("${modifiedCubeName}")))
+        {
+            String calculatedMembers = diffRepos.expand(
+                null, "${calculatedMembers}");
+            if (! (calculatedMembers.equals("") 
+                || calculatedMembers.equals("${calculatedMembers}")))
+            {
+                testContext = testContext.createSubstitutingCube(
+                    cubeName, 
+                    null, 
+                    calculatedMembers);    
+            }
+        }
         String mdx = diffRepos.expand(null, "${mdx}");
         String result = Util.nl + testContext.toString(
             testContext.executeQuery(mdx));
         diffRepos.assertEquals("result", "${result}", result);
     }
+    
 }
 
 // End ClearViewBase.java

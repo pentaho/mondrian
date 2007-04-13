@@ -28,6 +28,7 @@
 package <xsl:value-of select="$packagename"/>;
 
 import mondrian.test.*;
+import mondrian.olap.*;
 
 /**
  * Wraps DiffRepository-based tests with JUnit test methods so
@@ -43,6 +44,7 @@ public class <xsl:value-of select="$classname"/> extends FoodMartTestCase
         super(testName);
     }
     <xsl:apply-templates select="node()" />
+    
 }
   </xsl:template>
 
@@ -82,16 +84,29 @@ public class <xsl:value-of select="$classname"/> extends FoodMartTestCase
         </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
-	<xsl:value-of select="$text"/>
+        <xsl:value-of select="$text"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
   <xsl:template match="TestCase">
+      <xsl:param name="modifiedCubeName" select="Resource[@name='modifiedCubeName']"/>
+      <xsl:param name="calculatedMembers" select="Resource[@name='calculatedMembers']"/>
     public void <xsl:value-of select="@name"/>()
         throws Exception
-    {
-        assertQueryReturns(
+    { 
+      TestContext testContext = getTestContext();  
+      <xsl:if test="not(normalize-space(string($modifiedCubeName)) = '')" >
+          <xsl:if test="not(normalize-space(string($calculatedMembers)) = '')" >
+        testContext =   testContext.createSubstitutingCube(
+&quot;<xsl:value-of select="normalize-space(Resource[@name='modifiedCubeName'])"/>&quot;,
+            null,
+&quot;<xsl:call-template name="genTxt">
+      <xsl:with-param name="text" select="Resource[@name='calculatedMembers']"/>
+      </xsl:call-template>&quot;);         
+          </xsl:if>
+      </xsl:if>
+        testContext.assertQueryReturns(
 &quot;<xsl:call-template name="genTxt">
       <xsl:with-param name="text" select="Resource[@name='mdx']"/>
       </xsl:call-template>&quot;, 
@@ -101,6 +116,4 @@ public class <xsl:value-of select="$classname"/> extends FoodMartTestCase
       </xsl:call-template>&quot;));
     }
   </xsl:template>
-
-}
 </xsl:stylesheet>
