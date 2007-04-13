@@ -190,7 +190,7 @@ public class JdbcSchema {
      * or those with SoftReference with null content.
      */
     private static void sweepDB() {
-        if (sweepDBCount > SWEEP_COUNT) {
+        if (sweepDBCount++ > SWEEP_COUNT) {
             Iterator<SoftReference<JdbcSchema>> it = dbMap.values().iterator();
             while (it.hasNext()) {
                 SoftReference<JdbcSchema> ref = it.next();
