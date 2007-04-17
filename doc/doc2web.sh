@@ -117,6 +117,7 @@ doHtml en help.html
 # skip: doHtml en index.html
 doHtml en install.html
 doHtml es install.html
+doHtml fr install.html
 doHtml en install_postgresql.html
 doHtml en mdx.html
 doHtml en olap.html
