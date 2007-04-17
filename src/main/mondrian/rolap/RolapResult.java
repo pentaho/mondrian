@@ -562,8 +562,9 @@ class RolapResult extends ResultBase {
         evaluator.setCellReader(batchingReader);
         while (true) {
             axisMembers.clearAxisCount();
-            evalLoad(nonAllMembers, nonAllMembers.size()-1, 
-                        evaluator, axis, calc, axisMembers);
+            evalLoad(
+                nonAllMembers, nonAllMembers.size() - 1, 
+                evaluator, axis, calc, axisMembers);
             evaluator.clearExpResultCache();
 
             if (!batchingReader.loadAggregations(query)) {
@@ -572,9 +573,9 @@ class RolapResult extends ResultBase {
 
             if (attempt++ > maxEvalDepth) {
                 throw Util.newInternal(
-                        "Failed to load all aggregations after " +
-                        maxEvalDepth +
-                        "passes; there's probably a cycle");
+                    "Failed to load all aggregations after " +
+                    maxEvalDepth +
+                    " passes; there's probably a cycle");
             }
         }
     }
