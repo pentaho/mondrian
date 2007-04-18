@@ -379,14 +379,7 @@ public class SqlQuery {
         buf.append(expression);
         if (alias != null) {
             buf.append(" as ");
-            // If DB2, we normally don't quote identifiers in the queries because DB2 is 
-            // case sensitive. In this case, though, we need to quote the column alias
-            // because it can be a name from the schema with spaces in it.
-            if (dialect.isDB2()) {
-                dialect.quoteIdentifier("\"" + alias + "\"", buf);
-            } else {
-                dialect.quoteIdentifier(alias, buf);
-            }
+            dialect.quoteIdentifier(alias, buf);
         }
 
         select.add(buf.toString());
@@ -939,11 +932,7 @@ public class SqlQuery {
          * if quoting is not supported.
          */
         public String getQuoteIdentifierString() {
-            if (isDB2()) {
-                return "";
-            } else {
-                return quoteIdentifierString;
-            }
+            return quoteIdentifierString;
         }
 
         /**

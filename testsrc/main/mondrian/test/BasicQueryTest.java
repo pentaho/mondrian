@@ -2793,6 +2793,9 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "      <SQL dialect=\"luciddb\">\n" +
                 "        <![CDATA[SELECT * FROM \"customer\"]]>\n" +
                 "      </SQL>\n" +
+                "      <SQL dialect=\"db2\">\n" +
+                "        <![CDATA[SELECT * FROM \"customer\"]]>\n" +
+                "      </SQL>\n" +
                 "    </View>\n" +
                 "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n" +
                 "  </Hierarchy>\n" +
@@ -2822,8 +2825,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "       <View alias=\"productView\">\n" +
                 "           <SQL dialect=\"db2\"><![CDATA[\n" +
                 "SELECT *\n" +
-                "FROM product, product_class\n" +
-                "WHERE product.product_class_id = product_class.product_class_id\n" +
+                "FROM \"product\", \"product_class\"\n" +
+                "WHERE \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\"\n" +
                 "]]>\n" +
                 "           </SQL>\n" +
                 "           <SQL dialect=\"mssql\"><![CDATA[\n" +

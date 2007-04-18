@@ -603,15 +603,15 @@ public class MondrianFoodMartLoader {
             StringBuilder buf = new StringBuilder();
 
             String fromQuoteChar = null;
-            String toQuoteChar;
-            if (dialect.isMySQL()) {
+            String toQuoteChar = dialect.getQuoteIdentifierString();
+/*            if (dialect.isMySQL()) {
                 toQuoteChar = "`";
             } else if (dialect.isDB2()) {
                 toQuoteChar = "";
             } else {
                 toQuoteChar = "\"";
             }
-
+*/
             while ((line = bufferedReader.readLine()) != null) {
                 ++lineNumber;
 

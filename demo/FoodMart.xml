@@ -195,7 +195,7 @@ fname + ' ' + lname
 "customer"."fullname"
           </SQL>
           <SQL dialect="db2">
-CONCAT(CONCAT(fname, ' '), lname)
+CONCAT(CONCAT("customer"."fname", ' '), "customer"."lname")
           </SQL>
           <SQL dialect="luciddb">
 "fname" || ' ' || "lname"
@@ -224,7 +224,7 @@ fname + ' ' + lname
 "customer"."fullname"
           </SQL>
           <SQL dialect="db2">
-CONCAT(CONCAT(fname, ' '), lname)
+CONCAT(CONCAT("customer"."fname", ' '), "customer"."lname")
           </SQL>
           <SQL dialect="luciddb">
 "fname" || ' ' || "lname"
@@ -293,6 +293,9 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
 (case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
       </SQL>
       <SQL dialect="luciddb">
+(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
+      </SQL>
+      <SQL dialect="db2">
 (case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
       </SQL>
       <SQL dialect="generic">
@@ -594,7 +597,7 @@ fname + ' ' + lname
 "customer"."fullname"
           </SQL>
           <SQL dialect="db2">
-CONCAT(CONCAT(fname, ' '), lname)
+CONCAT(CONCAT("customer"."fname", ' '), "customer"."lname")
           </SQL>
           <SQL dialect="luciddb">
 "fname" || ' ' || "lname"

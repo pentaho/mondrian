@@ -842,7 +842,7 @@ public class TestContext {
         } else if (dialect.isDB2()) {
             expectedSql = expectedSql.replaceAll(
                     search,
-                    "CONCAT(CONCAT(fname, ' '), lname)");
+                    "CONCAT(CONCAT(`customer`.`fname`, ' '), `customer`.`lname`)");
         }
 
         // the following replacement is for quoting identifiers
