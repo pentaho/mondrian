@@ -50,16 +50,6 @@ public class MetricFilterTest extends ClearViewBase {
         return constructSuite(getDiffReposStatic(), MetricFilterTest.class);
     }
 
-    protected void runTest() throws Exception {
-        // Do not run the test in circumstances which hit bug 1696772. Remove
-        // this short-circuit when that bug is fixed.
-        if (getName().equals("testMetricFiltersWithNoSubtotals") &&
-            !MondrianProperties.instance().EnableNativeCrossJoin.get() &&
-            !Bug.Bug1696772Fixed) {
-            return;
-        }
-        super.runTest();
-    }
 }
 
 // End MetricFilterTest.java

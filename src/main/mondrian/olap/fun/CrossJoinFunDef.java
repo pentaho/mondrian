@@ -2260,6 +2260,11 @@ class CrossJoinFunDef extends FunDefBase {
     //
     /////////////////////////////////////////////////////////////////////////
 
+    /**
+     * The MeasureVisitorNEW class traverses the function call tree of
+     * the non empty crossjoin function and populates the queryMeasureSet 
+     * with base measures
+     */
     private static class MeasureVisitorNEW extends MdxVisitorImpl {
 
         Set<Member> queryMeasureSet;
@@ -2310,7 +2315,8 @@ class CrossJoinFunDef extends FunDefBase {
                     exp.accept(finder);
                     if (! finder.found) {
                         exp.accept(this);
-                        queryMeasureSet.add(member);
+                        // commented line out to fix bug #1696772
+                        // queryMeasureSet.add(member);
                     }
                 } else {
                     queryMeasureSet.add(member);
