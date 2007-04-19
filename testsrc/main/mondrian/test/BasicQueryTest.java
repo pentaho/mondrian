@@ -5570,6 +5570,31 @@ public class BasicQueryTest extends FoodMartTestCase {
                         "Row #0: 266,773\n"));
     }
 
+    public void testDefaultMeasureInCube() {
+               TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"DefaultMeasureTesting\" defaultMeasure=\"Supply Time\">\n" +
+                    "  <Table name=\"inventory_fact_1997\"/>\n" +
+                    "  <DimensionUsage name=\"Store\" source=\"Store\" " +
+                    "foreignKey=\"store_id\"/>\n" +
+                    "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" " +
+                    "foreignKey=\"store_id\"/>\n" +
+                    "  <Measure name=\"Store Invoice\" column=\"store_invoice\" " +
+                    "aggregator=\"sum\"/>\n" +
+                    "  <Measure name=\"Supply Time\" column=\"supply_time\" " +
+                    "aggregator=\"sum\"/>\n" +
+                    "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" " +
+                    "aggregator=\"sum\"/>\n" +
+                    "</Cube>",
+            null, null, null);
+        String queryWithoutFilter = "select store.members on 0 from " +
+                "DefaultMeasureTesting";
+        String queryWithDeflaultMeasureFilter = "select store.members on 0 " +
+                "from DefaultMeasureTesting where [measures].[Supply Time]";
+        assertQueriesReturnSimilarResults(queryWithoutFilter,
+                queryWithDeflaultMeasureFilter, testContext);
+    }
+
     /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.

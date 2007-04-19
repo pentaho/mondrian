@@ -195,6 +195,27 @@ public class FoodMartTestCase extends TestCase {
         return TestContext.fold(string);
     }
 
+    /**
+     * Executes query1 and query2 and Compares the obtained measure values.
+     */
+    protected void assertQueriesReturnSimilarResults(String query1, String query2, TestContext testContext) {
+
+        String resultString1 =
+                TestContext.toString(testContext.executeQuery(query1));
+        String resultString2 =
+                TestContext.toString(testContext.executeQuery(query2));
+        assertEquals(measureValues(resultString1), measureValues(resultString2));
+    }
+
+    /**
+     * Truncates the query result to return only measure values.
+     */
+    private static String measureValues(String resultString) {
+        int index = resultString.indexOf("}");
+        return index != -1 ? resultString.substring(index) : resultString;
+
+    }
+
     static class QueryAndResult {
         String query;
         String result;

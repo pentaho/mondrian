@@ -413,9 +413,6 @@ public void printCurrentMemberNames() {
         }
         RolapMember defaultMember = (RolapMember)
                 maxSolveMember.getHierarchy().getDefaultMember();
-        Util.assertTrue(
-                defaultMember != maxSolveMember,
-                "default member must not be calculated");
         RolapEvaluator evaluator = (RolapEvaluator) push(defaultMember);
         evaluator.setExpanding(maxSolveMember);
         final Exp exp = maxSolveMember.getExpression();

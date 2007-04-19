@@ -44,7 +44,7 @@
 					<li><a href="#Inline_tables">Inline tables</a></li>
 					<li><a href="#Member_properties_and_formatters">Member properties and formatters</a></li>
                     <li><a href="#Approximate_level_cardinality">Approximate level cardinality</a></li>
-
+					<li><a href="#Default_Measure_Attribute">Default Measure Attribute</a></li>
                 </ol>
 		</ol>
   	</li>
@@ -751,6 +751,27 @@ and a <a href="#Member_formatter">member formatter</a>.</p>
  href="#XML_Level">&lt;Level&gt;</a> element allows specifying the optional attribute "approxRowCount".  Specifying
     <code>approxRowCount</code> can improve performance by reducing the need to determine level, hierarchy, and dimension cardinality.
     This can have a significant impact when connecting to Mondrian via XMLA.</p>
+<!--
+################################################
+##  3.3.10 Default Measure Attribute       #####
+################################################ -->
+<h1>3.3.10 Default Measure Attribute<a name="Default_Measure_Attribute">&nbsp;</a></h1>
+
+<p>The <a
+ href="#XML_Cube">&lt;Cube&gt;</a> and <a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a>
+ elements allows specifying the optional attribute "defaultMeasure". </p>
+<p>Specifying <code>defaultMeasure</code> in <a href="#XML_Cube">&lt;Cube&gt;</a> element allows users
+ to explicitly specify any base measure as default Measure.</p>
+<p>Specifying <code>defaultMeasure</code> in <a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a>
+ element allows users to explicitly specify any VirtualCube Measure as a default Measure.</p>
+ <p>Note that if default measure is not specified it takes the first measure defined in the cube as the default measure.</p>
+<blockquote>
+  <code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot; defaultMeasure=&quot;Unit Sales&quot;&gt;<br>
+
+&nbsp; ...<br>
+  &lt;/<a href="#XML_Cube">Cube</a>&gt;</code>
+</blockquote>
+
 <!--
 #######################################
 ##  4. Star and snowflake schemas #####

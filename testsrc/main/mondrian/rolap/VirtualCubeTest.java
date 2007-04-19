@@ -43,6 +43,25 @@ public class VirtualCubeTest extends FoodMartTestCase {
         checkXxx(testContext);
     }
 
+    public void testCalculatedMeasureAsDefaultMeasureInVC() {
+        TestContext testContext = TestContext.create(
+            null, null,
+            "<VirtualCube name=\"Sales vs Warehouse\" defaultMeasure=\"Profit\">\n" +
+                "<VirtualCubeDimension name=\"Product\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Warehouse\" " +
+                    "name=\"[Measures].[Warehouse Sales]\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Sales\" " +
+                    "name=\"[Measures].[Unit Sales]\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Sales\" " +
+                    "name=\"[Measures].[Profit]\"/>\n" +
+                "</VirtualCube>",
+            null, null);
+        String query1 = "select from [Sales vs Warehouse]";
+        String query2 = "select from [Sales vs Warehouse] where measures.profit";
+        assertQueriesReturnSimilarResults(query1,query2, testContext);
+    }
+
+
     public void testWithTimeDimension() {
         TestContext testContext = TestContext.create(
             null, null,
@@ -712,6 +731,29 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #7: $3,417.72\n" +
                 "Row #8: $5,145.96\n"));
     }
+
+    public void testDefaultMeasureProperty() {
+         TestContext testContext = TestContext.create(
+            null, null,
+            "<VirtualCube name=\"Sales vs Warehouse\" defaultMeasure=\"Unit Sales\">\n" +
+                "<VirtualCubeDimension name=\"Product\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Warehouse\" " +
+                    "name=\"[Measures].[Warehouse Sales]\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Sales\" " +
+                    "name=\"[Measures].[Unit Sales]\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Sales\" " +
+                    "name=\"[Measures].[Profit]\"/>\n" +
+                "</VirtualCube>",
+            null, null);
+
+        String queryWithoutFilter = "select"+
+                " from [Sales vs Warehouse]";
+        String queryWithDeflaultMeasureFilter = "select "+
+                "from [Sales vs Warehouse] where measures.[Unit Sales]";
+        assertQueriesReturnSimilarResults(queryWithoutFilter,
+                queryWithDeflaultMeasureFilter, testContext);
+    }
+
 }
 
 // End VirtualCubeTest.java

@@ -182,6 +182,7 @@ public class RolapCube extends CubeBase {
             this.measuresHierarchy.newLevel("MeasuresLevel", 0);
 
         RolapMember measures[] = new RolapMember[xmlCube.measures.length];
+        Member defaultMeasure = null;
         for (int i = 0; i < xmlCube.measures.length; i++) {
             MondrianDef.Measure xmlMeasure = xmlCube.measures[i];
             MondrianDef.Expression measureExp;
@@ -212,6 +213,9 @@ public class RolapCube extends CubeBase {
                     xmlMeasure.formatString, measureExp,
                 aggregator, xmlMeasure.datatype);
             measures[i] = measure;
+            if(measure.getName().equalsIgnoreCase(xmlCube.defaultMeasure)){
+                defaultMeasure = measure;
+            }
 
             if (!Util.isEmpty(xmlMeasure.formatter)) {
                 // there is a special cell formatter class
@@ -255,6 +259,7 @@ public class RolapCube extends CubeBase {
 
         this.measuresHierarchy.setMemberReader(new CacheMemberReader(
                 new MeasureMemberSource(this.measuresHierarchy, measures)));
+        this.measuresHierarchy.setDefaultMember(defaultMeasure);
         init(xmlCube.dimensions);
         init(xmlCube);
 
@@ -289,6 +294,8 @@ public class RolapCube extends CubeBase {
         Map<RolapCube, List<MondrianDef.CalculatedMember>> calculatedMembersMap =
             new TreeMap<RolapCube, List<MondrianDef.CalculatedMember>>(
                 cubeComparator);
+        Member defaultMeasure = null;
+
         for (MondrianDef.VirtualCubeMeasure xmlMeasure : xmlVirtualCube.measures) {
             // Lookup a measure in an existing cube.
             RolapCube cube = schema.lookupCube(xmlMeasure.cubeName);
@@ -296,6 +303,9 @@ public class RolapCube extends CubeBase {
             boolean found = false;
             for (Member cubeMeasure : cubeMeasures) {
                 if (cubeMeasure.getUniqueName().equals(xmlMeasure.name)) {
+                    if (cubeMeasure.getName().equalsIgnoreCase(xmlVirtualCube.defaultMeasure)){
+                        defaultMeasure = cubeMeasure;
+                    }
                     found = true;
                     if (cubeMeasure instanceof RolapCalculatedMember) {
                         // We have a calulated member!  Keep track of which
@@ -415,6 +425,10 @@ public class RolapCube extends CubeBase {
             new CacheMemberReader(
                 new MeasureMemberSource(this.measuresHierarchy, measures)));
 
+
+        this.measuresHierarchy.setDefaultMember(defaultMeasure);
+
+
         // remove from the calculated members array those members that weren't
         // originally defined on this virtual cube
         List<Formula> finalCalcMemberList = new ArrayList<Formula>();
@@ -433,6 +447,14 @@ public class RolapCube extends CubeBase {
         calculatedMembers =
             finalCalcMemberList.toArray(
                 new Formula[finalCalcMemberList.size()]);
+
+        for (Formula calcMember : finalCalcMemberList) {
+              if (calcMember.getName().
+                      equalsIgnoreCase(xmlVirtualCube.defaultMeasure)){
+                      this.measuresHierarchy.setDefaultMember(calcMember.getMdxMember());
+                      break;
+              }
+        }
 
         // Note: virtual cubes do not get aggregate
     }

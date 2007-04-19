@@ -155,6 +155,12 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="defaultMeasure" required="false">
+            <Doc>
+                The name of the measure that would be taken as the default
+                measure of the cube.
+            </Doc>
+        </Attribute>
         <Attribute name="cache" type="Boolean" default="true">
             <Doc>
                 Should the Fact table data for this Cube be cached
@@ -220,6 +226,11 @@ Revision is $Id$
             </Doc>
         </Attribute>
         <Attribute name="name"><Doc></Doc></Attribute>
+        <Attribute name="defaultMeasure" required="false">
+            <Doc>The name of the measure that would be taken as the default
+                measure of the cube.
+            </Doc>
+         </Attribute>
         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the cube's name.

@@ -685,6 +685,15 @@ RME HACK
         return peerDimension;
     }
 
+    /**
+     * Sets default Measure
+     * @param defaultMeasure
+     */
+    public void setDefaultMember(Member defaultMeasure) {
+        if (defaultMeasure != null){
+            defaultMember = defaultMeasure;
+        }
+    }
 
 
     /**

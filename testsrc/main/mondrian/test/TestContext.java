@@ -260,7 +260,7 @@ public class TestContext {
 
         // Add cube definitions, if specified.
         if (cubeDefs != null) {
-            int i = s.indexOf("<Cube name=\"Sales\">");
+            int i = s.indexOf("<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">");
             s = s.substring(0, i) +
                 cubeDefs +
                 s.substring(i);
@@ -268,7 +268,8 @@ public class TestContext {
 
         // Add virtual cube definitions, if specified.
         if (virtualCubeDefs != null) {
-            int i = s.indexOf("<VirtualCube name=\"Warehouse and Sales\">");
+            int i = s.indexOf("<VirtualCube name=\"Warehouse and Sales\" " +
+                    "defaultMeasure=\"Store Sales\">");
             s = s.substring(0, i) +
                 virtualCubeDefs +
                 s.substring(i);

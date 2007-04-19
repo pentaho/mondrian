@@ -115,7 +115,7 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
   </Dimension>
 
 <!-- Sales -->
-<Cube name="Sales">
+<Cube name="Sales" defaultMeasure="Unit Sales">
   <Table name="sales_fact_1997">
 <!--
     <AggExclude name="agg_l_03_sales_fact_1997" />
@@ -703,7 +703,7 @@ fullname
    </CalculatedMember>
 </Cube>
 
-<VirtualCube name="Warehouse and Sales">
+<VirtualCube name="Warehouse and Sales" defaultMeasure="Store Sales">
   <VirtualCubeDimension cubeName="Sales" name="Customers"/>
   <VirtualCubeDimension cubeName="Sales" name="Education Level"/>
   <VirtualCubeDimension cubeName="Sales" name="Gender"/>
