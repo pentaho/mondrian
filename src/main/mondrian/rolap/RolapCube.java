@@ -968,6 +968,17 @@ return dim;
     }
 
     /**
+     * Returns the named sets of this cube.
+     */
+    public NamedSet[] getNamedSets() {
+        NamedSet[] namedSetsArray = new NamedSet[namedSets.length];
+        for (int i=0; i < namedSets.length; i++) {
+            namedSetsArray[i] = namedSets[i].getNamedSet();
+        }
+        return namedSetsArray; 
+    }
+
+    /**
      * Returns the schema reader which enforces the appropriate access-control
      * context.
      *

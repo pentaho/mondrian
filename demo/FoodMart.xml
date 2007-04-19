@@ -359,6 +359,9 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
     <Formula>[Measures].[Warehouse Sales] / [Measures].[Warehouse Cost]</Formula>
     <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
   </CalculatedMember>
+  <NamedSet name="Top Sellers">
+    <Formula>TopCount([Warehouse].[Warehouse Name].MEMBERS, 5, [Measures].[Warehouse Sales])</Formula>
+  </NamedSet>    
 </Cube>
 
 <!-- Test a cube based upon a single table. -->

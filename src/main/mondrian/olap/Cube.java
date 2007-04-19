@@ -27,6 +27,11 @@ public interface Cube extends OlapElement {
     Dimension[] getDimensions();
 
     /**
+     * Returns the named sets of this cube.
+     */
+    NamedSet[] getNamedSets();
+
+    /**
      * Finds a hierarchy whose name (or unique name, if <code>unique</code> is
      * true) equals <code>s</code>.
      */

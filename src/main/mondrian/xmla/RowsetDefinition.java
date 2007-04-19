@@ -5708,8 +5708,16 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
     }
 
     static class MdschemaSetsRowset extends Rowset {
+        private final RestrictionTest schemaNameRT;
+        private final RestrictionTest cubeNameRT;
+        private final RestrictionTest setNameRT;
+        private static final String GLOBAL_SCOPE = "1";
+
         MdschemaSetsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_SETS, request, handler);
+            schemaNameRT = getRestrictionTest(SchemaName);
+            cubeNameRT = getRestrictionTest(CubeName);
+            setNameRT = getRestrictionTest(SetName);            
         }
 
         private static final Column CatalogName =
@@ -5768,12 +5776,54 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                 true,
                 "A human-readable description of the measure.");
 
-        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
-            throw new XmlaException(
-                CLIENT_FAULT_FC,
-                HSB_UNSUPPORTED_OPERATION_CODE,
-                HSB_UNSUPPORTED_OPERATION_FAULT_FS,
-                new UnsupportedOperationException("MDSCHEMA_SETS"));
+        public void populate(XmlaResponse response, List<Row> rows)
+                throws XmlaException {
+            DataSourcesConfig.DataSource ds =
+                handler.getDataSource(request);
+            String roleStr = request.getRole();
+            DataSourcesConfig.Catalog[] catalogs =
+                    handler.getCatalogs(request, ds);
+
+            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                    continue;
+                }
+                Connection connection =
+                    handler.getConnection(dsCatalog, roleStr);
+                if (connection == null) {
+                    continue;
+                }
+
+                String catalogName = dsCatalog.name;
+                if (!schemaNameRT.passes(catalogName)) {
+                    continue;
+                }
+                processCatalog(connection, catalogName, rows);
+            }
+        }
+
+        private void processCatalog(Connection connection, String catalogName,
+                                    List<Row> rows) {
+            Cube[] cubes = connection.getSchemaReader().getCubes();
+            for (Cube cube : cubes) {
+                if (!cubeNameRT.passes(cube.getName())) {
+                     continue;
+                }
+                populateNamedSets(cube, catalogName, rows);
+            }
+        }
+
+        private void populateNamedSets(Cube cube, String catalogName,
+                                       List<Row> rows) {
+            for (NamedSet namedSet : cube.getNamedSets()) {
+                Row row = new Row();
+                row.set(CatalogName.name, catalogName);
+                row.set(CubeName.name, cube.getName());
+                row.set(SetName.name, namedSet.getUniqueName());
+                row.set(Scope.name, GLOBAL_SCOPE);
+                row.set(Description.name, namedSet.getDescription());
+                addRow(row, rows);
+            }
         }
     }
 

@@ -235,6 +235,18 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, props);
     }
 
+    public void testMDSets() throws Exception {
+        String requestType = "MDSCHEMA_SETS";
+
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+
+        doTest(requestType, props);
+    }
+
     public void testMDimensions() throws Exception {
         String requestType = "MDSCHEMA_DIMENSIONS";
 
