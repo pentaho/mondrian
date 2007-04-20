@@ -30,8 +30,8 @@ public class DelegatingTestContext extends TestContext {
         this.context = context;
     }
 
-    public synchronized Connection getFoodMartConnection(boolean fresh) {
-        return context.getFoodMartConnection(fresh);
+    public synchronized Connection getFoodMartConnection() {
+        return context.getFoodMartConnection();
     }
 
     public synchronized Connection getFoodMartConnection(Class dynProcClass) {

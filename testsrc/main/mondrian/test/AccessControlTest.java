@@ -30,7 +30,8 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     public void testGrantDimensionNone() {
-        final Connection connection = getConnection(true);
+        final Connection connection =
+            getTestContext().getFoodMartConnection(false);
         TestContext testContext = getTestContext(connection);
         RoleImpl role = ((RoleImpl) connection.getRole()).makeMutableClone();
         Schema schema = connection.getSchema();
@@ -42,7 +43,8 @@ public class AccessControlTest extends FoodMartTestCase {
         role.grant(genderDimension, Access.NONE);
         role.makeImmutable();
         connection.setRole(role);
-        testContext.assertAxisThrows("[Gender].children", "MDX object '[Gender]' not found in cube 'Sales'");
+        testContext.assertAxisThrows(
+            "[Gender].children", "MDX object '[Gender]' not found in cube 'Sales'");
     }
 
     public void testRoleMemberAccess() {
@@ -302,7 +304,7 @@ public class AccessControlTest extends FoodMartTestCase {
      * for Canada
      */
     private Connection getRestrictedConnection(boolean restrictCustomers) {
-        Connection connection = getConnection(true);
+        Connection connection = getTestContext().getFoodMartConnection(false);
         RoleImpl role = new RoleImpl();
         Schema schema = connection.getSchema();
         final boolean fail = true;
@@ -340,7 +342,7 @@ public class AccessControlTest extends FoodMartTestCase {
     /* todo: test that access to restricted measure fails (will not work --
     have not fixed Cube.getMeasures) */
     private class RestrictedTestContext extends TestContext {
-        public synchronized Connection getFoodMartConnection(boolean fresh) {
+        public synchronized Connection getFoodMartConnection() {
             return getRestrictedConnection(false);
         }
     }

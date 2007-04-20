@@ -126,9 +126,13 @@ public class ResultCache implements HttpSessionBindingListener {
             servletContext.getInitParameter("connectString");
         LOGGER.debug("connectString: " + connectString);
         this.connection =
-            DriverManager.getConnection(connectString, new ServletContextCatalogLocator(servletContext), false);
+            DriverManager.getConnection(
+                connectString,
+                new ServletContextCatalogLocator(servletContext));
         if (this.connection == null) {
-        	throw new RuntimeException("No ROLAP connection from connectString: " + connectString);
+            throw new RuntimeException(
+                "No ROLAP connection from connectString: "
+                    + connectString);
         }
     }
 

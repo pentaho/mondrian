@@ -1017,8 +1017,7 @@ return dim;
     public SchemaReader getSchemaReader(Role role) {
         if (role == null) {
             RoleImpl schemaDefaultRoleImpl = schema.getDefaultRole();
-            RoleImpl roleImpl = 
-                    (RoleImpl) schemaDefaultRoleImpl.makeMutableClone();
+            RoleImpl roleImpl = schemaDefaultRoleImpl.makeMutableClone();
             roleImpl.grant(this, Access.ALL);
             role = roleImpl;
         }

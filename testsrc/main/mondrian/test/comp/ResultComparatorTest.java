@@ -115,7 +115,7 @@ public class ResultComparatorTest extends TestCase {
         String queryString = XMLUtility.decodeEncodedString(queryNode.getFirstChild()
                 .getNodeValue());
 
-        Connection cxn = TestContext.instance().getFoodMartConnection(false);
+        Connection cxn = TestContext.instance().getFoodMartConnection();
         try {
             Query query = cxn.parseQuery(queryString);
             Result result = cxn.execute(query);

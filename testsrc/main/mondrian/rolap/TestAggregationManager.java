@@ -202,7 +202,7 @@ public class TestAggregationManager extends FoodMartTestCase {
         String column = "store_state";
         String value = "CA";
         final Connection connection =
-                TestContext.instance().getFoodMartConnection(false);
+                TestContext.instance().getFoodMartConnection();
         final boolean fail = true;
         Cube salesCube = connection.getSchema().lookupCube(cube, fail);
         Member storeSqftMeasure = salesCube.getSchemaReader(null)
@@ -664,14 +664,14 @@ public class TestAggregationManager extends FoodMartTestCase {
                 "    <Level name=\"Store Name\"    column=\"store_name\"    uniqueMembers=\"true\"/>\n" +
                 "  </Hierarchy>\n" +
                 "</Dimension>");
-        
+
         testContext.assertQueryReturns(
-                "select {[Measures].[Unit Sales]} on columns, " + 
-                "Filter ({ " + 
-                "[Store2].[All Stores].[USA].[CA].[Beverly Hills], " + 
-                "[Store2].[All Stores].[USA].[CA].[Beverly Hills].[Gourmet Supermarket] " + 
-                "},[Measures].[Unit Sales] > 0) on rows " + 
-                "from [Sales] " + 
+                "select {[Measures].[Unit Sales]} on columns, " +
+                "Filter ({ " +
+                "[Store2].[All Stores].[USA].[CA].[Beverly Hills], " +
+                "[Store2].[All Stores].[USA].[CA].[Beverly Hills].[Gourmet Supermarket] " +
+                "},[Measures].[Unit Sales] > 0) on rows " +
+                "from [Sales] " +
                 "where [Store Type].[Store Type].[Small Grocery]",
             fold(
                 "Axis #0:\n" +
@@ -680,7 +680,7 @@ public class TestAggregationManager extends FoodMartTestCase {
                 "{[Measures].[Unit Sales]}\n" +
                 "Axis #2:\n"));
     }
-    
+
     /**
      * Fake exception to interrupt the test when we see the desired query.
      * It is an {@link Error} because we need it to be unchecked
@@ -833,7 +833,7 @@ public class TestAggregationManager extends FoodMartTestCase {
             final String cube, final String measure,
             final String table, final String column, final String value) {
         final Connection connection =
-            TestContext.instance().getFoodMartConnection(false);
+            TestContext.instance().getFoodMartConnection();
         final boolean fail = true;
         Cube salesCube = connection.getSchema().lookupCube(cube, fail);
         Member storeSqftMeasure =
@@ -856,7 +856,7 @@ public class TestAggregationManager extends FoodMartTestCase {
             final String[] tables, final String[] columns,
             final String[] values) {
         final Connection connection =
-            TestContext.instance().getFoodMartConnection(false);
+            TestContext.instance().getFoodMartConnection();
         final boolean fail = true;
         Cube salesCube = connection.getSchema().lookupCube(cube, fail);
         Member measure = salesCube.getSchemaReader(null).getMemberByUniqueName(
@@ -879,7 +879,7 @@ public class TestAggregationManager extends FoodMartTestCase {
 
     private RolapCube getCube(final String cube) {
         final Connection connection =
-            TestContext.instance().getFoodMartConnection(false);
+            TestContext.instance().getFoodMartConnection();
         final boolean fail = true;
         return (RolapCube) connection.getSchema().lookupCube(cube, fail);
     }

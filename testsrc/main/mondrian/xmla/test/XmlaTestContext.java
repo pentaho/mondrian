@@ -24,6 +24,7 @@ import mondrian.spi.impl.CatalogLocatorImpl;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
 import mondrian.xmla.DataSourcesConfig;
+import mondrian.rolap.RolapConnectionProperties;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.DOMWrapper;
@@ -66,7 +67,7 @@ public class XmlaTestContext {
             return connectString;
         }
 
-        connectString = TestContext.getConnectString();
+        connectString = TestContext.instance().getConnectString();
 
         // Deal with MySQL and other connect strings with & in them
         connectString = connectString.replaceAll("&", "&amp;");
@@ -81,7 +82,8 @@ public class XmlaTestContext {
 
         Util.PropertyList connectProperties =
             Util.parseConnectString(getConnectString());
-        String catalogUrl = connectProperties.get("catalog");
+        String catalogUrl = connectProperties.get(
+            RolapConnectionProperties.Catalog.name());
 
         StringReader dsConfigReader =
                 new StringReader("<?xml version=\"1.0\"?>" +

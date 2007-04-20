@@ -56,13 +56,6 @@ public class TestContext {
     private PrintWriter pw;
 
     /**
-     * Connect string for the FoodMart database. Set by the constructor,
-     * but the connection is not created until the first call to
-     * {@link #getFoodMartConnection}.
-     */
-    private String foodMartConnectString;
-
-    /**
      * Connection to the FoodMart database. Set on the first call to
      * {@link #getFoodMartConnection}.
      */
@@ -90,6 +83,7 @@ public class TestContext {
         "[Marital Status]",
         "[Yearly Income]"
     };
+    private static String unadulteratedFoodMartSchema;
 
     /**
      * Retrieves the singleton (instantiating if necessary).
@@ -110,7 +104,19 @@ public class TestContext {
         MondrianResource.setThreadLocale(Locale.US);
 
         this.pw = new PrintWriter(System.out, true);
-        foodMartConnectString = getConnectString();
+    }
+
+    /**
+     * Returns the connect string by which the unit tests can talk to the
+     * FoodMart database.
+     *
+     * <p>In the base class, the result is the same as the static method
+     * {@link #getConnectString}. If a derived class overrides
+     * {@link #getFoodMartConnectionProperties()}, the result of this method
+     * will change also.
+     */
+    public final String getConnectString() {
+        return getFoodMartConnectionProperties().toString();
     }
 
     /**
@@ -127,7 +133,7 @@ public class TestContext {
      *     <code>demo/FoodMart.xml</code></li>.
      * </ul>
      */
-    public static String getConnectString() {
+    public static String getDefaultConnectString() {
         String connectString = MondrianProperties.instance().TestConnectString.get();
         final Util.PropertyList connectProperties;
         if (connectString == null || connectString.equals("")) {
@@ -184,22 +190,18 @@ public class TestContext {
      * <p>By default, returns a connection to the FoodMart database.
      */
     public Connection getConnection() {
-        return getFoodMartConnection(false);
+        return getFoodMartConnection();
     }
 
     /**
      * Returns a connection to the FoodMart database.
-     *
-     * @param fresh If true, returns a new connection, not one from the
-     *   connection pool
      */
-    public synchronized Connection getFoodMartConnection(boolean fresh) {
-        if (fresh) {
-            return DriverManager.getConnection(
-                    foodMartConnectString, null, fresh);
-        } else if (foodMartConnection == null) {
-            foodMartConnection = DriverManager.getConnection(
-                    foodMartConnectString, null, fresh);
+    public synchronized Connection getFoodMartConnection() {
+        if (foodMartConnection == null) {
+            foodMartConnection =
+                DriverManager.getConnection(
+                    getFoodMartConnectionProperties(),
+                    null);
         }
         return foodMartConnection;
     }
@@ -209,13 +211,15 @@ public class TestContext {
      * with a dynamic schema processor.
      */
     public synchronized Connection getFoodMartConnection(Class dynProcClass) {
-        Util.PropertyList properties =
-                Util.parseConnectString(foodMartConnectString);
+        Util.PropertyList properties = getFoodMartConnectionProperties();
         properties.put(
-                RolapConnectionProperties.DynamicSchemaProcessor.name(),
-                dynProcClass.getName());
-        return DriverManager.getConnection(
-                properties, null, null, false);
+            RolapConnectionProperties.DynamicSchemaProcessor.name(),
+            dynProcClass.getName());
+        return DriverManager.getConnection(properties, null, null);
+    }
+
+    public Util.PropertyList getFoodMartConnectionProperties() {
+        return Util.parseConnectString(getDefaultConnectString());
     }
 
     /**
@@ -223,13 +227,26 @@ public class TestContext {
      * with an inline schema.
      */
     public synchronized Connection getFoodMartConnection(String catalogContent) {
-        Util.PropertyList properties =
-            Util.parseConnectString(foodMartConnectString);
+        Util.PropertyList properties = getFoodMartConnectionProperties();
         properties.put(
             RolapConnectionProperties.CatalogContent.name(),
             catalogContent);
-        return DriverManager.getConnection(
-            properties, null, null, false);
+        return DriverManager.getConnection(properties, null, null);
+    }
+
+    /**
+     * Returns a connection to the FoodMart database, optionally not from the
+     * schema pool.
+     *
+     * @param useSchemaPool If false, use a fresh connection, not one from the
+     *   schema pool
+     */
+    public synchronized Connection getFoodMartConnection(boolean useSchemaPool) {
+        Util.PropertyList properties = getFoodMartConnectionProperties();
+        properties.put(
+            RolapConnectionProperties.UseSchemaPool.name(),
+            useSchemaPool ? "true" : "false");
+        return DriverManager.getConnection(properties, null, null);
     }
 
     /**
@@ -244,11 +261,14 @@ public class TestContext {
         String udfDefs)
     {
         // First, get the unadulterated schema.
-        String s;
         synchronized (SnoopingSchemaProcessor.class) {
-            getFoodMartConnection(SnoopingSchemaProcessor.class);
-            s = SnoopingSchemaProcessor.catalogContent;
+            if (unadulteratedFoodMartSchema == null) {
+                getFoodMartConnection(SnoopingSchemaProcessor.class);
+                unadulteratedFoodMartSchema = SnoopingSchemaProcessor.catalogContent;
+            }
         }
+
+        String s = unadulteratedFoodMartSchema;
 
         // Add parameter definitions, if specified.
         if (parameterDefs != null) {
@@ -861,19 +881,20 @@ public class TestContext {
         }
 
         Assert.assertEquals(expectedSql, transformedActualSql);
-        
-        testSQLAgainstDatasource(actualSql, expectedRows);
-    }
-    
-    private void testSQLAgainstDatasource(String actualSQL, int expectedRows) throws Exception {
-        //System.out.println(actualSQL);
 
-        Util.PropertyList connectProperties = Util.parseConnectString(TestContext.getConnectString());
-        
+        testSqlAgainstDatasource(actualSql, expectedRows);
+    }
+
+    private void testSqlAgainstDatasource(
+        String actualSql,
+        int expectedRows)
+        throws Exception
+    {
+        Util.PropertyList connectProperties = getFoodMartConnectionProperties();
+
         java.sql.Connection jdbcConn = null;
 
         try {
-            
             String jdbcDrivers =
                 connectProperties.get(RolapConnectionProperties.JdbcDrivers.name());
             if (jdbcDrivers != null) {
@@ -882,32 +903,34 @@ public class TestContext {
             final String jdbcDriversProp =
                 MondrianProperties.instance().JdbcDrivers.get();
             RolapUtil.loadDrivers(jdbcDriversProp);
-            
-            jdbcConn = java.sql.DriverManager.getConnection(connectProperties.get(RolapConnectionProperties.Jdbc.name()),
-                                                    connectProperties.get(RolapConnectionProperties.JdbcUser.name()),
-                                                    connectProperties.get(RolapConnectionProperties.JdbcPassword.name()));
+
+            jdbcConn = java.sql.DriverManager.getConnection(
+                connectProperties.get(RolapConnectionProperties.Jdbc.name()),
+                connectProperties.get(RolapConnectionProperties.JdbcUser.name()),
+                connectProperties.get(RolapConnectionProperties.JdbcPassword.name()));
             Statement s = jdbcConn.createStatement();
-            ResultSet rs = s.executeQuery(actualSQL);
+            ResultSet rs = s.executeQuery(actualSql);
 
             int rows = 0;
-
             while (rs.next()) {
                 rows++;
             }
-            
-            if (expectedRows != rows) {
-                throw new Exception("Expected " + expectedRows + ", but got " + rows + " rows\n" + actualSQL);
-            }
+
+            Assert.assertEquals("row count", expectedRows, rows);
         } catch (SQLException e) {
-            throw new Exception("ERROR in SQL - invalid for database: " + connectProperties.get(RolapConnectionProperties.Jdbc.name()) + "\n" + actualSQL, e);
+            throw new Exception("ERROR in SQL - invalid for database: "
+                + connectProperties.get(RolapConnectionProperties.Jdbc.name())
+                + "\n" + actualSql,
+                e);
         } finally {
             try {
-                jdbcConn.close();
+                if (jdbcConn != null) {
+                    jdbcConn.close();
+                }
             } catch (Exception e1) {
                 // ignore
             }
         }
-
     }
 
     /**
@@ -918,7 +941,7 @@ public class TestContext {
         // Construct a query, and mine it for a parsed expression.
         // Use a fresh connection, because some tests define their own dims.
         final boolean fresh = true;
-        final Connection connection = getFoodMartConnection(fresh);
+        final Connection connection = getFoodMartConnection();
         final String queryString =
                 "SELECT {" + expr + "} ON COLUMNS FROM [Sales]";
         final Query query = connection.parseQuery(queryString);
@@ -945,7 +968,7 @@ public class TestContext {
         // Construct a query, and mine it for a parsed expression.
         // Use a fresh connection, because some tests define their own dims.
         final boolean fresh = true;
-        final Connection connection = getFoodMartConnection(fresh);
+        final Connection connection = getFoodMartConnection();
         final String queryString =
                 "WITH MEMBER [Measures].[Foo] AS " +
                 Util.singleQuoteString(expr) +
@@ -1012,7 +1035,7 @@ public class TestContext {
         final String namedSetDefs,
         final String udfDefs) {
         return new TestContext() {
-            public synchronized Connection getFoodMartConnection(boolean fresh) {
+            public synchronized Connection getFoodMartConnection() {
                 final String schema = getFoodMartSchema(
                     parameterDefs, cubeDefs,
                     virtualCubeDefs, namedSetDefs, udfDefs);
@@ -1046,10 +1069,10 @@ public class TestContext {
      */
     public static TestContext createSubstitutingCube(
         final String cubeName,
-        final String dimensionDefs, final String memberDefs
-    ) {
+        final String dimensionDefs,
+        final String memberDefs) {
         return new TestContext() {
-            public synchronized Connection getFoodMartConnection(boolean fresh) {
+            public synchronized Connection getFoodMartConnection() {
                 final String schema =
                     getFoodMartSchemaSubstitutingCube(
                         cubeName, dimensionDefs, memberDefs);
@@ -1058,6 +1081,24 @@ public class TestContext {
         };
     }
 
+    /**
+     * Creates a TestContext which operates in a givene role.
+     *
+     * @param roleName Name of role
+     * @return
+     */
+    public static TestContext createInRole(final String roleName) {
+        return new TestContext() {
+            public Util.PropertyList getFoodMartConnectionProperties() {
+                Util.PropertyList properties =
+                    super.getFoodMartConnectionProperties();
+                properties.put(
+                    RolapConnectionProperties.Role.name(),
+                    roleName);
+                return properties;
+            }
+        };
+    }
     /**
      * Generates a string containing all dimensions except those given.
      * Useful as an argument to {@link #assertExprDependsOn(String, String)}.

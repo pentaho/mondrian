@@ -183,7 +183,6 @@ public class RolapSchema implements Schema {
         this.dataSourceChangeListener = createDataSourceChangeListener(connectInfo);
     }
 
-
     /**
      * Create RolapSchema given the MD5 hash, catalog name and string (content)
      * and the connectInfo object.
@@ -694,7 +693,6 @@ public class RolapSchema implements Schema {
                 makeKey(catalogUrl, dataSource);
 
             RolapSchema schema = null;
-            boolean hadDynProc = false;
 
             String dynProcName = connectInfo.get(
                 RolapConnectionProperties.DynamicSchemaProcessor.name());
@@ -711,6 +709,20 @@ public class RolapSchema implements Schema {
                 key = catalogStr;
             }
 
+            final boolean useContentChecksum =
+                Boolean.parseBoolean(
+                    connectInfo.get(
+                        RolapConnectionProperties.UseContentChecksum.name()));
+
+            // Use the schema pool unless "UseSchemaPool" is explicitly false.
+            // If a dynamic schema processor is specified never use the pool.
+            final boolean useSchemaPool =
+                Boolean.parseBoolean(
+                    connectInfo.get(
+                        RolapConnectionProperties.UseSchemaPool.name(),
+                        "true")) &&
+                Util.isEmpty(dynProcName);
+
             // If there is a dynamic processor registered, use it. This
             // implies there is not MD5 based caching, but, as with the previous
             // implementation, if the catalog string is in the connectInfo
@@ -726,7 +738,6 @@ public class RolapSchema implements Schema {
                         clazz.getConstructor();
                     final DynamicSchemaProcessor dynProc = ctor.newInstance();
                     catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
-                    hadDynProc = true;
 
                 } catch (Exception e) {
                     throw Util.newError(e, "loading DynamicSchemaProcessor "
@@ -741,20 +752,16 @@ public class RolapSchema implements Schema {
                 }
             }
 
-            boolean useSchemaPool =
-                Boolean.parseBoolean(
-                    connectInfo.get(
-                        RolapConnectionProperties.UseSchemaPool.name(),
-                        "true"));
             if (!useSchemaPool) {
-                return schema;
-            }
+                schema = new RolapSchema(
+                    key,
+                    null,
+                    catalogUrl,
+                    catalogStr,
+                    connectInfo,
+                    dataSource);
 
-            boolean useContentChecksum =
-                Boolean.parseBoolean(
-                    connectInfo.get(
-                        RolapConnectionProperties.UseContentChecksum.name()));
-            if (useContentChecksum) {
+            } else if (useContentChecksum) {
                 // Different catalogUrls can actually yield the same
                 // catalogStr! So, we use the MD5 as the key as well as
                 // the key made above - its has two entries in the
@@ -789,7 +796,7 @@ public class RolapSchema implements Schema {
                     }
                 }
 
-                if ((schema == null) ||
+                if (schema == null ||
                     md5Bytes == null ||
                     schema.md5Bytes == null ||
                     ! schema.md5Bytes.equals(md5Bytes)) {
@@ -822,17 +829,6 @@ public class RolapSchema implements Schema {
                         "\" exists already with MD5";
                     LOGGER.debug(msg);
                 }
-
-            } else if (hadDynProc) {
-                // If you are using a DynamicSchemaProcessor and don't
-                // specify USE_MD5, then the RolapSchema is NOT cached.
-                schema = new RolapSchema(
-                    key,
-                    null,
-                    catalogUrl,
-                    catalogStr,
-                    connectInfo,
-                    dataSource);
 
             } else {
                 SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);

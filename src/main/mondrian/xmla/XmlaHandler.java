@@ -814,11 +814,9 @@ public class XmlaHandler implements XmlaConstants {
 
         DataSourcesConfig.DataSource ds = getDataSource(request);
         DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
-        String role = request.getRole();
         final Map<String, String> properties = request.getProperties();
 
-        final RolapConnection connection =
-            (RolapConnection) getConnection(dsCatalog, role);
+        final Connection connection = getConnection(dsCatalog, request);
 
         final String statement = request.getStatement();
         final Query query = connection.parseQuery(statement);
@@ -1118,9 +1116,8 @@ public class XmlaHandler implements XmlaConstants {
 
             DataSourcesConfig.DataSource ds = getDataSource(request);
             DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
-            String role = request.getRole();
 
-            final Connection connection = getConnection(dsCatalog, role);
+            final Connection connection = getConnection(dsCatalog, request);
 
             final Query query;
             try {
@@ -2122,13 +2119,13 @@ public class XmlaHandler implements XmlaConstants {
      * source) and a user role.
      *
      * @param catalog Catalog
-     * @param role User role
+     * @param request XMLA request
      * @return Connection
      * @throws XmlaException If error occurs
      */
     protected Connection getConnection(
             DataSourcesConfig.Catalog catalog,
-            String role)
+            XmlaRequest request)
             throws XmlaException {
         DataSourcesConfig.DataSource ds = catalog.getDataSource();
 
@@ -2145,13 +2142,14 @@ public class XmlaHandler implements XmlaConstants {
             }
         }
 
-        connectProperties.put("catalog", catalogUrl);
+        connectProperties.put(
+            RolapConnectionProperties.Catalog.name(), catalogUrl);
 
         // Checking access
         if (!DataSourcesConfig.DataSource.AUTH_MODE_UNAUTHENTICATED
             .equalsIgnoreCase(
                 ds.getAuthenticationMode()) &&
-            null == role)
+            null == request)
         {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
@@ -2161,10 +2159,16 @@ public class XmlaHandler implements XmlaConstants {
                     "Access denied for data source needing authentication"));
         }
 
-        connectProperties.put("role", role);
-        RolapConnection conn =
-            (RolapConnection) DriverManager.getConnection(
-                connectProperties, null, false);
+        // Role in request overrides role in connect string, if present.
+        String roleName = request.getRole();
+        if (roleName != null) {
+            connectProperties.put(
+                RolapConnectionProperties.Role.name(), roleName);
+        }
+
+        Connection conn =
+            DriverManager.getConnection(
+                connectProperties, null);
 
 if (LOGGER.isDebugEnabled()) {
 if (conn == null) {
@@ -2307,9 +2311,8 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
 
         DataSourcesConfig.DataSource ds = getDataSource(request);
         DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
-        String role = request.getRole();
 
-        final Connection connection = getConnection(dsCatalog, role);
+        final Connection connection = getConnection(dsCatalog, request);
         final String statement = request.getStatement();
         final Query query = connection.parseQuery(statement);
         query.setResultStyle(ResultStyle.LIST);

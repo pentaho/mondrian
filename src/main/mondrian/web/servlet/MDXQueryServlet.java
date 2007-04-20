@@ -79,9 +79,9 @@ public class MDXQueryServlet extends HttpServlet {
         mondrian.olap.Connection mdxConnection = null;
         StringBuffer html = new StringBuffer();
 
-        //execute the query
+        // execute the query
         try {
-            mdxConnection = DriverManager.getConnection(connectString, locator, false);
+            mdxConnection = DriverManager.getConnection(connectString, locator);
             Query q = mdxConnection.parseQuery(queryString);
             Result result = mdxConnection.execute(q);
             List<Position> slicers = result.getSlicerAxis().getPositions();

@@ -1179,7 +1179,7 @@ public class Workbench extends javax.swing.JFrame {
                         connectString = connectString + "JdbcPassword=" + jdbcPassword + ";";
                     }
 
-                    connection = DriverManager.getConnection(connectString, null, false);
+                    connection = DriverManager.getConnection(connectString, null);
                 } catch (Exception ex) {
                     LOGGER.error("Exception  : Schema file is invalid."+ex.getMessage(), ex);
                 } catch (Error err) {

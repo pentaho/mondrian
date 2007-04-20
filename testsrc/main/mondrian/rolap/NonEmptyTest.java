@@ -941,7 +941,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             return;
         }
 
-        Connection con = getConnection(true);
+        Connection con = getTestContext().getFoodMartConnection(false);
         SmartMemberReader smr = getSmartMemberReader(con, "Customers");
         smr.mapLevelToMembers.setCache(
             new HardSmartCache<
@@ -1706,7 +1706,7 @@ public class NonEmptyTest extends FoodMartTestCase {
      */
     void checkNotNative(int rowCount, String mdx) {
         CachePool.instance().flush();
-        Connection con = getConnection(true);
+        Connection con = getTestContext().getFoodMartConnection(false);
         RolapNativeRegistry reg = getRegistry(con);
         reg.setListener(new Listener() {
             public void foundEvaluator(NativeEvent e) {
@@ -1745,7 +1745,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         CachePool.instance().flush();
         try {
             logger.debug("*** Native: " + mdx);
-            Connection con = getConnection(true);
+            Connection con = getTestContext().getFoodMartConnection();
             RolapNativeRegistry reg = getRegistry(con);
             reg.useHardCache(true);
             TestListener listener = new TestListener();
@@ -1770,7 +1770,7 @@ public class NonEmptyTest extends FoodMartTestCase {
 
             logger.debug("*** Interpreter: " + mdx);
             CachePool.instance().flush();
-            con = getConnection(true);
+            con = getTestContext().getFoodMartConnection(false);
             reg = getRegistry(con);
             listener.setFoundEvaluator(false);
             reg.setListener(listener);
@@ -1810,7 +1810,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     SmartMemberReader getSmartMemberReader(String hierName) {
-        Connection con = super.getConnection(false);
+        Connection con = getTestContext().getFoodMartConnection();
         return getSmartMemberReader(con, hierName);
     }
 

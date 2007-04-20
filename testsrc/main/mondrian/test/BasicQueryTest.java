@@ -2659,7 +2659,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             return;
         }
         final long start = System.currentTimeMillis();
-        Connection connection = getTestContext().getFoodMartConnection(false);
+        Connection connection = getTestContext().getFoodMartConnection();
         final String queryString =
                 "select {[Measures].[Unit Sales],\n" +
                 " [Measures].[Store Cost],\n" +
@@ -2771,14 +2771,14 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testCatalogHierarchyBasedOnView() {
-        if (getTestContext().getDialect().isMySQL()) {
-            return; // Mysql cannot handle subselect
+        // Don't run this test if aggregates are enabled: two levels mapped to
+        // the "gender" column confuse the agg engine.
+        if (MondrianProperties.instance().ReadAggregates.get()) {
+            return;
         }
-        Schema schema = getConnection().getSchema();
-        final Cube salesCube = schema.lookupCube("Sales", true);
-        schema.createDimension(
-                salesCube,
-                fold("<Dimension name=\"Gender2\" foreignKey=\"customer_id\">\n" +
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Gender2\" foreignKey=\"customer_id\">\n" +
                 "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n" +
                 "    <View alias=\"gender2\">\n" +
                 "      <SQL dialect=\"generic\">\n" +
@@ -2799,13 +2799,16 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "    </View>\n" +
                 "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n" +
                 "  </Hierarchy>\n" +
-                "</Dimension>"));
-        final Axis axis = getTestContext().executeAxis("[Gender2].members");
-        assertEquals(fold(
-                "[Gender2].[All Gender]\n" +
+                "</Dimension>",
+            null);
+        if (!testContext.getDialect().allowsFromQuery()) {
+            return;
+        }
+        testContext.assertAxisReturns(
+            "[Gender2].members",
+            fold("[Gender2].[All Gender]\n" +
                 "[Gender2].[All Gender].[F]\n" +
-                "[Gender2].[All Gender].[M]"),
-                TestContext.toString(axis.getPositions()));
+                "[Gender2].[All Gender].[M]"));
     }
 
     /**
@@ -2813,14 +2816,17 @@ public class BasicQueryTest extends FoodMartTestCase {
      * joins correctly. This probably won't work in MySQL.
      */
     public void testCatalogHierarchyBasedOnView2() {
-        if (getTestContext().getDialect().isMySQL()) {
-            return; // Mysql cannot handle subselect
+        // Don't run this test if aggregates are enabled: two levels mapped to
+        // the "gender" column confuse the agg engine.
+        if (MondrianProperties.instance().ReadAggregates.get()) {
+            return;
         }
-        Schema schema = getConnection().getSchema();
-        final Cube salesCube = schema.lookupCube("Sales", true);
-        schema.createDimension(
-                salesCube,
-                fold("<Dimension name=\"ProductView\" foreignKey=\"product_id\">\n" +
+        if (getTestContext().getDialect().allowsFromQuery()) {
+            return;
+        }
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+                "<Dimension name=\"ProductView\" foreignKey=\"product_id\">\n" +
                 "   <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"productView\">\n" +
                 "       <View alias=\"productView\">\n" +
                 "           <SQL dialect=\"db2\"><![CDATA[\n" +
@@ -2867,13 +2873,13 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "       <Level name=\"Brand Name\" column=\"brand_name\" uniqueMembers=\"false\"/>\n" +
                 "       <Level name=\"Product Name\" column=\"product_name\" uniqueMembers=\"true\"/>\n" +
                 "   </Hierarchy>\n" +
-                "</Dimension>"));
-        assertQueryReturns(
-                "select {[Measures].[Unit Sales]} on columns,\n" +
+                "</Dimension>");
+        testContext.assertQueryReturns(
+            "select {[Measures].[Unit Sales]} on columns,\n" +
                 " {[ProductView].[Drink].[Beverages].children} on rows\n" +
                 "from Sales",
 
-                fold("Axis #0:\n" +
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Unit Sales]}\n" +
@@ -3118,7 +3124,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             // prevent a CacheMemberReader from kicking in
             MondrianProperties.instance().LargeDimensionThreshold.set(1);
             final Connection connection =
-                    TestContext.instance().getFoodMartConnection(true);
+                    TestContext.instance().getFoodMartConnection();
             String queryString =
                     "select {[Measures].[Unit Sales]} on columns,\n" +
                     "{[Customers].members} on rows\n" +
@@ -4669,21 +4675,22 @@ public class BasicQueryTest extends FoodMartTestCase {
         // Create a second usage of the "Store" shared dimension called "Other
         // Store". Attach it to the "unit_sales" column (which has values [1,
         // 6] whereas store has values [1, 24].
-        schema.createDimension(
-                salesCube,
-                "<DimensionUsage name=\"Other Store\" source=\"Store\" foreignKey=\"unit_sales\" />");
-        Axis axis = getTestContext().executeAxis("[Other Store].members");
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<DimensionUsage name=\"Other Store\" source=\"Store\" foreignKey=\"unit_sales\" />");
+        Axis axis = testContext.executeAxis("[Other Store].members");
         assertEquals(63, axis.getPositions().size());
 
-        axis = getTestContext().executeAxis("[Store].members");
+        axis = testContext.executeAxis("[Store].members");
         assertEquals(63, axis.getPositions().size());
 
         final String q1 =
             "select {[Measures].[Unit Sales]} on columns,\n" +
             " NON EMPTY {[Other Store].members} on rows\n" +
             "from [Sales]";
-        assertQueryReturns(q1,
-                fold("Axis #0:\n" +
+        testContext.assertQueryReturns(
+            q1,
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Unit Sales]}\n" +
@@ -4735,7 +4742,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "  {[Store].[USA], [Store].[USA].[CA], [Store].[USA].[OR].[Portland]}, \n" +
             "  {[Other Store].[USA], [Other Store].[USA].[CA], [Other Store].[USA].[OR].[Portland]}) on rows\n" +
             "from [Sales]");
-        assertQueryReturns(q2,
+        testContext.assertQueryReturns(q2,
                 fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
@@ -4790,9 +4797,10 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testMemberVisibility() {
-        Schema schema = getConnection().getSchema();
-        final Cube cube = schema.createCube(
-                "<Cube name=\"Sales_MemberVis\">\n" +
+        String cubeName = "Sales_MemberVis";
+        TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"" + cubeName + "\">\n" +
                 "  <Table name=\"sales_fact_1997\"/>\n" +
                 "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
                 "      formatString=\"Standard\" visible=\"false\"/>\n" +
@@ -4811,8 +4819,9 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "      formula=\"[Measures].[Store Sales]-[Measures].[Store Cost]\">\n" +
                 "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n" +
                 "  </CalculatedMember>\n" +
-                "</Cube>");
-        final SchemaReader scr = cube.getSchemaReader(null);
+                "</Cube>",
+            null, null, null);
+        SchemaReader scr = testContext.getConnection().getSchema().lookupCube(cubeName, true).getSchemaReader(null);
         Member member = scr.getMemberByUniqueName(new String[] {"Measures", "Unit Sales"}, true);
         Object visible = member.getPropertyValue(Property.VISIBLE.name);
         assertEquals(Boolean.FALSE, visible);
@@ -4827,19 +4836,17 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testAllMemberCaption() {
-        Schema schema = getConnection().getSchema();
-        final Cube salesCube = schema.lookupCube("Sales", true);
-        schema.createDimension(
-                salesCube,
-                fold("<Dimension name=\"Gender3\" foreignKey=\"customer_id\">\n" +
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Gender3\" foreignKey=\"customer_id\">\n" +
                 "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\"\n" +
                 " allMemberCaption=\"Frauen und Maenner\" primaryKey=\"customer_id\">\n" +
                 "  <Table name=\"customer\"/>\n" +
                 "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n" +
                 "  </Hierarchy>\n" +
-                "</Dimension>"));
+                "</Dimension>");
         String mdx = "select {[Gender3].[All Gender]} on columns from Sales";
-        Result result = TestContext.instance().executeQuery(mdx);
+        Result result = testContext.executeQuery(mdx);
         Axis axis0 = result.getAxes()[0];
         Position pos0 = axis0.getPositions().get(0);
         Member allGender = pos0.get(0);
@@ -4848,19 +4855,17 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testAllLevelName() {
-        Schema schema = getConnection().getSchema();
-        final Cube salesCube = schema.lookupCube("Sales", true);
-        schema.createDimension(
-                salesCube,
-                fold("<Dimension name=\"Gender4\" foreignKey=\"customer_id\">\n" +
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Gender4\" foreignKey=\"customer_id\">\n" +
                 "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\"\n" +
                 " allLevelName=\"GenderLevel\" primaryKey=\"customer_id\">\n" +
                 "  <Table name=\"customer\"/>\n" +
                 "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n" +
                 "  </Hierarchy>\n" +
-                "</Dimension>"));
+                "</Dimension>");
         String mdx = "select {[Gender4].[All Gender]} on columns from Sales";
-        Result result = TestContext.instance().executeQuery(mdx);
+        Result result = testContext.executeQuery(mdx);
         Axis axis0 = result.getAxes()[0];
         Position pos0 = axis0.getPositions().get(0);
         Member allGender = pos0.get(0);
@@ -4873,43 +4878,47 @@ public class BasicQueryTest extends FoodMartTestCase {
      * twice.
      */
     public void testDimWithoutAll() {
-        Schema schema = getConnection().getSchema();
-        final Cube cube = schema.createCube(
-                "<Cube name=\"Sales_DimWithoutAll\">\n" +
-                "  <Table name=\"sales_fact_1997\"/>\n" +
-                "  <Dimension name=\"Product\" foreignKey=\"product_id\">\n" +
-                "    <Hierarchy hasAll=\"false\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n" +
-                "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n" +
-                "        <Table name=\"product\"/>\n" +
-                "        <Table name=\"product_class\"/>\n" +
-                "      </Join>\n" +
-                "      <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n" +
-                "          uniqueMembers=\"true\"/>\n" +
-                "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n" +
-                "          uniqueMembers=\"false\"/>\n" +
-                "      <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n" +
-                "          uniqueMembers=\"false\"/>\n" +
-                "      <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n" +
-                "          uniqueMembers=\"false\"/>\n" +
-                "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n" +
-                "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n" +
-                "          uniqueMembers=\"true\"/>\n" +
-                "    </Hierarchy>\n" +
-                "  </Dimension>\n" +
-                "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n" +
-                "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">\n" +
-                "    <Table name=\"customer\"/>\n" +
-                "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n" +
-                "    </Hierarchy>\n" +
-                "  </Dimension>" +
-                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
-                "      formatString=\"Standard\" visible=\"false\"/>\n" +
-                "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n" +
-                "      formatString=\"#,###.00\"/>\n" +
-                "</Cube>");
-        // Create a test context which evaluates expressions against the
-        // "Sales_DimWithoutAll" cube, not the "Sales" cube.
-        TestContext testContext = new DelegatingTestContext(getTestContext()) {
+        // Create a test context with a new ""Sales_DimWithoutAll" cube, and
+        // which evaluates expressions against that cube.
+        TestContext testContext = new TestContext() {
+            public synchronized Connection getFoodMartConnection() {
+                final String schema = getFoodMartSchema(
+                    null,
+                    "<Cube name=\"Sales_DimWithoutAll\">\n" +
+                    "  <Table name=\"sales_fact_1997\"/>\n" +
+                    "  <Dimension name=\"Product\" foreignKey=\"product_id\">\n" +
+                    "    <Hierarchy hasAll=\"false\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n" +
+                    "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n" +
+                    "        <Table name=\"product\"/>\n" +
+                    "        <Table name=\"product_class\"/>\n" +
+                    "      </Join>\n" +
+                    "      <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n" +
+                    "          uniqueMembers=\"true\"/>\n" +
+                    "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n" +
+                    "          uniqueMembers=\"false\"/>\n" +
+                    "      <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n" +
+                    "          uniqueMembers=\"false\"/>\n" +
+                    "      <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n" +
+                    "          uniqueMembers=\"false\"/>\n" +
+                    "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n" +
+                    "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n" +
+                    "          uniqueMembers=\"true\"/>\n" +
+                    "    </Hierarchy>\n" +
+                    "  </Dimension>\n" +
+                    "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n" +
+                    "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">\n" +
+                    "    <Table name=\"customer\"/>\n" +
+                    "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n" +
+                    "    </Hierarchy>\n" +
+                    "  </Dimension>" +
+                    "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
+                    "      formatString=\"Standard\" visible=\"false\"/>\n" +
+                    "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n" +
+                    "      formatString=\"#,###.00\"/>\n" +
+                    "</Cube>",
+                    null, null, null);
+                return getFoodMartConnection(schema);
+            }
             public String getDefaultCubeName() {
                 return "Sales_DimWithoutAll";
             }
@@ -5055,9 +5064,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * inconsistent, no data will be returned.
      */
     public void testMultipleConstraintsOnSameColumn() {
-        Schema schema = getConnection().getSchema();
         final String cubeName = "Sales_withCities";
-        final Cube cube = schema.createCube(
+        TestContext testContext = TestContext.create(
+            null,
             "<Cube name=\"" + cubeName + "\">\n" +
             "  <Table name=\"sales_fact_1997\"/>\n" +
             "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
@@ -5091,42 +5100,34 @@ public class BasicQueryTest extends FoodMartTestCase {
             "      formatString=\"Standard\" visible=\"false\"/>\n" +
             "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
             "      formatString=\"#,###.00\"/>\n" +
-            "</Cube>");
+            "</Cube>",
+            null, null, null);
 
-        try {
-            // Note that USA, CA, Burbank, and Alma Son are consistent with the
-            // constraint in the slicer, and therefore return a value, but other
-            // members are inconsistent so return null.
-            getTestContext().assertQueryReturns(
-                    fold(
-                        "select {\n" +
-                        " [Customers].[All Customers].[USA],\n" +
-                        " [Customers].[All Customers].[USA].[OR],\n" +
-                        " [Customers].[All Customers].[USA].[CA],\n" +
-                        " [Customers].[All Customers].[USA].[CA].[Altadena],\n" +
-                        " [Customers].[All Customers].[USA].[CA].[Burbank],\n" +
-                        " [Customers].[All Customers].[USA].[CA].[Burbank].[Alma Son]} ON COLUMNS\n" +
-                        "from [" + cubeName + "] \n" +
-                        "where ([Cities].[All Cities].[Burbank], [Measures].[Store Sales])"),
-                    fold(
-                        "Axis #0:\n" +
-                        "{[Cities].[All Cities].[Burbank], [Measures].[Store Sales]}\n" +
-                        "Axis #1:\n" +
-                        "{[Customers].[All Customers].[USA]}\n" +
-                        "{[Customers].[All Customers].[USA].[OR]}\n" +
-                        "{[Customers].[All Customers].[USA].[CA]}\n" +
-                        "{[Customers].[All Customers].[USA].[CA].[Altadena]}\n" +
-                        "{[Customers].[All Customers].[USA].[CA].[Burbank]}\n" +
-                        "{[Customers].[All Customers].[USA].[CA].[Burbank].[Alma Son]}\n" +
-                        "Row #0: 6,577.33\n" +
-                        "Row #0: \n" +
-                        "Row #0: 6,577.33\n" +
-                        "Row #0: \n" +
-                        "Row #0: 6,577.33\n" +
-                        "Row #0: 36.50\n"));
-        } finally {
-            schema.removeCube(cubeName);
-        }
+        testContext.assertQueryReturns(
+            "select {\n" +
+                " [Customers].[All Customers].[USA],\n" +
+                " [Customers].[All Customers].[USA].[OR],\n" +
+                " [Customers].[All Customers].[USA].[CA],\n" +
+                " [Customers].[All Customers].[USA].[CA].[Altadena],\n" +
+                " [Customers].[All Customers].[USA].[CA].[Burbank],\n" +
+                " [Customers].[All Customers].[USA].[CA].[Burbank].[Alma Son]} ON COLUMNS\n" +
+                "from [" + cubeName + "] \n" +
+                "where ([Cities].[All Cities].[Burbank], [Measures].[Store Sales])",
+            fold("Axis #0:\n" +
+                "{[Cities].[All Cities].[Burbank], [Measures].[Store Sales]}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers].[USA]}\n" +
+                "{[Customers].[All Customers].[USA].[OR]}\n" +
+                "{[Customers].[All Customers].[USA].[CA]}\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Altadena]}\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Burbank]}\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Burbank].[Alma Son]}\n" +
+                "Row #0: 6,577.33\n" +
+                "Row #0: \n" +
+                "Row #0: 6,577.33\n" +
+                "Row #0: \n" +
+                "Row #0: 6,577.33\n" +
+                "Row #0: 36.50\n"));
     }
 
     public void testOverrideDimension() {
@@ -5156,17 +5157,18 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testBadMeasure1() {
-        Schema schema = getConnection().getSchema();
-        final String cubeName = "SalesWithBadMeasure";
-        Throwable throwable = null;
-        try {
-            schema.createCube(
-                "<Cube name=\"" + cubeName + "\">\n" +
+        TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"SalesWithBadMeasure\">\n" +
                 "  <Table name=\"sales_fact_1997\"/>\n" +
                 "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
                 "  <Measure name=\"Bad Measure\" aggregator=\"sum\"\n" +
                 "      formatString=\"Standard\"/>\n" +
-                "</Cube>");
+                "</Cube>",
+            null, null, null);
+        Throwable throwable = null;
+        try {
+            testContext.assertSimpleQuery();
         } catch (Throwable e) {
             throwable = e;
         }
@@ -5174,16 +5176,12 @@ public class BasicQueryTest extends FoodMartTestCase {
         TestContext.checkThrowable(
             throwable,
             "must contain either a source column or a source expression, but not both");
-        schema.removeCube(cubeName);
     }
 
     public void testBadMeasure2() {
-        Schema schema = getConnection().getSchema();
-        final String cubeName = "SalesWithBadMeasure";
-        Throwable throwable = null;
-        try {
-            schema.createCube(
-                "<Cube name=\"" + cubeName + "\">\n" +
+        TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"SalesWithBadMeasure2\">\n" +
                 "  <Table name=\"sales_fact_1997\"/>\n" +
                 "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
                 "  <Measure name=\"Bad Measure\" column=\"unit_sales\" aggregator=\"sum\"\n" +
@@ -5194,7 +5192,11 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "       </SQL>\n" +
                 "    </MeasureExpression>\n" +
                 "  </Measure>\n" +
-                "</Cube>");
+                "</Cube>",
+            null, null, null);
+        Throwable throwable = null;
+        try {
+            testContext.assertSimpleQuery();
         } catch (Throwable e) {
             throwable = e;
         }
@@ -5202,7 +5204,6 @@ public class BasicQueryTest extends FoodMartTestCase {
         TestContext.checkThrowable(
             throwable,
             "must contain either a source column or a source expression, but not both");
-        schema.removeCube(cubeName);
     }
 
     public void testMemberOrdinalCaching() {
@@ -5214,7 +5215,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         try {
             // Use a fresh connection to make sure bad member ordinals haven't
             // been assigned by previous tests.
-            conn = getConnection(true);
+            conn = getTestContext().getFoodMartConnection(false);
             TestContext context = getTestContext(conn);
             tryMemberOrdinalCaching(context);
         } finally {
@@ -5469,7 +5470,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         )
         );
     }
-    
+
     public void testFormatInheritanceToPickupFormatFromSecondMeasureWhenTheFirstDoesNotHaveOne() {
         assertQueryReturns("with member measures.foo as 'measures.bar+measures.blah'" +
                 " member measures.bar as '10'" +

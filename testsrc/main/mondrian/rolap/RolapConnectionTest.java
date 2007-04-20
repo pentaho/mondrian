@@ -33,8 +33,8 @@ public class RolapConnectionTest extends TestCase {
     }
 
     public void testPooledConnectionWithProperties() throws SQLException {
-        final String connectString = TestContext.getConnectString();
-        Util.PropertyList properties = Util.parseConnectString(connectString);
+        Util.PropertyList properties =
+            TestContext.instance().getFoodMartConnectionProperties();
 
         // Only the JDBC-ODBC bridge gives the error necessary for this
         // test to succeed. So trivially succeed for all other JDBC
@@ -79,8 +79,8 @@ public class RolapConnectionTest extends TestCase {
     }
 
     public void testNonPooledConnectionWithProperties() {
-        final String connectString = TestContext.getConnectString();
-        Util.PropertyList properties = Util.parseConnectString(connectString);
+        Util.PropertyList properties =
+            TestContext.instance().getFoodMartConnectionProperties();
 
         // Only the JDBC-ODBC bridge gives the error necessary for this
         // test to succeed. So trivially succeed for all other JDBC
@@ -140,7 +140,7 @@ public class RolapConnectionTest extends TestCase {
                 properties.put(
                     RolapConnectionProperties.Locale.name(),
                     localeName);
-                return DriverManager.getConnection(properties, null, true);
+                return DriverManager.getConnection(properties, null);
             }
         };
         if (isQuery) {

@@ -11,6 +11,7 @@ package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.util.Format;
+import mondrian.rolap.RolapConnectionProperties;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -79,10 +80,11 @@ public class I18nTest extends FoodMartTestCase {
     }
 
     private void assertFormatNumber(String localeName, String resultString) {
-        String connectString =
-            TestContext.getConnectString() + ";Locale=" + localeName;
+        Util.PropertyList properties =
+            TestContext.instance().getFoodMartConnectionProperties();
+        properties.put(RolapConnectionProperties.Locale.name(), localeName);
         Connection connection =
-            DriverManager.getConnection(connectString, null, true);
+            DriverManager.getConnection(properties, null);
         Query query = connection.parseQuery(
             "WITH MEMBER [Measures].[Foo] AS ' 12345.67 ',\n" +
                 " FORMAT_STRING='#,###.00'\n" +

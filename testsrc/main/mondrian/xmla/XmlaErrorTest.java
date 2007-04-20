@@ -10,29 +10,25 @@
 package mondrian.xmla;
 
 import mondrian.olap.Util;
-import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.test.DiffRepository;
 import mondrian.tui.MockHttpServletRequest;
 import mondrian.tui.MockHttpServletResponse;
 import mondrian.tui.XmlaSupport;
 import mondrian.util.Base64;
+import mondrian.rolap.RolapConnectionProperties;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Test of the XMLA Fault generation - errors occur/are-detected in
@@ -54,10 +50,6 @@ public class XmlaErrorTest extends XmlaBaseTestCase
 
     private static final boolean DEBUG = false;
 
-    private static String AUTHORIZATION = XmlaRequestCallback.AUTHORIZATION;
-    private static String EXPECT = XmlaRequestCallback.EXPECT;
-    private static String EXPECT_100_CONTINUE = XmlaRequestCallback.EXPECT_100_CONTINUE;
-
     static boolean doAuthorization = false;
     static String user = null;
     static String password = null;
@@ -66,10 +58,11 @@ public class XmlaErrorTest extends XmlaBaseTestCase
         return (s1 == s2) ||
             ((s1 != null) && (s2 != null) && (s1.equals(s2)));
     }
-    static class CallBack implements XmlaRequestCallback {
+
+    static class Callback implements XmlaRequestCallback {
         static String MY_SESSION_ID = "my_session_id";
 
-        CallBack() {
+        Callback() {
         }
 
         public void init(ServletConfig servletConfig) throws ServletException {
@@ -165,16 +158,13 @@ System.out.println("password=" +password);
                 Element[] requestSoapParts,
                 Map<String, String> context) throws Exception {
 
-            if (XmlaExcelXPTest.sessionId == null) {
-                makeSessionId();
-            }
-            context.put(MY_SESSION_ID, XmlaExcelXPTest.sessionId);
-
+            context.put(MY_SESSION_ID, getSessionId("XmlaExcelXPTest", Action.CREATE));
         }
 
         public String generateSessionId(Map<String, String> context) {
-            return (String) context.get(MY_SESSION_ID);
+            return context.get(MY_SESSION_ID);
         }
+
         public void postAction(
                     HttpServletRequest request,
                     HttpServletResponse response,
@@ -184,7 +174,7 @@ System.out.println("password=" +password);
     }
 
     static Element[] getChildElements(Node node) {
-        List list = new ArrayList();
+        List<Node> list = new ArrayList<Node>();
 
         NodeList nlist = node.getChildNodes();
         int len = nlist.getLength();
@@ -195,7 +185,7 @@ System.out.println("password=" +password);
             }
         }
 
-        return (Element[]) list.toArray(new Element[0]);
+        return list.toArray(new Element[0]);
     }
     static CharacterData getCharacterData(Node node) {
         NodeList nlist = node.getChildNodes();
@@ -211,8 +201,8 @@ System.out.println("password=" +password);
     }
     static String getNodeContent(Node n) {
         CharacterData cd = getCharacterData(n);
-        return (cd instanceof CharacterData)
-            ? ((CharacterData)cd).getData()
+        return (cd != null)
+            ? cd.getData()
             : null;
     }
 
@@ -354,25 +344,7 @@ System.out.println("password=" +password);
 
     }
 
-    static int sessionIdCounter = 1000;
-    static String sessionId = null;
-
     private static PrintStream systemErr;
-
-    protected static void makeSessionId() {
-        int id = XmlaExcelXPTest.sessionIdCounter++;
-        StringBuilder buf = new StringBuilder();
-        buf.append("XmlaExcelXPTest-");
-        buf.append(id);
-        buf.append("-foo");
-        String sessionId = buf.toString();
-
-        // set class sessionid
-        XmlaExcelXPTest.sessionId = sessionId;
-    }
-
-    protected Servlet servlet;
-    protected String[][] catalogNameUrls = null;
 
     public XmlaErrorTest() {
     }
@@ -386,46 +358,35 @@ System.out.println("password=" +password);
         // intentionally, squelch the ones that SAX produces on stderr
         systemErr = System.err;
         System.setErr(new PrintStream(new ByteArrayOutputStream()));
-        
-        makeServlet();
+
+        makeServlet(getTestContext());
     }
+
     protected void tearDown() throws Exception {
         // Restore stderr
         System.setErr(systemErr);
     }
-    
+
     protected DiffRepository getDiffRepos() {
         return DiffRepository.lookup(XmlaErrorTest.class);
     }
 
-    protected void makeServlet()
-            throws IOException, ServletException, SAXException {
+    protected Class<? extends XmlaRequestCallback> getServletCallbackClass() {
+        return Callback.class;
+    }
 
-        XmlaExcelXPTest.sessionId = null;
-
-        String connectString = getConnectionString();
-        String[][] catalogNameUrls = getCatalogNameUrls();
-        servlet = XmlaSupport.makeServlet(connectString, catalogNameUrls, CallBack.class.getName());
-    }
-    public TestContext getTestContext() {
-        return TestContext.instance();
-    }
-    protected String getConnectionString() {
-        return getTestContext().getConnectString();
-    }
-    protected String[][] getCatalogNameUrls() {
+    protected Map<String, String> getCatalogNameUrls(TestContext testContext) {
         if (catalogNameUrls == null) {
-            String connectString = getConnectionString();
+            String connectString = testContext.getConnectString();
             Util.PropertyList connectProperties =
                         Util.parseConnectString(connectString);
-            String catalog = connectProperties.get("catalog");
-            catalogNameUrls = new String[][] {
-                { "TestCatalog", catalog }
-            };
+            String catalog = connectProperties.get(
+                RolapConnectionProperties.Catalog.name());
+            catalogNameUrls = new TreeMap<String, String>();
+            catalogNameUrls.put("FoodMart", catalog);
         }
         return catalogNameUrls;
     }
-
 
     /////////////////////////////////////////////////////////////////////////
     // tests
@@ -583,8 +544,8 @@ System.out.println("password=" +password);
         req.setContentType("text/xml");
 
         req.setAuthType(HttpServletRequest.BASIC_AUTH);
-        req.setHeader(AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
-        req.setHeader(AUTHORIZATION, "FOOBAR");
+        req.setHeader(XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
+        req.setHeader(XmlaRequestCallback.AUTHORIZATION, "FOOBAR");
 
         try {
             doTest(req, expectedFault);
@@ -608,7 +569,7 @@ System.out.println("password=" +password);
         req.setContentType("text/xml");
 
         req.setAuthType(HttpServletRequest.BASIC_AUTH);
-        req.setHeader(AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
+        req.setHeader(XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
 
         String user = "MY_USER";
         String password = "MY_PASSWORD";
@@ -617,11 +578,11 @@ System.out.println("password=" +password);
         String credential = user + ':' + password;
         String encoded = Base64.encodeBytes(credential.getBytes());
 
-        req.setHeader(AUTHORIZATION, encoded);
+        req.setHeader(XmlaRequestCallback.AUTHORIZATION, encoded);
 
         try {
             doTest(req, expectedFault);
-            req.setHeader(EXPECT, EXPECT_100_CONTINUE);
+            req.setHeader(XmlaRequestCallback.EXPECT, XmlaRequestCallback.EXPECT_100_CONTINUE);
 if (DEBUG) {
 System.out.println("DO IT AGAIN");
 }
@@ -654,17 +615,16 @@ System.out.println("DO IT AGAIN");
         req.setContentType("text/xml");
 
         req.setAuthType(HttpServletRequest.BASIC_AUTH);
-        req.setHeader(AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
+        req.setHeader(XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
 
         String user = "MY_USER";
         String password = "MY_PASSWORD";
         XmlaErrorTest.user = user + "FOO";
         XmlaErrorTest.password = password;
         String credential = user + ':' + password;
-        String encodedStr = Base64.encodeBytes(credential.getBytes());
-        String encoded = encodedStr;
+        String encoded = Base64.encodeBytes(credential.getBytes());
 
-        req.setHeader(AUTHORIZATION, encoded);
+        req.setHeader(XmlaRequestCallback.AUTHORIZATION, encoded);
 
         try {
             doTest(req, expectedFault);
@@ -696,7 +656,7 @@ System.out.println("DO IT AGAIN");
         req.setContentType("text/xml");
 
         req.setAuthType(HttpServletRequest.BASIC_AUTH);
-        req.setHeader(AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
+        req.setHeader(XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
 
         String user = "MY_USER";
         String password = "MY_PASSWORD";
@@ -705,7 +665,7 @@ System.out.println("DO IT AGAIN");
         String credential = user + ':' + password;
         String encoded = Base64.encodeBytes(credential.getBytes());
 
-        req.setHeader(AUTHORIZATION, encoded);
+        req.setHeader(XmlaRequestCallback.AUTHORIZATION, encoded);
 
         try {
             doTest(req, expectedFault);
@@ -932,7 +892,7 @@ System.out.println("DO IT AGAIN");
         res.setCharacterEncoding("UTF-8");
 
         if (servlet == null) {
-            makeServlet();
+            makeServlet(getTestContext());
         }
 
         servlet.service(req, res);
@@ -954,8 +914,8 @@ if (DEBUG) {
 System.out.println("Got CONTINUE");
 }
 
-            req.clearHeader(EXPECT);
-            req.clearHeader(AUTHORIZATION);
+            req.clearHeader(XmlaRequestCallback.EXPECT);
+            req.clearHeader(XmlaRequestCallback.AUTHORIZATION);
             doAuthorization = false;
 
             servlet.service(req, res);
@@ -982,7 +942,7 @@ if (DEBUG) {
 System.out.println("reqFileName="+reqFileName);
 }
         if (servlet == null) {
-            makeServlet();
+            makeServlet(getTestContext());
         }
         // do SOAP-XMLA
         byte[] bytes = XmlaSupport.processSoapXmla(requestText, servlet);
@@ -1012,6 +972,10 @@ System.out.println("expectedFault="+expectedFault);
 }
             fault.checkSame(expectedFault);
         }
+    }
+
+    protected String getSessionId(Action action) {
+        return getSessionId("XmlaExcelXPTest", action);
     }
 }
 

@@ -34,6 +34,7 @@ import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
 import mondrian.util.UtilCompatible;
+import mondrian.util.Pair;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -733,7 +734,7 @@ public class Util extends XOMUtil {
         }
         return null;
     }
-    
+
     /**
      * Converts an olap element (dimension, hierarchy, level or member) into
      * an expression representing a usage of that element in an MDX statement.
@@ -1268,8 +1269,8 @@ public class Util extends XOMUtil {
      * <code>PropertyList</code> is an order-preserving list of key-value
      * pairs. Lookup is case-insensitive, but the case of keys is preserved.
      */
-    public static class PropertyList {
-        List<String[]> list = new ArrayList<String[]>();
+    public static class PropertyList implements Iterable<Pair<String, String>> {
+        List<Pair<String, String>> list = new ArrayList<Pair<String, String>>();
 
         public String get(String key) {
             return get(key, null);
@@ -1277,9 +1278,9 @@ public class Util extends XOMUtil {
 
         public String get(String key, String defaultValue) {
             for (int i = 0, n = list.size(); i < n; i++) {
-                String[] pair = list.get(i);
-                if (pair[0].equalsIgnoreCase(key)) {
-                    return pair[1];
+                Pair<String, String> pair = list.get(i);
+                if (pair.left.equalsIgnoreCase(key)) {
+                    return pair.right;
                 }
             }
             return defaultValue;
@@ -1287,46 +1288,48 @@ public class Util extends XOMUtil {
 
         public String put(String key, String value) {
             for (int i = 0, n = list.size(); i < n; i++) {
-                String[] pair = list.get(i);
-                if (pair[0].equalsIgnoreCase(key)) {
-                    String old = pair[1];
+                Pair<String, String> pair = list.get(i);
+                if (pair.left.equalsIgnoreCase(key)) {
+                    String old = pair.right;
                     if (key.equalsIgnoreCase("Provider")) {
                         // Unlike all other properties, later values of
                         // "Provider" do not supersede
                     } else {
-                        pair[1] = value;
+                        pair.right = value;
                     }
                     return old;
                 }
             }
-            list.add(new String[] {key, value});
+            list.add(new Pair<String, String>(key, value));
             return null;
         }
 
         public String toString() {
             StringBuilder sb = new StringBuilder(64);
             for (int i = 0, n = list.size(); i < n; i++) {
-                String[] pair = list.get(i);
+                Pair<String, String> pair = list.get(i);
                 if (i > 0) {
                     sb.append("; ");
                 }
-                sb.append(pair[0]);
+                sb.append(pair.left);
                 sb.append('=');
 
-                if (pair[1] == null) {
+                final String right = pair.right;
+                if (right == null) {
                     sb.append("'null'");
                 } else {
                     /*
                      * Quote a property value if is has a semi colon in it
                      * 'xxx;yyy';
                      */
-                    if (pair[1].indexOf(';') >= 0 && pair[1].charAt(0) != '\'') {
+                    if (right.indexOf(';') >= 0 && right.charAt(0) != '\'') {
                         sb.append("'");
                     }
 
-                    sb.append(pair[1]);
+                    sb.append(right);
 
-                    if (pair[1].indexOf(';') >= 0 && pair[1].charAt(pair[1].length() - 1) != '\'') {
+                    if (right.indexOf(';') >= 0 && right.charAt(
+                        right.length() - 1) != '\'') {
                         sb.append("'");
                     }
                 }
@@ -1335,7 +1338,7 @@ public class Util extends XOMUtil {
             return sb.toString();
         }
 
-        public Iterator<String[]> iterator() {
+        public Iterator<Pair<String, String>> iterator() {
             return list.iterator();
         }
     }

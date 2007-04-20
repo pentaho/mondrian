@@ -32,7 +32,7 @@ public class RolapSchemaReaderTest extends TestCase {
 
         properties.put(RolapConnectionProperties.Role.name(), "No HR Cube");
 
-        Connection connection = DriverManager.getConnection(properties, null, true);
+        Connection connection = DriverManager.getConnection(properties, null);
 
         try {
             SchemaReader reader = connection.getSchemaReader();

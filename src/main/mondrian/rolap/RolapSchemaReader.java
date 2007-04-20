@@ -193,6 +193,10 @@ public abstract class RolapSchemaReader implements SchemaReader {
         boolean approximate,
         boolean materialize)
     {
+        if (!this.role.canAccess(level)) {
+            return 1;
+        }
+
         int rowCount = Integer.MIN_VALUE;
         if (approximate) {
             // See if the schema has an approximation.

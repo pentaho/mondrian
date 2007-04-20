@@ -42,7 +42,7 @@ public class StandAlone {
         long now = System.currentTimeMillis();
 //        java.sql.DriverManager.setLogWriter(new PrintWriter(System.err));
 
-        cxn = DriverManager.getConnection(ConnectionString, null, true);
+        cxn = DriverManager.getConnection(ConnectionString, null);
 
         System.out.println("Connected in " + (System.currentTimeMillis() - now) + " usec");
         processCommands();
@@ -294,7 +294,7 @@ public class StandAlone {
             }
 
             cxn.close();
-            cxn = DriverManager.getConnection(ConnectionString, null, true);
+            cxn = DriverManager.getConnection(ConnectionString, null);
         }
         else if (line.equals("\\cp")) {
             System.out.print("Enter cell property: ");

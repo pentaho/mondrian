@@ -12,24 +12,18 @@
 package mondrian.xmla;
 
 import mondrian.olap.Util;
-import mondrian.test.TestContext;
 import mondrian.test.DiffRepository;
 import mondrian.tui.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
-import org.xml.sax.SAXException;
 import org.custommonkey.xmlunit.XMLAssert;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.Servlet;
-
 
 /**
  * Test suite for compatibility of Mondrian XMLA with Excel 2000.
@@ -42,12 +36,7 @@ import javax.servlet.Servlet;
  */
 public class XmlaExcel2000Test extends XmlaBaseTestCase {
 
-    private static String EXPECT = XmlaRequestCallback.EXPECT;
-    private static String EXPECT_100_CONTINUE = XmlaRequestCallback.EXPECT_100_CONTINUE;
-
     private static final boolean DEBUG = false;
-    // session id properpty
-    public static final String SESSION_ID_PROP     = "session.id";
 
     public XmlaExcel2000Test() {
         super();
@@ -60,12 +49,12 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         return "excel_2000_"+ nos + "_out.xml";
     }
 
-    protected String getSessionId() {
-        return sessionId;
-    }
-
     protected DiffRepository getDiffRepos() {
         return DiffRepository.lookup(XmlaExcel2000Test.class);
+    }
+
+    protected Class<? extends XmlaRequestCallback> getServletCallbackClass() {
+        return Callback.class;
     }
 
     protected String generateExpectedString(String nos, Properties props)
@@ -75,8 +64,9 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         String expectedStr = fileToString(expectedFileName);
         if (props != null) {
             // YES, duplicate the above
-            if (getSessionId() != null) {
-                props.put(SESSION_ID_PROP, getSessionId());
+            String sessionId = getSessionId(Action.QUERY);
+            if (sessionId != null) {
+                props.put(SESSION_ID_PROP, sessionId);
             }
             expectedStr = Util.replaceProperties(
                 expectedStr, Util.toMap(props));
@@ -84,9 +74,10 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         return expectedStr;
     }
 
-    static class CallBack implements XmlaRequestCallback {
-        static String MY_SESSION_ID = "my_session_id";
-        CallBack() {
+    static class Callback implements XmlaRequestCallback {
+        static final String MY_SESSION_ID = "my_session_id";
+
+        Callback() {
         }
 
         public void init(ServletConfig servletConfig) throws ServletException {
@@ -115,17 +106,13 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
                 Map<String, String> context) throws Exception {
         }
 
-        private void setSessionId(Map context) {
-            if (XmlaExcel2000Test.sessionId == null) {
-                makeSessionId();
-            }
-
-            context.put(MY_SESSION_ID, XmlaExcel2000Test.sessionId);
+        private void setSessionId(Map<String, String> context) {
+            context.put(MY_SESSION_ID, getSessionId("XmlaExcel2000Test", Action.CREATE));
         }
 
         public String generateSessionId(Map<String, String> context) {
             setSessionId(context);
-            return (String) context.get(MY_SESSION_ID);
+            return context.get(MY_SESSION_ID);
         }
         public void postAction(
                     HttpServletRequest request,
@@ -133,61 +120,6 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
                     byte[][] responseSoapParts,
                     Map<String, String> context) throws Exception {
         }
-    }
-
-    static int sessionIdCounter = 1000;
-    static String sessionId = null;
-
-    protected static void makeSessionId() {
-        int id = XmlaExcel2000Test.sessionIdCounter++;
-        StringBuilder buf = new StringBuilder();
-        buf.append("XmlaExcel2000Test-");
-        buf.append(id);
-        buf.append("-foo");
-        String sessionId = buf.toString();
-
-        // set class sessionid
-        XmlaExcel2000Test.sessionId = sessionId;
-    }
-
-
-    protected Servlet servlet;
-    protected String[][] catalogNameUrls = null;
-
-    protected void setUp() throws Exception {
-        makeServlet();
-    }
-    protected void tearDown() throws Exception {
-    }
-    protected void makeServlet()
-            throws IOException, ServletException, SAXException {
-
-        XmlaExcel2000Test.sessionId = null;
-
-        String connectString = getConnectionString();
-        String[][] catalogNameUrls = getCatalogNameUrls();
-        servlet = XmlaSupport.makeServlet(connectString, catalogNameUrls, CallBack.class.getName());
-    }
-
-
-    public TestContext getTestContext() {
-        return TestContext.instance();
-    }
-
-    protected String getConnectionString() {
-        return getTestContext().getConnectString();
-    }
-    protected String[][] getCatalogNameUrls() {
-        if (catalogNameUrls == null) {
-            String connectString = getConnectionString();
-            Util.PropertyList connectProperties =
-                        Util.parseConnectString(connectString);
-            String catalog = connectProperties.get("catalog");
-            catalogNameUrls = new String[][] {
-                { "FoodMart", catalog }
-            };
-        }
-        return catalogNameUrls;
     }
 
     // good 3/26
@@ -268,9 +200,7 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
     protected void helperTest(String nos, boolean doSessionId)
             throws Exception {
         if (doSessionId) {
-            if (XmlaExcel2000Test.sessionId == null) {
-                makeSessionId();
-            }
+            Util.discard(getSessionId(Action.CREATE));
         }
         Properties props = new Properties();
         doTest(nos, props);
@@ -300,14 +230,12 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
     protected void helperTestExpect(String nos, boolean doSessionId)
             throws Exception {
         if (doSessionId) {
-            if (XmlaExcel2000Test.sessionId == null) {
-                makeSessionId();
-            }
+            Util.discard(getSessionId(Action.CREATE));
         }
         MockHttpServletRequest req = new MockHttpServletRequest();
         req.setMethod("POST");
         req.setContentType("text/xml");
-        req.setHeader(EXPECT, EXPECT_100_CONTINUE);
+        req.setHeader(XmlaRequestCallback.EXPECT, XmlaRequestCallback.EXPECT_100_CONTINUE);
 
         Properties props = new Properties();
         doTest(req, nos, props);
@@ -326,7 +254,7 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         res.setCharacterEncoding("UTF-8");
 
         if (servlet == null) {
-            makeServlet();
+            makeServlet(getTestContext());
         }
 
         servlet.service(req, res);
@@ -345,7 +273,7 @@ if (DEBUG) {
 System.out.println("Got CONTINUE");
 }
 
-            req.clearHeader(EXPECT);
+            req.clearHeader(XmlaRequestCallback.EXPECT);
             req.setBodyContent(requestText);
 
             servlet.service(req, res);
@@ -371,7 +299,7 @@ System.out.println("Got CONTINUE");
         Document reqDoc = XmlUtil.parseString(requestText);
 
         if (servlet == null) {
-            makeServlet();
+            makeServlet(getTestContext());
         }
         byte[] bytes = XmlaSupport.processSoapXmla(reqDoc, servlet);
 
@@ -406,6 +334,10 @@ System.out.println("XXXXXXX");
         XMLAssert.assertXMLEqual(expectedStr, gotStr);
     }
 
+    protected String getSessionId(Action action) {
+        return getSessionId("XmlaExcel2000Test", action);
+    }
+
     protected String generateRequestString(String nos, Properties props)
             throws Exception {
         String reqFileName = "excel_2000_" + nos + "_in.xml";
@@ -415,8 +347,9 @@ System.out.println("reqFileName="+reqFileName);
         String requestText = fileToString(reqFileName);
 
         if (props != null) {
-            if (XmlaExcel2000Test.sessionId != null) {
-                props.put(SESSION_ID_PROP, XmlaExcel2000Test.sessionId);
+            String sessionId = getSessionId(Action.QUERY);
+            if (sessionId != null) {
+                props.put(SESSION_ID_PROP, sessionId);
             }
             requestText = Util.replaceProperties(
                 requestText, Util.toMap(props));

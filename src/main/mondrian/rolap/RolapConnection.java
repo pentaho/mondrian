@@ -15,6 +15,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.util.MemoryMonitor;
 import mondrian.util.MemoryMonitorFactory;
+import mondrian.util.Pair;
 import mondrian.rolap.agg.AggregationManager;
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DataSourceConnectionFactory;
@@ -34,7 +35,7 @@ import java.util.*;
  * A <code>RolapConnection</code> is a connection to a Mondrian OLAP Server.
  *
  * <p>Typically, you create a connection via
- * {@link DriverManager#getConnection(String, mondrian.spi.CatalogLocator, boolean)}.
+ * {@link DriverManager#getConnection(String, mondrian.spi.CatalogLocator)}.
  * {@link RolapConnectionProperties} describes allowable keywords.</p>
  *
  * @see RolapSchema
@@ -143,7 +144,7 @@ public class RolapConnection extends ConnectionBase {
                 final String strDataSource =
                     connectInfo.get(RolapConnectionProperties.DataSource.name());
                 final String connectionKey = jdbcConnectString +
-                getJDBCProperties(connectInfo).toString();
+                    getJdbcProperties(connectInfo).toString();
 
                 schema = RolapSchema.Pool.instance().get(
                     catalogUrl,
@@ -207,7 +208,7 @@ public class RolapConnection extends ConnectionBase {
         final String poolNeededString =
                 connectInfo.get(RolapConnectionProperties.PoolNeeded.name());
 
-        Properties jdbcProperties = getJDBCProperties(connectInfo);
+        Properties jdbcProperties = getJdbcProperties(connectInfo);
         String propertyString = jdbcProperties.toString();
         if (jdbcConnectString != null) {
             // Get connection through own pooling datasource
@@ -309,16 +310,19 @@ public class RolapConnection extends ConnectionBase {
      * connection properties present in the
      * {@link Util.PropertyList connectInfo}.
      *
-     * @param connectInfo
+     * @param connectInfo Connection properties
      * @return The JDBC connection properties.
      */
-    private static Properties getJDBCProperties(Util.PropertyList connectInfo) {
+    private static Properties getJdbcProperties(Util.PropertyList connectInfo) {
         Properties jdbcProperties = new Properties();
-        Iterator<String[]> iterator = connectInfo.iterator();
-        while (iterator.hasNext()) {
-            String[] entry = iterator.next();
-            if (entry[0].startsWith(RolapConnectionProperties.JdbcPropertyPrefix)) {
-                jdbcProperties.put(entry[0].substring(RolapConnectionProperties.JdbcPropertyPrefix.length()), entry[1]);
+        for (Pair<String,String> entry : connectInfo) {
+            if (entry.left.startsWith(
+                RolapConnectionProperties.JdbcPropertyPrefix))
+            {
+                jdbcProperties.put(
+                    entry.left.substring(
+                        RolapConnectionProperties.JdbcPropertyPrefix.length()),
+                    entry.right);
             }
         }
         return jdbcProperties;

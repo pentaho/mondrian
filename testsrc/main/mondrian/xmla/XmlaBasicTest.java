@@ -25,6 +25,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.util.Properties;
+import java.util.Map;
 
 import junit.framework.AssertionFailedError;
 
@@ -78,8 +79,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     private static final boolean DEBUG = false;
 
-    protected String[][] catalogNameUrls = null;
-
     public XmlaBasicTest() {
     }
 
@@ -95,6 +94,10 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     protected DiffRepository getDiffRepos() {
         return DiffRepository.lookup(XmlaBasicTest.class);
+    }
+
+    protected Class<? extends XmlaRequestCallback> getServletCallbackClass() {
+        return null;
     }
 
     protected Document fileToDocument(String filename)
@@ -134,59 +137,38 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         return responseText;
     }
 
-    public TestContext getTestContext() {
-        return TestContext.instance();
-    }
-
-    protected String getConnectionString() {
-        return getTestContext().getConnectString();
-    }
-
-    protected String[][] getCatalogNameUrls() {
-        if (catalogNameUrls == null) {
-            String connectString = getConnectionString();
-            Util.PropertyList connectProperties =
-                        Util.parseConnectString(connectString);
-            String catalog = connectProperties.get("catalog");
-            catalogNameUrls = new String[][] {
-                { "FoodMart", catalog }
-            };
-        }
-        return catalogNameUrls;
-    }
-
     /////////////////////////////////////////////////////////////////////////
     // DISCOVER
     /////////////////////////////////////////////////////////////////////////
 
     public void testDDatasource() throws Exception {
         String requestType = "DISCOVER_DATASOURCES";
-        doTestRT(requestType);
+        doTestRT(requestType, TestContext.instance());
     }
 
     public void testDEnumerators() throws Exception {
         String requestType = "DISCOVER_ENUMERATORS";
-        doTestRT(requestType);
+        doTestRT(requestType, TestContext.instance());
     }
 
     public void testDKeywords() throws Exception {
         String requestType = "DISCOVER_KEYWORDS";
-        doTestRT(requestType);
+        doTestRT(requestType, TestContext.instance());
     }
 
     public void testDLiterals() throws Exception {
         String requestType = "DISCOVER_LITERALS";
-        doTestRT(requestType);
+        doTestRT(requestType, TestContext.instance());
     }
 
     public void testDProperties() throws Exception {
         String requestType = "DISCOVER_PROPERTIES";
-        doTestRT(requestType);
+        doTestRT(requestType, TestContext.instance());
     }
 
     public void testDSchemaRowsets() throws Exception {
         String requestType = "DISCOVER_SCHEMA_ROWSETS";
-        doTestRT(requestType);
+        doTestRT(requestType, TestContext.instance());
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -195,28 +177,28 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     public void testDBCatalogs() throws Exception {
         String requestType = "DBSCHEMA_CATALOGS";
-        doTestRT(requestType);
+        doTestRT(requestType, TestContext.instance());
     }
     // passes 2/25 - I think that this is good but not sure
     public void _testDBColumns() throws Exception {
         String requestType = "DBSCHEMA_COLUMNS";
-        doTestRT(requestType);
+        doTestRT(requestType, TestContext.instance());
     }
     // passes 2/25 - I think that this is good but not sure
     public void _testDBProviderTypes() throws Exception {
         String requestType = "DBSCHEMA_PROVIDER_TYPES";
-        doTestRT(requestType);
+        doTestRT(requestType, TestContext.instance());
     }
     // passes 2/25 - I think that this is good but not sure
     // Should this even be here
     public void _testDBTablesInfo() throws Exception {
         String requestType = "DBSCHEMA_TABLES_INFO";
-        doTestRT(requestType);
+        doTestRT(requestType, TestContext.instance());
     }
     // passes 2/25 - I think that this is good but not sure
     public void testDBTables() throws Exception {
         String requestType = "DBSCHEMA_TABLES";
-        doTestRT(requestType);
+        doTestRT(requestType, TestContext.instance());
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -232,7 +214,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(CATALOG_PROP, CATALOG);
         props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testMDSets() throws Exception {
@@ -244,7 +226,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(CATALOG_PROP, CATALOG);
         props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testMDimensions() throws Exception {
@@ -256,7 +238,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(CATALOG_PROP, CATALOG);
         props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testMDFunction() throws Exception {
@@ -270,7 +252,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(RESTRICTION_VALUE_PROP, restrictionValue);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
     // only make sure that something is returned
@@ -281,7 +263,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
     // good 2/25 : (partial implementation)
@@ -294,10 +276,9 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
-    // good 2/25 : (partial implementation)
     public void testMDLevels() throws Exception {
         String requestType = "MDSCHEMA_LEVELS";
 
@@ -311,7 +292,25 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(UNIQUE_NAME_ELEMENT, "DIMENSION_UNIQUE_NAME");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
+    }
+
+    public void testMDLevelsAccessControlled() throws Exception {
+        String requestType = "MDSCHEMA_LEVELS";
+
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CATALOG_NAME_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+        props.setProperty(UNIQUE_NAME_PROP, "[Customers]");
+        props.setProperty(UNIQUE_NAME_ELEMENT, "DIMENSION_UNIQUE_NAME");
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+
+        // TestContext which operates in a different Role.
+        TestContext testContext = TestContext.createInRole("California manager");
+        doTest(requestType, props, testContext);
     }
 
     public void testMDMeasures() throws Exception {
@@ -330,7 +329,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testMDMembers() throws Exception {
@@ -346,7 +345,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(UNIQUE_NAME_ELEMENT, "HIERARCHY_UNIQUE_NAME");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testMDProperties() throws Exception {
@@ -356,7 +355,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testApproxRowCountOverridesCountCallsToDatabase() throws Exception {
@@ -371,7 +370,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(UNIQUE_NAME_ELEMENT, "DIMENSION_UNIQUE_NAME");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testApproxRowCountInHierarchyOverridesCountCallsToDatabase() throws Exception {
@@ -386,7 +385,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(UNIQUE_NAME_ELEMENT, "DIMENSION_UNIQUE_NAME");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testDrillThrough() throws Exception {
@@ -402,7 +401,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testExecuteSlicer() throws Exception {
@@ -415,7 +414,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(FORMAT_PROP, FORMAT_MULTI_DIMENSIONAL);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, props);
+        doTest(requestType, props, TestContext.instance());
     }
 
     // Testcase for bug 1653587.
@@ -452,20 +451,21 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
        props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
        props.setProperty(FORMAT_PROP, FORMAT_MULTI_DIMENSIONAL);
        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
-       doTestInline(requestType, request, "${response}", props);
+       doTestInline(
+           requestType, request, "${response}", props, TestContext.instance());
    }
 
     /*
      * NOT IMPLEMENTED MDSCHEMA_SETS_out.xml
      */
 
-    public void doTestRT(String requestType) throws Exception {
+    public void doTestRT(String requestType, TestContext testContext) throws Exception {
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, props);
+        doTest(requestType, props, testContext);
     }
 
     /**
@@ -474,27 +474,32 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
      *
      * @param requestType Request type: "DISCOVER_DATASOURCES", "EXECUTE", etc.
      * @param props Properties for request
+     * @param testContext Test context
      */
     public void doTest(
         String requestType,
-        Properties props) throws Exception {
+        Properties props,
+        TestContext testContext) throws Exception {
 
         String requestText = fileToString("request");
-        doTestInline(requestType, requestText, "${response}", props);
+        doTestInline(
+            requestType, requestText, "${response}", props, testContext);
     }
 
     public void doTestInline(
         String requestType,
         String requestText,
         String respFileName,
-        Properties props) throws Exception
+        Properties props,
+        TestContext testContext)
+        throws Exception
     {
         Document responseDoc = (respFileName != null)
             ? fileToDocument(respFileName)
             : null;
 
-        String connectString = getConnectionString();
-        String[][] catalogNameUrls = getCatalogNameUrls();
+        String connectString = testContext.getConnectString();
+        Map<String,String> catalogNameUrls = getCatalogNameUrls(testContext);
 
         Document expectedDoc;
 
@@ -505,8 +510,9 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
             ? XmlaSupport.transformSoapXmla(
                 responseDoc, new String[][] {{"content", "schemadata"}}, ns)
             : null;
-        doTests(requestText, props, null, connectString, catalogNameUrls,
-                expectedDoc, CONTENT_SCHEMADATA);
+        doTests(
+            requestText, props, null, connectString, catalogNameUrls,
+            expectedDoc, CONTENT_SCHEMADATA);
 
         if (requestType.equals("EXECUTE")) {
             return;
@@ -540,7 +546,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
             Properties props,
             String soapResponseText,
             String connectString,
-            String[][] catalogNameUrls,
+            Map<String, String> catalogNameUrls,
             Document expectedDoc,
             String content) throws Exception {
 
@@ -628,6 +634,10 @@ System.out.println("XXXXXXX");
 		Node parentNode = node.getParentNode();
 		parentNode.removeChild(node);
 	}
+
+    protected String getSessionId(Action action) {
+        throw new UnsupportedOperationException();
+    }
 }
 
 // End XmlaBasicTest.java

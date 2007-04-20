@@ -594,7 +594,7 @@ public class NamedSetTest extends FoodMartTestCase {
 
     public void testNamedSetAgainstCube() {
         final TestContext tc = new TestContext() {
-            public synchronized Connection getFoodMartConnection(boolean fresh) {
+            public synchronized Connection getFoodMartConnection() {
                 return getFoodMartConnection(NamedSetsInCubeProcessor.class);
             }
         };
@@ -670,7 +670,7 @@ public class NamedSetTest extends FoodMartTestCase {
 
     public void testNamedSetAgainstSchema() {
         final TestContext tc = new TestContext() {
-            public synchronized Connection getFoodMartConnection(boolean fresh) {
+            public synchronized Connection getFoodMartConnection() {
                 return getFoodMartConnection(NamedSetsInCubeAndSchemaProcessor.class);
             }
         };
@@ -772,7 +772,7 @@ public class NamedSetTest extends FoodMartTestCase {
     public void testNamedSetsMixedWithCalcMembers()
     {
         final TestContext tc = new TestContext() {
-            public synchronized Connection getFoodMartConnection(boolean fresh) {
+            public synchronized Connection getFoodMartConnection() {
                 return getFoodMartConnection(MixedNamedSetSchemaProcessor.class);
             }
         };
@@ -871,7 +871,7 @@ public class NamedSetTest extends FoodMartTestCase {
      */
     public void testNamedSetDependencies() {
         final TestContext tc = new TestContext() {
-            public synchronized Connection getFoodMartConnection(boolean fresh) {
+            public synchronized Connection getFoodMartConnection() {
                 return getFoodMartConnection(NamedSetsInCubeProcessor.class);
             }
         };

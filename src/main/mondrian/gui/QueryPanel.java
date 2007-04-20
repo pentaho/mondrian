@@ -264,7 +264,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 connectString = connectString + "JdbcPassword=" + se.getJdbcPassword() + ";";
             }
 
-            Connection con = DriverManager.getConnection(connectString, null, false);
+            Connection con = DriverManager.getConnection(connectString, null);
             if (con != null) {
                 connection = con;
                 queryMenuItem.setText(windowMenuIndex + " MDX - "+se.getSchemaFile().getName());

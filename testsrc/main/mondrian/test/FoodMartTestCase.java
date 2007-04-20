@@ -37,10 +37,6 @@ public class FoodMartTestCase extends TestCase {
     public FoodMartTestCase() {
     }
 
-    protected Connection getConnection(boolean fresh) {
-        return getTestContext().getFoodMartConnection(fresh);
-    }
-
     /**
      * Returns the test context. Override this method if you wish to use a
      * different source for your FoodMart connection.
@@ -77,7 +73,7 @@ public class FoodMartTestCase extends TestCase {
     }
 
     protected Connection getConnection() {
-        return getConnection(false);
+        return getTestContext().getFoodMartConnection();
     }
 
     /**

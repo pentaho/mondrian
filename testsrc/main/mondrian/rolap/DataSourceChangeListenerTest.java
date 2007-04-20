@@ -475,7 +475,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
     }
 
     SmartMemberReader getSmartMemberReader(String hierName) {
-        Connection con = super.getConnection(false);
+        Connection con = getTestContext().getFoodMartConnection();
         return getSmartMemberReader(con, hierName);
     }
 
@@ -488,7 +488,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
     }
 
     RolapStar getStar(String starName) {
-        Connection con = super.getConnection(false);
+        Connection con = getTestContext().getFoodMartConnection();
         return getStar(con, starName);
     }
     RolapStar getStar(Connection con, String starName) {

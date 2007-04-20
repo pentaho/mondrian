@@ -1108,7 +1108,7 @@ public class SqlQuery {
          * Returns whether the underlying database is Teradata.
          */
         public boolean isTeradata() {
-            return productName.toUpperCase().indexOf("SYBASE") >= 0;
+            return productName.toUpperCase().indexOf("TERADATA") >= 0;
         }
 
         // -- behaviors --

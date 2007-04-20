@@ -3000,7 +3000,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Time].[1997].[Q2].[5]")); // not parents
     }
 
-    /** 
+    /**
      * tests that a null passed in returns an empty set in range function
      */
     public void testNullRange() {
@@ -3016,7 +3016,7 @@ public class FunctionTest extends FoodMartTestCase {
         assertAxisThrows("NULL : NULL",
                 "Mondrian Error:Failed to parse query 'select {NULL : NULL} on columns from Sales'");
     }
-    
+
     /**
      * Large dimensions use a different member reader, therefore need to
      * be tested separately.
@@ -3758,7 +3758,7 @@ public class FunctionTest extends FoodMartTestCase {
                 + "from the same hierarchy. The level was from '[Store]' but "
                 + "the member was from '[Time]'.");
     }
-    
+
     /**
      * This tests new NULL functionality exception throwing
      *
@@ -4673,7 +4673,7 @@ public class FunctionTest extends FoodMartTestCase {
      */
     public void _testHierarchizeOrdinal() {
         final Connection connection =
-                TestContext.instance().getFoodMartConnection(false);
+                TestContext.instance().getFoodMartConnection();
         connection.getSchema().createCube(
                 fold(
                     "<Cube name=\"Sales_Hierarchize\">\n" +
@@ -7286,7 +7286,7 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
                         "{[Store].[All Stores].[USA]}\n" +
                         "Row #0: 266,773\n"));
     }
-    
+
     private static void printHtml(PrintWriter pw, String s) {
         final String escaped = StringEscaper.htmlEscaper.escapeString(s);
         pw.print(escaped);

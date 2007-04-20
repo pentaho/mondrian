@@ -13,6 +13,7 @@
 
 package mondrian.olap;
 
+import javax.sql.DataSource;
 import java.util.Locale;
 import java.io.PrintWriter;
 
@@ -114,6 +115,14 @@ public interface Connection {
      * @param pw Writer to which to write logging information; may be null
      */
     CacheControl getCacheControl(PrintWriter pw);
+
+    /**
+     * Returns the data source this connection uses to create connections
+     * to the underlying JDBC database.
+     *
+     * @return Data source
+     */
+    DataSource getDataSource();
 }
 
 // End Connection.java

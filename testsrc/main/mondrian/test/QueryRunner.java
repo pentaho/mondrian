@@ -20,6 +20,8 @@ import java.text.MessageFormat;
 /**
  * Thread which runs an MDX query and checks it against an expected result.
  * It is used for concurrency testing.
+ *
+ * @version $Id$
  */
 public class QueryRunner extends Thread {
     private long mRunTime;
@@ -222,7 +224,9 @@ public class QueryRunner extends Thread {
         mStartTime = System.currentTimeMillis();
 
         try {
-            Connection cxn = DriverManager.getConnection(StandAlone.ConnectionString, null, false);
+            Connection cxn =
+                DriverManager.getConnection(
+                    StandAlone.ConnectionString, null);
             int queryIndex = -1;
 
             while (System.currentTimeMillis() - mStartTime < mRunTime) {
@@ -240,7 +244,10 @@ public class QueryRunner extends Thread {
                     cxn.execute(query);
                     mSuccessCount++;
                 } catch (Exception e) {
-                    mExceptions.add(new Exception("Exception occurred on iteration " + queryIndex, e));
+                    mExceptions.add(
+                        new Exception(
+                            "Exception occurred on iteration " + queryIndex,
+                            e));
                 }
             }
             mStopTime = System.currentTimeMillis();

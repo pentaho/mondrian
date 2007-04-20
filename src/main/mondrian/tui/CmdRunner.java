@@ -674,14 +674,13 @@ public class CmdRunner {
      * @return mondrian Connection.
      */
     public synchronized Connection getConnection(boolean fresh) {
+        // FIXME: fresh is currently ignored.
         if (this.connectString == null) {
             makeConnectString();
         }
-        if (fresh) {
-            return DriverManager.getConnection(this.connectString, null, fresh);
-        } else if (this.connection == null) {
+        if (this.connection == null) {
             this.connection =
-                DriverManager.getConnection(this.connectString, null, fresh);
+                DriverManager.getConnection(this.connectString, null);
         }
         return this.connection;
     }
@@ -1151,9 +1150,8 @@ public class CmdRunner {
 
 
         String catalogURL = CmdRunner.getCatalogURLProperty();
-        String[][] catalogNameUrls = new String[][] {
-                            { CATALOG_NAME, catalogURL }
-                        };
+        Map<String, String> catalogNameUrls = new HashMap<String, String>();
+        catalogNameUrls.put(CATALOG_NAME, catalogURL);
 
         long start = System.currentTimeMillis();
 
@@ -1195,17 +1193,17 @@ public class CmdRunner {
 
 
         String catalogURL = CmdRunner.getCatalogURLProperty();
-        String[][] catalogNameUrls = new String[][] {
-                            { CATALOG_NAME, catalogURL }
-                        };
+        Map<String, String> catalogNameUrls = new HashMap<String, String>();
+        catalogNameUrls.put(CATALOG_NAME, catalogURL);
 
         long start = System.currentTimeMillis();
 
         byte[] bytes = null;
         try {
-            bytes = XmlaSupport.processXmla(file,
-                        getConnectString(),
-                        catalogNameUrls);
+            bytes = XmlaSupport.processXmla(
+                file,
+                getConnectString(),
+                catalogNameUrls);
 
         } finally {
             queryTime = (System.currentTimeMillis() - start);
@@ -1662,7 +1660,7 @@ public class CmdRunner {
                     commandLoop(new File(this.filename));
                 } catch (IOException ex) {
                     setError(ex);
-                    buf.append("Error: " +ex);
+                    buf.append("Error: ").append(ex);
                 }
             }
 
@@ -1778,9 +1776,7 @@ public class CmdRunner {
             List<FunInfo> funInfoList = funTable.getFunInfoList();
             List<FunInfo> matches = new ArrayList<FunInfo>();
 
-            Iterator<FunInfo> it = funInfoList.iterator();
-            while (it.hasNext()) {
-                FunInfo fi = it.next();
+            for (FunInfo fi : funInfoList) {
                 if (fi.getName().equalsIgnoreCase(funcname)) {
                     matches.add(fi);
                 }
@@ -1793,7 +1789,7 @@ public class CmdRunner {
                 buf.append(nl);
                 appendList(buf);
             } else {
-                it = matches.iterator();
+                Iterator<FunInfo> it = matches.iterator();
                 boolean doname = true;
                 while (it.hasNext()) {
                     FunInfo fi = it.next();
@@ -1814,9 +1810,9 @@ public class CmdRunner {
                         buf.append("NONE");
                         buf.append(nl);
                     } else {
-                        for (int i = 0; i < sigs.length; i++) {
+                        for (String sig : sigs) {
                             appendIndent(buf, 2);
-                            buf.append(sigs[i]);
+                            buf.append(sig);
                             buf.append(nl);
                         }
                     }
@@ -1899,12 +1895,11 @@ public class CmdRunner {
             String arg = tokens[1];
             int index = arg.indexOf('=');
             if (index == -1) {
-                String name = arg;
-                if (isParam(name)) {
-                    listParam(name, buf);
+                if (isParam(arg)) {
+                    listParam(arg, buf);
                 } else {
                     buf.append("Bad parameter name:");
-                    buf.append(name);
+                    buf.append(arg);
                     buf.append(nl);
                 }
             } else {
@@ -1974,8 +1969,7 @@ public class CmdRunner {
             int index = arg.indexOf('=');
             if (index == -1) {
                 // its a commnd
-                String command = arg;
-                executeCubeCommand(cubename, command, buf);
+                executeCubeCommand(cubename, arg, buf);
             } else {
                 String[] nv = arg.split("=");
                 String name = (nv.length == 0) ? null : nv[0];
@@ -2215,7 +2209,7 @@ public class CmdRunner {
 
                 } catch (Exception ex) {
                     setError(ex);
-                    buf.append("Error: " +ex);
+                    buf.append("Error: ").append(ex);
                 }
             }
         }
