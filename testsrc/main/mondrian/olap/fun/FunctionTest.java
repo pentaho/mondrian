@@ -2630,7 +2630,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #13: 27\n" +
                     "Row #14: $674.70\n" +
                     "Row #14: $674.54\n" +
-                    "Row #14: $676.25\n" +
+                    "Row #14: $676.26\n" +
                     "Row #14: $676.48\n" +
                     "Row #14: 201\n" +
                     "Row #14: 201\n" +

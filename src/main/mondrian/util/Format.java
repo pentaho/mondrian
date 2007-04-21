@@ -685,20 +685,8 @@ public class Format {
             if (i0 > 0) {
                 return false;
             }
-            for (int i = i0; i < fd.nDigits; ++i) {
-                final char digit = fd.digits[i];
-                if (i == i0) {
-                    if (digit > '5') {
-                        return true;
-                    }
-                    if (digit < '5') {
-                        return false;
-                    }
-                } else {
-                    if (digit > '0') {
-                        return true;
-                    }
-                }
+            if (fd.digits[0] >= '5') {
+                return true;
             }
             return false;
         }
@@ -3061,7 +3049,6 @@ static class FloatingDecimal {
             if (lastDigit < totalDigits) {
                 // We need to truncate -- also round if the trailing digits are
                 // 5000... or greater.
-                boolean trailingZeroes = true;
                 int m = totalDigits;
                 while (true) {
                     m--;
@@ -3079,14 +3066,10 @@ static class FloatingDecimal {
                     } else if (m == lastDigit) {
                         char d = digits2[m];
                         digits2[m] = '0';
-                        if (d < '5' ||
-                            d == '5' && trailingZeroes) {
+                        if (d < '5') {
                             break; // no need to round
                         }
                     } else if (m > lastDigit) {
-                        if (digits2[m] > '0') {
-                            trailingZeroes = false;
-                        }
                         digits2[m] = '0';
                     } else if (digits2[m] == '9') {
                         digits2[m] = '0';

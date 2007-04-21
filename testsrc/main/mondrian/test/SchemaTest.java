@@ -412,7 +412,7 @@ public class SchemaTest extends FoodMartTestCase {
                 "Row #0: 37,989\n" +
                 "Row #0: 1,389\n" +
                 "Row #0: 1,389\n" +
-                "Row #0: 694\n" +
+                "Row #0: 695\n" +
                 "Row #1: 34,623\n" +
                 "Row #1: 536\n" +
                 "Row #1: 536\n" +
@@ -420,7 +420,7 @@ public class SchemaTest extends FoodMartTestCase {
                 "Row #2: 62,603\n" +
                 "Row #2: 901\n" +
                 "Row #2: 901\n" +
-                "Row #2: 450\n"));
+                "Row #2: 451\n"));
     }
 
     /**

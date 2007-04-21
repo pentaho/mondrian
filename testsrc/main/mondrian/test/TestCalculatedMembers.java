@@ -454,7 +454,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                     "Row #0: Infinity\n" +
                     "Row #0: |0.1|style=red\n" +
                     "Row #0: Infinity\n" +
-                    "Row #0: |0.2|style=red\n"));
+                    "Row #0: |0.3|style=red\n"));
     }
 
     /**

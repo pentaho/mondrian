@@ -139,7 +139,7 @@ public class FormatTest extends TestCase {
     }
 
     public void testTrickyNumbers() {
-        checkFormat(null, new Double(40.385), "##0.0#", "40.38");
+        checkFormat(null, new Double(40.385), "##0.0#", "40.39");
         checkFormat(null, new Double(40.386), "##0.0#", "40.39");
         checkFormat(null, new Double(40.384), "##0.0#", "40.38");
         checkFormat(null, new Double(40.385), "##0.#", "40.4");
@@ -176,7 +176,7 @@ public class FormatTest extends TestCase {
         checkFormat(null, new Double(-0.00006), "#.0%", ".0%");
         checkFormat(null, new Double(-0.0006), "#.0%", "-.1%");
         checkFormat(null, new Double(-0.0004), "#.0%", ".0%");
-        checkFormat(null, new Double(-0.0005), "#.0%", ".0%");
+        checkFormat(null, new Double(-0.0005), "#.0%", "-.1%");
         checkFormat(null, new Double(-0.0005000001), "#.0%", "-.1%");
         checkFormat(null, new Double(-0.00006), "#.00%", "-.01%");
         checkFormat(null, new Double(-0.00004), "#.00%", ".00%");
@@ -188,6 +188,19 @@ public class FormatTest extends TestCase {
         checkFormat(null, new Double(-0.001), "0.##;(0.##);Nil", "Nil");
         checkFormat(null, new Double(-0.01), "0.##;(0.##);Nil", "(0.01)");
         checkFormat(null, new Double(-0.01), "0.##;(0.#);Nil", "Nil");
+    }
+    
+    public void testNumberRoundingBug() {
+        checkFormat(null, new Double(0.50), "0", "1");
+        checkFormat(null, new Double(-1.5), "0", "-2");
+        checkFormat(null, new Double(-0.50), "0", "-1");
+        checkFormat(null, new Double(-0.99999999), "0.0", "-1.0");
+        checkFormat(null, new Double (-0.45), "#.0", "-.5");
+        checkFormat(null, new Double (-0.45), "0", "0");
+        checkFormat(null, new Double(-0.49999), "0", "0");
+        checkFormat(null, new Double(-0.49999), "0.0", "-0.5");
+        checkFormat(null, new Double(0.49999), "0", "0");
+        checkFormat(null, new Double(0.49999), "#.0", ".5");       
     }
 
     public void testCurrencyBug() {
