@@ -91,7 +91,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             //jEditorPaneXML.setContentType("text/xml");
             //jEditorPaneXML = new JEditorPane("text/xml", "<h>jjo <nkl>sf</nkl>sdf </h>");
         } catch (Exception ex) {
-            LOGGER.error(ex);
+            LOGGER.error("SchemaExplorer", ex);
         }
 
         jEditorPaneXML.setLayout(new java.awt.BorderLayout());
@@ -211,7 +211,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
              */
 
         } catch (Exception ex) {
-            LOGGER.error(ex);
+            LOGGER.error("SchemaExplorer init error", ex);
         }
     }
 
@@ -3111,6 +3111,11 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                         } else {
                             addMeasureExp.setEnabled(false);
                         }
+                        jPopupMenu.add(jSeparator1);
+                        jPopupMenu.add(delete);
+                    } else if (pathSelected instanceof MondrianGuiDef.MeasureExpression) {
+                        jPopupMenu.add(addSQL);
+                        addSQL.setEnabled(true);
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
                     } else if (pathSelected instanceof MondrianGuiDef.Closure) {

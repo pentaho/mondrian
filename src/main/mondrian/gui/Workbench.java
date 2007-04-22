@@ -1170,7 +1170,8 @@ public class Workbench extends javax.swing.JFrame {
                     // this connection parses the catalog file which if invalid will throw exception
                     String connectString = "Provider=mondrian;" +
                             "Jdbc=" + jdbcConnectionUrl + ";" +
-                                "Catalog=" + file.toURL().toString() + ";";
+                                "Catalog=" + file.toURL().toString() + ";" +
+                                "JdbcDrivers=" + jdbcDriverClassName + ";";
 
                     if (jdbcUsername != null && jdbcUsername.length() > 0) {
                         connectString = connectString + "JdbcUser=" + jdbcUsername + ";";

@@ -181,7 +181,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
             setText(invalidFlag, "Member Grant");
             super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("memberGrant"))));
         } else if (value instanceof MondrianGuiDef.SQL) {
-            setText("SQL");
+            setText(invalidFlag, ((MondrianGuiDef.SQL) value).dialect);
             super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("sql"))));
         } else if (value instanceof MondrianGuiDef.View) {
             setText("View");
@@ -351,14 +351,15 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
             if (! isEmpty(l.levelType)) {
                 // empty leveltype is treated as default value of "Regular"" which is ok with standard/time dimension
                 if (parentDimension != null) {
-                    if ((isEmpty(parentDimension.type) || parentDimension.type.equals("StandardDimension")) &&
+                    if ((isEmpty(parentDimension.type) || parentDimension.type.equals("StandardDimension")) 
+                            && !isEmpty(l.levelType) &&
                             (! l.levelType.equals(MondrianGuiDef.Level._levelType_values[0]))) {
                      // if dimension type is 'standard' then leveltype should be 'regular'
                         return "levelType '"+l.levelType+"' can only be used with a TimeDimension.";
-                    }
-                    if ((parentDimension.type.equals("TimeDimension")) &&
-                     // if dimension type is 'time' then leveltype value could be 'timeyears', 'timedays' etc'
+                    } else if (!isEmpty(parentDimension.type) && (parentDimension.type.equals("TimeDimension")) && 
+                            !isEmpty(l.levelType) &&
                             (l.levelType.equals(MondrianGuiDef.Level._levelType_values[0]))) {
+                        // if dimension type is 'time' then leveltype value could be 'timeyears', 'timedays' etc'
                         return "levelType '"+l.levelType+"' can only be used with a StandardDimension.";
                     }
                 }
@@ -439,9 +440,11 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                 return  nameLiteral + emptyMsg;}
             if (isEmpty(((MondrianGuiDef.Measure) value).aggregator) ) {
                 return "aggregator" + emptyMsg;}
-            if (isEmpty(((MondrianGuiDef.Measure) value).column)   ) {
-                return "column" + emptyMsg;}
-            if (cube != null && cube.fact != null) {
+            if (((MondrianGuiDef.Measure) value).measureExp != null) {
+                // Measure expressions are OK
+            } else if (isEmpty(((MondrianGuiDef.Measure) value).column)   ) {
+                return "column" + emptyMsg;
+            } else if (cube != null && cube.fact != null) {
 
                 // database validity check, if database connection is successful
                 if (jdbcMetaData.getErrMsg() == null) {

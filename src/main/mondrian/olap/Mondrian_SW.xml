@@ -814,6 +814,7 @@
             <Value>max</Value>
             <Value>avg</Value>
             <Value>distinct count</Value>
+            <Value>distinct-count</Value>
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
