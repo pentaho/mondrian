@@ -1,0 +1,140 @@
+<html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == Copyright (C) 2005-2006 Julian Hyde
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  -->
+
+<head>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Embedding Mondrian</title>
+</head>
+<body>
+<!-- doc2web start -->
+
+<!-- page title -->
+<div class="contentheading">Embedding Mondrian in a Java Application</div>
+<!-- end page title -->
+
+<p>By Will Gorman; last updated April, 2007.</p>
+
+<hr noshade size="1">
+
+<p>This document shows a simple example of embedding mondrian in a java application.  The steps include downloading Mondrian, installing a database, writing a simple application, compiling the application, and running the application. </p>
+
+<h2>Setting up the Environment<a name="setting_up_the_environment">&nbsp;</a></h2>
+
+<p>First, you need to download mondrian. You can get the latest release
+from SourceForge.</p>
+
+<h3>Download the Latest Release<a name="Download_the_latest_source_release">&nbsp;</a></h3>
+
+<p>Download the latest <code>mondrian-<i>version</i>.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
+SourceForge</a>, and unzip. Now find the <code>mondrian-<i>version</i>-src.zip</code> 
+inside this distribution, and unzip it within the mondrian binary distribution under the "src" directory.</p>
+
+<h2>Installing the Database<a name="installing_the_database">&nbsp;</a></h2>
+
+<p>Before you run this simple example, you must 
+install the standard FoodMart dataset. This is described in the
+<a href="install.html#2_Set_up_test_data">installation guide</a>.</p>
+
+<h2>The Source Code<a name="the_source_code">&nbsp;</a></h2>
+<p>Here is a simple example of embedding mondrian in a java class.  A connection is retrieved, a query is generated and finally the query is executed.  Open the file SimpleEmbeddedExample.java in the main Mondrian directory and paste the contents below.</p>
+<blockquote>
+<code>
+import mondrian.olap.*;<br>
+import java.io.*;<br>
+<br>
+public class SimpleEmbeddedExample {<br>
+<br>
+&nbsp; public static void main(String args[]) {<br>
+<br>
+&nbsp;&nbsp;&nbsp; // First, set up a valid connection string<br>
+&nbsp;&nbsp;&nbsp; String connStr = "Provider=mondrian;" +<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "Catalog=demo/FoodMart.xml;" +<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "JdbcDrivers=com.mysql.jdbc.Driver;" +<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart;" +<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "jdbcUser=foodmart;" +<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "jdbcPassword=foodmart";<br>
+<br>
+&nbsp;&nbsp;&nbsp; // Second, set up a valid query string<br>
+&nbsp;&nbsp;&nbsp; String queryStr = "select " +<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "{[Measures].[Unit Sales]} on columns, " +<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "{[Store].[All Stores]} on rows " +<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "from [Sales]";<br>
+<br>
+&nbsp;&nbsp;&nbsp; // Third, retrieve a connection from the DriveManager<br>
+&nbsp;&nbsp;&nbsp; Connection connection = DriverManager.getConnection(connStr, null, true);<br>
+<br>
+&nbsp;&nbsp;&nbsp; // Fourth, generate a MDX Query object<br>
+&nbsp;&nbsp;&nbsp; Query query = connection.parseQuery(queryStr);<br>
+<br>
+&nbsp;&nbsp;&nbsp; // Fifth, execute the query<br>
+&nbsp;&nbsp;&nbsp; Result result = connection.execute(query);<br>
+<br>
+&nbsp;&nbsp;&nbsp; // Finally, print out the result<br>
+&nbsp;&nbsp;&nbsp; StringWriter sw = new StringWriter();<br>
+&nbsp;&nbsp;&nbsp; PrintWriter pw = new PrintWriter(sw);<br>
+&nbsp;&nbsp;&nbsp; result.print(pw);<br>
+&nbsp;&nbsp;&nbsp; pw.flush();<br>
+&nbsp;&nbsp;&nbsp; System.out.println(sw.toString());<br>
+&nbsp; }<br>
+<br>
+}<br>
+<br>
+</code>
+</blockquote>
+<p>Note that you should replace the specific jdbc information with your own JDBC connection properties.</p>
+<h2>Compiling the Example <a name="compiling_the_example">&nbsp;</a></h2>
+<p>To compile this example via the command line:</p>
+<blockquote>
+<code>
+javac -cp "lib/mondrian.jar" SimpleEmbeddedExample.java
+</code>
+</blockquote>
+
+<h2>Running the Example <a name="compiling the example">&nbsp;</a></h2>
+<p>Below is the java command line that will execute the SimpleEmbeddedExample class.  Note that you must replace $JDBC_DRIVER_JAR_LOCATION with the correct path to your specific JDBC driver.</p>
+<blockquote>
+<code>
+java -cp ".:src/lib/log4j-1.2.9.jar:src/lib/commons-dbcp.jar:src/lib/commons-pool.jar:src/lib/commons-collections.jar<br>
+:src/lib/commons-vfs.jar:src/lib/commons-logging.jar:src/lib/commons-math-1.0.jar:src/lib/javacup.jar<br>
+:src/lib/eigenbase-resgen.jar:src/lib/eigenbase-properties.jar:src/lib/eigenbase-xom.jar:lib/mondrian.jar<br>
+:$JDBC_DRIVER_JAR_LOCATION" SimpleEmbeddedExample
+</code>
+</blockquote>
+<p> You should see this output:</p>
+<blockquote>
+<code>
+log4j:WARN No appenders could be found for logger (mondrian.olap.MondrianProperties).<br>
+log4j:WARN Please initialize the log4j system properly.<br>
+Axis #0:<br>
+{}<br>
+Axis #1:<br>
+{[Measures].[Unit Sales]}<br>
+Axis #2:<br>
+{[Store].[All Stores]}<br>
+Row #0: 266,773<br>
+</code>
+</blockquote>
+<p>View <a href="api/mondrian/olap/Result.html">Mondrian's API</a> for more details on traversing the Result object.</p>
+
+<hr noshade size="1"/>
+<p>
+    Author: Will Gorman; last updated April, 2007.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/embedding_mondrian.html?ac=1">log&nbsp;</a>)<br/>
+    Copyright (C) 2005-2006 Julian Hyde
+</p>
+
+<br />
+
+<!-- doc2web end -->
+
+</body>
+</html>
