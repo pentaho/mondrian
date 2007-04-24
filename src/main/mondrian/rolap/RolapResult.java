@@ -920,6 +920,9 @@ class RolapResult extends ResultBase {
                 } catch (MondrianEvaluationException e) {
                     // ignore
 
+                 } catch (Error e) {
+                     // Errors indicate fatal JVM problems; do not discard
+                     throw e;
                 } catch (Throwable e) {
                     Util.discard(e);
                 }
