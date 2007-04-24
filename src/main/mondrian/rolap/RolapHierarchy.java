@@ -24,8 +24,7 @@ import mondrian.mdx.UnresolvedFunCall;
 
 import org.apache.log4j.Logger;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * <code>RolapHierarchy</code> implements {@link Hierarchy} for a ROLAP database.
@@ -450,9 +449,59 @@ public class RolapHierarchy extends HierarchyBase {
     }
 
     /**
+     * Adds a table to the FROM clause of the query.
+     * If <code>table</code> is not null, adds the table. Otherwise, add the
+     * relation on which this hierarchy is based on.
+     *
+     * <p> This method is idempotent: if you call it more than once, it only
+     * adds the table(s) to the FROM clause once.
+     *
+     * @param query Query to add the hierarchy to
+     * @param aliasedTableNameMap used to disambiguate table names when the
+     * hierarchy belongs to shared dimensions that are referenced in different
+     * cubes.
+     * @param table table to add to the query 
+     */
+    void addToFrom(
+        SqlQuery query, 
+        Map<String, RolapStar.Table> aliasedTableNameMap, 
+        RolapStar.Table table) {
+        if (relation == null) {
+            throw Util.newError(
+                    "cannot add hierarchy " + getUniqueName() +
+                    " to query: it does not have a <Table>, <View> or <Join>");
+        }
+        final boolean failIfExists = false;
+        MondrianDef.Relation subRelation = null;
+        if (table != null) {
+        	// Suppose relation is
+        	//   (((A join B) join C) join D)
+        	// and the fact table is
+        	//   F
+        	// and the table to add is C. We want to make the expression
+        	//   F left join ((A join B) join C).
+        	// Search for the smallest subset of the relation which
+        	// joins with C.
+            assert (aliasedTableNameMap != null);
+        	subRelation = relationSubset(relation, aliasedTableNameMap, table);
+        }
+        
+        if (subRelation == null) {
+            // If no table is found or specified, add the entire base relation.
+            subRelation = relation;
+        }
+        
+        query.addFrom(subRelation, null, failIfExists);
+    }
+
+    /**
      * Returns the smallest subset of <code>relation</code> which contains
      * the relation <code>alias</code>, or null if these is no relation with
      * such an alias.
+     * @param relation the relation in which to look for table by its alias
+     * @param alias table alias to search for
+     * @return the smallest containing relation or null if no matching table
+     * is found in <code>relation</code>
      */
     private static MondrianDef.Relation relationSubset(
         MondrianDef.Relation relation,
@@ -477,6 +526,96 @@ public class RolapHierarchy extends HierarchyBase {
         }
     }
 
+    /**
+     * Returns the smallest subset of <code>relation</code> which contains
+     * the table <code>targetTable</code>, or null if the targetTable is not
+     * one of the joining table in <code>relation</code>.
+     * 
+     * @param relation the relation in which to look for targetTable
+     * @param aliasedTableNameMap used to disambiguate table names when the
+     * hierarchy belongs to shared dimensions that are referenced in different
+     * cubes.
+     * @param targetTable table to add to the query
+     * @return the smallest containing relation or null if no matching table
+     * is found in <code>relation</code>
+     */
+    private static MondrianDef.Relation relationSubset(
+        MondrianDef.Relation relation,
+        Map<String, RolapStar.Table> aliasedTableNameMap,
+        RolapStar.Table targetTable) {
+    	if (relation instanceof MondrianDef.Table) {
+    		MondrianDef.Table table = (MondrianDef.Table) relation;
+    		if (table.name.equals(targetTable.getTableName())) {
+    			if (table.getAlias().equals(targetTable.getAlias())) {
+                    // return if table has the same alias.
+    				return relation;
+    			} else {
+                    // if alias is different, use the alias from targetTable
+    				return 
+    				new MondrianDef.Table(
+    						table.schema,
+    						table.name,
+    						targetTable.getAlias());
+    			}
+    		} else {
+                // not the same table if table names are different
+    			return null;
+    		}
+    	} else if (relation instanceof MondrianDef.Join) {
+            // Search inside relation, starting from the rightmost table,
+            // and move left along the join chain.
+    		MondrianDef.Join join = (MondrianDef.Join) relation;
+    		MondrianDef.Relation rightRelation = 
+    			relationSubset(join.right, aliasedTableNameMap, targetTable);
+    		if (rightRelation == null) {
+                // Keep search left.
+    			return relationSubset(
+                    join.left, aliasedTableNameMap, targetTable);
+    		} else {
+                // Found a match.
+                // Rewrite the sub-relation to the left(and including) using
+                // the correct aliases.
+    			return rewriteRelationWithAliases(join, aliasedTableNameMap);
+    		}
+    	}
+    	throw Util.newInternal("bad relation type " + relation);
+    }
+
+    /**
+     * Rewrite <code>relation</code> with aliases given by
+     * <code>aliasedTableNameMap</code>.
+     * 
+     * @param relation relation to rewrite
+     * @param aliasedTableNameMap aliases to use for the tables in 
+     * <code>relation</code>
+     * @return the rewritten relation
+     */
+    private static MondrianDef.Relation rewriteRelationWithAliases(
+        MondrianDef.Relation relation,
+        Map<String, RolapStar.Table> aliasedTableNameMap) {
+    	
+    	if (relation instanceof MondrianDef.Table) {
+    		String relationNames = relation.toString() + relation.getAlias();
+    		RolapStar.Table starTable = 
+                aliasedTableNameMap.get(relationNames);
+    		return new MondrianDef.Table(
+    				((MondrianDef.Table)relation).schema,
+    				((MondrianDef.Table)relation).name,
+    				starTable.getAlias());
+    	} else {
+    		MondrianDef.Join join = (MondrianDef.Join) relation;
+    		MondrianDef.Relation left = 
+                rewriteRelationWithAliases(join.left, aliasedTableNameMap);
+    		MondrianDef.Relation right = 
+                rewriteRelationWithAliases(join.right, aliasedTableNameMap);
+    		
+    		return
+    		new MondrianDef.Join(
+    				left.getAlias(), join.leftKey, left,
+    				right.getAlias(), join.rightKey, right);
+    	}
+    }
+    
     /**
      * Returns a member reader which enforces the access-control profile of
      * <code>role</code>.

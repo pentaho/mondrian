@@ -1547,7 +1547,26 @@ assert is not true.
                         new RolapStar.Condition(column,
                             hierarchyUsage.getJoinExp());
 
-                    table = table.addJoin(relation, joinCondition);
+                    // (rchen) potential bug?:
+                    // FACT table joins with tables in a hierarchy in the
+                    // order they appear in the schema definition, even though
+                    // the primary key for this hierarchy can by on a table
+                    // which is not the leftmost.
+                    // e.g.
+                    // <Dimension name="Product">
+                    // <Hierarchy hasAll="true" primaryKey="product_id" primaryKeyTable="product">
+                    //  <Join leftKey="product_class_id" rightKey="product_class_id">
+                    //    <Table name="product_class"/>
+                    //    <Table name="product"/>
+                    //  </Join>
+                    // </Hierarchy>
+                    // <?Dimension>
+                    //
+                    // when this hierarchy is used in any cube. The fact table is joined with
+                    // the dimension tables using this incorrect join condition:
+                    //   "fact"."foreignKey" = "product"."product_id" 
+                    
+                    table = table.addJoin(this, relation, joinCondition);
                 }
 
                 // The parent Column is used so that non-shared dimensions

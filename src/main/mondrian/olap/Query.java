@@ -141,18 +141,12 @@ public class Query extends QueryPart {
     private boolean nativeCrossJoinVirtualCube;
 
     /**
-     * Used for virtual cubes.  Contains the set of maps used to map the
-     * levels referenced in a virtual cube to the columns in the underlying
-     * base cubes.
+     * Used for virtual cubes.
+     * Maps a base cube to the map from the levels referenced in a virtual
+     * cube to the columns in the underlying base cubes.
      */
-    private Set<Map<RolapLevel, RolapStar.Column>> virtualCubeBaseCubeMaps;
-
-    /**
-     * Maps one of the level-to-column maps stored in
-     * virtualCubeBaseCubeMaps to a measure corresponding to the underlying
-     * cube that the level-to-column map corrsponds to
-     */
-    private Map<Map<RolapLevel, RolapStar.Column>, RolapMember> levelMapToMeasureMap;
+    private Map<RolapCube, Map<RolapLevel, RolapStar.Column>> 
+        baseCubeToLevelToColumnMap;
 
     /**
      * If true, loading schema
@@ -1059,37 +1053,18 @@ public class Query extends QueryPart {
      *
      * @param maps the set of maps to be saved
      */
-    public void setVirtualCubeBaseCubeMaps(Set<Map<RolapLevel, RolapStar.Column>> maps)
+    public void setBaseCubeToLevelToColumnMap(
+        Map<RolapCube, Map<RolapLevel, RolapStar.Column>> map)
     {
-        virtualCubeBaseCubeMaps = maps;
+        baseCubeToLevelToColumnMap = map;
     }
 
     /**
-     * @return the set of level to column maps associated with the virtual
-     * cube this query references
+     * @return the map from base cube to its associated level to column map
      */
-    public Set<Map<RolapLevel, RolapStar.Column>> getVirtualCubeBaseCubeMaps()
+    public Map<RolapCube, Map<RolapLevel, RolapStar.Column>> getBaseCubeToLevelToColumnMap()
     {
-        return virtualCubeBaseCubeMaps;
-    }
-
-    /**
-     * Saves away the map that maps a level-to-column map to a measure
-     *
-     * @param map map to be saved
-     */
-    public void setLevelMapToMeasureMap(
-        Map<Map<RolapLevel, RolapStar.Column>, RolapMember> map)
-    {
-        levelMapToMeasureMap = map;
-    }
-
-    /**
-     * @return the level-to-column-to-measure map
-     */
-    public Map<Map<RolapLevel, RolapStar.Column>, RolapMember> getLevelMapToMeasureMap()
-    {
-        return levelMapToMeasureMap;
+        return baseCubeToLevelToColumnMap;
     }
 
     public Object accept(MdxVisitor visitor) {

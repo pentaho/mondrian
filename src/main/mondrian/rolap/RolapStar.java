@@ -86,6 +86,14 @@ public class RolapStar {
     private final Map<RolapCube, Map<RolapLevel, Column>>
         cubeToLevelToColumnMapMap;
 
+    /**
+     * Maps {@link RolapCube} to a {@link HashMap} which maps {@link String}
+     * to {@link RolapStar.Table}. Again the indirection is required because
+     * shared hierarchies can be used in different cubes by different names.
+     */
+    private final Map<RolapCube, Map<String, RolapStar.Table>>
+    	cubeToRelationNamesToStarTableMapMap;
+
     /** Holds all global aggregations of this star. */
     private Map<BitKey,Aggregation> aggregations;
 
@@ -158,6 +166,8 @@ public class RolapStar {
 
         this.cubeToLevelToColumnMapMap =
             new HashMap<RolapCube, Map<RolapLevel, Column>>();
+        this.cubeToRelationNamesToStarTableMapMap =
+            new HashMap<RolapCube, Map<String, RolapStar.Table>>();
         this.aggregations = new HashMap<BitKey, Aggregation>();
         this.pendingAggregations = new HashMap<BitKey, Aggregation>();
 
@@ -302,6 +312,23 @@ public class RolapStar {
         return levelToColumnMap;
     }
 
+    /**
+     * Get the <String, Table> map associated with a cube.
+     * @param cube
+     * @return the <String, RolapStar.Table> map
+     */
+    Map<String, RolapStar.Table> getRelationNamesToStarTableMap(
+    		RolapCube cube) {
+        Map<String, RolapStar.Table> relationNamesToStarTableMap =
+            this.cubeToRelationNamesToStarTableMapMap.get(cube);
+        if (relationNamesToStarTableMap == null) {
+            relationNamesToStarTableMap = 
+            	new HashMap<String, RolapStar.Table>();
+            this.cubeToRelationNamesToStarTableMapMap.put(
+            		cube, relationNamesToStarTableMap);
+        }
+        return relationNamesToStarTableMap;
+    }
 
     /**
      * Sets whether to cache database aggregation information; if false, cache
@@ -1558,16 +1585,18 @@ public class RolapStar {
             return column;
         }
 
-
         /**
          * Extends this 'leg' of the star by adding <code>relation</code>
          * joined by <code>joinCondition</code>. If the same expression is
-         * already present, does not create it again.
+         * already present, does not create it again. Stores the level to
+         * column name mapping associated with the input <code>cube</code>. 
          */
-        synchronized Table addJoin(MondrianDef.Relation relation,
-                                   RolapStar.Condition joinCondition) {
+        synchronized Table addJoin(
+            RolapCube cube,
+            MondrianDef.Relation relation,
+            RolapStar.Condition joinCondition) {
             if (relation instanceof MondrianDef.Table ||
-                    relation instanceof MondrianDef.View) {
+                relation instanceof MondrianDef.View) {
                 RolapStar.Table starTable = findChild(relation, joinCondition);
                 if (starTable == null) {
                     starTable = new RolapStar.Table(star, relation, this,
@@ -1576,24 +1605,30 @@ public class RolapStar {
                         this.children = new ArrayList<Table>();
                     }
                     this.children.add(starTable);
+                    
+                    Map<String, RolapStar.Table> map = 
+                        star.getRelationNamesToStarTableMap(cube);
+                    String relationNames =
+                        relation.toString() + relation.getAlias();
+                    map.put(relationNames, starTable);
                 }
                 return starTable;
-
+                
             } else if (relation instanceof MondrianDef.Join) {
                 MondrianDef.Join join = (MondrianDef.Join) relation;
-                RolapStar.Table leftTable = addJoin(join.left, joinCondition);
+                RolapStar.Table leftTable = addJoin(cube, join.left, joinCondition);
                 String leftAlias = join.leftAlias;
                 if (leftAlias == null) {
                     leftAlias = join.left.getAlias();
                     if (leftAlias == null) {
                         throw Util.newError(
-                                "missing leftKeyAlias in " + relation);
+                            "missing leftKeyAlias in " + relation);
                     }
                 }
                 assert leftTable.findAncestor(leftAlias) == leftTable;
                 // switch to uniquified alias
                 leftAlias = leftTable.getAlias();
-
+                
                 String rightAlias = join.rightAlias;
                 if (rightAlias == null) {
                     
@@ -1608,16 +1643,16 @@ public class RolapStar {
                     }
                     if (rightAlias == null) {
                         throw Util.newError(
-                                "missing rightKeyAlias in " + relation);
+                            "missing rightKeyAlias in " + relation);
                     }
                 }
                 joinCondition = new RolapStar.Condition(
-                        new MondrianDef.Column(leftAlias, join.leftKey),
-                        new MondrianDef.Column(rightAlias, join.rightKey));
+                    new MondrianDef.Column(leftAlias, join.leftKey),
+                    new MondrianDef.Column(rightAlias, join.rightKey));
                 RolapStar.Table rightTable = leftTable.addJoin(
-                        join.right, joinCondition);
+                    cube, join.right, joinCondition);
                 return rightTable;
-
+                
             } else {
                 throw Util.newInternal("bad relation type " + relation);
             }

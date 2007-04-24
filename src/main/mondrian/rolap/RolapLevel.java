@@ -238,6 +238,41 @@ public class RolapLevel extends LevelBase {
         return captionExp;
     }
 
+    /**
+     * Return SQL expression for table column expression using the table 
+     * alias provided.
+     * @param sqlQuery sqlQuery context to generate SQL for
+     * @param levelToColumnMap maps level to table columns
+     * @param expr expression that references this level
+     * @return SQL string for the expression
+     */
+    public String getExpressionWithAlias(
+        SqlQuery sqlQuery,        
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        MondrianDef.Expression expr) 
+    {
+        if (expr instanceof MondrianDef.Column &&
+            levelToColumnMap != null) {
+            RolapStar.Column targetColumn = levelToColumnMap.get(this);
+            
+            if (targetColumn != null) {
+                String tableAlias = targetColumn.getTable().getAlias();
+                
+                if (tableAlias != null) {
+                    MondrianDef.Column col = 
+                        new MondrianDef.Column(
+                            tableAlias, 
+                            ((MondrianDef.Column)expr).getColumnName());
+                    return col.getExpression(sqlQuery);
+                }
+            }
+        }
+       
+        // If not column expression, or no way to map level to columns
+        // return the default SQL translation for this expression.
+        return expr.getExpression(sqlQuery);
+    }
+    
     public boolean hasCaptionColumn(){
         return captionExp != null;
     }
