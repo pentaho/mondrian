@@ -1550,7 +1550,7 @@ assert is not true.
                     // (rchen) potential bug?:
                     // FACT table joins with tables in a hierarchy in the
                     // order they appear in the schema definition, even though
-                    // the primary key for this hierarchy can by on a table
+                    // the primary key for this hierarchy can be on a table
                     // which is not the leftmost.
                     // e.g.
                     // <Dimension name="Product">
@@ -1560,11 +1560,13 @@ assert is not true.
                     //    <Table name="product"/>
                     //  </Join>
                     // </Hierarchy>
-                    // <?Dimension>
+                    // </Dimension>
                     //
-                    // when this hierarchy is used in any cube. The fact table is joined with
-                    // the dimension tables using this incorrect join condition:
-                    //   "fact"."foreignKey" = "product"."product_id" 
+                    // When this hierarchy is referenced in a cube, the fact 
+                    // table is joined with the dimension tables using this
+                    // incorrect join condition which assumes the leftmost
+                    // table produces the primaryKey:
+                    //   "fact"."foreignKey" = "product_class"."product_id" 
                     
                     table = table.addJoin(this, relation, joinCondition);
                 }

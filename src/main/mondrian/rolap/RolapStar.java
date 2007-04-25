@@ -1475,6 +1475,8 @@ public class RolapStar {
         /**
          * This is only called by RolapCube. If the RolapLevel has a non-null
          * name expression then two columns will be made, otherwise only one.
+         * Updates the RolapLevel to RolapStar.Column mapping associated with
+         * this cube.
          *
          * @param cube
          * @param level
@@ -1588,8 +1590,9 @@ public class RolapStar {
         /**
          * Extends this 'leg' of the star by adding <code>relation</code>
          * joined by <code>joinCondition</code>. If the same expression is
-         * already present, does not create it again. Stores the level to
-         * column name mapping associated with the input <code>cube</code>. 
+         * already present, does not create it again. Stores the unaliased
+         * table names to RolapStar.Table mapping associated with the 
+         * input <code>cube</code>. 
          */
         synchronized Table addJoin(
             RolapCube cube,

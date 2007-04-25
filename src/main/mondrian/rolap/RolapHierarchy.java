@@ -529,7 +529,8 @@ public class RolapHierarchy extends HierarchyBase {
     /**
      * Returns the smallest subset of <code>relation</code> which contains
      * the table <code>targetTable</code>, or null if the targetTable is not
-     * one of the joining table in <code>relation</code>.
+     * one of the joining table in <code>relation</code>. The returned
+     * relation also contains the correct table aliases.
      * 
      * @param relation the relation in which to look for targetTable
      * @param aliasedTableNameMap used to disambiguate table names when the
@@ -543,42 +544,61 @@ public class RolapHierarchy extends HierarchyBase {
         MondrianDef.Relation relation,
         Map<String, RolapStar.Table> aliasedTableNameMap,
         RolapStar.Table targetTable) {
-    	if (relation instanceof MondrianDef.Table) {
-    		MondrianDef.Table table = (MondrianDef.Table) relation;
-    		if (table.name.equals(targetTable.getTableName())) {
-    			if (table.getAlias().equals(targetTable.getAlias())) {
-                    // return if table has the same alias.
-    				return relation;
-    			} else {
-                    // if alias is different, use the alias from targetTable
-    				return 
-    				new MondrianDef.Table(
-    						table.schema,
-    						table.name,
-    						targetTable.getAlias());
-    			}
-    		} else {
-                // not the same table if table names are different
-    			return null;
-    		}
-    	} else if (relation instanceof MondrianDef.Join) {
+        MondrianDef.Relation relationSubset =
+            lookupRelationSubset(relation, aliasedTableNameMap, targetTable);
+        
+        if (relationSubset != null) {
+            // Found a containing relation subset.
+            // Rewrite the sub-relation containing the targetTable, using
+            // the correct aliases.
+            return rewriteRelationWithAliases(relationSubset,
+                aliasedTableNameMap);            
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the smallest subset of <code>relation</code> which contains
+     * the table <code>targetTable</code>, or null if the targetTable is not
+     * one of the joining table in <code>relation</code>.
+     * 
+     * @param relation the relation in which to look for targetTable
+     * @param aliasedTableNameMap used to disambiguate table names when the
+     * hierarchy belongs to shared dimensions that are referenced in different
+     * cubes.
+     * @param targetTable table to add to the query
+     * @return the smallest containing relation or null if no matching table
+     * is found in <code>relation</code>
+     */
+    private static MondrianDef.Relation lookupRelationSubset(
+        MondrianDef.Relation relation,
+        Map<String, RolapStar.Table> aliasedTableNameMap,
+        RolapStar.Table targetTable) {
+        if (relation instanceof MondrianDef.Table) {
+            MondrianDef.Table table = (MondrianDef.Table) relation;
+            if (table.name.equals(targetTable.getTableName())) {
+                return relation;              
+            } else {
+                // Not the same table if table names are different
+                return null;
+            }
+        } else if (relation instanceof MondrianDef.Join) {
             // Search inside relation, starting from the rightmost table,
             // and move left along the join chain.
-    		MondrianDef.Join join = (MondrianDef.Join) relation;
-    		MondrianDef.Relation rightRelation = 
-    			relationSubset(join.right, aliasedTableNameMap, targetTable);
-    		if (rightRelation == null) {
-                // Keep search left.
-    			return relationSubset(
+            MondrianDef.Join join = (MondrianDef.Join) relation;
+            MondrianDef.Relation rightRelation = 
+                relationSubset(join.right, aliasedTableNameMap, targetTable);
+            if (rightRelation == null) {
+                // Keep searching left.
+                return lookupRelationSubset(
                     join.left, aliasedTableNameMap, targetTable);
-    		} else {
+            } else {
                 // Found a match.
-                // Rewrite the sub-relation to the left(and including) using
-                // the correct aliases.
-    			return rewriteRelationWithAliases(join, aliasedTableNameMap);
-    		}
-    	}
-    	throw Util.newInternal("bad relation type " + relation);
+                return join;
+            }
+        }
+        throw Util.newInternal("bad relation type " + relation);
     }
 
     /**
