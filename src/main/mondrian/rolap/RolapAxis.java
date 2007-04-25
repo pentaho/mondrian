@@ -407,8 +407,8 @@ public abstract class RolapAxis implements Axis {
 //System.out.println("RolapAxis.materialize: 4");
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
-                       "PositionWrapper.materialize: Member[] iter.class="
-                             + iter.getClass().getName());
+                        "PositionWrapper.materialize: Member[] iter.class="
+                        + ((iter != null) ? iter.getClass().getName() : null));
                 }
                 RolapAxis.MemberArrayIterable.this.materialize();
                 positionList = new MemberArrayIterable.PositionList();
