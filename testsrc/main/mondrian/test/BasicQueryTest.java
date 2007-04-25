@@ -2859,6 +2859,12 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "ON \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\"\n" +
                 "]]>\n" +
                 "           </SQL>\n" +
+                "           <SQL dialect=\"mysql\"><![CDATA[\n" +
+                "SELECT *\n" +
+                "FROM `product`, `product_class`\n" +
+                "WHERE `product`.`product_class_id` = `product_class`.`product_class_id`\n" +
+                "]]>\n" +
+                "           </SQL>\n" +
                 "           <SQL dialect=\"generic\"><![CDATA[\n" +
                 "SELECT *\n" +
                 "FROM \"product\", \"product_class\"\n" +
