@@ -288,7 +288,9 @@ public class SqlConstraintUtils {
             RolapLevel level = m.getLevel();
             RolapHierarchy hierarchy = level.getHierarchy();
             hierarchy.addToFrom(sqlQuery, level.getKeyExp());
-            String q = level.getKeyExp().getExpression(sqlQuery);
+            String q = 
+                level.getExpressionWithAlias(
+                    sqlQuery, levelToColumnMap, level.getKeyExp());
             RolapStar.Column column = levelToColumnMap.get(level);
             StarColumnPredicate cc = getColumnPredicates(column, c);
 
