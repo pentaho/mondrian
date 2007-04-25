@@ -61,6 +61,53 @@ public class VirtualCubeTest extends FoodMartTestCase {
         assertQueriesReturnSimilarResults(query1,query2, testContext);
     }
 
+    public void testDefaultMeasureInVCForIncorrectMeasureName() {
+        TestContext testContext = TestContext.create(
+            null, null,
+            "<VirtualCube name=\"Sales vs Warehouse\" defaultMeasure=\"Profit Error\">\n" +
+                "<VirtualCubeDimension name=\"Product\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Warehouse\" " +
+                    "name=\"[Measures].[Warehouse Sales]\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Sales\" " +
+                    "name=\"[Measures].[Unit Sales]\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Sales\" " +
+                    "name=\"[Measures].[Profit]\"/>\n" +
+                "</VirtualCube>",
+            null, null);
+        String query1 = "select from [Sales vs Warehouse]";
+        String query2 = "select from [Sales vs Warehouse] " +
+                "where measures.[Warehouse Sales]";
+        assertQueriesReturnSimilarResults(query1,query2, testContext);
+    }
+
+    public void testDefaultMeasureInVCForCaseSensitivity() {
+        TestContext testContext = TestContext.create(
+            null, null,
+            "<VirtualCube name=\"Sales vs Warehouse\" defaultMeasure=\"PROFIT\">\n" +
+                "<VirtualCubeDimension name=\"Product\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Warehouse\" " +
+                    "name=\"[Measures].[Warehouse Sales]\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Sales\" " +
+                    "name=\"[Measures].[Unit Sales]\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Sales\" " +
+                    "name=\"[Measures].[Profit]\"/>\n" +
+                "</VirtualCube>",
+            null, null);
+        String queryWithoutFilter = "select from [Sales vs Warehouse]";
+        String queryWithFirstMeasure = "select from [Sales vs Warehouse] " +
+                "where measures.[Warehouse Sales]";
+        String queryWithDefaultMeasureFilter = "select from [Sales vs Warehouse] " +
+                "where measures.[Profit]";
+
+        if (MondrianProperties.instance().CaseSensitive.get()) {
+            assertQueriesReturnSimilarResults(queryWithoutFilter,
+                    queryWithFirstMeasure, testContext);
+        } else {
+            assertQueriesReturnSimilarResults(queryWithoutFilter,
+                    queryWithDefaultMeasureFilter, testContext);
+        }
+    }
+
 
     public void testWithTimeDimension() {
         TestContext testContext = TestContext.create(

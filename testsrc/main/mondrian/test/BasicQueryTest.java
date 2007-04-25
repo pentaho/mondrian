@@ -5596,6 +5596,64 @@ public class BasicQueryTest extends FoodMartTestCase {
                 queryWithDeflaultMeasureFilter, testContext);
     }
 
+    public void testDefaultMeasureInCubeForIncorrectMeasureName() {
+               TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"DefaultMeasureTesting\" defaultMeasure=\"Supply Time Error\">\n" +
+                    "  <Table name=\"inventory_fact_1997\"/>\n" +
+                    "  <DimensionUsage name=\"Store\" source=\"Store\" " +
+                    "foreignKey=\"store_id\"/>\n" +
+                    "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" " +
+                    "foreignKey=\"store_id\"/>\n" +
+                    "  <Measure name=\"Store Invoice\" column=\"store_invoice\" " +
+                    "aggregator=\"sum\"/>\n" +
+                    "  <Measure name=\"Supply Time\" column=\"supply_time\" " +
+                    "aggregator=\"sum\"/>\n" +
+                    "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" " +
+                    "aggregator=\"sum\"/>\n" +
+                    "</Cube>",
+            null, null, null);
+        String queryWithoutFilter = "select store.members on 0 from " +
+                "DefaultMeasureTesting";
+        String queryWithFirstMeasure = "select store.members on 0 " +
+                "from DefaultMeasureTesting where [measures].[Store Invoice]";
+        assertQueriesReturnSimilarResults(queryWithoutFilter,
+                queryWithFirstMeasure, testContext);
+    }
+
+    public void testDefaultMeasureInCubeForCaseSensitivity() {
+               TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"DefaultMeasureTesting\" defaultMeasure=\"SUPPLY TIME\">\n" +
+                    "  <Table name=\"inventory_fact_1997\"/>\n" +
+                    "  <DimensionUsage name=\"Store\" source=\"Store\" " +
+                    "foreignKey=\"store_id\"/>\n" +
+                    "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" " +
+                    "foreignKey=\"store_id\"/>\n" +
+                    "  <Measure name=\"Store Invoice\" column=\"store_invoice\" " +
+                    "aggregator=\"sum\"/>\n" +
+                    "  <Measure name=\"Supply Time\" column=\"supply_time\" " +
+                    "aggregator=\"sum\"/>\n" +
+                    "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" " +
+                    "aggregator=\"sum\"/>\n" +
+                    "</Cube>",
+            null, null, null);
+        String queryWithoutFilter = "select store.members on 0 from " +
+                "DefaultMeasureTesting";
+        String queryWithFirstMeasure = "select store.members on 0 " +
+                "from DefaultMeasureTesting where [measures].[Store Invoice]";
+        String queryWithDefaultMeasureFilter = "select store.members on 0 " +
+                "from DefaultMeasureTesting where [measures].[Supply Time]";
+        if (MondrianProperties.instance().CaseSensitive.get()) {
+            assertQueriesReturnSimilarResults(queryWithoutFilter,
+                    queryWithFirstMeasure, testContext);
+        } else {
+            assertQueriesReturnSimilarResults(queryWithoutFilter,
+                    queryWithDefaultMeasureFilter, testContext);
+        }
+
+    }
+
     /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.

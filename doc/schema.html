@@ -759,17 +759,30 @@ and a <a href="#Member_formatter">member formatter</a>.</p>
 
 <p>The <a
  href="#XML_Cube">&lt;Cube&gt;</a> and <a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a>
- elements allows specifying the optional attribute "defaultMeasure". </p>
+ elements allows specifying the optional attribute "defaultMeasure".  </p>
 <p>Specifying <code>defaultMeasure</code> in <a href="#XML_Cube">&lt;Cube&gt;</a> element allows users
  to explicitly specify any base measure as default Measure.</p>
 <p>Specifying <code>defaultMeasure</code> in <a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a>
  element allows users to explicitly specify any VirtualCube Measure as a default Measure.</p>
- <p>Note that if default measure is not specified it takes the first measure defined in the cube as the default measure.</p>
+ <p>Note that if default measure is not specified it takes the first measure defined in the cube as the default measure. In the case of virtual cube,
+     it would pick up the first base measure of the first cube defined within it as the default.</p>
+<p>
+ Specifying the <code>defaultMeasure</code> explicitly would be useful in cases where you would want a calculated member to be picked up as the default measure.
+ To facilitate this, the calculated member could be defined in one of the base cubes and specified as the <code>defaultMeasure</code> in the virtual cube.
+ </p>
 <blockquote>
   <code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot; defaultMeasure=&quot;Unit Sales&quot;&gt;<br>
-
-&nbsp; ...<br>
-  &lt;/<a href="#XML_Cube">Cube</a>&gt;</code>
+      &nbsp;...<br>
+      &nbsp; &lt;<span><a href="#XML_CalculatedMember">CalculatedMember</a></span> name=&quot;Profit&quot; dimension=&quot;Measures&quot;&gt;<br>
+      &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Store Sales] - [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;...<br>
+      &nbsp; &lt;/<span><a href="#XML_CalculatedMember">CalculatedMember</a></span>&gt;<br>
+  &lt;/<a href="#XML_Cube">Cube</a>&gt;<br>
+    &lt;<a href="#XML_VirtualCube">VirtualCube</a> name=&quot;Warehouse and Sales&quot; defaultMeasure=&quot;Profit&quot; &gt;<br>
+    &nbsp;&nbsp;... <br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Profit]&quot;/&gt;<br>        
+    &lt;/<a href="#XML_VirtualCube">VirtualCube</a>&gt;
+   </code>
 </blockquote>
 
 <!--

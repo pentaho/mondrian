@@ -213,7 +213,7 @@ public class RolapCube extends CubeBase {
                     xmlMeasure.formatString, measureExp,
                 aggregator, xmlMeasure.datatype);
             measures[i] = measure;
-            if(measure.getName().equalsIgnoreCase(xmlCube.defaultMeasure)){
+            if(Util.equalName(measure.getName(),xmlCube.defaultMeasure)){
                 defaultMeasure = measure;
             }
 
