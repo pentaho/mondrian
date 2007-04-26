@@ -1663,10 +1663,17 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             return to == Category.Value ||
                 to == Category.Numeric;
         case Category.Numeric:
-            return to == Category.Value ||
-                to == Category.Integer ||
-                to == (Category.Integer | Category.Constant) ||
-                to == (Category.Numeric | Category.Constant);
+            switch (to) {
+            case Category.Logical:
+                conversionCount[0]++;
+                return true;
+            default:
+                return to == Category.Value ||
+                    to == Category.Integer ||
+                    to == (Category.Integer | Category.Constant) ||
+                    to == (Category.Numeric | Category.Constant);
+            }
+        
         case Category.Integer:
             return to == Category.Value ||
                 to == (Category.Integer | Category.Constant) ||

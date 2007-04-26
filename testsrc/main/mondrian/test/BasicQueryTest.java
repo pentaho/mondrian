@@ -2860,7 +2860,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "]]>\n" +
                 "           </SQL>\n" +
                 "           <SQL dialect=\"mysql\"><![CDATA[\n" +
-                "SELECT *\n" +
+                "SELECT `product`.`product_id`, `product_class`.`product_family`, `product_class`.`product_department`, `product_class`.`product_category`, `product_class`.`product_subcategory`, `product`.`brand_name`, `product`.`product_name` \n" +
                 "FROM `product`, `product_class`\n" +
                 "WHERE `product`.`product_class_id` = `product_class`.`product_class_id`\n" +
                 "]]>\n" +
@@ -5658,6 +5658,62 @@ public class BasicQueryTest extends FoodMartTestCase {
                     queryWithDefaultMeasureFilter, testContext);
         }
 
+    }
+    
+    /**
+     * This tests for bug #1706434
+     * The ability to convert numeric types to logical (boolean) types
+     */
+    public void testNumericToLogicalConversion() {
+        assertQueryReturns("select " + 
+        "{[Measures].[Unit Sales]} on columns, " +
+        "Filter(Descendants( " +
+        "[Product].[Food].[Baked Goods].[Bread]), " + 
+        "Count([Product].currentMember.children)) on Rows " +
+        "from [Sales]",
+        "Axis #0:\n" +
+        "{}\n" +
+        "Axis #1:\n" +
+        "{[Measures].[Unit Sales]}\n" +
+        "Axis #2:\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels].[Colony]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels].[Fantastic]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels].[Great]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels].[Modell]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels].[Sphinx]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins].[Colony]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins].[Fantastic]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins].[Great]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins].[Modell]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins].[Sphinx]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Sliced Bread]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Sliced Bread].[Colony]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Sliced Bread].[Fantastic]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Sliced Bread].[Great]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Sliced Bread].[Modell]}\n" +
+        "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Sliced Bread].[Sphinx]}\n" +
+        "Row #0: 7,870\n" +
+        "Row #1: 815\n" +
+        "Row #2: 163\n" +
+        "Row #3: 160\n" +
+        "Row #4: 145\n" +
+        "Row #5: 165\n" +
+        "Row #6: 182\n" +
+        "Row #7: 3,497\n" +
+        "Row #8: 740\n" +
+        "Row #9: 798\n" +
+        "Row #10: 605\n" +
+        "Row #11: 719\n" +
+        "Row #12: 635\n" +
+        "Row #13: 3,558\n" +
+        "Row #14: 737\n" +
+        "Row #15: 815\n" +
+        "Row #16: 638\n" +
+        "Row #17: 653\n" +
+        "Row #18: 715\n");
     }
 
     /**

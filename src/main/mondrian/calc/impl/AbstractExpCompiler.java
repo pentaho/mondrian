@@ -207,8 +207,33 @@ public class AbstractExpCompiler implements ExpCompiler {
         return (IterCalc) compile(exp, ITERABLE_RESULT_STYLE_ARRAY);
     }
 
+    /**
+     * compiles a boolean calc, support for converting 
+     * integers and doubles.
+     * 
+     * @param exp the expression to generate a calc for
+     */
     public BooleanCalc compileBoolean(Exp exp) {
-        return (BooleanCalc) compileScalar(exp, false);
+        final Calc calc = compileScalar(exp, false);
+        if (calc instanceof BooleanCalc) {
+            return (BooleanCalc) calc;
+        } else if (calc instanceof DoubleCalc) {
+            final DoubleCalc doubleCalc = (DoubleCalc) calc;
+            return new AbstractBooleanCalc(exp, new Calc[] {doubleCalc}) {
+                public boolean evaluateBoolean(Evaluator evaluator) {
+                    return doubleCalc.evaluateDouble(evaluator) != 0;
+                }
+            };
+        } else if (calc instanceof IntegerCalc) {
+            final IntegerCalc doubleCalc = (IntegerCalc) calc;
+            return new AbstractBooleanCalc(exp, new Calc[] {doubleCalc}) {
+                public boolean evaluateBoolean(Evaluator evaluator) {
+                    return doubleCalc.evaluateInteger(evaluator) != 0;
+                }
+            };
+        } else {
+            return (BooleanCalc) calc;
+        }
     }
 
     public DoubleCalc compileDouble(Exp exp) {
