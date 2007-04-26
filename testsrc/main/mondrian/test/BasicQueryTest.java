@@ -2860,7 +2860,25 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "]]>\n" +
                 "           </SQL>\n" +
                 "           <SQL dialect=\"mysql\"><![CDATA[\n" +
-                "SELECT `product`.`product_id`, `product_class`.`product_family`, `product_class`.`product_department`, `product_class`.`product_category`, `product_class`.`product_subcategory`, `product`.`brand_name`, `product`.`product_name` \n" +
+                "SELECT `product`.`product_id`,\n" +
+                "`product`.`brand_name`,\n" +
+                "`product`.`product_name`,\n" +
+                "`product`.`SKU`,\n" +
+                "`product`.`SRP`,\n" +
+                "`product`.`gross_weight`,\n" +
+                "`product`.`net_weight`,\n" +
+                "`product`.`recyclable_package`,\n" +
+                "`product`.`low_fat`,\n" +
+                "`product`.`units_per_case`,\n" +
+                "`product`.`cases_per_pallet`,\n" +
+                "`product`.`shelf_width`,\n" +
+                "`product`.`shelf_height`,\n" +
+                "`product`.`shelf_depth`,\n" +
+                "`product_class`.`product_class_id`,\n" +
+                "`product_class`.`product_family`,\n" +
+                "`product_class`.`product_department`,\n" +
+                "`product_class`.`product_category`,\n" +
+                "`product_class`.`product_subcategory` \n" +
                 "FROM `product`, `product_class`\n" +
                 "WHERE `product`.`product_class_id` = `product_class`.`product_class_id`\n" +
                 "]]>\n" +
