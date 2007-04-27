@@ -497,7 +497,7 @@ in {mondrian.foodmart.jdbcURL}.">
 
   <target name="junit-main" depends="compile,compile.tests,set.connectString">
     <mkdir dir="junit-results"/>
-    <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no">
+    <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no" errorproperty="juniterror" failureproperty="junitfailure">
         <classpath>
             <path refid="project.test.classpath"/>
         </classpath>
@@ -526,6 +526,16 @@ in {mondrian.foodmart.jdbcURL}.">
       </fileset>
       <report format="frames" todir="junit-results/html"/>
     </junitreport>
+    <fail>
+        <condition>
+            <isset property="juniterror"/>
+        </condition>
+    </fail>
+    <fail>
+        <condition>
+            <isset property="junitfailure"/>
+        </condition>
+    </fail>
 
   </target>
 
