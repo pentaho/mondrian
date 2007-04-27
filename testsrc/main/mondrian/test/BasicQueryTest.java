@@ -5707,7 +5707,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "{[EmployeesNonClosure].[Sheri Nowmer].children} on columns," +
                 "{[Time].[1997]} ON rows " +
                 "from HR",
-                "Axis #0:\n" +
+                fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Derrick Whelply]}\n" +
@@ -5725,7 +5725,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #0: $428.76\n" +
                 "Row #0: $234.36\n" +
                 "Row #0: $832.68\n" +
-                "Row #0: $577.80\n");
+                "Row #0: $577.80\n"));
     }
     
     /**
@@ -5739,7 +5739,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         "[Product].[Food].[Baked Goods].[Bread]), " + 
         "Count([Product].currentMember.children)) on Rows " +
         "from [Sales]",
-        "Axis #0:\n" +
+        fold("Axis #0:\n" +
         "{}\n" +
         "Axis #1:\n" +
         "{[Measures].[Unit Sales]}\n" +
@@ -5781,7 +5781,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         "Row #15: 815\n" +
         "Row #16: 638\n" +
         "Row #17: 653\n" +
-        "Row #18: 715\n");
+        "Row #18: 715\n"));
     }
 
     /**
