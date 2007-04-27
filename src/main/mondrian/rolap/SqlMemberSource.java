@@ -627,7 +627,11 @@ RME is this right
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
-        if (!parentMember.isAll() && parentMember.isCalculated()) {
+        // allow parent child calculated members through
+        // this fixes the non closure parent child hierarchy bug
+        if (!parentMember.isAll() && 
+                parentMember.isCalculated() && 
+                !parentMember.getLevel().isParentChild()) {
             return;
         }
         getMemberChildren2(parentMember, children, constraint);
@@ -1014,11 +1018,11 @@ RME is this right
                 RolapLevel childLevel, Object value, RolapMember dataMember) {
             super(parentMember, childLevel, value, dataMember);
         }
-
+        
         public boolean isCalculated() {
             return true;
         }
-
+        
         public Exp getExpression() {
             return getHierarchy().getAggregateChildrenExpression();
         }

@@ -98,6 +98,34 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
     
     /**
+     * Returns a TestContext in which the "HR" cube contains an extra dimension,
+     * "EmployeesNonClosure", which is a joined parent child hierarchy with no
+     * closure. this is almost identical to employee, except we removed the closure
+     * to validate that non-closures work
+     */
+    private TestContext getEmpNonClosureTestContext() {
+        return TestContext.createSubstitutingCube(
+            "HR",
+            "<Dimension name=\"EmployeesNonClosure\" foreignKey=\"employee_id\">" + 
+            "<Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"" + 
+            "    primaryKey=\"employee_id\">" + 
+            "  <Table name=\"employee\"/>" + 
+            "  <Level name=\"Employee Id\" type=\"Numeric\" uniqueMembers=\"true\"" + 
+            "      column=\"employee_id\" parentColumn=\"supervisor_id\"" + 
+            "      nameColumn=\"full_name\" nullParentValue=\"0\">" + 
+            "    <Property name=\"Marital Status\" column=\"marital_status\"/>" + 
+            "    <Property name=\"Position Title\" column=\"position_title\"/>" + 
+            "    <Property name=\"Gender\" column=\"gender\"/>" + 
+            "    <Property name=\"Salary\" column=\"salary\"/>" + 
+            "    <Property name=\"Education Level\" column=\"education_level\"/>" + 
+            "    <Property name=\"Management Role\" column=\"management_role\"/>" + 
+            "  </Level>" + 
+            "</Hierarchy>" + 
+            "</Dimension>",
+            null);
+    }
+    
+    /**
      * Tests snow flake closure combination.
      * bug #1675125 - now fixed.
      */
@@ -121,6 +149,38 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Row #0: 616\n" +
                 "Row #0: $64.01\n"));
     }
+    
+    /**
+     * Test case for bug #1708327
+     */
+    public void _testNonClosureParentChildHierarchy() {
+        
+        getEmpNonClosureTestContext().assertQueryReturns(
+                "Select " +
+                "{[EmployeesNonClosure].[Sheri Nowmer].children} on columns," +
+                "{[Time].[1997]} ON rows " +
+                "from HR",
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Derrick Whelply]}\n" +
+                "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Michael Spence]}\n" +
+                "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Maya Gutierrez]}\n" +
+                "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Roberta Damstra]}\n" +
+                "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]}\n" +
+                "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Darren Stanz]}\n" +
+                "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Donna Arnold]}\n" +
+                "Axis #2:\n" +
+                "{[Time].[1997]}\n" +
+                "Row #0: $36,494.07\n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: $428.76\n" +
+                "Row #0: $234.36\n" +
+                "Row #0: $832.68\n" +
+                "Row #0: $577.80\n");
+    }
+
     
     public void testAll() {
         assertQueryReturns(
