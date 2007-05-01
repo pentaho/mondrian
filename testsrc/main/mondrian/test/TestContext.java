@@ -371,17 +371,21 @@ public class TestContext {
 
     /**
      * Executes a query.
+     *
+     * @param queryString Query string
      */
     public Result executeQuery(String queryString) {
         Connection connection = getConnection();
         Query query = connection.parseQuery(queryString);
-        Result result = connection.execute(query);
-        return result;
+        return connection.execute(query);
     }
 
     /**
      * Executes a query, and asserts that it throws an exception which contains
      * the given pattern.
+     *
+     * @param queryString Query string
+     * @param pattern Pattern which exception must match
      */
     public void assertThrows(String queryString, String pattern) {
         Throwable throwable;
@@ -418,6 +422,15 @@ public class TestContext {
         checkThrowable(throwable, pattern);
     }
 
+    /**
+     * Returns the name of the default cube.
+     *
+     * <p>Tests which evaluate scalar expressions, such as
+     * {@link #assertExprReturns(String, String)}, generate queries against this
+     * cube.
+     *
+     * @return the name of the default cube
+     */
     public String getDefaultCubeName() {
         return "Sales";
     }
@@ -497,8 +510,7 @@ public class TestContext {
         final CalcWriter calcWriter = new CalcWriter(pw);
         calc.accept(calcWriter);
         pw.flush();
-        String calcString = sw.toString();
-        return calcString;
+        return sw.toString();
     }
 
     /**
@@ -506,7 +518,7 @@ public class TestContext {
      * It is an error if the expression returns tuples (as opposed to members),
      * or if it returns two or more members.
      *
-     * @param expression
+     * @param expression Expression string
      * @return Null if axis returns the empty set, member if axis returns one
      *   member. Throws otherwise.
      */
@@ -1082,10 +1094,10 @@ public class TestContext {
     }
 
     /**
-     * Creates a TestContext which operates in a givene role.
+     * Creates a TestContext which operates in a given role.
      *
      * @param roleName Name of role
-     * @return
+     * @return a TestContext which operates in the given role
      */
     public static TestContext createInRole(final String roleName) {
         return new TestContext() {
