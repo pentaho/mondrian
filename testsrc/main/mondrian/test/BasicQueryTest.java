@@ -5226,6 +5226,39 @@ public class BasicQueryTest extends FoodMartTestCase {
             "must contain either a source column or a source expression, but not both");
     }
 
+    public void testInvalidMembersInQuery() {
+        String mdx =
+            "select {[Measures].[Unit Sales]} on columns,\n" +
+            " {[Time].[1997].[Q1], [Time].[1997].[QTOO]} on rows\n" +
+            "from [Sales]";
+        
+        // By default, reference to invalid member should cause
+        // query failure.
+        assertThrows(
+            mdx,
+            "MDX object '[Time].[1997].[QTOO]' not found in cube 'Sales'");
+
+        // Now set property
+        final MondrianProperties properties = MondrianProperties.instance();
+
+        boolean saved = properties.IgnoreInvalidMembersDuringQuery.get();
+        try {
+            properties.IgnoreInvalidMembersDuringQuery.set(true);
+            assertQueryReturns(
+                mdx,
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Time].[1997].[Q1]}\n" +
+                    "Row #0: 66,291\n"));
+        } finally {
+            properties.IgnoreInvalidMembersDuringQuery.set(saved);
+        }
+    }
+
     public void testMemberOrdinalCaching() {
         final MondrianProperties properties = MondrianProperties.instance();
 

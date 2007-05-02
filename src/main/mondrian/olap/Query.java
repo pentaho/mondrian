@@ -400,13 +400,18 @@ public class Query extends QueryPart {
     }
 
     /**
-     * @return true if Query object is being accessed during schema load
-     * and the property to ignore invalid members is set to true
+     * @return true if the relevant property for ignoring invalid members is
+     * set to true for this query's environment (a different property is
+     * checked depending on whether environment is schema load vs query
+     * validation)
      */
     public boolean ignoreInvalidMembers()
     {
-        return load &&
-            MondrianProperties.instance().IgnoreInvalidMembers.get();
+        MondrianProperties props = MondrianProperties.instance();
+        return
+            (load && props.IgnoreInvalidMembers.get())
+            ||
+            (!load && props.IgnoreInvalidMembersDuringQuery.get());
     }
 
     /**

@@ -867,10 +867,18 @@ public class MondrianProperties extends TriggerableProperties {
 
     /**
      * Whether non-existent member errors should be ignored during schema
-     * load
+     * load.
      */
     public final BooleanProperty IgnoreInvalidMembers = new BooleanProperty(
         this, "mondrian.rolap.ignoreInvalidMembers", false);
+
+    /**
+     * Whether non-existent member errors should be ignored during query
+     * validation.
+     */
+    public final BooleanProperty IgnoreInvalidMembersDuringQuery
+        = new BooleanProperty(
+            this, "mondrian.rolap.ignoreInvalidMembersDuringQuery", false);
 
     /**
      * Iteration limit when computing an aggregate; 0 indicates unlimited
