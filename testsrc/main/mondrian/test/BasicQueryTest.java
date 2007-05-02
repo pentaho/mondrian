@@ -544,67 +544,62 @@ public class BasicQueryTest extends FoodMartTestCase {
             }
         }
         allCommentList.add("");
-        final String[] allComments = (String[])
-                allCommentList.toArray(new String[allCommentList.size()]);
+        final String[] allComments =
+            allCommentList.toArray(new String[allCommentList.size()]);
 
         // The last element of the array is the concatenation of all other
         // comments.
         StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < allComments.length; i++) {
-            buf.append(allComments[i]);
+        for (String allComment : allComments) {
+            buf.append(allComment);
         }
         allComments[allComments.length - 1] = buf.toString();
 
         // Comment at start of query.
-        for (int i = 0; i < allComments.length; i++) {
-            String comment = allComments[i];
+        for (String comment : allComments) {
             assertQueryReturns(
-                    comment + "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
-                    EmptyResult);
+                comment + "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
+                EmptyResult);
         }
 
         // Comment after SELECT.
-        for (int i = 0; i < allComments.length; i++) {
-            String comment = allComments[i];
+        for (String comment : allComments) {
             assertQueryReturns(
-                    "SELECT" + comment + "{} ON ROWS, {} ON COLUMNS FROM [Sales]",
-                    EmptyResult);
+                "SELECT" + comment + "{} ON ROWS, {} ON COLUMNS FROM [Sales]",
+                EmptyResult);
         }
 
         // Comment within braces.
-        for (int i = 0; i < allComments.length; i++) {
-            String comment = allComments[i];
+        for (String comment : allComments) {
             assertQueryReturns(
-                    "SELECT {" + comment + "} ON ROWS, {} ON COLUMNS FROM [Sales]",
-                    EmptyResult);
+                "SELECT {" + comment + "} ON ROWS, {} ON COLUMNS FROM [Sales]",
+                EmptyResult);
         }
 
         // Comment after axis name.
-        for (int i = 0; i < allComments.length; i++) {
-            String comment = allComments[i];
+        for (String comment : allComments) {
             assertQueryReturns(
-                    "SELECT {} ON ROWS" + comment + ", {} ON COLUMNS FROM [Sales]",
-                    EmptyResult);
+                "SELECT {} ON ROWS" + comment + ", {} ON COLUMNS FROM [Sales]",
+                EmptyResult);
         }
 
         // Comment before slicer.
-        for (int i = 0; i < allComments.length; i++) {
-            String comment = allComments[i];
+        for (String comment : allComments) {
             assertQueryReturns(
-                    "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales] WHERE" + comment + "([Gender].[F])",
-                    fold(
-                        "Axis #0:\n" +
+                "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales] WHERE" +
+                    comment + "([Gender].[F])",
+                fold(
+                    "Axis #0:\n" +
                         "{[Gender].[All Gender].[F]}\n" +
                         "Axis #1:\n" +
                         "Axis #2:\n"));
         }
 
         // Comment after query.
-        for (int i = 0; i < allComments.length; i++) {
-            String comment = allComments[i];
+        for (String comment : allComments) {
             assertQueryReturns(
-                    "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]" + comment,
-                    EmptyResult);
+                "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]" + comment,
+                EmptyResult);
         }
 
 
@@ -2421,6 +2416,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #0: 131,558\n" +
                 "Row #1: 135,215\n"));
     }
+
     /**
      * Query with distinct-count measure and no other measures gives
      * {@link ArrayIndexOutOfBoundsException}
@@ -5677,16 +5673,17 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
 
     }
-    
+
     /**
-     * This tests for bug #1706434
-     * The ability to convert numeric types to logical (boolean) types
+     * This tests for bug #1706434,
+     * the ability to convert numeric types to logical (boolean) types.
      */
     public void testNumericToLogicalConversion() {
-        assertQueryReturns("select " + 
+        if (!Bug.Bug1710913Fixed) return;
+        assertQueryReturns("select " +
         "{[Measures].[Unit Sales]} on columns, " +
         "Filter(Descendants( " +
-        "[Product].[Food].[Baked Goods].[Bread]), " + 
+        "[Product].[Food].[Baked Goods].[Bread]), " +
         "Count([Product].currentMember.children)) on Rows " +
         "from [Sales]",
         fold("Axis #0:\n" +

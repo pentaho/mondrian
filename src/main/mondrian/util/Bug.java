@@ -47,6 +47,13 @@ public class Bug {
     public static final boolean Bug1530543Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1710913&group_id=35302&atid=414613">bug 1710913, "Query with Filter(..., Count ...) corrupts cache"</a>
+     * is fixed.
+     */
+    public static final boolean Bug1710913Fixed = false;
+
+    /**
      * Returns whether to avoid a test because the memory monitor may cause it
      * to fail.
      *
