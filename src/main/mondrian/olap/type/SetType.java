@@ -31,8 +31,10 @@ public class SetType implements Type {
      *   known
      */
     public SetType(Type elementType) {
-        assert elementType instanceof MemberType ||
-                elementType instanceof TupleType;
+        if (elementType != null) {
+            assert elementType instanceof MemberType ||
+                    elementType instanceof TupleType;
+        }
         this.elementType = elementType;
     }
 
