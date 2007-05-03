@@ -128,6 +128,8 @@ demo/access/MondrianFoodMart.mdb"/>
       <include name="**/*.jar"/>
     </fileset>
     <pathelement location="${lib.dir}/retroweaver-rt-1.2.4.jar" />
+    <pathelement location="${lib.dir}/retrotranslator-runtime-1.2.1.jar" />
+    <pathelement location="${lib.dir}/backport-util-concurrent-3.0.jar" />
     <pathelement location="${driver.classpath}"/>
   </path>
 
@@ -754,6 +756,8 @@ ${war.file},
 ${jar.file},
 ${jar-jdk14.file},
 ${lib.dir}/retroweaver-rt-1.2.4.jar,
+${lib.dir}/retrotranslator-runtime-1.2.1.jar,
+${lib.dir}/backport-util-concurrent-3.0.jar,
 lib/*.dtd,
 demo/FoodMart.xml,
 demo/FoodMartCreateData.sql,
@@ -791,6 +795,8 @@ ${war.embeddedDb.file},
 ${jar.file},
 ${jar-jdk14.file},
 ${lib.dir}/retroweaver-rt-1.2.4.jar,
+${lib.dir}/retrotranslator-runtime-1.2.1.jar,
+${lib.dir}/backport-util-concurrent-3.0.jar,
 lib/*.dtd,
 demo/FoodMart.xml,
 LICENSE.html,
@@ -1197,6 +1203,51 @@ xalan.jar"/>
     <retroweaver inputjar="${jar.file}" outputjar="${jar-jdk14.file}" />
     <retroweaver srcdir="${testclasses.dir}" destdir="${testclasses-jdk14.dir}" />
   </target>
+
+    <!--
+         Just like Retroweaver, Retrotranslator also re-engineers JDK 1.5-compatible code so it can run under
+         JDK 1.4. Retrotranslator supports backporting of more advavnced features of java.util.concurrent.
+
+         This task compiles all core and test classes under 1.5
+         then runs retrotranslator to make them 1.4 compatible.
+
+         If you only intend to run on JDK 1.5, there's no need to call this task.
+
+         The inputs to this process are the mondrian.jar file (containing core
+         files) and the testclasses directory (containing test classes).
+
+         The outputs from this process are the mondrian-jdk14.jar file
+         and the testclasses-jdk14 directory.
+
+         Note that this task does not modify classes in place.
+
+         After you've run this task, you can invoke 'build test' from a JDK 1.4
+         and all the tests will run. You should also be able replace mondrian.jar
+         with mondrian-jdk14.jar and retrotranslator-runtime-1.2.1.jar (retrotranslator's
+         runtime library) in your web application and run jpivot, but I haven't
+         tried that.
+
+         When you run the regression under JDK 1.4, you must use ant-1.6.0.
+         Later versions of ant include junit4, which requires JDK 1.5.
+          -->
+    <target name="retrotranslator" depends="jar, compile.tests">
+        <taskdef name="retrotranslator" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask">
+            <classpath>
+                <pathelement location="${lib.dir}/retrotranslator-transformer-1.2.1.jar"/>
+                <pathelement location="${lib.dir}/retrotranslator-runtime-1.2.1.jar"/>
+                <pathelement location="${lib.dir}/backport-util-concurrent-3.0.jar"/>
+            </classpath>
+        </taskdef>
+        <delete quiet="true">
+            <fileset dir="." includes="${jar-jdk14.file}"/>
+            <fileset dir="${testclasses-jdk14.dir}"/>
+        </delete>
+        <mkdir dir="${testclasses-jdk14.dir}"/>
+        <retrotranslator destdir="${testclasses-jdk14.dir}" verify="false">
+            <fileset dir="${testclasses.dir}" includes="**/*.class"/>
+        </retrotranslator>
+        <retrotranslator srcjar="${jar.file}" destjar="${jar-jdk14.file}" verify="false"/>
+    </target>
 
 </project>
 
