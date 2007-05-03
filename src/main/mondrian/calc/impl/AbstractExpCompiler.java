@@ -225,10 +225,10 @@ public class AbstractExpCompiler implements ExpCompiler {
                 }
             };
         } else if (calc instanceof IntegerCalc) {
-            final IntegerCalc doubleCalc = (IntegerCalc) calc;
-            return new AbstractBooleanCalc(exp, new Calc[] {doubleCalc}) {
+            final IntegerCalc integerCalc = (IntegerCalc) calc;
+            return new AbstractBooleanCalc(exp, new Calc[] {integerCalc}) {
                 public boolean evaluateBoolean(Evaluator evaluator) {
-                    return doubleCalc.evaluateInteger(evaluator) != 0;
+                    return integerCalc.evaluateInteger(evaluator) != 0;
                 }
             };
         } else {
