@@ -765,7 +765,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
 
         });
-        
+
         define(new FunDefBase(
                 "InStr",
                 "InStr(<String Expression1>, <String Expression2>)",
@@ -2130,24 +2130,34 @@ public class BuiltinFunTable extends FunTableImpl {
 
     /**
      * Returns members of a level which are not empty (according to the
-     * criteria expressed by the evaluator). Calculated members are included.
+     * criteria expressed by the evaluator).
+     *
+     * @param evaluator Evaluator, determines non-empty criteria
+     * @param level Level
+     * @param includeCalcMembers Whether to include calculated members
      */
     protected static Member[] getNonEmptyLevelMembers(
-            Evaluator evaluator,
-            Level level) {
+        Evaluator evaluator,
+        Level level,
+        boolean includeCalcMembers)
+    {
         SchemaReader sr = evaluator.getSchemaReader();
         if (evaluator.isNonEmpty()) {
             final Member[] members = sr.getLevelMembers(level, evaluator);
-            return Util.addLevelCalculatedMembers(sr, level, members);
+            if (includeCalcMembers) {
+                return Util.addLevelCalculatedMembers(sr, level, members);
+            }
+            return members;
         }
-        return sr.getLevelMembers(level, true);
+        return sr.getLevelMembers(level, includeCalcMembers);
     }
 
     static List<Member> levelMembers(
             Level level,
             Evaluator evaluator,
             final boolean includeCalcMembers) {
-        Member[] members = getNonEmptyLevelMembers(evaluator, level);
+        Member[] members =
+            getNonEmptyLevelMembers(evaluator, level, includeCalcMembers);
         List<Member> memberList =
             new ArrayList<Member>(Arrays.asList(members));
         if (!includeCalcMembers) {
@@ -2167,7 +2177,9 @@ public class BuiltinFunTable extends FunTableImpl {
             // we're only interested in non-empty members of this level.
             memberList = new ArrayList<Member>();
             for (Level level : hierarchy.getLevels()) {
-                Member[] members = getNonEmptyLevelMembers(evaluator, level);
+                Member[] members =
+                    getNonEmptyLevelMembers(
+                        evaluator, level, includeCalcMembers);
                 memberList.addAll(Arrays.asList(members));
             }
         } else {

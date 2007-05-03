@@ -958,6 +958,27 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 86,837\n" +
                     "Row #0: 5,581\n" +
                     "Row #0: 151,211.21\n"));
+
+        // <Level>.members applied to a query with calc measures
+        // Again, no calc measures are returned
+        assertQueryReturns("with member [Measures].[Xxx] AS ' [Measures].[Unit Sales] '" +
+                "select {[Measures].[Measures].members} on columns from [Sales]",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "{[Measures].[Store Cost]}\n" +
+                    "{[Measures].[Store Sales]}\n" +
+                    "{[Measures].[Sales Count]}\n" +
+                    "{[Measures].[Customer Count]}\n" +
+                    "{[Measures].[Promotion Sales]}\n" +
+                    "Row #0: 266,773\n" +
+                    "Row #0: 225,627.23\n" +
+                    "Row #0: 565,238.13\n" +
+                    "Row #0: 86,837\n" +
+                    "Row #0: 5,581\n" +
+                    "Row #0: 151,211.21\n"));
     }
 
     public void testHierarchyMembers() {
