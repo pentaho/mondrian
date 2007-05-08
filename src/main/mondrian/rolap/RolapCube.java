@@ -1569,6 +1569,9 @@ assert is not true.
                     //   "fact"."foreignKey" = "product_class"."product_id" 
                     
                     table = table.addJoin(this, relation, joinCondition);
+                } else {
+                    // Register table aliases
+                    table.registerTableAlias(this, relation, table);
                 }
 
                 // The parent Column is used so that non-shared dimensions

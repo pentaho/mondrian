@@ -1056,7 +1056,7 @@ public class Query extends QueryPart {
      * Saves away the level to column maps for the underlying cubes that make
      * up the virtual cube referenced in this query
      *
-     * @param maps the set of maps to be saved
+     * @param map map to be saved
      */
     public void setBaseCubeToLevelToColumnMap(
         Map<RolapCube, Map<RolapLevel, RolapStar.Column>> map)

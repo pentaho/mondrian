@@ -1588,6 +1588,24 @@ public class RolapStar {
         }
 
         /**
+         * Register RolapStar.table with its associated names.
+         * 
+         * @param cube cube referencing this table
+         * @param relation mondiran refresentation of the table
+         * @param starTable rolap representation of the table
+         */
+        public void registerTableAlias(
+            RolapCube cube,
+            MondrianDef.Relation relation,
+            RolapStar.Table starTable) {
+            Map<String, RolapStar.Table> map = 
+                star.getRelationNamesToStarTableMap(cube);
+            String relationNames =
+                relation.toString() + relation.getAlias();
+            map.put(relationNames, starTable);            
+        }
+        
+        /**
          * Extends this 'leg' of the star by adding <code>relation</code>
          * joined by <code>joinCondition</code>. If the same expression is
          * already present, does not create it again. Stores the unaliased
@@ -1609,11 +1627,8 @@ public class RolapStar {
                     }
                     this.children.add(starTable);
                     
-                    Map<String, RolapStar.Table> map = 
-                        star.getRelationNamesToStarTableMap(cube);
-                    String relationNames =
-                        relation.toString() + relation.getAlias();
-                    map.put(relationNames, starTable);
+                    // Register table aliases
+                    registerTableAlias(cube, relation, starTable);
                 }
                 return starTable;
                 

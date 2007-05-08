@@ -105,6 +105,14 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "from\n" +
         "  [Employee Store Analysis]";
     
+    public static String queryStoreCube =
+        "with set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store Type], [*BASE_MEMBERS_Store])'\n" +
+        "set [*BASE_MEMBERS_Measures] as '{[Measures].[Store Sqft]}'\n" +
+        "set [*BASE_MEMBERS_Store Type] as '[Store Type].[Store Type].Members'\n" +
+        "set [*BASE_MEMBERS_Store] as '[Store].[Store State].Members'\n" +
+        "select [*BASE_MEMBERS_Measures] ON COLUMNS,\n" +
+        "Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember}) on rows from [Store]";
+    
     public static String resultCubeA =
         "Axis #0:\n" +
         "{}\n" +
@@ -216,6 +224,25 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "Row #11: $77,236\n" +
         "Row #11: $49,178\n";
 
+    public static String resultStoreCube =
+        "Axis #0:\n" +
+        "{}\n" +
+        "Axis #1:\n" +
+        "{[Measures].[Store Sqft]}\n" +
+        "Axis #2:\n" +
+        "{[Store Type].[All Store Types].[Deluxe Supermarket]}\n" +
+        "{[Store Type].[All Store Types].[Gourmet Supermarket]}\n" +
+        "{[Store Type].[All Store Types].[HeadQuarters]}\n" +
+        "{[Store Type].[All Store Types].[Mid-Size Grocery]}\n" +
+        "{[Store Type].[All Store Types].[Small Grocery]}\n" +
+        "{[Store Type].[All Store Types].[Supermarket]}\n" +
+        "Row #0: 146,045\n" +
+        "Row #1: 47,447\n" +
+        "Row #2: \n" +
+        "Row #3: 109,343\n" +
+        "Row #4: 75,281\n" +
+        "Row #5: 193,480\n";
+        
     public SharedDimensionTest() {
     }
 
@@ -224,8 +251,8 @@ public class SharedDimensionTest  extends FoodMartTestCase {
     }
 
     public void testA() {
-        // Create a virtual cube with a non-conforming dimension (Warehouse)
-        // that does not have ALL as its default member.
+        // Schema has two cubes sharing a dimension.
+        // Query from the first cube.
         TestContext testContext =
             TestContext.create(
              sharedDimension,
@@ -238,8 +265,8 @@ public class SharedDimensionTest  extends FoodMartTestCase {
     }   
 
     public void testB() {
-        // Create a virtual cube with a non-conforming dimension (Warehouse)
-        // that does not have ALL as its default member.
+        // Schema has two cubes sharing a dimension.
+        // Query from the second cube.
         TestContext testContext =
             TestContext.create(
              sharedDimension,
@@ -252,8 +279,9 @@ public class SharedDimensionTest  extends FoodMartTestCase {
     }   
 
     public void testVirtualCube() {
-        // Create a virtual cube with a non-conforming dimension (Warehouse)
-        // that does not have ALL as its default member.
+        // Schema has two cubes sharing a dimension, and a virtual cube built
+        // over these two cubes.
+        // Query from the virtual cube.
         TestContext testContext =
             TestContext.create(
              sharedDimension,
@@ -263,8 +291,21 @@ public class SharedDimensionTest  extends FoodMartTestCase {
              null);
 
         testContext.assertQueryReturns(queryVirtualCube, fold(resultVirtualCube));
-    } 
+    }
 
+    public void testStoreCube() {
+        // Use the default FoodMart schema 
+        TestContext testContext =
+            TestContext.create(
+             null,
+             null,
+             null,
+             null,
+             null);
+
+        testContext.assertQueryReturns(queryStoreCube, fold(resultStoreCube));
+    }
+    
 }
 
 // End SharedDimensionTest.java
