@@ -277,14 +277,12 @@ user:</p>
 
 <blockquote>
   <code><b><i>$</i></b> java -cp
-"/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-3.0.16-ga-bin.jar"<br>
+"/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-5.0.5-bin.jar"<br>
 &nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=com.mysql.jdbc.Driver<br>
-&nbsp;&nbsp;&nbsp;&nbsp;
--inputFile=/mondrian/demo/FoodMartCreateData.sql <br>
-&nbsp;&nbsp;&nbsp;&nbsp;
--outputJdbcURL="jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart"</code>
+&nbsp;&nbsp;&nbsp;&nbsp; -inputFile=/mondrian/demo/FoodMartCreateData.sql <br>
+&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL="jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart"</code>
 </blockquote>
 
 <h5>Example 2. Loading PostgreSQL from Access on Windows</h5>
