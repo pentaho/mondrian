@@ -386,13 +386,9 @@ non terminal MemberProperty
     member_property_definition;
 non terminal
     cell_opt,
-    cell_property,
-    cell_property_list,
+    cell_property,    
     dimension_opt,
-    mandatory_cell_property,
-    optional_cell_property,
-    property,
-    provider_specific_cell_property,
+    property,    
     unsigned_integer;
 
 non terminal Boolean
@@ -411,6 +407,7 @@ non terminal List
     formula_specification,
     member_property_def_list,
     property_list,
+    cell_property_list,
     when_list,
     with_formula_specification_opt;
 
@@ -1488,37 +1485,34 @@ slicer_specification ::=
 //
 // <cell_props> ::= [CELL] PROPERTIES <cell_property> [, <cell_property>...]
 cell_props ::=
-        cell_opt PROPERTIES cell_property_list
+        cell_opt PROPERTIES cell_property_list:p1 {: RESULT = p1; :}
     ;
 cell_opt ::=
         /* empty */
     |   CELL
     ;
 cell_property_list ::=
-        cell_property
-    |   cell_property COMMA cell_property_list
-    ;
-//
-// <cell_property> ::= <mandatory_cell_property>
-//                   | <optional_cell_property>
-//                   | <provider_specific_cell_property>
-cell_property ::=
-        mandatory_cell_property
-    |   optional_cell_property
-    |   provider_specific_cell_property
-    ;
-//
-// <mandatory_cell_property> ::= CELL_ORDINAL | VALUE | FORMATTED_VALUE
-//
-// <optional_cell_property> ::= FORMAT_STRING
-//                            | FORE_COLOR
-//                            | BACK_COLOR
-//                            | FONT_NAME
-//                            | FONT_SIZE
-//                            | FONT_FLAGS
-//
-// <provider_specific_cell_property> ::= <identifier>
-provider_specific_cell_property ::= identifier;
+    cell_property:p {:
+        RESULT = new LinkedList();
+        RESULT.add(new CellProperty(p));
+    :}
+    |   cell_property:p COMMA cell_property_list:p1 {:        
+        p1.add(0, new CellProperty(p));
+        RESULT = p1;
+    :}
+;
+
+// <cell_property> ::= FORMAT_STRING
+//                     | FORMATTED_VALUE
+//                     | FORE_COLOR
+//                     | BACK_COLOR
+//                     | FONT_NAME
+//                     | FONT_SIZE
+//                     | FONT_FLAGS
+//                     | CELL_ORDINAL
+//                     | VALUE
+cell_property ::= compound_id;
+
 //
 // <create_formula_statement> ::= CREATE [<scope>]<formula_specification>
 //

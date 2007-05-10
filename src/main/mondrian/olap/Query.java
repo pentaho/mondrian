@@ -221,6 +221,25 @@ public class Query extends QueryPart {
     }
 
     /**
+     * Checks whether the property name is present in the query.
+     */
+    public boolean hasCellProperty(String propertyName) {
+        for (QueryPart cellProp : cellProps) {
+            if (((CellProperty)cellProp).isNameEquals(propertyName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether any cell property present in the query
+     */
+    public boolean isCellPropertyEmpty() {
+        return cellProps.length == 0;
+    }
+
+    /**
      * Adds a new formula specifying a set
      * to an existing query.
      */

@@ -1339,12 +1339,19 @@ public class XmlaHandler implements XmlaConstants {
             writer.endElement(); // AxesInfo
             // -----------
             writer.startElement("CellInfo");
-            writer.element("Value", new String[] {
+            if (shouldReturnCellProperty(Property.VALUE.getName())){
+                writer.element("Value", new String[] {
                 "name", "VALUE"});
-            writer.element("FmtValue", new String[] {
-                "name", "FORMATTED_VALUE"});
-            writer.element("FormatString", new String[] {
-                "name", "FORMAT_STRING"});
+            }
+            if (shouldReturnCellProperty(Property.FORMATTED_VALUE.getName())){
+                writer.element("FmtValue", new String[] {
+                    "name", "FORMATTED_VALUE"});
+            }
+
+            if (shouldReturnCellProperty(Property.FORMAT_STRING.getName())){
+                writer.element("FormatString", new String[] {
+                    "name", "FORMAT_STRING"});
+            }
             writer.endElement(); // CellInfo
             // -----------
             writer.endElement(); // OlapInfo
@@ -1673,7 +1680,7 @@ public class XmlaHandler implements XmlaConstants {
                 String cellPropLong = cellPropLongs[i];
                 final Object value = cell.getPropertyValue(cellPropLong);
 
-                if (value != null) {
+                if (value != null && shouldReturnCellProperty(cellPropLong)) {
                     if (cellPropLong.equals(Property.VALUE.name)) {
                         String valueType = deduceValueType(evaluator, value);
                         writer.startElement(cellProps[i], new String[] {"xsi:type", valueType});
@@ -1693,6 +1700,11 @@ public class XmlaHandler implements XmlaConstants {
                 }
             }
             writer.endElement(); // Cell
+        }
+
+        private boolean shouldReturnCellProperty(String cellPropLong) {
+            Query query = result.getQuery();
+            return query.isCellPropertyEmpty() || query.hasCellProperty(cellPropLong);
         }
     }
 

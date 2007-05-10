@@ -206,6 +206,15 @@ public class ParserTest extends TestCase {
                     "from [cube]\n"));
     }
 
+    public void testCellProperties() {
+        assertParseQuery(
+                "select {[foo]} on columns from [cube] CELL PROPERTIES FORMATTED_VALUE",
+                TestContext.fold(
+                    "select {[foo]} ON COLUMNS\n" +
+                    "from [cube]\n" +
+                    "[FORMATTED_VALUE]"));
+    }
+
     public void testIsEmpty() {
         assertParseExpr("[Measures].[Unit Sales] IS EMPTY",
             "([Measures].[Unit Sales] IS EMPTY)");
@@ -479,6 +488,11 @@ public class ParserTest extends TestCase {
                 pw.print("where ");
                 slicer.unparse(pw);
                 pw.println();
+            }
+            if (cellProps != null) {
+                for (QueryPart cellProp : cellProps) {
+                    cellProp.unparse(pw);
+                }
             }
         }
 

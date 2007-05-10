@@ -406,6 +406,24 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     public void testExecuteSlicer() throws Exception {
         String requestType = "EXECUTE";
+        Properties props = getDefaultRequestProperties(requestType);
+
+        doTest(requestType, props, TestContext.instance());
+    }
+    public void testExecuteWithoutCellProperties() throws Exception {
+        String requestType = "EXECUTE";
+
+        doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+    }
+
+    public void testExecuteWithCellProperties()
+            throws Exception {
+        String requestType = "EXECUTE";
+
+        doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+    }
+
+    private Properties getDefaultRequestProperties(String requestType) {
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(CATALOG_PROP, CATALOG);
@@ -413,8 +431,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
         props.setProperty(FORMAT_PROP, FORMAT_MULTI_DIMENSIONAL);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
-
-        doTest(requestType, props, TestContext.instance());
+        return props;
     }
 
     // Testcase for bug 1653587.
@@ -444,13 +461,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
            "</Execute>\n" +
            "</soapenv:Body>\n" +
            "</soapenv:Envelope>";
-       Properties props = new Properties();
-       props.setProperty(REQUEST_TYPE_PROP, requestType);
-       props.setProperty(CATALOG_PROP, CATALOG);
-       props.setProperty(CATALOG_NAME_PROP, CATALOG);
-       props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
-       props.setProperty(FORMAT_PROP, FORMAT_MULTI_DIMENSIONAL);
-       props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+        Properties props = getDefaultRequestProperties(requestType);
        doTestInline(
            requestType, request, "${response}", props, TestContext.instance());
    }
