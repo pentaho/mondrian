@@ -221,6 +221,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        Map<String, RolapStar.Table> relationNamesToStarTableMap,
         AggStar aggStar,
         RolapMember parent)
     {
@@ -230,19 +231,22 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         Evaluator e = evaluator.push(parent);
         SqlConstraintUtils.addContextConstraint(sqlQuery, aggStar, e, strict);
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, levelToColumnMap, aggStar, parent, true);
+            sqlQuery, levelToColumnMap, relationNamesToStarTableMap,
+            aggStar, parent, true);
     }
-
+    
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        Map<String, RolapStar.Table> relationNamesToStarTableMap,
         AggStar aggStar,
         List<RolapMember> parents)
     {
         SqlConstraintUtils.addContextConstraint(
             sqlQuery, aggStar, evaluator, strict);
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, levelToColumnMap, aggStar, parents, true, false);
+            sqlQuery, levelToColumnMap, relationNamesToStarTableMap,
+            aggStar, parents, true, false);
     }
 
     /**
@@ -250,7 +254,8 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      * context.
      */
     public void addConstraint(
-        SqlQuery sqlQuery, Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
+        SqlQuery sqlQuery, Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        Map<String, RolapStar.Table> relationNamesToStarTableMap) {
         SqlConstraintUtils.addContextConstraint(
             sqlQuery, null, evaluator, strict);
     }

@@ -54,7 +54,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
 
         public void addConstraint(
             SqlQuery sqlQuery,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+            Map<String, RolapStar.Table> relationNamesToStarTableMap) {
             if (orderByExpr != null) {
                 Dialect dialect = sqlQuery.getDialect();
                 if (dialect.requiresOrderByAlias()) {
@@ -66,7 +67,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
                     sqlQuery.addOrderBy(orderByExpr, ascending, true, false);
                 }
             }
-            super.addConstraint(sqlQuery, levelToColumnMap);
+            super.addConstraint(sqlQuery, levelToColumnMap,
+                relationNamesToStarTableMap);
         }
 
         public Object getCacheKey() {

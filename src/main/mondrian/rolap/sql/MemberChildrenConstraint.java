@@ -40,6 +40,7 @@ public interface MemberChildrenConstraint extends SqlConstraint {
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        Map<String, RolapStar.Table> relationNamesToStarTableMap,        
         AggStar aggStar,
         RolapMember parent);
 
@@ -56,6 +57,7 @@ public interface MemberChildrenConstraint extends SqlConstraint {
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        Map<String, RolapStar.Table> relationNamesToStarTableMap,        
         AggStar aggStar,
         List<RolapMember> parents);
 

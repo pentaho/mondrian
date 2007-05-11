@@ -76,8 +76,10 @@ public abstract class RolapNativeSet extends RolapNative {
 
         public void addConstraint(
             SqlQuery sqlQuery,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
-            super.addConstraint(sqlQuery, levelToColumnMap);
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+            Map<String, RolapStar.Table> relationNamesToStarTableMap) {
+            super.addConstraint(sqlQuery, levelToColumnMap, 
+                relationNamesToStarTableMap);
             for (CrossJoinArg arg : args) {
                 // if the cross join argument has calculated members in its
                 // enumerated set, ignore the constraint since we won't
@@ -85,7 +87,8 @@ public abstract class RolapNativeSet extends RolapNative {
                 // will simply enumerate through the members in the set
                 if (!(arg instanceof MemberListCrossJoinArg) ||
                     !((MemberListCrossJoinArg) arg).hasCalcMembers()) {
-                    arg.addConstraint(sqlQuery, levelToColumnMap);
+                    arg.addConstraint(sqlQuery, levelToColumnMap, 
+                        relationNamesToStarTableMap);
                 }
             }
         }
@@ -294,7 +297,8 @@ public abstract class RolapNativeSet extends RolapNative {
 
         void addConstraint(
             SqlQuery sqlQuery,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap);
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+            Map<String, RolapStar.Table> relationNamesToStarTableMap);
 
         boolean isPreferInterpreter();
     }
@@ -362,10 +366,12 @@ public abstract class RolapNativeSet extends RolapNative {
 
         public void addConstraint(
             SqlQuery sqlQuery,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+            Map<String, RolapStar.Table> relationNamesToStarTableMap) {
             if (member != null) {
                 SqlConstraintUtils.addMemberConstraint(
-                    sqlQuery, levelToColumnMap, null, member, true);
+                    sqlQuery, levelToColumnMap, relationNamesToStarTableMap,
+                    null, member, true);
             }
         }
     }
@@ -478,10 +484,11 @@ public abstract class RolapNativeSet extends RolapNative {
 
         public void addConstraint(
             SqlQuery sqlQuery,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+            Map<String, RolapStar.Table> relationNamesToStarTableMap) {
             SqlConstraintUtils.addMemberConstraint(
-                sqlQuery, levelToColumnMap, null, Arrays.asList(members),
-                strict, true);
+                sqlQuery, levelToColumnMap, relationNamesToStarTableMap, null,
+                Arrays.asList(members), strict, true);
         }
     }
 

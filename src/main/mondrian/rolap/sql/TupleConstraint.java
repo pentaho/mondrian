@@ -38,7 +38,8 @@ public interface TupleConstraint extends SqlConstraint {
      */
     public void addConstraint(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap);
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        Map<String, RolapStar.Table> relationNamesToStarTableMap);
 
     /**
      * Will be called multiple times for every "group by" level in

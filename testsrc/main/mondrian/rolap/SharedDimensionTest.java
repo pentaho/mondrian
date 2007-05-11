@@ -113,6 +113,16 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "select [*BASE_MEMBERS_Measures] ON COLUMNS,\n" +
         "Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember}) on rows from [Store]";
     
+    public static String queryNECJMemberList =
+        "select {[Measures].[Employee Store Sales]} on columns,\n" +
+        "NonEmptyCrossJoin([Store Type].[Store Type].Members,\n" +
+        "{[Employee].[All Employees].[Middle Management],\n" +
+        "[Employee].[All Employees].[Store Management]})\n" +
+        "on rows from [Employee Store Analysis B]";
+    
+    public static String querySF1711865 =
+        "select NON EMPTY {[Product].[Product Family].Members} ON COLUMNS from [Sales 2]";
+    
     public static String resultCubeA =
         "Axis #0:\n" +
         "{}\n" +
@@ -242,6 +252,34 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "Row #3: 109,343\n" +
         "Row #4: 75,281\n" +
         "Row #5: 193,480\n";
+
+    public static String resultNECJMemberList =
+        "Axis #0:\n" +
+        "{}\n" +
+        "Axis #1:\n" +
+        "{[Measures].[Employee Store Sales]}\n" +
+        "Axis #2:\n" +
+        "{[Store Type].[All Store Types].[Deluxe Supermarket], [Employee].[All Employees].[Store Management]}\n" +
+        "{[Store Type].[All Store Types].[Gourmet Supermarket], [Employee].[All Employees].[Store Management]}\n" +
+        "{[Store Type].[All Store Types].[Mid-Size Grocery], [Employee].[All Employees].[Store Management]}\n" +
+        "{[Store Type].[All Store Types].[Small Grocery], [Employee].[All Employees].[Store Management]}\n" +
+        "{[Store Type].[All Store Types].[Supermarket], [Employee].[All Employees].[Store Management]}\n" +
+        "Row #0: $61,860\n" +
+        "Row #1: $10,156\n" +
+        "Row #2: $10,212\n" +
+        "Row #3: $5,932\n" +
+        "Row #4: $108,610\n";
+    
+    public static String resultSF1711865 =
+        "Axis #0:\n" +
+        "{}\n" +
+        "Axis #1:\n" +
+        "{[Product].[All Products].[Drink]}\n" +
+        "{[Product].[All Products].[Food]}\n" +
+        "{[Product].[All Products].[Non-Consumable]}\n" +
+        "Row #0: 7,978\n" +
+        "Row #0: 62,445\n" +
+        "Row #0: 16,414\n";
         
     public SharedDimensionTest() {
     }
@@ -291,6 +329,34 @@ public class SharedDimensionTest  extends FoodMartTestCase {
              null);
 
         testContext.assertQueryReturns(queryVirtualCube, fold(resultVirtualCube));
+    }
+
+    public void testNECJMemberList() {
+        // Schema has two cubes sharing a dimension.
+        // Query from the second cube.
+        TestContext testContext =
+            TestContext.create(
+             sharedDimension,
+             cubeA + "\n" + cubeB,
+             null,
+             null,
+             null);
+
+        testContext.assertQueryReturns(queryNECJMemberList, fold(resultNECJMemberList));
+    }
+    
+    public void testSF1711865() {
+        // Test for sourceforge.net bug 1711865
+        // Use the default FoodMart schema 
+        TestContext testContext =
+            TestContext.create(
+             null,
+             null,
+             null,
+             null,
+             null);
+
+        testContext.assertQueryReturns(querySF1711865, fold(resultSF1711865));
     }
 
     public void testStoreCube() {

@@ -1625,11 +1625,11 @@ public class RolapStar {
                     if (this.children.isEmpty()) {
                         this.children = new ArrayList<Table>();
                     }
-                    this.children.add(starTable);
-                    
-                    // Register table aliases
-                    registerTableAlias(cube, relation, starTable);
+                    this.children.add(starTable);                    
                 }
+                // Register table aliases
+                registerTableAlias(cube, relation, starTable);
+                
                 return starTable;
                 
             } else if (relation instanceof MondrianDef.Join) {

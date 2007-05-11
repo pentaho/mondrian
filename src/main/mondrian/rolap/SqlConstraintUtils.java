@@ -216,13 +216,15 @@ public class SqlConstraintUtils {
     public static void addMemberConstraint(
         SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        Map<String, RolapStar.Table> relationNamesToStarTableMap,
         AggStar aggStar,
         RolapMember parent,
         boolean strict)
     {
         List<RolapMember> list = Collections.singletonList(parent);
         addMemberConstraint(
-            sqlQuery, levelToColumnMap, aggStar, list, strict, false);
+            sqlQuery, levelToColumnMap, relationNamesToStarTableMap,
+            aggStar, list, strict, false);
     }
 
     /**
@@ -250,6 +252,7 @@ public class SqlConstraintUtils {
     public static void addMemberConstraint(
         SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        Map<String, RolapStar.Table> relationNamesToStarTableMap,
         AggStar aggStar,
         List<RolapMember> parents,
         boolean strict,
@@ -287,13 +290,24 @@ public class SqlConstraintUtils {
             }
             RolapLevel level = m.getLevel();
             RolapHierarchy hierarchy = level.getHierarchy();
-            hierarchy.addToFrom(sqlQuery, level.getKeyExp());
+            
             String q = 
                 level.getExpressionWithAlias(
                     sqlQuery, levelToColumnMap, level.getKeyExp());
             RolapStar.Column column = levelToColumnMap.get(level);
             StarColumnPredicate cc = getColumnPredicates(column, c);
 
+            if (column != null &&
+                relationNamesToStarTableMap != null) {
+                RolapStar.Table targetTable = column.getTable();
+                hierarchy.addToFrom(
+                    sqlQuery,
+                    relationNamesToStarTableMap,
+                    targetTable);
+            } else {
+                hierarchy.addToFrom(sqlQuery, level.getKeyExp());                
+            }
+            
             if (!strict &&
                 cc instanceof ListColumnPredicate &&
                 ((ListColumnPredicate) cc).getPredicates().size() >=

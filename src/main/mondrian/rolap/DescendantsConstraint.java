@@ -46,13 +46,15 @@ class DescendantsConstraint implements TupleConstraint {
 
     public void addConstraint(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap)
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        Map<String, RolapStar.Table> relationNamesToStarTableMap)
     {
         if (levelToColumnMap == null) {
             levelToColumnMap = Collections.emptyMap();
         }
         mcc.addMemberConstraint(
-            sqlQuery, levelToColumnMap, null, parentMembers);
+            sqlQuery, levelToColumnMap, relationNamesToStarTableMap,
+            null, parentMembers);
     }
 
     public void addLevelConstraint(
