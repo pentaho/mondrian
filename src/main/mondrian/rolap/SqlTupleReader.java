@@ -673,7 +673,7 @@ public class SqlTupleReader implements TupleReader {
         }
 
         // additional constraints
-        constraint.addConstraint(sqlQuery, levelToColumnMap);
+        constraint.addConstraint(sqlQuery, levelToColumnMap, relationNamesToStarTableMap);
 
         return sqlQuery.toString();
     }
