@@ -55,6 +55,9 @@ import org.eigenbase.xom.XMLOutput;
  * @author  sean
  */
 public class Workbench extends javax.swing.JFrame {
+    
+    public static String WORKBENCH_USER_HOME_DIR;
+    public static String WORKBENCH_CONFIG_FILE;
 
     private static final String LAST_USED1 = "lastUsed1";
     private static final String LAST_USED1_URL = "lastUsedUrl1";
@@ -92,6 +95,10 @@ public class Workbench extends javax.swing.JFrame {
     public Workbench() {
         myClassLoader = this.getClass().getClassLoader();
 
+        // Setting User home directory
+        WORKBENCH_USER_HOME_DIR = System.getProperty("user.home") + File.separator + ".schemaWorkbench";
+        WORKBENCH_CONFIG_FILE = WORKBENCH_USER_HOME_DIR + File.separator + "workbench.properties";
+
         loadWorkbenchProperties();
         initDataSource();
         initComponents();
@@ -102,7 +109,6 @@ public class Workbench extends javax.swing.JFrame {
         ImageIcon icon = new javax.swing.ImageIcon(myClassLoader.getResource(resources.getString("cube")));
 
         this.setIconImage(icon.getImage());
-        //openSchemaFrame(new File("C:/Documents and Settings/sarora/My Documents/Inventory.xml"), false); //===
     }
 
     /**
@@ -113,12 +119,16 @@ public class Workbench extends javax.swing.JFrame {
         try {
             String resourceName = "mondrian.gui.resources.workbenchInfo";
             resBundle = ResourceBundle.getBundle(resourceName);
-            workbenchProperties.load(new FileInputStream(new File("workbench.properties")));
+            
+            File f = new File(WORKBENCH_CONFIG_FILE);
+            if (f.exists()) {
+                workbenchProperties.load(new FileInputStream(f));
+            } else {
+                LOGGER.debug(WORKBENCH_CONFIG_FILE + " does not exist");
+            }
         } catch (Exception e) {
-            //e.printStackTrace();
-
             // TODO deal with exception
-            LOGGER.error(e);
+            LOGGER.error("loadWorkbenchProperties", e);
 
         }
     }
@@ -128,12 +138,36 @@ public class Workbench extends javax.swing.JFrame {
      */
     private void storeWorkbenchProperties() {
         //save properties to file
+        File dir = new File(WORKBENCH_USER_HOME_DIR);
+        try {
+            if (dir.exists()) {
+                if (!dir.isDirectory() ) {
+                    javax.swing.JOptionPane.showMessageDialog( this, 
+                            WORKBENCH_USER_HOME_DIR + " is not a directory!\nPlease rename this file and retry to save config!","",JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+            else {
+                dir.mkdirs();
+            }
+        } catch (Exception ex) {
+            LOGGER.error(ex);
+            javax.swing.JOptionPane.showMessageDialog( this, 
+                    "An error is occurred creating workbench config directory:\n" + WORKBENCH_USER_HOME_DIR +
+                            "\n" + ex.getLocalizedMessage(),"",JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
         OutputStream out = null;
         try {
-            out = (OutputStream) new FileOutputStream(new File("workbench.properties"));
+            out = (OutputStream) new FileOutputStream(new File(WORKBENCH_CONFIG_FILE));
             workbenchProperties.store(out, "Workbench configuration");
         } catch (Exception e) {
+            LOGGER.error(e);
             //TODO deal with exception
+            javax.swing.JOptionPane.showMessageDialog( this, 
+                    "An error is occurred creating workbench config file:\n" + WORKBENCH_CONFIG_FILE +
+                            "\n" + e.getLocalizedMessage(),"",JOptionPane.ERROR_MESSAGE);
         } finally {
             try {
                 out.close();

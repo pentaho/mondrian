@@ -218,7 +218,16 @@ public class QueryPanel extends javax.swing.JPanel {
 
             PrintStream p = new PrintStream(os);
 
-            ex.printStackTrace(p);
+            Throwable e = ex;
+            while (e != null) {
+                p.println(e.getLocalizedMessage());
+                LOGGER.error("", e);
+                Throwable prev = e;
+                e = e.getCause();
+                if (e == prev)
+                  break;
+                p.println();
+              }
 
             resultTextPane.setText(os.toString());
         }
