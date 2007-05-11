@@ -11,10 +11,10 @@
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
-    
+
   <link rel="stylesheet" type="text/css" href="stylesheet.css">
 
-	
+
   <title>Mondrian Schema Workbench</title>
 </head>
 
@@ -33,10 +33,10 @@
 
 
  <img src="images/workbench_schema_editor.png">
- 
+
 <p>It provides the following functionality:</p>
 
-	
+
 <ul>
 
 		<li>Schema editor integrated with the underlying data source for validation. (See above)</li>
@@ -47,6 +47,7 @@
 
 </ul>
 
+<p>A more detailed manual is <a href="schema_workbench.pdf">Schema Workbench Manual</a>
 <p></p>
 
 
@@ -133,7 +134,7 @@ BUILD SUCCESSFUL<br>
 Total time: 47 seconds<br>
       <p>This will create <code>lib/workbench.jar</code>.&nbsp;Include drivers for your database on the classpath.</p>
 
-      
+
       <p>To start the workbench., at the command prompt, type</p>
       <p>In Windows:</p>
       <blockquote>
@@ -158,20 +159,20 @@ Total time: 47 seconds<br>
     <tr>
 
       <td style="vertical-align: top;">
-      <p>Set properties for 
+      <p>Set properties for
       connection to your cube database via <code>Tools &gt; Preferences</code>.</p>
 
-      
+
       <blockquote>
-          
+
         <p><img src="images/workbench_preferences.png"></p>
 
       </blockquote>
 
-      
+
       <p>These preferences and the last 4 schemas edited are kept in a "workbench.properties" file in the root of the classpath.</p>
 
-      
+
       <p>If you change the connection properties, you will need to close/save the existing schema editor(s) and restart to
       see the effects.</p>
       </td>
@@ -182,15 +183,15 @@ Total time: 47 seconds<br>
     <tr>
 
       <td style="vertical-align: top;">
-      
+
       <p>Create a new schema or open an existing one.</p>
 
-      
-      <p>If you open an existing schema, the Workbench validates that the tables 
-      and columns underlying the cube definitions actually exist in the 
+
+      <p>If you open an existing schema, the Workbench validates that the tables
+      and columns underlying the cube definitions actually exist in the
       database.</p>
 
-      
+
       <blockquote>
           <img src="images/workbench_get_schema.png">
       </blockquote>
@@ -203,18 +204,18 @@ Total time: 47 seconds<br>
     <tr>
 
       <td style="vertical-align: top;">
-      
+
       <p>Create or edit elements in the schema. The Workbench validates your changes against the cube database tables and column names.</p>
 
-      
+
       <blockquote>
           <img src="images/workbench_database_validation.png">
       </blockquote>
 
-      
+
       <p>The Workbench validates edits against the Mondrian schema DTD.</p>
 
-      
+
       <blockquote>
           <img src="images/workbench_database_error.png">
       </blockquote>
@@ -227,11 +228,11 @@ Total time: 47 seconds<br>
     <tr>
 
       <td style="vertical-align: top;">
-      
+
       <p>Save your schema and run some MDX queries to test.
       Error messages and results are displayed.</p>
 
-      
+
       <blockquote>
           <img src="images/workbench_mdx_query_runner.png">
       </blockquote>
@@ -240,7 +241,7 @@ Total time: 47 seconds<br>
 
     </tr>
 
-  
+
   </tbody>
 </table>
 
