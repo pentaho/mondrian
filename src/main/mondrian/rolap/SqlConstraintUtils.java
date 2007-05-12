@@ -259,6 +259,11 @@ public class SqlConstraintUtils {
         boolean crossJoin)
     {
         if (parents.size() == 0) {
+            // Generate a predicate which is always false in order to produce
+            // the empty set.  It would be smarter to avoid executing SQL at
+            // all in this case, but doing it this way avoid special-case
+            // evaluation code.
+            sqlQuery.addWhere("(1 = 0)");
             return;
         }
 

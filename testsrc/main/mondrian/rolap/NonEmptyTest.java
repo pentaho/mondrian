@@ -438,6 +438,23 @@ public class NonEmptyTest extends FoodMartTestCase {
                         + "from [Sales] ");
     }
 
+    /** set containing only null member should not prevent usage of native */
+    public void testCjNullInEnum() {
+        MondrianProperties properties = MondrianProperties.instance();
+        boolean savedInvalidProp =
+            properties.IgnoreInvalidMembersDuringQuery.get();
+        try {
+            properties.IgnoreInvalidMembersDuringQuery.set(true);
+            checkNative(
+                20, 0,
+                "select {[Measures].[Unit Sales]} ON COLUMNS, "
+                + "NON EMPTY Crossjoin({[Gender].[All Gender].[emale]}, [Customers].[All Customers].[USA].children) ON ROWS "
+                + "from [Sales] ");
+        } finally {
+            properties.IgnoreInvalidMembersDuringQuery.set(savedInvalidProp);
+        }
+    }
+
     /**
      * enum sets {} containing members from different levels can not be computed
      * natively currently.

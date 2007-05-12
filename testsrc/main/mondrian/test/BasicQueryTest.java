@@ -5232,6 +5232,13 @@ public class BasicQueryTest extends FoodMartTestCase {
             " {[Time].[1997].[Q1], [Time].[1997].[QTOO]} on rows\n" +
             "from [Sales]";
 
+        String mdx2 =
+            "select {[Measures].[Unit Sales]} on columns,\n" +
+            "nonemptycrossjoin(\n" +
+            "{[Time].[1997].[Q1], [Time].[1997].[QTOO]},\n" +
+            "[Customers].[All Customers].[USA].children) on rows\n" +
+            "from [Sales]";
+
         // By default, reference to invalid member should cause
         // query failure.
         assertThrows(
@@ -5241,7 +5248,10 @@ public class BasicQueryTest extends FoodMartTestCase {
         // Now set property
         final MondrianProperties properties = MondrianProperties.instance();
 
-        boolean saved = properties.IgnoreInvalidMembersDuringQuery.get();
+        boolean savedInvalidProp =
+            properties.IgnoreInvalidMembersDuringQuery.get();
+        String savedAlertProp =
+            properties.AlertNativeEvaluationUnsupported.get();
         try {
             properties.IgnoreInvalidMembersDuringQuery.set(true);
             assertQueryReturns(
@@ -5254,8 +5264,27 @@ public class BasicQueryTest extends FoodMartTestCase {
                     "Axis #2:\n" +
                     "{[Time].[1997].[Q1]}\n" +
                     "Row #0: 66,291\n"));
+
+            // Verify that invalid members in query do NOT prevent
+            // usage of native NECJ (LER-5165).
+            properties.AlertNativeEvaluationUnsupported.set("ERROR");
+            assertQueryReturns(
+                mdx2,
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Time].[1997].[Q1], [Customers].[All Customers].[USA].[CA]}\n" +
+                    "{[Time].[1997].[Q1], [Customers].[All Customers].[USA].[OR]}\n" +
+                    "{[Time].[1997].[Q1], [Customers].[All Customers].[USA].[WA]}\n" +
+                    "Row #0: 16,890\n" +
+                    "Row #1: 19,287\n" +
+                    "Row #2: 30,114\n"));
         } finally {
-            properties.IgnoreInvalidMembersDuringQuery.set(saved);
+            properties.IgnoreInvalidMembersDuringQuery.set(savedInvalidProp);
+            properties.AlertNativeEvaluationUnsupported.set(savedAlertProp);
         }
     }
 

@@ -403,38 +403,75 @@ public abstract class RolapNativeSet extends RolapNative {
          * or returns null if the arguments are invalid.
          *
          * <p>To be valid, the arguments must be non-calculated members of the
-         * same level.
+         * same level (after filtering out any null members).  There must be at
+         * least one member to begin with (may be null).  If all members are
+         * nulls, then the result is a valid empty predicate.
+         *
+         * <p>REVIEW jvs 12-May-2007:  but according to the code, if
+         * strict is false, then the argument is valid even if calculated
+         * members are presented (and then it's flagged appropriately
+         * for special handling downstream).
          */
         static CrossJoinArg create(Exp[] args, boolean strict) {
             if (args.length == 0) {
                 return null;
             }
             RolapLevel level = null;
+            RolapLevel nullLevel = null;
             boolean hasCalcMembers = false;
+            int nNullMembers = 0;
             for (int i = 0; i < args.length; i++) {
                 if (!(args[i] instanceof MemberExpr)) {
                     return null;
                 }
-                RolapMember m = (RolapMember) ((MemberExpr) args[i]).getMember();
+                RolapMember m =
+                    (RolapMember) ((MemberExpr) args[i]).getMember();
+
+                if (m.isNull()) {
+                    // we're going to filter out null members anyway;
+                    // don't choke on the fact that their level
+                    // doesn't match that of others
+                    nullLevel = m.getLevel();
+                    ++nNullMembers;
+                    continue;
+                }
+                
                 if (m.isCalculated()) {
                     if (strict) {
                         return null;
                     }
                     hasCalcMembers = true;
                 }
-                if (i == 0) {
+                if (level == null) {
                     level = m.getLevel();
                 } else if (!level.equals(m.getLevel())) {
                     return null;
                 }
             }
+            if (level == null) {
+                // all members were null; use an arbitrary one of the
+                // null levels since the SQL predicate is going to always
+                // fail anyway
+                assert(nullLevel != null);
+                level = nullLevel;
+            }
             if (!isSimpleLevel(level)) {
                 return null;
             }
-            RolapMember[] members = new RolapMember[args.length];
-            for (int i = 0; i < members.length; i++) {
-                members[i] = (RolapMember) ((MemberExpr) args[i]).getMember();
+            RolapMember[] members = new RolapMember[args.length - nNullMembers];
+            
+            int j = 0;
+            for (int i = 0; i < args.length; ++i) {
+                RolapMember m =
+                    (RolapMember) ((MemberExpr) args[i]).getMember();
+                if (m.isNull()) {
+                    // filter out null members
+                    continue;
+                }
+                members[j] = m;
+                ++j;
             }
+            
             return new MemberListCrossJoinArg(
                 level, members, strict, hasCalcMembers);
         }
