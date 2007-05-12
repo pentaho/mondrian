@@ -1341,14 +1341,18 @@ public class Workbench extends javax.swing.JFrame {
                 }
 
             });
-            jfc.setCurrentDirectory(new File(new URI(workbenchProperties.getProperty(LAST_USED1_URL))));
+            
+            String lastUsed = workbenchProperties.getProperty(LAST_USED1_URL);
+            
+            if (lastUsed != null) {
+                jfc.setCurrentDirectory(new File(new URI(lastUsed)));
+            }
         } catch (Exception ex) {
-            LOGGER.error("==Could not set file chooser. last used file does not exist", ex);
+            LOGGER.error("Could not set file chooser", ex);
         }
         MondrianProperties.instance();
         if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
-                //setLastUsed(jfc.getSelectedFile().getName(), jfc.getSelectedFile().toURL().toString());
                 setLastUsed(jfc.getSelectedFile().getName(), jfc.getSelectedFile().toURI().toURL().toString());
             } catch (MalformedURLException e) {
                 LOGGER.error(e);

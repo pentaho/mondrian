@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="2.3.2.8944"/>
+  <property name="version" value="2.3.2.9247"/>
   <property name="vendor" value="Pentaho"/>
 
   <!--
@@ -52,6 +52,8 @@
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
   <property name="jar-jdk14.file" value="${lib.dir}/${name}-jdk14.jar" />
   <property name="workbench.jar.file" value="${lib.dir}/workbench.jar"/>
+  <property name="workbench.dist.name" value="workbench-${version}"/>
+  <property name="workbench.dist.file" value="${workbench.dist.name}.zip"/>
   <property name="resource.jar.file" value="${lib.dir}/eigenbase-resgen.jar"/>
   <property name="xom.jar.file" value="${lib.dir}/eigenbase-xom.jar"/>
   <property name="war.file" value="${lib.dir}/${name}.war"/>
@@ -1147,6 +1149,43 @@ xalan.jar"/>
     <available file="${jar.file}" property="mondrian.jar.exists"/>
     <available file="${workbench.jar.file}" property="workbench.jar.exists"/>
     <java  jar="${workbench.jar.file}"  fork="yes"/>
+  </target>
+
+  <target name="workbench-dist" 
+      depends="version,workbench">
+    <mkdir dir="${dist.dir}" />
+    <delete file="${dist.dir}/${workbench.dist.file}"/>
+    <zip zipfile="${dist.dir}/${workbench.dist.file}">
+      <zipfileset
+          dir="."
+          prefix="${workbench.dist.name}"
+          includes="
+${doc.dir}/**/*.pdf,
+lib/mondrian.jar,
+lib/workbench.jar,
+lib/x*.jar,
+lib/eigenbase*.jar,
+lib/commons*.jar,
+lib/javacup.jar,
+lib/jlfgr-*.jar,
+lib/*.dtd,
+lib/*.xsd,
+demo/FoodMart.xml,
+LICENSE.html"
+          excludes="
+**/*~,
+**/_vti*/*,
+**/*.psp,
+${doc.dir}/api/src-html/**/*"/>
+      <zipfileset
+          dir="workbench"
+          prefix="${workbench.dist.name}"
+          includes="**/*"/>
+      <zipfileset
+          dir="src/main"
+          prefix="${workbench.dist.name}/src"
+          includes="mondrian/gui/**/*"/>
+    </zip>
   </target>
 
   <!--
