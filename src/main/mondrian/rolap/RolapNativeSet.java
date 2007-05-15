@@ -300,7 +300,7 @@ public abstract class RolapNativeSet extends RolapNative {
             Map<RolapLevel, RolapStar.Column> levelToColumnMap,
             Map<String, RolapStar.Table> relationNamesToStarTableMap);
 
-        boolean isPreferInterpreter();
+        boolean isPreferInterpreter(boolean joinArg);
     }
 
     /**
@@ -334,7 +334,7 @@ public abstract class RolapNativeSet extends RolapNative {
             return new RolapMember[] { member };
         }
 
-        public boolean isPreferInterpreter() {
+        public boolean isPreferInterpreter(boolean joinArg) {
             return false;
         }
 
@@ -388,14 +388,16 @@ public abstract class RolapNativeSet extends RolapNative {
         private RolapLevel level = null;
         private boolean strict;
         private boolean hasCalcMembers;
+        private boolean hasNonCalcMembers;
 
         private MemberListCrossJoinArg(
             RolapLevel level, RolapMember[] members, boolean strict,
-            boolean hasCalcMembers) {
+            boolean hasCalcMembers, boolean hasNonCalcMembers) {
             this.level = level;
             this.members = members;
             this.strict = strict;
             this.hasCalcMembers = hasCalcMembers;
+            this.hasNonCalcMembers = hasNonCalcMembers;
         }
 
         /**
@@ -419,6 +421,7 @@ public abstract class RolapNativeSet extends RolapNative {
             RolapLevel level = null;
             RolapLevel nullLevel = null;
             boolean hasCalcMembers = false;
+            boolean hasNonCalcMembers = false;
             int nNullMembers = 0;
             for (int i = 0; i < args.length; i++) {
                 if (!(args[i] instanceof MemberExpr)) {
@@ -441,6 +444,8 @@ public abstract class RolapNativeSet extends RolapNative {
                         return null;
                     }
                     hasCalcMembers = true;
+                } else {
+                    hasNonCalcMembers = true;
                 }
                 if (level == null) {
                     level = m.getLevel();
@@ -473,7 +478,7 @@ public abstract class RolapNativeSet extends RolapNative {
             }
             
             return new MemberListCrossJoinArg(
-                level, members, strict, hasCalcMembers);
+                level, members, strict, hasCalcMembers, hasNonCalcMembers);
         }
 
         public RolapLevel getLevel() {
@@ -484,8 +489,16 @@ public abstract class RolapNativeSet extends RolapNative {
             return members;
         }
 
-        public boolean isPreferInterpreter() {
-            return true;
+        public boolean isPreferInterpreter(boolean joinArg) {
+            if (joinArg) {
+                // If this enumeration only contains calculated members,
+                // prefer non-native evaluation.
+                return hasCalcMembers && !hasNonCalcMembers;
+            } else {
+                // For non-join usage, always prefer non-native
+                // eval, since the members are already known.
+                return true;
+            }
         }
 
         public boolean hasCalcMembers() {
@@ -711,14 +724,18 @@ public abstract class RolapNativeSet extends RolapNative {
     }
 
     /**
-     * If all involved sets are already known, like in crossjoin({a,b}, {c,d}),
-     * then use the interpreter.
+     * Tests whether non-native evaluation is preferred for the
+     * given arguments.
      *
-     * @return true if <em>all</em> args are prefer the interpreter
+     * @param joinArg true if evaluating a cross-join; false if
+     * evaluating a single-input expression such as filter
+     *
+     * @return true if <em>all</em> args prefer the interpreter
      */
-    protected boolean isPreferInterpreter(CrossJoinArg[] args) {
+    protected boolean isPreferInterpreter(
+        CrossJoinArg[] args, boolean joinArg) {
         for (CrossJoinArg arg : args) {
-            if (!arg.isPreferInterpreter()) {
+            if (!arg.isPreferInterpreter(joinArg)) {
                 return false;
             }
         }

@@ -429,12 +429,13 @@ public class NonEmptyTest extends FoodMartTestCase {
                 + "  [Time].[1997].[Q1].[1])");
     }
 
-    /** SQL does not make sense because alle members are known */
+    /** use SQL even when all members are known */
     public void testCjEnumEnum() {
-        checkNotNative(
+        checkNative(
+                4,
                 4,
                 "select {[Measures].[Unit Sales]} ON COLUMNS, "
-                        + "Crossjoin({[Product].[All Products].[Drink].[Beverages], [Product].[All Products].[Drink].[Dairy]}, {[Customers].[All Customers].[USA].[OR].[Portland], [Customers].[All Customers].[USA].[OR].[Salem]}) ON ROWS "
+                        + "NonEmptyCrossjoin({[Product].[All Products].[Drink].[Beverages], [Product].[All Products].[Drink].[Dairy]}, {[Customers].[All Customers].[USA].[OR].[Portland], [Customers].[All Customers].[USA].[OR].[Salem]}) ON ROWS "
                         + "from [Sales] ");
     }
 

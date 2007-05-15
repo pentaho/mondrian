@@ -80,7 +80,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
                 "arguments not supported");
             return null;
         }
-        if (isPreferInterpreter(cargs)) {
+        if (isPreferInterpreter(cargs, true)) {
             // Native evaluation wouldn't buy us anything, so no
             // need to alert
             return null;

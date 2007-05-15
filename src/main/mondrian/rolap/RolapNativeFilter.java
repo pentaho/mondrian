@@ -93,7 +93,7 @@ public class RolapNativeFilter extends RolapNativeSet {
         if (cargs == null) {
             return null;
         }
-        if (isPreferInterpreter(cargs)) {
+        if (isPreferInterpreter(cargs, false)) {
             return null;
         }
 
