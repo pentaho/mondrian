@@ -2414,35 +2414,10 @@ class CrossJoinFunDef extends FunDefBase {
                 }                
             }
 
-            Set<Member> independentSlicerMembers = null;
-            Set<Member> dependentSlicerMembers = null;
+            List<Member> slicerMembers = null;
             if (evaluator instanceof RolapEvaluator) {
                 RolapEvaluator rev = (RolapEvaluator) evaluator;
-                independentSlicerMembers = 
-                    new HashSet<Member>();
-                dependentSlicerMembers = 
-                    new HashSet<Member>();
-                        
-                for (Member m : rev.getSlicerMembers()) {
-                    // Slicer member is said to be independent if CrossJoin
-                    // computation is not affected by it. CrossJoin is not
-                    // affected by members that appear in the CrossJoin
-                    // arguments.
-                    boolean slicerFound = false;
-                    for (Member lm : listMembers) {
-                        Hierarchy h = lm.getHierarchy();
-                        if (h.equals(m.getHierarchy())) {
-                            slicerFound = true;
-                            break;
-                        }
-                    }
-                    
-                    if (slicerFound) {
-                        independentSlicerMembers.add(m);
-                    } else {
-                        dependentSlicerMembers.add(m);                        
-                    }
-                }
+                slicerMembers = rev.getSlicerMembers();
             }
             
             // Now we have the non-List-Members, but some of them may not be 
@@ -2456,23 +2431,14 @@ class CrossJoinFunDef extends FunDefBase {
             List<Member[]> nonAllMemberList = new ArrayList<Member[]>();
             
             Member em;
-            boolean isIndependentSlicerMember = false;
-            boolean isDependentSlicerMember = false;
+            boolean isSlicerMember = false;
             for (int i = 0; i < evalMembers.length; i++) {
                 em = evalMembers[i];
                 
-                if (independentSlicerMembers == null) {
-                    isIndependentSlicerMember = false;
+                if (slicerMembers == null) {
+                    isSlicerMember = false;
                 } else {
-                    isIndependentSlicerMember = 
-                        independentSlicerMembers.contains(em);
-                }
-                
-                if (dependentSlicerMembers == null) {
-                    isDependentSlicerMember = false;
-                } else {
-                    isDependentSlicerMember = 
-                        dependentSlicerMembers.contains(em);
+                    isSlicerMember = slicerMembers.contains(em);
                 }
                 
                 if (em == null) {
@@ -2483,18 +2449,14 @@ class CrossJoinFunDef extends FunDefBase {
                 if (em.isMeasure()) {
                     continue;
                 }
-                
-                if (isDependentSlicerMember) {
-                    // Keep members unchanged if they are dependent
-                    // slicer members(otherwise they will be replaced by the
-                    // "all" member)
+                if (em.isCalculated() && !isSlicerMember) {
                     continue;
                 }
                 
                 // If the member is not the All member;
-                // or if it is an independent slicer member,
+                // or if it is a slicer member,
                 // replace with the "all" member.
-                if (!em.isAll() || isIndependentSlicerMember) {
+                if (!em.isAll() || isSlicerMember) {
                     Hierarchy h = em.getHierarchy();
                     Member[] rootMembers = schemaReader.getHierarchyRootMembers(h);
                     if (h.hasAll()) {
