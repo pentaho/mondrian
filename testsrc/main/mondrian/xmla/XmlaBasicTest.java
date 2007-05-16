@@ -422,7 +422,19 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
         doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
     }
+    
+    public void testExecuteWithMemberKeyDimensionProperty()
+                throws Exception {
+            String requestType = "EXECUTE";
 
+            doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+        }
+    public void testExecuteWithDimensionProperties()
+                throws Exception {
+            String requestType = "EXECUTE";
+
+            doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+        }
     private Properties getDefaultRequestProperties(String requestType) {
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);

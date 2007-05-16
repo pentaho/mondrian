@@ -1399,19 +1399,44 @@ public class XmlaHandler implements XmlaConstants {
                     "name", hierarchy.getName()
                 });
                 for (final String prop : props) {
-                    String longPropName = longPropNames.get(prop);
-                    if (longPropName == null) {
-                        longPropName = prop;
-                    }
                     writer.element(
-                        prop, new String[]{
-                        "name",
-                        hierarchy.getUniqueName() + "." +
-                            Util.quoteMdxIdentifier(longPropName),
-                    });
+                        prop, getAttributes(prop, hierarchy));
                 }
                 writer.endElement(); // HierarchyInfo
             }
+        }
+
+        private String[] getAttributes(String prop, Hierarchy hierarchy) {
+            String actualPropName = getPropertyName(prop);
+            List<String> values = new ArrayList<String>();
+            values.add("name");
+            values.add(hierarchy.getUniqueName() + "." +
+                    Util.quoteMdxIdentifier(actualPropName));
+            if (longPropNames.get(prop) == null){
+                //Adding type attribute to the optional properties
+                values.add("type");
+                values.add(getXsdType(actualPropName));
+            }
+            return values.toArray(new String[values.size()]);
+        }
+
+        private String getXsdType(String prop) {
+            Property.Datatype datatype = Property.lookup(prop, false).getType();
+            if(Property.Datatype.TYPE_NUMERIC.equals(datatype)){
+                    return RowsetDefinition.Type.UnsignedInteger.columnType;
+            }
+            if(Property.Datatype.TYPE_BOOLEAN.equals(datatype)){
+                    return RowsetDefinition.Type.Boolean.columnType;
+            }
+            return RowsetDefinition.Type.String.columnType;
+        }
+
+        private String getPropertyName(String prop) {
+            String actualPropertyName = longPropNames.get(prop);
+            if(actualPropertyName == null){
+                return prop;
+            }
+            return actualPropertyName;
         }
 
         private void axes(SaxWriter writer) {

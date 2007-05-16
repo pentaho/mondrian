@@ -3025,7 +3025,7 @@ The default value for this property is an empty string.</PropertyDescription>
                                     <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Measures].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Measures].[PARENT_UNIQUE_NAME]"/>
+                                    <PARENT_UNIQUE_NAME name="[Measures].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="Axis1">
@@ -3035,7 +3035,7 @@ The default value for this property is an empty string.</PropertyDescription>
                                     <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Store].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Store].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Store].[PARENT_UNIQUE_NAME]"/>
+                                    <PARENT_UNIQUE_NAME name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="SlicerAxis">

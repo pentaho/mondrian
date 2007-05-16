@@ -401,6 +401,13 @@ public class Property extends EnumeratedValues.BasicValue {
     public static final Property DISPLAY_INFO =
             new Property("DISPLAY_INFO", Datatype.TYPE_NUMERIC, DISPLAY_INFO_ORDINAL, false, true, false, "Display instruction of a member for XML/A");
 
+     public static final int MEMBER_KEY_ORDINAL = 45;
+    /**
+     * Definition of the property which
+     * holds the member key of the current member.
+     */
+    public static final Property MEMBER_KEY =
+            new Property("MEMBER_KEY", Datatype.TYPE_STRING, MEMBER_KEY_ORDINAL, false, true, false, "Member key.");
     /**
      * The various property names which define a format string.
      */
@@ -533,6 +540,7 @@ public class Property extends EnumeratedValues.BasicValue {
                 SOLVE_ORDER,
                 VALUE,
                 DATATYPE,
+                MEMBER_KEY,
             });
 
     static {
