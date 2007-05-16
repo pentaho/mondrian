@@ -34,6 +34,7 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      *
      * @param sqlQuery the query to modify
      * @param levelToColumnMap where to find each level's key
+     * @param relationNamesToStarTableMap table alias map
      * @param aggStar Aggregate star, if we are reading from an aggregate table,
      * @param parent the parent member that restricts the returned children
      */
@@ -51,6 +52,7 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      *
      * @param sqlQuery the query to modify
      * @param levelToColumnMap where to find each level's key
+     * @param relationNamesToStarTableMap table alias map
      * @param aggStar Aggregate table, or null if query is against fact table
      * @param parents list of parent members that restrict the returned children.
      */

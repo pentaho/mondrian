@@ -1719,6 +1719,41 @@ public class NonEmptyTest extends FoodMartTestCase {
         );
     }
     
+    public void testCalculatedSlicerMember() {
+        // This test verifies that members(the FILTER members in the query
+        // below) on the slicer are ignored in CrossJoin emptiness check.
+        // Otherwise, if they are not ignored, stack over flow will occur
+        // because emptiness check depends on a calculated slicer member
+        // which references the non-empty set being computed.
+        executeQuery(
+            "With " +
+            "Set BM_PRODUCT as '{[Product].[All Products].[Drink]}' " +
+            "Set BM_EDU as '[Education Level].[Education Level].Members' " +
+            "Set BM_GENDER as '{[Gender].[Gender].[M]}' " +
+            "Set NECJ_SET as 'NonEmptyCrossJoin(BM_GENDER, NonEmptyCrossJoin(BM_EDU,BM_PRODUCT))' " +
+            "Set GM_PRODUCT as 'Generate(NECJ_SET, {[Product].CurrentMember})' " +
+            "Set GM_EDU as 'Generate(NECJ_SET, {[Education Level].CurrentMember})' " +
+            "Set GM_GENDER as 'Generate(NECJ_SET, {[Gender].CurrentMember})' " +
+            "Set GM_MEASURE as '{[Measures].[Unit Sales]}' " +
+            "Member [Education Level].FILTER1 as 'Aggregate(GM_EDU)' " +
+            "Member [Gender].FILTER2 as 'Aggregate(GM_GENDER)' " +
+            "Select " +
+            "GM_PRODUCT on rows, GM_MEASURE on columns " +
+            "From [Sales] Where ([Education Level].FILTER1, [Gender].FILTER2)"
+        );
+    }
+    
+    public void testDependentSlicerMember() {
+        // Note: this test produces different result under native or nonnative
+        // evaluation. To be fixed.
+        executeQuery("with set [p] as '[Product].[Product Family].members' " +
+            "set [s] as '[Store].[Store Country].members' " +
+            "set [ne] as 'nonemptycrossjoin([p],[s])' " +
+            "set [nep] as 'Generate([ne],{[Product].CurrentMember})' " +
+            "select [nep] on columns from sales " +
+            "where ([Store].[Store Country].[Mexico])");
+    }
+    
     /**
      * make sure the following is not run natively
      */

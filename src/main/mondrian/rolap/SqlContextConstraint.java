@@ -201,8 +201,8 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     * @param strict defines the behaviour if the evaluator context
     * contains calculated members. If true, an exception is thrown,
     * otherwise calculated members are silently ignored. The
-    * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, mondrian.rolap.aggmatcher.AggStar, RolapMember)} and
-    * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, mondrian.rolap.aggmatcher.AggStar, java.util.List)} will
+    * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, java.util.Map, mondrian.rolap.aggmatcher.AggStar, RolapMember)} and
+    * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, java.util.Map, mondrian.rolap.aggmatcher.AggStar, java.util.List)} will
     * never accept a calculated member as parent.
     */
     SqlContextConstraint(RolapEvaluator evaluator, boolean strict) {
@@ -234,7 +234,11 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
             sqlQuery, levelToColumnMap, relationNamesToStarTableMap,
             aggStar, parent, true);
     }
-    
+
+    /**
+     * Adds <code>parents</code> to the current
+     * context and restricts the SQL resultset to that new context.
+     */
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,

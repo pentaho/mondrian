@@ -47,10 +47,8 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
      */
     private RolapDependencyTestingEvaluator(
             RolapEvaluatorRoot root,
-            RolapDependencyTestingEvaluator evaluator,
-            CellReader cellReader,
-            Member[] cloneCurrentMembers) {
-        super(root, evaluator, cellReader, cloneCurrentMembers);
+            RolapDependencyTestingEvaluator evaluator) {
+        super(root, evaluator);
     }
 
     public Object evaluate(
@@ -131,12 +129,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
     }
 
     public RolapEvaluator _push() {
-        Member[] cloneCurrentMembers = getMembers().clone();
-        return new RolapDependencyTestingEvaluator(
-                root,
-                this,
-                cellReader,
-                cloneCurrentMembers);
+        return new RolapDependencyTestingEvaluator(root, this);
     }
 
 

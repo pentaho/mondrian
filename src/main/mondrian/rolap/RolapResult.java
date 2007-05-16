@@ -221,7 +221,7 @@ class RolapResult extends ResultBase {
 
             if (! axisMembers.isEmpty()) {
                 for (Member m : axisMembers) {
-                    evaluator.setContext(m);
+                    evaluator.setSlicerContext(m);
                     if (m.isMeasure()) {
                         // A Measure was explicitly declared in the
                         // Slicer, don't need to worry about Measures

@@ -60,40 +60,37 @@ public class RolapEvaluator implements Evaluator {
     private final Member[] calcMembers;
     private int calcMemberCount;
 
+    private final List<Member> slicerMembers;
 
     /**
      * Creates an evaluator.
      */
     protected RolapEvaluator(
             RolapEvaluatorRoot root,
-            RolapEvaluator parent,
-            CellReader cellReader,
-            Member[] currentMembers) {
+            RolapEvaluator parent) {
+        this.iterationLength = 1;
         this.root = root;
         this.parent = parent;
-        if (parent == null) {
-            this.depth = 0;
-            this.nonEmpty = false;
-        } else {
-          this.depth = parent.depth + 1;
-          this.nonEmpty = parent.nonEmpty;
-        }
-        this.iterationLength = 1;
-        this.evalAxes = false;
 
-        this.cellReader = cellReader;
-        if (currentMembers == null) {
-            this.currentMembers = new Member[root.cube.getDimensions().length];
+        if (parent == null) {
+            depth = 0;
+            nonEmpty = false;
+            evalAxes = false;
+            cellReader = null;
+            currentMembers = new Member[root.cube.getDimensions().length];
+            calcMembers = new Member[this.currentMembers.length];            
+            calcMemberCount = 0;
+            slicerMembers = new ArrayList<Member>();
         } else {
-            this.currentMembers = currentMembers;
-        }
-        calcMembers = new Member[this.currentMembers.length];
-        calcMemberCount = 0;
-        for (Member member : this.currentMembers) {
-            if (member != null && member.isCalculated()) {
-                addCalcMember(member);
-            }
-        }
+            depth = parent.depth + 1;
+            nonEmpty = parent.nonEmpty;
+            evalAxes = parent.evalAxes;
+            cellReader = parent.cellReader;
+            currentMembers = parent.currentMembers.clone();
+            calcMembers = parent.calcMembers.clone();
+            calcMemberCount = parent.calcMemberCount;
+            slicerMembers = new ArrayList<Member> (parent.slicerMembers);
+        }        
     }
 
     /**
@@ -102,7 +99,7 @@ public class RolapEvaluator implements Evaluator {
      * @param root Shared context between this evaluator and its children
      */
     public RolapEvaluator(RolapEvaluatorRoot root) {
-        this(root, null, null, null);
+        this(root, null);
 
         // we expect client to set CellReader
 
@@ -260,14 +257,9 @@ public class RolapEvaluator implements Evaluator {
      */
     protected RolapEvaluator _push() {
         getQuery().checkCancelOrTimeout();
-        Member[] cloneCurrentMembers = currentMembers.clone();
-        RolapEvaluator newEvaluator =
-            new RolapEvaluator(
-                root,
-                this,
-                cellReader,
-                cloneCurrentMembers);
-        newEvaluator.setEvalAxes(evalAxes);
+        
+        RolapEvaluator newEvaluator = new RolapEvaluator(root, this);
+
         return newEvaluator;
     }
 
@@ -345,6 +337,27 @@ public void printCurrentMemberNames() {
         }
     }
 
+    /**
+     * Add a slicer member to the evaulator context, and remember it as part
+     * of the slicer. The slicer members are passed onto derived evaluators
+     * so that functions using those evaluators can choose to ignore the
+     * slicer members. One such function is CrossJoin emptiness check.
+     * 
+     * @param member a member in the slicer
+     */
+    public void setSlicerContext(Member member) {
+        setContext(member);
+        slicerMembers.add(member);        
+    }
+    
+    /**
+     * Return the list of slicer members in the current evaluator context.
+     * @return slicerMembers
+     */
+    public List<Member> getSlicerMembers() {
+        return slicerMembers;
+    }
+    
     public Member setContext(Member member) {
         RolapMember m = (RolapMember) member;
         int ordinal = m.getDimension().getOrdinal(root.cube);

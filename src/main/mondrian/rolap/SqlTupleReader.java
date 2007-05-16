@@ -52,7 +52,7 @@ import java.util.*;
  * then we can not store the parent/child pairs in the MemberCache and
  * {@link TupleConstraint#getMemberChildrenConstraint(RolapMember)}
  * must return null. Also
- * {@link TupleConstraint#addConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map)}
+ * {@link TupleConstraint#addConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, java.util.Map)}
  * is required to join the fact table for the levels table.</li>
  * </ul>
  *

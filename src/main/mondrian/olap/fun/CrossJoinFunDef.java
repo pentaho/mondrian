@@ -21,8 +21,8 @@ import mondrian.olap.type.SetType;
 import mondrian.olap.type.TupleType;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
-import mondrian.util.Bug;
 import mondrian.util.UnsupportedList;
+import mondrian.rolap.*;
 
 import java.util.*;
 
@@ -2403,8 +2403,7 @@ class CrossJoinFunDef extends FunDefBase {
                 ? (Member[]) list.get(0) 
                 : new Member[] { (Member) list.get(0) }; 
 
-
-            // Remove listMembers from evalMembers    
+            // Remove listMembers from evalMembers and independentSlicerMembers   
             for (Member lm : listMembers) {
                 Hierarchy h = lm.getHierarchy();
                 for (int i = 0; i < evalMembers.length; i++) {
@@ -2412,9 +2411,40 @@ class CrossJoinFunDef extends FunDefBase {
                     if ((em != null) && h.equals(em.getHierarchy())) {
                         evalMembers[i] = null;
                     }
-                }
+                }                
             }
 
+            Set<Member> independentSlicerMembers = null;
+            Set<Member> dependentSlicerMembers = null;
+            if (evaluator instanceof RolapEvaluator) {
+                RolapEvaluator rev = (RolapEvaluator) evaluator;
+                independentSlicerMembers = 
+                    new HashSet<Member>();
+                dependentSlicerMembers = 
+                    new HashSet<Member>();
+                        
+                for (Member m : rev.getSlicerMembers()) {
+                    // Slicer member is said to be independent if CrossJoin
+                    // computation is not affected by it. CrossJoin is not
+                    // affected by members that appear in the CrossJoin
+                    // arguments.
+                    boolean slicerFound = false;
+                    for (Member lm : listMembers) {
+                        Hierarchy h = lm.getHierarchy();
+                        if (h.equals(m.getHierarchy())) {
+                            slicerFound = true;
+                            break;
+                        }
+                    }
+                    
+                    if (slicerFound) {
+                        independentSlicerMembers.add(m);
+                    } else {
+                        dependentSlicerMembers.add(m);                        
+                    }
+                }
+            }
+            
             // Now we have the non-List-Members, but some of them may not be 
             // All Members (default Member need not be the All Member) and
             // for some Hierarchies there may not be an All Member. 
@@ -2424,21 +2454,47 @@ class CrossJoinFunDef extends FunDefBase {
             SchemaReader schemaReader = evaluator.getSchemaReader();
             allMemberList = new ArrayList<Member>();
             List<Member[]> nonAllMemberList = new ArrayList<Member[]>();
-            for (int i = 0, j = 0; i < evalMembers.length; i++) {
-                Member em = evalMembers[i];
+            
+            Member em;
+            boolean isIndependentSlicerMember = false;
+            boolean isDependentSlicerMember = false;
+            for (int i = 0; i < evalMembers.length; i++) {
+                em = evalMembers[i];
+                
+                if (independentSlicerMembers == null) {
+                    isIndependentSlicerMember = false;
+                } else {
+                    isIndependentSlicerMember = 
+                        independentSlicerMembers.contains(em);
+                }
+                
+                if (dependentSlicerMembers == null) {
+                    isDependentSlicerMember = false;
+                } else {
+                    isDependentSlicerMember = 
+                        dependentSlicerMembers.contains(em);
+                }
+                
                 if (em == null) {
                     // Above we might have removed some by setting them
-                    // to null.
+                    // to null. These are the CrossJoin axes.
                     continue;
                 }
                 if (em.isMeasure()) {
                     continue;
                 }
-                if (em.isCalculated()) {
+                
+                if (isDependentSlicerMember) {
+                    // Keep members unchanged if they are dependent
+                    // slicer members(otherwise they will be replaced by the
+                    // "all" member)
                     continue;
                 }
-                // The member is not the All member
-                if (! em.isAll()) {
+                
+                // If the member is not the All member;
+                // or if it is an independent slicer member,
+                // replace with the "all" member.
+                if (!em.isAll() || isIndependentSlicerMember) {
                     Hierarchy h = em.getHierarchy();
                     Member[] rootMembers = schemaReader.getHierarchyRootMembers(h);
                     if (h.hasAll()) {

@@ -234,6 +234,8 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "Row #11: $77,236\n" +
         "Row #11: $49,178\n";
 
+    // This result is actually incorrect for native evaluation.
+    // Keep the test case here to test the SQL generation.
     public static String resultStoreCube =
         "Axis #0:\n" +
         "{}\n" +
