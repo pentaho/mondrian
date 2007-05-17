@@ -42,6 +42,7 @@ import mondrian.xmla.XmlaBasicTest;
 import mondrian.xmla.XmlaExcel2000Test;
 import mondrian.xmla.XmlaExcelXPTest;
 import mondrian.xmla.XmlaErrorTest;
+import mondrian.xmla.XmlaCognosTest;
 import mondrian.xmla.impl.DynamicDatasourceXmlaServletTest;
 import mondrian.xmla.test.XmlaTest;
 import mondrian.test.clearview.*;
@@ -198,6 +199,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(XmlaErrorTest.class);
             suite.addTestSuite(XmlaExcel2000Test.class);
             suite.addTestSuite(XmlaExcelXPTest.class);
+            suite.addTestSuite(XmlaCognosTest.class);
             suite.addTestSuite(DynamicDatasourceXmlaServletTest.class);
             suite.addTest(XmlaTest.suite());
             if (isRunOnce()) suite.addTestSuite(TestCalculatedMembers.class);

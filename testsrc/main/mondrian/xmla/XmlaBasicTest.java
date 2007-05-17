@@ -36,26 +36,8 @@ import junit.framework.AssertionFailedError;
  * @version $Id$
  */
 public class XmlaBasicTest extends XmlaBaseTestCase {
-    // request.type
-    public static final String REQUEST_TYPE_PROP = "request.type";
 
-    // data.source.info
-    public static final String DATA_SOURCE_INFO_PROP = "data.source.info";
-    public static final String DATA_SOURCE_INFO = "MondrianFoodMart";
-
-    // catalog
-    public static final String CATALOG_PROP     = "catalog";
-    public static final String CATALOG_NAME_PROP= "catalog.name";
-    public static final String CATALOG          = "FoodMart";
-
-    // cube
-    public static final String CUBE_NAME_PROP   = "cube.name";
-    public static final String SALES_CUBE       = "Sales";
-
-    // format
-    public static final String FORMAT_PROP     = "format";
     public static final String FORMAT_TABLULAR = "Tabular";
-    public static final String FORMAT_MULTI_DIMENSIONAL = "Multidimensional";
 
     // unique name
     public static final String UNIQUE_NAME_ELEMENT    = "unique.name.element";
@@ -77,8 +59,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     public static final String CONTENT_SCHEMADATA =
                 Enumeration.Content.SchemaData.name();
 
-    private static final boolean DEBUG = false;
-
     public XmlaBasicTest() {
     }
 
@@ -98,16 +78,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     protected Class<? extends XmlaRequestCallback> getServletCallbackClass() {
         return null;
-    }
-
-    protected Document fileToDocument(String filename)
-                throws IOException , SAXException {
-        String s = getDiffRepos().expand(null, filename);
-        if (s.equals(filename)) {
-            s = "<?xml version='1.0'?><Empty/>";
-        }
-        Document doc = XmlUtil.parse(new ByteArrayInputStream(s.getBytes()));
-        return doc;
     }
 
     protected String extractSoapResponse(
@@ -435,16 +405,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
             doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
         }
-    private Properties getDefaultRequestProperties(String requestType) {
-        Properties props = new Properties();
-        props.setProperty(REQUEST_TYPE_PROP, requestType);
-        props.setProperty(CATALOG_PROP, CATALOG);
-        props.setProperty(CATALOG_NAME_PROP, CATALOG);
-        props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
-        props.setProperty(FORMAT_PROP, FORMAT_MULTI_DIMENSIONAL);
-        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
-        return props;
-    }
 
     // Testcase for bug 1653587.
     public void testExecuteCrossjoin() throws Exception {
@@ -490,173 +450,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
         doTest(requestType, props, testContext);
     }
-
-    /**
-     * Executes an XMLA request, reading the text of the request and the
-     * response from attributes in {@link #getDiffRepos()}.
-     *
-     * @param requestType Request type: "DISCOVER_DATASOURCES", "EXECUTE", etc.
-     * @param props Properties for request
-     * @param testContext Test context
-     */
-    public void doTest(
-        String requestType,
-        Properties props,
-        TestContext testContext) throws Exception {
-
-        String requestText = fileToString("request");
-        doTestInline(
-            requestType, requestText, "${response}", props, testContext);
-    }
-
-    public void doTestInline(
-        String requestType,
-        String requestText,
-        String respFileName,
-        Properties props,
-        TestContext testContext)
-        throws Exception
-    {
-        Document responseDoc = (respFileName != null)
-            ? fileToDocument(respFileName)
-            : null;
-
-        String connectString = testContext.getConnectString();
-        Map<String,String> catalogNameUrls = getCatalogNameUrls(testContext);
-
-        Document expectedDoc;
-
-        // Test 'schemadata' first, so that if it fails, we will be able to
-        // amend the ref file with the fullest XML response.
-        final String ns = "cxmla";
-        expectedDoc = (responseDoc != null)
-            ? XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "schemadata"}}, ns)
-            : null;
-        doTests(
-            requestText, props, null, connectString, catalogNameUrls,
-            expectedDoc, CONTENT_SCHEMADATA);
-
-        if (requestType.equals("EXECUTE")) {
-            return;
-        }
-
-        expectedDoc = (responseDoc != null)
-            ? XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "none"}}, ns)
-            : null;
-
-        doTests(requestText, props, null, connectString, catalogNameUrls,
-                expectedDoc, CONTENT_NONE);
-
-        expectedDoc = (responseDoc != null)
-            ? XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "data"}}, ns)
-            : null;
-        doTests(requestText, props, null, connectString, catalogNameUrls,
-                expectedDoc, CONTENT_DATA);
-
-        expectedDoc = (responseDoc != null)
-            ? XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "schema"}}, ns)
-            : null;
-        doTests(requestText, props, null, connectString, catalogNameUrls,
-                expectedDoc, CONTENT_SCHEMA);
-    }
-
-    protected void doTests(
-            String soapRequestText,
-            Properties props,
-            String soapResponseText,
-            String connectString,
-            Map<String, String> catalogNameUrls,
-            Document expectedDoc,
-            String content) throws Exception {
-
-        if (content != null) {
-            props.setProperty(CONTENT_PROP, content);
-        }
-        soapRequestText = Util.replaceProperties(
-            soapRequestText, Util.toMap(props));
-
-if (DEBUG) {
-System.out.println("soapRequestText="+soapRequestText);
-}
-        Document soapReqDoc = XmlUtil.parseString(soapRequestText);
-
-        Document xmlaReqDoc = XmlaSupport.extractBodyFromSoap(soapReqDoc);
-
-        // do XMLA
-        byte[] bytes =
-            XmlaSupport.processXmla(xmlaReqDoc, connectString, catalogNameUrls);
-        String response = new String(bytes);
-if (DEBUG) {
-System.out.println("xmla response="+response);
-}
-        if (XmlUtil.supportsValidation()) {
-            if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
-if (DEBUG) {
-                System.out.println("XML Data is Valid");
-}
-            }
-        }
-
-        // do SOAP-XMLA
-        bytes = XmlaSupport.processSoapXmla(soapReqDoc, connectString, catalogNameUrls, null);
-        response = new String(bytes);
-if (DEBUG) {
-System.out.println("soap response="+response);
-}
-        if (XmlUtil.supportsValidation()) {
-            if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
-if (DEBUG) {
-                System.out.println("XML Data is Valid");
-}
-            }
-        }
-
-        Document gotDoc = ignoreLastUpdateDate(XmlUtil.parse(bytes));
-        String gotStr = XmlUtil.toString(gotDoc, true);
-        gotStr = Util.maskVersion(gotStr);
-        if (expectedDoc != null) {
-            String expectedStr = XmlUtil.toString(expectedDoc, true);
-if (DEBUG) {
-System.out.println("GOT:\n"+gotStr);
-System.out.println("EXPECTED:\n"+expectedStr);
-System.out.println("XXXXXXX");
-}
-            try {
-                XMLAssert.assertXMLEqual(expectedStr, gotStr);
-            } catch (AssertionFailedError e) {
-                if (content.equals(CONTENT_SCHEMADATA)) {
-                    // Let DiffRepository do the comparison. It will output
-                    // a textual difference, and will update the logfile,
-                    // XmlaBasicTest.log.xml. If you agree with the change,
-                    // copy this file to XmlaBasicTest.ref.xml.
-                    getDiffRepos().assertEquals("response", "${response}", gotStr);
-                } else {
-                    throw e;
-                }
-            }
-        } else {
-            if (content.equals(CONTENT_SCHEMADATA)) {
-                getDiffRepos().amend("${response}", gotStr);
-            }
-        }
-    }
-
-    private Document ignoreLastUpdateDate(Document document) {
-		NodeList elements = document.getElementsByTagName("LAST_SCHEMA_UPDATE");
-		for (int i = elements.getLength(); i > 0; i--) {
-			removeNode(elements.item(i-1));
-		}
-		return document;
-	}
-
-	private void removeNode(Node node) {
-		Node parentNode = node.getParentNode();
-		parentNode.removeChild(node);
-	}
 
     protected String getSessionId(Action action) {
         throw new UnsupportedOperationException();
