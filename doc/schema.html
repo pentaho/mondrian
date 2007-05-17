@@ -1336,7 +1336,7 @@ END</code>
 element within a <code>&lt;<a href="#XML_Level">Level</a>&gt;</code>, like this:</p>
 
 <blockquote>
-  <code>&lt;<a href="#XML_Level">Level</a> name="MyLevel" column="LevelColumn" uniqueMembers="true"/&gt;<br>  &lt;<a
+  <code>&lt;<a href="#XML_Level">Level</a> name="MyLevel" column="LevelColumn" uniqueMembers="true"&gt;<br>  &nbsp;  &lt;<a
  href="#XML_Property">Property</a> name="MyProp" column="PropColumn" formatter="com.acme.MyPropertyFormatter"/&gt;<br>&lt;<a
  href="#XML_Level">Level</a>/&gt;</code>
 </blockquote>
@@ -1422,8 +1422,9 @@ then the format string is applied to the cell value. Here is the same property w
 format string:</p>
 
 <blockquote>
-  <code>&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
-name="FORMAT_STRING" expression="Iif(Value &lt; 0,
+  <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
+name="FORMAT_STRING"<br>
+&nbsp;&nbsp;&nbsp; expression="Iif(Value &lt; 0,
 '|($#,##0.00)|style=red', '|$#,##0.00|style=green')"/&gt;</code>
 </blockquote>
 
@@ -1433,14 +1434,12 @@ name="FORMAT_STRING" expression="Iif(Value &lt; 0,
 As with <a href="#Measures">measures</a>,
 setting datatype specifies how the calculated member is returned via XML for Analysis.
 The DATATYPE property of a calculated member can have values "<code>String</code>", "<code>Integer</code>", or
-"<code>Numeric</code>"
+"<code>Numeric</code>":
 </p>
 
 <blockquote>
-&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
-name="DATATYPE" value="Numeric"/&gt;<br>
-</code>
-</blockquote>
+<code>&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
+name="DATATYPE" value="Numeric"/&gt;</code></blockquote>
 
 
 
@@ -2758,7 +2757,7 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
 <br />
 <br />
 
-<p>Author: Julian Hyde; last modified August 2006.<br/>
+<p>Author: Julian Hyde; last modified May 2007.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">log</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc.<br/>
