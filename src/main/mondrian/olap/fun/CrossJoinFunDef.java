@@ -2449,14 +2449,30 @@ class CrossJoinFunDef extends FunDefBase {
                 if (em.isMeasure()) {
                     continue;
                 }
-                if (em.isCalculated() && !isSlicerMember) {
+                
+                //
+                // The unconstrained members need to be replaced by the "All"
+                // member based on its usage and property. This is currently
+                // also the behavior of native cross join evaluation. See
+                // SqlConstraintUtils.addContextConstraint()
+                //
+                // on slicer? | calculated? | replace with All?
+                // -----------------------------------------------
+                //     Y      |      Y      |      Y always
+                //     Y      |      N      |      N
+                //     N      |      Y      |      N
+                //     N      |      N      |      Y if not "All"
+                // -----------------------------------------------
+                //
+                if (( isSlicerMember && !em.isCalculated()) ||
+                    (!isSlicerMember &&  em.isCalculated())) {
                     continue;
                 }
                 
                 // If the member is not the All member;
                 // or if it is a slicer member,
                 // replace with the "all" member.
-                if (!em.isAll() || isSlicerMember) {
+                if (isSlicerMember || !em.isAll()) {
                     Hierarchy h = em.getHierarchy();
                     Member[] rootMembers = schemaReader.getHierarchyRootMembers(h);
                     if (h.hasAll()) {

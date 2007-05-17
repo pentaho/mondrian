@@ -1725,7 +1725,11 @@ public class NonEmptyTest extends FoodMartTestCase {
         // Otherwise, if they are not ignored, stack over flow will occur
         // because emptiness check depends on a calculated slicer member
         // which references the non-empty set being computed.
-        executeQuery(
+        //
+        // Bcause native evaluation already ignores calculated members on
+        // the slicer, both native and non-native evaluation should return
+        // the same result.
+        checkNative(20, 1,
             "With " +
             "Set BM_PRODUCT as '{[Product].[All Products].[Drink]}' " +
             "Set BM_EDU as '[Education Level].[Education Level].Members' " +
@@ -1743,17 +1747,113 @@ public class NonEmptyTest extends FoodMartTestCase {
         );
     }
     
-    public void testDependentSlicerMember() {
-        // Note: this test produces different result under native or nonnative
-        // evaluation. To be fixed.
-        executeQuery("with set [p] as '[Product].[Product Family].members' " +
+    public void testIndependentSlicerMemberNonNative() {
+        String query =
+            "with set [p] as '[Product].[Product Family].members' " +
             "set [s] as '[Store].[Store Country].members' " +
             "set [ne] as 'nonemptycrossjoin([p],[s])' " +
             "set [nep] as 'Generate([ne],{[Product].CurrentMember})' " +
             "select [nep] on columns from sales " +
-            "where ([Store].[Store Country].[Mexico])");
+            "where ([Store].[Store Country].[Mexico])";
+
+        String resultNonNative =
+            "Axis #0:\n" +
+            "{[Store].[All Stores].[Mexico]}\n" +
+            "Axis #1:\n" +
+            "{[Product].[All Products].[Drink]}\n" +
+            "{[Product].[All Products].[Food]}\n" +
+            "{[Product].[All Products].[Non-Consumable]}\n" +
+            "Row #0: \n" +
+            "Row #0: \n" +
+            "Row #0: \n";
+        
+        boolean origNativeCJ = 
+            MondrianProperties.instance().EnableNativeCrossJoin.get();
+        MondrianProperties.instance().EnableNativeCrossJoin.set(false);
+        
+        Connection conn = getTestContext().getFoodMartConnection(false);
+        TestContext context = getTestContext(conn);        
+        context.assertQueryReturns(query, resultNonNative);
+        
+        MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
     }
     
+    public void testIndependentSlicerMemberNative() {
+        // Currently this behaves differently from non-native evaluation.
+        String query =
+            "with set [p] as '[Product].[Product Family].members' " +
+            "set [s] as '[Store].[Store Country].members' " +
+            "set [ne] as 'nonemptycrossjoin([p],[s])' " +
+            "set [nep] as 'Generate([ne],{[Product].CurrentMember})' " +
+            "select [nep] on columns from sales " +
+            "where ([Store].[Store Country].[Mexico])";
+
+        String resultNative =
+            "Axis #0:\n" +
+            "{[Store].[All Stores].[Mexico]}\n" +
+            "Axis #1:\n";
+
+        boolean origNativeCJ = 
+            MondrianProperties.instance().EnableNativeCrossJoin.get();
+        MondrianProperties.instance().EnableNativeCrossJoin.set(true);
+
+        Connection conn = getTestContext().getFoodMartConnection(false);
+        TestContext context = getTestContext(conn);        
+        context.assertQueryReturns(query, resultNative);
+        
+        MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
+    }
+
+    public void testDependentSlicerMemberNonNative() {
+        String query =
+            "with set [p] as '[Product].[Product Family].members' " +
+            "set [s] as '[Store].[Store Country].members' " +
+            "set [ne] as 'nonemptycrossjoin([p],[s])' " +
+            "set [nep] as 'Generate([ne],{[Product].CurrentMember})' " +
+            "select [nep] on columns from sales " +
+            "where ([Time].[1998])";
+
+        String resultNonNative =
+            "Axis #0:\n" +
+            "{[Time].[1998]}\n" +
+            "Axis #1:\n";
+        
+        boolean origNativeCJ = 
+            MondrianProperties.instance().EnableNativeCrossJoin.get();
+        MondrianProperties.instance().EnableNativeCrossJoin.set(false);
+
+        Connection conn = getTestContext().getFoodMartConnection(false);
+        TestContext context = getTestContext(conn);        
+        context.assertQueryReturns(query, resultNonNative);
+
+        MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
+}
+
+    public void testDependentSlicerMemberNative() {
+        String query =
+            "with set [p] as '[Product].[Product Family].members' " +
+            "set [s] as '[Store].[Store Country].members' " +
+            "set [ne] as 'nonemptycrossjoin([p],[s])' " +
+            "set [nep] as 'Generate([ne],{[Product].CurrentMember})' " +
+            "select [nep] on columns from sales " +
+            "where ([Time].[1998])";
+
+        String resultNative =
+            "Axis #0:\n" +
+            "{[Time].[1998]}\n" +
+            "Axis #1:\n";
+        
+        boolean origNativeCJ = 
+            MondrianProperties.instance().EnableNativeCrossJoin.get();
+        MondrianProperties.instance().EnableNativeCrossJoin.set(true);
+
+        Connection conn = getTestContext().getFoodMartConnection(false);
+        TestContext context = getTestContext(conn);        
+        context.assertQueryReturns(query, resultNative);
+
+        MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
+    }
+
     /**
      * make sure the following is not run natively
      */

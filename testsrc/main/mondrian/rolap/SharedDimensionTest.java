@@ -111,7 +111,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "set [*BASE_MEMBERS_Store Type] as '[Store Type].[Store Type].Members'\n" +
         "set [*BASE_MEMBERS_Store] as '[Store].[Store State].Members'\n" +
         "select [*BASE_MEMBERS_Measures] ON COLUMNS,\n" +
-        "Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember}) on rows from [Store]";
+        "Non Empty Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember}) on rows from [Store]";
     
     public static String queryNECJMemberList =
         "select {[Measures].[Employee Store Sales]} on columns,\n" +
@@ -244,16 +244,14 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "Axis #2:\n" +
         "{[Store Type].[All Store Types].[Deluxe Supermarket]}\n" +
         "{[Store Type].[All Store Types].[Gourmet Supermarket]}\n" +
-        "{[Store Type].[All Store Types].[HeadQuarters]}\n" +
         "{[Store Type].[All Store Types].[Mid-Size Grocery]}\n" +
         "{[Store Type].[All Store Types].[Small Grocery]}\n" +
         "{[Store Type].[All Store Types].[Supermarket]}\n" +
         "Row #0: 146,045\n" +
         "Row #1: 47,447\n" +
-        "Row #2: \n" +
-        "Row #3: 109,343\n" +
-        "Row #4: 75,281\n" +
-        "Row #5: 193,480\n";
+        "Row #2: 109,343\n" +
+        "Row #3: 75,281\n" +
+        "Row #4: 193,480\n";
 
     public static String resultNECJMemberList =
         "Axis #0:\n" +
