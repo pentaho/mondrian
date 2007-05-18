@@ -27,7 +27,8 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "      <Table name=\"employee\" alias=\"employee\" />\n" +
         "      <Table name=\"employee\" alias=\"employee_manager\" />\n" +
         "    </Join>\n" +
-        "    <Level name=\"Manager\" table=\"employee_manager\" column=\"management_role\" uniqueMembers=\"true\"/>\n" +
+        "    <Level name=\"Role\" table=\"employee_manager\" column=\"management_role\" uniqueMembers=\"true\"/>\n" +
+        "    <Level name=\"Title\" table=\"employee_manager\" column=\"position_title\" uniqueMembers=\"false\"/>\n" +
         "  </Hierarchy>\n" +
         "</Dimension>";
 
@@ -67,7 +68,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "with\n" +
         "  set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Employee], [*BASE_MEMBERS_Store Type])'\n" +
         "  set [*BASE_MEMBERS_Measures] as '{[Measures].[Employee Store Sales], [Measures].[Employee Store Cost]}'\n" +
-        "  set [*BASE_MEMBERS_Employee] as '[Employee].[Manager].Members'\n" +
+        "  set [*BASE_MEMBERS_Employee] as '[Employee].[Role].Members'\n" +
         "  set [*NATIVE_MEMBERS_Employee] as 'Generate([*NATIVE_CJ_SET], {[Employee].CurrentMember})'\n" +
         "  set [*BASE_MEMBERS_Store Type] as '[Store Type].[Store Type].Members'\n" +
         "  set [*NATIVE_MEMBERS_Store Type] as 'Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember})'\n" +
@@ -81,7 +82,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "with\n" +
         "  set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Employee], [*BASE_MEMBERS_Store Type])'\n" +
         "  set [*BASE_MEMBERS_Measures] as '{[Measures].[Employee Store Sales], [Measures].[Employee Store Cost]}'\n" +
-        "  set [*BASE_MEMBERS_Employee] as '[Employee].[Manager].Members'\n" +
+        "  set [*BASE_MEMBERS_Employee] as '[Employee].[Role].Members'\n" +
         "  set [*NATIVE_MEMBERS_Employee] as 'Generate([*NATIVE_CJ_SET], {[Employee].CurrentMember})'\n" +
         "  set [*BASE_MEMBERS_Store Type] as '[Store Type].[Store Type].Members'\n" +
         "  set [*NATIVE_MEMBERS_Store Type] as 'Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember})'\n" +
@@ -95,7 +96,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "with\n" +
         "  set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Employee], [*BASE_MEMBERS_Store Type])'\n" +
         "  set [*BASE_MEMBERS_Measures] as '{[Measures].[Employee Store Sales], [Measures].[Employee Store Cost]}'\n" +
-        "  set [*BASE_MEMBERS_Employee] as '[Employee].[Manager].Members'\n" +
+        "  set [*BASE_MEMBERS_Employee] as '[Employee].[Role].Members'\n" +
         "  set [*NATIVE_MEMBERS_Employee] as 'Generate([*NATIVE_CJ_SET], {[Employee].CurrentMember})'\n" +
         "  set [*BASE_MEMBERS_Store Type] as '[Store Type].[Store Type].Members'\n" +
         "  set [*NATIVE_MEMBERS_Store Type] as 'Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember})'\n" +
@@ -117,9 +118,16 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "select {[Measures].[Employee Store Sales]} on columns,\n" +
         "NonEmptyCrossJoin([Store Type].[Store Type].Members,\n" +
         "{[Employee].[All Employees].[Middle Management],\n" +
-        "[Employee].[All Employees].[Store Management]})\n" +
+        " [Employee].[All Employees].[Store Management]})\n" +
         "on rows from [Employee Store Analysis B]";
     
+    public static String queryNECJMultiLevelMemberList =
+        "select {[Employee Store Sales]} on columns, " +
+        "NonEmptyCrossJoin([Store Type].[Store Type].Members, " +
+        "{[Employee].[Store Management].[Store Manager], " +
+        " [Employee].[Senior Management].[President]}) " +
+        "on rows from [Employee Store Analysis B]";
+
     public static String querySF1711865 =
         "select NON EMPTY {[Product].[Product Family].Members} ON COLUMNS from [Sales 2]";
     
@@ -270,6 +278,19 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "Row #3: $5,932\n" +
         "Row #4: $108,610\n";
     
+    public static String resultNECJMultiLevelMemberList =
+        "Axis #0:\n" +
+        "{}\n" +
+        "Axis #1:\n" +
+        "{[Measures].[Employee Store Sales]}\n" +
+        "Axis #2:\n" +
+        "{[Store Type].[All Store Types].[Deluxe Supermarket], [Employee].[All Employees].[Store Management].[Store Manager]}\n" +
+        "{[Store Type].[All Store Types].[Gourmet Supermarket], [Employee].[All Employees].[Store Management].[Store Manager]}\n" +
+        "{[Store Type].[All Store Types].[Supermarket], [Employee].[All Employees].[Store Management].[Store Manager]}\n" +
+        "Row #0: $1,783\n" +
+        "Row #1: $286\n" +
+        "Row #2: $1,020\n";
+
     public static String resultSF1711865 =
         "Axis #0:\n" +
         "{}\n" +
@@ -280,7 +301,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "Row #0: 7,978\n" +
         "Row #0: 62,445\n" +
         "Row #0: 16,414\n";
-        
+            
     public SharedDimensionTest() {
     }
 
@@ -342,8 +363,27 @@ public class SharedDimensionTest  extends FoodMartTestCase {
              null,
              null);
 
-        testContext.assertQueryReturns(queryNECJMemberList, fold(resultNECJMemberList));
+        testContext.assertQueryReturns(queryNECJMemberList,
+            fold(resultNECJMemberList));
     }
+
+    public void testNECJMultiLevelMemberList() {
+        // Schema has two cubes sharing a dimension.
+        // Query from the first cube.
+        // This is a case where not using alias not only affects performance,
+        // but also produces incorrect result.
+        TestContext testContext =
+            TestContext.create(
+             sharedDimension,
+             cubeA + "\n" + cubeB,
+             null,
+             null,
+             null);
+
+        testContext.assertQueryReturns(queryNECJMultiLevelMemberList,
+            fold(resultNECJMultiLevelMemberList));
+    }   
+    
     
     public void testSF1711865() {
         // Test for sourceforge.net bug 1711865

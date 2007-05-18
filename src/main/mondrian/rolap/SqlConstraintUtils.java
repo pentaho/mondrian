@@ -208,6 +208,7 @@ public class SqlConstraintUtils {
      *
      * @param sqlQuery the query to modify
      * @param levelToColumnMap where to find each level's key
+     * @param relationNamesToStarTableMap map to disambiguate table aliases
      * @param aggStar Definition of the aggregate table, or null
      * @param parent the list of parent members
      * @param strict defines the behavior if <code>parent</code>
@@ -241,6 +242,7 @@ public class SqlConstraintUtils {
      *
      * @param sqlQuery the query to modify
      * @param levelToColumnMap where to find each level's key
+     * @param relationNamesToStarTableMap map to disambiguate table aliases
      * @param aggStar (not used)
      * @param parents the list of parent members
      * @param strict defines the behavior if <code>parents</code>
@@ -273,7 +275,12 @@ public class SqlConstraintUtils {
         if (crossJoin) {
             RolapLevel level = parents.get(0).getLevel();
             if (!level.isUnique() && !membersAreCrossProduct(parents)) {
-                constrainMultiLevelMembers(sqlQuery, parents, strict);
+                constrainMultiLevelMembers(
+                    sqlQuery,
+                    levelToColumnMap,
+                    relationNamesToStarTableMap,
+                    parents,
+                    strict);
                 return;
             }
         }
@@ -371,16 +378,25 @@ public class SqlConstraintUtils {
      * list of members
      *
      * @param sqlQuery query containing the where clause
+     * @param levelToColumnMap where to find each level's key
+     * @param query the query that the sql expression will be added to
      * @param members list of constraining members
      * @param strict defines the behavior when calculated members are present
      */
     private static void constrainMultiLevelMembers(
         SqlQuery sqlQuery,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        Map<String, RolapStar.Table> relationNamesToStarTableMap,        
         List<RolapMember> members,
         boolean strict)
     {
         if (sqlQuery.getDialect().supportsMultiValueInExpr()) {
-            if (generateMultiValueInExpr(sqlQuery, members, strict)) {
+            if (generateMultiValueInExpr(
+                sqlQuery, 
+                levelToColumnMap,
+                relationNamesToStarTableMap,
+                members, 
+                strict)) {
                 return;
             }
         }
@@ -410,8 +426,21 @@ public class SqlConstraintUtils {
                     if (firstMember) {
                         RolapHierarchy hierarchy =
                             (RolapHierarchy) level.getHierarchy();
-                        hierarchy.addToFrom(sqlQuery, level.getKeyExp());
+                        
+                        RolapStar.Column column = levelToColumnMap.get(level);
+
+                        if (column != null &&
+                            relationNamesToStarTableMap != null) {
+                            RolapStar.Table targetTable = column.getTable();
+                            hierarchy.addToFrom(
+                                sqlQuery,
+                                relationNamesToStarTableMap,
+                                targetTable);
+                        } else {
+                            hierarchy.addToFrom(sqlQuery, level.getKeyExp());                
+                        }                        
                     }
+                    
                     if (!firstLevel) {
                         condition += " and ";
                     } else {
@@ -419,6 +448,7 @@ public class SqlConstraintUtils {
                     }
                     condition += constrainLevel(
                         level,
+                        levelToColumnMap,
                         sqlQuery,
                         getColumnValue(
                             m.getSqlKey(),
@@ -489,6 +519,7 @@ public class SqlConstraintUtils {
      * Generates a sql expression constraining a level by some value
      *
      * @param level the level
+     * @param levelToColumnMap where to find each level's key
      * @param query the query that the sql expression will be added to
      * @param columnValue value constraining the level
      * @param caseSensitive if true, need to handle case sensitivity of the
@@ -498,6 +529,7 @@ public class SqlConstraintUtils {
      */
     public static String constrainLevel(
         RolapLevel level,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,        
         SqlQuery query,
         String columnValue,
         boolean caseSensitive)
@@ -512,8 +544,11 @@ public class SqlConstraintUtils {
             // we presume that it is a string.
             datatype = SqlQuery.Datatype.String;
         }
-        String column = exp.getExpression(query);
+        String column =
+            level.getExpressionWithAlias(query, levelToColumnMap, exp);
+        
         String constraint;
+        
         if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(columnValue)) {
             constraint = column + " is " + RolapUtil.sqlNullLiteral;
         } else {
@@ -547,6 +582,8 @@ public class SqlConstraintUtils {
      * of a query, provided the member values are all non-null
      *
      * @param sqlQuery query containing the where clause
+     * @param levelToColumnMap where to find each level's key
+     * @param relationNamesToStarTableMap map to disambiguate table aliases
      * @param members list of constraining members
      * @param strict defines the behavior when calculated members are present
      *
@@ -554,6 +591,8 @@ public class SqlConstraintUtils {
      */
     private static boolean generateMultiValueInExpr(
         SqlQuery sqlQuery,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        Map<String, RolapStar.Table> relationNamesToStarTableMap,        
         List<RolapMember> members,
         boolean strict)
     {
@@ -583,15 +622,35 @@ public class SqlConstraintUtils {
                 if (firstMember) {
                     RolapHierarchy hierarchy =
                         (RolapHierarchy) level.getHierarchy();
-                    hierarchy.addToFrom(sqlQuery, level.getKeyExp());
+                    RolapStar.Column column = levelToColumnMap.get(level);
+
+                    if (column != null &&
+                        relationNamesToStarTableMap != null) {
+                        RolapStar.Table targetTable = column.getTable();
+                        hierarchy.addToFrom(
+                            sqlQuery,
+                            relationNamesToStarTableMap,
+                            targetTable);
+                    } else {
+                        hierarchy.addToFrom(sqlQuery, level.getKeyExp());                
+                    }                        
+                    
                     if (!firstLevel) {
                         columnBuf.append(",");
                     }
                     MondrianDef.Expression exp = level.getNameExp();
+                    
                     if (exp == null) {
                         exp = level.getKeyExp();
                     }
-                    columnBuf.append(exp.getExpression(sqlQuery));
+                    
+                    String columnString =
+                        level.getExpressionWithAlias(
+                            sqlQuery,
+                            levelToColumnMap,
+                            exp);
+
+                    columnBuf.append(columnString);
                 }
 
                 if (firstLevel) {

@@ -51,6 +51,7 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
         query.addWhere(
             SqlConstraintUtils.constrainLevel(
                 level,
+                levelToColumnMap,
                 query,
                 childName,
                 true));

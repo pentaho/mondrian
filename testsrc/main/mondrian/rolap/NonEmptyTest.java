@@ -1771,9 +1771,11 @@ public class NonEmptyTest extends FoodMartTestCase {
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().EnableNativeCrossJoin.set(false);
         
+        // Get a fresh connection; Otherwise the mondrian property setting
+        // is not refreshed.
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);        
-        context.assertQueryReturns(query, resultNonNative);
+        context.assertQueryReturns(query, fold(resultNonNative));
         
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
     }
@@ -1799,7 +1801,7 @@ public class NonEmptyTest extends FoodMartTestCase {
 
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);        
-        context.assertQueryReturns(query, resultNative);
+        context.assertQueryReturns(query, fold(resultNative));
         
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
     }
@@ -1824,7 +1826,7 @@ public class NonEmptyTest extends FoodMartTestCase {
 
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);        
-        context.assertQueryReturns(query, resultNonNative);
+        context.assertQueryReturns(query, fold(resultNonNative));
 
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
 }
@@ -1849,7 +1851,7 @@ public class NonEmptyTest extends FoodMartTestCase {
 
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);        
-        context.assertQueryReturns(query, resultNative);
+        context.assertQueryReturns(query, fold(resultNative));
 
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
     }
