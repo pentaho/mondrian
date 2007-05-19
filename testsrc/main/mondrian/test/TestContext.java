@@ -828,8 +828,7 @@ public class TestContext {
     public SqlQuery.Dialect getDialect() {
         java.sql.Connection connection = null;
         try {
-            DataSource dataSource =
-                ((RolapConnection) getConnection()).getDataSource();
+            DataSource dataSource = getConnection().getDataSource();
             connection = dataSource.getConnection();
             return SqlQuery.Dialect.create(connection.getMetaData());
         } catch (SQLException e) {

@@ -1455,6 +1455,27 @@ public class SqlQuery {
         }
 
         /**
+         * Returns true if aliases defined in the SELECT clause can be used as
+         * expressions in the ORDER BY clause.
+         *
+         * <p>For example, in such a dialect,
+         * <blockquote>
+         * <code>SELECT x, x + y AS z FROM t ORDER BY z</code>
+         * </blockquote>
+         *
+         * would be legal.</p>
+         *
+         * <p>MySQL, DB2 and Ingres are examples of dialects where this is true;
+         * Access is a dialect where this is false.</p>
+         *
+         * @return Whether aliases defined in the SELECT clause can be used as
+         * expressions in the ORDER BY clause.
+         */
+        public boolean allowsOrderByAlias() {
+            return requiresOrderByAlias();
+        }
+
+        /**
          * Returns true if this dialect supports multi-value IN expressions.
          * E.g.,
          *

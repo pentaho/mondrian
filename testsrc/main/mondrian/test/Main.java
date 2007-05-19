@@ -168,6 +168,7 @@ public class Main extends TestSuite {
                 suite.addTest((Test) o);
             }
         } else {
+            suite.addTestSuite(DialectTest.class);
             suite.addTestSuite(MemoryMonitorTest.class);
             suite.addTestSuite(ObjectPoolTest.class);
             suite.addTestSuite(RolapConnectionTest.class);
