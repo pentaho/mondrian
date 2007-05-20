@@ -1111,9 +1111,16 @@ public class SqlQuery {
             return productName.toUpperCase().indexOf("TERADATA") >= 0;
         }
 
-        // -- behaviors --
-        protected boolean requiresAliasForFromItems() {
-            return isPostgres();
+        /**
+         * Returns whether this Dialect requires subqueries in the FROM clause
+         * to have an alias.
+         *
+         * @see #allowsFromQuery()
+         */
+        public boolean requiresAliasForFromQuery() {
+            return isMySQL() ||
+                isDerby() ||
+                isPostgres();
         }
 
         /**

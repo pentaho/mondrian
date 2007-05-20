@@ -99,7 +99,9 @@ public class DialectTest extends TestCase {
                 // derby
                 "Syntax error: Encountered \",\" at line 1, column 36.",
                 // access
-                "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression '.*'."
+                "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression '.*'.",
+                // postgres
+                "ERROR: function count\\(integer, integer\\) does not exist"
             };
             assertQueryFails(sql, errs);
         }
@@ -185,24 +187,33 @@ public class DialectTest extends TestCase {
             dialectize("select * from (select * from [sales_fact_1997]) as [x]");
         if (getDialect().allowsFromQuery()) {
             assertQuerySucceeds(sql);
-
-            // As above, but no alias.
-            String sql2 =
-                dialectize("select * from (select * from [sales_fact_1997])");
-            if (getDialect().isMySQL() ||
-                getDialect().isDerby()) {
-                String[] errs = {
-                    // mysql
-                    "Every derived table must have its own alias",
-                    // derby
-                    "Syntax error: Encountered \"<EOF>\" at line 1, column 47."
-                };
-                assertQueryFails(sql2, errs);
-            } else {
-                assertQuerySucceeds(sql2);
-            }
         } else {
             assertQueryFails(sql, new String[] {});
+        }
+    }
+
+    public void testRequiresFromQueryAlias() {
+        if (getDialect().requiresAliasForFromQuery()) {
+            assertTrue(getDialect().allowsFromQuery());
+        }
+        if (!getDialect().allowsFromQuery()) {
+            return;
+        }
+
+        String sql =
+            dialectize("select * from (select * from [sales_fact_1997])");
+        if (getDialect().requiresAliasForFromQuery()) {
+            String[] errs = {
+                // mysql
+                "Every derived table must have its own alias",
+                // derby
+                "Syntax error: Encountered \"<EOF>\" at line 1, column 47.",
+                // postgres
+                "ERROR: subquery in FROM must have an alias"
+            };
+            assertQueryFails(sql, errs);
+        } else {
+            assertQuerySucceeds(sql);
         }
     }
 
