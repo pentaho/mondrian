@@ -61,6 +61,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
     private static final Logger LOGGER = Logger.getLogger(SchemaExplorer.class);
 
+    private Workbench workbench;
     private MondrianGuiDef.Schema schema;
     private SchemaTreeModel model;
     private SchemaTreeCellRenderer renderer;
@@ -77,27 +78,27 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     private String errMsg = null;
 
     /** Creates new form SchemaExplorer */
-    public SchemaExplorer() {
+    public SchemaExplorer(Workbench workbench) {
+        this.workbench = workbench;
         myClassLoader = this.getClass().getClassLoader();
         initComponents();
     }
 
-    public SchemaExplorer(File f, JDBCMetaData jdbcMetaData, boolean newFile, JInternalFrame parentIFrame) {
-        this();
+    public SchemaExplorer(Workbench workbench, File f, JDBCMetaData jdbcMetaData, boolean newFile, JInternalFrame parentIFrame) {
+        this(workbench);
+        
+        alert = getResourceConverter().getString("schemaExplorer.alert.title","Alert");
 
         //====XML editor
         try {
-            jEditorPaneXML = new JEditorPane();//===new JEditorPane(f.toURL().toString());
-            //jEditorPaneXML.setContentType("text/xml");
-            //jEditorPaneXML = new JEditorPane("text/xml", "<h>jjo <nkl>sf</nkl>sdf </h>");
+            jEditorPaneXML = new JEditorPane();
         } catch (Exception ex) {
-            LOGGER.error("SchemaExplorer", ex);
+            LOGGER.error("SchemaExplorer-JEditorPane", ex);
         }
 
         jEditorPaneXML.setLayout(new java.awt.BorderLayout());
         jEditorPaneXML.setEditable(false);
         jScrollPaneXML = new JScrollPane(jEditorPaneXML);
-        //===jScrollPaneXML.setViewportView(jEditorPaneXML);
         jPanelXML.setLayout(new java.awt.BorderLayout());
         jPanelXML.add(jScrollPaneXML, java.awt.BorderLayout.CENTER);
         jPanelXML.add(targetLabel2, java.awt.BorderLayout.NORTH);
@@ -105,10 +106,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         jPanelXML.setMaximumSize(jPanel1.getMaximumSize());
         jPanelXML.setPreferredSize(jPanel1.getPreferredSize());
 
-        //jSplitPane1.setRightComponent(jPanelXML);
-
-        databaseLabel.setText("Database -  " +jdbcMetaData.getDbCatalogName() + "  ("+ jdbcMetaData.getDatabaseProductName()+")");
-
+        databaseLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.database.text", 
+                "Database - {0} ({1})", 
+                    new String[] { jdbcMetaData.getDbCatalogName(), jdbcMetaData.getDatabaseProductName() }));
+        
         try {
             Parser xmlParser = XOMUtil.createDefaultParser();
             this.schemaFile = f;
@@ -147,20 +148,26 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     schema.virtualCubes = new MondrianGuiDef.VirtualCube[0];
 
                     LOGGER.error("Exception  : Schema file parsing failed."+ex.getMessage(), ex);
-                    errMsg = "Parsing Error: Could not open file\n"+schemaFile+".\n"+ex.getMessage();
+                    errMsg = getResourceConverter().getFormattedString("schemaExplorer.parsing.error", 
+                            "Parsing Error: Could not open file {0}\n{1}", 
+                                new String[] { schemaFile.toString(), ex.getLocalizedMessage() });
+                    
                 }
             }
             setTitle(); // sets title of i frame with schema name and file name
 
             //renderer = new SchemaTreeCellRenderer();
-            renderer = new SchemaTreeCellRenderer(jdbcMetaData);
+            renderer = new SchemaTreeCellRenderer(workbench, jdbcMetaData);
             model = new SchemaTreeModel(schema);
             tree.setModel(model);
             tree.setCellRenderer(renderer);
             tree.addTreeSelectionListener(this);
 
-            JComboBox listEditor = new JComboBox( new String[] {"Join", "Table"} );
-            listEditor.setToolTipText("select Join or Table Hierarchy");
+            //            getResourceConverter().getString("schemaExplorer.hierarchy.select.title","Select Join or Table Hierarchy");
+
+            JComboBox listEditor = new JComboBox( new String[] {getResourceConverter().getString("schemaExplorer.hierarchy.select.join","Join"),
+                                                                getResourceConverter().getString("schemaExplorer.hierarchy.select.table", "Table")} );
+            listEditor.setToolTipText(getResourceConverter().getString("schemaExplorer.hierarchy.select.title","Select Join or Table Hierarchy"));
             listEditor.setPreferredSize(new java.awt.Dimension(listEditor.getPreferredSize().width, 24)); //Do not remove this
 
             listEditor.addItemListener(new ItemListener() {
@@ -178,17 +185,17 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
             TreeCellEditor comboEditor = new DefaultCellEditor(listEditor);
 
-            editor = new SchemaTreeCellEditor(tree, renderer, comboEditor);
+            editor = new SchemaTreeCellEditor(workbench, tree, renderer, comboEditor);
             tree.setCellEditor(editor);
             tree.setEditable(true);
 
 
             //SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor();
-            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(jdbcMetaData);
+            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(workbench, jdbcMetaData);
             spce.addCellEditorListener(this);
             propertyTable.setDefaultEditor(Object.class, spce);
             SchemaPropertyCellRenderer.attributeBackground = jScrollPane2.getBackground();    // to set background color of attribute columns
-            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
             propertyTable.setDefaultRenderer(Object.class, spcr);
 
 
@@ -220,7 +227,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
      */
     private void initComponents() {
 
-        ResourceBundle resources = ResourceBundle.getBundle("mondrian.gui.resources.gui");
+        //ResourceBundle resources = ResourceBundle.getBundle("mondrian.gui.resources.gui");
         jPanelXML = new JPanel();
         jScrollPaneXML = new JScrollPane();
 
@@ -277,7 +284,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         tree = new JTree() {
             public String getToolTipText(MouseEvent evt) {
-                String toggleMsg = "Double click to display Join/Table selection";
+                String toggleMsg = getResourceConverter().getString("schemaExplorer.hierarchy.toggle","Double click to display Join/Table selection");
                 if (getRowForLocation(evt.getX(), evt.getY()) == -1) return null;
                 TreePath curPath = getPathForLocation(evt.getX(), evt.getY());
                 Object o = curPath.getLastPathComponent();
@@ -330,7 +337,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         jPanel1.setLayout(new BorderLayout());
 
         propertyTable.setModel(new DefaultTableModel(new Object[][] {
-        }, new String[] { "Attribute", "Value" }) {
+        }, new String[] { getResourceConverter().getString("schemaExplorer.propertyTable.attribute","Attribute"),
+                            getResourceConverter().getString("schemaExplorer.propertyTable.value","Value") }) {
             Class[] types = new Class[] { java.lang.String.class, java.lang.Object.class };
             boolean[] canEdit = new boolean[] { false, true };
 
@@ -352,21 +360,21 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         targetLabel.setFont(new Font("Dialog", 1, 14));
         targetLabel.setForeground((Color) UIManager.getDefaults().get("CheckBoxMenuItem.acceleratorForeground"));
         targetLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        targetLabel.setText("Schema");
+        targetLabel.setText(getResourceConverter().getString("schemaExplorer.targetLabel.title","Schema"));
         targetLabel.setBorder(new EtchedBorder());
         // up arrow button for property table heading
         jPanel3 = new JPanel();
         jPanel3.setLayout(new BorderLayout());
         BasicArrowButton arrowButtonUp = new BasicArrowButton(SwingConstants.NORTH);
         BasicArrowButton arrowButtonDown = new BasicArrowButton(SwingConstants.SOUTH);
-        arrowButtonUp.setToolTipText("move to parent element");
-        arrowButtonDown.setToolTipText("move to child element");
-        arrowButtonUpAction = new AbstractAction("Arrow button up") {
+        arrowButtonUp.setToolTipText(getResourceConverter().getString("schemaExplorer.arrowButtonUp.toolTip","move to parent element"));
+        arrowButtonDown.setToolTipText(getResourceConverter().getString("schemaExplorer.arrowButtonDown.toolTip","move to child element"));
+        arrowButtonUpAction = new AbstractAction(getResourceConverter().getString("schemaExplorer.arrowButtonUp.title","Arrow button up")) {
             public void actionPerformed(ActionEvent e) {
                 arrowButtonUpAction(e);
             }
         };
-        arrowButtonDownAction = new AbstractAction("Arrow button down") {
+        arrowButtonDownAction = new AbstractAction(getResourceConverter().getString("schemaExplorer.arrowButtonDown.title","Arrow button down")) {
             public void actionPerformed(ActionEvent e) {
                 arrowButtonDownAction(e);
             }
@@ -388,7 +396,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         targetLabel2.setFont(new Font("Dialog", 1, 14));
         targetLabel2.setForeground((Color) UIManager.getDefaults().get("CheckBoxMenuItem.acceleratorForeground"));
         targetLabel2.setHorizontalAlignment(SwingConstants.CENTER);
-        targetLabel2.setText("Schema");
+        targetLabel2.setText(getResourceConverter().getString("schemaExplorer.targetLabel.title","Schema"));
         targetLabel2.setBorder(new EtchedBorder());
         validStatusLabel2.setFont(new Font("Dialog", Font.PLAIN, 12));
         validStatusLabel2.setForeground(Color.RED);
@@ -408,192 +416,192 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         //========================================================
         // actions
         //========================================================
-        addCube = new AbstractAction("Add cube") {
+        addCube = new AbstractAction(getResourceConverter().getString("schemaExplorer.addCube.title","Add cube")) {
             public void actionPerformed(ActionEvent e) {
                 addCube(e);
             }
         };
-        addDimension = new AbstractAction("Add Dimension") {
+        addDimension = new AbstractAction(getResourceConverter().getString("schemaExplorer.addDimension.title","Add Dimension")) {
             public void actionPerformed(ActionEvent e) {
                 addDimension(e);
             }
         };
-        addDimensionUsage = new AbstractAction("Add Dimension Usage") {
+        addDimensionUsage = new AbstractAction(getResourceConverter().getString("schemaExplorer.addDimensionUsage.title","Add Dimension Usage")) {
             public void actionPerformed(ActionEvent e) {
                 addDimensionUsage(e);
             }
         };
-        addHierarchy = new AbstractAction("Add Hierarchy") {
+        addHierarchy = new AbstractAction(getResourceConverter().getString("schemaExplorer.addHierarchy.title","Add Hierarchy")) {
             public void actionPerformed(ActionEvent e) {
                 addHierarchy(e);
             }
         };
-        addNamedSet = new AbstractAction("Add Named Set") {
+        addNamedSet = new AbstractAction(getResourceConverter().getString("schemaExplorer.addNamedSet.title","Add Named Set")) {
             public void actionPerformed(ActionEvent e) {
                 addNamedSet(e);
             }
         };
-        addMeasure = new AbstractAction("Add Measure") {
+        addMeasure = new AbstractAction(getResourceConverter().getString("schemaExplorer.addMeasure.title","Add Measure")) {
             public void actionPerformed(ActionEvent e) {
                 addMeasure(e);
             }
         };
-        addCalculatedMember = new AbstractAction("Add Calculated Measure") {
+        addCalculatedMember = new AbstractAction(getResourceConverter().getString("schemaExplorer.addCalculatedMember.title","Add Calculated Member")) {
             public void actionPerformed(ActionEvent e) {
                 addCalculatedMember(e);
             }
         };
-        addUserDefinedFunction = new AbstractAction("Add User Defined Function") {
+        addUserDefinedFunction = new AbstractAction(getResourceConverter().getString("schemaExplorer.addUserDefinedFunction.title","Add User Defined Function")) {
             public void actionPerformed(ActionEvent e) {
                 addUserDefinedFunction(e);
             }
         };
-        addRole = new AbstractAction("Add Role") {
+        addRole = new AbstractAction(getResourceConverter().getString("schemaExplorer.addRole.title","Add Role")) {
             public void actionPerformed(ActionEvent e) {
                 addRole(e);
             }
         };
-        addSchemaGrant = new AbstractAction("Add Schema Grant") {
+        addSchemaGrant = new AbstractAction(getResourceConverter().getString("schemaExplorer.addSchemaGrant.title","Add Schema Grant")) {
             public void actionPerformed(ActionEvent e) {
                 addSchemaGrant(e);
             }
         };
-        addCubeGrant = new AbstractAction("Add Cube Grant") {
+        addCubeGrant = new AbstractAction(getResourceConverter().getString("schemaExplorer.addCubeGrant.title","Add Cube Grant")) {
             public void actionPerformed(ActionEvent e) {
                 addCubeGrant(e);
             }
         };
-        addDimensionGrant = new AbstractAction("Add Dimension Grant") {
+        addDimensionGrant = new AbstractAction(getResourceConverter().getString("schemaExplorer.addDimensionGrant.title","Add Dimension Grant")) {
             public void actionPerformed(ActionEvent e) {
                 addDimensionGrant(e);
             }
         };
-        addHierarchyGrant = new AbstractAction("Add Hierarchy Grant") {
+        addHierarchyGrant = new AbstractAction(getResourceConverter().getString("schemaExplorer.addHierarchyGrant.title","Add Hierarchy Grant")) {
             public void actionPerformed(ActionEvent e) {
                 addHierarchyGrant(e);
             }
         };
-        addMemberGrant = new AbstractAction("Add Member Grant") {
+        addMemberGrant = new AbstractAction(getResourceConverter().getString("schemaExplorer.addMemberGrant.title","Add Member Grant")) {
             public void actionPerformed(ActionEvent e) {
                 addMemberGrant(e);
             }
         };
 
-        addLevel = new AbstractAction("Add Level") {
+        addLevel = new AbstractAction(getResourceConverter().getString("schemaExplorer.addLevel.title","Add Level")) {
             public void actionPerformed(ActionEvent e) {
                 addLevel(e);
             }
         };
-        addClosure = new AbstractAction("Add Closure") {
+        addClosure = new AbstractAction(getResourceConverter().getString("schemaExplorer.addClosure.title","Add Closure")) {
             public void actionPerformed(ActionEvent e) {
                 addClosure(e);
             }
         };
-        addKeyExp = new AbstractAction("Add Key Expression") {
+        addKeyExp = new AbstractAction(getResourceConverter().getString("schemaExplorer.addKeyExpression.title","Add Key Expression")) {
             public void actionPerformed(ActionEvent e) {
                 addKeyExp(e);
             }
         };
-        addNameExp = new AbstractAction("Add Name Expression") {
+        addNameExp = new AbstractAction(getResourceConverter().getString("schemaExplorer.addNameExpression.title","Add Name Expression")) {
             public void actionPerformed(ActionEvent e) {
                 addNameExp(e);
             }
         };
-        addOrdinalExp = new AbstractAction("Add Ordinal Expression") {
+        addOrdinalExp = new AbstractAction(getResourceConverter().getString("schemaExplorer.addOrdinalExpression.title","Add Ordinal Expression")) {
             public void actionPerformed(ActionEvent e) {
                 addOrdinalExp(e);
             }
         };
-        addParentExp = new AbstractAction("Add Parent Expression") {
+        addParentExp = new AbstractAction(getResourceConverter().getString("schemaExplorer.addParentExpression.title","Add Parent Expression")) {
             public void actionPerformed(ActionEvent e) {
                 addParentExp(e);
             }
         };
-        addMeasureExp = new AbstractAction("Add Measure Expression") {
+        addMeasureExp = new AbstractAction(getResourceConverter().getString("schemaExplorer.addMeasureExpression.title","Add Measure Expression")) {
             public void actionPerformed(ActionEvent e) {
                 addMeasureExp(e);
             }
         };
-        addSQL = new AbstractAction("Add SQL") {
+        addSQL = new AbstractAction(getResourceConverter().getString("schemaExplorer.addSQL.title","Add SQL")) {
             public void actionPerformed(ActionEvent e) {
                 addSQL(e);
             }
         };
-        addRelation = new AbstractAction("Add Relation") {
+        addRelation = new AbstractAction(getResourceConverter().getString("schemaExplorer.addRelation.title","Add Relation")) {
             public void actionPerformed(ActionEvent e) {
                 addRelation(e);
             }
         };
-        addProperty = new AbstractAction("Add Property") {
+        addProperty = new AbstractAction(getResourceConverter().getString("schemaExplorer.addProperty.title","Add Property")) {
             public void actionPerformed(ActionEvent e) {
                 addProperty(e);
             }
         };
 
-        addVirtualCube = new AbstractAction("Add Virtual Cube") {
+        addVirtualCube = new AbstractAction(getResourceConverter().getString("schemaExplorer.addVirtualCube.title","Add Virtual Cube")) {
             public void actionPerformed(ActionEvent e) {
                 addVirtualCube(e);
             }
         };
-        addVirtualCubeDimension = new AbstractAction("Add Virtual Cube Dimension") {
+        addVirtualCubeDimension = new AbstractAction(getResourceConverter().getString("schemaExplorer.addVirtualCubeDimension.title","Add Virtual Cube Dimension")) {
             public void actionPerformed(ActionEvent e) {
                 addVirtualCubeDimension(e);
             }
         };
-        addVirtualCubeMeasure = new AbstractAction("Add Virtual Cube Measure") {
+        addVirtualCubeMeasure = new AbstractAction(getResourceConverter().getString("schemaExplorer.addVirtualCubeMeasure.title","Add Virtual Cube Measure")) {
             public void actionPerformed(ActionEvent e) {
                 addVirtualCubeMeasure(e);
             }
         };
 
-        addAggPattern = new AbstractAction("Add Aggregate Pattern") {
+        addAggPattern = new AbstractAction(getResourceConverter().getString("schemaExplorer.addAggregatePattern.title","Add Aggregate Pattern")) {
             public void actionPerformed(ActionEvent e) {
                 addAggPattern(e);
             }
         };
-        addAggExclude = new AbstractAction("Add Aggregate Exclude Table") {
+        addAggExclude = new AbstractAction(getResourceConverter().getString("schemaExplorer.addAggregateExcludeTable.title","Add Aggregate Exclude Table")) {
             public void actionPerformed(ActionEvent e) {
                 addAggExclude(e);
             }
         };
-        addAggName = new AbstractAction("Add Aggregate Name") {
+        addAggName = new AbstractAction(getResourceConverter().getString("schemaExplorer.addAggregateName.title","Add Aggregate Name")) {
             public void actionPerformed(ActionEvent e) {
                 addAggName(e);
             }
         };
-        addAggIgnoreColumn = new AbstractAction("Add Aggregate Ignore Column") {
+        addAggIgnoreColumn = new AbstractAction(getResourceConverter().getString("schemaExplorer.addAggregateIgnoreColumn.title","Add Aggregate Ignore Column")) {
             public void actionPerformed(ActionEvent e) {
                 addAggIgnoreColumn(e);
             }
         };
-        addAggForeignKey = new AbstractAction("Add Aggregate Foreign Key") {
+        addAggForeignKey = new AbstractAction(getResourceConverter().getString("schemaExplorer.addAggregateForeignKey.title","Add Aggregate Foreign Key")) {
             public void actionPerformed(ActionEvent e) {
                 addAggForeignKey(e);
             }
         };
-        addAggMeasure = new AbstractAction("Add Aggregate Measure") {
+        addAggMeasure = new AbstractAction(getResourceConverter().getString("schemaExplorer.addAggregateMeasure.title","Add Aggregate Measure")) {
             public void actionPerformed(ActionEvent e) {
                 addAggMeasure(e);
             }
         };
-        addAggLevel = new AbstractAction("Add Aggregate Level") {
+        addAggLevel = new AbstractAction(getResourceConverter().getString("schemaExplorer.addAggregateLevel.title","Add Aggregate Level")) {
             public void actionPerformed(ActionEvent e) {
                 addAggLevel(e);
             }
         };
-        addAggFactCount = new AbstractAction("Add Aggregate Fact Count") {
+        addAggFactCount = new AbstractAction(getResourceConverter().getString("schemaExplorer.addAggregateFactCount.title","Add Aggregate Fact Count")) {
             public void actionPerformed(ActionEvent e) {
                 addAggFactCount(e);
             }
         };
 
-        delete = new AbstractAction("Delete") {
+        delete = new AbstractAction(getResourceConverter().getString("schemaExplorer.actionDelete.title","Delete")) {
             public void actionPerformed(ActionEvent e) {
                 delete(e);
             }
         };
 
-        editMode = new AbstractAction("EditMode") {
+        editMode = new AbstractAction(getResourceConverter().getString("schemaExplorer.actionEdit.title","EditMode")) {
             public void actionPerformed(ActionEvent e) {
                 editMode(e);
             }
@@ -602,80 +610,80 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         //========================================================
         // toolbar buttons
         //========================================================
-        addCubeButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addCube"))));
-        addCubeButton.setToolTipText("Add Cube");
+        addCubeButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addCube"))));
+        addCubeButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addCube.title","Add cube"));
         addCubeButton.addActionListener(addCube);
 
-        addDimensionButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addDimension"))));
-        addDimensionButton.setToolTipText("Add Dimension");
+        addDimensionButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addDimension"))));
+        addDimensionButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addDimension.title","Add Dimension"));
         addDimensionButton.addActionListener(addDimension);
 
-        addDimensionUsageButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addDimensionUsage"))));
-        addDimensionUsageButton.setToolTipText("Add Dimension Usage");
+        addDimensionUsageButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addDimensionUsage"))));
+        addDimensionUsageButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addDimensionUsage.title","Add Dimension Usage"));
         addDimensionUsageButton.addActionListener(addDimensionUsage);
 
-        addHierarchyButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addHierarchy"))));
-        addHierarchyButton.setToolTipText("Add Hierarchy");
+        addHierarchyButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addHierarchy"))));
+        addHierarchyButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addHierarchy.title","Add Hierarchy"));
         addHierarchyButton.addActionListener(addHierarchy);
 
-        addNamedSetButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addNamedSet"))));
-        addNamedSetButton.setToolTipText("Add Named Set");
+        addNamedSetButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addNamedSet"))));
+        addNamedSetButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addNamedSet.title","Add Named Set"));
         addNamedSetButton.addActionListener(addNamedSet);
 
-        addUserDefinedFunctionButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addUserDefinedFunction"))));
-        addUserDefinedFunctionButton.setToolTipText("Add User defined Function");
+        addUserDefinedFunctionButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addUserDefinedFunction"))));
+        addUserDefinedFunctionButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addUserDefinedFunction.title","Add User defined Function"));
         addUserDefinedFunctionButton.addActionListener(addUserDefinedFunction);
 
-        addCalculatedMemberButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addCalculatedMember"))));
-        addCalculatedMemberButton.setToolTipText("Add Calculated Member");
+        addCalculatedMemberButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addCalculatedMember"))));
+        addCalculatedMemberButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addCalculatedMember.title","Add Calculated Member"));
         addCalculatedMemberButton.addActionListener(addCalculatedMember);
 
-        addMeasureButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addMeasure"))));
-        addMeasureButton.setToolTipText("Add Measure");
+        addMeasureButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addMeasure"))));
+        addMeasureButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addMeasure.title","Add Measure"));
         addMeasureButton.addActionListener(addMeasure);
 
-        addLevelButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addLevel"))));
-        addLevelButton.setToolTipText("Add Level");
+        addLevelButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addLevel"))));
+        addLevelButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addLevel.title","Add Level"));
         addLevelButton.addActionListener(addLevel);
 
-        addPropertyButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addProperty"))));
-        addPropertyButton.setToolTipText("Add Property");
+        addPropertyButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addProperty"))));
+        addPropertyButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addProperty.title","Add Property"));
         addPropertyButton.addActionListener(addProperty);
 
-        addVirtualCubeButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addVirtualCube"))));
-        addVirtualCubeButton.setToolTipText("Add Virtual Cube");
+        addVirtualCubeButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addVirtualCube"))));
+        addVirtualCubeButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addVirtualCube.title","Add Virtual Cube"));
         addVirtualCubeButton.addActionListener(addVirtualCube);
 
-        addVirtualCubeDimensionButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addVirtualCubeDimension"))));
-        addVirtualCubeDimensionButton.setToolTipText("Add Virtual Dimension");
+        addVirtualCubeDimensionButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addVirtualCubeDimension"))));
+        addVirtualCubeDimensionButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addVirtualCubeDimension.title","Add Virtual Dimension"));
         addVirtualCubeDimensionButton.addActionListener(addVirtualCubeDimension);
 
-        addVirtualCubeMeasureButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addVirtualCubeMeasure"))));
-        addVirtualCubeMeasureButton.setToolTipText("Add Virtual Measure");
+        addVirtualCubeMeasureButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addVirtualCubeMeasure"))));
+        addVirtualCubeMeasureButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addVirtualCubeMeasure.title","Add Virtual Measure"));
         addVirtualCubeMeasureButton.addActionListener(addVirtualCubeMeasure);
 
-        addRoleButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addRole"))));
-        addRoleButton.setToolTipText("Add Role");
+        addRoleButton.setIcon(new ImageIcon(myClassLoader.getResource(getResourceConverter().getGUIReference("addRole"))));
+        addRoleButton.setToolTipText(getResourceConverter().getString("schemaExplorer.addRole.title","Add Role"));
         addRoleButton.addActionListener(addRole);
 
-        cutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Cut24.gif")));
-        cutButton.setToolTipText("Cut");
+        cutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(getResourceConverter().getGUIReference("cut"))));
+        cutButton.setToolTipText(getResourceConverter().getString("schemaExplorer.actionCut.title","Cut"));
 
-        copyButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Copy24.gif")));
-        copyButton.setToolTipText("Copy");
+        copyButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(getResourceConverter().getGUIReference("copy"))));
+        copyButton.setToolTipText(getResourceConverter().getString("schemaExplorer.actionCopy.title","Copy"));
 
-        pasteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Paste24.gif")));
-        pasteButton.setToolTipText("Paste");
+        pasteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(getResourceConverter().getGUIReference("paste"))));
+        pasteButton.setToolTipText(getResourceConverter().getString("schemaExplorer.actionPaste.title","Paste"));
 
-        deleteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Delete24.gif")));
-        deleteButton.setToolTipText("Delete");
+        deleteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(getResourceConverter().getGUIReference("delete"))));
+        deleteButton.setToolTipText(getResourceConverter().getString("schemaExplorer.actionDelete.title","Delete"));
         deleteButton.addActionListener(delete);
 
-        editModeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Edit24.gif")));
-        editModeButton.setToolTipText("View XML");
+        editModeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(getResourceConverter().getGUIReference("edit"))));
+        editModeButton.setToolTipText(getResourceConverter().getString("schemaExplorer.actionEdit.title","Edit Mode"));
         editModeButton.addActionListener(editMode);
 
-        databaseLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/development/Server24.gif")));
+        databaseLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource(getResourceConverter().getGUIReference("database"))));
 
 
         jToolBar1.add(addCubeButton);
@@ -807,7 +815,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         MondrianGuiDef.Schema schema = (MondrianGuiDef.Schema) tree.getModel().getRoot();
         MondrianGuiDef.Cube cube = new MondrianGuiDef.Cube();
 
-        cube.name = "";// get unique name //"New Cube " + schema.cubes.length;
+        cube.name = "";
 
         cube.dimensions = new MondrianGuiDef.Dimension[0];
         cube.measures = new MondrianGuiDef.Measure[0];
@@ -820,7 +828,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         cube.namedSets = new MondrianGuiDef.NamedSet[0];
 
         //add cube to schema
-        cube.name = getNewName("New Cube ", schema.cubes);
+        cube.name = getNewName(getResourceConverter().getString("schemaExplorer.newCube.title","New Cube"), schema.cubes);
         cube.cache = Boolean.TRUE;
         cube.enabled = Boolean.TRUE;
         NodeDef[] temp = schema.cubes;
@@ -839,12 +847,12 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         MondrianGuiDef.Schema schema = (MondrianGuiDef.Schema) tree.getModel().getRoot();
         MondrianGuiDef.Role role = new MondrianGuiDef.Role();
 
-        role.name = "";// get unique name //"New Cube " + schema.cubes.length;
+        role.name = "";
 
         role.schemaGrants = new MondrianGuiDef.SchemaGrant[0];
 
         //add cube to schema
-        role.name = getNewName("New Role ", schema.roles);
+        role.name = getNewName(getResourceConverter().getString("schemaExplorer.newRole.title","New Role"), schema.roles);
         NodeDef[] temp = schema.roles;
         schema.roles = new MondrianGuiDef.Role[temp.length + 1];
         for (int _i = 0; _i < temp.length; _i++) {
@@ -869,7 +877,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         cube.enabled = Boolean.TRUE;
 
         //add cube to schema
-        cube.name = getNewName("New Virtual Cube ", schema.virtualCubes);
+        cube.name = getNewName(getResourceConverter().getString("schemaExplorer.newVirtualCube.title","New Virtual Cube"), schema.virtualCubes);
         NodeDef[] temp = schema.virtualCubes;
         schema.virtualCubes = new MondrianGuiDef.VirtualCube[temp.length + 1];
         for (int _i = 0; _i < temp.length; _i++) {
@@ -888,7 +896,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         udf.name = "";// get unique name //"New Udf " + schema.userDefinedFunctions.length;
 
         //add cube to schema
-        udf.name = getNewName("New Udf ", schema.userDefinedFunctions);
+        udf.name = getNewName(getResourceConverter().getString("schemaExplorer.newUserDefinedFunction.title","New User defined Function"), schema.userDefinedFunctions);
         NodeDef[] temp = schema.userDefinedFunctions;
         schema.userDefinedFunctions = new MondrianGuiDef.UserDefinedFunction[temp.length + 1];
         for (int _i = 0; _i < temp.length; _i++) {
@@ -931,7 +939,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Cube)) {
-            JOptionPane.showMessageDialog(this, "Cube not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeNotSelected.alert","Cube not selected."), 
+                    alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -939,10 +948,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         MondrianGuiDef.Cube cube = (MondrianGuiDef.Cube) path;
 
         MondrianGuiDef.Measure measure = new MondrianGuiDef.Measure();
-        measure.name = ""; // get unique name //"New Measure " + cube.measures.length;
+        measure.name = "";
 
         //add cube to schema
-        measure.name = getNewName("New Measure ", cube.measures);
+        measure.name = getNewName(getResourceConverter().getString("schemaExplorer.newMeasure.title","New Measure"), cube.measures);
         measure.visible = Boolean.TRUE;
         NodeDef[] temp = cube.measures;
         cube.measures = new MondrianGuiDef.Measure[temp.length + 1];
@@ -979,7 +988,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Table)) {
-            JOptionPane.showMessageDialog(this, "Cube Fact Table not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeFactTableNotSelected.alert","Cube Fact Table not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -987,7 +996,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         MondrianGuiDef.Table factTable = (MondrianGuiDef.Table) path;
 
         MondrianGuiDef.AggPattern aggname = new MondrianGuiDef.AggPattern();
-        aggname.pattern = ""; // get unique name //"New Measure " + cube.measures.length;
+        aggname.pattern = "";
 
         //add cube to schema
         aggname.ignorecase = Boolean.TRUE;
@@ -1032,14 +1041,14 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         }
         if (!(path instanceof MondrianGuiDef.Table)) {
-            JOptionPane.showMessageDialog(this, "Table not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.tableNotSelected.alert","Table not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         MondrianGuiDef.Table factTable = (MondrianGuiDef.Table) path;
 
         MondrianGuiDef.AggName aggname = new MondrianGuiDef.AggName();
-        aggname.name = ""; // get unique name //"New Measure " + cube.measures.length;
+        aggname.name = "";
 
         //add cube to schema
         aggname.ignorecase = Boolean.TRUE;
@@ -1091,12 +1100,12 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Table || path instanceof MondrianGuiDef.AggPattern)) {
-            JOptionPane.showMessageDialog(this, "Cube Fact Table or Aggregate Pattern not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeFactTableOrAggPatternNotSelected.alert","Cube Fact Table or Aggregate Pattern not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         MondrianGuiDef.AggExclude aggexclude = new MondrianGuiDef.AggExclude();
-        aggexclude.pattern = ""; // get unique name //"New Measure " + cube.measures.length;
+        aggexclude.pattern = "";
 
         aggexclude.ignorecase = Boolean.TRUE;
 
@@ -1145,7 +1154,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.AggTable)) {
-            JOptionPane.showMessageDialog(this, "Aggregate Table not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.aggregateTableNotSelected.alert","Aggregate Table not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1188,7 +1197,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.AggTable)) {
-            JOptionPane.showMessageDialog(this, "Aggregate Table not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.aggregateTableNotSelected.alert","Aggregate Table not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1230,7 +1239,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.AggTable)) {
-            JOptionPane.showMessageDialog(this, "Aggregate Table not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.aggregateTableNotSelected.alert","Aggregate Table not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1271,7 +1280,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         }
         if (!(path instanceof MondrianGuiDef.AggTable)) {
-            JOptionPane.showMessageDialog(this, "Aggregate Table not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.aggregateTableNotSelected.alert","Aggregate Table not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1313,7 +1322,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         if ( ! ((path instanceof MondrianGuiDef.AggName) ||
                 (path instanceof MondrianGuiDef.AggPattern) )) {
-            JOptionPane.showMessageDialog(this, "Aggregate Table or Aggregate Pattern not selected.",
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.aggregateTableOrAggPatternNotSelected.alert","Aggregate Table or Aggregate Pattern not selected."),
                     alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -1357,7 +1366,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.VirtualCube)) {
-            JOptionPane.showMessageDialog(this, "Virtual Cube not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.virtualCubeNotSelected.alert","Virtual Cube not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1368,7 +1377,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         measure.name = ""; // get unique name //"New Measure " + cube.measures.length;
 
         //add cube to schema
-        measure.name = getNewName("New Virtual Measure ", cube.measures);
+        measure.name = getNewName(getResourceConverter().getString("schemaExplorer.newVirtualMeasure.title","New Virtual Measure"), cube.measures);
         measure.visible = Boolean.TRUE; // default true
 
         NodeDef[] temp = cube.measures;
@@ -1406,7 +1415,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         }
         if ( ! ((path instanceof MondrianGuiDef.Cube) || (path instanceof MondrianGuiDef.VirtualCube) )) {
-            JOptionPane.showMessageDialog(this, "Cube or Virtual Cube not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeOrVirtualCubeNotSelected.alert","Cube or Virtual Cube not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1420,7 +1429,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
 
         MondrianGuiDef.CalculatedMember calcmember = new MondrianGuiDef.CalculatedMember();
-        calcmember.name = ""; // get unique name //"New Calculated Measure " + cube.calculatedMembers.length;
+        calcmember.name = "";
         calcmember.dimension = "Measures";
         calcmember.visible = Boolean.TRUE;  // default value
         calcmember.formatString = "";
@@ -1430,7 +1439,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         //add cube to schema
         if (cube != null) {
-            calcmember.name = getNewName("New Calculated Measure ", cube.calculatedMembers);
+            calcmember.name = getNewName(getResourceConverter().getString("schemaExplorer.newCalculatedMember.title","New Calculated Member"), cube.calculatedMembers);
             NodeDef[] temp = cube.calculatedMembers;
             cube.calculatedMembers = new MondrianGuiDef.CalculatedMember[temp.length + 1];
             for (int i = 0; i < temp.length; i++) {
@@ -1438,7 +1447,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
             cube.calculatedMembers[cube.calculatedMembers.length - 1] = calcmember;
         } else {
-            calcmember.name = getNewName("New Calculated Measure ", vcube.calculatedMembers);
+            calcmember.name = getNewName(getResourceConverter().getString("schemaExplorer.newCalculatedMember.title","New Calculated Member"), vcube.calculatedMembers);
             NodeDef[] temp = vcube.calculatedMembers;
             vcube.calculatedMembers = new MondrianGuiDef.CalculatedMember[temp.length + 1];
             for (int i = 0; i < temp.length; i++) {
@@ -1473,7 +1482,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             if (o.getClass() == Workbench.class) {
                 ((Workbench) o).getViewXMLMenuItem().setSelected(editModeXML);
                 break;
-                //System.out.println("desktpo parent class ==="+o.getClass());
             }
             o= o.getParent();
         }
@@ -1484,7 +1492,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         // delete the selected  schema object
         TreePath tpath = tree.getSelectionPath();
         if (tpath == null) {
-            JOptionPane.showMessageDialog(this, "Select an object in Schema to delete.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.objectToDeleteNotSelected.alert","Object to delete in Schema not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return ;
         }
         Object child = tpath.getLastPathComponent(); // to be deleted
@@ -1499,45 +1507,15 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             if (tpath.getPathCount()-3 > 0) {
                 grandparent = tpath.getPathComponent(i-1);   // get parent path
             }
-            //System.out.println("path count=="+tpath.getPathCount());
-            //System.out.println("==== Parent path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
-            //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
             break;
         }
         if (parent == null) {
-            JOptionPane.showMessageDialog(this, "Schema object cannot be deleted.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cantDeleteObject.alert","Schema object cannot be deleted."), alert, JOptionPane.WARNING_MESSAGE);
             return ;
         }
 
         boolean tofind = true;
-        /*
-        if (parent instanceof MondrianGuiDef.Cube) {
-            MondrianGuiDef.Cube c = (MondrianGuiDef.Cube)parent;
-            if (child instanceof MondrianGuiDef.CubeDimension) {
-                NodeDef[] temp = c.dimensions;
-                c.dimensions = new MondrianGuiDef.CubeDimension[temp.length - 1];
-                tofind = true;
-                for (int i=0, j=0; i < temp.length; i++) {
-                    if (tofind && temp[i].equals(child)) {
-                        // check equality of parent attributes
-                        MondrianGuiDef.CubeDimension match = (MondrianGuiDef.CubeDimension) temp[i];
-                        MondrianGuiDef.CubeDimension d = (MondrianGuiDef.CubeDimension) child;
-                        if ( ((match.name== null && d.name==null) || ( match.name != null && match.name.equals(d.name) )) &&
-                                ((match.caption== null && d.caption==null) || ( match.caption != null && match.caption.equals(d.name) )) &&
-                                ((match.foreignKey== null && d.foreignKey==null) || ( match.foreignKey != null && match.name.equals(d.foreignKey) )) ) {
-                            tofind = false;
-                            if (i+1 < temp.length) {
-                                nextSibling = temp[i+1];
-                            }
-                            if(i-1 >= 0) {
-                                prevSibling = temp[i-1];
-                            }
-                            continue;
-                        }
-                    }
-                    c.dimensions[j++] = (MondrianGuiDef.CubeDimension) temp[i];
-                }*/
-        //=============================
+
         Field[] fs = parent.getClass().getFields();
         for (int i = 0; i < fs.length; i++) {
             if (fs[i].getType().isArray() && (fs[i].getType().getComponentType().isInstance(child) )) {
@@ -1554,17 +1532,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                                 // check equality of parent class attributes for a special case when child is an object of CubeDimensions
                                 MondrianGuiDef.CubeDimension matchDim = (MondrianGuiDef.CubeDimension) match;
                                 MondrianGuiDef.CubeDimension childDim = (MondrianGuiDef.CubeDimension) child;
-                                /*
-                                System.out.println("matchDim.name="+matchDim.name);
-                                System.out.println("childDim.name="+childDim.name);
-                                System.out.println("matchDim.caption="+matchDim.caption);
-                                System.out.println("childDim.caption="+childDim.caption);
-                                System.out.println("matchDim.foreignKey="+matchDim.foreignKey);
-                                System.out.println("childDim.foreignKey="+childDim.foreignKey);
-                                System.out.println("1st="+((matchDim.name== null && childDim.name==null) || ( matchDim.name != null && matchDim.name.equals(childDim.name) )));
-                                System.out.println("2nd="+((matchDim.caption== null && childDim.caption==null) || ( matchDim.caption != null && matchDim.caption.equals(childDim.caption) )));
-                                System.out.println("3rd="+((matchDim.foreignKey== null && childDim.foreignKey==null) || ( matchDim.foreignKey != null && matchDim.foreignKey.equals(childDim.foreignKey) )));
-                                 */
+
                                 if ( ((matchDim.name== null && childDim.name==null) || ( matchDim.name != null && matchDim.name.equals(childDim.name) )) &&
                                         ((matchDim.caption== null && childDim.caption==null) || ( matchDim.caption != null && matchDim.caption.equals(childDim.caption) )) &&
                                         ((matchDim.foreignKey== null && childDim.foreignKey==null) || ( matchDim.foreignKey != null && matchDim.foreignKey.equals(childDim.foreignKey) )) ) {
@@ -1633,6 +1601,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                         }
                     }
                 } catch (Exception ex) {
+                    LOGGER.error("delete", ex);
                     // field not found
                 }
             }
@@ -1665,19 +1634,18 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0; parentIndex--) {
-                //System.out.println("==== path element "+i+" ="+e.getPath().getPathComponent(i).getClass().toString());
+
                 if ( (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Cube) ||
                         (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Schema) ) {
                     path =  tpath.getPathComponent(parentIndex);
                     break;
-                    //System.out.println("Cube fact table name ="+((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) e.getPath().getPathComponent(i)).fact).name);
                 }
             }
         }
 
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if ( ! ((path instanceof MondrianGuiDef.Cube) || (path instanceof MondrianGuiDef.Schema) )) {
-            JOptionPane.showMessageDialog(this, "Cube or Schema not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeOrSchemaNotSelected.alert","Cube or Schema not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1695,7 +1663,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         dimension.type = "StandardDimension";    // default dimension type
         dimension.hierarchies = new MondrianGuiDef.Hierarchy[1];
         dimension.hierarchies[0] = new MondrianGuiDef.Hierarchy();
-        dimension.hierarchies[0].name = "New Hierarchy 0";
+        dimension.hierarchies[0].name = getResourceConverter().getString("schemaExplorer.newHierarchyInTree.title","New Hierarchy 0");
         dimension.hierarchies[0].hasAll = true;
         dimension.hierarchies[0].levels = new MondrianGuiDef.Level[0];
         dimension.hierarchies[0].memberReaderParameters = new MondrianGuiDef.MemberReaderParameter[0];
@@ -1703,7 +1671,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         //add cube to schema
         if (cube != null) {
-            dimension.name = getNewName("New Dimension ", cube.dimensions);
+            dimension.name = getNewName(getResourceConverter().getString("schemaExplorer.newDimension.title","New Dimension"), cube.dimensions);
             NodeDef[] temp = cube.dimensions;
             cube.dimensions = new MondrianGuiDef.CubeDimension[temp.length + 1];
             for (int i = 0; i < temp.length; i++) {
@@ -1711,7 +1679,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             }
             cube.dimensions[cube.dimensions.length - 1] = dimension;
         } else {
-            dimension.name = getNewName("New Dimension ", schema.dimensions);
+            dimension.name = getNewName(getResourceConverter().getString("schemaExplorer.newDimension.title","New Dimension"), schema.dimensions);
             NodeDef[] temp = schema.dimensions;
             schema.dimensions = new MondrianGuiDef.Dimension[temp.length + 1];
             for (int i = 0; i < temp.length; i++) {
@@ -1738,18 +1706,16 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0; parentIndex--) {
-                //System.out.println("==== path element "+i+" ="+e.getPath().getPathComponent(i).getClass().toString());
                 if ( tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.VirtualCube ) {
                     path =  tpath.getPathComponent(parentIndex);
                     break;
-                    //System.out.println("Cube fact table name ="+((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) e.getPath().getPathComponent(i)).fact).name);
                 }
             }
         }
 
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if ( ! (path instanceof MondrianGuiDef.VirtualCube  )) {
-            JOptionPane.showMessageDialog(this, "Virtual Cube not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.virtualCubeNotSelected.alert","Virtual Cube not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1759,7 +1725,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         dimension.name = "";
 
         //add cube to schema
-        dimension.name = getNewName("New Virtual Dimension ", cube.dimensions);
+        dimension.name = getNewName(getResourceConverter().getString("schemaExplorer.newVirtualDimension.title","New Virtual Dimension"), cube.dimensions);
         NodeDef[] temp = cube.dimensions;
         cube.dimensions = new MondrianGuiDef.VirtualCubeDimension[temp.length + 1];
         for (int i = 0; i < temp.length; i++) {
@@ -1779,29 +1745,29 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
     private String getNewName(String preName, Object[] objs) {
         boolean exists = true;
-        //String preName = "New Dimension ";
-        String newName="", objName = "";
+
+        String newName = "", objName = "", workName = preName.trim()+ " " ;
 
         if (objs != null) {
             int objNo = objs.length;
             try {
                 Field f = objs.getClass().getComponentType().getField("name");
-                while(exists) {
-                    newName = preName + objNo++;
+                while (exists) {
+                    newName = workName + objNo++;
                     exists = false;
                     for(int i = 0; i < objs.length; i++) {
                         objName  = (String) f.get(objs[i]);
                         if (newName.equals(objName)) {
-                            exists=true;
+                            exists = true;
                             break;
                         }
                     }
                 }
             } catch (Exception ex) {
-                LOGGER.error(ex);
+                LOGGER.error("getNewName", ex);
             }
         } else {
-            newName = preName + 0;
+            newName = workName + 0;
         }
         return newName;
     }
@@ -1811,19 +1777,17 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         Object path = null;
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0; parentIndex--) {
-                //System.out.println("==== path element "+i+" ="+e.getPath().getPathComponent(i).getClass().toString());
                 if ( (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Cube) ||
                         (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Schema) ) {
                     path =  tpath.getPathComponent(parentIndex);
                     break;
-                    //System.out.println("Cube fact table name ="+((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) e.getPath().getPathComponent(i)).fact).name);
                 }
             }
         }
 
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if ( ! ((path instanceof MondrianGuiDef.Cube) || (path instanceof MondrianGuiDef.Schema) )) {
-            JOptionPane.showMessageDialog(this, "Cube or Schema not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeOrSchemaNotSelected.alert","Cube or Schema not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1838,13 +1802,13 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
 
         MondrianGuiDef.NamedSet namedset = new MondrianGuiDef.NamedSet();
-        namedset.name = ""; // get unique name// New Named Set " + ((schema==null)?cube.namedSets.length:schema.namedSets.length);
+        namedset.name = "";
         namedset.formula="";
         namedset.formulaElement = new MondrianGuiDef.Formula();
 
         //add cube to schema
         if (cube != null) {
-            namedset.name = getNewName("New Named Set ", cube.namedSets);
+            namedset.name = getNewName(getResourceConverter().getString("schemaExplorer.newNamedSet.title","New Named Set"), cube.namedSets);
 
             NodeDef[] temp = cube.namedSets;
             cube.namedSets = new MondrianGuiDef.NamedSet[temp.length + 1];
@@ -1853,7 +1817,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
             cube.namedSets[cube.namedSets.length - 1] = namedset;
         } else {
-            namedset.name = getNewName("New Named Set ", schema.namedSets);
+            namedset.name = getNewName(getResourceConverter().getString("schemaExplorer.newNamedSet.title","New Named Set"), schema.namedSets);
             NodeDef[] temp = schema.namedSets;
             schema.namedSets = new MondrianGuiDef.NamedSet[temp.length + 1];
             for (int i = 0; i < temp.length; i++) {
@@ -1890,7 +1854,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Cube)) {
-            JOptionPane.showMessageDialog(this, "Cube not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeNotSelected.alert","Cube not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1900,7 +1864,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         dimension.name = ""; //get unique name //"New Dimension Usage" + cube.dimensions.length;
 
         //add cube to schema
-        dimension.name = getNewName("New Dimension Usage ", cube.dimensions);
+        dimension.name = getNewName(getResourceConverter().getString("schemaExplorer.newDimensionUsage.title","New Dimension Usage"), cube.dimensions);
         NodeDef[] temp = cube.dimensions;
         cube.dimensions = new MondrianGuiDef.CubeDimension[temp.length + 1];
         for (int i = 0; i < temp.length; i++) {
@@ -1926,9 +1890,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Role) {
-                    //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
-                    //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
                     break;
                 }
             }
@@ -1936,7 +1898,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Role)) {
-            JOptionPane.showMessageDialog(this, "Role not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.roleNotSelected.alert","Role not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1972,17 +1934,15 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.SchemaGrant) {
-                    //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
-                    //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
                     break;
                 }
             }
 
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
+
         if (!(path instanceof MondrianGuiDef.SchemaGrant)) {
-            JOptionPane.showMessageDialog(this, "Schema Grant not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.schemaGrantNotSelected.alert","Schema Grant not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2029,14 +1989,14 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.CubeGrant)) {
-            JOptionPane.showMessageDialog(this, "Cube Grant not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeGrantNotSelected.alert","Cube Grant not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         MondrianGuiDef.CubeGrant cubeGrant = (MondrianGuiDef.CubeGrant) path;
 
         MondrianGuiDef.DimensionGrant dimeGrant = new MondrianGuiDef.DimensionGrant();
-        dimeGrant.access = ""; //get unique name //"New Dimension Usage" + cube.dimensions.length;
+        dimeGrant.access = "";
 
         //add cube to schema
         NodeDef[] temp = cubeGrant.dimensionGrants;
@@ -2064,17 +2024,15 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.CubeGrant) {
-                    //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
-                    //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
                     break;
                 }
             }
 
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
+
         if (!(path instanceof MondrianGuiDef.CubeGrant)) {
-            JOptionPane.showMessageDialog(this, "Cube Grant not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeGrantNotSelected.alert","Cube Grant not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2110,24 +2068,22 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.HierarchyGrant) {
-                    //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
-                    //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
                     break;
                 }
             }
 
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
+
         if (!(path instanceof MondrianGuiDef.HierarchyGrant)) {
-            JOptionPane.showMessageDialog(this, "Hierarchy Grant not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.hierarchyGrantNotSelected.alert","Hierarchy Grant not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         MondrianGuiDef.HierarchyGrant hieGrant = (MondrianGuiDef.HierarchyGrant) path;
 
         MondrianGuiDef.MemberGrant memberGrant = new MondrianGuiDef.MemberGrant();
-        memberGrant.access = ""; //get unique name //"New Dimension Usage" + cube.dimensions.length;
+        memberGrant.access = "";
 
         //add cube to schema
         NodeDef[] temp = hieGrant.memberGrants;
@@ -2159,17 +2115,14 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Hierarchy) {
-                    //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
-                    //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
                     break;
                 }
             }
 
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Hierarchy)) {
-            JOptionPane.showMessageDialog(this, "Hierarchy not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.hierarchyNotSelected.alert","Hierarchy not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2179,20 +2132,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         level.uniqueMembers = false;
         level.name = "";
         level.properties = new MondrianGuiDef.Property[0];
-/*
-        level.nameExp = new MondrianGuiDef.NameExpression();
-        level.nameExp.expressions = new MondrianGuiDef.SQL[1];
-        level.nameExp.expressions[0] = new MondrianGuiDef.SQL();
-        level.ordinalExp = new MondrianGuiDef.OrdinalExpression();
-        level.ordinalExp.expressions = new MondrianGuiDef.SQL[1];
-        level.ordinalExp.expressions[0] = new MondrianGuiDef.SQL();
-        level.closure = new MondrianGuiDef.Closure();
-        level.closure.table = new MondrianGuiDef.Table("","","");
-*/
-        //dimension.hierarchies[0].memberReaderParameters[0] = new MondrianGuiDef.Parameter();
 
         //add cube to schema
-        level.name = getNewName("New Level ", hierarchy.levels);
+        level.name = getNewName(getResourceConverter().getString("schemaExplorer.newLevel.title","New Level"), hierarchy.levels);
         NodeDef[] temp = hierarchy.levels;
         hierarchy.levels = new MondrianGuiDef.Level[temp.length + 1];
         for (int i = 0; i < temp.length; i++) {
@@ -2218,9 +2160,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.ExpressionView) {  // parent could also be MondrianGuiDef.Expression
-                    //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
-                    //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
                     break;
                 }
             }
@@ -2228,7 +2168,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.ExpressionView)) {
-            JOptionPane.showMessageDialog(this, "Expression not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.expressionNotSelected.alert","Expression not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2263,9 +2203,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Level) {
-                    //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
-                    //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
                     break;
                 }
             }
@@ -2273,7 +2211,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Level)) {
-            JOptionPane.showMessageDialog(this, "Level not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.levelNotSelected.alert","Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2310,7 +2248,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         }
         if (!(path instanceof MondrianGuiDef.Level)) {
-            JOptionPane.showMessageDialog(this, "Level not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.levelNotSelected.alert","Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2347,7 +2285,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         }
         if (!(path instanceof MondrianGuiDef.Level)) {
-            JOptionPane.showMessageDialog(this, "Level not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.levelNotSelected.alert","Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2384,7 +2322,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         }
         if (!(path instanceof MondrianGuiDef.Level)) {
-            JOptionPane.showMessageDialog(this, "Level not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.levelNotSelected.alert","Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2421,7 +2359,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         }
         if (!(path instanceof MondrianGuiDef.Measure)) {
-            JOptionPane.showMessageDialog(this, "Measure not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.measureNotSelected.alert","Measure not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2451,17 +2389,15 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Hierarchy) {
-                    //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
-                    //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
                     break;
                 }
             }
 
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
+
         if (!(path instanceof MondrianGuiDef.Hierarchy)) {
-            JOptionPane.showMessageDialog(this, "Hierarchy not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.hierarchyNotSelected.alert","Hierarchy not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2490,17 +2426,15 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Dimension) {
-                    //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
-                    //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
                     break;
                 }
             }
 
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
+
         if (!(path instanceof MondrianGuiDef.Dimension)) {
-            JOptionPane.showMessageDialog(this, "Dimension not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.dimensionNotSelected.alert","Dimension not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2508,13 +2442,13 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         MondrianGuiDef.Hierarchy hierarchy = new MondrianGuiDef.Hierarchy();
 
-        hierarchy.name = "";// get unique name //"New Hierarchy " + dimension.hierarchies.length;
+        hierarchy.name = "";
         hierarchy.hasAll = Boolean.TRUE; //new Boolean(false);
         hierarchy.levels = new MondrianGuiDef.Level[0];
         hierarchy.memberReaderParameters = new MondrianGuiDef.MemberReaderParameter[0];
         hierarchy.relation = new MondrianGuiDef.Table("", "Table", "");
 
-        hierarchy.name = getNewName("New Hierarchy ", dimension.hierarchies);
+        hierarchy.name = getNewName(getResourceConverter().getString("schemaExplorer.newHierarchy.title","New Hierarchy"), dimension.hierarchies);
         NodeDef[] temp = dimension.hierarchies;
         dimension.hierarchies = new MondrianGuiDef.Hierarchy[temp.length + 1];
         for (int i = 0; i < temp.length; i++) {
@@ -2543,17 +2477,15 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Level) {
-                    //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
-                    //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
                     break;
                 }
             }
 
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
+
         if (!(path instanceof MondrianGuiDef.Level)) {
-            JOptionPane.showMessageDialog(this, "Level not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.levelNotSelected.alert","Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2561,13 +2493,13 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         MondrianGuiDef.Level level = (MondrianGuiDef.Level) path;
 
         MondrianGuiDef.Property property = new MondrianGuiDef.Property();
-        property.name = ""; // get unique name // "New Property " + level.properties.length;
+        property.name = "";
 
         //add cube to schema
         if (level.properties == null) {
             level.properties = new MondrianGuiDef.Property[0];
         }
-        property.name = getNewName("New Property ", level.properties);
+        property.name = getNewName(getResourceConverter().getString("schemaExplorer.newProperty.title","New Property"), level.properties);
         NodeDef[] temp = level.properties;
         level.properties = new MondrianGuiDef.Property[temp.length + 1];
         for (int i = 0; i < temp.length; i++) {
@@ -2597,17 +2529,15 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (tpath != null) {
             for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Level) {
-                    //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
-                    //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
                     break;
                 }
             }
 
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
+
         if (!(path instanceof MondrianGuiDef.Level)) {
-            JOptionPane.showMessageDialog(this, "Level not selected.", alert, JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.levelNotSelected.alert","Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2673,13 +2603,11 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         String selectedFactTable = null;
         String selectedFactTableSchema = null;
 
-        for(int i=e.getPath().getPathCount()-1; i>=0;i--) { //i=0; i< e.getPath().getPathCount();i++
-            //System.out.println("==== path element "+i+" ="+e.getPath().getPathComponent(i).getClass().toString());
+        for(int i=e.getPath().getPathCount()-1; i>=0;i--) {
             Object comp = e.getPath().getPathComponent(i);
             if ( comp instanceof MondrianGuiDef.Cube &&  ((MondrianGuiDef.Cube) comp).fact != null ) {
                 selectedFactTable = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) comp).fact).name;
                 selectedFactTableSchema = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) comp).fact).schema;
-                //System.out.println("Cube fact table name ="+((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) e.getPath().getPathComponent(i)).fact).name);
             }
         }
         TreePath tpath = e.getPath();
@@ -2722,53 +2650,59 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         if (o instanceof MondrianGuiDef.Column) {
             pNames = DEF_COLUMN;
-            targetLabel.setText(LBL_COLUMN);
+            targetLabel.setText(getResourceConverter().getString("common.column.title",LBL_COLUMN));
         } else if (o instanceof MondrianGuiDef.Cube) {
             pNames = DEF_CUBE;
-            targetLabel.setText(LBL_CUBE);
+            targetLabel.setText(getResourceConverter().getString("common.cube.title",LBL_CUBE));
             ((MondrianGuiDef.Cube) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Dimension) {
             pNames = DEF_DIMENSION;
             if (po instanceof MondrianGuiDef.Schema) {
-                targetLabel.setText("Shared " + LBL_DIMENSION);
+                targetLabel.setText(getResourceConverter().getString("common.sharedDimension.title", 
+                        "Shared Dimension"));
             } else {
-                targetLabel.setText(LBL_DIMENSION + " for " + elementName + " " +
-                    parentName);
+                targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.dimensionElementParent.title", 
+                        "Dimension for {0} {1}", 
+                            new String[] { elementName, parentName }));
             }
             ((MondrianGuiDef.Dimension) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.DimensionUsage) {
             pNames = DEF_DIMENSION_USAGE;
-            targetLabel.setText(LBL_DIMENSION_USAGE + " for " + elementName + " " +
-                    parentName);
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.dimensionUsageForElement.title", 
+                    "Dimension Usage for {0} {1}", 
+                        new String[] { elementName, parentName }));
+            //targetLabel.setText(LBL_DIMENSION_USAGE + " for " + elementName + " " +
+            //        parentName);
             ((MondrianGuiDef.DimensionUsage) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.KeyExpression) {
             pNames = DEF_DEFAULT;
-            targetLabel.setText(LBL_KEY_EXPRESSION);
+            targetLabel.setText(getResourceConverter().getString("common.keyExpression.title",LBL_KEY_EXPRESSION));
             ((MondrianGuiDef.ExpressionView) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.NameExpression) {
             pNames = DEF_DEFAULT;
-            targetLabel.setText(LBL_NAME_EXPRESSION);
+            targetLabel.setText(getResourceConverter().getString("common.nameExpression.title",LBL_NAME_EXPRESSION));
             ((MondrianGuiDef.ExpressionView) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.OrdinalExpression) {
             pNames = DEF_DEFAULT;
-            targetLabel.setText(LBL_ORDINAL_EXPRESSION);
+            targetLabel.setText(getResourceConverter().getString("common.ordinalExpression.title",LBL_ORDINAL_EXPRESSION));
             ((MondrianGuiDef.ExpressionView) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.ParentExpression) {
             pNames = DEF_DEFAULT;
-            targetLabel.setText(LBL_PARENT_EXPRESSION);
+            targetLabel.setText(getResourceConverter().getString("common.parentExpression.title",LBL_PARENT_EXPRESSION));
             ((MondrianGuiDef.ExpressionView) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.ExpressionView) {
             pNames = DEF_EXPRESSION_VIEW;
-            targetLabel.setText(LBL_EXPRESSION_VIEW);
+            targetLabel.setText(getResourceConverter().getString("common.expressionView.title",LBL_EXPRESSION_VIEW));
             ((MondrianGuiDef.ExpressionView) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.MeasureExpression) {
             pNames = DEF_DEFAULT;
-            targetLabel.setText(LBL_MEASURE_EXPRESSION);
+            targetLabel.setText(getResourceConverter().getString("common.measureExpression.title",LBL_MEASURE_EXPRESSION));
             ((MondrianGuiDef.ExpressionView) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Hierarchy) {
             pNames = DEF_HIERARCHY;
-            targetLabel.setText(LBL_HIERARCHY + " for " + elementName + " " +
-                    parentName);
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.hierarchyElementParent.title", 
+                    "Hierarchy for {0} {1}", 
+                        new String[] { elementName, parentName }));
             ((MondrianGuiDef.Hierarchy) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Join) {
             pNames = DEF_JOIN;
@@ -2777,147 +2711,157 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                 int indexOfChild = tree.getModel().getIndexOfChild(parentJoin, o);
                 switch (indexOfChild) {
                     case 0:
-                        targetLabel.setText("Left : " + LBL_JOIN);
+                        targetLabel.setText(getResourceConverter().getString("common.leftJoin.title","Left : " + LBL_JOIN));
                         break;
                     case 1:
-                        targetLabel.setText("Right : " + LBL_JOIN);
+                        targetLabel.setText(getResourceConverter().getString("common.rightJoin.title","Right : " + LBL_JOIN));
                 }
             } else {
-                targetLabel.setText(LBL_JOIN + " for " + elementName + " " +
-                    parentName);
+                targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.generalJoinForElement.title", 
+                        "Join for {0} {1}", 
+                            new String[] { elementName, parentName }));
             }
             ((MondrianGuiDef.Join) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Level) {
             pNames = DEF_LEVEL;
-            targetLabel.setText(LBL_LEVEL + " for " + elementName + " " +
-                    parentName);
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.levelForElement.title", 
+                    "Level for {0} {1}", 
+                        new String[] { elementName, parentName }));
             ((MondrianGuiDef.Level) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Measure) {
             pNames = DEF_MEASURE;
-            targetLabel.setText(LBL_MEASURE + " for " + elementName + " " +
-                    parentName);
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.measureForElement.title", 
+                    "Measure for {0} {1}", 
+                        new String[] { elementName, parentName }));
             ((MondrianGuiDef.Measure) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.CalculatedMember) {
             pNames = DEF_CALCULATED_MEMBER;
-            targetLabel.setText(LBL_CALCULATED_MEMBER + " for " + elementName + " " +
-                    parentName);
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.calculatedMemberForElement.title", 
+                    "Calculated Member for {0} {1}", 
+                        new String[] { elementName, parentName }));
             ((MondrianGuiDef.CalculatedMember) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.CalculatedMemberProperty) {
             pNames = DEF_CALCULATED_MEMBER_PROPERTY;
-            targetLabel.setText(LBL_CALCULATED_MEMBER_PROPERTY);
+            targetLabel.setText(getResourceConverter().getString("common.calculatedMemberProperty.title",LBL_CALCULATED_MEMBER_PROPERTY));
         } else if (o instanceof MondrianGuiDef.NamedSet) {
             pNames = DEF_NAMED_SET;
-            targetLabel.setText(LBL_NAMED_SET + " for " + elementName + " " +
-                    parentName);
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.namedSetForElement.title", 
+                    "Named Set for {0} {1}", 
+                        new String[] { elementName, parentName }));
             ((MondrianGuiDef.NamedSet) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.UserDefinedFunction) {
             pNames = DEF_USER_DEFINED_FUNCTION;
-            targetLabel.setText(LBL_USER_DEFINED_FUNCTION + " for " + elementName +
-                    " " + parentName);
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.userDefinedFunctionForElement.title", 
+                    "User Defined Function for {0} {1}", 
+                        new String[] { elementName, parentName }));
             ((MondrianGuiDef.UserDefinedFunction) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.MemberReaderParameter) {
             pNames = DEF_PARAMETER;
-            targetLabel.setText(LBL_PARAMETER);
+            targetLabel.setText(getResourceConverter().getString("common.parameter.title",LBL_PARAMETER));
         } else if (o instanceof MondrianGuiDef.Property) {
             pNames = DEF_PROPERTY;
-            targetLabel.setText(LBL_PROPERTY);
+            targetLabel.setText(getResourceConverter().getString("common.property.title",LBL_PROPERTY));
             ((MondrianGuiDef.Property) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Closure) {
             pNames = DEF_CLOSURE;
-            targetLabel.setText(LBL_CLOSURE);
+            targetLabel.setText(getResourceConverter().getString("common.closure.title",LBL_CLOSURE));
             ((MondrianGuiDef.Closure) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Schema) {
             pNames = DEF_SCHEMA;
-            targetLabel.setText(LBL_SCHEMA);
+            targetLabel.setText(getResourceConverter().getString("common.schema.title",LBL_SCHEMA));
             ((MondrianGuiDef.Schema) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.SQL) {
             pNames = DEF_SQL;
-            targetLabel.setText(LBL_SQL);
+            targetLabel.setText(getResourceConverter().getString("common.sql.title",LBL_SQL));
             ((MondrianGuiDef.SQL) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Table) {
             pNames = DEF_TABLE;
-            targetLabel.setText(LBL_TABLE + " for " + elementName + " " +
-                    parentName);
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.tableForElement.title", 
+                    "Table for {0} {1}", 
+                        new String[] { elementName, parentName }));
             ((MondrianGuiDef.Table) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.AggName) {
             pNames = DEF_AGG_NAME;
-            targetLabel.setText(LBL_AGG_NAME);
+            targetLabel.setText(getResourceConverter().getString("common.aggName.title",LBL_AGG_NAME));
             ((MondrianGuiDef.AggName) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.AggIgnoreColumn) {
             pNames = DEF_AGG_IGNORE_COLUMN;
-            targetLabel.setText(LBL_AGG_IGNORE_COLUMN);
+            targetLabel.setText(getResourceConverter().getString("common.aggIgnoreColumn.title",LBL_AGG_IGNORE_COLUMN));
             ((MondrianGuiDef.AggIgnoreColumn) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.AggForeignKey) {
             pNames = DEF_AGG_FOREIGN_KEY;
-            targetLabel.setText(LBL_AGG_FOREIGN_KEY);
+            targetLabel.setText(getResourceConverter().getString("common.aggForeignKey.title",LBL_AGG_FOREIGN_KEY));
             ((MondrianGuiDef.AggForeignKey) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.AggMeasure) {
             pNames = DEF_AGG_MEASURE;
-            targetLabel.setText(LBL_AGG_MEASURE);
+            targetLabel.setText(getResourceConverter().getString("common.aggMeasure.title",LBL_AGG_MEASURE));
             ((MondrianGuiDef.AggMeasure) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.AggLevel) {
             pNames = DEF_AGG_LEVEL;
-            targetLabel.setText(LBL_AGG_LEVEL);
+            targetLabel.setText(getResourceConverter().getString("common.aggLevel.title",LBL_AGG_LEVEL));
             ((MondrianGuiDef.AggLevel) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.AggExclude) {
             pNames = DEF_AGG_EXCLUDE;
-            targetLabel.setText(LBL_AGG_EXCLUDE);
+            targetLabel.setText(getResourceConverter().getString("common.aggExclude.title",LBL_AGG_EXCLUDE));
             ((MondrianGuiDef.AggExclude) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.AggPattern) {
             pNames = DEF_AGG_PATTERN;
-            targetLabel.setText(LBL_AGG_PATTERN);
+            targetLabel.setText(getResourceConverter().getString("common.aggPattern.title",LBL_AGG_PATTERN));
             ((MondrianGuiDef.AggPattern) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.AggFactCount) {
             pNames = DEF_AGG_FACT_COUNT;
-            targetLabel.setText(LBL_AGG_FACT_COUNT);
+            targetLabel.setText(getResourceConverter().getString("common.aggFactCount.title",LBL_AGG_FACT_COUNT));
             ((MondrianGuiDef.AggFactCount) o).displayXML(pxml, 0);
 
         } else if (o instanceof MondrianGuiDef.View) {
             pNames = DEF_VIEW;
-            targetLabel.setText(LBL_VIEW);
+            targetLabel.setText(getResourceConverter().getString("common.view.title",LBL_VIEW));
 
         } else if (o instanceof MondrianGuiDef.Role) {
             pNames = DEF_ROLE;
-            targetLabel.setText(LBL_ROLE + " for " + elementName + " " +
-                    parentName);
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.roleElementParent.title", 
+                    "Role for {0} {1}", 
+                        new String[] { elementName, parentName }));
             ((MondrianGuiDef.Role) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.SchemaGrant) {
             pNames = DEF_SCHEMA_GRANT;
-            targetLabel.setText(LBL_SCHEMA_GRANT);
+            targetLabel.setText(getResourceConverter().getString("common.schemaGrant.title",LBL_SCHEMA_GRANT));
             ((MondrianGuiDef.SchemaGrant) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.CubeGrant) {
             pNames = DEF_CUBE_GRANT;
-            targetLabel.setText(LBL_CUBE_GRANT);
+            targetLabel.setText(getResourceConverter().getString("common.cubeGrant.title",LBL_CUBE_GRANT));
             ((MondrianGuiDef.CubeGrant) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.DimensionGrant) {
             pNames = DEF_DIMENSION_GRANT;
-            targetLabel.setText(LBL_DIMENSION_GRANT);
+            targetLabel.setText(getResourceConverter().getString("common.dimensionGrant.title",LBL_DIMENSION_GRANT));
             ((MondrianGuiDef.DimensionGrant) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.HierarchyGrant) {
             pNames = DEF_HIERARCHY_GRANT;
-            targetLabel.setText(LBL_HIERARCHY_GRANT);
+            targetLabel.setText(getResourceConverter().getString("common.hierarchyGrant.title",LBL_HIERARCHY_GRANT));
             ((MondrianGuiDef.HierarchyGrant) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.MemberGrant) {
             pNames = DEF_MEMBER_GRANT;
-            targetLabel.setText(LBL_MEMBER_GRANT);
+            targetLabel.setText(getResourceConverter().getString("common.memberGrant.title",LBL_MEMBER_GRANT));
             ((MondrianGuiDef.MemberGrant) o).displayXML(pxml, 0);
 
         } else if (o instanceof MondrianGuiDef.VirtualCube) {
             pNames = DEF_VIRTUAL_CUBE;
-            targetLabel.setText(LBL_VIRTUAL_CUBE + " for " + elementName + " " +
-                    parentName);
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.virtualCubeElementParent.title", 
+                    "Virtual Cube for {0} {1}", 
+                        new String[] { elementName, parentName }));
             ((MondrianGuiDef.VirtualCube) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.VirtualCubeDimension) {
             pNames = DEF_VIRTUAL_CUBE_DIMENSION;
-            targetLabel.setText(LBL_VIRTUAL_CUBE_DIMENSION + " for " + elementName + " " +
-                    parentName);
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.virtualCubeDimensionElementParent.title", 
+                    "Virtual Cube Dimension for {0} {1}", 
+                        new String[] { elementName, parentName }));
             ((MondrianGuiDef.VirtualCubeDimension) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.VirtualCubeMeasure) {
             pNames = DEF_VIRTUAL_CUBE_MEASURE;
-            targetLabel.setText(LBL_VIRTUAL_CUBE_MEASURE);
+            targetLabel.setText(getResourceConverter().getString("common.virtualCubeMeasure.title",LBL_VIRTUAL_CUBE_MEASURE));
             ((MondrianGuiDef.VirtualCubeMeasure) o).displayXML(pxml, 0);
         } else {
-            targetLabel.setText(LBL_UNKNOWN_TYPE);
+            targetLabel.setText(getResourceConverter().getString("common.unknownType.title",LBL_UNKNOWN_TYPE));
         }
 
         //jEditorPaneXML.setText(sxml.toString());  // removed because it caused the scrollbar for new element selected to reach at the end.
@@ -2928,7 +2872,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         targetLabel2.setText(targetLabel.getText());
 
-        PropertyTableModel ptm = new PropertyTableModel(o, pNames);
+        PropertyTableModel ptm = new PropertyTableModel(workbench, o, pNames);
 
         ptm.setFactTable(selectedFactTable);
         ptm.setFactTableSchema(selectedFactTableSchema);
@@ -3267,7 +3211,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     private static final String LBL_VIRTUAL_CUBE_MEASURE = "Virtual Cube Measure";
     private static final String LBL_UNKNOWN_TYPE = "Unknown Type";
 
-    private static final String alert = "Alert";
+    private static String alert = "Alert";
 
     private AbstractAction arrowButtonUpAction;
     private AbstractAction arrowButtonDownAction;
@@ -3380,7 +3324,11 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     public void setTitle() {
         // sets the title of Internal Frame within which this schema explorer is displayed.
         // The title includes schema name and schema file name
-        parentIFrame.setTitle("Schema -  "+schema.name+"  "+"("+schemaFile.getName()+")"+(isDirty()?"*":""));
+
+        parentIFrame.setTitle(getResourceConverter().getFormattedString("schemaExplorer.frame.title", 
+                "Schema - {0} ({1}){2}", 
+                    new String[] { schema.name, schemaFile.getName(), isDirty()?"*":"" }));
+
         parentIFrame.setToolTipText(schemaFile.toString());
     }
 
@@ -3416,6 +3364,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         return editModeXML; // used by schema frame focuslistener in workbench/desktoppane
     }
 
+    public I18n getResourceConverter() {
+        return workbench.getResourceConverter();
+    }
 }
 
 // End SchemaExplorer.java

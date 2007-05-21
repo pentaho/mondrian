@@ -33,6 +33,8 @@ public class JDBCMetaData {
 
     Connection conn = null;
     DatabaseMetaData md = null;
+    
+    Workbench workbench;
 
     /* Map of Schema and its fact tables ::
      * allFactTableDimensions = [Schema1, Schema2] -> [FactTableT8, FactTable9] -> [ForeignKeys -> PrimaryKeyTable]
@@ -57,7 +59,8 @@ public class JDBCMetaData {
     private String errMsg = null;
     private Database db = new Database();
 
-    public JDBCMetaData(String jdbcDriverClassName, String jdbcConnectionUrl, String jdbcUsername, String jdbcPassword) {
+    public JDBCMetaData(Workbench wb, String jdbcDriverClassName, String jdbcConnectionUrl, String jdbcUsername, String jdbcPassword) {
+        this.workbench = wb;
         this.jdbcConnectionUrl = jdbcConnectionUrl;
         this.jdbcDriverClassName = jdbcDriverClassName;
         this.jdbcUsername = jdbcUsername;
@@ -69,13 +72,24 @@ public class JDBCMetaData {
         }
     }
 
+    /**
+     * @return the workbench i18n converter
+     */
+    public I18n getResourceConverter() {
+        return workbench.getResourceConverter();
+    }
+
     /* Creates a database connection and initializes the meta data details */
     public String initConnection(){
         LOGGER.debug("JDBCMetaData: initConnection");
 
         try {
-            if (jdbcDriverClassName==null || jdbcConnectionUrl==null) {
-                throw new Exception("Driver="+jdbcDriverClassName+"\nConn Url="+jdbcConnectionUrl+"\n(Hint: Use Prefrences to set Database Connection parameters first and then open a Schema.)");
+            if (jdbcDriverClassName == null || jdbcDriverClassName.trim().length() == 0 ||
+                    jdbcConnectionUrl == null|| jdbcConnectionUrl.trim().length() == 0) {
+                errMsg = getResourceConverter().getFormattedString("jdbcMetaData.blank.exception", 
+                        "Driver={0}\nConnection URL={1}\nUse Preferences to set Database Connection parameters first and then open a Schema", 
+                        new String[] { jdbcDriverClassName, jdbcConnectionUrl });
+                return errMsg;
             }
 
             Class.forName(jdbcDriverClassName);
@@ -104,7 +118,7 @@ public class JDBCMetaData {
             }
             rsd = md.getCatalogs();
             while (rsd.next())
-                System.out.println("   Caltalog ="+rsd.getString("TABLE_CAT"));
+                System.out.println("   Catalog ="+rsd.getString("TABLE_CAT"));
              */
             LOGGER.debug("Database Product Name: " + db.productName);
             LOGGER.debug("Database Product Version: " + db.productVersion);
@@ -116,7 +130,7 @@ public class JDBCMetaData {
             LOGGER.debug("JDBCMetaData: initConnection - no error");
             return null;
         } catch (Exception e) {
-            errMsg = e.getMessage();
+            errMsg = e.getClass().getSimpleName() + " : " + e.getLocalizedMessage();
             LOGGER.error("Database connection exception : "+errMsg, e);
             return errMsg;
             //e.printStackTrace();
@@ -173,7 +187,8 @@ public class JDBCMetaData {
         LOGGER.debug("JDBCMetaData: Loading schema: '" + dbs.name + "'");
         ResultSet rs = null;
         try {
-            rs = md.getTables(null, dbs.name, null, new String[]{"TABLE"});
+            // Tables and views can be used
+            rs = md.getTables(null, dbs.name, null, new String[]{"TABLE", "VIEW"});
             while(rs.next()) {
                 String tbname = rs.getString("TABLE_NAME");
                 DbTable dbt;
@@ -202,7 +217,7 @@ public class JDBCMetaData {
             }
             rs.close();
         } catch (Exception e) {
-            LOGGER.error(e);
+            LOGGER.error("setAllTables", e);
         }
     }
 
@@ -224,7 +239,7 @@ public class JDBCMetaData {
             }
             rs.close();
         } catch (Exception e) {
-            LOGGER.error(e);
+            LOGGER.error("setPKey", e);
         }
     }
 
@@ -238,7 +253,7 @@ public class JDBCMetaData {
             }
             rs.close();
         } catch (Exception e) {
-            LOGGER.error(e);
+            LOGGER.error("setColumns", e);
         }
     }
 
@@ -390,8 +405,10 @@ public class JDBCMetaData {
          */
         String s = "somita->namita";
         String [] p = s.split("->");
-        if (p.length >=2)
-            LOGGER.debug("p0="+p[0]+", p1="+p[1]);
+        if (LOGGER.isDebugEnabled()) {
+            if (p.length >=2)
+                LOGGER.debug("p0="+p[0]+", p1="+p[1]);
+        }
     }
 
 /* ===================================================================================================

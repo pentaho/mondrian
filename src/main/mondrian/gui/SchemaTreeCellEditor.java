@@ -34,17 +34,17 @@ public class SchemaTreeCellEditor extends javax.swing.tree.DefaultTreeCellEditor
     private final ClassLoader myClassLoader;
     JComboBox listEditor;
     ArrayList listeners;
-    private final ResourceBundle resources;
+    //private final ResourceBundle resources;
 
     /** Creates a new instance of SchemaTreeCellEditor */
-    public SchemaTreeCellEditor(JTree tree, DefaultTreeCellRenderer renderer, TreeCellEditor editor) {
+    public SchemaTreeCellEditor(Workbench workbench, JTree tree, DefaultTreeCellRenderer renderer, TreeCellEditor editor) {
         super(tree, renderer, editor);
         listeners = new ArrayList();
         myClassLoader = this.getClass().getClassLoader();
-        resources = ResourceBundle.getBundle("mondrian.gui.resources.gui");
-        renderer.setLeafIcon(new ImageIcon(myClassLoader.getResource(resources.getString("table"))));
-        renderer.setOpenIcon(new ImageIcon(myClassLoader.getResource(resources.getString("join"))));
-        renderer.setClosedIcon(new ImageIcon(myClassLoader.getResource(resources.getString("join"))));
+        //resources = ResourceBundle.getBundle("mondrian.gui.resources.gui");
+        renderer.setLeafIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("table"))));
+        renderer.setOpenIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("join"))));
+        renderer.setClosedIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("join"))));
 
         /*
         listEditor = new JComboBox( new String[] {"Join", "Table"} );

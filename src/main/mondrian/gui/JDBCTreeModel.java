@@ -58,7 +58,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
             root = cat;
 
         } catch (Exception ex) {
-            LOGGER.error(ex);
+            LOGGER.error("JDBCTreeModel", ex);
         }
     }
 

@@ -63,6 +63,13 @@ public class PreferencesDialog extends javax.swing.JDialog {
         return driverClassTextField.getText();
     }
 
+    /**
+     * @return the workbench i18n converter
+     */
+    public I18n getResourceConverter() {
+        return ((Workbench) getParent()).getResourceConverter();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -89,7 +96,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
 
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        setTitle("Workbench Preferences");
+        setTitle(getResourceConverter().getString("preferences.pane.title","Workbench Preferences"));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 closeDialog(evt);
@@ -98,7 +105,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Driver Class Name");
+        jLabel1.setText(getResourceConverter().getString("preferences.driverClassName.title","Driver Class Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -106,7 +113,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(jLabel1, gridBagConstraints);
 
-        jLabel2.setText("Connection URL");
+        jLabel2.setText(getResourceConverter().getString("preferences.connectionURL.title","Connection URL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -115,7 +122,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(jLabel2, gridBagConstraints);
 
-        jLabel3.setText("User name");
+        jLabel3.setText(getResourceConverter().getString("preferences.userName.title","User name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -124,7 +131,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(jLabel3, gridBagConstraints);
 
-        jLabel4.setText("Password");
+        jLabel4.setText(getResourceConverter().getString("preferences.password.title","Password"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -173,7 +180,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(driverClassTextField, gridBagConstraints);
 
-        jTabbedPane1.addTab("JDBC", jPanel1);
+        jTabbedPane1.addTab(getResourceConverter().getString("preferences.jdbcPanel.title","JDBC"), jPanel1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
@@ -182,7 +189,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         getContentPane().add(jTabbedPane1, gridBagConstraints);
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(getResourceConverter().getString("preferences.cancelButton.title","Cancel"));
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -196,7 +203,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         getContentPane().add(cancelButton, gridBagConstraints);
 
-        acceptButton.setText("Accept");
+        acceptButton.setText(getResourceConverter().getString("preferences.acceptButton.title","Accept"));
         acceptButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 acceptButtonActionPerformed(evt);

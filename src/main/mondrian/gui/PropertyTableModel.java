@@ -32,23 +32,23 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
 
     String[] propertyNames;
     Object target;
+    Workbench workbench;
 
-    public PropertyTableModel(Object t, String[] pNames) {
+    public PropertyTableModel(Workbench wb, Object t, String[] pNames) {
         super();
-
+        workbench = wb;
         propertyNames = pNames;
         target = t;
     }
 
     public String getColumnName(int i) {
         if (i == 0) {
-            // === return "Property";
-            return "Attribute";
+            return workbench.getResourceConverter().getString("propertyTableModel.attribute","Attribute");
         } else if (i==1) {
-            return "Value";
+            return workbench.getResourceConverter().getString("propertyTableModel.value","Value");
         }
 
-        return "?";
+        return workbench.getResourceConverter().getString("propertyTableModel.unknown","?");
     }
 
     // get property name for given row no.
@@ -150,7 +150,7 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                     return obj;
                 }
             } catch (Exception ex) {
-                LOGGER.error(ex);
+                LOGGER.error("getValueAt(row, index)", ex);
                 return "#ERROR";
             }
         }
@@ -225,14 +225,16 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                 && (! (target instanceof MondrianGuiDef.Table))
                 && (! aValue.equals(target.getClass().getField(propertyNames[rowIndex]).get(target)))
                 && duplicateName(aValue) ) {
-                    setErrorMsg("Error setting name property. '"+aValue+"' already exists");
+                    setErrorMsg(workbench.getResourceConverter().getFormattedString("propertyTableModel.duplicateValue.error", 
+                            "Error setting name property. {0} already exists", 
+                                new String[] { aValue.toString() }));
                 } else {
                     Field f = target.getClass().getField(propertyNames[rowIndex]);
                     f.set(target,aValue);
                 }
             }
         } catch (Exception ex) {
-            LOGGER.error(ex);
+            LOGGER.error("setValueAt(aValue, row, index)", ex);
         }
     }
 

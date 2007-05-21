@@ -31,11 +31,13 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
     private final ClassLoader myClassLoader;
     public boolean invalidFlag;
     private JDBCMetaData jdbcMetaData;
+    private Workbench workbench;
 
     /** Creates a new instance of SchemaTreeCellRenderer */
 
-    public SchemaTreeCellRenderer(JDBCMetaData jdbcMetaData  ){
+    public SchemaTreeCellRenderer(Workbench wb, JDBCMetaData jdbcMetaData  ) {
         this();
+        this.workbench = wb;
         this.jdbcMetaData = jdbcMetaData;
     }
     public SchemaTreeCellRenderer() {
@@ -46,18 +48,17 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-        ResourceBundle resources = ResourceBundle.getBundle("mondrian.gui.resources.gui");
 
         invalidFlag = isInvalid(tree, value, row);
 
         this.setPreferredSize(null); // This allows the layout mgr to calculate the pref size of renderer.
         if (value instanceof MondrianGuiDef.Cube) {
             setText(invalidFlag, ((MondrianGuiDef.Cube) value).name);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("cube"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("cube"))));
         } else if (value instanceof MondrianGuiDef.Column) {
             setText(invalidFlag, ((MondrianGuiDef.Column) value).name);
         } else if (value instanceof MondrianGuiDef.Dimension) {
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("dimension"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("dimension"))));
             setText(invalidFlag, ((MondrianGuiDef.CubeDimension) value).name);
             /* Do not remove this line.
              * This sets the preferred width of tree cell displaying dimension name.
@@ -70,28 +71,28 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
              */
             this.setPreferredSize(new java.awt.Dimension(this.getPreferredSize().width+1, 25)); //Do not remove this
         } else if (value instanceof MondrianGuiDef.DimensionUsage)      {
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("dimensionUsage"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("dimensionUsage"))));
             setText(invalidFlag, ((MondrianGuiDef.CubeDimension) value).name);
         } else if (value instanceof MondrianGuiDef.KeyExpression) {
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("key"))));
-            setText("Key Expression");
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("key"))));
+            setText(workbench.getResourceConverter().getString("common.keyExpression.title","Key Expression"));
         } else if (value instanceof MondrianGuiDef.NameExpression) {
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("name"))));
-            setText("Name Expression");
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("name"))));
+            setText(workbench.getResourceConverter().getString("common.nameExpression.title","Name Expression"));
         } else if (value instanceof MondrianGuiDef.OrdinalExpression) {
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("ordinal"))));
-            setText("Ordinal Expression");
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("ordinal"))));
+            setText(workbench.getResourceConverter().getString("common.ordinalExpression.title","Ordinal Expression"));
         } else if (value instanceof MondrianGuiDef.ParentExpression) {
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("parent"))));
-            setText("Parent Expression");
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("parent"))));
+            setText(workbench.getResourceConverter().getString("common.parentExpression.title","Parent Expression"));
         } else if (value instanceof MondrianGuiDef.Expression) {
-            setText("Expression");
+            setText(workbench.getResourceConverter().getString("common.expression.title","Expression"));
         } else if (value instanceof MondrianGuiDef.ExpressionView) {
-            setText("ExpressionView");
+            setText(workbench.getResourceConverter().getString("common.expressionView.title","Expression View"));
         } else if (value instanceof MondrianGuiDef.Hierarchy) {
-            setText(invalidFlag, "Hierarchy");
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.hierarchy.title","Hierarchy"));
             //setText(((MondrianGuiDef.Hierarchy) value).name);    // hierarchies do not have names
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("hierarchy"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("hierarchy"))));
             this.setPreferredSize(new java.awt.Dimension(this.getPreferredSize().width+1, 25)); //Do not remove this
 
 //        } else if (value instanceof MondrianGuiDef.Relation) {
@@ -106,18 +107,22 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                     if (parent instanceof MondrianGuiDef.Join) {
                         int indexOfChild = tree.getModel().getIndexOfChild(parent, value);
                         switch (indexOfChild) {
-                            case 0: prefix="Left : "; break;
-                            case 1: prefix="Right : "; break;
+                            case 0: prefix = workbench.getResourceConverter().getString("common.leftPrefix.title","Left") + " "; break;
+                            case 1: prefix = workbench.getResourceConverter().getString("common.rightPrefix.title","Right") + " "; break;
                         }
                     }
                 }
             }
             if (value instanceof MondrianGuiDef.Join) {
-                setText(prefix+"Join");
-                super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("join"))));
+                setText(workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.join.title", 
+                        "{0} : Join", new String[] {prefix}));
+                //setText(prefix + " " + workbench.getResourceConverter().getString("common.join.title","Join"));
+                super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("join"))));
             } else if (value instanceof MondrianGuiDef.Table) {
-                setText(prefix+"Table: "+ ((MondrianGuiDef.Table) value).name);
-                super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("table"))));
+                //setText(prefix+"Table: "+ ((MondrianGuiDef.Table) value).name);
+                setText(workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.table.title", 
+                        "{0}Table: {1}", new String[] {(prefix.length() == 0 ? "" : prefix + " : "), ((MondrianGuiDef.Table) value).name}));
+                super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("table"))));
             }
             this.getPreferredSize();
             this.setPreferredSize(new Dimension(this.getPreferredSize().width+35, 24)); //Do not remove this
@@ -127,7 +132,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 
         } else if (value instanceof MondrianGuiDef.Level) {
             setText(invalidFlag, ((MondrianGuiDef.Level) value).name);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("level"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("level"))));
             /* Do not remove this line.
              * This sets the preferred width of tree cell displaying Level name.
              * This resolves the ambiguous problem of last char or last word truncated from Level name in the tree cell.
@@ -141,83 +146,83 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
         } else if (value instanceof MondrianGuiDef.Measure) {
 
             setText(invalidFlag, ((MondrianGuiDef.Measure) value).name);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("measure"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("measure"))));
         } else if (value instanceof MondrianGuiDef.MemberReaderParameter) {
             setText(invalidFlag, ((MondrianGuiDef.MemberReaderParameter) value).name);
         } else if (value instanceof MondrianGuiDef.Property) {
             setText(invalidFlag, ((MondrianGuiDef.Property) value).name);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("property"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("property"))));
         } else if (value instanceof MondrianGuiDef.Schema) {
-            setText(invalidFlag, "Schema");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("schema"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.schema.title","Schema"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("schema"))));
         } else if (value instanceof MondrianGuiDef.NamedSet) {
             setText(invalidFlag, ((MondrianGuiDef.NamedSet) value).name);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("namedSet"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("namedSet"))));
         } else if (value instanceof MondrianGuiDef.CalculatedMember) {
             setText(invalidFlag, ((MondrianGuiDef.CalculatedMember) value).name);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("calculatedMember"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("calculatedMember"))));
         } else if (value instanceof MondrianGuiDef.CalculatedMemberProperty) {
             setText(invalidFlag, ((MondrianGuiDef.CalculatedMemberProperty) value).name);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("nopic"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("nopic"))));
         } else if (value instanceof MondrianGuiDef.UserDefinedFunction) {
             setText(invalidFlag, ((MondrianGuiDef.UserDefinedFunction) value).name);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("userDefinedFunction"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("userDefinedFunction"))));
         } else if (value instanceof MondrianGuiDef.Role) {
             setText(invalidFlag, ((MondrianGuiDef.Role) value).name);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("role"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("role"))));
         } else if (value instanceof MondrianGuiDef.SchemaGrant) {
-            setText(invalidFlag, "Schema Grant");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("schemaGrant"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.schemaGrant.title","Schema Grant"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("schemaGrant"))));
         } else if (value instanceof MondrianGuiDef.CubeGrant) {
-            setText(invalidFlag, "Cube Grant");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("cubeGrant"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.cubeGrant.title","Cube Grant"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("cubeGrant"))));
         } else if (value instanceof MondrianGuiDef.DimensionGrant) {
-            setText(invalidFlag, "Dimension Grant");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("dimensionGrant"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.dimensionGrant.title","Dimension Grant"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("dimensionGrant"))));
         } else if (value instanceof MondrianGuiDef.HierarchyGrant) {
-            setText(invalidFlag, "Hierarchy Grant");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("hierarchyGrant"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.hierarchyGrant.title","Hierarchy Grant"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("hierarchyGrant"))));
         } else if (value instanceof MondrianGuiDef.MemberGrant) {
-            setText(invalidFlag, "Member Grant");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("memberGrant"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.memberGrant.title","Member Grant"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("memberGrant"))));
         } else if (value instanceof MondrianGuiDef.SQL) {
             setText(invalidFlag, ((MondrianGuiDef.SQL) value).dialect);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("sql"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("sql"))));
         } else if (value instanceof MondrianGuiDef.View) {
-            setText("View");
+            setText(workbench.getResourceConverter().getString("common.view.title","View"));
         } else if (value instanceof MondrianGuiDef.VirtualCube) {
             setText(invalidFlag, ((MondrianGuiDef.VirtualCube) value).name);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("virtualCube"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("virtualCube"))));
         } else if (value instanceof MondrianGuiDef.VirtualCubeDimension) {
             setText(invalidFlag, ((MondrianGuiDef.VirtualCubeDimension) value).name);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("virtualCubeDimension"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("virtualCubeDimension"))));
         } else if (value instanceof MondrianGuiDef.VirtualCubeMeasure) {
             setText(invalidFlag, ((MondrianGuiDef.VirtualCubeMeasure) value).name);
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("virtualCubeMeasure"))));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("virtualCubeMeasure"))));
         } else if (value instanceof MondrianGuiDef.AggName) {
-            setText(invalidFlag, "Aggregate Name");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("aggTable"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.aggName.title","Aggregate Name"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("aggTable"))));
         } else if (value instanceof MondrianGuiDef.AggForeignKey) {
-            setText(invalidFlag, "Aggregate Foreign Key");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("aggForeignKey"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.aggForeignKey.title","Aggregate Foreign Key"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("aggForeignKey"))));
         } else if (value instanceof MondrianGuiDef.AggIgnoreColumn) {
-            setText(invalidFlag, "Aggregate Ignore Column");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("aggIgnoreColumn"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.aggIgnoreColumn.title","Aggregate Ignore Column"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("aggIgnoreColumn"))));
         } else if (value instanceof MondrianGuiDef.AggLevel) {
-            setText(invalidFlag, "Aggregate Level");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("aggLevel"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.aggLevel.title","Aggregate Level"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("aggLevel"))));
         } else if (value instanceof MondrianGuiDef.AggMeasure) {
-            setText(invalidFlag, "Aggregate Measure");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("aggMeasure"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.aggMeasure.title","Aggregate Measure"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("aggMeasure"))));
         } else if (value instanceof MondrianGuiDef.AggPattern) {
-            setText(invalidFlag, "Aggregate Pattern");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("aggPattern"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.aggPattern.title","Aggregate Pattern"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("aggPattern"))));
         } else if (value instanceof MondrianGuiDef.AggExclude) {
-            setText(invalidFlag, "Aggregate Exclude");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("aggExclude"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.aggExclude.title","Aggregate Exclude"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("aggExclude"))));
         } else if (value instanceof MondrianGuiDef.Closure) {
-            setText(invalidFlag, "Closure");
-            super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("closure"))));
+            setText(invalidFlag, workbench.getResourceConverter().getString("common.closure.title","Closure"));
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("closure"))));
         } else if (value instanceof ElementDef) {
             setText(((ElementDef) value).getName());
         } else {
@@ -234,10 +239,9 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
     }
 
     public String invalid(JTree tree, TreePath tpath, Object value, Object icube, Object iparentDimension, Object iparentHierarchy, Object iparentLevel) {
-        String errMsg = null;
-        String nameLiteral = "Name";
-        //String valueClass = value.getClass().getSimpleName();
-        String emptyMsg = " must be set";
+        //String errMsg = null;
+        String nameMustBeSet = workbench.getResourceConverter().getString("schemaTreeCellRenderer.nameMustBeSet.alert",
+                "Name must be set");
 
         MondrianGuiDef.Cube cube = (MondrianGuiDef.Cube) icube ; //null;
         MondrianGuiDef.Dimension parentDimension = (MondrianGuiDef.Dimension) iparentDimension; // null // used only by level to check for leveltype value
@@ -247,7 +251,6 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
         if (tpath != null ) {
             int pathcount = tpath.getPathCount();
             for(int i=0; i<pathcount && (cube==null || parentDimension==null || parentHierarchy==null || parentLevel==null) ;i++) {
-                //System.out.println("path element "+i+" ="+tree.getSelectionPath().getPathComponent(i).getClass().toString());
                 if (tpath.getPathComponent(i) instanceof MondrianGuiDef.Cube && cube==null) {
                     cube = (MondrianGuiDef.Cube) tpath.getPathComponent(i);
                 }
@@ -260,32 +263,34 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                 if (tpath.getPathComponent(i) instanceof MondrianGuiDef.Level && parentLevel == null) {
                     parentLevel = (MondrianGuiDef.Level) tpath.getPathComponent(i);
                 }
-                //System.out.println("Cube fact table name ="+((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) e.getPath().getPathComponent(i)).fact).name);
             }
         }
 
         //Step 1: check validity of this value object
         if (value instanceof MondrianGuiDef.Schema) {
             if ( isEmpty(((MondrianGuiDef.Schema) value).name) ) {
-                return nameLiteral + emptyMsg;
+                return nameMustBeSet;
             }
         } else if(value instanceof MondrianGuiDef.VirtualCube) {
             if ( isEmpty(((MondrianGuiDef.VirtualCube) value).name) ) {
-                return nameLiteral + emptyMsg;
+                return nameMustBeSet;
             }
         } else if(value instanceof MondrianGuiDef.VirtualCubeDimension) {
             if ( isEmpty(((MondrianGuiDef.VirtualCubeDimension) value).name) ) {
-                return nameLiteral + emptyMsg;
+                return nameMustBeSet;
             }
         } else if(value instanceof MondrianGuiDef.VirtualCubeMeasure) {
             if ( isEmpty(((MondrianGuiDef.VirtualCubeMeasure) value).name) ) {
-                return nameLiteral + emptyMsg;
+                return nameMustBeSet;
             }
         } else if (value instanceof MondrianGuiDef.Cube) {
             if ( isEmpty(((MondrianGuiDef.Cube) value).name) ) {
-                return nameLiteral + emptyMsg;}
+                return nameMustBeSet;
+            }
             if ( ((MondrianGuiDef.Cube) value).fact == null || isEmpty(((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) value).fact).name)   )    //check name is not blank
-            {    return "Fact name" + emptyMsg;}
+            {    return workbench.getResourceConverter().getString("schemaTreeCellRenderer.factNameMustBeSet.alert",
+                                            "Fact name must be set");
+            }
 
             // database validity check, if database connection is successful
             if (jdbcMetaData.getErrMsg() == null) {
@@ -294,15 +299,21 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                 String schemaName = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) value).fact).schema;
                 String factTable = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) value).fact).name;
                 if (! jdbcMetaData.isTableExists(schemaName, factTable)) {
-                    return "Fact table '"+factTable+"' does not exist in database "+((schemaName==null || schemaName.equals(""))?".":"schema "+schemaName);
+                    return workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.factTableDoesNotExist.alert", 
+                            "Fact table {0} does not exist in database {1}", new String[] {factTable, ((schemaName==null || schemaName.equals(""))?".":"schema "+schemaName)});
                 }
             }
         } else if (value instanceof MondrianGuiDef.CubeDimension) {
             if (isEmpty(((MondrianGuiDef.CubeDimension) value).name))    //check name is not blank
-            {   return nameLiteral + emptyMsg;}
+            {
+                return nameMustBeSet;
+            }
             if (value instanceof MondrianGuiDef.DimensionUsage) {
                 if(isEmpty(((MondrianGuiDef.DimensionUsage) value).source))    //check source is not blank
-                {   return "Source" + emptyMsg;}
+                {
+                    return workbench.getResourceConverter().getString("schemaTreeCellRenderer.sourceMustBeSet.alert",
+                                                    "Source must be set");
+                }
                 // check source is name of one of dimensions of schema (shared dimensions)
                 MondrianGuiDef.Schema s = (MondrianGuiDef.Schema) tree.getModel().getRoot();
                 MondrianGuiDef.Dimension ds[] = s.dimensions;
@@ -315,28 +326,23 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                     }
                 }
                 if (notfound) {
-                    return "Source '"+sourcename+"' does not exist as Shared Dimension of Schema";
+                    return workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.sourceInSharedDimensionDoesNotExist.alert", 
+                            "Source {0} does not exist as Shared Dimension of Schema", new String[] {sourcename});
                 }
             }
             if (value instanceof MondrianGuiDef.Dimension && cube != null) {
                 /* //foreignkey can be blank if  hierarchy relation is null
                  * // this check moved to child hierarchies relation check below
-                if(isEmpty(((MondrianGuiDef.Dimension) value).foreignKey))    //check foreignkey is not blank
-                { return "ForeignKey" + emptyMsg;}
                  */
                 if(! isEmpty(((MondrianGuiDef.Dimension) value).foreignKey)) {
                     // database validity check, if database connection is successful
                     if (jdbcMetaData.getErrMsg() == null) {
 
-                        //Vector allcols  = jdbcMetaData.getAllColumns(((MondrianGuiDef.Table) cube.fact).schema, ((MondrianGuiDef.Table) cube.fact).name);
                         String foreignKey = ((MondrianGuiDef.Dimension) value).foreignKey;
                         if (! jdbcMetaData.isColExists(((MondrianGuiDef.Table) cube.fact).schema, ((MondrianGuiDef.Table) cube.fact).name, foreignKey)) {
-                            return "foreignKey '"+foreignKey+"' does not exist in fact table.";
+                            return workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.foreignKeyDoesNotExist.alert", 
+                                    "foreignKey {0} does not exist in fact table", new String[] {foreignKey});
                         }
-                    /*
-                    if (! allcols.contains(foreignKey))        // check foreignKey is a fact table column
-                    {   return "ForeignKey '"+foreignKey+"' does not exist in fact table.";}
-                     */
                     }
                 }
             }
@@ -355,12 +361,14 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                             && !isEmpty(l.levelType) &&
                             (! l.levelType.equals(MondrianGuiDef.Level._levelType_values[0]))) {
                      // if dimension type is 'standard' then leveltype should be 'regular'
-                        return "levelType '"+l.levelType+"' can only be used with a TimeDimension.";
+                        return workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.levelUsedOnlyInTimeDimension.alert", 
+                                "levelType {0} can only be used with a TimeDimension", new String[] {l.levelType});
                     } else if (!isEmpty(parentDimension.type) && (parentDimension.type.equals("TimeDimension")) && 
                             !isEmpty(l.levelType) &&
                             (l.levelType.equals(MondrianGuiDef.Level._levelType_values[0]))) {
                         // if dimension type is 'time' then leveltype value could be 'timeyears', 'timedays' etc'
-                        return "levelType '"+l.levelType+"' can only be used with a StandardDimension.";
+                        return workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.levelUsedOnlyInStandardDimension.alert", 
+                                "levelType {0} can only be used with a StandardDimension", new String[] {l.levelType});
                     }
                 }
             }
@@ -372,7 +380,8 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
              */
             if (isEmpty(column)) {
                 if (l.properties == null || l.properties.length == 0) {
-                    return "column" + emptyMsg;
+                    return workbench.getResourceConverter().getString("schemaTreeCellRenderer.columnMustBeSet.alert",
+                        "Column must be set");
                 }
             } else {
                 // database validity check, if database connection is successful
@@ -382,19 +391,23 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                         if (parentHierarchy != null  ) {
                             if (parentHierarchy.relation == null  && cube != null) { // case of degenerate dimension within cube, hierarchy table not specified
                                 if (! jdbcMetaData.isColExists(((MondrianGuiDef.Table) cube.fact).schema, ((MondrianGuiDef.Table) cube.fact).name, column)) {
-                                    return "Degenerate dimension validation check - Column '"+column+"' does not exist in fact table.";
+                                    return workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.degenDimensionColumnDoesNotExist.alert", 
+                                            "Degenerate dimension validation check - Column {0} does not exist in fact table", new String[] {column});
                                 }
                             } else if (parentHierarchy.relation instanceof MondrianGuiDef.Table){
                                 if (! jdbcMetaData.isColExists(((MondrianGuiDef.Table) parentHierarchy.relation).schema, ((MondrianGuiDef.Table) parentHierarchy.relation).name, column)) {
-                                    return "column '"+column+"' does not exist in Dimension table '"+((MondrianGuiDef.Table) parentHierarchy.relation).name+"'.";
+                                    return workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.columnInDimensionDoesNotExist.alert", 
+                                            "Column {0} does not exist in Dimension table", new String[] {((MondrianGuiDef.Table) parentHierarchy.relation).name});
                                 }
                             } else  if (parentHierarchy.relation instanceof MondrianGuiDef.Join){    // relation is join, table should be specified
-                                return "table" + emptyMsg;
+                                return workbench.getResourceConverter().getString("schemaTreeCellRenderer.tableMustBeSet.alert",
+                                    "Table must be set");
                             }
                         }
                     } else {
                         if (! jdbcMetaData.isColExists(null, table, column)) {
-                            return "column '"+column+"' does not exist in table '"+table+"'.";
+                            return workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.columnInTableDoesNotExist.alert", 
+                                    "Column {0} does not exist in table {1}", new String[] { column, table });
                         }
                     }
                 }
@@ -409,7 +422,8 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
             MondrianGuiDef.Property p = (MondrianGuiDef.Property) value;
             String column = p.column; // check property's column is in table'
             if (isEmpty(column)) {
-                return "column" + emptyMsg;
+                return workbench.getResourceConverter().getString("schemaTreeCellRenderer.columnMustBeSet.alert",
+                    "Column must be set");
             }
             // database validity check, if database connection is successful
             if (jdbcMetaData.getErrMsg() == null) {
@@ -421,29 +435,36 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                     if (parentHierarchy != null  ) {
                         if (parentHierarchy.relation == null  && cube != null) { // case of degenerate dimension within cube, hierarchy table not specified
                             if (! jdbcMetaData.isColExists(((MondrianGuiDef.Table) cube.fact).schema, ((MondrianGuiDef.Table) cube.fact).name, column)) {
-                                return "Degenerate dimension validation check - Column '"+column+"' does not exist in fact table.";
+                                return workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.degenDimensionColumnDoesNotExist.alert", 
+                                        "Degenerate dimension validation check - Column {0} does not exist in fact table", new String[] {column});
                             }
                         } else if (parentHierarchy.relation instanceof MondrianGuiDef.Table){
                             if (! jdbcMetaData.isColExists(((MondrianGuiDef.Table) parentHierarchy.relation).schema, ((MondrianGuiDef.Table) parentHierarchy.relation).name, column)) {
-                                return "column '"+column+"' does not exist in Dimension table '"+((MondrianGuiDef.Table) parentHierarchy.relation).name+"'.";
+                                return workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.columnInDimensionDoesNotExist.alert", 
+                                        "Column {0} does not exist in Dimension table", new String[] {((MondrianGuiDef.Table) parentHierarchy.relation).name});
                             }
                         }
                     }
                 } else {
                     if (! jdbcMetaData.isColExists(null, table, column)) {
-                        return "column '"+column+"' does not exist in Level table '"+table+"'.";
+                        return workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.columnInDimensionDoesNotExist.alert", 
+                                "Column {0} does not exist in Level table {1}", new String[] {column, table});
                     }
                 }
             }
         } else if (value instanceof MondrianGuiDef.Measure) {
             if ( isEmpty(((MondrianGuiDef.Measure) value).name) ) {
-                return  nameLiteral + emptyMsg;}
+                return nameMustBeSet;
+            }
             if (isEmpty(((MondrianGuiDef.Measure) value).aggregator) ) {
-                return "aggregator" + emptyMsg;}
+                return workbench.getResourceConverter().getString("schemaTreeCellRenderer.aggregatorMustBeSet.alert",
+                        "Aggregator must be set");
+            }
             if (((MondrianGuiDef.Measure) value).measureExp != null) {
                 // Measure expressions are OK
             } else if (isEmpty(((MondrianGuiDef.Measure) value).column)   ) {
-                return "column" + emptyMsg;
+                return workbench.getResourceConverter().getString("schemaTreeCellRenderer.columnMustBeSet.alert",
+                    "Column must be set");
             } else if (cube != null && cube.fact != null) {
 
                 // database validity check, if database connection is successful
@@ -471,47 +492,61 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                             agIndex=0;  // aggregator = sum or avg, column should be numeric
                         }
                         if (! (agIndex == -1 || (colType >=2 && colType <=8))) {
-                            return "aggregator '"+((MondrianGuiDef.Measure) value).aggregator+"' is not valid on the data type of the column '"+((MondrianGuiDef.Measure) value).column+"'";
+                            return workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.aggregatorNotValidForColumn.alert", 
+                                    "Aggregator {0} is not valid for the data type of the column {1}", new String[] {((MondrianGuiDef.Measure) value).aggregator, ((MondrianGuiDef.Measure) value).column});
                         }
                     }
                 }
             }
         } else if (value instanceof MondrianGuiDef.Hierarchy) {
             if (((MondrianGuiDef.Hierarchy)value).relation instanceof MondrianGuiDef.Join) {
-                String returnMsg = "";
                 if ( isEmpty(((MondrianGuiDef.Hierarchy) value).primaryKeyTable)) {
-                    returnMsg = "primaryKeyTable ";
+                    if ( isEmpty(((MondrianGuiDef.Hierarchy) value).primaryKey)) {
+                        return workbench.getResourceConverter().getString("schemaTreeCellRenderer.primaryKeyTableAndPrimaryKeyMustBeSet.alert",
+                            "PrimaryKeyTable and PrimaryKey must be set for Join");
+                    } else {
+                        return workbench.getResourceConverter().getString("schemaTreeCellRenderer.primaryKeyTableMustBeSet.alert",
+                            "PrimaryKeyTable must be set for Join");
+                    }
                 }
                 if ( isEmpty(((MondrianGuiDef.Hierarchy) value).primaryKey)) {
-                    if (returnMsg.length() > 0) {
-                        returnMsg = returnMsg + "and";
-                    }
-                    returnMsg = returnMsg + " primaryKey ";
-                }
-                if (returnMsg.length() > 0) {
-                    return (returnMsg + emptyMsg + " for Join");
+                    return workbench.getResourceConverter().getString("schemaTreeCellRenderer.primaryKeyMustBeSet.alert",
+                        "PrimaryKey must be set for Join");
                 }
             }
         } else if (value instanceof MondrianGuiDef.NamedSet) {
             if ( isEmpty(((MondrianGuiDef.NamedSet) value).name) ) {
-                return nameLiteral + emptyMsg;}
+                return nameMustBeSet;
+            }
             if ( isEmpty(((MondrianGuiDef.NamedSet) value).formula) ) {
-                return "formula " + emptyMsg;}
+                return workbench.getResourceConverter().getString("schemaTreeCellRenderer.formulaMustBeSet.alert",
+                    "Formula must be set");
+            }
         } else if (value instanceof MondrianGuiDef.UserDefinedFunction) {
             if ( isEmpty(((MondrianGuiDef.UserDefinedFunction) value).name) ) {
-                return nameLiteral + emptyMsg;}
+                return nameMustBeSet;
+            }
             if(  isEmpty(((MondrianGuiDef.UserDefinedFunction) value).className)) {
-                return "className" + emptyMsg;}
+                return workbench.getResourceConverter().getString("schemaTreeCellRenderer.classNameMustBeSet.alert",
+                    "Class name must be set");
+            }
         } else if (value instanceof MondrianGuiDef.CalculatedMember) {
             if ( isEmpty(((MondrianGuiDef.CalculatedMember) value).name) ) {
-                return nameLiteral + emptyMsg;}
+                return nameMustBeSet;
+            }
             if (isEmpty(((MondrianGuiDef.CalculatedMember) value).dimension) ) {
-                return "dimension" + emptyMsg;}
+                return workbench.getResourceConverter().getString("schemaTreeCellRenderer.dimensionMustBeSet.alert",
+                    "Dimension must be set");
+            }
         } else if (value instanceof MondrianGuiDef.Join) {
             if ( isEmpty(((MondrianGuiDef.Join) value).leftKey) ) {
-                return "leftKey" + emptyMsg;}
+                return workbench.getResourceConverter().getString("schemaTreeCellRenderer.leftKeyMustBeSet.alert",
+                    "Left key must be set");
+            }
             if (isEmpty(((MondrianGuiDef.Join) value).rightKey) ) {
-                return "rightKey" + emptyMsg;}
+                return workbench.getResourceConverter().getString("schemaTreeCellRenderer.rightKeyMustBeSet.alert",
+                    "Right key must be set");
+            }
         }
 
         // Step 2: check validity of all child objects for this value object.
@@ -528,7 +563,11 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                 // special check for cube dimension where foreign key is blank : allowed /not allowed
                 if (value instanceof MondrianGuiDef.Dimension && cube != null && ((MondrianGuiDef.Hierarchy)child).relation != null) {
                     if(isEmpty(((MondrianGuiDef.Dimension) value).foreignKey))    //check foreignkey is not blank
-                    {    return "foreignKey" + emptyMsg;    // if relation is null, foreignkey must be specified
+                    {
+                        // if relation is null, foreignkey must be specified
+                        
+                        return workbench.getResourceConverter().getString("schemaTreeCellRenderer.foreignKeyMustBeSet.alert",
+                            "Foreign key must be set");
                     }
                 }
                 childErrMsg = invalid(tree, tpath, child, cube, parentDimension, child, parentLevel);   //check the current hierarchy and its children
@@ -588,19 +627,19 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                     childName = (String) f.get(child) ;
                     if (childName == null) {
                         childName="";
-                    } else {
-                        childName = " '" + childName + "'";
                     }
-                    childErrMsg = simpleName[simpleName.length-1] + " " +
-                        childName +" is invalid.";
+                    childErrMsg = workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.childErrorMessageWithName.alert", 
+                            "{0} {1} is invalid", new String[] {simpleName[simpleName.length-1], childName});
+
                 } catch(Exception ex) {
-                    childErrMsg = simpleName[simpleName.length-1] + " is invalid.";
+                    childErrMsg = workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.childErrorExceptionMessage.alert", 
+                            "{0} is invalid", new String[] {simpleName[simpleName.length-1]});
                 }
                 return childErrMsg;
             }
         }
 
-        return errMsg;
+        return null;
     }
 
     private boolean isEmpty(Object v) {
@@ -615,7 +654,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
         /* (TreePath) tree.getPathForRow(row) returns null for new objects added to tree in the first run of rendering.
          * Check for null before calling methods on Treepath returned.
          */
-        return (invalid(tree, tree.getPathForRow(row), value) ==null)?false:true;
+        return (invalid(tree, tree.getPathForRow(row), value) == null) ? false : true;
         //return (invalid(null, value) ==null)?false:true;
     }
 

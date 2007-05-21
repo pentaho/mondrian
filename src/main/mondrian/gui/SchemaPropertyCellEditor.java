@@ -36,7 +36,10 @@ import javax.swing.text.JTextComponent;
  * @version $Id$
  */
 public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEditor {
+    Workbench workbench;
+    
     ArrayList listeners;
+    
     JTextField stringEditor;
     JCheckBox booleanEditor;
     JTextField integerEditor;
@@ -57,15 +60,18 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
     String noSelect = "-- No Selection --";
     FocusAdapter editorFocus;
 
-    public SchemaPropertyCellEditor(JDBCMetaData jdbcMetaData) {
-        this();
+    public SchemaPropertyCellEditor(Workbench workbench, JDBCMetaData jdbcMetaData) {
+        this(workbench);
         this.jdbcMetaData = jdbcMetaData;
     }
 
     /** Creates a new instance of SchemaPropertyCellEditor */
-    public SchemaPropertyCellEditor() {
+    public SchemaPropertyCellEditor(Workbench workbench) {
 
-
+        this.workbench = workbench;
+        
+        noSelect = getResourceConverter().getString("schemaPropertyCellEditor.noSelection",
+                "-- No Selection --");
 
         listeners = new ArrayList();
         stringEditor = new JTextField();
@@ -89,55 +95,9 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
         listEditor.setBackground(Color.white);
         listEditor.setBorder(new EmptyBorder(0, 0, 0, 0)); //super.noFocusBorder);
 
-        /*
-         // MouseListener for JComboBox does not execurte when ComboBox is editable.
-
-        ml = new MouseAdapter() {
-            boolean all = true;
-            public void mouseClicked(MouseEvent e) {
-                System.out.println("Mouse clicked ");}
-
-            public void mouseReleased(MouseEvent e) {
-                System.out.println("mouse relased listeditor");
-                if (listEditor.isDisplayable()) listEditor.setPopupVisible(true);
-            }
-
-            public void mousePressed(MouseEvent e) {
-                System.out.println("Mouse pressed "+e.getClickCount());
-                if(e.getClickCount() == 2) {
-                    if (all) {
-                        listEditor.setModel(allOptions); } else {
-                        listEditor.setModel(selOptions); }
-                    all = !all;
-                }
-            }
-        };
-         // ItemListener executes twice for each change in selected item.
-        il = new ItemListener() {
-            boolean all = true;
-            public void itemStateChanged(ItemEvent e) {
-                System.out.println("itemlistener executed ="+listEditor.getSelectedIndex());
-
-                if (((JComboBox)e.getItemSelectable()).getSelectedIndex() == 0) {   // 0 index refers to less or more options
-                    if (all) {
-                        listEditor.setModel(allOptions); } else {
-                        listEditor.setModel(selOptions); }
-                    //((JComboBox)e.getItemSelectable()).setSelectedIndex(-1);
-                    ((JComboBox)e.getItemSelectable()).setPopupVisible(true);
-                    all = !all;
-
-                }
-
-                if (listEditor.isDisplayable()) listEditor.setPopupVisible(true);
-
-            }
-        };
-         */
-
         al = new ActionListener() {
             boolean all = true;
             public void actionPerformed(ActionEvent e) {
-                //System.out.println(listEditor.getSelectedIndex()+"getActionCommand=="+e.getActionCommand());
                 if (e.getActionCommand().equals("comboBoxChanged") && listEditor.getSelectedIndex() == 0) {   // 0 index refers to less or more options
                     if (all) {
                         listEditor.setModel(allOptions);
@@ -154,7 +114,6 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             }
 
         };
-
 
         JTextComponent editor = (JTextComponent) listEditor.getEditor().getEditorComponent();
 
@@ -182,16 +141,10 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             }
         });
 
-        //====editor.addFocusListener(editorFocus);
-        /*
-        editor.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {System.out.println("--Combo Box Editor GAINED focus"+activeEditor.getClass()); }
-            public void focusLost(FocusEvent e) {System.out.println("--Combo Box Editor LOST focus"+activeEditor.getClass());}
-        });
-         */
         relationRenderer = new JPanel();
-        //relationRenderer.setLayout(new BorderLayout()); // default flowlayout
-        relationList = new JComboBox( new String[] {"Join", "Table"} );
+
+        relationList = new JComboBox( new String[] {getResourceConverter().getString("schemaPropertyCellEditor.join","Join"), 
+                                                    getResourceConverter().getString("schemaPropertyCellEditor.table","Table")} );
         relationList.setMaximumSize(stringEditor.getMaximumSize());
         relationTable = new JTable();
         relationRenderer.add(relationList);
@@ -376,7 +329,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
                 (targetClassz == MondrianGuiDef.DimensionUsage.class && propertyName.equals("foreignKey")) ||
                 (targetClassz == MondrianGuiDef.Measure.class && propertyName.equals("column")) ) {
             Vector fks      = new Vector(jdbcMetaData.getFactTableFKs(selectedFactTableSchema, selectedFactTable)); //===
-            fks.add(0, "<< All Columns >>");
+            fks.add(0, getResourceConverter().getString("schemaPropertyCellEditor.allColumns","<< All Columns >>"));
             Vector allcols  = new Vector(jdbcMetaData.getAllColumns(selectedFactTableSchema, selectedFactTable));
             ComboBoxModel cFks = new DefaultComboBoxModel(fks);
 
@@ -384,7 +337,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             listEditor.setToolTipText(null);
             listEditor.removeActionListener(al);
             if ((fks.size() > 1) && propertyName.equals("foreignKey")){
-                allcols.add(0, "<< Foreign keys >>");
+                allcols.add(0, getResourceConverter().getString("schemaPropertyCellEditor.foreignKeys", "<< Foreign keys >>"));
                 ComboBoxModel cAllcols = new DefaultComboBoxModel(allcols);
                 listEditor.setModel(cFks);
                 //listEditor.setToolTipText("Relavant Options shows Foreign keys and All Columns in selected Fact Table");
@@ -526,8 +479,8 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
                 cAllTables  = new DefaultComboBoxModel(allTables);
                 allOptions = cAllTables;
                 if (factTables.size() > 0) {
-                    ((DefaultComboBoxModel) cFactTables).insertElementAt("<< All Tables >>",0);
-                    ((DefaultComboBoxModel) cAllTables).insertElementAt("<< Fact Tables >>",0);
+                    ((DefaultComboBoxModel) cFactTables).insertElementAt(workbench.getResourceConverter().getString("schemaPropertyCellEditor.allTables","<< All Tables >>"),0);
+                    ((DefaultComboBoxModel) cAllTables).insertElementAt(workbench.getResourceConverter().getString("schemaPropertyCellEditor.factTables","<< Fact Tables >>"),0);
                     listEditor.setModel(cFactTables);
                     //listEditor.setToolTipText("Double-Click to toggle between Fact tables and All tables");
                     selOptions = cFactTables;
@@ -535,8 +488,8 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
                 }
             } else {
                 if (dimeTables.size() > 0) {
-                    ((DefaultComboBoxModel) cDimeTables).insertElementAt("<< All Tables >>",0);
-                    ((DefaultComboBoxModel) cAllTables).insertElementAt("<< Dimension Tables >>",0);
+                    ((DefaultComboBoxModel) cDimeTables).insertElementAt(workbench.getResourceConverter().getString("schemaPropertyCellEditor.allTables","<< All Tables >>"),0);
+                    ((DefaultComboBoxModel) cAllTables).insertElementAt(workbench.getResourceConverter().getString("schemaPropertyCellEditor.dimensionTables","<< Dimension Tables >>"),0);
                     listEditor.setModel(cDimeTables);
                     //listEditor.setToolTipText("Double-Click to toggle between Dimension tables and All tables");
                     selOptions = cDimeTables;
@@ -563,65 +516,65 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             activeEditor = stringEditor;
             stringEditor.setText((String)value);
         } else if (value.getClass() == MondrianGuiDef.Join.class) {
-            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor();
+            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(workbench);
             tableEditor.setDefaultEditor(Object.class, spce);
-            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
             tableEditor.setDefaultRenderer(Object.class, spcr);
-            PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_JOIN);
+            PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_JOIN);
             tableEditor.setModel(ptm);
             activeEditor = tableEditor;
         } else if (value.getClass() == MondrianGuiDef.NameExpression.class) {
             return null;
         } else if (value.getClass() == MondrianGuiDef.Relation.class) {
-            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor();
+            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(workbench);
             tableEditor.setDefaultEditor(Object.class, spce);
-            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
             tableEditor.setDefaultRenderer(Object.class, spcr);
-            PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_RELATION);
+            PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_RELATION);
             tableEditor.setModel(ptm);
             activeEditor = tableEditor;
             return null;
         } else if (value.getClass() == MondrianGuiDef.OrdinalExpression.class) {
-            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor();
+            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(workbench);
             tableEditor.setDefaultEditor(Object.class, spce);
-            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
             tableEditor.setDefaultRenderer(Object.class, spcr);
             //===PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_SQL);
-            PropertyTableModel ptm = new PropertyTableModel(((MondrianGuiDef.OrdinalExpression)value).expressions[0],SchemaExplorer.DEF_SQL);
+            PropertyTableModel ptm = new PropertyTableModel(workbench, ((MondrianGuiDef.OrdinalExpression)value).expressions[0],SchemaExplorer.DEF_SQL);
             ptm.setParentTarget(((PropertyTableModel) table.getModel()).target);
             tableEditor.setModel(ptm);
             activeEditor = tableEditor;
         } else if (value.getClass() == MondrianGuiDef.Formula.class) {
-            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(jdbcMetaData);
+            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(workbench, jdbcMetaData);
             tableEditor.setDefaultEditor(Object.class, spce);
-            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
             tableEditor.setDefaultRenderer(Object.class, spcr);
-            PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_FORMULA);
+            PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_FORMULA);
             tableEditor.setModel(ptm);
             tableEditor.getColumnModel().getColumn(0).setMaxWidth(100);
             tableEditor.getColumnModel().getColumn(0).setMinWidth(100);
             activeEditor = tableEditor;
         } else if (value.getClass() == MondrianGuiDef.CalculatedMemberProperty.class) {
-            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(jdbcMetaData);
+            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(workbench, jdbcMetaData);
             tableEditor.setDefaultEditor(Object.class, spce);
-            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
             tableEditor.setDefaultRenderer(Object.class, spcr);
-            PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_CALCULATED_MEMBER_PROPERTY);
+            PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_CALCULATED_MEMBER_PROPERTY);
             tableEditor.setModel(ptm);
             tableEditor.getColumnModel().getColumn(0).setMaxWidth(100);
             tableEditor.getColumnModel().getColumn(0).setMinWidth(100);
             activeEditor = tableEditor;
         } else if (value.getClass() == MondrianGuiDef.Table.class) {
-            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(jdbcMetaData);
+            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(workbench, jdbcMetaData);
             // adding cell editing stopped listeners to nested property of type table
             // so that any change in value of table fields are reflected in tree
             for (int i = listeners.size() - 1; i >= 0; i--) {
                 spce.addCellEditorListener(((CellEditorListener)listeners.get(i)));
             }
             tableEditor.setDefaultEditor(Object.class, spce);
-            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
             tableEditor.setDefaultRenderer(Object.class, spcr);
-            PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_TABLE);
+            PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_TABLE);
             ptm.setFactTable(selectedFactTable);
             if (targetClassz == MondrianGuiDef.Cube.class) {
                 ptm.setParentTarget(((PropertyTableModel) table.getModel()).target);}
@@ -630,16 +583,16 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             tableEditor.getColumnModel().getColumn(0).setMinWidth(100);
             activeEditor = tableEditor;
         } else if (value.getClass() == MondrianGuiDef.AggFactCount.class) {
-            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(jdbcMetaData);
+            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(workbench, jdbcMetaData);
             // adding cell editing stopped listeners to nested property of type table
             // so that any change in value of table fields are reflected in tree
             for (int i = listeners.size() - 1; i >= 0; i--) {
                 spce.addCellEditorListener(((CellEditorListener)listeners.get(i)));
             }
             tableEditor.setDefaultEditor(Object.class, spce);
-            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
             tableEditor.setDefaultRenderer(Object.class, spcr);
-            PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_AGG_FACT_COUNT);
+            PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_AGG_FACT_COUNT);
             ptm.setFactTable(selectedFactTable);
             /*
             if (targetClassz == MondrianGuiDef.Cube.class) {
@@ -650,16 +603,16 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             tableEditor.getColumnModel().getColumn(0).setMinWidth(100);
             activeEditor = tableEditor;
         } else if (value.getClass() == MondrianGuiDef.Closure.class) {
-            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(jdbcMetaData);
+            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(workbench, jdbcMetaData);
             // adding cell editing stopped listeners to nested property of type table
             // so that any change in value of table fields are reflected in tree
             for (int i = listeners.size() - 1; i >= 0; i--) {
                 spce.addCellEditorListener(((CellEditorListener)listeners.get(i)));
             }
             tableEditor.setDefaultEditor(Object.class, spce);
-            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
             tableEditor.setDefaultRenderer(Object.class, spcr);
-            PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_CLOSURE);
+            PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_CLOSURE);
             ptm.setFactTable(selectedFactTable);
             if (targetClassz == MondrianGuiDef.Level.class) {
                 ptm.setParentTarget(((PropertyTableModel) table.getModel()).target);}
@@ -669,11 +622,11 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             spcr.setTableRendererHeight(tableEditor, null);
             activeEditor = tableEditor;
         } else if (value.getClass() == MondrianGuiDef.Property.class) {
-            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor();
+            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(workbench);
             tableEditor.setDefaultEditor(Object.class, spce);
-            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
             tableEditor.setDefaultRenderer(Object.class, spcr);
-            PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_PROPERTY);
+            PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_PROPERTY);
             tableEditor.setModel(ptm);
             activeEditor = tableEditor;
         } else {
@@ -1040,6 +993,10 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             }
         }
         return hlevels;
+    }
+    
+    private I18n getResourceConverter() {
+        return workbench.getResourceConverter();
     }
 
     /* // Not required for time being

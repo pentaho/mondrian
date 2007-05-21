@@ -21,6 +21,9 @@ import javax.swing.table.TableCellRenderer;
  * @version $Id$
  */
 public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCellRenderer {
+    
+    Workbench workbench;
+    
     JLabel stringRenderer;
     JCheckBox booleanRenderer;
     JLabel integerRenderer;
@@ -37,7 +40,9 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
     static public Color attributeBackground ;
 
     /** Creates a new instance of SchemaPropertyCellRenderer */
-    public SchemaPropertyCellRenderer() {
+    public SchemaPropertyCellRenderer(Workbench wb) {
+        
+        workbench = wb;
 
         super.setBackground(attributeBackground);
 
@@ -68,7 +73,8 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
         relationRenderer = new JPanel();
 
         rlPanel = new JPanel();
-        relationList = new JComboBox( new String[] {"Join", "Table"} );
+        relationList = new JComboBox( new String[] {workbench.getResourceConverter().getString("schemaPropertyCellRenderer.join","Join"), 
+                                                    workbench.getResourceConverter().getString("schemaPropertyCellRenderer.table","Table")} );
         relationList.setMaximumSize(new Dimension(55,22));
         relationList.setPreferredSize(new Dimension(55,22));
         relationList.setMinimumSize(new Dimension(55,22));
@@ -136,7 +142,8 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
 
                 stringRenderer.setText(generateJoinStr(value));
 
-                stringRenderer.setToolTipText("Select the Join/Table object from Schema tree to edit.");
+                stringRenderer.setToolTipText(workbench.getResourceConverter().getString("schemaPropertyCellRenderer.selectJoinObject",
+                        "Select the Join/Table object from Schema tree to edit."));
                 stringRenderer.setOpaque(true);
                 stringRenderer.setBackground(Color.LIGHT_GRAY); //new java.awt.Color(184, 207, 229)
                 return stringRenderer;
@@ -159,48 +166,48 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 return tableRenderer;
                  **/
             } else if (value.getClass() == MondrianGuiDef.OrdinalExpression.class) {
-                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
                 //===PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_SQL);
-                PropertyTableModel ptm = new PropertyTableModel(((MondrianGuiDef.OrdinalExpression)value).expressions[0],SchemaExplorer.DEF_SQL);
+                PropertyTableModel ptm = new PropertyTableModel(workbench, ((MondrianGuiDef.OrdinalExpression)value).expressions[0],SchemaExplorer.DEF_SQL);
                 tableRenderer.setModel(ptm);
                 tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
                 tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
                 return tableRenderer;
             } else if (value.getClass() == MondrianGuiDef.Formula.class) {
-                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
-                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_FORMULA);
+                PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_FORMULA);
                 tableRenderer.setModel(ptm);
                 tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
                 tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
                 return tableRenderer;
             } else if (value.getClass() == MondrianGuiDef.CalculatedMemberProperty.class) {
-                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
-                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_CALCULATED_MEMBER_PROPERTY);
+                PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_CALCULATED_MEMBER_PROPERTY);
                 tableRenderer.setModel(ptm);
                 tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
                 tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
                 return tableRenderer;
             } else if (value.getClass() == MondrianGuiDef.Relation.class) {
-                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
-                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_RELATION);
+                PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_RELATION);
                 tableRenderer.setModel(ptm);
                 return tableRenderer;
             } else if (value.getClass() == MondrianGuiDef.Table.class) {
-                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
-                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_TABLE);
+                PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_TABLE);
                 tableRenderer.setModel(ptm);
                 tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
                 tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
                 return tableRenderer;
             } else if (value.getClass() == MondrianGuiDef.AggFactCount.class) {
-                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
-                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_AGG_FACT_COUNT);
+                PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_AGG_FACT_COUNT);
                 tableRenderer.setModel(ptm);
                 tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
                 tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
@@ -209,18 +216,18 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
 
 
 
-                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
-                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_CLOSURE);
+                PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_CLOSURE);
                 tableRenderer.setModel(ptm);
                 tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
                 tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
                 setTableRendererHeight(tableRenderer, null);
                 return tableRenderer;
             } else if (value.getClass() == MondrianGuiDef.Property.class) {
-                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
-                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_PROPERTY);
+                PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_PROPERTY);
                 tableRenderer.setModel(ptm);
                 return tableRenderer;
             } else {
@@ -238,7 +245,7 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 if (pos > 0) {
                     String tipName = (className.substring(pos + 1)) + "," +
                         tableModel.getRowName(row);
-                    tooltip = Workbench.getTooltip(tipName);
+                    tooltip = workbench.getTooltip(tipName);
                 }
                 stringRenderer.setToolTipText(tooltip);
                 stringRenderer.setText((String)value);

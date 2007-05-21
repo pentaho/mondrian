@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.Map;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.filechooser.FileSystemView;
-import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.olap.MondrianProperties;
 
@@ -67,10 +66,12 @@ public class Workbench extends javax.swing.JFrame {
     private static final String LAST_USED3_URL = "lastUsedUrl3";
     private static final String LAST_USED4 = "lastUsed4";
     private static final String LAST_USED4_URL = "lastUsedUrl4";
+    private static final String WorkbenchInfoResourceName = "mondrian.gui.resources.workbenchInfo";
+    private static final String GUIResourceName = "mondrian.gui.resources.gui";
+    private static final String TextResourceName = "mondrian.gui.resources.text";
 
     private static final Logger LOGGER = Logger.getLogger(Workbench.class);
 
-    private Connection connection;
     private String jdbcDriverClassName;
     private String jdbcConnectionUrl;
     private String jdbcUsername;
@@ -79,8 +80,15 @@ public class Workbench extends javax.swing.JFrame {
     private JDBCMetaData jdbcMetaData;
 
     private final ClassLoader myClassLoader;
-    private final ResourceBundle resources;
+
+    private final ResourceBundle guiResourceBundle;
+    private final ResourceBundle textResourceBundle;
+
     private Properties workbenchProperties;
+    private static ResourceBundle workbenchResourceBundle = null;
+    
+    private I18n resourceConverter = null;
+
     private static int newSchema = 1;
 
     private String openFile=null;
@@ -89,11 +97,14 @@ public class Workbench extends javax.swing.JFrame {
     private Vector mdxWindows = new Vector();
     private int windowMenuMapIndex = 1;
 
-    private static ResourceBundle resBundle = null;
-
     /** Creates new form Workbench */
     public Workbench() {
         myClassLoader = this.getClass().getClassLoader();
+
+        guiResourceBundle = ResourceBundle.getBundle(GUIResourceName, Locale.getDefault(), myClassLoader);
+        textResourceBundle = ResourceBundle.getBundle(TextResourceName, Locale.getDefault(), myClassLoader);
+        
+        resourceConverter = new I18n(guiResourceBundle, textResourceBundle);
 
         // Setting User home directory
         WORKBENCH_USER_HOME_DIR = System.getProperty("user.home") + File.separator + ".schemaWorkbench";
@@ -103,10 +114,7 @@ public class Workbench extends javax.swing.JFrame {
         initDataSource();
         initComponents();
 
-        //ResourceBundle resources = ResourceBundle.getBundle("mondrian.gui.resources.gui", Locale.getDefault(), myClassLoader);
-        resources = ResourceBundle.getBundle("mondrian.gui.resources.gui", Locale.getDefault(), myClassLoader);
-
-        ImageIcon icon = new javax.swing.ImageIcon(myClassLoader.getResource(resources.getString("cube")));
+        ImageIcon icon = new javax.swing.ImageIcon(myClassLoader.getResource(resourceConverter.getGUIReference("cube")));
 
         this.setIconImage(icon.getImage());
     }
@@ -117,8 +125,7 @@ public class Workbench extends javax.swing.JFrame {
     private void loadWorkbenchProperties() {
         workbenchProperties = new Properties();
         try {
-            String resourceName = "mondrian.gui.resources.workbenchInfo";
-            resBundle = ResourceBundle.getBundle(resourceName);
+            workbenchResourceBundle = ResourceBundle.getBundle(WorkbenchInfoResourceName, Locale.getDefault(), myClassLoader);
             
             File f = new File(WORKBENCH_CONFIG_FILE);
             if (f.exists()) {
@@ -142,8 +149,10 @@ public class Workbench extends javax.swing.JFrame {
         try {
             if (dir.exists()) {
                 if (!dir.isDirectory() ) {
-                    javax.swing.JOptionPane.showMessageDialog( this, 
-                            WORKBENCH_USER_HOME_DIR + " is not a directory!\nPlease rename this file and retry to save config!","",JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog( this, 
+                            getResourceConverter().getFormattedString("workbench.user.home.not.directory", 
+                                        "{0} is not a directory!\nPlease rename this file and retry to save configuration!", new String[] {WORKBENCH_USER_HOME_DIR}),
+                                        "", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
             }
@@ -151,10 +160,12 @@ public class Workbench extends javax.swing.JFrame {
                 dir.mkdirs();
             }
         } catch (Exception ex) {
-            LOGGER.error(ex);
-            javax.swing.JOptionPane.showMessageDialog( this, 
-                    "An error is occurred creating workbench config directory:\n" + WORKBENCH_USER_HOME_DIR +
-                            "\n" + ex.getLocalizedMessage(),"",JOptionPane.ERROR_MESSAGE);
+            LOGGER.error("storeWorkbenchProperties: mkdirs", ex);
+            JOptionPane.showMessageDialog( this, 
+                    getResourceConverter().getFormattedString("workbench.user.home.exception", 
+                            "An error is occurred creating workbench configuration directory:\n{0}\nError is: {1}",
+                                new String[] {WORKBENCH_USER_HOME_DIR, ex.getLocalizedMessage()}),
+                            "", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
@@ -163,17 +174,17 @@ public class Workbench extends javax.swing.JFrame {
             out = (OutputStream) new FileOutputStream(new File(WORKBENCH_CONFIG_FILE));
             workbenchProperties.store(out, "Workbench configuration");
         } catch (Exception e) {
-            LOGGER.error(e);
-            //TODO deal with exception
-            javax.swing.JOptionPane.showMessageDialog( this, 
-                    "An error is occurred creating workbench config file:\n" + WORKBENCH_CONFIG_FILE +
-                            "\n" + e.getLocalizedMessage(),"",JOptionPane.ERROR_MESSAGE);
+            LOGGER.error("storeWorkbenchProperties: store", e);
+            JOptionPane.showMessageDialog( this, 
+                    getResourceConverter().getFormattedString("workbench.save.configuration", 
+                            "An error is occurred creating workbench configuration file:\n{0}\nError is: {1}",
+                            new String[] {WORKBENCH_CONFIG_FILE, e.getLocalizedMessage()}),
+                            "", JOptionPane.ERROR_MESSAGE);
         } finally {
             try {
                 out.close();
             } catch (IOException eIO) {
-                //TODO deal with exception
-                LOGGER.error(eIO);
+                LOGGER.error("storeWorkbenchProperties: out.close", eIO);
             }
         }
     }
@@ -240,10 +251,11 @@ public class Workbench extends javax.swing.JFrame {
         viewCubesMenuItem = new javax.swing.JCheckBoxMenuItem();
         viewXMLMenuItem = new javax.swing.JCheckBoxMenuItem();
 
-        setTitle("Schema Workbench");
+        setTitle(getResourceConverter().getString("workbench.panel.title","Schema Workbench"));
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
+                storeWorkbenchProperties();
                 closeAllSchemaFrames(true);
             }
         });
@@ -251,7 +263,8 @@ public class Workbench extends javax.swing.JFrame {
         getContentPane().add(desktopPane, java.awt.BorderLayout.CENTER);
 
 
-        newSchemaMenuItem2.setText("Schema");
+        newSchemaMenuItem2.setText(getResourceConverter().getString("workbench.menu.newSchema","Schema"));
+        //newSchemaMenuItem2.setText("Schema");
         newSchemaMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newSchemaMenuItemActionPerformed(evt);
@@ -259,7 +272,8 @@ public class Workbench extends javax.swing.JFrame {
         });
 
 
-        newQueryMenuItem2.setText("MDX Query");
+        newQueryMenuItem2.setText(getResourceConverter().getString("workbench.menu.newQuery","MDX Query"));
+        //newQueryMenuItem2.setText("MDX Query");
         newQueryMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newQueryMenuItemActionPerformed(evt);
@@ -267,7 +281,8 @@ public class Workbench extends javax.swing.JFrame {
         });
 
 
-        newJDBCExplorerMenuItem2.setText("JDBC Explorer");
+        newJDBCExplorerMenuItem2.setText(getResourceConverter().getString("workbench.menu.newJDBC","JDBC Explorer"));
+        //newJDBCExplorerMenuItem2.setText("JDBC Explorer");
         newJDBCExplorerMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newJDBCExplorerMenuItemActionPerformed(evt);
@@ -284,8 +299,9 @@ public class Workbench extends javax.swing.JFrame {
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jPanel2.setMaximumSize(new java.awt.Dimension(50, 28) ); // old width=18
 
-        toolbarNewButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/New16.gif")));
-        toolbarNewButton.setToolTipText("New");
+        toolbarNewButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(resourceConverter.getGUIReference("new"))));
+        toolbarNewButton.setToolTipText(getResourceConverter().getString("workbench.toolbar.new","New"));
+        //toolbarNewButton.setToolTipText("New");
         toolbarNewButton.setBorderPainted(false);
         toolbarNewButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -299,7 +315,8 @@ public class Workbench extends javax.swing.JFrame {
         jPanel2.add(jToolBar2,java.awt.BorderLayout.CENTER);
 
         toolbarNewArrowButton = new BasicArrowButton(SwingConstants.SOUTH);
-        toolbarNewArrowButton.setToolTipText("New");
+        toolbarNewArrowButton.setToolTipText(getResourceConverter().getString("workbench.toolbar.newArrow","New"));
+        //toolbarNewArrowButton.setToolTipText("New");
         toolbarNewArrowButton.setBorderPainted(false);
         toolbarNewArrowButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -315,9 +332,10 @@ public class Workbench extends javax.swing.JFrame {
 
 
 
-
-        toolbarOpenButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Open16.gif")));
-        toolbarOpenButton.setToolTipText("Open");
+        
+        toolbarOpenButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(resourceConverter.getGUIReference("open"))));
+        toolbarOpenButton.setToolTipText(getResourceConverter().getString("workbench.toolbar.open","Open"));
+        //toolbarOpenButton.setToolTipText("Open");
         toolbarOpenButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openMenuItemActionPerformed(evt);
@@ -326,8 +344,9 @@ public class Workbench extends javax.swing.JFrame {
 
         jToolBar1.add(toolbarOpenButton);
 
-        toolbarSaveButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Save16.gif")));
-        toolbarSaveButton.setToolTipText("Save");
+        
+        toolbarSaveButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(resourceConverter.getGUIReference("save"))));
+        toolbarSaveButton.setToolTipText(getResourceConverter().getString("workbench.toolbar.save","Save"));
         toolbarSaveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveMenuItemActionPerformed(evt);
@@ -336,8 +355,8 @@ public class Workbench extends javax.swing.JFrame {
 
         jToolBar1.add(toolbarSaveButton);
 
-        toolbarSaveAsButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/SaveAs16.gif")));
-        toolbarSaveAsButton.setToolTipText("Save As");
+        toolbarSaveAsButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(resourceConverter.getGUIReference("saveAs"))));
+        toolbarSaveAsButton.setToolTipText(getResourceConverter().getString("workbench.toolbar.saveAs","Save As"));
         toolbarSaveAsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAsMenuItemActionPerformed(evt);
@@ -349,8 +368,8 @@ public class Workbench extends javax.swing.JFrame {
         jPanel1.setMaximumSize(new java.awt.Dimension(8, 8)); //8, 32767
         jToolBar1.add(jPanel1);
 
-        toolbarPreferencesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Preferences16.gif")));
-        toolbarPreferencesButton.setToolTipText("Preferences");
+        toolbarPreferencesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(resourceConverter.getGUIReference("preferences"))));
+        toolbarPreferencesButton.setToolTipText(getResourceConverter().getString("workbench.toolbar.preferences","Preferences"));
         toolbarPreferencesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 toolbarPreferencesButtonActionPerformed(evt);
@@ -362,10 +381,10 @@ public class Workbench extends javax.swing.JFrame {
 
         getContentPane().add(jToolBar1, java.awt.BorderLayout.NORTH);
 
-        fileMenu.setText("File");
-        newMenu.setText("New");
+        fileMenu.setText(getResourceConverter().getString("workbench.menu.file","File"));
+        newMenu.setText(getResourceConverter().getString("workbench.menu.new","New"));
 
-        newSchemaMenuItem.setText("Schema");
+        newSchemaMenuItem.setText(getResourceConverter().getString("workbench.menu.newSchema","Schema"));
         newSchemaMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newSchemaMenuItemActionPerformed(evt);
@@ -374,7 +393,7 @@ public class Workbench extends javax.swing.JFrame {
 
         newMenu.add(newSchemaMenuItem);
 
-        newQueryMenuItem.setText("MDX Query");
+        newQueryMenuItem.setText(getResourceConverter().getString("workbench.menu.newQuery","MDX Query"));
         newQueryMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newQueryMenuItemActionPerformed(evt);
@@ -383,7 +402,7 @@ public class Workbench extends javax.swing.JFrame {
 
         newMenu.add(newQueryMenuItem);
 
-        newJDBCExplorerMenuItem.setText("JDBC Explorer");
+        newJDBCExplorerMenuItem.setText(getResourceConverter().getString("workbench.menu.newJDBC","JDBC Explorer"));
         newJDBCExplorerMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newJDBCExplorerMenuItemActionPerformed(evt);
@@ -394,7 +413,7 @@ public class Workbench extends javax.swing.JFrame {
 
         fileMenu.add(newMenu);
 
-        openMenuItem.setText("Open");
+        openMenuItem.setText(getResourceConverter().getString("workbench.menu.open","Open"));
         openMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openMenuItemActionPerformed(evt);
@@ -403,7 +422,7 @@ public class Workbench extends javax.swing.JFrame {
 
         fileMenu.add(openMenuItem);
 
-        saveMenuItem.setText("Save");
+        saveMenuItem.setText(getResourceConverter().getString("workbench.menu.save","Save"));
         saveMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveMenuItemActionPerformed(evt);
@@ -412,7 +431,7 @@ public class Workbench extends javax.swing.JFrame {
 
         fileMenu.add(saveMenuItem);
 
-        saveAsMenuItem.setText("Save As ...");
+        saveAsMenuItem.setText(getResourceConverter().getString("workbench.menu.saveAsDot","Save As ..."));
         saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAsMenuItemActionPerformed(evt);
@@ -459,7 +478,7 @@ public class Workbench extends javax.swing.JFrame {
         updateLastUsedMenu();
         fileMenu.add(jSeparator1);
 
-        exitMenuItem.setText("Exit");
+        exitMenuItem.setText(getResourceConverter().getString("workbench.menu.exit","Exit"));
         exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exitMenuItemActionPerformed(evt);
@@ -470,24 +489,24 @@ public class Workbench extends javax.swing.JFrame {
 
         menuBar.add(fileMenu);
 
-        editMenu.setText("Edit");
-        cutMenuItem.setText("Cut");
+        editMenu.setText(getResourceConverter().getString("workbench.menu.edit","Edit"));
+        cutMenuItem.setText(getResourceConverter().getString("workbench.menu.cut","Cut"));
         editMenu.add(cutMenuItem);
 
-        copyMenuItem.setText("Copy");
+        copyMenuItem.setText(getResourceConverter().getString("workbench.menu.copy","Copy"));
         editMenu.add(copyMenuItem);
 
-        pasteMenuItem.setText("Paste");
+        pasteMenuItem.setText(getResourceConverter().getString("workbench.menu.paste","Paste"));
         editMenu.add(pasteMenuItem);
 
-        deleteMenuItem.setText("Delete");
+        pasteMenuItem.setText(getResourceConverter().getString("workbench.menu.delete","Delete"));
         editMenu.add(deleteMenuItem);
 
         menuBar.add(editMenu);
         editMenu.add(pasteMenuItem);
 
-        viewMenu.setText("View");
-        viewXMLMenuItem.setText("View XML");
+        viewMenu.setText(getResourceConverter().getString("workbench.menu.view","View"));
+        viewXMLMenuItem.setText(getResourceConverter().getString("workbench.menu.viewXML","View XML"));
         viewXMLMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 viewXMLMenuItemActionPerformed(evt);
@@ -496,8 +515,8 @@ public class Workbench extends javax.swing.JFrame {
         viewMenu.add(viewXMLMenuItem);
         menuBar.add(viewMenu);
 
-        toolsMenu.setText("Tools");
-        preferencesMenuItem.setText("Preferences");
+        toolsMenu.setText(getResourceConverter().getString("workbench.menu.tools","Tools"));
+        preferencesMenuItem.setText(getResourceConverter().getString("workbench.menu.preferences","Preferences"));
         preferencesMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 toolbarPreferencesButtonActionPerformed(evt);
@@ -507,10 +526,10 @@ public class Workbench extends javax.swing.JFrame {
         menuBar.add(toolsMenu);
 
 
-        windowMenu.setText("Windows");
+        windowMenu.setText(getResourceConverter().getString("workbench.menu.windows","Windows"));
 
         cascadeMenuItem = new javax.swing.JMenuItem();
-        cascadeMenuItem.setText("Cascade Windows");
+        cascadeMenuItem.setText(getResourceConverter().getString("workbench.menu.cascadeWindows","Cascade Windows"));
         cascadeMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cascadeMenuItemActionPerformed(evt);
@@ -518,7 +537,7 @@ public class Workbench extends javax.swing.JFrame {
         });
 
         tileMenuItem = new javax.swing.JMenuItem();
-        tileMenuItem.setText("Tile Windows");
+        tileMenuItem.setText(getResourceConverter().getString("workbench.menu.tileWindows","Tile Windows"));
         tileMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 tileMenuItemActionPerformed(evt);
@@ -526,7 +545,7 @@ public class Workbench extends javax.swing.JFrame {
         });
 
         closeAllMenuItem = new javax.swing.JMenuItem();
-        closeAllMenuItem.setText("Close All");
+        closeAllMenuItem.setText(getResourceConverter().getString("workbench.menu.closeAll","Close All"));
         closeAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeAllMenuItemActionPerformed(evt);
@@ -534,7 +553,7 @@ public class Workbench extends javax.swing.JFrame {
         });
 
         minimizeMenuItem = new javax.swing.JMenuItem();
-        minimizeMenuItem.setText("Minimize All");
+        minimizeMenuItem.setText(getResourceConverter().getString("workbench.menu.minimizeAll","Minimize All"));
         minimizeMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 minimizeMenuItemActionPerformed(evt);
@@ -542,7 +561,7 @@ public class Workbench extends javax.swing.JFrame {
         });
 
         maximizeMenuItem = new javax.swing.JMenuItem();
-        maximizeMenuItem.setText("Maximize All");
+        maximizeMenuItem.setText(getResourceConverter().getString("workbench.menu.maximizeAll","Maximize All"));
         maximizeMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 maximizeMenuItemActionPerformed(evt);
@@ -551,7 +570,7 @@ public class Workbench extends javax.swing.JFrame {
 
         menuBar.add(windowMenu);
 
-        aboutMenuItem.setText("About");
+        aboutMenuItem.setText(getResourceConverter().getString("workbench.menu.about","About"));
         aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 aboutMenuItemActionPerformed(evt);
@@ -560,12 +579,33 @@ public class Workbench extends javax.swing.JFrame {
 
         helpMenu.add(aboutMenuItem);
 
-        helpMenu.setText("Help");
+        helpMenu.setText(getResourceConverter().getString("workbench.menu.help","Help"));
         menuBar.add(helpMenu);
 
         setJMenuBar(menuBar);
 
         pack();
+    }
+
+    /**
+     * @return the workbenchResourceBundle
+     */
+    public ResourceBundle getWorkbenchResourceBundle() {
+        return workbenchResourceBundle;
+    }
+
+    /**
+     * @return the resources
+     */
+    public ResourceBundle getGUIResourceBundle() {
+        return guiResourceBundle;
+    }
+
+    /**
+     * @return the resourceConverter
+     */
+    public I18n getResourceConverter() {
+        return resourceConverter;
     }
 
     private void tileMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
@@ -610,7 +650,7 @@ public class Workbench extends javax.swing.JFrame {
                 }
             }
         } catch (Exception ex) {
-            LOGGER.error(ex);
+            LOGGER.error("tileMenuItemActionPerformed", ex);
             //do nothing
         }
     }
@@ -642,7 +682,7 @@ public class Workbench extends javax.swing.JFrame {
                 }
             }
         } catch (Exception ex) {
-            LOGGER.error(ex);
+            LOGGER.error("cascadeMenuItemActionPerformed", ex);
             //do nothing
         }
     }
@@ -682,7 +722,7 @@ public class Workbench extends javax.swing.JFrame {
                 System.exit(0);
             }
         } catch (Exception ex) {
-            LOGGER.error(ex);
+            LOGGER.error("closeAllSchemaFrames", ex);
         }
     }
 
@@ -690,8 +730,10 @@ public class Workbench extends javax.swing.JFrame {
         if (se.isDirty()) {
             JMenuItem schemaMenuItem = (JMenuItem) schemaWindowMap.get(desktopPane.getSelectedFrame());
             int answer = JOptionPane.showConfirmDialog(null,
-                                "Save changes to "+se.getSchemaFile()+"?" ,
-                                "Schema", JOptionPane.YES_NO_CANCEL_OPTION);
+                    getResourceConverter().getFormattedString("workbench.saveSchemaOnClose.alert", 
+                            "Save changes to {0}?", 
+                                new String[] { se.getSchemaFile().toString() }),
+                                getResourceConverter().getString("workbench.saveSchemaOnClose.title","Schema"), JOptionPane.YES_NO_CANCEL_OPTION);
             switch(answer) { //   yes=0 ;no=1 ;cancel=2
             case 0:
                 saveMenuItemActionPerformed(null);
@@ -740,7 +782,7 @@ public class Workbench extends javax.swing.JFrame {
                 }
             }
         } catch (Exception ex) {
-            LOGGER.error(ex);
+            LOGGER.error("minimizeMenuItemActionPerformed", ex);
             //do nothing
         }
     }
@@ -764,14 +806,14 @@ public class Workbench extends javax.swing.JFrame {
                 }
             }
         } catch (Exception ex) {
-            LOGGER.error(ex);
+            LOGGER.error("maximizeMenuItemActionPerformed", ex);
             //do nothing
         }
     }
 
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            JEditorPane jEditorPane = new JEditorPane(myClassLoader.getResource(resources.getString("version")).toString());
+            JEditorPane jEditorPane = new JEditorPane(myClassLoader.getResource(resourceConverter.getGUIReference("version")).toString());
             jEditorPane.setEditable(false);
             JScrollPane jScrollPane = new JScrollPane(jEditorPane);
             JPanel jPanel = new JPanel();
@@ -795,23 +837,36 @@ public class Workbench extends javax.swing.JFrame {
             jf.setVisible(true);
             jf.show();
         } catch (Exception ex) {
-            LOGGER.error(ex);
+            LOGGER.error("aboutMenuItemActionPerformed", ex);
         }
 
     }
     private void newJDBCExplorerMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            if (this.jdbcDriverClassName==null || this.jdbcConnectionUrl==null) {
-                throw new Exception("Driver="+this.jdbcDriverClassName+"\nConn Url="+this.jdbcConnectionUrl);
+            if (jdbcDriverClassName == null || jdbcDriverClassName.trim().length() == 0 ||
+                    jdbcConnectionUrl == null || jdbcConnectionUrl.trim().length() == 0) {
+                throw new Exception("Driver="+this.jdbcDriverClassName+"\nConnection Url="+this.jdbcConnectionUrl);
             }
 
             JInternalFrame jf = new JInternalFrame();
-            jf.setTitle("JDBC Explorer - " + this.jdbcConnectionUrl);
+            jf.setTitle(getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.title", 
+                    "JDBC Explorer - {0}", 
+                    new String[] { jdbcConnectionUrl }));
+            //jf.setTitle("JDBC Explorer - " + this.jdbcConnectionUrl);
 
-            Class.forName(this.jdbcDriverClassName);
-            java.sql.Connection con = java.sql.DriverManager.getConnection(this.jdbcConnectionUrl, this.jdbcUsername, this.jdbcPassword);
+            Class.forName(jdbcDriverClassName);
 
-            JDBCExplorer jdbce = new JDBCExplorer(con);
+            java.sql.Connection conn = null;
+            
+            if (jdbcUsername != null && jdbcUsername.length() > 0 &&
+                jdbcPassword != null && jdbcPassword.length() > 0) {
+                conn = java.sql.DriverManager.getConnection(jdbcConnectionUrl, jdbcUsername, jdbcPassword);
+            } else {
+
+                conn = java.sql.DriverManager.getConnection(jdbcConnectionUrl);
+            }
+            
+            JDBCExplorer jdbce = new JDBCExplorer(conn);
 
             jf.getContentPane().add(jdbce);
             jf.setBounds(0, 0, 500, 480);
@@ -825,8 +880,12 @@ public class Workbench extends javax.swing.JFrame {
 
             jf.show();
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Database connection could not be done.\n"+ex.getMessage(), "Database Connection Error" , JOptionPane.ERROR_MESSAGE);
-            LOGGER.error(ex);
+            JOptionPane.showMessageDialog(this, 
+                    getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.exception", 
+                            "Database connection not successful.\n{0}", 
+                            new String[] { ex.getLocalizedMessage() }), 
+                            getResourceConverter().getString("workbench.new.JDBCExplorer.exception.title", "Database Connection Error") , JOptionPane.ERROR_MESSAGE);
+            LOGGER.error("newJDBCExplorerMenuItemActionPerformed", ex);
         }
     }
 
@@ -860,38 +919,21 @@ public class Workbench extends javax.swing.JFrame {
          * user's home directory on Unix.
          */
         File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
-        File outputFile  ; //=new File(defaultDir, "Schema"+ newSchema +".xml");
+        File outputFile;
         do  {
             outputFile = new File(defaultDir, "Schema"+ newSchema++ +".xml");
         } while (outputFile.exists());
-        /*
-        try {
 
-            FileWriter out = new FileWriter(outputFile);
-            out.write("<?xml version=\"1.0\"?>\n\r");
-            out.write("<Schema name=\"New Schema "+newSchema+"\">\n\r");  //name=\"FoodMart\"
-            out.write("</Schema>\n\r");
-            out.close();
-            newSchema++;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-         */
         openSchemaFrame(outputFile, true);
     }
 
     private void newQueryMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
 
-        /*
-        System.out.println("connection.getCatalogName()==="+connection.getCatalogName());
-        System.out.println("connection.getProperty(catalog)==="+connection.getProperty("catalog"));
-        System.out.println("connection.getSchema().getName()==="+connection.getSchema().getName());
-         */
         JMenuItem schemaMenuItem = (JMenuItem) schemaWindowMap.get(desktopPane.getSelectedFrame());
 
         final JInternalFrame jf = new JInternalFrame();
-        jf.setTitle("MDX Query");
-        QueryPanel qp = new QueryPanel();
+        jf.setTitle(getResourceConverter().getString("workbench.new.MDXQuery.title", "MDX Query"));
+        QueryPanel qp = new QueryPanel(this);
 
         jf.getContentPane().add(qp);
         jf.setBounds(0, 0, 500, 480);
@@ -907,6 +949,7 @@ public class Workbench extends javax.swing.JFrame {
             jf.setSelected(true);
         } catch(Exception ex) {
             // do nothing
+            LOGGER.error("newQueryMenuItemActionPerformed.setSelected", ex);
         }
 
         // add the mdx frame to this set of mdx frames for cascading method
@@ -914,7 +957,9 @@ public class Workbench extends javax.swing.JFrame {
 
         // create mdx menu item
         final javax.swing.JMenuItem queryMenuItem = new javax.swing.JMenuItem();
-        queryMenuItem.setText(windowMenuMapIndex + " MDX"); //file.getName()
+        queryMenuItem.setText(getResourceConverter().getFormattedString("workbench.new.MDXQuery.menuitem", 
+                "{0} MDX", 
+                new String[] { Integer.toString(windowMenuMapIndex) }));
         queryMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 try {
@@ -924,7 +969,7 @@ public class Workbench extends javax.swing.JFrame {
                         jf.setSelected(true);
                     }
                 } catch (Exception ex) {
-                    LOGGER.error(ex);
+                    LOGGER.error("queryMenuItem", ex);
                 }
             }
         });
@@ -952,12 +997,13 @@ public class Workbench extends javax.swing.JFrame {
 
         qp.setMenuItem(queryMenuItem);
         qp.setSchemaWindowMap(schemaWindowMap);
-        //===qp.setConnection(connection);
         qp.setWindowMenuIndex(windowMenuMapIndex++);
+
         if (schemaMenuItem != null) {
             qp.initConnection(schemaMenuItem.getText());
         } else {
-            JOptionPane.showMessageDialog(this,"No Mondrian connection. Select a Schema to connect.", "Alert", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,getResourceConverter().getString("workbench.new.MDXQuery.no.selection", "No Mondrian connection. Select a Schema to connect."), 
+                    getResourceConverter().getString("workbench.new.MDXQuery.no.selection.title", "Alert"), JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -974,6 +1020,7 @@ public class Workbench extends javax.swing.JFrame {
 
     private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         JInternalFrame jf = desktopPane.getSelectedFrame();
+        
         if (jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
             SchemaExplorer se = (SchemaExplorer) jf.getContentPane().getComponent(0);
             java.io.File schemaFile = se.getSchemaFile();
@@ -982,13 +1029,18 @@ public class Workbench extends javax.swing.JFrame {
             MondrianGuiDef.Schema schema = se.getSchema();
             JFileChooser jfc = new JFileChooser();
             MondrianProperties.instance();
-            //===jfc.setSelectedFile(schemaFile);
+
             jfc.setSelectedFile(suggSchemaFile);
+
             if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
                 try {
                     schemaFile = jfc.getSelectedFile();
                     if (!oldSchemaFile.equals(schemaFile) && schemaFile.exists()) {  //new file already exists, check for overwrite
-                        int answer = JOptionPane.showConfirmDialog(null, schemaFile.getAbsolutePath() + " file already exists. Do you want to replace it?", "Save As", JOptionPane.YES_NO_OPTION);
+                        int answer = JOptionPane.showConfirmDialog(null, 
+                                getResourceConverter().getFormattedString("workbench.saveAs.schema.confirm", 
+                                        "{0} schema file already exists. Do you want to replace it?", 
+                                        new String[] { schemaFile.getAbsolutePath() }),
+                                        getResourceConverter().getString("workbench.saveAs.schema.confirm.title", "Save As"), JOptionPane.YES_NO_OPTION);
                         if (answer == 1) { //  no=1 ; yes=0
                             return;
                         }
@@ -1009,6 +1061,7 @@ public class Workbench extends javax.swing.JFrame {
                     se.setSchemaFile(schemaFile);
                     se.setTitle();  //sets title of iframe
                     setLastUsed(jfc.getSelectedFile().getName(), jfc.getSelectedFile().toURI().toURL().toString());
+                    
                     // update menu item with new file name, then update catalog list for mdx queries
                     JMenuItem sMenuItem = (JMenuItem) schemaWindowMap.get(jf);
                     String mtexttokens[] = sMenuItem.getText().split(" ");
@@ -1035,6 +1088,12 @@ public class Workbench extends javax.swing.JFrame {
 
     private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         JInternalFrame jf = desktopPane.getSelectedFrame();
+        
+        // Don't save if nothing there
+        if (jf == null || jf.getContentPane() == null) {
+            return;
+        }
+        
         if (jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
             SchemaExplorer se = (SchemaExplorer) jf.getContentPane().getComponent(0);
 
@@ -1056,7 +1115,7 @@ public class Workbench extends javax.swing.JFrame {
                 schema.displayXML(out);
                 setLastUsed(schemaFile.getName(), schemaFile.toURI().toURL().toString());
             } catch (Exception ex) {
-                LOGGER.error(ex);
+                LOGGER.error("saveMenuItemActionPerformed", ex);
             }
         }
     }
@@ -1089,24 +1148,7 @@ public class Workbench extends javax.swing.JFrame {
                 workbenchProperties.setProperty(lastUsedUrl+i, workbenchProperties.getProperty(lastUsedUrl+(i-1)));
             }
         }
-        /*
-        if ( workbenchProperties.getProperty(LAST_USED1) == null ||
-                (! name.equals(workbenchProperties.getProperty(LAST_USED1))) ) {
 
-            if (workbenchProperties.getProperty(LAST_USED3) != null) {
-                workbenchProperties.setProperty(LAST_USED4, workbenchProperties.getProperty(LAST_USED3));
-                workbenchProperties.setProperty(LAST_USED4_URL, workbenchProperties.getProperty(LAST_USED3_URL));
-            }
-            if (workbenchProperties.getProperty(LAST_USED2) != null) {
-                workbenchProperties.setProperty(LAST_USED3, workbenchProperties.getProperty(LAST_USED2));
-                workbenchProperties.setProperty(LAST_USED3_URL, workbenchProperties.getProperty(LAST_USED2_URL));
-            }
-            if (workbenchProperties.getProperty(LAST_USED1) != null) {
-                workbenchProperties.setProperty(LAST_USED2, workbenchProperties.getProperty(LAST_USED1));
-                workbenchProperties.setProperty(LAST_USED2_URL, workbenchProperties.getProperty(LAST_USED1_URL));
-            }
-        }
-         */
         workbenchProperties.setProperty(LAST_USED1, name);
         workbenchProperties.setProperty(LAST_USED1_URL, url);
         updateLastUsedMenu();
@@ -1142,20 +1184,16 @@ public class Workbench extends javax.swing.JFrame {
             openSchemaFrame(new File(new URI(workbenchProperties.getProperty(LAST_USED1_URL))), false);
         } catch (Exception e) //catch (URISyntaxException e)
         {
-            LOGGER.error(e);
+            LOGGER.error("lastUsed1MenuItemActionPerformed", e);
         }
     }
 
     private void lastUsed2MenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            /*
-                workbenchProperties.setProperty(LAST_USED2, workbenchProperties.getProperty(LAST_USED1));
-                workbenchProperties.setProperty(LAST_USED2_URL, workbenchProperties.getProperty(LAST_USED1_URL));
-             */
             openSchemaFrame(new File(new URI(workbenchProperties.getProperty(LAST_USED2_URL))), false);
             setLastUsed(workbenchProperties.getProperty(LAST_USED2), workbenchProperties.getProperty(LAST_USED2_URL));
         } catch (URISyntaxException e) {
-            LOGGER.error(e);
+            LOGGER.error("lastUsed2MenuItemActionPerformed", e);
         }
     }
 
@@ -1164,7 +1202,7 @@ public class Workbench extends javax.swing.JFrame {
             openSchemaFrame(new File(new URI(workbenchProperties.getProperty(LAST_USED3_URL))), false);
             setLastUsed(workbenchProperties.getProperty(LAST_USED3), workbenchProperties.getProperty(LAST_USED3_URL));
         } catch (URISyntaxException e) {
-            LOGGER.error(e);
+            LOGGER.error("lastUsed3MenuItemActionPerformed", e);
         }
     }
 
@@ -1173,7 +1211,7 @@ public class Workbench extends javax.swing.JFrame {
             openSchemaFrame(new File(new URI(workbenchProperties.getProperty(LAST_USED4_URL))), false);
             setLastUsed(workbenchProperties.getProperty(LAST_USED4), workbenchProperties.getProperty(LAST_USED4_URL));
         } catch (URISyntaxException e) {
-            LOGGER.error(e);
+            LOGGER.error("lastUsed4MenuItemActionPerformed", e);
         }
     }
 
@@ -1191,12 +1229,20 @@ public class Workbench extends javax.swing.JFrame {
                 }
                 // check if schema file exists
                 if (! file.exists()) {
-                    JOptionPane.showMessageDialog(this, file.getAbsolutePath() + " File not found.", "Alert", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(this, 
+                            getResourceConverter().getFormattedString("workbench.open.schema.not.found", 
+                                    "{0} File not found.", 
+                                    new String[] { file.getAbsolutePath() }),
+                                    getResourceConverter().getString("workbench.open.schema.not.found.title", "Alert"), JOptionPane.WARNING_MESSAGE);
                     return;
                 }
                 // check if file is writable
                 if (! file.canWrite()) {
-                    JOptionPane.showMessageDialog(this, file.getAbsolutePath() + " File is locked by another application.", "Alert", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(this, 
+                            getResourceConverter().getFormattedString("workbench.open.schema.not.writeable", 
+                                    "{0} is not writeable.", 
+                                    new String[] { file.getAbsolutePath() }),
+                                    getResourceConverter().getString("workbench.open.schema.not.found.writeable", "Alert"), JOptionPane.WARNING_MESSAGE);
                     return;
                 }
                 // check if schema file is valid by initiating a mondrian connection
@@ -1214,24 +1260,31 @@ public class Workbench extends javax.swing.JFrame {
                         connectString = connectString + "JdbcPassword=" + jdbcPassword + ";";
                     }
 
-                    connection = DriverManager.getConnection(connectString, null);
+                    DriverManager.getConnection(connectString, null);
                 } catch (Exception ex) {
-                    LOGGER.error("Exception  : Schema file is invalid."+ex.getMessage(), ex);
+                    LOGGER.error("Exception : Schema file " + file.getAbsolutePath() + " is invalid." + ex.getMessage(), ex);
                 } catch (Error err) {
-                    LOGGER.error("Error : Schema file is invalid."+err.getMessage(), err);
+                    LOGGER.error("Error : Schema file " + file.getAbsolutePath() + " is invalid." + err.getMessage(), err);
                 }
             }
 
             final JInternalFrame schemaFrame = new JInternalFrame();
-            schemaFrame.setTitle("Schema - " + file.getName());
-            //===Class.forName(jdbcDriverClassName);
-            jdbcMetaData = new JDBCMetaData(jdbcDriverClassName, jdbcConnectionUrl, jdbcUsername, jdbcPassword);
+            schemaFrame.setTitle(getResourceConverter().getFormattedString("workbench.open.schema.title", 
+                    "Schema - {0}", 
+                    new String[] { file.getName() }));
+            //schemaFrame.setTitle("Schema - " + file.getName());
 
-            schemaFrame.getContentPane().add(new SchemaExplorer(file, jdbcMetaData, newFile, schemaFrame));
+            jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName, jdbcConnectionUrl, jdbcUsername, jdbcPassword);
+
+            schemaFrame.getContentPane().add(new SchemaExplorer(this, file, jdbcMetaData, newFile, schemaFrame));
 
             String errorOpening = ((SchemaExplorer) schemaFrame.getContentPane().getComponent(0)).getErrMsg() ;
             if (errorOpening != null) {
-                JOptionPane.showMessageDialog(this,errorOpening, "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        getResourceConverter().getFormattedString("workbench.open.schema.error", 
+                                "Error opening schema - {0}.", 
+                                new String[] { errorOpening }),
+                                getResourceConverter().getString("workbench.open.schema.error.title", "Error"), JOptionPane.ERROR_MESSAGE);
                 schemaFrame.setClosed(true);
                 return;
             }
@@ -1249,7 +1302,11 @@ public class Workbench extends javax.swing.JFrame {
 
             // display jdbc connection status warning, if connection is uncsuccessful
             if (jdbcMetaData.getErrMsg() != null) {
-                JOptionPane.showMessageDialog(this, "Database connection could not be done.\n"+jdbcMetaData.getErrMsg()+"\n All validations related to database will be ignored.", "Alert" , JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, 
+                        getResourceConverter().getFormattedString("workbench.open.schema.jdbc.error", 
+                                "Database connection could not be done.\n{0}\nAll validations related to database will be ignored.", 
+                                new String[] { jdbcMetaData.getErrMsg() }),
+                                getResourceConverter().getString("workbench.open.schema.jdbc.error.title", "Alert"), JOptionPane.WARNING_MESSAGE);
             }
 
             final javax.swing.JMenuItem schemaMenuItem = new javax.swing.JMenuItem();
@@ -1263,7 +1320,7 @@ public class Workbench extends javax.swing.JFrame {
                             schemaFrame.setSelected(true);
                         }
                     } catch (Exception ex) {
-                        LOGGER.error(ex);
+                        LOGGER.error("schemaMenuItem", ex);
                     }
                 }
             });
@@ -1291,11 +1348,10 @@ public class Workbench extends javax.swing.JFrame {
                         int response = confirmFrameClose(schemaFrame, se);
                         if (response == 3) {    // not dirty
                             if (se.isNewFile()) {
-                            //System.out.println("File ==="+se.getSchemaFile()+"  deleted=="+se.getSchemaFile().delete());
                                 se.getSchemaFile().delete();
                             }
                             // default case for no save and not dirty
-                            schemaWindowMap.remove(schemaFrame); //schemaWindowMap.remove(se.getSchemaFile());
+                            schemaWindowMap.remove(schemaFrame);
                             updateMDXCatalogList();
                             schemaFrame.dispose();
                             windowMenu.remove(schemaMenuItem);
@@ -1323,7 +1379,7 @@ public class Workbench extends javax.swing.JFrame {
             });
             viewXMLMenuItem.setSelected(false);
         } catch (Exception ex) {
-            LOGGER.error(ex);
+            LOGGER.error("openSchemaFrame", ex);
         }
 
     }
@@ -1337,7 +1393,7 @@ public class Workbench extends javax.swing.JFrame {
                     || pathname.isDirectory();
                 }
                 public String getDescription() {
-                    return "Mondrian Schema files (*.xml)";
+                    return getResourceConverter().getString("workbench.open.schema.file.type", "Mondrian Schema files (*.xml)");
                 }
 
             });
@@ -1381,38 +1437,6 @@ public class Workbench extends javax.swing.JFrame {
         }
         return false;
 
-
-        /* // file->schema frame
-        JInternalFrame elem = (JInternalFrame) schemaWindowMap.get(file);
-        if (elem != null) {
-            try {
-                elem.setSelected(true); // make the schema file active
-                return true;
-            } catch(Exception ex) {
-                schemaWindowMap.remove(file); // remove file from map as schema frame does not exist
-            }
-        }
-        return false;
-         */
-        /*
-        Iterator it = schemaWindowMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry elem = (Map.Entry) it.next();
-            File value = (File)elem.getValue();
-            JInternalFrame key = (JInternalFrame)elem.getKey() ;
-
-            if (  value.equals(file)  &&  (key.getContentPane().getComponent(0) instanceof SchemaExplorer) ) {
-                try {
-                    key.setSelected(true); // make the schema file active
-                    return true;
-                } catch(Exception ex) {
-                    schemaWindowMap.remove(key); // remove file from map as schema frame does not exist
-                    break;
-                }
-            }
-        }
-        return false;
-         */
     }
 
 
@@ -1439,11 +1463,13 @@ public class Workbench extends javax.swing.JFrame {
         }
     }
 
-    public static String getTooltip(String titleName) {
+    public String getTooltip(String titleName) {
         try {
-            return resBundle.getString(titleName);
+            return getWorkbenchResourceBundle().getString(titleName);
         } catch (MissingResourceException e) {
-            return "No help available for '" + titleName + "'";
+            return getResourceConverter().getFormattedString("workbench.tooltip.error", 
+                    "No help available for {0}", 
+                    new String[] { titleName });
         }
     }
 
@@ -1459,13 +1485,12 @@ public class Workbench extends javax.swing.JFrame {
             if (w.openFile != null) {
                 File f= new File(w.openFile);
                 if (f.canRead()) {
-                    //w.openSchemaFrame(f.getAbsoluteFile());
                     w.openSchemaFrame(f.getAbsoluteFile(), false); // parameter to indicate this is a new or existing catalog file
                 }
             }
             w.show();
         } catch (Throwable ex) {
-            LOGGER.error(ex);
+            LOGGER.error("main", ex);
         }
     }
 
