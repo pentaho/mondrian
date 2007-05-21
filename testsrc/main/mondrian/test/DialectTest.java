@@ -101,7 +101,9 @@ public class DialectTest extends TestCase {
                 // access
                 "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression '.*'.",
                 // postgres
-                "ERROR: function count\\(integer, integer\\) does not exist"
+                "ERROR: function count\\(integer, integer\\) does not exist",
+                // LucidDb
+                ".*Invalid number of arguments to function 'COUNT'. Was expecting 1 arguments"
             };
             assertQueryFails(sql, errs);
         }
@@ -314,8 +316,8 @@ public class DialectTest extends TestCase {
                     if (b) {
                         fail("expected to succeed for type=" + type +
                             ", concur=" + concur);
+                        throw Util.newInternal(e, "query [" + sql + "] failed");
                     }
-                    throw Util.newInternal(e, "query [" + sql + "] failed");
                 } finally {
                     if (stmt != null) {
                         try {
