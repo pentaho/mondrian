@@ -761,14 +761,21 @@ public class Aggregation {
         int loadKeys(SortedSet<Comparable<?>> valueSet, boolean hasNull) {
             this.hasNull = hasNull;
             int size = valueSet.size();
-            this.keys = valueSet.toArray(new Comparable<?>[size]);
+            
+            if (hasNull) {
+                size ++;
+            }
+            keys = new Comparable<?>[size];
+            
+            valueSet.toArray(keys);            
+            if (hasNull) {
+                keys[size-1] = RolapUtil.sqlNullValue; 
+            }
+            
             for (int i = 0; i < size; i++) {
                 mapKeyToOffset.put(keys[i], i);
             }
-            if (hasNull) {
-                mapKeyToOffset.put(RolapUtil.sqlNullValue, size);
-                ++size;
-            }
+            
             return size;
         }
 
