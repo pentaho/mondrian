@@ -1069,6 +1069,19 @@ public class TestContext {
     }
 
     /**
+     * Creates a TestContext which contains the given schema text.
+     *
+     * @return TestContext which contains the given schema
+     */
+    public static TestContext create(final String schema) {
+        return new TestContext() {
+            public synchronized Connection getFoodMartConnection() {
+                return getFoodMartConnection(schema);
+            }
+        };
+    }
+
+    /**
      * Creates a TestContext, adding hierarchy definitions to a cube definition.
      *
      * @param cubeName Name of a cube in the schema (cube must exist)

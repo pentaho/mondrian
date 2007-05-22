@@ -9,6 +9,12 @@
 */
 package mondrian.test;
 
+import org.apache.log4j.*;
+import org.apache.log4j.varia.LevelRangeFilter;
+import mondrian.rolap.aggmatcher.AggTableManager;
+
+import java.io.StringWriter;
+
 /**
  * Unit tests for various schema features.
  *
@@ -440,6 +446,80 @@ public class SchemaTest extends FoodMartTestCase {
         testContext.assertThrows(
             "select from [Sales]",
             "Unknown aggregator 'invalidAggregator'; valid aggregators are: 'sum', 'count', 'min', 'max', 'avg', 'distinct-count'");
+    }
+
+    public void testFoo() {
+        final Logger logger = Logger.getLogger(AggTableManager.class);
+        final StringWriter sw = new StringWriter();
+        final Appender appender =
+            new WriterAppender(new SimpleLayout(), sw);
+        final LevelRangeFilter filter = new LevelRangeFilter();
+        filter.setLevelMin(Level.WARN);
+        appender.addFilter(filter);
+        logger.addAppender(appender);
+        try {
+            TestContext testContext = TestContext.create(
+                "<?xml version=\"1.0\"?>\n" +
+                    "<Schema name=\"FoodMart\">\n" +
+                    "<Cube name=\"Sales Degen\">\n" +
+                    "  <Table name=\"sales_fact_1997\">\n" +
+                    "    <AggExclude pattern=\"agg_c_14_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_l_05_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_g_ms_pcat_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_ll_01_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_c_special_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_l_03_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_l_04_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_pl_01_sales_fact_1997\"/>\n" +
+                    "    <AggName name=\"agg_c_10_sales_fact_1997\">\n" +
+                    "      <AggFactCount column=\"FACT_COUNT\"/>\n" +
+                    "      <AggMeasure name=\"[Measures].[Store Cost]\" column=\"store_cost\" />\n" +
+                    "      <AggMeasure name=\"[Measures].[Store Sales]\" column=\"store_sales\" />\n" +
+                    "     </AggName>\n" +
+                    "  </Table>\n" +
+                    "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n" +
+                    "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n" +
+                    "      <Table name=\"time_by_day\"/>\n" +
+                    "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n" +
+                    "          levelType=\"TimeYears\"/>\n" +
+                    "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n" +
+                    "          levelType=\"TimeQuarters\"/>\n" +
+                    "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n" +
+                    "          levelType=\"TimeMonths\"/>\n" +
+                    "    </Hierarchy>\n" +
+                    "  </Dimension>\n" +
+                    "  <Dimension name=\"Time Degenerate\">\n" +
+                    "    <Hierarchy hasAll=\"true\" primaryKey=\"time_id\">\n" +
+                    "      <Level name=\"day\" column=\"time_id\"/>\n" +
+                    "      <Level name=\"month\" column=\"product_id\" type=\"Numeric\"/>\n" +
+                    "    </Hierarchy>" +
+                    "  </Dimension>" +
+                    "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n" +
+                    "      formatString=\"#,###.00\"/>\n" +
+                    "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
+                    "      formatString=\"#,###.00\"/>\n" +
+                    "</Cube>\n" +
+                    "</Schema>");
+            testContext.assertQueryReturns(
+                "select from [Sales Degen]",
+                fold(
+                    "Axis #0:\n" +
+                        "{}\n" +
+                        "225,627.23"));
+        } finally {
+            logger.removeAppender(appender);
+        }
+        // Note that 'product_id' is NOT one of the columns with unknown usage.
+        // It is used as a level in the degenerate dimension [Time Degenerate].
+        assertEquals(
+            fold("WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'unit_sales' with unknown usage.\n" +
+                "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'customer_count' with unknown usage.\n" +
+                "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'the_year' with unknown usage.\n" +
+                "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'month_of_year' with unknown usage.\n" +
+                "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'quarter' with unknown usage.\n" +
+                "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_lc_100_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'unit_sales' with unknown usage.\n" +
+                "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_lc_100_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'customer_id' with unknown usage.\n"),
+            sw.toString());
     }
 }
 
