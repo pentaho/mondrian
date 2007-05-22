@@ -592,6 +592,7 @@ public class SqlQuery {
         private final String productName;
         private final String productVersion;
         private final Set<List<Integer>> supportedResultSetTypes;
+        private final boolean readOnly;
 
         private static final int[] RESULT_SET_TYPE_VALUES = {
             ResultSet.TYPE_FORWARD_ONLY,
@@ -605,12 +606,14 @@ public class SqlQuery {
             String quoteIdentifierString,
             String productName,
             String productVersion,
-            Set<List<Integer>> supportedResultSetTypes)
+            Set<List<Integer>> supportedResultSetTypes,
+            boolean readOnly)
         {
             this.quoteIdentifierString = quoteIdentifierString;
             this.productName = productName;
             this.productVersion = productVersion;
             this.supportedResultSetTypes = supportedResultSetTypes;
+            this.readOnly = readOnly;
         }
 
         /**
@@ -682,11 +685,20 @@ public class SqlQuery {
                     "while detecting result set concurrency");
             }
 
+            final boolean readOnly;
+            try {
+                readOnly = databaseMetaData.isReadOnly();
+            } catch (SQLException e) {
+                throw Util.newInternal(e,
+                    "while detecting isReadOnly");
+            }
+
             return new Dialect(
                 quoteIdentifierString,
                 productName,
                 productVersion,
-                supports);
+                supports,
+                readOnly);
         }
 
         /**
@@ -1393,9 +1405,13 @@ public class SqlQuery {
          * Returns whether this dialect supports common SQL Data Definition
          * Language (DDL) statements such as <code>CREATE TABLE</code> and
          * <code>DROP INDEX</code>.
+         *
+         * <p>Access seems to allow DDL iff the .mdb file is writeable.
+         *
+         * @see java.sql.DatabaseMetaData#isReadOnly()
          */
         public boolean allowsDdl() {
-            return !isAccess();
+            return !readOnly;
         }
 
         /**
