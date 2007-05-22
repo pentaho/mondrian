@@ -84,7 +84,7 @@ public class PropertiesTest extends FoodMartTestCase {
 
         // This property works in Mondrian 1.1.5 (due to XMLA support)
         intPropValue = (Integer)member.getPropertyValue("LEVEL_NUMBER");
-        assertEquals(new Integer(member.getLevel().getDepth()), intPropValue);
+        assertEquals(Integer.valueOf(member.getLevel().getDepth()), intPropValue);
 
         // This property works in Mondrian 1.1.5 (due to XMLA support)
         stringPropValue = (String)member.getPropertyValue("MEMBER_UNIQUE_NAME");
@@ -94,7 +94,7 @@ public class PropertiesTest extends FoodMartTestCase {
         assertEquals(member.getName(), stringPropValue);
 
         intPropValue = (Integer)member.getPropertyValue("MEMBER_TYPE");
-        assertEquals(new Integer(member.getMemberType().ordinal()), intPropValue);
+        assertEquals(Integer.valueOf(member.getMemberType().ordinal()), intPropValue);
 
         stringPropValue = (String)member.getPropertyValue("MEMBER_GUID");
         assertNull(stringPropValue);
@@ -116,19 +116,19 @@ public class PropertiesTest extends FoodMartTestCase {
         }
 
         intPropValue = (Integer)member.getPropertyValue("MEMBER_ORDINAL");
-        assertEquals(new Integer(member.getOrdinal()), intPropValue);
+        assertEquals(Integer.valueOf(member.getOrdinal()), intPropValue);
 
 //        intPropValue = (Integer)member.getPropertyValue("CHILDREN_CARDINALITY");
-//        assertEquals(new Integer(scr.getMemberChildren(member).length), intPropValue);
+//        assertEquals(Integer.valueOf(scr.getMemberChildren(member).length), intPropValue);
 
         intPropValue = (Integer)member.getPropertyValue("PARENT_LEVEL");
-        assertEquals(new Integer(member.getParentMember().getLevel().getDepth()), intPropValue);
+        assertEquals(Integer.valueOf(member.getParentMember().getLevel().getDepth()), intPropValue);
 
         stringPropValue = (String)member.getPropertyValue("PARENT_UNIQUE_NAME");
         assertEquals(member.getParentUniqueName(), stringPropValue);
 
         intPropValue = (Integer)member.getPropertyValue("PARENT_COUNT");
-        assertEquals(new Integer(1), intPropValue);
+        assertEquals(Integer.valueOf(1), intPropValue);
 
         stringPropValue = (String)member.getPropertyValue("DESCRIPTION");
         assertEquals(member.getDescription(), stringPropValue);
@@ -142,50 +142,58 @@ public class PropertiesTest extends FoodMartTestCase {
         }
     }
 
-    public void testGetChildCardinalityPropertyValue(){
+    public void testGetChildCardinalityPropertyValue() {
         Cube salesCube = getConnection().getSchema().lookupCube("Sales",true);
         SchemaReader scr = salesCube.getSchemaReader(null);
-        Member memberForCardinalityTest = scr.getMemberByUniqueName(new String[] {"Marital Status", "All Marital Status"}, true);
-        Integer intPropValue = (Integer)memberForCardinalityTest.getPropertyValue("CHILDREN_CARDINALITY");
-        assertEquals(new Integer(111), intPropValue);
+        Member memberForCardinalityTest =
+            scr.getMemberByUniqueName(
+                new String[] {"Marital Status", "All Marital Status"},
+                true);
+        Integer intPropValue =
+            (Integer) memberForCardinalityTest.getPropertyValue(
+                "CHILDREN_CARDINALITY");
+        assertEquals(Integer.valueOf(111), intPropValue);
     }
 
     /**
      * Tests the ability of MDX parser to pass requested member properties
      * to Result object.
-     *
-     * <p>Unfortunately this feature is not implemented in Mondrian 1.2.
-     * Test disabled.
      */
-    public void _testPropertiesMDX() {
-        Result result = executeQuery("SELECT {[Customers].[All Customers].[USA].[CA]} DIMENSION PROPERTIES "+nl+
-                        " CATALOG_NAME, SCHEMA_NAME, CUBE_NAME, DIMENSION_UNIQUE_NAME, " + nl +
-                        " HIERARCHY_UNIQUE_NAME, LEVEL_UNIQUE_NAME, LEVEL_NUMBER, MEMBER_UNIQUE_NAME, " + nl +
-                        " MEMBER_NAME, MEMBER_TYPE, MEMBER_GUID, MEMBER_CAPTION, MEMBER_ORDINAL, CHILDREN_CARDINALITY," + nl +
-                        " PARENT_LEVEL, PARENT_UNIQUE_NAME, PARENT_COUNT, DESCRIPTION ON COLUMNS" + nl +
-                        "FROM [Sales]");
-        Axis[] axes = result.getAxes();
-        Object[] axesProperties = null;
-        // Commented out because axis properties are not implemented as of 1.2.
-//        axesProperties = axes[0].properties;
-        assertEquals(axesProperties[0],"CATALOG_NAME");
-        assertEquals(axesProperties[1],"SCHEMA_NAME");
-        assertEquals(axesProperties[2],"CUBE_NAME");
-        assertEquals(axesProperties[3],"DIMENSION_UNIQUE_NAME");
-        assertEquals(axesProperties[4],"HIERARCHY_UNIQUE_NAME");
-        assertEquals(axesProperties[5],"LEVEL_UNIQUE_NAME");
-        assertEquals(axesProperties[6],"LEVEL_NUMBER");
-        assertEquals(axesProperties[7],"MEMBER_UNIQUE_NAME");
-        assertEquals(axesProperties[8],"MEMBER_NAME");
-        assertEquals(axesProperties[9],"MEMBER_TYPE");
-        assertEquals(axesProperties[10],"MEMBER_GUID");
-        assertEquals(axesProperties[11],"MEMBER_CAPTION");
-        assertEquals(axesProperties[12],"MEMBER_ORDINAL");
-        assertEquals(axesProperties[13],"CHILDREN_CARDINALITY");
-        assertEquals(axesProperties[14],"PARENT_LEVEL");
-        assertEquals(axesProperties[15],"PARENT_UNIQUE_NAME");
-        assertEquals(axesProperties[16],"PARENT_COUNT");
-        assertEquals(axesProperties[17],"DESCRIPTION");
+    public void testPropertiesMDX() {
+        Result result = executeQuery(
+            "SELECT {[Customers].[All Customers].[USA].[CA]} DIMENSION PROPERTIES "+nl+
+                " CATALOG_NAME, SCHEMA_NAME, CUBE_NAME, DIMENSION_UNIQUE_NAME, " + nl +
+                " HIERARCHY_UNIQUE_NAME, LEVEL_UNIQUE_NAME, LEVEL_NUMBER, MEMBER_UNIQUE_NAME, " + nl +
+                " MEMBER_NAME, MEMBER_TYPE, MEMBER_GUID, MEMBER_CAPTION, MEMBER_ORDINAL, CHILDREN_CARDINALITY," + nl +
+                " PARENT_LEVEL, PARENT_UNIQUE_NAME, PARENT_COUNT, DESCRIPTION ON COLUMNS" + nl +
+                "FROM [Sales]");
+        QueryAxis[] axes = result.getQuery().getAxes();
+        Id[] axesProperties = axes[0].getDimensionProperties();
+        String[] props = {
+        "CATALOG_NAME",
+        "SCHEMA_NAME",
+        "CUBE_NAME",
+        "DIMENSION_UNIQUE_NAME",
+        "HIERARCHY_UNIQUE_NAME",
+        "LEVEL_UNIQUE_NAME",
+        "LEVEL_NUMBER",
+        "MEMBER_UNIQUE_NAME",
+        "MEMBER_NAME",
+        "MEMBER_TYPE",
+        "MEMBER_GUID",
+        "MEMBER_CAPTION",
+        "MEMBER_ORDINAL",
+        "CHILDREN_CARDINALITY",
+        "PARENT_LEVEL",
+        "PARENT_UNIQUE_NAME",
+        "PARENT_COUNT",
+        "DESCRIPTION"};
+
+        assertEquals(axesProperties.length, props.length);
+        int i = 0;
+        for (String prop : props) {
+            assertEquals("[" + prop + "]", axesProperties[i++].toString());
+        }
     }
 
     public void testMandatoryCellProperties() {
@@ -202,18 +210,18 @@ public class PropertiesTest extends FoodMartTestCase {
 
         assertNull(cell.getPropertyValue("BACK_COLOR"));
         assertNull(cell.getPropertyValue("CELL_EVALUATION_LIST"));
-        assertEquals(new Integer(y * 2 + x),
+        assertEquals(Integer.valueOf(y * 2 + x),
                 cell.getPropertyValue("CELL_ORDINAL"));
         assertNull(cell.getPropertyValue("FORE_COLOR"));
         assertNull(cell.getPropertyValue("FONT_NAME"));
         assertNull(cell.getPropertyValue("FONT_SIZE"));
-        assertEquals(new Integer(0), cell.getPropertyValue("FONT_FLAGS"));
+        assertEquals(Integer.valueOf(0), cell.getPropertyValue("FONT_FLAGS"));
         assertEquals("Standard", cell.getPropertyValue("FORMAT_STRING"));
         // FORMAT is a synonym for FORMAT_STRING
         assertEquals("Standard", cell.getPropertyValue("FORMAT"));
         assertEquals("135,215", cell.getPropertyValue("FORMATTED_VALUE"));
         assertNull(cell.getPropertyValue("NON_EMPTY_BEHAVIOR"));
-        assertEquals(new Integer(0), cell.getPropertyValue("SOLVE_ORDER"));
+        assertEquals(Integer.valueOf(0), cell.getPropertyValue("SOLVE_ORDER"));
         assertEquals(135215.0, ((Number) cell.getPropertyValue("VALUE")).doubleValue(), 0.1);
 
         // Case sensitivity.
@@ -226,13 +234,13 @@ public class PropertiesTest extends FoodMartTestCase {
             assertNull(cell.getPropertyValue("solve_order"));
             assertNull(cell.getPropertyValue("value"));
         } else {
-            assertEquals(new Integer(y * 2 + x),
+            assertEquals(Integer.valueOf(y * 2 + x),
                     cell.getPropertyValue("cell_ordinal"));
-            assertEquals(new Integer(0), cell.getPropertyValue("font_flags"));
+            assertEquals(Integer.valueOf(0), cell.getPropertyValue("font_flags"));
             assertEquals("Standard", cell.getPropertyValue("format_string"));
             assertEquals("Standard", cell.getPropertyValue("format"));
             assertEquals("135,215", cell.getPropertyValue("formatted_value"));
-            assertEquals(new Integer(0), cell.getPropertyValue("solve_order"));
+            assertEquals(Integer.valueOf(0), cell.getPropertyValue("solve_order"));
             assertEquals(135215.0, ((Number) cell.getPropertyValue("value")).doubleValue(), 0.1);
         }
     }

@@ -636,7 +636,7 @@ public class CacheControlImpl implements CacheControl {
     }
 
     private static class FoundOne extends RuntimeException {
-        private final UnionCellRegion region;
+        private final transient UnionCellRegion region;
 
         public FoundOne(UnionCellRegion region) {
             this.region = region;

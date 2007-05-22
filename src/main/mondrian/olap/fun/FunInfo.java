@@ -12,6 +12,7 @@ package mondrian.olap.fun;
 
 import mondrian.olap.FunDef;
 import mondrian.olap.Syntax;
+import mondrian.olap.Util;
 
 import java.util.*;
 import java.lang.reflect.Array;
@@ -141,14 +142,34 @@ public class FunInfo implements Comparable<FunInfo> {
         if (c != 0) {
             return c;
         }
-        final List pcList = toList(this.getParameterCategories());
+        final List<Object> pcList = toList(this.getParameterCategories());
         final String pc = pcList.toString();
         final List otherPcList = toList(fi.getParameterCategories());
         final String otherPc = otherPcList.toString();
         return pc.compareTo(otherPc);
     }
 
-    private static List toList(Object a) {
+    public boolean equals(Object obj) {
+        if (obj instanceof FunInfo) {
+            final FunInfo that = (FunInfo) obj;
+            if (!name.equals(that.name)) {
+                return false;
+            }
+            final List<Object> pcList = toList(this.getParameterCategories());
+            final List<Object> pcList2 = toList(that.getParameterCategories());
+            return pcList.equals(pcList2);
+        } else {
+            return false;
+        }
+    }
+
+    public int hashCode() {
+        int h = name.hashCode();
+        final List<Object> pcList = toList(this.getParameterCategories());
+        return Util.hash(h, pcList);
+    }
+
+    private static List<Object> toList(Object a) {
         final List<Object> list = new ArrayList<Object>();
         if (a == null) {
             return list;

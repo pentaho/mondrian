@@ -37,7 +37,7 @@ public class Bug {
     // boolean should go away.
     // (What's the bug associated with this??)
 
-    public static boolean Checkin7641UseOptimizer = false;
+    public static final boolean Checkin7641UseOptimizer = false;
 
     /**
      * Whether
@@ -45,6 +45,13 @@ public class Bug {
      * is fixed.
      */
     public static final boolean Bug1530543Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1722959&group_id=35302&atid=414613">bug 1722959, "NON EMPTY &lt;Level&gt;.MEMBERS fails if nonempty.enable=false"</a>
+     * is fixed.
+     */
+    public static final boolean Bug1722959Fixed = false;
 
     /**
      * Returns whether to avoid a test because the memory monitor may cause it

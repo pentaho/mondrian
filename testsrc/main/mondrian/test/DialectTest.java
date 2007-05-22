@@ -65,6 +65,7 @@ public class DialectTest extends TestCase {
                 connection = null;
             }
         }
+        super.tearDown();
     }
 
     protected SqlQuery.Dialect getDialect() {
@@ -163,8 +164,9 @@ public class DialectTest extends TestCase {
     public void testAllowsDdl() {
         int phase = 0;
         SQLException e = null;
+        Statement stmt = null;
         try {
-            Statement stmt = getConnection().createStatement();
+            stmt = getConnection().createStatement();
             String sql = dialectize("create table [foo] ([i] integer)");
             phase = 1;
             assertFalse(stmt.execute(sql));
@@ -174,6 +176,14 @@ public class DialectTest extends TestCase {
             phase = 3;
         } catch (SQLException e2) {
             e = e2;
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e1) {
+                    // ignore
+                }
+            }
         }
         if (getDialect().allowsDdl()) {
             assertEquals(3, phase);

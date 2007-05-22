@@ -418,7 +418,7 @@ public class AggGen {
                 buf.append(getFactTableName());
                 buf.append("\", could not get parent column name");
                 buf.append("for RolapStar.Column \"");
-                buf.append(rname);
+                buf.append(prColumn);
                 buf.append("\" for RolapStar.Table with alias \"");
                 buf.append(rt.getAlias());
                 buf.append("\"");

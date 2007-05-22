@@ -24,6 +24,7 @@ import org.w3c.dom.NodeList;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -348,23 +349,25 @@ System.out.println("password=" +password);
 
     public XmlaErrorTest() {
     }
+    
     public XmlaErrorTest(String name) {
         super(name);
     }
 
-
     protected void setUp() throws Exception {
+        super.setUp();
+
         // NOTE jvs 27-Feb-2007:  Since this test produces errors
         // intentionally, squelch the ones that SAX produces on stderr
         systemErr = System.err;
         System.setErr(new PrintStream(new ByteArrayOutputStream()));
 
-        makeServlet(getTestContext());
     }
 
     protected void tearDown() throws Exception {
         // Restore stderr
         System.setErr(systemErr);
+        super.tearDown();
     }
 
     protected DiffRepository getDiffRepos() {
@@ -519,7 +522,7 @@ System.out.println("password=" +password);
         try {
             doTest(reqFileName, expectedFault);
         } finally {
-            servlet = null;
+            clearServlet();
             doAuthorization = false;
         }
     }
@@ -550,7 +553,7 @@ System.out.println("password=" +password);
         try {
             doTest(req, expectedFault);
         } finally {
-            servlet = null;
+            clearServlet();
             doAuthorization = false;
         }
     }
@@ -588,7 +591,7 @@ System.out.println("DO IT AGAIN");
 }
             doTest(req, expectedFault);
         } finally {
-            servlet = null;
+            clearServlet();
             XmlaErrorTest.doAuthorization = false;
             XmlaErrorTest.user = null;
             XmlaErrorTest.password = null;
@@ -629,7 +632,7 @@ System.out.println("DO IT AGAIN");
         try {
             doTest(req, expectedFault);
         } finally {
-            servlet = null;
+            clearServlet();
             XmlaErrorTest.doAuthorization = false;
             XmlaErrorTest.user = null;
             XmlaErrorTest.password = null;
@@ -670,7 +673,7 @@ System.out.println("DO IT AGAIN");
         try {
             doTest(req, expectedFault);
         } finally {
-            servlet = null;
+            clearServlet();
             XmlaErrorTest.doAuthorization = false;
             XmlaErrorTest.user = null;
             XmlaErrorTest.password = null;
@@ -891,10 +894,7 @@ System.out.println("DO IT AGAIN");
         MockHttpServletResponse res = new MockHttpServletResponse();
         res.setCharacterEncoding("UTF-8");
 
-        if (servlet == null) {
-            makeServlet(getTestContext());
-        }
-
+        Servlet servlet = getServlet(getTestContext());
         servlet.service(req, res);
 
         int statusCode = res.getStatusCode();
@@ -932,6 +932,7 @@ System.out.println("Got CONTINUE");
 
         }
     }
+
     public void doTest(
             String reqFileName,
             Fault expectedFault
@@ -941,9 +942,7 @@ System.out.println("Got CONTINUE");
 if (DEBUG) {
 System.out.println("reqFileName="+reqFileName);
 }
-        if (servlet == null) {
-            makeServlet(getTestContext());
-        }
+        Servlet servlet = getServlet(getTestContext());
         // do SOAP-XMLA
         byte[] bytes = XmlaSupport.processSoapXmla(requestText, servlet);
         processResults(bytes, expectedFault);

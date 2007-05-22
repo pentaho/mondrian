@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -23,6 +23,8 @@ import javax.servlet.ServletContextListener;
  * <code>javax.transform</code>) because it is loaded when Tomcat starts, not
  * when the servlet is loaded. (This might be a bug in Tomcat 4.0.3, because
  * it worked in 4.0.1. But anyway.)
+ *
+ * @version $Id$
  */
 
 public class Listener implements ServletContextListener {
@@ -50,7 +52,7 @@ public class Listener implements ServletContextListener {
             throw new Error(
                 "Received [" + e.toString() + "] while initializing servlet");
         }
-        ApplicationContext applicationContext = (ApplicationContext) o;
+        applicationContext = (ApplicationContext) o;
         applicationContext.init(event);
     }
 

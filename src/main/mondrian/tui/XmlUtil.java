@@ -845,7 +845,7 @@ System.err.println("    systemId="+systemId);
             ? "0.0.0" : version.substring(index+1);
     }
 
-    protected static int[] versionNumbers = null;
+    private static int[] versionNumbers = null;
 
     /**
      * Gets the Xerces version numbers as a three part array of ints where
@@ -854,7 +854,7 @@ System.err.println("    systemId="+systemId);
      *
      * @return Xerces version number as int array
      */
-    public static int[] getXercesVersionNumbers() {
+    public static synchronized int[] getXercesVersionNumbers() {
         if (versionNumbers == null) {
             int[] verNums = new int[3];
             String verNumStr = getXercesVersionNumberString();

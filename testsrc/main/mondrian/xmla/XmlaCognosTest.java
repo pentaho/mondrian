@@ -12,6 +12,8 @@ package mondrian.xmla;
 import mondrian.olap.MondrianProperties;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
+import mondrian.util.Bug;
+import org.eigenbase.util.property.BooleanProperty;
 
 /**
  * Test suite for compatibility of Mondrian XMLA with Cognos8.2 connected via
@@ -39,11 +41,20 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
     }
 
     public void testNonEmptyWithCognosCalcOneLiteral() throws Exception {
-        boolean currentState =
-                MondrianProperties.instance().EnableNonEmptyOnAllAxis.get();
-        MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(true);
-        executeMDX();
-        MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(currentState);
+        // Disable testcase until bug 1722959 is fixed.
+        if (!Bug.Bug1722959Fixed &&
+            !MondrianProperties.instance().EnableNativeNonEmpty.get()) {
+            return;
+        }
+        final BooleanProperty property =
+            MondrianProperties.instance().EnableNonEmptyOnAllAxis;
+        boolean currentState = property.get();
+        try {
+            property.set(true);
+            executeMDX();
+        } finally {
+            property.set(currentState);
+        }
     }
 
     public void testCellProperties() throws Exception {
@@ -86,11 +97,6 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
     protected String getSessionId(Action action) {
         return null;
     }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
 }
+
 // XmlaCognosTest.java

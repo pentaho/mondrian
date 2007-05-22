@@ -1237,7 +1237,7 @@ Revision is $Id$
                 return "<inline data>";
             }
             public Relation find(String seekAlias) {
-                return seekAlias.equals(this) ? this : null;
+                return seekAlias.equals(this.alias) ? this : null;
             }
             public boolean equals(Object o) {
                 if (o instanceof InlineTable) {

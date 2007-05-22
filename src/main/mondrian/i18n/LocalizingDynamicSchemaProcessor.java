@@ -56,13 +56,14 @@ public class LocalizingDynamicSchemaProcessor
     private int localeType = INVALID_LOCALE;
 
     void populate(String propFile) {
-        String localizedPropFileBase = "";
+        StringBuilder localizedPropFileBase = new StringBuilder();
         String [] tokens = propFile.split("\\.");
 
         for (int i = 0; i < tokens.length - 1; i++) {
-            localizedPropFileBase = localizedPropFileBase +
-                    ((localizedPropFileBase.length() == 0) ? "" : ".") +
-                    tokens[i];
+            if (localizedPropFileBase.length() > 0) {
+                localizedPropFileBase.append(".");
+            }
+            localizedPropFileBase.append(tokens[i]);
         }
 
         String [] localePropFilename = new String[localeType];

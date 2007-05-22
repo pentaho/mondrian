@@ -151,9 +151,9 @@ public class RoleImpl implements Role {
             this.hierarchy = hierarchy;
             this.access = access;
             final Level[] levels = hierarchy.getLevels();
-            this.topLevel = (topLevel == null) 
+            this.topLevel = (topLevel == null)
                     ? levels[0] : topLevel;
-            this.bottomLevel = (bottomLevel == null) 
+            this.bottomLevel = (bottomLevel == null)
                     ? levels[levels.length-1] : bottomLevel;
         }
 
@@ -232,9 +232,10 @@ public class RoleImpl implements Role {
         }
 
         private boolean childGrantsExist(Member parent) {
-            for (final Member member : memberGrants.keySet()) {
+            for (Map.Entry<Member, Access> entry : memberGrants.entrySet()) {
+                final Member member = entry.getKey();
                 if (member.getParentMember() == parent) {
-                    final Access access = toAccess(memberGrants.get(member));
+                    final Access access = toAccess(entry.getValue());
                     if (access != Access.NONE) {
                         return true;
                     }
@@ -384,7 +385,7 @@ public class RoleImpl implements Role {
 
     public Access getAccess(Level level) {
         assert level != null;
-        HierarchyAccessImpl hierarchyAccess = 
+        HierarchyAccessImpl hierarchyAccess =
                 hierarchyGrants.get(level.getHierarchy());
         if (hierarchyAccess != null) {
             if (hierarchyAccess.topLevel != null &&

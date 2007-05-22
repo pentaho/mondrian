@@ -43,7 +43,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     protected static final String LAST_SCHEMA_UPDATE_DATE = "somedate";
     private static final String LAST_SCHEMA_UPDATE_NODE_NAME = "LAST_SCHEMA_UPDATE";
     protected SortedMap<String, String> catalogNameUrls = null;
-    protected Servlet servlet;
+    private Servlet servlet;
 
     private static int sessionIdCounter = 1000;
     private static Map<String,String> sessionIdMap =
@@ -105,28 +105,28 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         return catalogNameUrls;
     }
 
-    protected void makeServlet(TestContext testContext)
-            throws IOException, ServletException, SAXException {
+    protected Servlet getServlet(TestContext testContext)
+        throws IOException, ServletException, SAXException
+    {
+        if (servlet == null) {
+            getSessionId(Action.CLEAR);
 
-        getSessionId(Action.CLEAR);
+            String connectString = testContext.getConnectString();
+            Map<String, String> catalogNameUrls =
+                getCatalogNameUrls(testContext);
+            servlet =
+                XmlaSupport.makeServlet(
+                    connectString, catalogNameUrls,
+                    getServletCallbackClass().getName());
+        }
+        return servlet;
+    }
 
-        String connectString = testContext.getConnectString();
-        Map<String, String> catalogNameUrls =
-            getCatalogNameUrls(testContext);
-        servlet =
-            XmlaSupport.makeServlet(
-                connectString, catalogNameUrls,
-                getServletCallbackClass().getName());
+    protected void clearServlet() {
+        servlet = null;
     }
 
     protected abstract Class<? extends XmlaRequestCallback> getServletCallbackClass();
-
-    protected void setUp() throws Exception {
-        makeServlet(getTestContext());
-    }
-
-    protected void tearDown() throws Exception {
-    }
 
     protected Properties getDefaultRequestProperties(String requestType) {
         Properties props = new Properties();

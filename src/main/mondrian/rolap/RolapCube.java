@@ -672,7 +672,7 @@ return dim;
                 for (int j = 0; j < properties.length; j++) {
                     if (properties[j].name.equals(
                         Property.MEMBER_ORDINAL.getName())) {
-                        Integer ordinal = new Integer(properties[j].value);
+                        Integer ordinal = Integer.valueOf(properties[j].value);
 
                         final String uname =
                             "[Measures].[" + xmlCalcMember.name + "]";
@@ -997,7 +997,7 @@ return dim;
         for (int i=0; i < namedSets.length; i++) {
             namedSetsArray[i] = namedSets[i].getNamedSet();
         }
-        return namedSetsArray; 
+        return namedSetsArray;
     }
 
     /**
@@ -1562,12 +1562,12 @@ assert is not true.
                     // </Hierarchy>
                     // </Dimension>
                     //
-                    // When this hierarchy is referenced in a cube, the fact 
+                    // When this hierarchy is referenced in a cube, the fact
                     // table is joined with the dimension tables using this
                     // incorrect join condition which assumes the leftmost
                     // table produces the primaryKey:
-                    //   "fact"."foreignKey" = "product_class"."product_id" 
-                    
+                    //   "fact"."foreignKey" = "product_class"."product_id"
+
                     table = table.addJoin(this, relation, joinCondition);
                 } else {
                     // Register table aliases
@@ -2560,12 +2560,12 @@ assert is not true.
         }
     }
 
-    private class CubeComparator implements Comparator<RolapCube>
+    private static class CubeComparator implements Comparator<RolapCube>
     {
         public int compare(RolapCube c1, RolapCube c2)
         {
             return c1.getName().compareTo(c2.getName());
-         }
+        }
     }
 }
 

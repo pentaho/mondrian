@@ -12,6 +12,7 @@ package mondrian.rolap;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.test.FoodMartTestCase;
+import org.eigenbase.util.property.BooleanProperty;
 
 /**
  * Tests the {@link MondrianProperties#EnableNonEmptyOnAllAxis} property.
@@ -22,9 +23,16 @@ public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
 
     public void testNonEmptyForAllAxesWithPropertySet() {
 
+        final BooleanProperty property =
+            MondrianProperties.instance().EnableNonEmptyOnAllAxis;
+        final boolean save = property.get();
         try {
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(true);
-            final String MDX_QUERY = "select {[Country].[USA].[OR].Children} on 0, {[Promotions].Members} on 1 from [Sales] where [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]";
+            property.set(true);
+            final String MDX_QUERY =
+                "select {[Country].[USA].[OR].Children} on 0,"
+                    + " {[Promotions].Members} on 1 "
+                    + "from [Sales] "
+                    + "where [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]";
             final String EXPECTED_RESULT = fold("Axis #0:\n" +
                 "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n" +
                 "Axis #1:\n" +
@@ -65,7 +73,7 @@ public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
                 "Row #3: \n");
             assertQueryReturns(MDX_QUERY, EXPECTED_RESULT);
         } finally {
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(false);
+            property.set(save);
         }
     }
 

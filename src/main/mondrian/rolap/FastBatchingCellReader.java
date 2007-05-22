@@ -397,7 +397,7 @@ public class FastBatchingCellReader implements CellReader {
      * SegmentArrayQuerySpec addMeasure Util.assertTrue being
      * triggered (which is what happened).
      */
-    class BatchKey {
+    static class BatchKey {
         BitKey key;
         RolapStar star;
         BatchKey(BitKey key, RolapStar star) {

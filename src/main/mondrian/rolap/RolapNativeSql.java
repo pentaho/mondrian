@@ -73,11 +73,13 @@ public class RolapNativeSql {
     }
 
     /**
-     * uses chain of responsibility to find a matching sql compiler
+     * Implementation of {@link SqlCompiler} that uses chain of responsibility
+     * to find a matching sql compiler.
+     *
      * @author av
      * @since Nov 23, 2005
      */
-    class CompositeSqlCompiler implements SqlCompiler {
+    static class CompositeSqlCompiler implements SqlCompiler {
         List<SqlCompiler> compilers = new ArrayList<SqlCompiler>();
 
         public void add(SqlCompiler compiler) {
@@ -101,7 +103,8 @@ public class RolapNativeSql {
     }
 
     /**
-     * compiles a numeric literal to SQL
+     * Compiles a numeric literal to SQL.
+     *
      * @author av
      * @since Nov 23, 2005
      */

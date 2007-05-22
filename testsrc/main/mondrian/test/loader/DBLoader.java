@@ -258,7 +258,7 @@ public abstract class DBLoader {
      * rows by streaming them in, one does not have to have all
      * of the row data in memory.
      */
-    public interface RowStream {
+    public interface RowStream extends Iterable<Row> {
         Iterator<Row> iterator();
     }
 
@@ -269,54 +269,55 @@ public abstract class DBLoader {
         }
     };
 
-    public class Table {
-        public class Controller {
-            private boolean dropTable;
-            private boolean dropRows;
-            private boolean createTable;
-            private boolean loadRows;
-            private RowStream rowStream;
+    public static class Controller {
+        private boolean dropTable;
+        private boolean dropRows;
+        private boolean createTable;
+        private boolean loadRows;
+        private RowStream rowStream;
 
-            private Controller() {
-                this.dropTable = true;
-                this.dropRows = true;
-                this.createTable = true;
-                this.loadRows = true;
-                this.rowStream = EMPTY_ROW_STREAM;
-            }
-            public boolean shouldDropTable() {
-                return this.dropTable;
-            }
-            public void setShouldDropTable(boolean dropTable) {
-                this.dropTable = dropTable;
-            }
-            public boolean shouldDropTableRows() {
-                return this.dropRows;
-            }
-            public void setShouldDropTableRows(boolean dropRows) {
-                this.dropRows = dropRows;
-            }
-            public boolean createTable() {
-                return this.createTable;
-            }
-            public void setCreateTable(boolean createTable) {
-                this.createTable = createTable;
-            }
-            public boolean loadRows() {
-                return this.loadRows;
-            }
-            public void setloadRows(boolean loadRows) {
-                this.loadRows = loadRows;
-            }
-            public void setRowStream(RowStream rowStream) {
-                this.rowStream = (rowStream == null)
-                    ? EMPTY_ROW_STREAM
-                    : rowStream;
-            }
-            public Iterator<Row> rows() {
-                return this.rowStream.iterator();
-            }
+        private Controller() {
+            this.dropTable = true;
+            this.dropRows = true;
+            this.createTable = true;
+            this.loadRows = true;
+            this.rowStream = EMPTY_ROW_STREAM;
         }
+        public boolean shouldDropTable() {
+            return this.dropTable;
+        }
+        public void setShouldDropTable(boolean dropTable) {
+            this.dropTable = dropTable;
+        }
+        public boolean shouldDropTableRows() {
+            return this.dropRows;
+        }
+        public void setShouldDropTableRows(boolean dropRows) {
+            this.dropRows = dropRows;
+        }
+        public boolean createTable() {
+            return this.createTable;
+        }
+        public void setCreateTable(boolean createTable) {
+            this.createTable = createTable;
+        }
+        public boolean loadRows() {
+            return this.loadRows;
+        }
+        public void setloadRows(boolean loadRows) {
+            this.loadRows = loadRows;
+        }
+        public void setRowStream(RowStream rowStream) {
+            this.rowStream = (rowStream == null)
+                ? EMPTY_ROW_STREAM
+                : rowStream;
+        }
+        public Iterator<Row> rows() {
+            return this.rowStream.iterator();
+        }
+    }
+
+    public class Table {
 
         private final String name;
         private final Column[] columns;
@@ -824,7 +825,7 @@ public abstract class DBLoader {
 
     protected boolean executeDropTableRows(Table table) throws Exception {
         try {
-            Table.Controller controller = table.getController();
+            Controller controller = table.getController();
             if (controller.shouldDropTableRows()) {
                 String suffix = System.getProperty(DROP_TABLE_ROWS_PROP,
                             DROP_TABLE_ROWS_SUFFIX_DEFAULT);
@@ -847,7 +848,7 @@ public abstract class DBLoader {
     protected boolean executeDropTable(Table table) {
         // If table does not exist, that is OK
         try {
-            Table.Controller controller = table.getController();
+            Controller controller = table.getController();
             if (controller.shouldDropTable()) {
                 String suffix = System.getProperty(DROP_TABLE_PROP,
                                 DROP_TABLE_SUFFIX_DEFAULT);
@@ -868,7 +869,7 @@ public abstract class DBLoader {
     }
     protected boolean executeCreateTable(Table  table) {
         try {
-            Table.Controller controller = table.getController();
+            Controller controller = table.getController();
             if (controller.createTable()) {
                 String suffix = System.getProperty(CREATE_TABLE_PROP,
                                 CREATE_TABLE_SUFFIX_DEFAULT);
@@ -894,7 +895,7 @@ public abstract class DBLoader {
                             LOAD_TABLE_ROWS_SUFFIX_DEFAULT);
             makeFileWriter(table, "." + suffix );
 
-            Table.Controller controller = table.getController();
+            Controller controller = table.getController();
             if (controller.loadRows()) {
                 String[] batch = new String[this.batchSize];
                 int nosInBatch = 0;
@@ -931,6 +932,7 @@ e.printStackTrace();
         }
         return rowsAdded;
     }
+
     protected String createInsertStatement(Table table, Object[] values)
             throws Exception {
 
@@ -1289,6 +1291,7 @@ e.printStackTrace();
         }
         return batchSize;
     }
+
     protected void writeDDL(String ddl) throws Exception {
         LOGGER.debug(ddl);
 
@@ -1296,11 +1299,24 @@ e.printStackTrace();
         this.fileWriter.write(';');
         this.fileWriter.write(nl);
     }
+
     protected void executeDDL(String ddl) throws Exception {
         LOGGER.debug(ddl);
 
-        Statement statement = getConnection().createStatement();
-        statement.execute(ddl);
-
+        Statement statement = null;
+        try {
+            statement = getConnection().createStatement();
+            statement.execute(ddl);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
+        }
     }
 }
+
+// End DBLoader.java

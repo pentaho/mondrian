@@ -20,7 +20,7 @@ import mondrian.test.TestContext;
  */
 public class SharedDimensionTest  extends FoodMartTestCase {
 
-    public static String sharedDimension = 
+    public static final String sharedDimension =
         "<Dimension name=\"Employee\">\n" +
         "  <Hierarchy hasAll=\"true\" primaryKey=\"employee_id\" primaryKeyTable=\"employee\">\n" +
         "    <Join leftKey=\"supervisor_id\" rightKey=\"employee_id\">\n" +
@@ -35,7 +35,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
     // Base Cube A: use product_id as foreign key for Employee diemnsion
     // because there exist rows satidfying the join condition
     // "employee.employee_id = inventory_fact_1997.product_id"
-    public static String cubeA =
+    public static final String cubeA =
         "<Cube name=\"Employee Store Analysis A\">\n" +
         "  <Table name=\"inventory_fact_1997\" alias=\"inventory\" />\n" +
         "  <DimensionUsage name=\"Employee\" source=\"Employee\" foreignKey=\"product_id\" />\n" +
@@ -47,7 +47,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
     // Base Cube B: use time_id as foreign key for Employee diemnsion
     // because there exist rows satidfying the join condition
     // "employee.employee_id = inventory_fact_1997.time_id"
-    public static String cubeB =
+    public static final String cubeB =
         "<Cube name=\"Employee Store Analysis B\">\n" +
         "  <Table name=\"inventory_fact_1997\" alias=\"inventory\" />\n" +
         "  <DimensionUsage name=\"Employee\" source=\"Employee\" foreignKey=\"time_id\" />\n" +
@@ -56,7 +56,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "  <Measure name=\"Employee Store Cost\" aggregator=\"sum\" formatString=\"$#,##0\" column=\"warehouse_cost\" />\n" +
         "</Cube>";
 
-    public static String virtualCube =
+    public static final String virtualCube =
         "<VirtualCube name=\"Employee Store Analysis\">\n" +
         "  <VirtualCubeDimension name=\"Employee\"/>\n" +
         "  <VirtualCubeDimension name=\"Store Type\"/>\n" +
@@ -64,7 +64,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "  <VirtualCubeMeasure cubeName=\"Employee Store Analysis B\" name=\"[Measures].[Employee Store Cost]\"/>\n" +
         "</VirtualCube>";
 
-    public static String queryCubeA =
+    public static final String queryCubeA =
         "with\n" +
         "  set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Employee], [*BASE_MEMBERS_Store Type])'\n" +
         "  set [*BASE_MEMBERS_Measures] as '{[Measures].[Employee Store Sales], [Measures].[Employee Store Cost]}'\n" +
@@ -78,7 +78,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "from\n" +
         "  [Employee Store Analysis A]";
 
-    public static String queryCubeB =
+    public static final String queryCubeB =
         "with\n" +
         "  set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Employee], [*BASE_MEMBERS_Store Type])'\n" +
         "  set [*BASE_MEMBERS_Measures] as '{[Measures].[Employee Store Sales], [Measures].[Employee Store Cost]}'\n" +
@@ -91,8 +91,8 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "  NON EMPTY Generate([*NATIVE_CJ_SET], {([Employee].CurrentMember, [Store Type].CurrentMember)}) ON ROWS\n" +
         "from\n" +
         "  [Employee Store Analysis B]";
-    
-    public static String queryVirtualCube =
+
+    public static final String queryVirtualCube =
         "with\n" +
         "  set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Employee], [*BASE_MEMBERS_Store Type])'\n" +
         "  set [*BASE_MEMBERS_Measures] as '{[Measures].[Employee Store Sales], [Measures].[Employee Store Cost]}'\n" +
@@ -105,33 +105,33 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "  NON EMPTY Generate([*NATIVE_CJ_SET], {([Employee].CurrentMember, [Store Type].CurrentMember)}) ON ROWS\n" +
         "from\n" +
         "  [Employee Store Analysis]";
-    
-    public static String queryStoreCube =
+
+    public static final String queryStoreCube =
         "with set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store Type], [*BASE_MEMBERS_Store])'\n" +
         "set [*BASE_MEMBERS_Measures] as '{[Measures].[Store Sqft]}'\n" +
         "set [*BASE_MEMBERS_Store Type] as '[Store Type].[Store Type].Members'\n" +
         "set [*BASE_MEMBERS_Store] as '[Store].[Store State].Members'\n" +
         "select [*BASE_MEMBERS_Measures] ON COLUMNS,\n" +
         "Non Empty Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember}) on rows from [Store]";
-    
-    public static String queryNECJMemberList =
+
+    public static final String queryNECJMemberList =
         "select {[Measures].[Employee Store Sales]} on columns,\n" +
         "NonEmptyCrossJoin([Store Type].[Store Type].Members,\n" +
         "{[Employee].[All Employees].[Middle Management],\n" +
         " [Employee].[All Employees].[Store Management]})\n" +
         "on rows from [Employee Store Analysis B]";
-    
-    public static String queryNECJMultiLevelMemberList =
+
+    public static final String queryNECJMultiLevelMemberList =
         "select {[Employee Store Sales]} on columns, " +
         "NonEmptyCrossJoin([Store Type].[Store Type].Members, " +
         "{[Employee].[Store Management].[Store Manager], " +
         " [Employee].[Senior Management].[President]}) " +
         "on rows from [Employee Store Analysis B]";
 
-    public static String querySF1711865 =
+    public static final String querySF1711865 =
         "select NON EMPTY {[Product].[Product Family].Members} ON COLUMNS from [Sales 2]";
-    
-    public static String resultCubeA =
+
+    public static final String resultCubeA =
         "Axis #0:\n" +
         "{}\n" +
         "Axis #1:\n" +
@@ -174,8 +174,8 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "Row #10: $2,045\n" +
         "Row #11: $77,236\n" +
         "Row #11: $34,842\n";
-    
-    public static String resultCubeB =
+
+    public static final String resultCubeB =
         "Axis #0:\n" +
         "{}\n" +
         "Axis #1:\n" +
@@ -198,7 +198,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "Row #4: $108,610\n" +
         "Row #4: $49,178\n";
 
-    public static String resultVirtualCube =
+    public static final String resultVirtualCube =
         "Axis #0:\n" +
         "{}\n" +
         "Axis #1:\n" +
@@ -244,7 +244,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
 
     // This result is actually incorrect for native evaluation.
     // Keep the test case here to test the SQL generation.
-    public static String resultStoreCube =
+    public static final String resultStoreCube =
         "Axis #0:\n" +
         "{}\n" +
         "Axis #1:\n" +
@@ -261,7 +261,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "Row #3: 75,281\n" +
         "Row #4: 193,480\n";
 
-    public static String resultNECJMemberList =
+    public static final String resultNECJMemberList =
         "Axis #0:\n" +
         "{}\n" +
         "Axis #1:\n" +
@@ -277,8 +277,8 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "Row #2: $10,212\n" +
         "Row #3: $5,932\n" +
         "Row #4: $108,610\n";
-    
-    public static String resultNECJMultiLevelMemberList =
+
+    public static final String resultNECJMultiLevelMemberList =
         "Axis #0:\n" +
         "{}\n" +
         "Axis #1:\n" +
@@ -291,7 +291,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "Row #1: $286\n" +
         "Row #2: $1,020\n";
 
-    public static String resultSF1711865 =
+    public static final String resultSF1711865 =
         "Axis #0:\n" +
         "{}\n" +
         "Axis #1:\n" +
@@ -301,7 +301,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         "Row #0: 7,978\n" +
         "Row #0: 62,445\n" +
         "Row #0: 16,414\n";
-            
+
     public SharedDimensionTest() {
     }
 
@@ -321,7 +321,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
              null);
 
         testContext.assertQueryReturns(queryCubeA, fold(resultCubeA));
-    }   
+    }
 
     public void testB() {
         // Schema has two cubes sharing a dimension.
@@ -335,7 +335,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
              null);
 
         testContext.assertQueryReturns(queryCubeB, fold(resultCubeB));
-    }   
+    }
 
     public void testVirtualCube() {
         // Schema has two cubes sharing a dimension, and a virtual cube built
@@ -382,12 +382,12 @@ public class SharedDimensionTest  extends FoodMartTestCase {
 
         testContext.assertQueryReturns(queryNECJMultiLevelMemberList,
             fold(resultNECJMultiLevelMemberList));
-    }   
-    
-    
+    }
+
+
     public void testSF1711865() {
         // Test for sourceforge.net bug 1711865
-        // Use the default FoodMart schema 
+        // Use the default FoodMart schema
         TestContext testContext =
             TestContext.create(
              null,
@@ -400,7 +400,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
     }
 
     public void testStoreCube() {
-        // Use the default FoodMart schema 
+        // Use the default FoodMart schema
         TestContext testContext =
             TestContext.create(
              null,
@@ -411,7 +411,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
 
         testContext.assertQueryReturns(queryStoreCube, fold(resultStoreCube));
     }
-    
+
 }
 
 // End SharedDimensionTest.java

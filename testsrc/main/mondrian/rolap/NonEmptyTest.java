@@ -1688,7 +1688,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     /**
-     * Test for bug #1696772 
+     * Test for bug #1696772
      * Modified which calculations are tested for non native, non empty joins
      */
     public void testNonEmptyWithCalcMeasure() {
@@ -1718,7 +1718,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         "From [Sales]"
         );
     }
-    
+
     public void testCalculatedSlicerMember() {
         // This test verifies that members(the FILTER members in the query
         // below) on the slicer are ignored in CrossJoin emptiness check.
@@ -1746,7 +1746,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "From [Sales] Where ([Education Level].FILTER1, [Gender].FILTER2)"
         );
     }
-    
+
     public void testIndependentSlicerMemberNonNative() {
         String query =
             "with set [p] as '[Product].[Product Family].members' " +
@@ -1766,20 +1766,20 @@ public class NonEmptyTest extends FoodMartTestCase {
             "Row #0: \n" +
             "Row #0: \n" +
             "Row #0: \n";
-        
-        boolean origNativeCJ = 
+
+        boolean origNativeCJ =
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().EnableNativeCrossJoin.set(false);
-        
+
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed.
         Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);        
+        TestContext context = getTestContext(conn);
         context.assertQueryReturns(query, fold(resultNonNative));
-        
+
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
     }
-    
+
     public void testIndependentSlicerMemberNative() {
         // Currently this behaves differently from non-native evaluation.
         String query =
@@ -1795,14 +1795,14 @@ public class NonEmptyTest extends FoodMartTestCase {
             "{[Store].[All Stores].[Mexico]}\n" +
             "Axis #1:\n";
 
-        boolean origNativeCJ = 
+        boolean origNativeCJ =
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
 
         Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);        
+        TestContext context = getTestContext(conn);
         context.assertQueryReturns(query, fold(resultNative));
-        
+
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
     }
 
@@ -1819,13 +1819,13 @@ public class NonEmptyTest extends FoodMartTestCase {
             "Axis #0:\n" +
             "{[Time].[1998]}\n" +
             "Axis #1:\n";
-        
-        boolean origNativeCJ = 
+
+        boolean origNativeCJ =
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().EnableNativeCrossJoin.set(false);
 
         Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);        
+        TestContext context = getTestContext(conn);
         context.assertQueryReturns(query, fold(resultNonNative));
 
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
@@ -1844,13 +1844,13 @@ public class NonEmptyTest extends FoodMartTestCase {
             "Axis #0:\n" +
             "{[Time].[1998]}\n" +
             "Axis #1:\n";
-        
-        boolean origNativeCJ = 
+
+        boolean origNativeCJ =
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
 
         Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);        
+        TestContext context = getTestContext(conn);
         context.assertQueryReturns(query, fold(resultNative));
 
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
@@ -1993,7 +1993,7 @@ public class NonEmptyTest extends FoodMartTestCase {
      * @author av
      * @since Nov 22, 2005
      */
-    class TestListener implements Listener {
+    static class TestListener implements Listener {
         boolean foundEvaluator;
         boolean foundInCache;
         boolean excecuteSql;

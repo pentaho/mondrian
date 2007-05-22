@@ -19,10 +19,7 @@ import mondrian.spi.UserDefinedFunction;
 import mondrian.util.Bug;
 
 import java.util.regex.Pattern;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import junit.framework.Assert;
 
@@ -1440,7 +1437,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         System.out.println(TestContext.toString(axis.getPositions()));
     }
 
-    public static final QueryAndResult[] taglibQueries = {
+    private static final List<QueryAndResult> taglibQueries = Arrays.asList(
         // 0
         new QueryAndResult(
                 "select\n" +
@@ -2211,38 +2208,38 @@ public class BasicQueryTest extends FoodMartTestCase {
 
                 "Axis #0:\n" +
                 "{[Measures].[Store Sales], [Time].[1997], [Promotion Media].[All Media].[TV]}\n" +
-                "7,786.21"),
-    };
+                "7,786.21")
+    );
 
     public void testTaglib0() {
-        assertQueryReturns(taglibQueries[0].query, taglibQueries[0].result);
+        assertQueryReturns(taglibQueries.get(0).query, taglibQueries.get(0).result);
     }
 
     public void testTaglib1() {
-        assertQueryReturns(taglibQueries[1].query, taglibQueries[1].result);
+        assertQueryReturns(taglibQueries.get(1).query, taglibQueries.get(1).result);
     }
 
     public void testTaglib2() {
-        assertQueryReturns(taglibQueries[2].query, taglibQueries[2].result);
+        assertQueryReturns(taglibQueries.get(2).query, taglibQueries.get(2).result);
     }
 
     public void testTaglib3() {
-        assertQueryReturns(taglibQueries[3].query, taglibQueries[3].result);
+        assertQueryReturns(taglibQueries.get(3).query, taglibQueries.get(3).result);
     }
 
     public void testTaglib4() {
-        assertQueryReturns(taglibQueries[4].query, taglibQueries[4].result);
+        assertQueryReturns(taglibQueries.get(4).query, taglibQueries.get(4).result);
     }
 
     public void testTaglib5() {
-        assertQueryReturns(taglibQueries[5].query, taglibQueries[5].result);
+        assertQueryReturns(taglibQueries.get(5).query, taglibQueries.get(5).result);
     }
 
     public void testCellValue() {
         Result result = executeQuery(
-                        "select {[Measures].[Unit Sales],[Measures].[Store Sales]} on columns,\n" +
-                        " {[Gender].[M]} on rows\n" +
-                        "from Sales");
+            "select {[Measures].[Unit Sales],[Measures].[Store Sales]} on columns,\n" +
+                " {[Gender].[M]} on rows\n" +
+                "from Sales");
         Cell cell = result.getCell(new int[] {0,0});
         Object value = cell.getValue();
         assertTrue(value instanceof Number);
@@ -4436,20 +4433,23 @@ public class BasicQueryTest extends FoodMartTestCase {
         runParallelQueries(6, 10, false);
     }
 
-    private void runParallelQueries(final int threadCount,
-            final int iterationCount, final boolean flush) {
-        long timeoutMs = threadCount * iterationCount * 600 * 1000; // 10 minute per query
+    private void runParallelQueries(
+        final int threadCount,
+        final int iterationCount,
+        final boolean flush)
+    {
+        long timeoutMs = (long) threadCount * iterationCount * 600 * 1000; // 10 minute per query
         final int[] executeCount = new int[] {0};
-        final QueryAndResult[] queries = new QueryAndResult[sampleQueries.length + taglibQueries.length];
-        System.arraycopy(sampleQueries, 0, queries, 0, sampleQueries.length);
-        System.arraycopy(taglibQueries, 0, queries, sampleQueries.length, taglibQueries.length);
+        final List<QueryAndResult> queries = new ArrayList<QueryAndResult>();
+        queries.addAll(Arrays.asList(sampleQueries));
+        queries.addAll(taglibQueries);
         TestCaseForker threaded = new TestCaseForker(
                 this, timeoutMs, threadCount, new ChooseRunnable() {
                     public void run(int i) {
                         for (int j = 0; j < iterationCount; j++) {
-                            int queryIndex = (i * 2 + j) % queries.length;
+                            int queryIndex = (i * 2 + j) % queries.size();
                             try {
-                                QueryAndResult query = queries[queryIndex];
+                                QueryAndResult query = queries.get(queryIndex);
                                 assertQueryReturns(query.query, query.result);
                                 if (flush && i == 0) {
                                     CachePool.instance().flush();
@@ -4471,8 +4471,6 @@ public class BasicQueryTest extends FoodMartTestCase {
         threaded.run();
         assertEquals("number of executions", threadCount * iterationCount, executeCount[0]);
     }
-
-
 
     /**
      * Makes sure that the expression <code>

@@ -340,8 +340,12 @@ public class RolapMember extends MemberBase {
         return (RolapMember) super.getParentMember();
     }
 
+    public int hashCode() {
+        return uniqueName.hashCode();
+    }
+
     public boolean equals(Object o) {
-        return (o == this) || 
+        return (o == this) ||
                 ((o instanceof RolapMember) && equals((RolapMember) o));
     }
 
@@ -352,7 +356,9 @@ public class RolapMember extends MemberBase {
 
     private boolean equals(RolapMember that) {
         assert that != null; // public method should have checked
-        return this.getUniqueName().equalsIgnoreCase(that.getUniqueName());
+        // Do not use equalsIgnoreCase; unique names should be identical, and
+        // hashCode assumes this.
+        return this.getUniqueName().equals(that.getUniqueName());
     }
 
     void makeUniqueName(HierarchyUsage hierarchyUsage) {
@@ -570,7 +576,7 @@ public class RolapMember extends MemberBase {
     public Comparable getOrderKey() {
         return orderKey;
     }
-    
+
     void setOrdinal(int ordinal) {
         if (this.ordinal == -1) {
             this.ordinal = ordinal;
@@ -580,7 +586,7 @@ public class RolapMember extends MemberBase {
     void setOrderKey(Comparable orderKey) {
         this.orderKey = orderKey;
     }
-    
+
     private void resetOrdinal() {
         this.ordinal = -1;
     }

@@ -104,7 +104,8 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
         StringBuilder ds = new StringBuilder();
         ds.append("<?xml version=\"1.0\"?>");
         ds.append("<DataSources>");
-        for (String dsName : dsCatalog.keySet()) {
+        for (Map.Entry<String, String[]> entry : dsCatalog.entrySet()) {
+            final String dsName = entry.getKey();
             ds.append("<DataSource> ");
             ds.append("  <DataSourceName>").append(dsName).append("</DataSourceName>");
             ds.append("       <DataSourceDescription>DATASOURCE_DESCRIPTION</DataSourceDescription>");
@@ -114,7 +115,8 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
             ds.append("       <ProviderType>MDP</ProviderType>");
             ds.append("       <AuthenticationMode>Unauthenticated</AuthenticationMode>");
             ds.append("       <Catalogs>");
-            for (String catalog : dsCatalog.get(dsName)) {
+            final String[] catalogs = entry.getValue();
+            for (String catalog : catalogs) {
                 ds.append(catalog);
             }
             ds.append("       </Catalogs>");

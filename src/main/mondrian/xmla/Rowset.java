@@ -332,9 +332,6 @@ System.out.println("Rowset.getRestrictionTest: requiredValue=" +requiredValue);
 
         if (requiredValue == null) {
             return new RestrictionTest() {
-                public boolean passes(int ival) {
-                    return true;
-                }
                 public boolean passes(Object value) {
                     return true;
                 }
@@ -407,7 +404,7 @@ System.out.println("Rowset.getRestrictionTest: requiredValue=" +requiredValue);
      * using a HashMap and for very big data sets memory is
      * a concern.
      */
-    protected class Row {
+    protected static class Row {
         private final ArrayList<String> names;
         private final ArrayList<Object> values;
         Row() {
@@ -437,7 +434,7 @@ System.out.println("Rowset.getRestrictionTest: requiredValue=" +requiredValue);
     /**
      * Holder for non-scalar column values of a {@link mondrian.xmla.Rowset.Row}.
      */
-    protected class XmlElement {
+    protected static class XmlElement {
         private final String tag;
         private final String[] attributes;
         private final String text;

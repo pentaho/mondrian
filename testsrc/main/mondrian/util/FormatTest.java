@@ -110,9 +110,9 @@ public class FormatTest extends TestCase {
         checkNumber(locale, format, new Double(0), result0);
         checkNumber(locale, format, new Double(.6), resultPoint6);
         checkNumber(locale, format, null, resultEmpty);
-        checkNumber(locale, format, new Long(6), result6);
-        checkNumber(locale, format, new Long(-6), resultNeg6);
-        checkNumber(locale, format, new Long(0), result0);
+        checkNumber(locale, format, Long.valueOf(6), result6);
+        checkNumber(locale, format, Long.valueOf(-6), resultNeg6);
+        checkNumber(locale, format, Long.valueOf(0), result0);
     }
 
     private void checkNumber(
@@ -189,7 +189,7 @@ public class FormatTest extends TestCase {
         checkFormat(null, new Double(-0.01), "0.##;(0.##);Nil", "(0.01)");
         checkFormat(null, new Double(-0.01), "0.##;(0.#);Nil", "Nil");
     }
-    
+
     public void testNumberRoundingBug() {
         checkFormat(null, new Double(0.50), "0", "1");
         checkFormat(null, new Double(-1.5), "0", "-2");
@@ -200,7 +200,7 @@ public class FormatTest extends TestCase {
         checkFormat(null, new Double(-0.49999), "0", "0");
         checkFormat(null, new Double(-0.49999), "0.0", "-0.5");
         checkFormat(null, new Double(0.49999), "0", "0");
-        checkFormat(null, new Double(0.49999), "#.0", ".5");       
+        checkFormat(null, new Double(0.49999), "#.0", ".5");
     }
 
     public void testCurrencyBug() {

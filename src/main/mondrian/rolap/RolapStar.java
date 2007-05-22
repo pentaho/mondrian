@@ -322,7 +322,7 @@ public class RolapStar {
         Map<String, RolapStar.Table> relationNamesToStarTableMap =
             this.cubeToRelationNamesToStarTableMapMap.get(cube);
         if (relationNamesToStarTableMap == null) {
-            relationNamesToStarTableMap = 
+            relationNamesToStarTableMap =
             	new HashMap<String, RolapStar.Table>();
             this.cubeToRelationNamesToStarTableMapMap.put(
             		cube, relationNamesToStarTableMap);
@@ -963,6 +963,12 @@ public class RolapStar {
                    other.name.equals(this.name);
         }
 
+        public int hashCode() {
+            int h = name.hashCode();
+            h = Util.hash(h, table);
+            return h;
+        }
+
         public String getName() {
             return name;
         }
@@ -1239,6 +1245,12 @@ public class RolapStar {
             RolapStar.Measure other = (RolapStar.Measure) obj;
             // Note: both measure have to have the same aggregator
             return (other.aggregator == this.aggregator);
+        }
+
+        public int hashCode() {
+            int h = super.hashCode();
+            h = Util.hash(h, aggregator);
+            return h;
         }
 
         /**
@@ -1589,7 +1601,7 @@ public class RolapStar {
 
         /**
          * Register RolapStar.table with its associated names.
-         * 
+         *
          * @param cube cube referencing this table
          * @param relation mondiran refresentation of the table
          * @param starTable rolap representation of the table
@@ -1598,19 +1610,19 @@ public class RolapStar {
             RolapCube cube,
             MondrianDef.Relation relation,
             RolapStar.Table starTable) {
-            Map<String, RolapStar.Table> map = 
+            Map<String, RolapStar.Table> map =
                 star.getRelationNamesToStarTableMap(cube);
             String relationNames =
                 relation.toString() + relation.getAlias();
-            map.put(relationNames, starTable);            
+            map.put(relationNames, starTable);
         }
-        
+
         /**
          * Extends this 'leg' of the star by adding <code>relation</code>
          * joined by <code>joinCondition</code>. If the same expression is
          * already present, does not create it again. Stores the unaliased
-         * table names to RolapStar.Table mapping associated with the 
-         * input <code>cube</code>. 
+         * table names to RolapStar.Table mapping associated with the
+         * input <code>cube</code>.
          */
         synchronized Table addJoin(
             RolapCube cube,
@@ -1625,13 +1637,13 @@ public class RolapStar {
                     if (this.children.isEmpty()) {
                         this.children = new ArrayList<Table>();
                     }
-                    this.children.add(starTable);                    
+                    this.children.add(starTable);
                 }
                 // Register table aliases
                 registerTableAlias(cube, relation, starTable);
-                
+
                 return starTable;
-                
+
             } else if (relation instanceof MondrianDef.Join) {
                 MondrianDef.Join join = (MondrianDef.Join) relation;
                 RolapStar.Table leftTable = addJoin(cube, join.left, joinCondition);
@@ -1646,12 +1658,12 @@ public class RolapStar {
                 assert leftTable.findAncestor(leftAlias) == leftTable;
                 // switch to uniquified alias
                 leftAlias = leftTable.getAlias();
-                
+
                 String rightAlias = join.rightAlias;
                 if (rightAlias == null) {
-                    
+
                     // the right relation of a join may be a join
-                    // if so, we need to use the right relation join's 
+                    // if so, we need to use the right relation join's
                     // left relation's alias.
                     if (join.right instanceof MondrianDef.Join) {
                         MondrianDef.Join joinright = (MondrianDef.Join)  join.right;
@@ -1670,7 +1682,7 @@ public class RolapStar {
                 RolapStar.Table rightTable = leftTable.addJoin(
                     cube, join.right, joinCondition);
                 return rightTable;
-                
+
             } else {
                 throw Util.newInternal("bad relation type " + relation);
             }

@@ -66,12 +66,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
     protected DiffRepository getDiffRepos() {
         return DiffRepository.lookup(XmlaBasicTest.class);
     }
@@ -392,7 +386,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
         doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
     }
-    
+
     public void testExecuteWithMemberKeyDimensionProperty()
                 throws Exception {
             String requestType = "EXECUTE";

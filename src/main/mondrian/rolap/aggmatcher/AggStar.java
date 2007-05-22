@@ -724,12 +724,14 @@ public class AggStar {
                     MondrianDef.Column lcolumn = (MondrianDef.Column) rleft;
                     left = new MondrianDef.Column(getName(), lcolumn.name);
                 } else {
-
+                    throw Util.newInternal("not implemented: rleft=" + rleft);
+/*
                     // RME TODO can we catch this during validation
                     String msg = mres.BadRolapStarLeftJoinCondition.str(
                         "AggStar.Table",
                         rleft.getClass().getName(), left.toString());
                     getLogger().warn(msg);
+*/
                 }
             }
             // Explicitly set which columns are foreign keys in the

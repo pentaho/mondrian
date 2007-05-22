@@ -104,7 +104,6 @@ public class CsvLoader {
     private int nextSet;
     private boolean inComment;
     private String[] columnNames;
-    private int numberColumns;
     private String[] columns;
 
     public CsvLoader(InputStream in, String charset)

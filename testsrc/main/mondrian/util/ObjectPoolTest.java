@@ -136,7 +136,7 @@ public class ObjectPoolTest extends TestCase {
     private static List<String> genStringsList(int nos) {
         List<String> l = new ArrayList<String>(nos);
         for (int i = 0; i < nos; i++) {
-            l.add(new Integer(i).toString());
+            l.add(Integer.valueOf(i).toString());
         }
         return l;
     }
@@ -147,7 +147,7 @@ public class ObjectPoolTest extends TestCase {
     private static List<KeyValue> genKeyValueList(int nos) {
         List<KeyValue> l = new ArrayList<KeyValue>(nos);
         for (int i = 0; i < nos; i++) {
-            l.add(new KeyValue((long)i, new Integer(i)));
+            l.add(new KeyValue((long)i, Integer.valueOf(i)));
         }
         return l;
     }

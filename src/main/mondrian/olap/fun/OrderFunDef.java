@@ -117,7 +117,7 @@ class OrderFunDef extends FunDefBase {
         }
     }
 
-    private class CalcImpl extends AbstractListCalc {
+    private static class CalcImpl extends AbstractListCalc {
         private final ListCalc listCalc;
         private final Calc expCalc;
         private final boolean desc;

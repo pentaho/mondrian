@@ -145,7 +145,7 @@ public class Query extends QueryPart {
      * Maps a base cube to the map from the levels referenced in a virtual
      * cube to the columns in the underlying base cubes.
      */
-    private Map<RolapCube, Map<RolapLevel, RolapStar.Column>> 
+    private Map<RolapCube, Map<RolapLevel, RolapStar.Column>>
         baseCubeToLevelToColumnMap;
 
     /**
@@ -443,12 +443,12 @@ public class Query extends QueryPart {
      */
     public void setResultStyle(ResultStyle resultStyle) {
         switch (resultStyle) {
-        case ITERABLE :
+        case ITERABLE:
             // For java4, use LIST
-            resultStyle = (Util.PreJdk15)
+            this.resultStyle = (Util.PreJdk15)
                 ? ResultStyle.LIST : ResultStyle.ITERABLE;
             break;
-        case LIST :
+        case LIST:
         case MUTABLE_LIST:
             this.resultStyle = resultStyle;
             break;
@@ -459,10 +459,10 @@ public class Query extends QueryPart {
                         ResultStyle.LIST,
                         ResultStyle.MUTABLE_LIST
                     },
-                    resultStyle
-                );
+                    resultStyle);
         }
     }
+    
     public ResultStyle getResultStyle() {
         return resultStyle;
     }

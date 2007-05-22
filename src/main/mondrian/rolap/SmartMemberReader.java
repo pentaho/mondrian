@@ -310,9 +310,12 @@ public class SmartMemberReader implements MemberReader, MemberCache {
             result.add(child);
         }
         synchronized (this) {
-            for (RolapMember member : tempMap.keySet()) {
+            for (Map.Entry<RolapMember, List<RolapMember>> entry :
+                tempMap.entrySet())
+            {
+                final RolapMember member = entry.getKey();
                 if (getChildrenFromCache(member, constraint) == null) {
-                    List<RolapMember> list = tempMap.get(member);
+                final List<RolapMember> list = entry.getValue();
                     putChildren(member, constraint, list);
                 }
             }

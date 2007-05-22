@@ -239,7 +239,7 @@ public class RolapLevel extends LevelBase {
     }
 
     /**
-     * Return SQL expression for table column expression using the table 
+     * Return SQL expression for table column expression using the table
      * alias provided.
      * @param sqlQuery sqlQuery context to generate SQL for
      * @param levelToColumnMap maps level to table columns
@@ -247,32 +247,32 @@ public class RolapLevel extends LevelBase {
      * @return SQL string for the expression
      */
     public String getExpressionWithAlias(
-        SqlQuery sqlQuery,        
+        SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        MondrianDef.Expression expr) 
+        MondrianDef.Expression expr)
     {
         if (expr instanceof MondrianDef.Column &&
             levelToColumnMap != null) {
             RolapStar.Column targetColumn = levelToColumnMap.get(this);
-            
+
             if (targetColumn != null) {
                 String tableAlias = targetColumn.getTable().getAlias();
-                
+
                 if (tableAlias != null) {
-                    MondrianDef.Column col = 
+                    MondrianDef.Column col =
                         new MondrianDef.Column(
-                            tableAlias, 
+                            tableAlias,
                             ((MondrianDef.Column)expr).getColumnName());
                     return col.getExpression(sqlQuery);
                 }
             }
         }
-       
+
         // If not column expression, or no way to map level to columns
         // return the default SQL translation for this expression.
         return expr.getExpression(sqlQuery);
     }
-    
+
     public boolean hasCaptionColumn(){
         return captionExp != null;
     }
@@ -728,7 +728,7 @@ public class RolapLevel extends LevelBase {
     /**
      * Level reader for the level which contains the 'all' member.
      */
-    class AllLevelReaderImpl implements LevelReader {
+    static class AllLevelReaderImpl implements LevelReader {
         public boolean constrainRequest(
                 RolapMember member,
                 Map<RolapLevel, RolapStar.Column> levelToColumnMap,
@@ -749,7 +749,7 @@ public class RolapLevel extends LevelBase {
     /**
      * Level reader for the level which contains the null member.
      */
-    class NullLevelReader implements LevelReader {
+    static class NullLevelReader implements LevelReader {
         public boolean constrainRequest(
                 RolapMember member,
                 Map<RolapLevel, RolapStar.Column> levelToColumnMap,

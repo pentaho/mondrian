@@ -411,25 +411,22 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                 throw Util.newInternal(e, "while joining thread #" + i);
             }
         }
-        String messages = null;
+        StringBuilder messages = new StringBuilder();
         int failures = 0;
-        for (int i = 0; i < workerCount; i++) {
-            if (workers[i].failures.size() > 0) {
-                for (Throwable throwable : workers[i].failures) {
-                    String message =
-                        throwable.toString() + throwable.getMessage();
-                    if (message != null) {
-                        failures++;
-                        if (messages == null) {
-                            messages = message;
-                        } else {
-                            messages += "\n" + message;
-                        }
+        for (Worker worker : workers) {
+            for (Throwable throwable : worker.failures) {
+                String message =
+                    throwable.toString() + throwable.getMessage();
+                if (message != null) {
+                    failures++;
+                    if (messages.length() != 0) {
+                        messages.append(Util.nl);
                     }
+                    messages.append(message);
                 }
             }
         }
-        if ((failures != 0) && (messages != null)) {
+        if (failures != 0) {
             TestCase.fail(failures + " threads failed\n"+messages);
         }
     }

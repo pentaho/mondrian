@@ -460,11 +460,11 @@ public class RolapHierarchy extends HierarchyBase {
      * @param aliasedTableNameMap used to disambiguate table names when the
      * hierarchy belongs to shared dimensions that are referenced in different
      * cubes.
-     * @param table table to add to the query 
+     * @param table table to add to the query
      */
     void addToFrom(
-        SqlQuery query, 
-        Map<String, RolapStar.Table> aliasedTableNameMap, 
+        SqlQuery query,
+        Map<String, RolapStar.Table> aliasedTableNameMap,
         RolapStar.Table table) {
         if (relation == null) {
             throw Util.newError(
@@ -485,12 +485,12 @@ public class RolapHierarchy extends HierarchyBase {
             assert (aliasedTableNameMap != null);
         	subRelation = relationSubset(relation, aliasedTableNameMap, table);
         }
-        
+
         if (subRelation == null) {
             // If no table is found or specified, add the entire base relation.
             subRelation = relation;
         }
-        
+
         query.addFrom(subRelation, null, failIfExists);
     }
 
@@ -531,7 +531,7 @@ public class RolapHierarchy extends HierarchyBase {
      * the table <code>targetTable</code>, or null if the targetTable is not
      * one of the joining table in <code>relation</code>. The returned
      * relation also contains the correct table aliases.
-     * 
+     *
      * @param relation the relation in which to look for targetTable
      * @param aliasedTableNameMap used to disambiguate table names when the
      * hierarchy belongs to shared dimensions that are referenced in different
@@ -546,13 +546,13 @@ public class RolapHierarchy extends HierarchyBase {
         RolapStar.Table targetTable) {
         MondrianDef.Relation relationSubset =
             lookupRelationSubset(relation, aliasedTableNameMap, targetTable);
-        
+
         if (relationSubset != null) {
             // Found a containing relation subset.
             // Rewrite the sub-relation containing the targetTable, using
             // the correct aliases.
             return rewriteRelationWithAliases(relationSubset,
-                aliasedTableNameMap);            
+                aliasedTableNameMap);
         } else {
             return null;
         }
@@ -562,7 +562,7 @@ public class RolapHierarchy extends HierarchyBase {
      * Returns the smallest subset of <code>relation</code> which contains
      * the table <code>targetTable</code>, or null if the targetTable is not
      * one of the joining table in <code>relation</code>.
-     * 
+     *
      * @param relation the relation in which to look for targetTable
      * @param aliasedTableNameMap used to disambiguate table names when the
      * hierarchy belongs to shared dimensions that are referenced in different
@@ -578,7 +578,7 @@ public class RolapHierarchy extends HierarchyBase {
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table table = (MondrianDef.Table) relation;
             if (table.name.equals(targetTable.getTableName())) {
-                return relation;              
+                return relation;
             } else {
                 // Not the same table if table names are different
                 return null;
@@ -587,7 +587,7 @@ public class RolapHierarchy extends HierarchyBase {
             // Search inside relation, starting from the rightmost table,
             // and move left along the join chain.
             MondrianDef.Join join = (MondrianDef.Join) relation;
-            MondrianDef.Relation rightRelation = 
+            MondrianDef.Relation rightRelation =
                 relationSubset(join.right, aliasedTableNameMap, targetTable);
             if (rightRelation == null) {
                 // Keep searching left.
@@ -604,19 +604,19 @@ public class RolapHierarchy extends HierarchyBase {
     /**
      * Rewrite <code>relation</code> with aliases given by
      * <code>aliasedTableNameMap</code>.
-     * 
+     *
      * @param relation relation to rewrite
-     * @param aliasedTableNameMap aliases to use for the tables in 
+     * @param aliasedTableNameMap aliases to use for the tables in
      * <code>relation</code>
      * @return the rewritten relation
      */
     private static MondrianDef.Relation rewriteRelationWithAliases(
         MondrianDef.Relation relation,
         Map<String, RolapStar.Table> aliasedTableNameMap) {
-    	
+
     	if (relation instanceof MondrianDef.Table) {
     		String relationNames = relation.toString() + relation.getAlias();
-    		RolapStar.Table starTable = 
+    		RolapStar.Table starTable =
                 aliasedTableNameMap.get(relationNames);
     		return new MondrianDef.Table(
     				((MondrianDef.Table)relation).schema,
@@ -624,18 +624,18 @@ public class RolapHierarchy extends HierarchyBase {
     				starTable.getAlias());
     	} else {
     		MondrianDef.Join join = (MondrianDef.Join) relation;
-    		MondrianDef.Relation left = 
+    		MondrianDef.Relation left =
                 rewriteRelationWithAliases(join.left, aliasedTableNameMap);
-    		MondrianDef.Relation right = 
+    		MondrianDef.Relation right =
                 rewriteRelationWithAliases(join.right, aliasedTableNameMap);
-    		
+
     		return
     		new MondrianDef.Join(
     				left.getAlias(), join.leftKey, left,
     				right.getAlias(), join.rightKey, right);
     	}
     }
-    
+
     /**
      * Returns a member reader which enforces the access-control profile of
      * <code>role</code>.
@@ -862,7 +862,7 @@ RME HACK
      * omitted from sets (in particular, in the set constructor operator "{ ...
      * }".
      */
-    class RolapNullMember extends RolapMember {
+    static class RolapNullMember extends RolapMember {
         RolapNullMember(final RolapLevel level) {
             super(null, level, null, "#Null", MemberType.NULL);
             assert level != null;

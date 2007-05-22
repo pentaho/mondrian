@@ -458,7 +458,7 @@ public class RolapSchema implements Schema {
             for (MondrianDef.CubeGrant cubeGrant : schemaGrant.cubeGrants) {
                 RolapCube cube = lookupCube(cubeGrant.cube);
                 if (cube == null) {
-                    throw Util.newError("Unknown cube '" + cube + "'");
+                    throw Util.newError("Unknown cube '" + cubeGrant.cube + "'");
                 }
                 role.grant(cube, getAccess(cubeGrant.access, cubeAllowed));
                 final SchemaReader schemaReader = cube.getSchemaReader(null);
@@ -1555,7 +1555,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * Function table which contains all of the user-defined functions in this
      * schema, plus all of the standard functions.
      */
-    class RolapSchemaFunctionTable extends FunTableImpl {
+    static class RolapSchemaFunctionTable extends FunTableImpl {
         private final List<UserDefinedFunction> udfList;
 
         RolapSchemaFunctionTable(Collection<UserDefinedFunction> udfs) {

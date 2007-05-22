@@ -158,6 +158,10 @@ public class ParameterExpr extends ExpBase {
         return this.parameter == that.parameter;
     }
 
+    public int hashCode() {
+        return parameter.hashCode();
+    }
+
     /**
      * Returns whether the parameter can be modified.
      */

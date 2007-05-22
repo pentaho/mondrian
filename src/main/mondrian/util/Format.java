@@ -78,17 +78,9 @@ public class Format {
      * {@link Format#format}.
      */
     private static FieldPosition createDummyFieldPos() {
-        final FieldPosition[] pos = {null};
-        new DecimalFormat() {
-            public StringBuffer format(
-                    double number,
-                    StringBuffer result,
-                    FieldPosition fieldPosition) {
-                pos[0] = fieldPosition;
-                return result;
-            }
-        }.format(0.0);
-        return pos[0];
+        final DummyDecimalFormat format1 = new DummyDecimalFormat();
+        format1.format(0.0);
+        return format1.pos;
     }
 
     /**
@@ -2088,6 +2080,18 @@ loop:
      */
     public interface LocaleFormatFactory {
         FormatLocale get(Locale locale);
+    }
+
+    private static class DummyDecimalFormat extends DecimalFormat {
+        private FieldPosition pos;
+
+        public StringBuffer format(
+                double number,
+                StringBuffer result,
+                FieldPosition fieldPosition) {
+            pos = fieldPosition;
+            return result;
+        }
     }
 
 /**

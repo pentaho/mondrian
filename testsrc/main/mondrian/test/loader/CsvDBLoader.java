@@ -388,11 +388,12 @@ public class CsvDBLoader extends DBLoader {
                     columns = loadColumns(columnNames, columnTypes, lineNos);
                     table = new Table(tableName, columns);
                     tableList.add(table);
-                    Table.Controller controller = table.getController();
+                    Controller controller = table.getController();
 
                     if (fileName != null) {
 //System.out.println("CsvLoader.loadTables: fileName="+fileName);
-                        RowStream rowStream = new CsvLoaderRowStream(
+                        RowStream rowStream =
+                            new CsvLoaderRowStream(
                                 new CsvLoader(fileName));
                         controller.setRowStream(rowStream);
                         csvloader.nextSet();

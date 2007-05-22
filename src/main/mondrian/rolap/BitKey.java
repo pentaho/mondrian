@@ -128,7 +128,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
      */
     BitSet toBitSet();
 
-    /** 
+    /**
      * An Iterator over the bit positions.
      * For example, if the BitKey had positions 3 and 4 set, then
      * the Iterator would return the values 3 and then 4. The bit
@@ -441,14 +441,14 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             }
             return bitSet;
         }
-        
-        /** 
-         * To say that I am happy about this algorithm (or the variations  
+
+        /**
+         * To say that I am happy about this algorithm (or the variations
          * of the algorithm used for the Mid128 and Big BitKey implementations)
          * would be a stretch. It works but there has to be a more
          * elegant and faster one but this is the best I could come up
          * with in a couple of hours.
-         * 
+         *
          */
         public Iterator<Integer> iterator() {
             return new Iterator<Integer>() {
@@ -493,7 +493,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                     return true;
                 }
                 public Integer next() {
-                    return new Integer(pos);
+                    return Integer.valueOf(pos);
                 }
                 public void remove() {
                     throw new UnsupportedOperationException("remove");
@@ -817,7 +817,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                     }
                 }
                 public Integer next() {
-                    return new Integer(pos);
+                    return Integer.valueOf(pos);
                 }
                 public void remove() {
                     throw new UnsupportedOperationException("remove");
@@ -1155,11 +1155,11 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                         }
                         bits[index] = bits[index] >>> (p+1);
                         return true;
-                    } 
+                    }
                     return false;
                 }
                 public Integer next() {
-                    return new Integer(pos);
+                    return Integer.valueOf(pos);
                 }
                 public void remove() {
                     throw new UnsupportedOperationException("remove");

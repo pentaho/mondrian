@@ -26,12 +26,10 @@ import java.io.PrintWriter;
  * @version $Id$
  */
 public class CacheFunDef extends FunDefBase {
-    private final Type type;
     private static final String NAME = "$Cache";
     private static final String SIGNATURE = "$Cache(<<Exp>>)";
     private static final String DESCRIPTION = "Evaluates and returns its sole argument, applying statement-level caching";
     private static final Syntax SYNTAX = Syntax.Internal;
-    private ExpCacheDescriptor cacheDescriptor;
     static final CacheFunResolver Resolver = new CacheFunResolver();
 
     CacheFunDef(
@@ -43,7 +41,7 @@ public class CacheFunDef extends FunDefBase {
             Type type) {
         super(name, signature, description, syntax,
                 category, new int[] {category});
-        this.type = type;
+        Util.discard(type);
     }
 
     public void unparse(Exp[] args, PrintWriter pw) {

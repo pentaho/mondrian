@@ -33,7 +33,7 @@ public class CurrentDateStringUdf implements UserDefinedFunction {
         Object arg = arguments[0].evaluateScalar(evaluator);
 
         final Locale locale = Locale.getDefault();
-        final Format format = new Format((((String) arg).toString()), locale);
+        final Format format = new Format((String) arg, locale);
         Date currDate = new Date();
         return format.format(currDate);
     }

@@ -141,6 +141,10 @@ public class ParameterImpl
             that.defaultExp.equals(this.defaultExp);
     }
 
+    public int hashCode() {
+        return Util.hash(getName().hashCode(), defaultExp.hashCode());
+    }
+
     /**
      * Returns whether the parameter can be modified.
      */

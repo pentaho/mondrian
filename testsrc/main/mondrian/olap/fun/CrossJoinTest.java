@@ -1070,7 +1070,7 @@ if (! Util.PreJdk15) {
     ////////////////////////////////////////////////////////////////////////
     // Helper classes
     ////////////////////////////////////////////////////////////////////////
-    public class TestFunDef implements FunDef {
+    public static class TestFunDef implements FunDef {
         TestFunDef() {
         }
         public Syntax getSyntax() {
@@ -1101,7 +1101,8 @@ if (! Util.PreJdk15) {
             throw new UnsupportedOperationException();
         }
     }
-    public class NullFunDef implements FunDef {
+
+    public static class NullFunDef implements FunDef {
         NullFunDef() {
         }
         public Syntax getSyntax() {
@@ -1126,13 +1127,14 @@ if (! Util.PreJdk15) {
             return "";
         }
         public void unparse(Exp[] args, PrintWriter pw) {
-           // 
+           //
         }
         public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
             return null;
         }
     }
-    public class TestExp implements Exp {
+
+    public static class TestExp implements Exp {
         Type type;
         TestExp() {
             this.type = new SetType(new MemberType(null, null, null, null));

@@ -98,19 +98,15 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
         }
 
         // Make sure the member and the level come from the same dimension.
-        //
-        final Dimension memberDimension = memberCalc.getType().getDimension();
-        final Dimension levelDimension;
-        if (levelCalc == null) {
-            levelDimension = memberDimension;
-        } else {
-            levelDimension = levelCalc.getType().getDimension();
+        if (levelCalc != null) {
+            final Dimension memberDimension = memberCalc.getType().getDimension();
+            final Dimension levelDimension = levelCalc.getType().getDimension();
             if (!memberDimension.equals(levelDimension)) {
                 throw MondrianResource.instance().
-                        FunctionMbrAndLevelHierarchyMismatch.ex(
-                                opening ? "OpeningPeriod" : "ClosingPeriod",
-                                levelDimension.getUniqueName(),
-                                memberDimension.getUniqueName());
+                    FunctionMbrAndLevelHierarchyMismatch.ex(
+                    opening ? "OpeningPeriod" : "ClosingPeriod",
+                    levelDimension.getUniqueName(),
+                    memberDimension.getUniqueName());
             }
         }
         return new AbstractMemberCalc(call, new Calc[] {levelCalc, memberCalc}) {

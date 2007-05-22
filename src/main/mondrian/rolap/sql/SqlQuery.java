@@ -520,7 +520,7 @@ public class SqlQuery {
         }
     }
 
-    private class ClauseList extends ArrayList<String> {
+    private static class ClauseList extends ArrayList<String> {
         private final boolean allowDups;
 
         ClauseList(final boolean allowDups) {
@@ -1145,16 +1145,29 @@ public class SqlQuery {
         }
 
         /**
-         * Whether "select * from (select * from t)" is OK.
+         * Returns whether this Dialect allows a subquery in the from clause,
+         * for example
+         *
+         * <blockquote><code>SELECT * FROM (SELECT * FROM t) AS x</code></blockquote>
+         *
+         * @see #requiresAliasForFromQuery()
          */
         public boolean allowsFromQuery() {
-            // older versions of AS400 do not allow FROM subqueries
-            return !isMySQL() && !isOldAS400() && !isInformix() &&
-                !isSybase() && !isInterbase();
+            // Older versions of AS400 and MySQL before 4.0 do not allow FROM
+            // subqueries in the FROM clause.
+            return !(isMySQL() && productVersion.compareTo("4.") < 0)
+                && !isOldAS400() && !isInformix()
+                && !isSybase() && !isInterbase();
         }
 
         /**
-         * Whether "select count(distinct x, y) from t" is OK.
+         * Returns whether this Dialect allows multiple arguments to the
+         * <code>COUNT(DISTINCT ...) aggregate function, for example
+         *
+         * <blockquote><code>SELECT COUNT(DISTINCT x, y) FROM t</code></blockquote>
+         *
+         * @see #allowsCountDistinct()
+         * @see #allowsMultipleCountDistinct()
          */
         public boolean allowsCompoundCountDistinct() {
             return isMySQL();

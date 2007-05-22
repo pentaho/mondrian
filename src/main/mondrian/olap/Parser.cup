@@ -386,9 +386,9 @@ non terminal MemberProperty
     member_property_definition;
 non terminal
     cell_opt,
-    cell_property,    
+    cell_property,
     dimension_opt,
-    property,    
+    property,
     unsigned_integer;
 
 non terminal Boolean
@@ -1417,7 +1417,8 @@ axis_specification ::=
             // special cases, so are ignored.
             if (index < 0 || index != d || index >= AxisOrdinal.MaxLogicalOrdinal) {
                 throw MondrianResource.instance().InvalidAxis.ex(
-                        new Integer(AxisOrdinal.MaxLogicalOrdinal), new Double(d));
+                    AxisOrdinal.MaxLogicalOrdinal,
+                    d);
             }
 
             AxisOrdinal axis = AxisOrdinal.forLogicalOrdinal(index);
@@ -1428,8 +1429,8 @@ axis_specification ::=
     ;
 
 non_empty_opt ::=
-        /* empty */ {: RESULT = new Boolean(false); :}
-    |   NON EMPTY {: RESULT = new Boolean(true); :}
+        /* empty */ {: RESULT = Boolean.FALSE; :}
+    |   NON EMPTY {: RESULT = Boolean.TRUE; :}
     ;
 dim_props_opt ::=
         /* empty */
@@ -1496,7 +1497,7 @@ cell_property_list ::=
         RESULT = new LinkedList();
         RESULT.add(new CellProperty(p));
     :}
-    |   cell_property:p COMMA cell_property_list:p1 {:        
+    |   cell_property:p COMMA cell_property_list:p1 {:
         p1.add(0, new CellProperty(p));
         RESULT = p1;
     :}

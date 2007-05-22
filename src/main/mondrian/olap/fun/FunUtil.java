@@ -908,7 +908,7 @@ public class FunUtil extends Util {
 
         Arrays.sort(asArray);
         // get a quartile, median is a second q
-        double dm = (asArray.length * range) / 4;
+        double dm = 0.25 * asArray.length * range;
         int median = (int) Math.floor(dm);
         return dm == median && median < asArray.length - 1 ?
                 (asArray[median] + asArray[median + 1]) / 2 :
@@ -1441,10 +1441,10 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
                 if (ancestorMember.getLevel() == targetLevel) {
                     if (schemaReader.isVisible(ancestorMember)) {
                         result = ancestorMember;
-                        break searchLoop;
+                        break;
                     } else {
                         result = member.getHierarchy().getNullMember();
-                        break searchLoop;
+                        break;
                     }
                 }
             } else {
@@ -1466,13 +1466,8 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
                     // wrong.
                     //
                     if (distance == 0) {
-                        if (targetLevel == null || ancestorMember.getLevel() == targetLevel) {
-                            result = ancestorMember;
-                            break searchLoop;
-                        } else {
-                            result = member.getHierarchy().getNullMember();
-                            break searchLoop;
-                        }
+                        result = ancestorMember;
+                        break;
                     }
                 }
             }
@@ -1673,7 +1668,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
                     to == (Category.Integer | Category.Constant) ||
                     to == (Category.Numeric | Category.Constant);
             }
-        
+
         case Category.Integer:
             return to == Category.Value ||
                 to == (Category.Integer | Category.Constant) ||
@@ -2373,6 +2368,14 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         }
 
         public int compareTo(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean equals(Object obj) {
+            throw new UnsupportedOperationException();
+        }
+
+        public int hashCode() {
             throw new UnsupportedOperationException();
         }
     }

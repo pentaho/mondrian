@@ -834,7 +834,6 @@ public class XmlaHandler implements XmlaConstants {
 
         String dtSql = dtCell.getDrillThroughSQL(true);
         java.sql.Connection sqlConn = null;
-        ResultSet rs = null;
 
         try {
             final String advancedFlag =
@@ -857,38 +856,48 @@ public class XmlaHandler implements XmlaConstants {
                 }
                 List<String> truncatedTableList = new ArrayList<String>();
                 sqlConn = connection.getDataSource().getConnection();
-                Statement stmt = sqlConn.createStatement();
-                List<List<String>> fields = new ArrayList<List<String>>();
+                Statement stmt = null;
+                try {
+                    stmt = sqlConn.createStatement();
+                    List<List<String>> fields = new ArrayList<List<String>>();
 
-                Map<String, List<String>> tableFieldMap =
-                    new HashMap<String, List<String>>();
-                for (MondrianDef.Relation relation1 : relationList) {
-                    final String tableName = relation1.toString();
-                    List<String> fieldNameList = new ArrayList<String>();
-                    // FIXME: Quote table name
-                    dtSql = "SELECT * FROM " + tableName + " WHERE 1=2";
-                    rs = stmt.executeQuery(dtSql);
-                    ResultSetMetaData rsMeta = rs.getMetaData();
-                    for (int j = 1; j <= rsMeta.getColumnCount(); j++) {
-                        String colName = rsMeta.getColumnName(j);
-                        boolean colNameExists = false;
-                        for (List<String> prvField : fields) {
-                            if (prvField.contains(colName)) {
-                                colNameExists = true;
-                                break;
+                    Map<String, List<String>> tableFieldMap =
+                        new HashMap<String, List<String>>();
+                    for (MondrianDef.Relation relation1 : relationList) {
+                        final String tableName = relation1.toString();
+                        List<String> fieldNameList = new ArrayList<String>();
+                        // FIXME: Quote table name
+                        dtSql = "SELECT * FROM " + tableName + " WHERE 1=2";
+                        ResultSet rs = stmt.executeQuery(dtSql);
+                        ResultSetMetaData rsMeta = rs.getMetaData();
+                        for (int j = 1; j <= rsMeta.getColumnCount(); j++) {
+                            String colName = rsMeta.getColumnName(j);
+                            boolean colNameExists = false;
+                            for (List<String> prvField : fields) {
+                                if (prvField.contains(colName)) {
+                                    colNameExists = true;
+                                    break;
+                                }
+                            }
+                            if (!colNameExists) {
+                                fieldNameList.add(rsMeta.getColumnName(j));
                             }
                         }
-                        if (!colNameExists) {
-                            fieldNameList.add(rsMeta.getColumnName(j));
+                        fields.add(fieldNameList);
+                        String truncatedTableName =
+                            tableName.substring(tableName.lastIndexOf(".") + 1);
+                        truncatedTableList.add(truncatedTableName);
+                        tableFieldMap.put(truncatedTableName, fieldNameList);
+                    }
+                    return new TabularRowSet(tableFieldMap, truncatedTableList);
+                } finally {
+                    if (stmt != null) {
+                        try {
+                            stmt.close();
+                        } catch (SQLException ignored) {
                         }
                     }
-                    fields.add(fieldNameList);
-                    String truncatedTableName =
-                        tableName.substring(tableName.lastIndexOf(".") + 1);
-                    truncatedTableList.add(truncatedTableName);
-                    tableFieldMap.put(truncatedTableName, fieldNameList);
                 }
-                return new TabularRowSet(tableFieldMap, truncatedTableList);
             } else {
                 int count = -1;
                 if (MondrianProperties.instance().EnableTotalCount.booleanValue()) {
@@ -900,21 +909,22 @@ public class XmlaHandler implements XmlaConstants {
                 }
                 int resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE;
                 int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
-                SqlQuery.Dialect dialect = ((RolapSchema) connection.getSchema()).getDialect();
+                SqlQuery.Dialect dialect =
+                    ((RolapSchema) connection.getSchema()).getDialect();
                 if (!dialect.supportsResultSetConcurrency(
                     resultSetType, resultSetConcurrency)) {
                     // downgrade to non-scroll cursor, since we can
                     // fake absolute() via forward fetch
                     resultSetType = ResultSet.TYPE_FORWARD_ONLY;
                 }
-                SqlStatement stmt =
+                SqlStatement stmt2 =
                     RolapUtil.executeQuery(
                         connection.getDataSource(), dtSql, -1,
                         "XmlaHandler.executeDrillThroughQuery",
                         "Error in drill through",
                         resultSetType, resultSetConcurrency);
                 return new TabularRowSet(
-                    stmt, request.drillThroughMaxRows(),
+                    stmt2, request.drillThroughMaxRows(),
                     request.drillThroughFirstRowset(), count,
                     resultSetType);
             }
@@ -933,13 +943,11 @@ public class XmlaHandler implements XmlaConstants {
                 HSB_DRILL_THROUGH_SQL_FAULT_FS,
                 e);
         } finally {
-            try {
-                if (rs != null) rs.close();
-            } catch (SQLException ignored) {
-            }
-            try {
-                if (sqlConn != null && !sqlConn.isClosed()) sqlConn.close();
-            } catch (SQLException ignored) {
+            if (sqlConn != null) {
+                try {
+                    sqlConn.close();
+                } catch (SQLException ignored) {
+                }
             }
         }
     }
@@ -2331,7 +2339,7 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
         final String catalogName =
             properties.get(PropertyDefinition.Catalog.name());
         DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
-        if ((dsCatalog == null) && (catalogName == null)) {
+        if ((dsCatalog == null) && (catalogName != null)) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_CONNECTION_DATA_SOURCE_CODE,

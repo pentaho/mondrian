@@ -326,14 +326,14 @@ class Segment {
                 // Work around the fact that Boolean is not Comparable until JDK
                 // 1.5.
                 assert !(Comparable.class.isAssignableFrom(Boolean.class));
-                axisValueSets[i] =
-                    new TreeSet(
-                        new Comparator() {
+                final SortedSet set =
+                    new TreeSet<Comparable<Object>>(
+                        new Comparator<Object>() {
                             public int compare(Object o1, Object o2) {
                                 if (o1 instanceof Boolean) {
-                                    Boolean b1 = (Boolean) o1;
+                                    boolean b1 = (Boolean) o1;
                                     if (o2 instanceof Boolean) {
-                                        Boolean b2 = (Boolean) o2;
+                                        boolean b2 = (Boolean) o2;
                                         return (b1 == b2 ? 0 : (b1 ? 1 : -1));
                                     } else {
                                         return -1;
@@ -344,6 +344,7 @@ class Segment {
                             }
                         }
                     );
+                axisValueSets[i] = set;
             } else {
                 assert Comparable.class.isAssignableFrom(Boolean.class);
                 axisValueSets[i] = new TreeSet<Comparable<?>>();

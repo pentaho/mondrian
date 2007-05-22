@@ -1120,6 +1120,19 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Returns an exception indicating that we didn't expect to find this value
+     * here.
+     *
+     * @param value Value
+     */
+    public static RuntimeException unexpected(Enum value) {
+        return Util.newInternal(
+            "Was not expecting value '" + value +
+                "' for enumeration '" + value.getClass().getName() +
+                "' in this context");
+    }
+
+    /**
      * Checks that a precondition (declared using the javadoc <code>@pre</code>
      * tag) is satisfied.
      *

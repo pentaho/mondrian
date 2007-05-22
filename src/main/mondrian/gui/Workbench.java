@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
@@ -52,11 +52,12 @@ import org.eigenbase.xom.XMLOutput;
 /**
  *
  * @author  sean
+ * @version $Id$
  */
 public class Workbench extends javax.swing.JFrame {
-    
-    public static String WORKBENCH_USER_HOME_DIR;
-    public static String WORKBENCH_CONFIG_FILE;
+
+    static String WORKBENCH_USER_HOME_DIR;
+    static String WORKBENCH_CONFIG_FILE;
 
     private static final String LAST_USED1 = "lastUsed1";
     private static final String LAST_USED1_URL = "lastUsedUrl1";
@@ -126,7 +127,7 @@ public class Workbench extends javax.swing.JFrame {
         workbenchProperties = new Properties();
         try {
             workbenchResourceBundle = ResourceBundle.getBundle(WorkbenchInfoResourceName, Locale.getDefault(), myClassLoader);
-            
+
             File f = new File(WORKBENCH_CONFIG_FILE);
             if (f.exists()) {
                 workbenchProperties.load(new FileInputStream(f));
@@ -168,7 +169,7 @@ public class Workbench extends javax.swing.JFrame {
                             "", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        
+
         OutputStream out = null;
         try {
             out = (OutputStream) new FileOutputStream(new File(WORKBENCH_CONFIG_FILE));
@@ -1397,9 +1398,9 @@ public class Workbench extends javax.swing.JFrame {
                 }
 
             });
-            
+
             String lastUsed = workbenchProperties.getProperty(LAST_USED1_URL);
-            
+
             if (lastUsed != null) {
                 jfc.setCurrentDirectory(new File(new URI(lastUsed)));
             }

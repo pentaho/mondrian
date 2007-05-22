@@ -58,16 +58,18 @@ public class XmlaTest extends TestCase {
 
     // implement TestCase
     protected void setUp() throws Exception {
+        super.setUp();
         DiffRepository diffRepos = getDiffRepos();
         diffRepos.setCurrentTestCaseName(getName());
     }
-    
+
     // implement TestCase
     protected void tearDown() throws Exception {
         DiffRepository diffRepos = getDiffRepos();
         diffRepos.setCurrentTestCaseName(null);
+        super.tearDown();
     }
-    
+
     private static DiffRepository getDiffRepos() {
         return DiffRepository.lookup(XmlaTest.class);
     }
@@ -89,7 +91,7 @@ public class XmlaTest extends TestCase {
             new DOMSource(responseElem), new StreamResult(bufWriter));
         bufWriter.write(Util.nl);
         String actualResponse = bufWriter.getBuffer().toString();
-        
+
         try {
             // Start with a purely logical XML diff to avoid test noise
             // from non-determinism in XML generation.
@@ -102,7 +104,7 @@ public class XmlaTest extends TestCase {
             diffRepos.assertEquals("response", "${response}", actualResponse);
         }
     }
-    
+
     private Element ignoreLastUpdateDate(Element element) {
         NodeList elements = element.getElementsByTagName("LAST_SCHEMA_UPDATE");
         for (int i = elements.getLength(); i > 0; i--) {
@@ -135,7 +137,7 @@ public class XmlaTest extends TestCase {
         TestSuite suite = new TestSuite();
 
         DiffRepository diffRepos = getDiffRepos();
-        
+
         MondrianProperties properties = MondrianProperties.instance();
         String filePattern = properties.QueryFilePattern.get();
 
@@ -154,15 +156,15 @@ public class XmlaTest extends TestCase {
                 }
             }
         }
-        
+
         LOGGER.debug("Found " + testCaseNames.size() + " XML/A test cases");
-        
+
         for (String name : testCaseNames) {
             suite.addTest(new XmlaTest(name));
         }
 
         suite.addTestSuite(OtherTest.class);
-        
+
         return suite;
     }
 

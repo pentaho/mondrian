@@ -93,7 +93,7 @@ public class XmlaTestServletRequestWrapper extends HttpServletRequestWrapper {
 		return servletInStream;
 	}
 
-	private class XmlaTestServletInputStream extends ServletInputStream {
+	private static class XmlaTestServletInputStream extends ServletInputStream {
 
 		private ByteArrayInputStream bais;
 

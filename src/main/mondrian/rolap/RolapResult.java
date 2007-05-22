@@ -92,12 +92,12 @@ class RolapResult extends ResultBase {
             /////////////////////////////////////////////////////////////////
             //
             // Evaluation Algorithm
-            // 
+            //
             // There are three basic steps to the evaluation algorithm:
-            // 1) Determine all Members for each axis but do not save 
+            // 1) Determine all Members for each axis but do not save
             // information (do not build the RolapAxis),
             // 2) Save all Members for each axis (build RolapAxis).
-            // 3) Evaluate and store each Cell determined by the Members 
+            // 3) Evaluate and store each Cell determined by the Members
             // of the axes.
             // Step 1 converges on the stable set of Members pre axis.
             // Steps 1 and 2 make sure that the data has been loaded.
@@ -114,8 +114,8 @@ class RolapResult extends ResultBase {
             // the Member in the Slicer.
             //
             // Special Dimensions:
-            // There are 2 special dimensions. 
-            // The first is the Time dimension. If in a schema there is 
+            // There are 2 special dimensions.
+            // The first is the Time dimension. If in a schema there is
             // no ALL Member, then Whatever happens to be the default
             // Member is used if Time Members are not explicitly set
             // in the query.
@@ -134,7 +134,7 @@ class RolapResult extends ResultBase {
             // use can cause evaluation issues (seemingly strange evaluation
             // results).
             //
-            // Next, load all root Members for Hierarchies that have no ALL 
+            // Next, load all root Members for Hierarchies that have no ALL
             // Member and load ALL Members that are not the default Member.
             //
             // Determine the Members of the Slicer axis (Step 1 above).  Any
@@ -173,7 +173,7 @@ class RolapResult extends ResultBase {
             // Calculated Member is not a Member of the Measure Hierarchy),
             // then find the Dimension associated with the Calculated
             // Member and remove Members with the same Dimension in the set of
-            // root Members for Hierarchies that have no ALL Member. 
+            // root Members for Hierarchies that have no ALL Member.
             // This is done because via the Calculated Member the Member
             // was implicitly specified in the query. If this removal occurs,
             // then the Axes must be re-evaluated repeating Step 3.
@@ -195,10 +195,10 @@ class RolapResult extends ResultBase {
             // List of Measures
             final List<Member> measureMembers = new ArrayList<Member>();
 
-            // load all root Members for Hierarchies that have no ALL 
+            // load all root Members for Hierarchies that have no ALL
             // Member and load ALL Members that are not the default Member.
             // Also, all Measures are are gathered.
-            loadSpecialMembers(nonDefaultAllMembers, 
+            loadSpecialMembers(nonDefaultAllMembers,
                                 nonAllMembers, measureMembers);
 
             // clear evaluation cache
@@ -211,11 +211,11 @@ class RolapResult extends ResultBase {
             final List<Member[]> emptyNonAllMembers = Collections.emptyList();
 
             /////////////////////////////////////////////////////////////////
-            // 
+            //
             // Determine Slicer
-            // 
+            //
             axisMembers.setSlicer(true);
-            loadMembers(emptyNonAllMembers, evaluator, 
+            loadMembers(emptyNonAllMembers, evaluator,
                         query.slicerAxis, query.slicerCalc, axisMembers);
             axisMembers.setSlicer(false);
 
@@ -232,14 +232,14 @@ class RolapResult extends ResultBase {
                 replaceNonAllMembers(nonAllMembers, axisMembers);
                 axisMembers.clearMembers();
             }
-            // 
+            //
             /////////////////////////////////////////////////////////////////
 
 
             /////////////////////////////////////////////////////////////////
-            // 
+            //
             // Determine Axes
-            // 
+            //
             boolean changed = false;
 
             // reset to total member count
@@ -248,7 +248,7 @@ class RolapResult extends ResultBase {
             for (int i = 0; i < axes.length; i++) {
                 final QueryAxis axis = query.axes[i];
                 final Calc calc = query.axisCalcs[i];
-                loadMembers(emptyNonAllMembers, evaluator, 
+                loadMembers(emptyNonAllMembers, evaluator,
                             axis, calc, axisMembers);
             }
 
@@ -267,7 +267,7 @@ class RolapResult extends ResultBase {
 
 /*
             // This code allows replacing default Measure Member
-            // with one found in the query, an implicit Measure. 
+            // with one found in the query, an implicit Measure.
             // Fixes some problems (RolapResultTest._testNullDefaultMeasure)
             // but causes other ones (NamedSetTest.testNamedSetUsedInCrossJoin)
             // so it can not be used.
@@ -302,8 +302,8 @@ class RolapResult extends ResultBase {
                 for (int i = 0; i < axes.length; i++) {
                     final QueryAxis axis = query.axes[i];
                     final Calc calc = query.axisCalcs[i];
-                    loadMembers(nonAllMembers, 
-                                (RolapEvaluator) evaluator.push(), 
+                    loadMembers(nonAllMembers,
+                                (RolapEvaluator) evaluator.push(),
                                 axis, calc, axisMembers);
                 }
             }
@@ -311,17 +311,17 @@ class RolapResult extends ResultBase {
             // throws exception if number of members exceeds limit
             axisMembers.checkLimit();
 
-            // 
+            //
             /////////////////////////////////////////////////////////////////
 
             /////////////////////////////////////////////////////////////////
-            // 
+            //
             // Execute Slicer
-            // 
-            this.slicerAxis = evalExecute(nonAllMembers, 
-                                    nonAllMembers.size()-1, 
-                                    (RolapEvaluator) evaluator.push(), 
-                                    query.slicerAxis, 
+            //
+            this.slicerAxis = evalExecute(nonAllMembers,
+                                    nonAllMembers.size()-1,
+                                    (RolapEvaluator) evaluator.push(),
+                                    query.slicerAxis,
                                     query.slicerCalc);
             // Use the context created by the slicer for the other
             // axes.  For example, "select filter([Customers], [Store
@@ -343,13 +343,13 @@ class RolapResult extends ResultBase {
             default:
                 throw MondrianResource.instance().CompoundSlicer.ex();
             }
-            // 
+            //
             /////////////////////////////////////////////////////////////////
 
             /////////////////////////////////////////////////////////////////
-            // 
+            //
             // Execute Axes
-            // 
+            //
             boolean redo = true;
             while (redo) {
                 RolapEvaluator e = (RolapEvaluator) evaluator.push();
@@ -358,7 +358,7 @@ class RolapResult extends ResultBase {
                 for (int i = 0; i < axes.length; i++) {
                     QueryAxis axis = query.axes[i];
                     final Calc calc = query.axisCalcs[i];
-                    Axis axisResult = evalExecute(nonAllMembers, 
+                    Axis axisResult = evalExecute(nonAllMembers,
                                 nonAllMembers.size()-1, e, axis, calc);
 
                     if (! nonAllMembers.isEmpty()) {
@@ -366,7 +366,7 @@ class RolapResult extends ResultBase {
                         for (Position p: pl) {
                             for (Member m: p) {
                                 if (m.isCalculated()) {
-                                    CalculatedMeasureVisitor visitor = 
+                                    CalculatedMeasureVisitor visitor =
                                         new CalculatedMeasureVisitor();
                                     m.getExpression().accept(visitor);
                                     Dimension dimension = visitor.dimension;
@@ -380,15 +380,15 @@ class RolapResult extends ResultBase {
                     this.axes[i] = axisResult;
                 }
             }
-            // 
+            //
             /////////////////////////////////////////////////////////////////
 
             /////////////////////////////////////////////////////////////////
-            // 
+            //
             // Get value for each Cell
-            // 
+            //
             executeBody(query);
-            // 
+            //
             /////////////////////////////////////////////////////////////////
 
             // If you are very close to running out of memory due to
@@ -530,7 +530,7 @@ class RolapResult extends ResultBase {
         }
     }
 
-    protected boolean replaceNonAllMembers(List<Member[]> nonAllMembers, 
+    protected boolean replaceNonAllMembers(List<Member[]> nonAllMembers,
                                             AxisMember axisMembers) {
 
         boolean changed = false;
@@ -555,7 +555,7 @@ class RolapResult extends ResultBase {
 
     }
 
-    protected void loadMembers(List<Member[]> nonAllMembers, 
+    protected void loadMembers(List<Member[]> nonAllMembers,
                     RolapEvaluator evaluator, QueryAxis axis, Calc calc,
                     AxisMember axisMembers) {
         int attempt = 0;
@@ -563,7 +563,7 @@ class RolapResult extends ResultBase {
         while (true) {
             axisMembers.clearAxisCount();
             evalLoad(
-                nonAllMembers, nonAllMembers.size() - 1, 
+                nonAllMembers, nonAllMembers.size() - 1,
                 evaluator, axis, calc, axisMembers);
             evaluator.clearExpResultCache();
 
@@ -580,7 +580,7 @@ class RolapResult extends ResultBase {
         }
     }
 
-    void evalLoad(List<Member[]> nonAllMembers, int cnt, 
+    void evalLoad(List<Member[]> nonAllMembers, int cnt,
             Evaluator evaluator, QueryAxis axis, Calc calc,
             AxisMember axisMembers) {
         if (cnt < 0) {
@@ -592,7 +592,7 @@ class RolapResult extends ResultBase {
             }
         }
     }
-    Axis evalExecute(List<Member[]> nonAllMembers, int cnt, 
+    Axis evalExecute(List<Member[]> nonAllMembers, int cnt,
             RolapEvaluator evaluator, QueryAxis axis, Calc calc) {
         Axis axisResult = null;
         if (cnt < 0) {
@@ -610,23 +610,25 @@ class RolapResult extends ResultBase {
         return axisResult;
     }
 
-    /** 
+    /**
      * Finds all root Members 1) whose Hierarchy does not have an ALL
      * Member, 2) whose default Member is not the ALL Member and 3)
      * all Measures.
-     * 
-     * @param nonDefaultAllMembers  List of all root Members for Hierarchies 
+     *
+     * @param nonDefaultAllMembers  List of all root Members for Hierarchies
      * whose default Member is not the ALL Member.
      * @param nonAllMembers List of root Members for Hierarchies that have no
      * ALL Member.
      * @param measureMembers  List all Measures
      */
-    protected void loadSpecialMembers(List<Member> nonDefaultAllMembers, 
-                List<Member[]> nonAllMembers,
-                List<Member> measureMembers) {
+    protected void loadSpecialMembers(
+        List<Member> nonDefaultAllMembers,
+        List<Member[]> nonAllMembers,
+        List<Member> measureMembers)
+    {
         SchemaReader schemaReader = evaluator.getSchemaReader();
         Member[] evalMembers = evaluator.getMembers();
-        for (int i = 0, j = 0; i < evalMembers.length; i++) {
+        for (int i = 0; i < evalMembers.length; i++) {
             Member em = evalMembers[i];
             if (em.isCalculated()) {
                 continue;
@@ -644,15 +646,11 @@ class RolapResult extends ResultBase {
                     }
                 } else {
                     if (h.hasAll()) {
-                        boolean found = false;
                         for (Member m : rootMembers) {
                             if (m.isAll()) {
                                 nonDefaultAllMembers.add(m);
-                                found = true;
                                 break;
                             }
-                        }
-                        if (! found) {
                         }
                     } else {
                         nonAllMembers.add(rootMembers);
@@ -1049,10 +1047,10 @@ class RolapResult extends ResultBase {
     }
 
 
-    /** 
-     * Counts and collects Members found of the axes. 
+    /**
+     * Counts and collects Members found of the axes.
      * This class does two things. First it collects all Members
-     * found during the Member-Determination phase. 
+     * found during the Member-Determination phase.
      * Secondly, it counts how many Members are on each axis and
      * forms the product, the totalCellCount which is checked against
      * the ResultLimit property value.
@@ -1091,7 +1089,7 @@ class RolapResult extends ResultBase {
                 this.totalCellCount *= this.axisCount;
                 if (this.totalCellCount > this.limit) {
                     throw MondrianResource.instance().
-                        TotalMembersLimitExceeded.ex(this.totalCellCount, 
+                        TotalMembersLimitExceeded.ex(this.totalCellCount,
                                                         this.limit);
                 }
                 this.axisCount = 0;
@@ -1148,11 +1146,6 @@ class RolapResult extends ResultBase {
             return (parent == null) ? m : getTopParent(parent);
         }
 
-        private void merge(final List<Member> members) {
-            for (Member member : members) {
-                merge(member);
-            }
-        }
         private void merge(final Member[] members) {
             for (Member member : members) {
                 merge(member);
@@ -1336,7 +1329,7 @@ class RolapResult extends ResultBase {
      * A CellFormatterValueFormatter uses a user-defined {@link CellFormatter}
      * to format values.
      */
-    class CellFormatterValueFormatter implements ValueFormatter {
+    static class CellFormatterValueFormatter implements ValueFormatter {
         final CellFormatter cf;
 
         /**
@@ -1358,7 +1351,7 @@ class RolapResult extends ResultBase {
      * to be used in formatting an Object value with a
      * given format string.
      */
-    class FormatValueFormatter implements ValueFormatter{
+    static class FormatValueFormatter implements ValueFormatter {
         final Locale locale;
 
         /**

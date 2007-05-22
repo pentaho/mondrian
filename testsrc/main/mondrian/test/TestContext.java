@@ -18,7 +18,6 @@ import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.rolap.RolapConnectionProperties;
-import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
@@ -68,7 +67,7 @@ public class TestContext {
     private static final Pattern LineBreakPattern =
         Pattern.compile("\r\n|\r|\n");
     private static final Pattern TabPattern = Pattern.compile("\t");
-    public static final String[] AllDims = {
+    private static final String[] AllDims = {
         "[Measures]",
         "[Store]",
         "[Store Size in SQFT]",
@@ -904,6 +903,8 @@ public class TestContext {
         Util.PropertyList connectProperties = getFoodMartConnectionProperties();
 
         java.sql.Connection jdbcConn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
 
         try {
             String jdbcDrivers =
@@ -919,8 +920,8 @@ public class TestContext {
                 connectProperties.get(RolapConnectionProperties.Jdbc.name()),
                 connectProperties.get(RolapConnectionProperties.JdbcUser.name()),
                 connectProperties.get(RolapConnectionProperties.JdbcPassword.name()));
-            Statement s = jdbcConn.createStatement();
-            ResultSet rs = s.executeQuery(actualSql);
+            stmt = jdbcConn.createStatement();
+            rs = stmt.executeQuery(actualSql);
 
             int rows = 0;
             while (rs.next()) {
@@ -934,6 +935,20 @@ public class TestContext {
                 + "\n" + actualSql,
                 e);
         } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (Exception e1) {
+                // ignore
+            }
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (Exception e1) {
+                // ignore
+            }
             try {
                 if (jdbcConn != null) {
                     jdbcConn.close();
@@ -951,7 +966,6 @@ public class TestContext {
     public void assertSetExprDependsOn(String expr, String dimList) {
         // Construct a query, and mine it for a parsed expression.
         // Use a fresh connection, because some tests define their own dims.
-        final boolean fresh = true;
         final Connection connection = getFoodMartConnection();
         final String queryString =
                 "SELECT {" + expr + "} ON COLUMNS FROM [Sales]";
@@ -978,7 +992,6 @@ public class TestContext {
     public void assertExprDependsOn(String expr, String dimList) {
         // Construct a query, and mine it for a parsed expression.
         // Use a fresh connection, because some tests define their own dims.
-        final boolean fresh = true;
         final Connection connection = getFoodMartConnection();
         final String queryString =
                 "WITH MEMBER [Measures].[Foo] AS " +
@@ -1146,8 +1159,9 @@ public class TestContext {
     }
 
     public static class SnoopingSchemaProcessor
-        extends FilterDynamicSchemaProcessor {
-        public static String catalogContent;
+        extends FilterDynamicSchemaProcessor
+    {
+        private static String catalogContent;
 
         protected String filter(
             String schemaUrl,

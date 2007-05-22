@@ -281,10 +281,7 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
         MockHttpServletResponse res = new MockHttpServletResponse();
         res.setCharacterEncoding("UTF-8");
 
-        if (servlet == null) {
-            makeServlet(getTestContext());
-        }
-
+        Servlet servlet = getServlet(getTestContext());
         servlet.service(req, res);
 
         int statusCode = res.getStatusCode();
@@ -326,12 +323,8 @@ System.out.println("Got CONTINUE");
         String requestText = generateRequestString(nos, props);
         Document reqDoc = XmlUtil.parseString(requestText);
 
-
-        if (servlet == null) {
-            makeServlet(getTestContext());
-        }
+        Servlet servlet = getServlet(getTestContext());
         byte[] bytes = XmlaSupport.processSoapXmla(reqDoc, servlet);
-
 
         String expectedStr = generateExpectedString(nos, props);
 

@@ -9,27 +9,34 @@
 */
 package mondrian.recorder;
 
+import mondrian.olap.Util;
+
 import java.io.PrintStream;
 
 /**
  * Implementation of {@link MessageRecorder} simply writes messages to
  * PrintStreams.
+ *
+ * @version $Id$
  */
 public class PrintStreamRecorder extends AbstractRecorder {
     private final PrintStream err;
     private final PrintStream out;
+
     public PrintStreamRecorder() {
         this(System.out, System.err);
     }
+
     public PrintStreamRecorder(final PrintStream out, final PrintStream err) {
         this.out = out;
         this.err = err;
     }
+
     protected void recordMessage(
             final String msg,
             final Object info,
             final MsgType msgType) {
-        PrintStream ps = null;
+        PrintStream ps;
         String prefix;
         switch (msgType) {
         case INFO:
@@ -45,7 +52,7 @@ public class PrintStreamRecorder extends AbstractRecorder {
             ps = err;
             break;
         default:
-            prefix = "UNKNOWN: ";
+            throw Util.unexpected(msgType);
         }
         String context = getContext();
 

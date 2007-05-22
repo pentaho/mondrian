@@ -213,7 +213,7 @@ public class MemberHelperTest extends TestCase {
         }
 
         public Object clone() {
-            return null;
+            return this;
         }
 
         public Dimension getDimension() {
@@ -249,3 +249,5 @@ public class MemberHelperTest extends TestCase {
         }
     }
 }
+
+// End MemberHelperTest.java

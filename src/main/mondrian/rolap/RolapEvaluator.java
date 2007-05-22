@@ -78,7 +78,7 @@ public class RolapEvaluator implements Evaluator {
             evalAxes = false;
             cellReader = null;
             currentMembers = new Member[root.cube.getDimensions().length];
-            calcMembers = new Member[this.currentMembers.length];            
+            calcMembers = new Member[this.currentMembers.length];
             calcMemberCount = 0;
             slicerMembers = new ArrayList<Member>();
         } else {
@@ -90,7 +90,7 @@ public class RolapEvaluator implements Evaluator {
             calcMembers = parent.calcMembers.clone();
             calcMemberCount = parent.calcMemberCount;
             slicerMembers = new ArrayList<Member> (parent.slicerMembers);
-        }        
+        }
     }
 
     /**
@@ -257,7 +257,7 @@ public class RolapEvaluator implements Evaluator {
      */
     protected RolapEvaluator _push() {
         getQuery().checkCancelOrTimeout();
-        
+
         RolapEvaluator newEvaluator = new RolapEvaluator(root, this);
 
         return newEvaluator;
@@ -277,6 +277,10 @@ public class RolapEvaluator implements Evaluator {
         }
         RolapEvaluator that = (RolapEvaluator) obj;
         return Arrays.equals(this.currentMembers, that.currentMembers);
+    }
+
+    public int hashCode() {
+        return Util.hashArray(0, this.currentMembers);
     }
 
 /**
@@ -342,14 +346,14 @@ public void printCurrentMemberNames() {
      * of the slicer. The slicer members are passed onto derived evaluators
      * so that functions using those evaluators can choose to ignore the
      * slicer members. One such function is CrossJoin emptiness check.
-     * 
+     *
      * @param member a member in the slicer
      */
     public void setSlicerContext(Member member) {
         setContext(member);
-        slicerMembers.add(member);        
+        slicerMembers.add(member);
     }
-    
+
     /**
      * Return the list of slicer members in the current evaluator context.
      * @return slicerMembers
@@ -357,7 +361,7 @@ public void printCurrentMemberNames() {
     public List<Member> getSlicerMembers() {
         return slicerMembers;
     }
-    
+
     public Member setContext(Member member) {
         RolapMember m = (RolapMember) member;
         int ordinal = m.getDimension().getOrdinal(root.cube);

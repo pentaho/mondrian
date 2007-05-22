@@ -146,7 +146,7 @@ public class DiffRepository
     /**
      * Default prefix directories.
      */
-    public static final String[] DefaultPrefixes = {"testsrc", "main"};
+    private static final String[] DefaultPrefixes = {"testsrc", "main"};
 
     private static File findFile(
         Class clazz, String[] prefixes, final String suffix)
@@ -346,7 +346,7 @@ public class DiffRepository
      * @param resourceName Name of resource, e.g. "sql", "plan"
      * @return The value of the resource, or null if not found
      */
-    public String get(
+    public synchronized String get(
         final String testCaseName,
         String resourceName)
     {

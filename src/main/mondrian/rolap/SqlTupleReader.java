@@ -410,7 +410,7 @@ public class SqlTupleReader implements TupleReader {
                     moreRows = currPartialResultIdx < partialResult.size();
                 }
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             if (stmt == null) {
                 throw Util.newError(e, message);
             } else {
@@ -597,10 +597,10 @@ public class SqlTupleReader implements TupleReader {
             // generate sub-selects, each one joining with one of
             // underlying fact tables
             int k = -1;
-            for (RolapCube baseCube :
-                 baseCubeToLevelToColumnMap.keySet())
+            for (Map.Entry<RolapCube, Map<RolapLevel, RolapStar.Column>> entry :
+                baseCubeToLevelToColumnMap.entrySet())
             {
-
+                final RolapCube baseCube = entry.getKey();
                 boolean finalSelect =
                     (++k == baseCubeToLevelToColumnMap.size() - 1);
                 WhichSelect whichSelect =
@@ -609,7 +609,7 @@ public class SqlTupleReader implements TupleReader {
                 selectString +=
                     generateSelectForLevels(
                         dataSource,
-                        baseCubeToLevelToColumnMap.get(baseCube),
+                        entry.getValue(),
                         baseCube.getStar().getRelationNamesToStarTableMap(baseCube),
                         whichSelect);
                 if (!finalSelect) {
@@ -673,7 +673,8 @@ public class SqlTupleReader implements TupleReader {
         }
 
         // additional constraints
-        constraint.addConstraint(sqlQuery, levelToColumnMap, relationNamesToStarTableMap);
+        constraint.addConstraint(
+            sqlQuery, levelToColumnMap, relationNamesToStarTableMap);
 
         return sqlQuery.toString();
     }

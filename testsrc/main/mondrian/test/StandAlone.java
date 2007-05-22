@@ -62,17 +62,18 @@ public class StandAlone {
 
                 if (line.equals("\\q")) {
                     break inputLoop;
-                }
-                else if (line.startsWith("\\")) {
+                } else if (line.startsWith("\\")) {
                     processSlashCommand(line);
-                }
-                else {
+                } else {
                     StringBuilder buf = new StringBuilder();
                     buf.append(line);
 
                     for (;;) {
                         System.out.print("> ");
                         line = in.readLine();
+                        if (line == null) {
+                            break inputLoop;
+                        }
                         if (line.equals(".")) {
                             break;
                         }
@@ -96,11 +97,9 @@ public class StandAlone {
 
                     printResult(result, printResults);
                 }
-            }
-            catch (IOException ioe) {
+            } catch (IOException ioe) {
                 ioe.printStackTrace();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -279,8 +278,7 @@ public class StandAlone {
     private static void processSlashCommand(String line) throws IOException {
         if (line.equals("\\schema")) {
             printSchema(cxn.getSchema());
-        }
-        else if (line.equals("\\dbg")) {
+        } else if (line.equals("\\dbg")) {
 
             PrintWriter out = java.sql.DriverManager.getLogWriter();
 
@@ -295,19 +293,16 @@ public class StandAlone {
 
             cxn.close();
             cxn = DriverManager.getConnection(ConnectionString, null);
-        }
-        else if (line.equals("\\cp")) {
+        } else if (line.equals("\\cp")) {
             System.out.print("Enter cell property: ");
             cellProp = stdin.readLine();
-            if (cellProp.length() == 0) {
+            if (cellProp == null || cellProp.length() == 0) {
                 cellProp = null;
             }
-        }
-        else if (line.equals("\\mp")) {
+        } else if (line.equals("\\mp")) {
             printMemberProps ^= true;
             System.out.println("Print member properties: " + printMemberProps);
-        }
-        else if (line.startsWith("\\test ")) {
+        } else if (line.startsWith("\\test ")) {
             StringTokenizer st = new StringTokenizer(line, " ", false);
             st.nextToken(); // throw away /test
             String threads = st.nextToken();
@@ -316,8 +311,7 @@ public class StandAlone {
 
             try {
                 useRandom = st.nextToken();
-            }
-            catch (NoSuchElementException nse) {
+            } catch (NoSuchElementException nse) {
                 useRandom = "false";
             }
 
@@ -326,12 +320,10 @@ public class StandAlone {
                     Integer.parseInt(threads),
                     Integer.parseInt(seconds),
                     Boolean.valueOf(useRandom));
-            }
-            catch (NumberFormatException nfe) {
+            } catch (NumberFormatException nfe) {
                 System.out.println("Please enter a valid integer for the number of threads and the execution time");
             }
-        }
-        else {
+        } else {
             System.out.println("Commands:");
             System.out.println("\t\\q        Quit");
             System.out.println("\t\\schema   Print the schema");

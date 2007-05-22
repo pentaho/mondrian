@@ -856,7 +856,7 @@ public class Aggregation {
      * <p>In this case, year=1998 is the only value which can be eliminated from
      * the segment.
      */
-    private class ValuePruner {
+    private static class ValuePruner {
         /**
          * Multi-column predicate. If the predicate evaluates to true, a cell
          * will be removed from the segment. But we can only eliminate a value
@@ -1028,7 +1028,7 @@ public class Aggregation {
         }
     }
 
-    private class ConstraintComparator implements Comparator<Integer> {
+    private static class ConstraintComparator implements Comparator<Integer> {
         private final double[] bloats;
 
         ConstraintComparator(double[] bloats) {

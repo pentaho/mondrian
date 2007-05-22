@@ -24,6 +24,7 @@
 package mondrian.util;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * An <code>ObjectPool</code> is a low-memory replacement for a
@@ -364,6 +365,7 @@ public class ObjectPool<T> {
         int index = 0;
         Itr() {
         }
+
         public boolean hasNext() {
             if (index == ObjectPool.this.state.length) {
                 return false;
@@ -376,9 +378,14 @@ public class ObjectPool<T> {
             }
             return (ObjectPool.this.state[index] == FULL);
         }
+
         public T next() {
+            if (index >= ObjectPool.this.values.length) {
+                throw new NoSuchElementException();
+            }
             return ObjectPool.this.values[index++];
         }
+
         public void remove() {
             throw new UnsupportedOperationException("ObjectPool.Itr.remove");
         }

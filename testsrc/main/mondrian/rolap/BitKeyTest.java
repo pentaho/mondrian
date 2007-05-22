@@ -653,7 +653,7 @@ public class BitKeyTest extends TestCase {
         }
         int index = 0;
         for (Integer i : bitKey) {
-            assertEquals(i, new Integer(bitPositions[index++]));
+            assertEquals(i, Integer.valueOf(bitPositions[index++]));
         }
     }
 

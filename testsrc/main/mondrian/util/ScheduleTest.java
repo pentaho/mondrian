@@ -31,7 +31,7 @@ public class ScheduleTest extends TestCase {
             (1 << Calendar.WEDNESDAY) |
             (1 << Calendar.THURSDAY) |
             (1 << Calendar.FRIDAY);
-    public static final String[] daysOfWeek = new String[]{
+    private static final String[] daysOfWeek = {
         null, "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
     };
 

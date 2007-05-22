@@ -531,7 +531,7 @@ public class RolapConnection extends ConnectionBase {
      * A <code>NonEmptyResult</code> filters a result by removing empty rows
      * on a particular axis.
      */
-    class NonEmptyResult extends ResultBase {
+    static class NonEmptyResult extends ResultBase {
 
         final Result underlying;
         private final int axis;

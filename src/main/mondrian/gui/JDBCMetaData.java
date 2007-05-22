@@ -261,28 +261,27 @@ public class JDBCMetaData {
  *  The following functions provide an interface to JDBCMetaData class to retrieve the meta data details
  * =================================================================================================== */
 
-    public Vector getAllSchemas() {
+    public Vector<String> getAllSchemas() {
         return db.getAllSchemas();
     }
 
 
     /* get all tables in a given schema */
-    public Vector getAllTables(String schemaName) {
+    public Vector<String> getAllTables(String schemaName) {
         return db.getAllTables(schemaName);
     }
 
     /* get all tables in given schema minus the given table name */
-    public Vector getAllTables(String schemaName, String minusTable) {
+    public Vector<String> getAllTables(String schemaName, String minusTable) {
 
         if (minusTable == null) {
             return getAllTables(schemaName);
         } else {
-            Vector allTablesMinusOne = new Vector();
-            Iterator i = getAllTables(schemaName).iterator();
-            while (i.hasNext()) {
-                String s = (String) i.next();
-                if (s.endsWith(minusTable)) {   // startsWith and endsWith cannot be compared with null argument, throws exception
-                    if ((schemaName == null) || s.startsWith(schemaName) ) {
+            Vector<String> allTablesMinusOne = new Vector<String>();
+            for (String s : getAllTables(schemaName)) {
+                if (s
+                    .endsWith(minusTable)) {   // startsWith and endsWith cannot be compared with null argument, throws exception
+                    if ((schemaName == null) || s.startsWith(schemaName)) {
                         continue;
                     }
                 }
@@ -293,13 +292,13 @@ public class JDBCMetaData {
     }
 
     /* get all possible cases of fact tables in a schema */
-    public Vector getFactTables(String schemaName) {
+    public Vector<String> getFactTables(String schemaName) {
         return db.getFactTables(schemaName);
     }
 
     /* get all possible cases of dimension tables which are linked to given fact table by foreign keys */
-    public Vector getDimensionTables(String schemaName, String factTable) {
-        Vector dimeTables = new Vector();
+    public Vector<String> getDimensionTables(String schemaName, String factTable) {
+        Vector<String> dimeTables = new Vector<String>();
 
         if (factTable == null) {
             return dimeTables;
@@ -325,8 +324,8 @@ public class JDBCMetaData {
     }
 
     /* get all foreign keys in given fact table */
-    public Vector getFactTableFKs(String schemaName, String factTable) {
-        Vector fks = new Vector();
+    public Vector<String> getFactTableFKs(String schemaName, String factTable) {
+        Vector<String> fks = new Vector<String>();
 
         if (factTable == null) {
             return fks;
@@ -345,15 +344,15 @@ public class JDBCMetaData {
     }
 
     /* get all columns of given table in schema */
-    public Vector getAllColumns(String schemaName, String tableName) {
-        Vector allcols = new Vector();
-        
+    public Vector<String> getAllColumns(String schemaName, String tableName) {
+        Vector<String> allcols = new Vector<String>();
+
         if (tableName == null) {
-                Vector allTables = getAllTables(schemaName);
-            
+                Vector<String> allTables = getAllTables(schemaName);
+
                 for (int i = 0; i < allTables.size(); i++) {
-                    String tab = (String)allTables.get(i);
-                    Vector cols;
+                    String tab = allTables.get(i);
+                    Vector<String> cols;
                     if (tab.indexOf("->") == -1) {
                         cols = getAllColumns(schemaName, tab);
                     } else {
@@ -361,7 +360,7 @@ public class JDBCMetaData {
                         cols = getAllColumns(names[0], names[1]);
                     }
                     for (int j = 0; j < cols.size(); j++) {
-                        String col = (String)cols.get(j);
+                        String col = cols.get(j);
                         allcols.add(tab + "->"+ col);
                     }
                 }
@@ -420,11 +419,11 @@ public class JDBCMetaData {
         String productVersion =    "";
 
         // list of all schemas in database
-        List schemas = new ArrayList(); //ordered collection, allows duplicates and null
-        List tables  = new ArrayList(); // list of all tables in all schemas in database
-        Map tablesCount = new TreeMap(); // map of table names and the count of tables with this name in the database.
+        List<DbSchema> schemas = new ArrayList<DbSchema>(); //ordered collection, allows duplicates and null
+        List<DbTable> tables  = new ArrayList<DbTable>(); // list of all tables in all schemas in database
+        Map<String, Integer> tablesCount = new TreeMap<String, Integer>(); // map of table names and the count of tables with this name in the database.
 
-        Vector allSchemas ;
+        Vector<String> allSchemas ;
 
         private void addDbSchema(DbSchema dbs) {
             schemas.add(dbs);
@@ -432,22 +431,21 @@ public class JDBCMetaData {
 
         private void addDbTable(DbTable dbs) {
             tables.add(dbs);
-            Integer count = (Integer) tablesCount.get(dbs.name);
+            Integer count = tablesCount.get(dbs.name);
             if (count == null) {
-                count = new Integer(1);
+                count = Integer.valueOf(1);
             } else {
-                count = new Integer(count.intValue()+1);
+                count = Integer.valueOf(count.intValue() + 1);
             }
             tablesCount.put(dbs.name, count);
         }
 
-        private Vector getAllSchemas() {
+        private Vector<String> getAllSchemas() {
             if (allSchemas == null) {
-                allSchemas = new Vector();
+                allSchemas = new Vector<String>();
                 if (schemas.size() > 0) {
-                    Iterator i = schemas.iterator();
-                    while (i.hasNext()) {
-                        allSchemas.add( ((DbSchema) i.next()).name );
+                    for (DbSchema s : schemas) {
+                        allSchemas.add((s).name);
                     }
                 }
             }
@@ -458,13 +456,9 @@ public class JDBCMetaData {
             if (sname == null || sname.equals("")) {
                 return tablesCount.containsKey(tableName);
             } else {
-                Iterator i = schemas.iterator();
-                while (i.hasNext()) {
-                    DbSchema s = (DbSchema) i.next();
-                    if ( s.name.equals(sname) ) {
-                        Iterator ti = s.tables.iterator();
-                        while (ti.hasNext()) {
-                            DbTable d = (DbTable) ti.next();
+                for (DbSchema s : schemas) {
+                    if (s.name.equals(sname)) {
+                        for (DbTable d : s.tables) {
                             if (d.name.equals(tableName)) {
                                 return true;
                             }
@@ -478,23 +472,18 @@ public class JDBCMetaData {
 
         private boolean colExists(String sname, String tableName, String colName) {
             if (sname == null || sname.equals("")) {
-                Iterator ti = tables.iterator();
-                while (ti.hasNext()) {
-                    DbTable t = (DbTable) ti.next();
-                    if (t.name.equals(tableName)){
+                Iterator<DbTable> ti = tables.iterator();
+                for (DbTable t : tables) {
+                    if (t.name.equals(tableName)) {
                         return t.colsDataType.containsKey(colName);
                     }
                 }
             } else {
                 // return a vector of "fk col name" string objects if schema is given
-                Iterator i = schemas.iterator();
-                while (i.hasNext()) {
-                    DbSchema s = (DbSchema) i.next();
-                    if ( s.name.equals(sname) ) {
-                        Iterator ti = s.tables.iterator();
-                        while (ti.hasNext()) {
-                            DbTable t = (DbTable) ti.next();
-                            if (t.name.equals(tableName)){
+                for (DbSchema s : schemas) {
+                    if (s.name.equals(sname)) {
+                        for (DbTable t : s.tables) {
+                            if (t.name.equals(tableName)) {
                                 return t.colsDataType.containsKey(colName);
                             }
                         }
@@ -506,30 +495,24 @@ public class JDBCMetaData {
             return false;
         }
 
-        private Vector getAllTables(String sname) {
-            Vector v = new Vector();
+        private Vector<String> getAllTables(String sname) {
+            Vector<String> v = new Vector<String>();
 
             if (sname == null || sname.equals("")) {
                 // return a vector of "schemaname -> table name" string objects
-                Iterator i = tables.iterator();
-                while (i.hasNext()) {
-                    DbTable d = (DbTable) i.next();
-                    if ( d.schemaName == null ) {
+                for (DbTable d : tables) {
+                    if (d.schemaName == null) {
                         v.add(d.name);
                     } else {
-                        v.add(d.schemaName + "->"+ d.name);
+                        v.add(d.schemaName + "->" + d.name);
                     }
                 }
 
             } else {
                 // return a vector of "tablename" string objects
-                Iterator i = schemas.iterator();
-                while (i.hasNext()) {
-                    DbSchema s = (DbSchema) i.next();
-                    if ( s.name.equals(sname) ) {
-                        Iterator ti = s.tables.iterator();
-                        while (ti.hasNext()) {
-                            DbTable d = (DbTable) ti.next();
+                for (DbSchema s : schemas) {
+                    if (s.name.equals(sname)) {
+                        for (DbTable d : s.tables) {
                             v.add(d.name);
                         }
                         break;
@@ -539,33 +522,28 @@ public class JDBCMetaData {
             return v;
         }
 
-        private Vector getFactTables(String sname) {
-            Vector f = new Vector();
+        private Vector<String> getFactTables(String sname) {
+            Vector<String> f = new Vector<String>();
 
             if (sname == null || sname.equals("")) {
                 // return a vector of "schemaname -> table name" string objects if schema is not given
-                Iterator ti = tables.iterator();
-                while (ti.hasNext()) {
-                    DbTable t = (DbTable) ti.next();
-                    if (t instanceof FactTable){
-                        if ( t.schemaName == null ) {
+                Iterator<DbTable> ti = tables.iterator();
+                for (DbTable t : tables) {
+                    if (t instanceof FactTable) {
+                        if (t.schemaName == null) {
                             f.add(t.name);
                         } else {
-                            f.add(t.schemaName + "->"+ t.name);
+                            f.add(t.schemaName + "->" + t.name);
                         }
                     }
                 }
             } else {
                 // return a vector of "fact tablename" string objects if schema is given
-                Iterator i = schemas.iterator();
-                while (i.hasNext()) {
-                    DbSchema s = (DbSchema) i.next();
-                    if ( s.name.equals(sname) ) {
-                        Iterator ti = s.tables.iterator();
-                        while (ti.hasNext()) {
-                            Object t = ti.next();
-                            if (t instanceof FactTable){
-                                f.add(((FactTable)t).name);
+                for (DbSchema s : schemas) {
+                    if (s.name.equals(sname)) {
+                        for (DbTable t : s.tables) {
+                            if (t instanceof FactTable) {
+                                f.add(((FactTable) t).name);
                             }
                         }
                         break;
@@ -577,43 +555,41 @@ public class JDBCMetaData {
         }
 
         /* get all foreign keys in given fact table */
-        private Vector getFactTableFKs(String sname, String factTable) {
-            Vector f = new Vector();
+        private Vector<String> getFactTableFKs(String sname, String factTable) {
+            Vector<String> f = new Vector<String>();
 
             if (sname == null || sname.equals("")) {
                 // return a vector of "schemaname -> table name -> fk col" string objects if schema is not given
-                boolean duplicate = (tablesCount.containsKey(factTable)) && (((Integer) tablesCount.get(factTable)).intValue() > 1);
+                boolean duplicate = (tablesCount.containsKey(factTable)) && ((tablesCount.get(factTable)).intValue() > 1);
 
-                Iterator ti = tables.iterator();
-                while (ti.hasNext()) {
-                    DbTable t = (DbTable) ti.next();
-                    if (t instanceof FactTable && t.name.equals(factTable)){
+                for (DbTable t : tables) {
+                    if (t instanceof FactTable && t.name.equals(factTable)) {
                         if (duplicate) {
-                            Iterator fki = ((FactTable)t).fks.keySet().iterator();
-                            while (fki.hasNext()) {
-                                String fk = (String) fki.next();
-                                if ( t.schemaName == null ) {
+                            for (String fk : ((FactTable) t).fks.keySet()) {
+                                if (t.schemaName == null) {
                                     f.add(t.name + "->" + fk);
                                 } else {
-                                    f.add(t.schemaName + "->"+ t.name + "->" + fk);
+                                    f.add(
+                                        t.schemaName
+                                            + "->"
+                                            + t.name
+                                            + "->"
+                                            + fk);
                                 }
                             }
                         } else {
-                            f.addAll( ((FactTable)t).fks.keySet());
+                            f.addAll(((FactTable) t).fks.keySet());
                         }
                     }
                 }
             } else {
                 // return a vector of "fk col name" string objects if schema is given
-                Iterator i = schemas.iterator();
-                while (i.hasNext()) {
-                    DbSchema s = (DbSchema) i.next();
-                    if ( s.name.equals(sname) ) {
-                        Iterator ti = s.tables.iterator();
-                        while (ti.hasNext()) {
-                            DbTable t = (DbTable) ti.next();
-                            if (t instanceof FactTable && t.name.equals(factTable)){
-                                f.addAll(((FactTable)t).fks.keySet());
+                for (DbSchema s : schemas) {
+                    if (s.name.equals(sname)) {
+                        for (DbTable t : s.tables) {
+                            if (t instanceof FactTable && t.name
+                                .equals(factTable)) {
+                                f.addAll(((FactTable) t).fks.keySet());
                                 break;
                             }
                         }
@@ -624,44 +600,46 @@ public class JDBCMetaData {
             return f;
         }
 
-        private Vector getDimensionTables(String sname, String factTable) {
-            Vector f = new Vector();
+        private Vector<String> getDimensionTables(String sname, String factTable) {
+            Vector<String> f = new Vector<String>();
 
             if (sname == null || sname.equals("")) {
                 // return a vector of "schemaname -> table name -> dimension table name" string objects if schema is not given
-                boolean duplicate =  (tablesCount.containsKey(factTable))  &&  (((Integer) tablesCount.get(factTable)).intValue() > 1);
+                boolean duplicate =  (tablesCount.containsKey(factTable))  &&  ((tablesCount.get(factTable)).intValue() > 1);
 
-                Iterator ti = tables.iterator();
-                while (ti.hasNext()) {
-                    DbTable t = (DbTable) ti.next();
-                    if (t instanceof FactTable && t.name.equals(factTable)){
+                for (DbTable t : tables) {
+                    if (t instanceof FactTable && t.name.equals(factTable)) {
                         if (duplicate) {
-                            Iterator fki = ((FactTable)t).fks.values().iterator();
-                            while (fki.hasNext()) {
-                                String fkt = (String) fki.next();
-                                if ( t.schemaName == null ) {
+                            Iterator<String> fki =
+                                ((FactTable) t).fks.values().iterator();
+                            for (String fkt : ((FactTable) t).fks.values()) {
+                                if (t.schemaName == null) {
                                     f.add(t.name + "->" + fkt);
                                 } else {
-                                    f.add(t.schemaName + "->"+ t.name + "->" + fkt);
+                                    f.add(
+                                        t
+                                            .schemaName
+                                            + "->"
+                                            + t
+                                            .name
+                                            + "->"
+                                            + fkt);
                                 }
                             }
                         } else {
-                            f.addAll(((FactTable)t).fks.values());
+                            f.addAll(((FactTable) t).fks.values());
                             break;
                         }
                     }
                 }
             } else {
                 // return a vector of "fk col name" string objects if schema is given
-                Iterator i = schemas.iterator();
-                while (i.hasNext()) {
-                    DbSchema s = (DbSchema) i.next();
-                    if ( s.name.equals(sname) ) {
-                        Iterator ti = s.tables.iterator();
-                        while (ti.hasNext()) {
-                            DbTable t = (DbTable) ti.next();
-                            if (t instanceof FactTable && t.name.equals(factTable)){
-                                f.addAll(((FactTable)t).fks.values());
+                for (DbSchema s : schemas) {
+                    if (s.name.equals(sname)) {
+                        for (DbTable t : s.tables) {
+                            if (t instanceof FactTable && t.name
+                                .equals(factTable)) {
+                                f.addAll(((FactTable) t).fks.values());
                                 break;
                             }
                         }
@@ -676,23 +654,17 @@ public class JDBCMetaData {
 
             if (sname == null || sname.equals("")) {
                 // return a vector of "schemaname -> table name -> dimension table name" string objects if schema is not given
-                Iterator ti = tables.iterator();
-                while (ti.hasNext()) {
-                    DbTable t = (DbTable) ti.next();
-                    if (t.name.equals(tableName)){
+                for (DbTable t : tables) {
+                    if (t.name.equals(tableName)) {
                         return t.pk;
                     }
                 }
             } else {
                 // return a vector of "fk col name" string objects if schema is given
-                Iterator i = schemas.iterator();
-                while (i.hasNext()) {
-                    DbSchema s = (DbSchema) i.next();
-                    if ( s.name.equals(sname) ) {
-                        Iterator ti = s.tables.iterator();
-                        while (ti.hasNext()) {
-                            DbTable t = (DbTable) ti.next();
-                            if (t.name.equals(tableName)){
+                for (DbSchema s : schemas) {
+                    if (s.name.equals(sname)) {
+                        for (DbTable t : s.tables) {
+                            if (t.name.equals(tableName)) {
                                 return t.pk;
                             }
                         }
@@ -703,25 +675,26 @@ public class JDBCMetaData {
             return null;
         }
 
-        private Vector getAllColumns(String sname, String tableName) {
-            Vector f = new Vector();
+        private Vector<String> getAllColumns(String sname, String tableName) {
+            Vector<String> f = new Vector<String>();
 
             if (sname == null || sname.equals("")) {
                 // return a vector of "schemaname -> table name -> cols" string objects if schema is not given
-                boolean duplicate =  (tablesCount.containsKey(tableName))  && (((Integer) tablesCount.get(tableName)).intValue() > 1);
+                boolean duplicate =  (tablesCount.containsKey(tableName))  && ((tablesCount.get(tableName)).intValue() > 1);
 
-                Iterator ti = tables.iterator();
-                while (ti.hasNext()) {
-                    DbTable t = (DbTable) ti.next();
-                    if (t.name.equals(tableName)){
+                for (DbTable t : tables) {
+                    if (t.name.equals(tableName)) {
                         if (duplicate) {
-                            Iterator ci = t.colsDataType.keySet().iterator();
-                            while (ci.hasNext()) {
-                                String c = (String) ci.next();
-                                if ( t.schemaName == null ) {
+                            for (String c : t.colsDataType.keySet()) {
+                                if (t.schemaName == null) {
                                     f.add(t.name + "->" + c);
                                 } else {
-                                    f.add(t.schemaName + "->"+ t.name + "->" + c);
+                                    f.add(
+                                        t.schemaName
+                                            + "->"
+                                            + t.name
+                                            + "->"
+                                            + c);
                                 }
                             }
                         } else {
@@ -732,14 +705,10 @@ public class JDBCMetaData {
                 }
             } else {
                 // return a vector of "col name" string objects if schema is given
-                Iterator i = schemas.iterator();
-                while (i.hasNext()) {
-                    DbSchema s = (DbSchema) i.next();
-                    if ( s.name.equals(sname) ) {
-                        Iterator ti = s.tables.iterator();
-                        while (ti.hasNext()) {
-                            DbTable t = (DbTable) ti.next();
-                            if (t.name.equals(tableName)){
+                for (DbSchema s : schemas) {
+                    if (s.name.equals(sname)) {
+                        for (DbTable t : s.tables) {
+                            if (t.name.equals(tableName)) {
                                 f.addAll(t.colsDataType.keySet());
                                 break;
                             }
@@ -754,26 +723,19 @@ public class JDBCMetaData {
         private int getColumnDataType(String sname, String tableName, String colName) {
 
             if (sname == null || sname.equals("")) {
-                Iterator ti = tables.iterator();
-                while (ti.hasNext()) {
-                    DbTable t = (DbTable) ti.next();
-                    if (t.name.equals(tableName)){
-                        int dataType =  Integer.parseInt((String) t.colsDataType.get(colName));
-                        return dataType;
+                for (DbTable t : tables) {
+                    if (t.name.equals(tableName)) {
+                        return Integer.parseInt(t.colsDataType.get(colName));
                     }
                 }
             } else {
                 // return a vector of "fk col name" string objects if schema is given
-                Iterator i = schemas.iterator();
-                while (i.hasNext()) {
-                    DbSchema s = (DbSchema) i.next();
-                    if ( s.name.equals(sname) ) {
-                        Iterator ti = s.tables.iterator();
-                        while (ti.hasNext()) {
-                            DbTable t = (DbTable) ti.next();
-                            if (t.name.equals(tableName)){
-                                int dataType =  Integer.parseInt((String) t.colsDataType.get(colName));
-                                return dataType;
+                for (DbSchema s : schemas) {
+                    if (s.name.equals(sname)) {
+                        for (DbTable t : s.tables) {
+                            if (t.name.equals(tableName)) {
+                                return Integer.parseInt(
+                                    t.colsDataType.get(colName));
                             }
                         }
                         break;
@@ -783,12 +745,12 @@ public class JDBCMetaData {
 
             return -1;
         }
-
     }
 
     class DbSchema {
         String name;
-        List tables = new ArrayList(); //ordered collection, allows duplicates and null
+        /** ordered collection, allows duplicates and null */
+        final List<DbTable> tables = new ArrayList<DbTable>();
 
         private void addDbTable(DbTable dbt){
             tables.add(dbt);
@@ -799,7 +761,8 @@ public class JDBCMetaData {
         String schemaName;
         String name;
         String pk;
-        Map colsDataType = new TreeMap(); // sorted map key=column, value=data type of column
+        /** sorted map key=column, value=data type of column */
+        final Map<String, String> colsDataType = new TreeMap<String, String>();
 
         private void addColsDataType(String col, String dataType) {
             colsDataType.put(col, dataType);
@@ -808,7 +771,8 @@ public class JDBCMetaData {
     }
 
     class FactTable extends DbTable {
-        Map fks = new TreeMap(); // sorted map key = foreign key col, value=primary key table associated with this fk
+        /** sorted map key = foreign key col, value=primary key table associated with this fk */
+        final Map<String, String> fks = new TreeMap<String, String>();
 
         private void addFks(String fk, String pkt) {
             fks.put(fk, pkt);

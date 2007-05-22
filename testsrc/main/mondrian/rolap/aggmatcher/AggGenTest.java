@@ -12,6 +12,8 @@ package mondrian.rolap.aggmatcher;
 import java.io.StringWriter;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +28,8 @@ import mondrian.olap.Query;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapConnection;
 import mondrian.test.FoodMartTestCase;
+
+import javax.sql.DataSource;
 
 
 /**
@@ -65,20 +69,36 @@ public class AggGenTest extends FoodMartTestCase {
 
         logger.removeAppender(myAppender);
 
-        DatabaseMetaData dbmeta = rolapConn.getDataSource().getConnection().getMetaData();
-        JdbcSchema jdbcSchema = JdbcSchema.makeDB(rolapConn.getDataSource());
-        final String catalogName = jdbcSchema.getCatalogName();
-        final String schemaName = jdbcSchema.getSchemaName();
+        final DataSource dataSource = rolapConn.getDataSource();
+        Connection sqlConnection = null;
+        try {
+            sqlConnection = dataSource.getConnection();
+            DatabaseMetaData dbmeta = sqlConnection.getMetaData();
+            JdbcSchema jdbcSchema = JdbcSchema.makeDB(dataSource);
+            final String catalogName = jdbcSchema.getCatalogName();
+            final String schemaName = jdbcSchema.getSchemaName();
 
-        String log = writer.toString();
-        Pattern p = Pattern.compile("DEBUG - Init: Column: [^:]+: `(\\w+)`.`(\\w+)`" +
+            String log = writer.toString();
+            Pattern p = Pattern.compile(
+                "DEBUG - Init: Column: [^:]+: `(\\w+)`.`(\\w+)`" +
                 Util.nl +
                 "WARN - Can not find column: \\2");
-        Matcher m = p.matcher(log);
+            Matcher m = p.matcher(log);
 
-        while (m.find()) {
-            ResultSet rs = dbmeta.getColumns(catalogName, schemaName, m.group(1), m.group(2));
-            assertTrue(!rs.next());
+            while (m.find()) {
+                ResultSet rs =
+                    dbmeta.getColumns(
+                        catalogName, schemaName, m.group(1), m.group(2));
+                assertTrue(!rs.next());
+            }
+        } finally {
+            if (sqlConnection != null) {
+                try {
+                    sqlConnection.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
         }
     }
 

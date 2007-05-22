@@ -91,11 +91,12 @@ public class MondrianFoodMartLoader {
 
     // Fields
 
-    final Pattern decimalDataTypeRegex = Pattern.compile("DECIMAL\\((.*),(.*)\\)");
-    final DecimalFormat integerFormatter = new DecimalFormat(decimalFormat(15, 0));
-    final String dateFormatString = "yyyy-MM-dd";
-    final String oracleDateFormatString = "YYYY-MM-DD";
-    final DateFormat dateFormatter = new SimpleDateFormat(dateFormatString);
+    private static final Pattern decimalDataTypeRegex = Pattern.compile("DECIMAL\\((.*),(.*)\\)");
+    private static final DecimalFormat integerFormatter = new DecimalFormat(decimalFormat(15, 0));
+    private static final String dateFormatString = "yyyy-MM-dd";
+    private static final String oracleDateFormatString = "YYYY-MM-DD";
+    private static final DateFormat dateFormatter = new SimpleDateFormat(dateFormatString);
+    
     private String jdbcDrivers;
     private String jdbcURL;
     private String userName;
@@ -680,34 +681,50 @@ public class MondrianFoodMartLoader {
         buf.append(" from ")
             .append(quoteId(dialect, name));
         String ddl = buf.toString();
-        Statement statement = inputConnection.createStatement();
-        LOGGER.debug("Input table SQL: " + ddl);
+        Statement statement = null;
+        ResultSet rs = null;
+        try {
+            statement = inputConnection.createStatement();
+            LOGGER.debug("Input table SQL: " + ddl);
 
-        ResultSet rs = statement.executeQuery(ddl);
+            rs = statement.executeQuery(ddl);
 
-        String[] batch = new String[inputBatchSize];
-        int batchSize = 0;
-        boolean displayedInsert = false;
+            String[] batch = new String[inputBatchSize];
+            int batchSize = 0;
+            boolean displayedInsert = false;
 
-        while (rs.next()) {
-            /*
-             * Get a batch of insert statements, then save a batch
-             */
-
-            String insertStatement = createInsertStatement(rs, name, columns);
-            if (!displayedInsert && LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Example Insert statement: " + insertStatement);
-                displayedInsert = true;
+            while (rs.next()) {
+                // Get a batch of insert statements, then save a batch
+                String insertStatement = createInsertStatement(rs, name, columns);
+                if (!displayedInsert && LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Example Insert statement: " + insertStatement);
+                    displayedInsert = true;
+                }
+                batch[batchSize++] = insertStatement;
+                if (batchSize >= inputBatchSize) {
+                    rowsAdded += writeBatch(batch, batchSize);
+                    batchSize = 0;
+                }
             }
-            batch[batchSize++] = insertStatement;
-            if (batchSize >= inputBatchSize) {
+
+            if (batchSize > 0) {
                 rowsAdded += writeBatch(batch, batchSize);
-                batchSize = 0;
             }
-        }
-
-        if (batchSize > 0) {
-            rowsAdded += writeBatch(batch, batchSize);
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
         }
 
         return rowsAdded;
@@ -1631,8 +1648,19 @@ public class MondrianFoodMartLoader {
         LOGGER.info(ddl);
 
         if (jdbcOutput) {
-            final Statement statement = connection.createStatement();
-            statement.execute(ddl);
+            Statement statement = null;
+            try {
+                statement = connection.createStatement();
+                statement.execute(ddl);
+            } finally {
+                if (statement != null) {
+                    try {
+                        statement.close();
+                    } catch (SQLException e) {
+                        // ignore
+                    }
+                }
+            }
         } else {
             fileOutput.write(ddl);
             fileOutput.write(";" + nl);

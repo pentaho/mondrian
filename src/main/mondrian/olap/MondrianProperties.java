@@ -354,7 +354,7 @@ public class MondrianProperties extends TriggerableProperties {
      * init.ora, typically 150. The throughput of Oracle and other databases
      * will probably reduce long before you get to their limit.</p>
      */
-    public final IntegerProperty QueryLimit = new IntegerProperty(
+    public transient final IntegerProperty QueryLimit = new IntegerProperty(
             this, "mondrian.query.limit", 40);
 
     /**
@@ -364,14 +364,14 @@ public class MondrianProperties extends TriggerableProperties {
      * per the <code>{@link #DebugOutFile mondrian.debug.out.file}</code>
      * property below. This is separate from Log4j logging.
      */
-    public final IntegerProperty TraceLevel = new IntegerProperty(
+    public transient final IntegerProperty TraceLevel = new IntegerProperty(
             this, "mondrian.trace.level");
 
     /**
      * Property containing the name of the file to which tracing is to be
      * written. If empty (the default), prints to stdout.
      */
-    public final StringProperty DebugOutFile = new StringProperty(
+    public transient final StringProperty DebugOutFile = new StringProperty(
             this, "mondrian.debug.out.file", null);
 
     /**
@@ -379,7 +379,7 @@ public class MondrianProperties extends TriggerableProperties {
      * Must be a comma-separated list of class names, and the classes must be
      * on the class path.
      */
-    public final StringProperty JdbcDrivers = new StringProperty(
+    public transient final StringProperty JdbcDrivers = new StringProperty(
             this,
             "mondrian.jdbcDrivers",
             "sun.jdbc.odbc.JdbcOdbcDriver," +
@@ -391,20 +391,22 @@ public class MondrianProperties extends TriggerableProperties {
      * Property which, if set to a value greater than zero, limits the maximum
      * size of a result set.
      */
-    public final IntegerProperty ResultLimit = new IntegerProperty(
+    public transient final IntegerProperty ResultLimit = new IntegerProperty(
             this, "mondrian.result.limit", 0);
 
     /** @deprecated obsolete */
-    public final IntegerProperty CachePoolCostLimit = new IntegerProperty(
+    public transient final IntegerProperty CachePoolCostLimit =
+        new IntegerProperty(
             this, "mondrian.rolap.CachePool.costLimit", 10000);
 
     /** @deprecated obsolete */
-    public final BooleanProperty PrintCacheablesAfterQuery =
+    public transient final BooleanProperty PrintCacheablesAfterQuery =
             new BooleanProperty(
                     this, "mondrian.rolap.RolapResult.printCacheables");
 
     /** @deprecated obsolete */
-    public final BooleanProperty FlushAfterQuery = new BooleanProperty(
+    public transient final BooleanProperty FlushAfterQuery =
+        new BooleanProperty(
             this, "mondrian.rolap.RolapResult.flushAfterEachQuery");
 
     // mondrian.test properties
@@ -418,7 +420,7 @@ public class MondrianProperties extends TriggerableProperties {
      *
      * @see #TestClass
      */
-    public final StringProperty TestName = new StringProperty(
+    public transient final StringProperty TestName = new StringProperty(
             this, "mondrian.test.Name", null);
 
     /**
@@ -433,7 +435,7 @@ public class MondrianProperties extends TriggerableProperties {
      *
      * @see #TestName
      */
-    public final StringProperty TestClass = new StringProperty(
+    public transient final StringProperty TestClass = new StringProperty(
             this, "mondrian.test.Class", null);
 
     /**
@@ -441,7 +443,8 @@ public class MondrianProperties extends TriggerableProperties {
      * use to connect to the database.
      * Format is specified in {@link Util#parseConnectString(String)}.
      */
-    public final StringProperty TestConnectString = new StringProperty(
+    public transient final StringProperty TestConnectString =
+        new StringProperty(
             this, "mondrian.test.connectString", null);
 
 
@@ -452,28 +455,28 @@ public class MondrianProperties extends TriggerableProperties {
      * The default value is to connect to an ODBC data source called
      * "MondrianFoodMart".
      */
-    public final StringProperty FoodmartJdbcURL = new StringProperty(
+    public transient final StringProperty FoodmartJdbcURL = new StringProperty(
             this, "mondrian.foodmart.jdbcURL", "jdbc:odbc:MondrianFoodMart");
 
     /**
      * Property containing the JDBC URL of a test database.
      * It does not default.
      */
-    public final StringProperty TestJdbcURL = new StringProperty(
+    public transient final StringProperty TestJdbcURL = new StringProperty(
             this, "mondrian.test.jdbcURL", null);
 
     /**
      * Property containing the JDBC user of a test database.
      * The default value is null, to cope with DBMSs that don't need this.
      */
-    public final StringProperty TestJdbcUser = new StringProperty(
+    public transient final StringProperty TestJdbcUser = new StringProperty(
             this, "mondrian.test.jdbcUser", null);
 
     /**
      * Property containing the JDBC password of a test database.
      * The default value is null, to cope with DBMSs that don't need this.
      */
-    public final StringProperty TestJdbcPassword = new StringProperty(
+    public transient final StringProperty TestJdbcPassword = new StringProperty(
             this, "mondrian.test.jdbcPassword", null);
 
     /**
@@ -481,7 +484,8 @@ public class MondrianProperties extends TriggerableProperties {
      * If a dimension has more than this number of members, Mondrian uses a
      * {@link mondrian.rolap.SmartMemberReader smart member reader}.
      */
-    public final IntegerProperty LargeDimensionThreshold = new IntegerProperty(
+    public transient final IntegerProperty LargeDimensionThreshold =
+        new IntegerProperty(
             this, "mondrian.rolap.LargeDimensionThreshold", 100);
 
     /**
@@ -511,7 +515,7 @@ public class MondrianProperties extends TriggerableProperties {
      * Any fewer actual values, or any more
      * possible values, and Mondrian will use a sparse representation.
      */
-    public final IntegerProperty SparseSegmentCountThreshold =
+    public transient final IntegerProperty SparseSegmentCountThreshold =
             new IntegerProperty(
                     this, "mondrian.rolap.SparseSegmentValueThreshold", 1000);
 
@@ -520,7 +524,7 @@ public class MondrianProperties extends TriggerableProperties {
      * determines whether to choose a sparse or dense representation when
      * storing collections of cell values in memory.
      */
-    public final DoubleProperty SparseSegmentDensityThreshold =
+    public transient final DoubleProperty SparseSegmentDensityThreshold =
             new DoubleProperty(
                     this, "mondrian.rolap.SparseSegmentDensityThreshold", 0.5);
 
@@ -534,46 +538,48 @@ public class MondrianProperties extends TriggerableProperties {
      * <blockquote><code>mondrian.test.QueryFilePattern=queryTest_fec[A-Za-z0-9_]*.xml</code></blockquote>
      * </p>
      */
-    public final StringProperty QueryFilePattern = new StringProperty(
+    public transient final StringProperty QueryFilePattern =
+        new StringProperty(
             this, "mondrian.test.QueryFilePattern", null);
 
     /**
      * Property defining
      * where the test XML files are.
      */
-    public final StringProperty QueryFileDirectory = new StringProperty(
+    public transient final StringProperty QueryFileDirectory =
+        new StringProperty(
             this, "mondrian.test.QueryFileDirectory", null);
 
     /**
      * todo:
      */
-    public final IntegerProperty Iterations = new IntegerProperty(
+    public transient final IntegerProperty Iterations = new IntegerProperty(
             this, "mondrian.test.Iterations", 1);
 
     /**
      * todo:
      */
-    public final IntegerProperty VUsers = new IntegerProperty(
+    public transient final IntegerProperty VUsers = new IntegerProperty(
             this, "mondrian.test.VUsers", 1);
 
     /**
      * Property which returns the time limit for the test run in seconds.
      * If the test is running after that time, it is terminated.
      */
-    public final IntegerProperty TimeLimit = new IntegerProperty(
+    public transient final IntegerProperty TimeLimit = new IntegerProperty(
             this, "mondrian.test.TimeLimit", 0);
 
     /**
      * Property which indicates whether this is a "warmup test".
      */
-    public final BooleanProperty Warmup = new BooleanProperty(
+    public transient final BooleanProperty Warmup = new BooleanProperty(
             this, "mondrian.test.Warmup", false);
 
     /**
      * Property which contains the URL of the catalog to be used by
      * {@link mondrian.tui.CmdRunner} and XML/A Test.
      */
-    public final StringProperty CatalogURL = new StringProperty(
+    public transient final StringProperty CatalogURL = new StringProperty(
             this, "mondrian.catalogURL", null);
 
     //////////////////////////////////////////////////////////////////////////
@@ -592,7 +598,8 @@ public class MondrianProperties extends TriggerableProperties {
      * {@link #ReadAggregates} property but will not be used unless this
      * property is set to true.
      */
-    public final BooleanProperty UseAggregates = new BooleanProperty(
+    public transient final BooleanProperty UseAggregates =
+        new BooleanProperty(
             this, "mondrian.rolap.aggregates.Use", false);
 
     /**
@@ -603,7 +610,8 @@ public class MondrianProperties extends TriggerableProperties {
      * Unless mondrian.rolap.aggregates.Use is set to true, the aggregates
      * found will not be used.
      */
-    public final BooleanProperty ReadAggregates = new BooleanProperty(
+    public transient final BooleanProperty ReadAggregates =
+        new BooleanProperty(
             this, "mondrian.rolap.aggregates.Read", false);
 
 
@@ -615,7 +623,8 @@ public class MondrianProperties extends TriggerableProperties {
      * (number of rows multiplied by number of columns); if false, Mondrian
      * uses the aggregate table with the fewest rows.
      */
-    public final BooleanProperty ChooseAggregateByVolume = new BooleanProperty(
+    public transient final BooleanProperty ChooseAggregateByVolume =
+        new BooleanProperty(
             this, "mondrian.rolap.aggregates.ChooseByVolume", false);
 
     /**
@@ -628,7 +637,8 @@ public class MondrianProperties extends TriggerableProperties {
      *
      * <p>Normally, this property is not set by a user.
      */
-    public final StringProperty AggregateRules = new StringProperty(
+    public transient final StringProperty AggregateRules =
+        new StringProperty(
             this, "mondrian.rolap.aggregates.rules", "/DefaultRules.xml");
 
     /**
@@ -636,7 +646,8 @@ public class MondrianProperties extends TriggerableProperties {
      *
      * <p>Normally, this property is not set by a user.
      */
-    public final StringProperty AggregateRuleTag = new StringProperty(
+    public transient final StringProperty AggregateRuleTag =
+        new StringProperty(
             this, "mondrian.rolap.aggregates.rule.tag", "default");
 
     /**
@@ -648,7 +659,8 @@ public class MondrianProperties extends TriggerableProperties {
      * This is for use in the CmdRunner allowing one to create aggregate table
      * generation sql.
      */
-    public final BooleanProperty GenerateAggregateSql = new BooleanProperty(
+    public transient final BooleanProperty GenerateAggregateSql =
+        new BooleanProperty(
             this, "mondrian.rolap.aggregates.generateSql", false);
 
     //
@@ -660,7 +672,8 @@ public class MondrianProperties extends TriggerableProperties {
      * If true, no RolapStar will cache aggregate data from one
      * query to the next (the cache is cleared after each query).
      */
-    public final BooleanProperty DisableCaching = new BooleanProperty(
+    public transient final BooleanProperty DisableCaching =
+        new BooleanProperty(
             this, "mondrian.rolap.star.disableCaching", false);
 
     /**
@@ -673,7 +686,8 @@ public class MondrianProperties extends TriggerableProperties {
      * <code>MondrianProperties.instance().QueryLimit.set(50)</code>.
 
      */
-    public final BooleanProperty EnableTriggers = new BooleanProperty(
+    public transient final BooleanProperty EnableTriggers =
+        new BooleanProperty(
             this, "mondrian.olap.triggers.enable", true);
 
     /**
@@ -681,14 +695,16 @@ public class MondrianProperties extends TriggerableProperties {
      * If set to true, the all SqlQuery SQL strings
      * will be generated in pretty-print mode, formatted for ease of reading.
      */
-    public final BooleanProperty GenerateFormattedSql = new BooleanProperty(
+    public transient final BooleanProperty GenerateFormattedSql =
+        new BooleanProperty(
             this, "mondrian.rolap.generate.formatted.sql", false);
 
     /**
      * Boolean property which controls whether each query axis implicit has the
      * NON EMPTY option set. The default is false.
      */
-    public final BooleanProperty EnableNonEmptyOnAllAxis = new BooleanProperty(
+    public transient final BooleanProperty EnableNonEmptyOnAllAxis =
+        new BooleanProperty(
             this, "mondrian.rolap.nonempty", false);
 
     /**
@@ -696,10 +712,9 @@ public class MondrianProperties extends TriggerableProperties {
      * compared according to order key value fetched from their ordinal
      * expression.  The default is false (only database ORDER BY is used).
      */
-    public final BooleanProperty CompareSiblingsByOrderKey =
+    public transient final BooleanProperty CompareSiblingsByOrderKey =
         new BooleanProperty(
-            this, "mondrian.rolap.compareSiblingsByOrderKey",
-            false);
+            this, "mondrian.rolap.compareSiblingsByOrderKey", false);
 
     /**
      * Boolean property which controls whether to use a cache for frequently
@@ -708,9 +723,9 @@ public class MondrianProperties extends TriggerableProperties {
      * Order([Product].MEMBERS, [Measures].[Unit Sales]))</code> would perform
      * many redundant sorts. The default is true.
      */
-    public final BooleanProperty EnableExpCache = new BooleanProperty(
+    public transient final BooleanProperty EnableExpCache =
+        new BooleanProperty(
             this, "mondrian.expCache.enable", true);
-
 
     /**
      * Integer property which controls whether to test operators' dependencies,
@@ -723,7 +738,8 @@ public class MondrianProperties extends TriggerableProperties {
      *
      * <p>The default is 0.
      */
-    public final IntegerProperty TestExpDependencies = new IntegerProperty(
+    public transient final IntegerProperty TestExpDependencies =
+        new IntegerProperty(
             this, "mondrian.test.ExpDependencies", 0);
 
     /**
@@ -742,45 +758,51 @@ public class MondrianProperties extends TriggerableProperties {
      * internal random-number generator. This is a little more deterministic
      * than setting the value to 0.
      */
-    public final IntegerProperty TestSeed = new IntegerProperty(
+    public transient final IntegerProperty TestSeed =
+        new IntegerProperty(
             this, "mondrian.test.random.seed", 1234);
 
     /**
      * Name of locale property file.
      *
-     * <p>Used for the {@link mondrian.i18n.LocalizingDynamicSchemaProcessor}; 
+     * <p>Used for the {@link mondrian.i18n.LocalizingDynamicSchemaProcessor};
      * see <a href="{@docRoot}/../schema.html#I18n">Internationalization</a>
      * for more details.</td>
      *
      * <p>Default value is null.
      */
-    public final StringProperty LocalePropFile = new StringProperty(
+    public transient final StringProperty LocalePropFile =
+        new StringProperty(
             this, "mondrian.rolap.localePropFile", null);
 
     /**
      * if enabled some NON EMPTY CrossJoin will be computed in SQL
      */
-    public final BooleanProperty EnableNativeCrossJoin = new BooleanProperty(
-        this, "mondrian.native.crossjoin.enable", true);
+    public transient final BooleanProperty EnableNativeCrossJoin =
+        new BooleanProperty(
+            this, "mondrian.native.crossjoin.enable", true);
 
     /**
      * if enabled some TopCount will be computed in SQL
      */
-    public final BooleanProperty EnableNativeTopCount = new BooleanProperty(
-        this, "mondrian.native.topcount.enable", true);
+    public transient final BooleanProperty EnableNativeTopCount =
+        new BooleanProperty(
+            this, "mondrian.native.topcount.enable", true);
 
     /**
      * if enabled some Filter() will be computed in SQL
      */
-    public final BooleanProperty EnableNativeFilter = new BooleanProperty(
-        this, "mondrian.native.filter.enable", true);
+    public transient final BooleanProperty EnableNativeFilter =
+        new BooleanProperty(
+            this, "mondrian.native.filter.enable", true);
 
     /**
      * some NON EMPTY set operations like member.children, level.members and
      * member descendants will be computed in SQL
      */
-    public final BooleanProperty EnableNativeNonEmpty = new BooleanProperty(
-        this, "mondrian.native.nonempty.enable", true);
+    public transient final BooleanProperty EnableNativeNonEmpty =
+        new BooleanProperty(
+            this, "mondrian.native.nonempty.enable", true);
 
     /**
      * Alerting action to take in case native evaluation of a function is
@@ -804,22 +826,23 @@ public class MondrianProperties extends TriggerableProperties {
      *
      *</ul>
      */
-    public final StringProperty AlertNativeEvaluationUnsupported =
+    public transient final StringProperty AlertNativeEvaluationUnsupported =
         new StringProperty(this, "mondrian.native.unsupported.alert", "OFF");
 
     /**
      * If enabled, first row in the result of an XML/A drill-through request
      * will be filled with the total count of rows in underlying database.
      */
-    public final BooleanProperty EnableTotalCount = new BooleanProperty(
-        this, "mondrian.xmla.drillthroughTotalCount.enable", true);
+    public transient final BooleanProperty EnableTotalCount =
+        new BooleanProperty(
+            this, "mondrian.xmla.drillthroughTotalCount.enable", true);
 
     /**
      * Boolean property which controls whether the MDX parser resolves uses
      * case-sensitive matching when looking up identifiers. The default is
      * false.
      */
-    public final BooleanProperty CaseSensitive = new BooleanProperty(
+    public transient final BooleanProperty CaseSensitive = new BooleanProperty(
             this, "mondrian.olap.case.sensitive", false);
 
 
@@ -827,7 +850,7 @@ public class MondrianProperties extends TriggerableProperties {
      * Property which defines
      * limit on the number of rows returned by XML/A drill through request.
      */
-    public final IntegerProperty MaxRows = new IntegerProperty(
+    public transient final IntegerProperty MaxRows = new IntegerProperty(
         this, "mondrian.xmla.drillthroughMaxRows", 1000);
 
     /**
@@ -842,7 +865,7 @@ public class MondrianProperties extends TriggerableProperties {
      * <li>DB2: 2,500
      * <li>Other: 10,000</ul>
      */
-    public final IntegerProperty MaxConstraints = new IntegerProperty(
+    public transient final IntegerProperty MaxConstraints = new IntegerProperty(
         this, "mondrian.rolap.maxConstraints", 1000);
 
     /**
@@ -851,17 +874,17 @@ public class MondrianProperties extends TriggerableProperties {
      * If evaluation exceeds this depth (for example, while evaluating a
      * very complex calculated member), Mondrian will throw an error.
      */
-    public final IntegerProperty MaxEvalDepth = new IntegerProperty(
+    public transient final IntegerProperty MaxEvalDepth = new IntegerProperty(
             this, "mondrian.rolap.evaluate.MaxEvalDepth", 10);
 
 
-    public final StringProperty JdbcFactoryClass = new StringProperty(
+    public transient final StringProperty JdbcFactoryClass = new StringProperty(
             this, "mondrian.rolap.aggregates.jdbcFactoryClass", null);
 
     /**
      * Timeout value (in seconds) for queries; 0 indicates no timeout
      */
-    public final IntegerProperty QueryTimeout = new IntegerProperty(
+    public transient final IntegerProperty QueryTimeout = new IntegerProperty(
         this, "mondrian.rolap.queryTimeout", 0);
 
 
@@ -869,42 +892,45 @@ public class MondrianProperties extends TriggerableProperties {
      * Whether non-existent member errors should be ignored during schema
      * load.
      */
-    public final BooleanProperty IgnoreInvalidMembers = new BooleanProperty(
-        this, "mondrian.rolap.ignoreInvalidMembers", false);
+    public transient final BooleanProperty IgnoreInvalidMembers =
+        new BooleanProperty(
+            this, "mondrian.rolap.ignoreInvalidMembers", false);
 
     /**
      * Whether non-existent member errors should be ignored during query
      * validation.
      */
-    public final BooleanProperty IgnoreInvalidMembersDuringQuery
+    public transient final BooleanProperty IgnoreInvalidMembersDuringQuery
         = new BooleanProperty(
             this, "mondrian.rolap.ignoreInvalidMembersDuringQuery", false);
 
     /**
      * Iteration limit when computing an aggregate; 0 indicates unlimited
      */
-    public final IntegerProperty IterationLimit = new IntegerProperty(
+    public transient final IntegerProperty IterationLimit = new IntegerProperty(
         this, "mondrian.rolap.iterationLimit", 0);
 
     /**
      * Whether the <code>MemoryMonitor</code> should be enabled. By
      * default for Java5 and above it is not enabled.
      */
-    public final BooleanProperty MemoryMonitor = new BooleanProperty(
+    public transient final BooleanProperty MemoryMonitor = new BooleanProperty(
         this, "mondrian.util.memoryMonitor.enable", false);
 
     /**
      * The default <code>MemoryMonitor</code> percentage threshold.
      */
-    public final IntegerProperty MemoryMonitorThreshold = new IntegerProperty(
-        this, "mondrian.util.memoryMonitor.percentage.threshold", 90);
+    public transient final IntegerProperty MemoryMonitorThreshold =
+        new IntegerProperty(
+            this, "mondrian.util.memoryMonitor.percentage.threshold", 90);
 
     /**
      * The <code>MemoryMonitor</code> class property. If the value is
      * non-null, it is used by the <code>MemoryMonitorFactory</code>
      * to create the implementation.
      */
-    public final StringProperty MemoryMonitorClass = new StringProperty(
+    public transient final StringProperty MemoryMonitorClass =
+        new StringProperty(
             this, "mondrian.util.MemoryMonitor.class", null);
 
     /**
@@ -912,7 +938,7 @@ public class MondrianProperties extends TriggerableProperties {
      * non-null, it is used by the <code>ExpCompiler.Factory</code>
      * to create the implementation.
      */
-    public final StringProperty ExpCompilerClass = new StringProperty(
+    public transient final StringProperty ExpCompilerClass = new StringProperty(
             this, "mondrian.calc.ExpCompiler.class", null);
 
     /**
@@ -925,7 +951,8 @@ public class MondrianProperties extends TriggerableProperties {
      * list, say <code>Integer.MAX_VALUE</code>, then the optimizer
      * will never be applied.
      */
-    public final IntegerProperty CrossJoinOptimizerSize = new IntegerProperty(
+    public transient final IntegerProperty CrossJoinOptimizerSize =
+        new IntegerProperty(
             this, "mondrian.olap.fun.crossjoin.optimizer.size", 0);
 
 }

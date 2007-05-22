@@ -165,6 +165,15 @@ public class CubeAccess {
         }
         return true;
     }
+
+    public int hashCode() {
+        int h = mdxCube.hashCode();
+        h = Util.hash(h, hierarchyList);
+        h = Util.hash(h, memberList);
+        h = Util.hashArray(h, noAccessHierarchies);
+        h = Util.hashArray(h, limitedMembers);
+        return h;
+    }
 }
 
 // End CubeAccess.java

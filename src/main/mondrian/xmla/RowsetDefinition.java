@@ -996,8 +996,8 @@ enum RowsetDefinition {
         }
     };
 
-    final Column[] columnDefinitions;
-    final Column[] sortColumnDefinitions;
+    transient final Column[] columnDefinitions;
+    transient final Column[] sortColumnDefinitions;
 
     /**
      * Date the schema was last modified.

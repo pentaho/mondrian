@@ -517,7 +517,7 @@ public interface CellKey {
                 return Arrays.equals(this.ordinals, that.ordinals);
             } else {
                 // Use symmetric logic in One, Two, Three.
-                return o.equals(this);
+                return o instanceof CellKey && o.equals(this);
             }
         }
     }

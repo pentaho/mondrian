@@ -215,7 +215,7 @@ public class QueryRunner extends Thread {
     };
 
     public QueryRunner(int id, int numSeconds, boolean useRandomQuery) {
-        mRunTime = numSeconds * 1000;
+        mRunTime = (long) numSeconds * 1000;
         mMyId = id;
         mRandomQueries = useRandomQuery;
     }
