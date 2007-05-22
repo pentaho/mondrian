@@ -38,7 +38,7 @@ CP=$CP:~/.schemaWorkbench
 # add all needed JDBC drivers to the classpath
 
 for i in `ls drivers/*.jar`; do
-CP=$CP:drivers/$i
+CP=$CP:$i
 done
 
 #echo $CP
