@@ -12,6 +12,7 @@ package mondrian.test;
 import org.apache.log4j.*;
 import org.apache.log4j.varia.LevelRangeFilter;
 import mondrian.rolap.aggmatcher.AggTableManager;
+import mondrian.olap.MondrianProperties;
 
 import java.io.StringWriter;
 
@@ -448,7 +449,15 @@ public class SchemaTest extends FoodMartTestCase {
             "Unknown aggregator 'invalidAggregator'; valid aggregators are: 'sum', 'count', 'min', 'max', 'avg', 'distinct-count'");
     }
 
-    public void testFoo() {
+    /**
+     * Testcase for
+     * <a href="https://sourceforge.net/tracker/?func=detail&atid=414613&aid=1583462&group_id=35302">
+     * Bug 1721514, "'unknown usage' messages"</a>.
+     */
+    public void testUnknownUsages() {
+        if (!MondrianProperties.instance().ReadAggregates.get()) {
+            return;
+        }
         final Logger logger = Logger.getLogger(AggTableManager.class);
         final StringWriter sw = new StringWriter();
         final Appender appender =
@@ -472,7 +481,7 @@ public class SchemaTest extends FoodMartTestCase {
                     "    <AggExclude pattern=\"agg_l_04_sales_fact_1997\"/>\n" +
                     "    <AggExclude pattern=\"agg_pl_01_sales_fact_1997\"/>\n" +
                     "    <AggName name=\"agg_c_10_sales_fact_1997\">\n" +
-                    "      <AggFactCount column=\"FACT_COUNT\"/>\n" +
+                    "      <AggFactCount column=\"fact_count\"/>\n" +
                     "      <AggMeasure name=\"[Measures].[Store Cost]\" column=\"store_cost\" />\n" +
                     "      <AggMeasure name=\"[Measures].[Store Sales]\" column=\"store_sales\" />\n" +
                     "     </AggName>\n" +
