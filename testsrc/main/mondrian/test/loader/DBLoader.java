@@ -725,7 +725,7 @@ public abstract class DBLoader {
             buf.append("    ");
             buf.append(quoteId(column.name));
             buf.append(" ");
-            buf.append(column.typeName);
+            buf.append(getDialectTypeName(column));
             String constraint = column.getConstraint();
             if (!constraint.equals("")) {
                 buf.append(" ");
@@ -739,11 +739,19 @@ public abstract class DBLoader {
         table.setCreateTableStmt(ddl);
     }
 
+    private String getDialectTypeName(Column column) {
+        if (column.typeName.equals("DECIMAL(10,2)") && dialect.isAccess()) {
+            return "Currency";
+        }
+        return column.typeName;
+    }
+
     public void executeStatements(Table[] tables) throws Exception {
         for (Table table : tables) {
             table.executeStatements();
         }
     }
+
     protected void executeStatements(Table table) throws Exception {
         executeDropTable(table);
 
@@ -1236,10 +1244,10 @@ e.printStackTrace();
 
     /**
      * If we are outputting to JDBC,
-     *      Execute the given set of SQL statements
+     *      execute the given set of SQL statements;
      *
      * Otherwise,
-     *      output the statements to a file.
+     *      outputs the statements to a file.
      *
      * @param batch         SQL statements to execute
      * @param batchSize     # SQL statements to execute

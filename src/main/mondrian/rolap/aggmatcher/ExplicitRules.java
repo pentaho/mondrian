@@ -947,7 +947,9 @@ RME TODO
             return new Recognizer.Matcher() {
                 public boolean matches(String name) {
                     // Match is case insensitive
-                    return ExplicitRules.TableDef.this.factCountName.equalsIgnoreCase(name);
+                    final String factCountName = TableDef.this.factCountName;
+                    return factCountName != null &&
+                        factCountName.equalsIgnoreCase(name);
                 }
             };
         }
