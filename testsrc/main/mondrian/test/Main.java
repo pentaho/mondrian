@@ -83,8 +83,8 @@ public class Main extends TestSuite {
             PrintWriter pw = new PrintWriter(System.out);
             pw.println("mondrian.test.Main received exception:");
             String[] errors = Util.convertStackToString(e);
-            for (int i = 0; i < errors.length; i++) {
-                pw.println(errors[i]);
+            for (String error : errors) {
+                pw.println(error);
             }
             pw.flush();
             System.exit(1);
@@ -170,8 +170,8 @@ public class Main extends TestSuite {
         } else {
             suite.addTestSuite(MemoryMonitorTest.class);
             suite.addTestSuite(ObjectPoolTest.class);
-            suite.addTestSuite(RolapConnectionTest.class);
             suite.addTestSuite(DialectTest.class);
+            suite.addTestSuite(RolapConnectionTest.class);
             suite.addTest(ResultComparatorTest.suite());
             suite.addTestSuite(DrillThroughTest.class);
             suite.addTestSuite(BasicQueryTest.class);

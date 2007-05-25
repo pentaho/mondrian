@@ -1317,6 +1317,19 @@ public class Util extends XOMUtil {
             return null;
         }
 
+        public boolean remove(String key) {
+            boolean found = false;
+            for (int i = 0; i < list.size(); i++) {
+                Pair<String, String> pair = list.get(i);
+                if (pair.getKey().equals(key)) {
+                    list.remove(i);
+                    found = true;
+                    --i;
+                }
+            }
+            return found;
+        }
+        
         public String toString() {
             StringBuilder sb = new StringBuilder(64);
             for (int i = 0, n = list.size(); i < n; i++) {
