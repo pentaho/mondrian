@@ -15,6 +15,9 @@ import java.net.URL;
 import java.io.IOException;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.List;
+import java.util.Collections;
+import java.util.Arrays;
 
 /**
  * Implementation of {@link MondrianServer}.
@@ -25,6 +28,66 @@ import java.util.regex.Matcher;
  */
 class MondrianServerImpl extends MondrianServer {
     private static MondrianVersion version = null;
+    public static final String[] keywords = new String[] {
+        "$AdjustedProbability", "$Distance", "$Probability",
+        "$ProbabilityStDev", "$ProbabilityStdDeV", "$ProbabilityVariance",
+        "$StDev", "$StdDeV", "$Support", "$Variance",
+        "AddCalculatedMembers", "Action", "After", "Aggregate", "All",
+        "Alter", "Ancestor", "And", "Append", "As", "ASC", "Axis",
+        "Automatic", "Back_Color", "BASC", "BDESC", "Before",
+        "Before_And_After", "Before_And_Self", "Before_Self_After",
+        "BottomCount", "BottomPercent", "BottomSum", "Break", "Boolean",
+        "Cache", "Calculated", "Call", "Case", "Catalog_Name", "Cell",
+        "Cell_Ordinal", "Cells", "Chapters", "Children",
+        "Children_Cardinality", "ClosingPeriod", "Cluster",
+        "ClusterDistance", "ClusterProbability", "Clusters",
+        "CoalesceEmpty", "Column_Values", "Columns", "Content",
+        "Contingent", "Continuous", "Correlation", "Cousin", "Covariance",
+        "CovarianceN", "Create", "CreatePropertySet", "CrossJoin", "Cube",
+        "Cube_Name", "CurrentMember", "CurrentCube", "Custom", "Cyclical",
+        "DefaultMember", "Default_Member", "DESC", "Descendents",
+        "Description", "Dimension", "Dimension_Unique_Name", "Dimensions",
+        "Discrete", "Discretized", "DrillDownLevel",
+        "DrillDownLevelBottom", "DrillDownLevelTop", "DrillDownMember",
+        "DrillDownMemberBottom", "DrillDownMemberTop", "DrillTrough",
+        "DrillUpLevel", "DrillUpMember", "Drop", "Else", "Empty", "End",
+        "Equal_Areas", "Exclude_Null", "ExcludeEmpty", "Exclusive",
+        "Expression", "Filter", "FirstChild", "FirstRowset",
+        "FirstSibling", "Flattened", "Font_Flags", "Font_Name",
+        "Font_size", "Fore_Color", "Format_String", "Formatted_Value",
+        "Formula", "From", "Generate", "Global", "Head", "Hierarchize",
+        "Hierarchy", "Hierary_Unique_name", "IIF", "IsEmpty",
+        "Include_Null", "Include_Statistics", "Inclusive", "Input_Only",
+        "IsDescendant", "Item", "Lag", "LastChild", "LastPeriods",
+        "LastSibling", "Lead", "Level", "Level_Unique_Name", "Levels",
+        "LinRegIntercept", "LinRegR2", "LinRegPoint", "LinRegSlope",
+        "LinRegVariance", "Long", "MaxRows", "Median", "Member",
+        "Member_Caption", "Member_Guid", "Member_Name", "Member_Ordinal",
+        "Member_Type", "Member_Unique_Name", "Members",
+        "Microsoft_Clustering", "Microsoft_Decision_Trees", "Mining",
+        "Model", "Model_Existence_Only", "Models", "Move", "MTD", "Name",
+        "Nest", "NextMember", "Non", "Normal", "Not", "Ntext", "Nvarchar",
+        "OLAP", "On", "OpeningPeriod", "OpenQuery", "Or", "Ordered",
+        "Ordinal", "Pages", "Pages", "ParallelPeriod", "Parent",
+        "Parent_Level", "Parent_Unique_Name", "PeriodsToDate", "PMML",
+        "Predict", "Predict_Only", "PredictAdjustedProbability",
+        "PredictHistogram", "Prediction", "PredictionScore",
+        "PredictProbability", "PredictProbabilityStDev",
+        "PredictProbabilityVariance", "PredictStDev", "PredictSupport",
+        "PredictVariance", "PrevMember", "Probability",
+        "Probability_StDev", "Probability_StdDev", "Probability_Variance",
+        "Properties", "Property", "QTD", "RangeMax", "RangeMid",
+        "RangeMin", "Rank", "Recursive", "Refresh", "Related", "Rename",
+        "Rollup", "Rows", "Schema_Name", "Sections", "Select", "Self",
+        "Self_And_After", "Sequence_Time", "Server", "Session", "Set",
+        "SetToArray", "SetToStr", "Shape", "Skip", "Solve_Order", "Sort",
+        "StdDev", "Stdev", "StripCalculatedMembers", "StrToSet",
+        "StrToTuple", "SubSet", "Support", "Tail", "Text", "Thresholds",
+        "ToggleDrillState", "TopCount", "TopPercent", "TopSum",
+        "TupleToStr", "Under", "Uniform", "UniqueName", "Use", "Value",
+        "Value", "Var", "Variance", "VarP", "VarianceP", "VisualTotals",
+        "When", "Where", "With", "WTD", "Xor",
+    };
 
     public void flushSchemaCache() {
         RolapSchema.clearCache();
@@ -38,28 +101,53 @@ class MondrianServerImpl extends MondrianServer {
         return getVersionStatic();
     }
 
+    public List<String> getKeywords() {
+        return Collections.unmodifiableList(Arrays.asList(keywords));
+    }
+
     private static synchronized MondrianVersion getVersionStatic() {
         if (version == null) {
-            final String versionString = loadVersionFile();
+            final String[] vendorTitleVersion = loadVersionFile();
+            String vendor = vendorTitleVersion[0];
+            final String title = vendorTitleVersion[1];
+            final String versionString = vendorTitleVersion[2];
+            int dot1 = versionString.indexOf('.');
+            final int majorVersion =
+                Integer.valueOf(versionString.substring(0, dot1));
+            int dot2 = versionString.indexOf('.', dot1 + 1);
+            final int minorVersion =
+                Integer.valueOf(versionString.substring(dot1 + 1, dot2));
             version = new MondrianVersion() {
                 public String getVersionString() {
                     return versionString;
+                }
+
+                public int getMajorVersion() {
+                    return majorVersion;
+                }
+
+                public int getMinorVersion() {
+                    return minorVersion;
+                }
+
+                public String getProductName() {
+                    return title;
                 }
             };
         }
         return version;
     }
 
-    private static String loadVersionFile() {
+    private static String[] loadVersionFile() {
         // First, try to read the version info from the package. If the classes
         // came from a jar, this info will be set from manifest.mf.
         Package pakkage = MondrianServerImpl.class.getPackage();
         String implementationVersion = pakkage.getImplementationVersion();
-        if (implementationVersion != null) {
-            return implementationVersion;
-        }
 
         // Second, try to read VERSION.txt.
+        String version = null;
+        String title = null;
+        String vendor = null;
         URL resource =
             MondrianServerImpl.class.getClassLoader()
                 .getResource("DefaultRules.xml");
@@ -81,16 +169,24 @@ class MondrianServerImpl extends MondrianServer {
                 Matcher matcher = pattern.matcher(versionString);
                 if (matcher.matches()) {
                     int groupCount = matcher.groupCount();
-                    String title = matcher.group(1);
-                    String version = matcher.group(2);
-                    String vendor = matcher.group(3);
-                    return version;
+                    assert groupCount == 3;
+                    title = matcher.group(1);
+                    version = matcher.group(2);
+                    vendor = matcher.group(3);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        return "Unknown version";
+
+        // Version from jar manifest overrides that from VERSION.txt.
+        if (implementationVersion != null) {
+            version = implementationVersion;
+        }
+        if (version == null) {
+            version = "Unknown version";
+        }
+        return new String[] {vendor, title, version};
     }
 }
 

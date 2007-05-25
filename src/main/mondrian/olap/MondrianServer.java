@@ -9,6 +9,10 @@
 */
 package mondrian.olap;
 
+import java.util.List;
+import java.util.Collections;
+import java.util.Arrays;
+
 /**
  * Interface by which to control an instance of Mondrian.
  *
@@ -64,13 +68,52 @@ public abstract class MondrianServer {
     public abstract MondrianVersion getVersion();
 
     /**
+     * Returns a list of MDX keywords.
+     * @return list of MDX keywords
+     */
+    public abstract List<String> getKeywords();
+
+    /**
      * Description of the version of the server.
      */
     public interface MondrianVersion {
         /**
          * Returns the version string, for example "2.3.0".
+         *
+         * @see java.sql.DatabaseMetaData#getDatabaseProductVersion()
          */
         String getVersionString();
+
+        /**
+         * Returns the major part of the version number.
+         *
+         * <p>For example, if the full version string is "2.3.0", the major
+         * version is 2.
+         *
+         * @return major part of the version number
+         * @see java.sql.DatabaseMetaData#getDatabaseMajorVersion()
+         */
+        int getMajorVersion();
+
+        /**
+         * Returns the minor part of the version number.
+         *
+         * <p>For example, if the full version string is "2.3.0", the minor
+         * version is 3.
+         *
+         * @return minor part of the version number
+         *
+         * @see java.sql.DatabaseMetaData#getDatabaseProductVersion()
+         */
+        int getMinorVersion();
+
+        /**
+         * Retrieves the name of this database product.
+         *
+         * @return database product name
+         * @see java.sql.DatabaseMetaData#getDatabaseProductName()
+         */
+        String getProductName();
     }
 }
 
