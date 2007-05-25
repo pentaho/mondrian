@@ -68,11 +68,7 @@ public class RolapConnectionTest extends TestCase {
                 fail("Expected exception, but got a different one: " + e);
             }
         } catch (IllegalArgumentException e) {
-            // Workaround Java bug, logged on 2006/12/09 with synopsis
-            // "DriverManager.getConnection throws IllegalArgumentException".
-            if (!System.getProperties().getProperty("java.version").startsWith("1.6.")) {
-                fail("Expect IllegalArgumentException only in JDK 1.6");
-            }
+            handleIllegalArgumentException(properties, e);
         } finally {
             RolapConnectionPool.instance().clearPool();
         }
@@ -96,19 +92,46 @@ public class RolapConnectionTest extends TestCase {
         properties.put("jdbc.charSet", "UTF-16");
         properties.put(RolapConnectionProperties.PoolNeeded.name(), "false");
         DataSource dataSource = RolapConnection.createDataSource(properties);
-        Connection connection;
+        Connection connection = null;
         try {
             connection = dataSource.getConnection();
-            connection.close();
             fail("Expected exception");
         } catch (SQLException se) {
             // this is expected
         } catch (IllegalArgumentException e) {
-            // Workaround Java bug, logged on 2006/12/09 with synopsis
-            // "DriverManager.getConnection throws IllegalArgumentException".
-            if (!System.getProperties().getProperty("java.version").startsWith("1.6.")) {
-                fail("Expect IllegalArgumentException only in JDK 1.6");
+            handleIllegalArgumentException(properties, e);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
             }
+        }
+    }
+
+    /**
+     * Handle an {@link IllegalArgumentException} which occurs when have
+     * tried to create a connection with an illegal charset.
+     */
+    private void handleIllegalArgumentException(
+        Util.PropertyList properties,
+        IllegalArgumentException e)
+    {
+        // Workaround Java bug, logged on 2006/12/09 with synopsis
+        // "DriverManager.getConnection throws IllegalArgumentException".
+        if (System.getProperties().getProperty("java.version").startsWith("1.6.")) {
+            properties.remove("jdbc.charSet");
+            DataSource dataSource = RolapConnection.createDataSource(properties);
+            try {
+                Connection connection1 = dataSource.getConnection();
+                connection1.close();
+            } catch (SQLException e1) {
+                // ignore
+            }
+        } else {
+            fail("Expect IllegalArgumentException only in JDK 1.6, got " + e);
         }
     }
 
