@@ -809,6 +809,8 @@ class RolapResult extends ResultBase {
             ev.setCellReader(batchingReader);
             Object preliminaryValue = calc.evaluate(ev);
             Util.discard(preliminaryValue);
+            ev.clearExpResultCache();
+
             if (!batchingReader.loadAggregations(evaluator.getQuery())) {
                 break;
             }
@@ -1246,10 +1248,6 @@ class RolapResult extends ResultBase {
                 namedSetValues.put(name, value);
             }
             return value;
-        }
-
-        protected void clearNamedSets() {
-            namedSetValues.clear();
         }
 
         public Object getParameterValue(ParameterSlot slot) {
