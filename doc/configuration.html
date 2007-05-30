@@ -366,6 +366,20 @@ suite of regression tests.</p>
       </td>
     </tr>
     <tr>
+      <td>
+        <code>
+        <a href="api/mondrian/olap/MondrianProperties.html#NullDenominatorProducesInfinity">mondrian.olap.NullDenominatorProducesInfinity</a></code></td>
+      <td>boolean</td>
+      <td>true</td>
+      <td>
+          If a division has a non-null numerator and a null denominator,
+          it evaluates to "Infinity", which conforms to MSAS behavior. However,
+          the old semantics of evaluating this to NULL(non MSAS conforming), is
+          useful in some applications. This properties controls whether the
+          result should be "Infinity" or NULL.
+      </td>
+    </tr>
+    <tr>
       <td colspan="4">
 
       <b><br>

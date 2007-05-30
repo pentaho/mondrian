@@ -1594,13 +1594,25 @@ public class BuiltinFunTable extends FunTableImpl {
                     public double evaluateDouble(Evaluator evaluator) {
                         final double v0 = calc0.evaluateDouble(evaluator);
                         final double v1 = calc1.evaluateDouble(evaluator);
-                        // Null in numerator always returns DoubleNull
-                        // Null in denominator with numeric numerator returns infinity
-                        // This is consistent with MSAS
+                        // Null in numerator always returns DoubleNull.
+                        //
+                        // If the mondrian property 
+                        // mondrian.olap.NullDenominatorProducesInfinity is true(default),
+                        // Null in denominator with numeric numerator returns infinity.
+                        // This is consistent with MSAS.
+                        //
+                        // If this property is false, Null in denominator returns Null.
+                        // This is only used by certain applications and does not conform
+                        // to MSAS behavior.
                         if (v0 == DoubleNull) {
                             return DoubleNull;
                         } else if (v1 == DoubleNull) {
-                            return Double.POSITIVE_INFINITY;
+                        	if (MondrianProperties.instance().
+                        	    NullDenominatorProducesInfinity.get()) {
+                        	    return Double.POSITIVE_INFINITY;
+                        	} else {
+                        	    return DoubleNull;
+                        	}
                         } else {
                             return v0 / v1;
                         }

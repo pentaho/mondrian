@@ -565,10 +565,12 @@ class RolapResult extends ResultBase {
             evalLoad(
                 nonAllMembers, nonAllMembers.size() - 1,
                 evaluator, axis, calc, axisMembers);
-            evaluator.clearExpResultCache();
 
             if (!batchingReader.loadAggregations(query)) {
                 break;
+            } else {
+                // Clear expression cache if new aggregates are loaded.
+                evaluator.clearExpResultCache();            	
             }
 
             if (attempt++ > maxEvalDepth) {
@@ -599,7 +601,8 @@ class RolapResult extends ResultBase {
             evaluator.setCellReader(aggregatingReader);
             axisResult =
                     executeAxis(evaluator.push(), axis, calc, true, null);
-            evaluator.clearExpResultCache();
+            // No need to clear expression cache here as no new aggregates are
+            // loaded(aggregatingReader reads from cache).
         } else {
             for (Member m : nonAllMembers.get(cnt)) {
                 evaluator.setContext(m);
@@ -764,7 +767,6 @@ class RolapResult extends ResultBase {
                 evaluator.setCellReader(this.batchingReader);
                 executeStripe(query.axes.length - 1,
                                 (RolapEvaluator) evaluator.push());
-                evaluator.clearExpResultCache();
 
                 // Retrieve the aggregations collected.
                 //
@@ -772,7 +774,11 @@ class RolapResult extends ResultBase {
                     // We got all of the cells we needed, so the result must be
                     // correct.
                     return;
+                } else {
+                    // Clear expression cache if new aggregates are loaded.                    
+                    evaluator.clearExpResultCache();                	
                 }
+                
                 if (count++ > maxEvalDepth) {
                     if (evaluator instanceof RolapDependencyTestingEvaluator) {
                         // The dependency testing evaluator can trigger new
@@ -809,11 +815,14 @@ class RolapResult extends ResultBase {
             ev.setCellReader(batchingReader);
             Object preliminaryValue = calc.evaluate(ev);
             Util.discard(preliminaryValue);
-            ev.clearExpResultCache();
 
             if (!batchingReader.loadAggregations(evaluator.getQuery())) {
                 break;
+            } else {
+                // Clear expression cache if new aggregates are loaded.
+                ev.clearExpResultCache();
             }
+            
             if (attempt++ > maxEvalDepth) {
                 throw Util.newInternal(
                         "Failed to load all aggregations after " +
@@ -822,11 +831,15 @@ class RolapResult extends ResultBase {
         }
 
         // If there were pending reads when we entered, some of the other
-        // expressions may have been evaluated incorrectly. Set the reaader's
+        // expressions may have been evaluated incorrectly. Set the reader's
         // 'dirty' flag so that the caller knows that it must re-evaluate them.
         if (dirty) {
             batchingReader.setDirty(true);
+            
+            // Clear expression cache if new aggregates are loaded.
+            ((RolapEvaluator)evaluator).clearExpResultCache();
         }
+        
         RolapEvaluator ev = (RolapEvaluator) evaluator.push();
         ev.setCellReader(aggregatingReader);
         Object value = calc.evaluate(ev);

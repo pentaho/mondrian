@@ -954,7 +954,17 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final IntegerProperty CrossJoinOptimizerSize =
         new IntegerProperty(
             this, "mondrian.olap.fun.crossjoin.optimizer.size", 0);
-
+    
+    /**
+     * If a division has a non-null numerator and a null denominator,
+     * it evaluates to "Infinity", which conforms to MSAS behavior. However,
+     * the old semantics of evaluating this to NULL(non MSAS conforming), is
+     * useful in some applications. This properties controls whether the
+     * result should be "Infinity" or NULL.
+     */
+    public transient final BooleanProperty NullDenominatorProducesInfinity = 
+    	new BooleanProperty(
+            this, "mondrian.olap.NullDenominatorProducesInfinity", true);
 }
 
 // End MondrianProperties.java
