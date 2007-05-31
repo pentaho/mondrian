@@ -4169,22 +4169,20 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDivideByNull() {
+        
         boolean origNullDenominatorProducesInfinity =
             MondrianProperties.instance().NullDenominatorProducesInfinity.get();
-        MondrianProperties.instance().NullDenominatorProducesInfinity.set(false);
-
-        // Get a fresh connection; Otherwise the mondrian property setting
-        // is not refreshed.
-        Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);
         
-        context.assertExprReturns("-2 / " + NullNumericExpr, "");
-        context.assertExprReturns(NullNumericExpr + " / - 2", "");
-        context.assertExprReturns(NullNumericExpr + " / " + NullNumericExpr, "");
-        
-        MondrianProperties.instance().NullDenominatorProducesInfinity.
-        	set(origNullDenominatorProducesInfinity);
-    	
+        try {
+            MondrianProperties.instance().NullDenominatorProducesInfinity.set(false);
+            
+            assertExprReturns("-2 / " + NullNumericExpr, "");
+            assertExprReturns(NullNumericExpr + " / - 2", "");
+            assertExprReturns(NullNumericExpr + " / " + NullNumericExpr, "");
+        } finally {
+            MondrianProperties.instance().NullDenominatorProducesInfinity.
+            set(origNullDenominatorProducesInfinity);
+        }
     }
     
     public void testDivideByZero() {

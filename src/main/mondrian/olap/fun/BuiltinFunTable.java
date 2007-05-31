@@ -1590,6 +1590,9 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
+                final boolean isNullDenominatorProducesInfinity =
+                        MondrianProperties.instance().
+                        NullDenominatorProducesInfinity.get();
                 return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
                     public double evaluateDouble(Evaluator evaluator) {
                         final double v0 = calc0.evaluateDouble(evaluator);
@@ -1607,8 +1610,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         if (v0 == DoubleNull) {
                             return DoubleNull;
                         } else if (v1 == DoubleNull) {
-                        	if (MondrianProperties.instance().
-                        	    NullDenominatorProducesInfinity.get()) {
+                        	if (isNullDenominatorProducesInfinity) {
                         	    return Double.POSITIVE_INFINITY;
                         	} else {
                         	    return DoubleNull;
