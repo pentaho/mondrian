@@ -568,11 +568,8 @@ class RolapResult extends ResultBase {
 
             if (!batchingReader.loadAggregations(query)) {
                 break;
-            } else {
-                // Clear expression cache if new aggregates are loaded.
-                evaluator.clearExpResultCache();            	
             }
-
+            
             if (attempt++ > maxEvalDepth) {
                 throw Util.newInternal(
                     "Failed to load all aggregations after " +
@@ -764,7 +761,7 @@ class RolapResult extends ResultBase {
             int count = 0;
             while (true) {
 
-                evaluator.setCellReader(this.batchingReader);
+                evaluator.setCellReader(batchingReader);
                 executeStripe(query.axes.length - 1,
                                 (RolapEvaluator) evaluator.push());
 
@@ -774,9 +771,6 @@ class RolapResult extends ResultBase {
                     // We got all of the cells we needed, so the result must be
                     // correct.
                     return;
-                } else {
-                    // Clear expression cache if new aggregates are loaded.                    
-                    evaluator.clearExpResultCache();                	
                 }
                 
                 if (count++ > maxEvalDepth) {
@@ -818,9 +812,6 @@ class RolapResult extends ResultBase {
 
             if (!batchingReader.loadAggregations(evaluator.getQuery())) {
                 break;
-            } else {
-                // Clear expression cache if new aggregates are loaded.
-                ev.clearExpResultCache();
             }
             
             if (attempt++ > maxEvalDepth) {
@@ -835,9 +826,6 @@ class RolapResult extends ResultBase {
         // 'dirty' flag so that the caller knows that it must re-evaluate them.
         if (dirty) {
             batchingReader.setDirty(true);
-            
-            // Clear expression cache if new aggregates are loaded.
-            ((RolapEvaluator)evaluator).clearExpResultCache();
         }
         
         RolapEvaluator ev = (RolapEvaluator) evaluator.push();

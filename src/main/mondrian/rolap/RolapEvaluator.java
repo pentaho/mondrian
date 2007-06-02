@@ -656,10 +656,23 @@ public void printCurrentMemberNames() {
         Object key = getExpResultCacheKey(cacheDescriptor);
         Object result = root.expResultCache.get(key);
         if (result == null) {
+            int aggregateCacheMissCountBefore = cellReader.getMissCount();
             result = cacheDescriptor.evaluate(this);
-            root.expResultCache.put(key, result == null ? nullResult : result);
-        } else if (result == nullResult) {
-            result = null;
+            int aggregateCacheMissCountAfter = cellReader.getMissCount();
+            
+            // Only cache the evaluation result if the evaluation did not
+            // use any missing aggregates. If missing aggregates are seen,
+            // the aggregateCacheMissCount will increase.
+            if (aggregateCacheMissCountBefore == aggregateCacheMissCountAfter) {
+                if (result == null) {
+                    result = nullResult;
+                }
+                root.expResultCache.put(key, result);
+            }
+        } else {
+            if (result == nullResult) {
+                result = null;
+            }
         }
         return result;
     }
