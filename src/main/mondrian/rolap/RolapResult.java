@@ -427,7 +427,9 @@ class RolapResult extends ResultBase {
                 // cache so each thread can start using it
                 rcube.pushAggregateModificationsToGlobalCache();
 
-                evaluator.clearExpResultCache();
+                // Expression cache duration is for each query. It is time to
+                // clear out the whole expression cache at the end of a query.
+                evaluator.clearExpResultCache(true);
             }
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("RolapResult<init>: " + Util.printMemory());
@@ -568,6 +570,10 @@ class RolapResult extends ResultBase {
 
             if (!batchingReader.loadAggregations(query)) {
                 break;
+            } else {
+                // Clear invalid expression result so that the next evaluation
+                // will pick up the newly loaded aggregates.
+                evaluator.clearExpResultCache(false);
             }
             
             if (attempt++ > maxEvalDepth) {
@@ -771,6 +777,10 @@ class RolapResult extends ResultBase {
                     // We got all of the cells we needed, so the result must be
                     // correct.
                     return;
+                } else {
+                    // Clear invalid expression result so that the next evaluation
+                    // will pick up the newly loaded aggregates.
+                    evaluator.clearExpResultCache(false);
                 }
                 
                 if (count++ > maxEvalDepth) {
@@ -812,6 +822,10 @@ class RolapResult extends ResultBase {
 
             if (!batchingReader.loadAggregations(evaluator.getQuery())) {
                 break;
+            } else {
+                // Clear invalid expression result so that the next evaluation
+                // will pick up the newly loaded aggregates.
+                ev.clearExpResultCache(false);
             }
             
             if (attempt++ > maxEvalDepth) {

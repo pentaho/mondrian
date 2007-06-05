@@ -142,6 +142,8 @@ public class RolapEvaluator implements Evaluator {
     protected static class RolapEvaluatorRoot {
         final Map<Object, Object> expResultCache =
             new HashMap<Object, Object>();
+        final Map<Object, Object> tmpExpResultCache =
+            new HashMap<Object, Object>();
         final RolapCube cube;
         final RolapConnection connection;
         final SchemaReader schemaReader;
@@ -195,6 +197,48 @@ public class RolapEvaluator implements Evaluator {
          */
         public Object getParameterValue(ParameterSlot slot) {
             throw new UnsupportedOperationException();
+        }
+        
+        /**
+         * Put result in cache.
+         * 
+         * @param key key
+         * @param result value to be cached
+         * @param isValidResult indicate if this result is valid
+         */
+        public void putCacheResult(Object key, Object result, 
+            boolean isValidResult) {
+            if (isValidResult) {
+                expResultCache.put(key, result);
+            } else {
+                tmpExpResultCache.put(key, result);
+            }
+        }
+        
+        /**
+         * Get result from cache
+         * 
+         * @param key cache key
+         * @return cached expression
+         */
+        public Object getCacheResult(Object key) {
+            Object result = expResultCache.get(key);
+            if (result == null) {
+                result = tmpExpResultCache.get(key);
+            }
+            return result;
+        }
+        
+        /**
+         * Clear the expression result cache.
+         * 
+         * @param clearValidResult whether to clear valid expression results
+         */
+        public void clearResultCache(boolean clearValidResult) {
+            if (clearValidResult) {
+                expResultCache.clear();
+            }
+            tmpExpResultCache.clear();
         }
     }
 
@@ -654,31 +698,39 @@ public void printCurrentMemberNames() {
         // Look up a cached result, and if not present, compute one and add to
         // cache. Use a dummy value to represent nulls.
         Object key = getExpResultCacheKey(cacheDescriptor);
-        Object result = root.expResultCache.get(key);
+        Object result = root.getCacheResult(key);
         if (result == null) {
             int aggregateCacheMissCountBefore = cellReader.getMissCount();
             result = cacheDescriptor.evaluate(this);
             int aggregateCacheMissCountAfter = cellReader.getMissCount();
+
+            boolean isValidResult;
             
-            // Only cache the evaluation result if the evaluation did not
-            // use any missing aggregates. If missing aggregates are seen,
-            // the aggregateCacheMissCount will increase.
-            if (aggregateCacheMissCountBefore == aggregateCacheMissCountAfter) {
-                if (result == null) {
-                    result = nullResult;
-                }
-                root.expResultCache.put(key, result);
+            if (aggregateCacheMissCountBefore == 
+                aggregateCacheMissCountAfter) {
+                // Cache the evaluation result as valid result  if the 
+                // evaluation did not use any missing aggregates. If missing
+                // aggregates are seen, the aggregateCacheMissCount will
+                // increase.
+                isValidResult = true;
+            } else {
+                // Cache the evaluation result as invalid result if the
+                // evaluation uses missing aggregates.
+                isValidResult = false;
             }
-        } else {
-            if (result == nullResult) {
-                result = null;
-            }
+            root.putCacheResult(
+                key,
+                result == null ? nullResult : result,
+                isValidResult);
+        } else if (result == nullResult) {
+            result = null;
         }
+        
         return result;
     }
 
-    public void clearExpResultCache() {
-        root.expResultCache.clear();
+    public void clearExpResultCache(boolean clearValidResult) {
+        root.clearResultCache(clearValidResult);
     }
 
     public boolean isNonEmpty() {
