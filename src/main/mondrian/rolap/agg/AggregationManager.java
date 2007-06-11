@@ -72,14 +72,10 @@ public class AggregationManager extends RolapAggregationManager {
         Aggregation aggregation =
                 star.lookupOrCreateAggregation(constrainedColumnsBitKey);
 
-        // synchronized access
-        synchronized (aggregation) {
             // try to eliminate unneccessary constraints
             // for Oracle: prevent an IN-clause with more than 1000 elements
             predicates = aggregation.optimizePredicates(columns, predicates);
-
             aggregation.load(columns, measures, predicates, pinnedSegments);
-        }
     }
 
     public Object getCellFromCache(CellRequest request) {
@@ -91,13 +87,10 @@ public class AggregationManager extends RolapAggregationManager {
             // cell is not in any aggregation
             return null;
         }
-        // synchronized access
-        synchronized (aggregation) {
             Object o = aggregation.getCellValue(
                     measure, request.getSingleValues(), null);
             if (o != null) {
                 return o;
-            }
         }
         throw Util.newInternal("not found");
     }
@@ -113,11 +106,8 @@ public class AggregationManager extends RolapAggregationManager {
             // cell is not in any aggregation
             return null;
         } else {
-            // synchronized access
-            synchronized (aggregation) {
                 return aggregation.getCellValue(measure,
                             request.getSingleValues(), pinSet);
-            }
         }
     }
 

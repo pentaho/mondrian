@@ -19,6 +19,8 @@ import java.sql.*;
 import java.util.*;
 import java.io.PrintWriter;
 
+import org.apache.log4j.Logger;
+
 /**
  * A <code>Segment</code> is a collection of cell values parameterized by
  * a measure, and a set of (column, value) pairs. An example of a segment is</p>
@@ -91,6 +93,8 @@ class Segment {
      * but should still be ignored.
      */
     private final List<Region> excludedRegions;
+    private static final Logger LOGGER =
+            Logger.getLogger(Segment.class);
 
     /**
      * Creates a <code>Segment</code>; it's not loaded yet.
@@ -158,13 +162,7 @@ class Segment {
 
     private void makeDescription(StringBuilder buf, boolean values) {
         final String sep = Util.nl + "    ";
-        buf.append("Segment #");
-        buf.append(id);
-        buf.append(" {");
-        buf.append(sep);
-        buf.append("measure=");
-        buf.append(measure.getAggregator().getExpression(
-                        measure.getExpression().getGenericExpression()));
+        buf.append(printSegmentHeaderInfo(sep));
 
         RolapStar.Column[] columns = aggregation.getColumns();
         for (int i = 0; i < columns.length; i++) {
@@ -200,6 +198,18 @@ class Segment {
         buf.append('}');
     }
 
+    private String printSegmentHeaderInfo(String sep) {
+        StringBuilder buf = new StringBuilder();
+        buf.append("Segment #");
+        buf.append(id);
+        buf.append(" {");
+        buf.append(sep);
+        buf.append("measure=");
+        buf.append(measure.getAggregator().getExpression(
+                        measure.getExpression().getGenericExpression()));
+        return buf.toString();
+    }
+
     public String toString() {
         if (this.desc == null) {
             StringBuilder buf = new StringBuilder(64);
@@ -225,10 +235,8 @@ class Segment {
      *
      * </ul></p>
      *
-     * <p>Note: Must be called from a synchronized context, because uses the
-     * <code>cellKey[]</code> as workspace.</p>
      */
-    Object getCellValue(Object[] keys) {
+    synchronized Object getCellValue(Object[] keys) {
         assert keys.length == axes.length;
         int missed = 0;
         for (int i = 0; i < keys.length; i++) {
@@ -535,6 +543,7 @@ class Segment {
     public synchronized void waitUntilLoaded() {
         if (!isReady()) {
             try {
+                LOGGER.debug("Waiting on " + printSegmentHeaderInfo(","));
                 wait();
             } catch (InterruptedException e) {
             }
@@ -552,11 +561,12 @@ class Segment {
 
     /**
      * Prints the state of this <code>Segment</code>, including constraints
-     * and values.
+     * and values. Blocks the current thread until the segment is loaded.
      *
      * @param pw Writer
      */
     public void print(PrintWriter pw) {
+        waitUntilLoaded();
         final StringBuilder buf = new StringBuilder();
         makeDescription(buf, true);
         pw.print(buf.toString());

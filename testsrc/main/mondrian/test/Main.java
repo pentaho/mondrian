@@ -170,8 +170,8 @@ public class Main extends TestSuite {
         } else {
             suite.addTestSuite(MemoryMonitorTest.class);
             suite.addTestSuite(ObjectPoolTest.class);
-            suite.addTestSuite(DialectTest.class);
             suite.addTestSuite(RolapConnectionTest.class);
+            suite.addTestSuite(DialectTest.class);
             suite.addTest(ResultComparatorTest.suite());
             suite.addTestSuite(DrillThroughTest.class);
             suite.addTestSuite(BasicQueryTest.class);

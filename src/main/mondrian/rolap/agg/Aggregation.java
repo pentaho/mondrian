@@ -18,6 +18,7 @@ import mondrian.rolap.*;
 
 import java.lang.ref.SoftReference;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.io.PrintWriter;
 
 /**
@@ -68,7 +69,9 @@ public class Aggregation {
 
     /**
      * List of soft references to segments.
-     * Access must be inside of synchronized methods.
+     * This List implementation should be Thread safe on all mutative operations 
+     * (add, set, and so on). Access to this list is not synchronized in the code.
+     * This is the only mutable field in the class.
      */
     private final List<SoftReference<Segment>> segmentRefs;
 
@@ -83,9 +86,6 @@ public class Aggregation {
     /**
      * This is set in the load method and is used during
      * the processing of a particular aggregate load.
-     * The AggregateManager synchonizes access to each instance's methods
-     * so that an instance is processing a single set of columns, measures,
-     * contraints at any one time.
      */
     private RolapStar.Column[] columns;
 
@@ -102,10 +102,14 @@ public class Aggregation {
     {
         this.star = star;
         this.constrainedColumnsBitKey = constrainedColumnsBitKey;
-        this.segmentRefs = new ArrayList<SoftReference<Segment>>();
+        this.segmentRefs = getThreadSafeListImplementation();
         this.maxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         this.creationTimestamp = new Date();
+    }
+
+    private CopyOnWriteArrayList<SoftReference<Segment>> getThreadSafeListImplementation() {
+        return new CopyOnWriteArrayList<SoftReference<Segment>>();
     }
 
     /**
@@ -128,13 +132,15 @@ public class Aggregation {
      *   state = {CA, OR},
      *   gender = unconstrained
      */
-    public synchronized void load(
+    public void load(
             RolapStar.Column[] columns,
             RolapStar.Measure[] measures,
             StarColumnPredicate[] predicates,
             RolapAggregationManager.PinSet pinnedSegments) {
         // all constrained columns
-        this.columns = columns;
+        if (this.columns == null) {
+            this.columns = columns;
+        }
 
         BitKey measureBitKey = constrainedColumnsBitKey.emptyCopy();
         int axisCount = columns.length;
@@ -146,19 +152,8 @@ public class Aggregation {
         for (int i = 0; i < axisCount; i++) {
             axes[i] = new Aggregation.Axis(predicates[i]);
         }
-
-        Segment[] segments = new Segment[measures.length];
-        for (int i = 0; i < measures.length; i++) {
-            RolapStar.Measure measure = measures[i];
-            measureBitKey.set(measure.getBitPosition());
-            List<Segment.Region> excludedRegions = Collections.emptyList();
-            Segment segment =
-                new Segment(this, measure, axes, excludedRegions);
-            segments[i] = segment;
-            SoftReference<Segment> ref = new SoftReference<Segment>(segment);
-            segmentRefs.add(ref);
-            ((AggregationManager.PinSetImpl) pinnedSegments).add(segment);
-        }
+        Segment[] segments = addSegmentsToAggregation(measures,
+                measureBitKey, axes, pinnedSegments);
         // The constrained columns are simply the level and foreign columns
         BitKey levelBitKey = constrainedColumnsBitKey;
         Segment.load(
@@ -166,11 +161,29 @@ public class Aggregation {
             measureBitKey, pinnedSegments, axes);
     }
 
+    private Segment[] addSegmentsToAggregation(
+            RolapStar.Measure[] measures, BitKey measureBitKey, Axis[] axes,
+            RolapAggregationManager.PinSet pinnedSegments) {
+        Segment[] segments = new Segment[measures.length];
+        for (int i = 0; i < measures.length; i++) {
+            RolapStar.Measure measure = measures[i];
+            measureBitKey.set(measure.getBitPosition());
+            List<Segment.Region> excludedRegions = Collections.emptyList();
+            Segment segment =
+                    new Segment(this, measure, axes, excludedRegions);
+            segments[i] = segment;
+            SoftReference<Segment> ref = new SoftReference<Segment>(segment);
+            segmentRefs.add(ref);
+            ((AggregationManager.PinSetImpl) pinnedSegments).add(segment);
+        }
+        return segments;
+    }
+
     /**
      * Drops predicates, where the list of values is close to the values which
      * would be returned anyway.
      */
-    public synchronized StarColumnPredicate[] optimizePredicates(
+    public StarColumnPredicate[] optimizePredicates(
             RolapStar.Column[] columns,
             StarColumnPredicate[] predicates) {
 
@@ -618,6 +631,8 @@ public class Aggregation {
 
     /**
      * Retrieves the value identified by <code>keys</code>.
+     * If the requested cell is found in the loading segment, current Thread
+     * will be blocked until segment is loaded.
      *
      * <p>If <code>pinSet</code> is not null, pins the
      * segment which holds it. <code>pinSet</code> ensures that a segment is
@@ -628,16 +643,15 @@ public class Aggregation {
      * <p>Returns {@link Util#nullValue} if a segment contains the cell and the
      * cell's value is null.
      */
-    public synchronized Object getCellValue(
+    public Object getCellValue(
         RolapStar.Measure measure,
         Object[] keys,
         RolapAggregationManager.PinSet pinSet)
     {
-        for (Iterator<SoftReference<Segment>> it = segmentRefs.iterator(); it.hasNext();) {
-            SoftReference<Segment> ref = it.next();
-            Segment segment = ref.get();
+        for (SoftReference<Segment> segmentref : segmentRefs) {
+            Segment segment = segmentref.get();
             if (segment == null) {
-                it.remove();
+                segmentRefs.remove(segmentref);
                 continue; // it's being garbage-collected
             }
             if (segment.measure != measure) {
@@ -657,7 +671,11 @@ public class Aggregation {
                         && !((AggregationManager.PinSetImpl) pinSet).contains(segment)
                         && segment.wouldContain(keys))
                 {
-                    ((AggregationManager.PinSetImpl) pinSet).add(segment);
+                    segment.waitUntilLoaded(); //Waiting on Segment state
+                    if (segment.isReady()) {
+                        ((AggregationManager.PinSetImpl) pinSet).add(segment);
+                        return segment.getCellValue(keys);
+                    }
                 }
             }
         }
