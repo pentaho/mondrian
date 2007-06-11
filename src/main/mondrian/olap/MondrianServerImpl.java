@@ -111,11 +111,19 @@ class MondrianServerImpl extends MondrianServer {
             String vendor = vendorTitleVersion[0];
             final String title = vendorTitleVersion[1];
             final String versionString = vendorTitleVersion[2];
+            if (false) {
+                System.out.println(
+                    "vendor=" + vendor
+                        + ", title=" + title
+                        + ", versionString=" + versionString);
+            }
             int dot1 = versionString.indexOf('.');
             final int majorVersion =
+                dot1 < 0 ? 1 :
                 Integer.valueOf(versionString.substring(0, dot1));
             int dot2 = versionString.indexOf('.', dot1 + 1);
             final int minorVersion =
+                dot2 < 0 ? 0 :
                 Integer.valueOf(versionString.substring(dot1 + 1, dot2));
             version = new MondrianVersion() {
                 public String getVersionString() {

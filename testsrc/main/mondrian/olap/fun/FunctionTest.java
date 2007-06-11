@@ -2335,6 +2335,84 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Promotion Media].[All Media], [Product].[All Products].[Non-Consumable]}" ));
     }
 
+    public void testExtract() {
+        assertAxisReturns(
+            "Extract(\n" +
+                "Crossjoin({[Gender].[F], [Gender].[M]},\n" +
+                "          {[Marital Status].Members}),\n" +
+                "[Gender])",
+            fold(
+                "[Gender].[All Gender].[F]\n" +
+                    "[Gender].[All Gender].[M]"));
+
+        // Extract(<set>) with no dimensions is not valid
+        assertAxisThrows("Extract(Crossjoin({[Gender].[F], [Gender].[M]}, {[Marital Status].Members}))",
+            "No function matches signature 'Extract(<Set>)'");
+
+        // Extract applied to non-constant dimension should fail
+        assertAxisThrows("Extract(Crossjoin([Gender].Members, [Store].Children), [Store].Hierarchy.Dimension)",
+            "not a constant dimension: [Store].Hierarchy.Dimension");
+
+        // Extract applied to set of members is OK (if silly). Duplicates are
+        // removed, as always.
+        assertAxisReturns("Extract({[Gender].[M], [Gender].Members}, [Gender])",
+            fold(
+                "[Gender].[All Gender].[M]\n" +
+                "[Gender].[All Gender]\n" +
+                    "[Gender].[All Gender].[F]"));
+
+        // Extract of dimension not in set fails
+        assertAxisThrows(
+            "Extract(Crossjoin([Gender].Members, [Store].Children), [Marital Status])",
+            "dimension [Marital Status] is not a dimension of the expression Crossjoin([Gender].Members, [Store].Children)");
+
+        // Extract applied to empty set returns empty set
+        assertAxisReturns("Extract(Crossjoin({[Gender].Parent}, [Store].Children), [Store])",
+            "");
+
+        // Extract applied to asymmetric set
+        assertAxisReturns("Extract(\n" +
+            "{([Gender].[M], [Marital Status].[M]),\n" +
+            " ([Gender].[F], [Marital Status].[M]),\n" +
+            " ([Gender].[M], [Marital Status].[S])},\n" +
+            "[Gender])",
+            fold(
+                "[Gender].[All Gender].[M]\n" +
+                    "[Gender].[All Gender].[F]"));
+
+        // Extract applied to asymmetric set (other side)
+        assertAxisReturns("Extract(\n" +
+            "{([Gender].[M], [Marital Status].[M]),\n" +
+            " ([Gender].[F], [Marital Status].[M]),\n" +
+            " ([Gender].[M], [Marital Status].[S])},\n" +
+            "[Marital Status])",
+            fold(
+                "[Marital Status].[All Marital Status].[M]\n" +
+                    "[Marital Status].[All Marital Status].[S]"));
+
+        // Extract more than one dimension
+        assertAxisReturns("Extract(\n" +
+            "[Gender].Children * [Marital Status].Children * [Time].[1997].Children * [Store].[USA].Children,\n" +
+            "[Time], [Marital Status])",
+            fold(
+                "{[Time].[1997].[Q1], [Marital Status].[All Marital Status].[M]}\n" +
+                    "{[Time].[1997].[Q2], [Marital Status].[All Marital Status].[M]}\n" +
+                    "{[Time].[1997].[Q3], [Marital Status].[All Marital Status].[M]}\n" +
+                    "{[Time].[1997].[Q4], [Marital Status].[All Marital Status].[M]}\n" +
+                    "{[Time].[1997].[Q1], [Marital Status].[All Marital Status].[S]}\n" +
+                    "{[Time].[1997].[Q2], [Marital Status].[All Marital Status].[S]}\n" +
+                    "{[Time].[1997].[Q3], [Marital Status].[All Marital Status].[S]}\n" +
+                    "{[Time].[1997].[Q4], [Marital Status].[All Marital Status].[S]}"));
+
+        // Extract duplicate dimensions fails
+        assertAxisThrows("Extract(\n" +
+            "{([Gender].[M], [Marital Status].[M]),\n" +
+            " ([Gender].[F], [Marital Status].[M]),\n" +
+            " ([Gender].[M], [Marital Status].[S])},\n" +
+            "[Gender], [Gender])",
+            "dimension [Gender] is extracted more than once");
+    }
+
     /**
      * Tests that TopPercent() operates succesfully on a
      * axis of crossjoined tuples.  previously, this would
@@ -4169,13 +4247,12 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDivideByNull() {
-        
         boolean origNullDenominatorProducesInfinity =
             MondrianProperties.instance().NullDenominatorProducesInfinity.get();
-        
+
         try {
             MondrianProperties.instance().NullDenominatorProducesInfinity.set(false);
-            
+
             assertExprReturns("-2 / " + NullNumericExpr, "");
             assertExprReturns(NullNumericExpr + " / - 2", "");
             assertExprReturns(NullNumericExpr + " / " + NullNumericExpr, "");
@@ -4184,7 +4261,7 @@ public class FunctionTest extends FoodMartTestCase {
             set(origNullDenominatorProducesInfinity);
         }
     }
-    
+
     public void testDivideByZero() {
         assertExprReturns("-3 / (2 - 2)", "-Infinity");
     }

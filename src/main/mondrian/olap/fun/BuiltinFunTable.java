@@ -937,36 +937,7 @@ public class BuiltinFunTable extends FunTableImpl {
 
         define(DescendantsFunDef.Resolver);
 
-        define(new FunDefBase(
-                "Distinct",
-                "Distinct(<Set>)",
-                "Eliminates duplicate tuples from a set.",
-                "fxx") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final ListCalc listCalc =
-                        compiler.compileList(call.getArg(0));
-                return new AbstractListCalc(call, new Calc[] {listCalc}) {
-                    public List evaluateList(Evaluator evaluator) {
-                        List list = listCalc.evaluateList(evaluator);
-                        return distinct(list);
-                    }
-                };
-            }
-
-            List<Object> distinct(List list) {
-                Set<MemberHelper> set = new HashSet<MemberHelper>(list.size());
-                List<Object> result = new ArrayList<Object>();
-
-                for (Object element : list) {
-                    MemberHelper lookupObj = new MemberHelper(element);
-
-                    if (set.add(lookupObj)) {
-                        result.add(element);
-                    }
-                }
-                return result;
-            }
-        });
+        define(DistinctFunDef.instance);
 
         define(DrilldownLevelFunDef.Resolver);
 
@@ -1033,17 +1004,7 @@ public class BuiltinFunTable extends FunTableImpl {
         });
 
         define(ExceptFunDef.Resolver);
-
-        if (false) define(new FunDefBase(
-                "Extract",
-                "Extract(<Set>, <Dimension>[, <Dimension>...])",
-                "Returns a set of tuples from extracted dimension elements. The opposite of Crossjoin.",
-                "fx*") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                throw new UnsupportedOperationException();
-            }
-        });
-
+        define(ExtractFunDef.Resolver);
         define(FilterFunDef.instance);
 
         define(GenerateFunDef.ListResolver);
@@ -1599,7 +1560,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         final double v1 = calc1.evaluateDouble(evaluator);
                         // Null in numerator always returns DoubleNull.
                         //
-                        // If the mondrian property 
+                        // If the mondrian property
                         // mondrian.olap.NullDenominatorProducesInfinity is true(default),
                         // Null in denominator with numeric numerator returns infinity.
                         // This is consistent with MSAS.
@@ -2210,6 +2171,7 @@ public class BuiltinFunTable extends FunTableImpl {
         Hierarchy hierarchy = dimension.getHierarchy();
         return hierarchyMembers(hierarchy, evaluator, includeCalcMembers);
     }
+
 }
 
 // End BuiltinFunTable.java

@@ -4003,6 +4003,17 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Except</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Extract</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a set of tuples from
+                            extracted dimension elements. The opposite
+                            of Crossjoin.</DESCRIPTION>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Extract</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Filter</FUNCTION_NAME>
                         <DESCRIPTION>Returns the set resulting from
                             filtering a set based on a search condition.</DESCRIPTION>
@@ -4480,7 +4491,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <INTERFACE_NAME/>
                         <CAPTION>Left</CAPTION>
                     </row>
-                     <row>
+                    <row>
                         <FUNCTION_NAME>Len</FUNCTION_NAME>
                         <DESCRIPTION>Returns the number of characters in
                             a string</DESCRIPTION>
@@ -4727,7 +4738,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <FUNCTION_NAME>Mid</FUNCTION_NAME>
                         <DESCRIPTION>Returns all the characters starting
-                         from specified index from the string</DESCRIPTION>
+                            from specified index from the string</DESCRIPTION>
                         <PARAMETER_LIST>String, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -11507,7 +11518,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
 ]]>
         </Resource>
     </TestCase>
-       <TestCase name="testExecuteWithDimensionProperties">
+    <TestCase name="testExecuteWithDimensionProperties">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope
@@ -12071,7 +12082,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
 ]]>
         </Resource>
     </TestCase>
-
     <TestCase name="testExecuteWithoutCellProperties">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
