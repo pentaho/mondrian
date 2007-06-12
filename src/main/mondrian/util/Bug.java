@@ -54,6 +54,20 @@ public class Bug {
     public static final boolean Bug1722959Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1735827&group_id=35302&atid=414613">bug 1735827, "Shared Tables and native NonEmptyCrossJoin"</a>
+     * is fixed.
+     */
+    public static final boolean Bug1735827Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1735839&group_id=35302&atid=414613">bug 1735839, "Shared Tables with Two Separate Aliases Fail"</a>
+     * is fixed.
+     */
+    public static final boolean Bug1735839Fixed = false;
+
+    /**
      * Returns whether to avoid a test because the memory monitor may cause it
      * to fail.
      *

@@ -12,6 +12,7 @@ package mondrian.test;
 import org.apache.log4j.*;
 import org.apache.log4j.varia.LevelRangeFilter;
 import mondrian.rolap.aggmatcher.AggTableManager;
+import mondrian.util.Bug;
 import mondrian.olap.MondrianProperties;
 
 import java.io.StringWriter;
@@ -110,6 +111,37 @@ public class SchemaTest extends FoodMartTestCase {
         testContext.assertThrows(
             "select from [Sales]",
             "Duplicate table alias 'customer' in cube 'Sales'");
+    }
+
+    /**
+     * This result is somewhat peculiar. If two dimensions share a foreign key, what 
+     * is the expected result?  Also, in this case, they share the same table without
+     * an alias, and the system doesn't complain.
+     */
+    public void testDuplicateTableAliasSameForeignKey() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Yearly Income2\" foreignKey=\"customer_id\">\n" +
+                "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n" +
+                "    <Table name=\"customer\"/>\n" +
+                "    <Level name=\"Yearly Income\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n" +
+                "  </Hierarchy>\n" +
+                "</Dimension>");
+        testContext.assertQueryReturns(
+            "select from [Sales]",
+            fold("Axis #0:\n" +
+                 "{}\n" + 
+                 "266,773"));
+        
+        /** NonEmptyCrossJoin Fails
+        testContext.assertQueryReturns(
+                "select NonEmptyCrossJoin({[Yearly Income2].[All Yearly Income2s]},{[Customers].[All Customers]}) on rows," +
+                "NON EMPTY {[Measures].[Unit Sales]} on columns" +
+                " from [Sales]",
+                fold("Axis #0:\n" +
+                     "{}\n" + 
+                     "266,773"));
+        */
     }
 
     /**
@@ -264,6 +296,141 @@ public class SchemaTest extends FoodMartTestCase {
                 "Row #61: 2,192\n" +
                 "Row #62: 1,324\n" +
                 "Row #63: 523\n"));
+    }
+
+    /**
+     * Tests two dimensions using same table (via different join paths).
+     * native non empty cross join sql generation returns empty query.
+     */
+    public void testDimensionsShareTableNativeNonEmptyCrossJoin() {
+        if (Bug.Bug1735827Fixed) {
+            final TestContext testContext = TestContext.createSubstitutingCube(
+                "Sales",
+                "<Dimension name=\"Yearly Income2\" foreignKey=\"product_id\">\n" +
+                    "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n" +
+                    "    <Table name=\"customer\" alias=\"customerx\" />\n" +
+                    "    <Level name=\"Yearly Income\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n" +
+                    "  </Hierarchy>\n" +
+                    "</Dimension>");
+            
+            testContext.assertQueryReturns(
+                    "select NonEmptyCrossJoin({[Yearly Income2].[All Yearly Income2s]},{[Customers].[All Customers]}) on rows," +
+                    "NON EMPTY {[Measures].[Unit Sales]} on columns" +
+                    " from [Sales]",
+                    fold("Axis #0:\n" +
+                         "{}\n" + 
+                         "266,773"));
+        }
+    }
+
+    /**
+     * Tests two dimensions using same table with same foreign key
+     * one table uses an alias.
+     * 
+     */
+    public void testDimensionsShareTableSameForeignKeys() {
+        // this is most likely due to the same bug
+        // but i'm not 100% certain
+        if (Bug.Bug1735827Fixed) {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Yearly Income2\" foreignKey=\"customer_id\">\n" +
+                "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n" +
+                "    <Table name=\"customer\" alias=\"customerx\" />\n" +
+                "    <Level name=\"Yearly Income\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n" +
+                "  </Hierarchy>\n" +
+                "</Dimension>");
+        testContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                "NON EMPTY Crossjoin({[Yearly Income].[All Yearly Incomes].Children},\n" +
+                "                     [Yearly Income2].[All Yearly Income2s].Children) ON ROWS\n" +
+                "from [Sales]",
+                "Not Sure Yet");
+        }
+    }
+
+    /**
+     * Tests two dimensions using same table (via different join paths).
+     * both using a table alias.
+     */
+    public void testTwoAliasesDimensionsShareTable() {
+        if (Bug.Bug1735839Fixed) {
+        final TestContext testContext = TestContext.create(
+                null,
+                "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n" +
+                        "  <Table name=\"inventory_fact_1997\"/>\n" +
+                        "  <Dimension name=\"StoreA\" foreignKey=\"store_id\">" +
+                        "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">" +
+                        "      <Table name=\"store\" alias=\"storea\"/>" +
+                        "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
+                        "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\"/>" +
+                        "    </Hierarchy>" + 
+                        "  </Dimension>" +  
+                        
+                        "  <Dimension name=\"StoreB\" foreignKey=\"customer_id\">" +
+                        "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">" +
+                        "      <Table name=\"store\"  alias=\"storeb\"/>" +
+                        "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
+                        "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\"/>" +
+                        "    </Hierarchy>" + 
+                        "  </Dimension>" +
+                        "  <Measure name=\"Store Invoice\" column=\"store_invoice\" " +
+                        "aggregator=\"sum\"/>\n" +
+                        "  <Measure name=\"Supply Time\" column=\"supply_time\" " +
+                        "aggregator=\"sum\"/>\n" +
+                        "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" " +
+                        "aggregator=\"sum\"/>\n" +
+                        "</Cube>",
+                null, null, null);
+        
+        testContext.assertQueryReturns(
+                "select NON EMPTY [StoreA].[USA].children on rows," +
+                "{[Measures].[Warehouse Cost]} on columns" +
+                " from " +
+                "AliasedDimensionsTesting", "Not Sure Yet");
+        }
+    }
+
+    /**
+     * Tests two dimensions using same table with same foreign key.
+     * both using a table alias.
+     */
+    public void testTwoAliasesDimensionsShareTableSameForeignKeys() {
+        if (Bug.Bug1735839Fixed) {
+            final TestContext testContext = TestContext.create(
+                    null,
+                    "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n" +
+                            "  <Table name=\"inventory_fact_1997\"/>\n" +
+                            "  <Dimension name=\"StoreA\" foreignKey=\"store_id\">" +
+                            "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">" +
+                            "      <Table name=\"store\" alias=\"storea\"/>" +
+                            "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
+                            "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\"/>" +
+                            "    </Hierarchy>" + 
+                            "  </Dimension>" +  
+                            
+                            "  <Dimension name=\"StoreB\" foreignKey=\"store_id\">" +
+                            "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">" +
+                            "      <Table name=\"store\"  alias=\"storeb\"/>" +
+                            "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
+                            "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\"/>" +
+                            "    </Hierarchy>" + 
+                            "  </Dimension>" +
+                            "  <Measure name=\"Store Invoice\" column=\"store_invoice\" " +
+                            "aggregator=\"sum\"/>\n" +
+                            "  <Measure name=\"Supply Time\" column=\"supply_time\" " +
+                            "aggregator=\"sum\"/>\n" +
+                            "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" " +
+                            "aggregator=\"sum\"/>\n" +
+                            "</Cube>",
+                    null, null, null);
+            
+            testContext.assertQueryReturns(
+                    "select NON EMPTY [StoreA].[USA].children on rows," +
+                    "{[Measures].[Warehouse Cost]} on columns" +
+                    " from " +
+                    "AliasedDimensionsTesting", "Not Sure Yet");
+        }
     }
 
     /**
