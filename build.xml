@@ -130,6 +130,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <include name="**/*.jar"/>
     </fileset>
     <pathelement location="${lib.dir}/retroweaver-rt-1.2.4.jar" />
+    <pathelement location="${lib.dir}/backport-util-concurrent.jar" />
     <pathelement location="${driver.classpath}"/>
   </path>
 
