@@ -3640,6 +3640,10 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns(
                 "Filter([Gender].members, 1 = 0).Item(0).Parent",
                 "");
+        assertExprReturns(
+                "(Filter([Store].members, 0 = 0).Item(0).Item(0)," +
+                        "Filter([Store].members, 0 = 0).Item(0).Item(0))",
+                "266,773");
     }
 
     public void testTupleNull() {

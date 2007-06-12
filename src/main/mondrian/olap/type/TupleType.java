@@ -54,7 +54,8 @@ public class TupleType implements Type {
         for (Type elementType : elementTypes) {
             if (elementType instanceof MemberType) {
                 MemberType memberType = (MemberType) elementType;
-                if (memberType.getDimension().isMeasures()) {
+                Dimension dimension = memberType.getDimension();
+                if (dimension != null && dimension.isMeasures()) {
                     return memberType.getValueType();
                 }
             }

@@ -91,7 +91,7 @@ public class TupleFunDef extends FunDefBase {
                 MemberType member1 = memberTypes[j];
                 final Dimension dimension = memberType.getDimension();
                 final Dimension dimension1 = member1.getDimension();
-                if (dimension == dimension1) {
+                if (dimension != null && dimension == dimension1) {
                     throw MondrianResource.instance().DupDimensionsInTuple.ex(
                             dimension.getUniqueName());
                 }
