@@ -174,7 +174,7 @@ public abstract class AbstractCalc implements Calc {
      * dimension which an expression depends on, and the default member for
      * every dimension which it does not depend on.
      *
-     * <p>The default member is oftne the 'all' member, so this evaluator is
+     * <p>The default member is often the 'all' member, so this evaluator is
      * usually the most efficient context in which to evaluate the expression.
      *
      * @param calc

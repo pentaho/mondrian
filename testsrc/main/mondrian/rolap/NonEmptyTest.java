@@ -62,30 +62,30 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testStrMeasure() {
-      TestContext ctx = TestContext.create(
-              null,
-              "<Cube name=\"StrMeasure\"> \n" +
-              "  <Table name=\"promotion\"/> \n" +
-              "  <Dimension name=\"Promotions\"> \n" +
-              "    <Hierarchy hasAll=\"true\" > \n" +
-              "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n" +
-              "    </Hierarchy> \n" +
-              "  </Dimension> \n" +
-              "  <Measure name=\"Media\" column=\"media_type\" aggregator=\"max\" datatype=\"String\"/> \n" +
-              "</Cube> \n",
-              null,null,null);
-
-      ctx.assertQueryReturns(
-              "select {[Measures].[Media]} on columns " +
-              "from [StrMeasure]",
-              "Axis #0:" + nl +
-              "{}" + nl +
-              "Axis #1:" + nl +
-              "{[Measures].[Media]}" + nl +
-              "Row #0: TV" + nl
-
-      );
-  }
+        TestContext ctx = TestContext.create(
+            null,
+            "<Cube name=\"StrMeasure\"> \n" +
+            "  <Table name=\"promotion\"/> \n" +
+            "  <Dimension name=\"Promotions\"> \n" +
+            "    <Hierarchy hasAll=\"true\" > \n" +
+            "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n" +
+            "    </Hierarchy> \n" +
+            "  </Dimension> \n" +
+            "  <Measure name=\"Media\" column=\"media_type\" aggregator=\"max\" datatype=\"String\"/> \n" +
+            "</Cube> \n",
+            null,null,null);
+        
+        ctx.assertQueryReturns(
+            "select {[Measures].[Media]} on columns " +
+            "from [StrMeasure]",
+            "Axis #0:" + nl +
+            "{}" + nl +
+            "Axis #1:" + nl +
+            "{[Measures].[Media]}" + nl +
+            "Row #0: TV" + nl
+            
+        );
+    }
 
     public void testBug1515302() {
         TestContext ctx = TestContext.create(
@@ -279,6 +279,118 @@ public class NonEmptyTest extends FoodMartTestCase {
         } else {
             checkNative(32, 8, mdx);
         }
+    }
+    
+    public void testNonNativeFilterWithNullMeasure() {
+        String query =
+            "select Filter([Store].[Store Name].members, " +
+            "              Not ([Measures].[Store Sqft] - [Measures].[Grocery Sqft] < 10000) ) on rows, " +
+            "{[Measures].[Store Sqft], [Measures].[Grocery Sqft]} on columns " +
+            "from [Store]";
+
+        String result =
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Store Sqft]}\n" +
+            "{[Measures].[Grocery Sqft]}\n" +
+            "Axis #2:\n" +
+            "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n" +
+            "{[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]}\n" +
+            "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n" +
+            "{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}\n" +
+            "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n" +
+            "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n" +
+            "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n" +
+            "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n" +
+            "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n" +
+            "Row #0: 36,509\n" +
+            "Row #0: 22,450\n" +
+            "Row #1: \n" + 
+            "Row #1: \n" + 
+            "Row #2: 30,797\n" +
+            "Row #2: 20,141\n" +
+            "Row #3: \n" + 
+            "Row #3: \n" + 
+            "Row #4: \n" +
+            "Row #4: \n" + 
+            "Row #5: 39,696\n" +
+            "Row #5: 24,390\n" +
+            "Row #6: 33,858\n" +
+            "Row #6: 22,123\n" +
+            "Row #7: \n" +
+            "Row #7: \n" + 
+            "Row #8: \n" + 
+            "Row #8: \n";
+    
+        boolean origNativeFilter =
+            MondrianProperties.instance().EnableNativeFilter.get();
+        MondrianProperties.instance().EnableNativeFilter.set(false);
+
+        // Get a fresh connection; Otherwise the mondrian property setting
+        // is not refreshed for this parameter.
+        Connection conn = getTestContext().getFoodMartConnection(false);
+        TestContext context = getTestContext(conn);
+        context.assertQueryReturns(query, fold(result));
+
+        MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
+        
+    }
+    
+    public void testNativeFilterWithNullMeasure() {
+        // Currently this behaves differently from non-native evaluation.
+        String query =
+            "select Filter([Store].[Store Name].members, " +
+            "              Not ([Measures].[Store Sqft] - [Measures].[Grocery Sqft] < 10000) ) on rows, " +
+            "{[Measures].[Store Sqft], [Measures].[Grocery Sqft]} on columns " +
+            "from [Store]";
+
+        String result =
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Store Sqft]}\n" +
+            "{[Measures].[Grocery Sqft]}\n" +
+            "Axis #2:\n" +
+            "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n" +
+            "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n" +
+            "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n" +
+            "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n" +
+            "Row #0: 36,509\n" +
+            "Row #0: 22,450\n" +
+            "Row #1: 30,797\n" +
+            "Row #1: 20,141\n" +
+            "Row #2: 39,696\n" +
+            "Row #2: 24,390\n" +
+            "Row #3: 33,858\n" +
+            "Row #3: 22,123\n";
+
+        boolean origNativeFilter =
+            MondrianProperties.instance().EnableNativeFilter.get();
+        MondrianProperties.instance().EnableNativeFilter.set(true);
+
+        // Get a fresh connection; Otherwise the mondrian property setting
+        // is not refreshed for this parameter.
+        Connection conn = getTestContext().getFoodMartConnection(false);
+        TestContext context = getTestContext(conn);
+        context.assertQueryReturns(query, fold(result));
+
+        MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
+        
+    }
+
+    public void testNativeFilterNonEmpty() {
+        if (!MondrianProperties.instance().EnableNativeFilter.get()) {
+            return;
+        }
+        checkNative(
+                32,
+                20,
+                "select Filter(CrossJoin([Store].[Store Name].members, " +
+                "                        [Store Type].[Store Type].members), " +
+                "                        Not IsEmpty([Measures].[Store Sqft]) ) on rows, " +
+                "{[Measures].[Store Sqft]} on columns " +
+                "from [Store]");
     }
 
     /**
@@ -1046,7 +1158,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         checkNative(18, 3,
             "select " +
             "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, " +
-            "nonEmptyCrossJoin([Product].[All Products].children, " +
+            "NonEmptyCrossJoin([Product].[All Products].children, " +
             "[Store].[All Stores].children) on rows " +
             "from [Warehouse and Sales]");
     }
@@ -1772,7 +1884,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         MondrianProperties.instance().EnableNativeCrossJoin.set(false);
 
         // Get a fresh connection; Otherwise the mondrian property setting
-        // is not refreshed.
+        // is not refreshed for this parameter.
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);
         context.assertQueryReturns(query, fold(resultNonNative));
@@ -1799,6 +1911,8 @@ public class NonEmptyTest extends FoodMartTestCase {
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
 
+        // Get a fresh connection; Otherwise the mondrian property setting
+        // is not refreshed for this parameter.
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);
         context.assertQueryReturns(query, fold(resultNative));
@@ -1824,6 +1938,8 @@ public class NonEmptyTest extends FoodMartTestCase {
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().EnableNativeCrossJoin.set(false);
 
+        // Get a fresh connection; Otherwise the mondrian property setting
+        // is not refreshed for this parameter.
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);
         context.assertQueryReturns(query, fold(resultNonNative));
@@ -1849,6 +1965,8 @@ public class NonEmptyTest extends FoodMartTestCase {
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
 
+        // Get a fresh connection; Otherwise the mondrian property setting
+        // is not refreshed for this parameter.
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);
         context.assertQueryReturns(query, fold(resultNative));

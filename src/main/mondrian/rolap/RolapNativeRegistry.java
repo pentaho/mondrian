@@ -8,8 +8,7 @@
 */
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
@@ -21,13 +20,19 @@ import mondrian.olap.NativeEvaluator;
  */
 public class RolapNativeRegistry extends RolapNative {
 
-    private List<RolapNative> natives = new ArrayList<RolapNative>();
+    private Map<String, RolapNative> nativeEvaluatorMap =
+        new HashMap<String, RolapNative>();
 
     public RolapNativeRegistry() {
         super.setEnabled(true);
-        register(new RolapNativeCrossJoin());
-        register(new RolapNativeTopCount());
-        register(new RolapNativeFilter());
+        
+        /*
+         * Mondrian functions which might be evaluated natively.
+         */
+        register("NonEmptyCrossJoin".toUpperCase(), new RolapNativeCrossJoin());
+        register("CrossJoin".toUpperCase(), new RolapNativeCrossJoin());
+        register("TopCount".toUpperCase(), new RolapNativeTopCount());
+        register("Filter".toUpperCase(), new RolapNativeFilter());        
     }
 
     /**
@@ -40,38 +45,42 @@ public class RolapNativeRegistry extends RolapNative {
         if (!isEnabled()) {
             return null;
         }
-        for (RolapNative rn : natives) {
-            NativeEvaluator ne = rn.createEvaluator(evaluator, fun, args);
-            if (ne != null) {
-                if (listener != null) {
-                    NativeEvent e = new NativeEvent(this, ne);
-                    listener.foundEvaluator(e);
-                }
-                return ne;
+        
+        RolapNative rn = nativeEvaluatorMap.get(fun.getName().toUpperCase());
+        
+        if (rn == null) {
+            return null;
+        }
+
+        NativeEvaluator ne = rn.createEvaluator(evaluator, fun, args);
+        
+        if (ne != null) {
+            if (listener != null) {
+                NativeEvent e = new NativeEvent(this, ne);
+                listener.foundEvaluator(e);
             }
         }
-        return null;
+        return ne;
     }
-
-    public void register(RolapNative rn) {
-        natives.add(rn);
+    
+    public void register(String funName, RolapNative rn) {
+        nativeEvaluatorMap.put(funName, rn);
     }
 
     /** for testing */
     void setListener(Listener listener) {
         super.setListener(listener);
-        for (RolapNative rn : natives) {
+        for (RolapNative rn : nativeEvaluatorMap.values()) {
             rn.setListener(listener);
         }
     }
 
     /** for testing */
     void useHardCache(boolean hard) {
-        for (RolapNative rn : natives) {
+        for (RolapNative rn : nativeEvaluatorMap.values()) {
             rn.useHardCache(hard);
         }
     }
-
 }
 
 // End RolapNativeRegistry.java

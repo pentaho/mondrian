@@ -366,6 +366,33 @@ public class RolapNativeSql {
     }
 
     /**
+     * compiles an <code>IsEmpty(measure)</code>
+     * expression into SQL <code>measure is null</code>
+     *
+     */
+    class IsEmptySqlCompiler extends FunCallSqlCompilerBase {
+        private final SqlCompiler compiler;
+
+        protected IsEmptySqlCompiler(int category, String mdx,
+                SqlCompiler argumentCompiler) {
+            super(category, mdx, 1);
+            this.compiler = argumentCompiler;
+        }
+
+        public String compile(Exp exp) {
+            String[] args = compileArgs(exp, compiler);
+            if (args == null) {
+                return null;
+            }
+            return "(" + args[0] + " is null" + ")";
+        }
+
+        public String toString() {
+            return "IsEmptySqlCompiler[" + mdx + "]";
+        }
+    }
+
+    /**
      * compiles an <code>IIF(cond, val1, val2)</code>
      * expression into SQL <code>CASE WHEN cond THEN val1 ELSE val2 END</code>
      *
@@ -424,6 +451,7 @@ public class RolapNativeSql {
         booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, ">=", ">=", numericCompiler));
         booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "=", "=", numericCompiler));
         booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "<>", "<>", numericCompiler));
+        booleanCompiler.add(new IsEmptySqlCompiler(Category.Logical, "IsEmpty", numericCompiler));
 
         booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "and", "AND", booleanCompiler));
         booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "or", "OR", booleanCompiler));
