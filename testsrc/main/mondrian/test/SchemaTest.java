@@ -485,7 +485,6 @@ public class SchemaTest extends FoodMartTestCase {
      * both using a table alias.
      */
     public void testDimensionsShareJoinTableTwoAliases() {
-        if (Bug.Bug1735839Fixed) {
         final TestContext testContext = TestContext.create(
                 null,
                 "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n" +
@@ -497,7 +496,7 @@ public class SchemaTest extends FoodMartTestCase {
                         "      <Table name=\"region\" alias=\"store_region\"/>\n" +
                         "    </Join>\n" +
                         " <Level name=\"Store Country\" table=\"store\"  column=\"store_country\" uniqueMembers=\"true\"/>\n" +
-                        " <Level name=\"Store Region\"  table=\"region\" column=\"sales_region\"  uniqueMembers=\"true\"/>\n" +
+                        " <Level name=\"Store Region\"  table=\"store_region\" column=\"sales_region\"  uniqueMembers=\"true\"/>\n" +
                         " <Level name=\"Store Name\"    table=\"store\"  column=\"store_name\"    uniqueMembers=\"true\"/>\n" +
                         "</Hierarchy>\n" +
                         "</Dimension>\n" +
@@ -517,7 +516,6 @@ public class SchemaTest extends FoodMartTestCase {
                         "<Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"#,###.00\"/>\n" +
                         "</Cube>",
                 null, null, null);
-       
         
         testContext.assertQueryReturns(
                 "select  {[Store].[USA].[South West]} on rows," +
@@ -531,11 +529,7 @@ public class SchemaTest extends FoodMartTestCase {
                      "Axis #2:\n" +
                      "{[Store].[All Stores].[USA].[South West]}\n" +
                      "Row #0: 72,631\n"));
-        }
     }
-
-    
-    
     
     /**
      * Tests two dimensions using same table (via different join paths).
