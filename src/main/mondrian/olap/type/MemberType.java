@@ -98,6 +98,10 @@ public class MemberType implements Type {
         return level;
     }
 
+    public Member getMember() {
+        return member;
+    }
+
     public boolean usesDimension(Dimension dimension, boolean maybe) {
         if (this.dimension == null) {
             return maybe;

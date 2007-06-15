@@ -31,6 +31,10 @@ public class CubeType implements Type {
         this.cube = cube;
     }
 
+    public Cube getCube() {
+        return cube;
+    }
+
     public boolean usesDimension(Dimension dimension, boolean maybe) {
         return false;
     }

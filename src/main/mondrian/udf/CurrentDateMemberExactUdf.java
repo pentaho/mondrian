@@ -18,7 +18,8 @@ import mondrian.util.*;
  *
  * <blockquote>
  * <code>
- * CurrentDataMember(&lt;Hierarchy&gt;, &lt;FormatString&gt;) returns &lt;Member&gt;
+ * CurrentDateMember(&lt;Hierarchy&gt;, &lt;FormatString&gt;)
+ * returns &lt;Member&gt;
  * </code>
  * </blockquote>
  *

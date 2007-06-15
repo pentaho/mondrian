@@ -22,7 +22,7 @@ import java.util.*;
  *
  * <blockquote>
  * <code>
- * CurrentDataMember(&lt;Hierarchy&gt;, &lt;FormatString&gt;[, &lt;Find&gt;)
+ * CurrentDateMember(&lt;Hierarchy&gt;, &lt;FormatString&gt;[, &lt;Find&gt;)
  * returns &lt;Member&gt;
  * </code>
  * </blockquote>
