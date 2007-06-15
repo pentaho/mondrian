@@ -1244,6 +1244,7 @@
                 if (o instanceof Table) {
                     Table that = (Table) o;
                     return this.name.equals(that.name) &&
+                        Util.equals(this.alias, that.alias) &&
                         Util.equals(this.schema, that.schema);
                 } else {
                     return false;

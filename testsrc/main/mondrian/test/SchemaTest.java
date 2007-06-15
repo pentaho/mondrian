@@ -348,9 +348,6 @@ public class SchemaTest extends FoodMartTestCase {
      * 
      */
     public void testDimensionsShareTableSameForeignKeys() {
-        // this is most likely due to the same bug
-        // but i'm not 100% certain
-        if (Bug.Bug1735827Fixed) {
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Yearly Income2\" foreignKey=\"customer_id\">\n" +
@@ -359,13 +356,46 @@ public class SchemaTest extends FoodMartTestCase {
                 "    <Level name=\"Yearly Income\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n" +
                 "  </Hierarchy>\n" +
                 "</Dimension>");
+        
+        testContext.assertQueryReturns("select {[Yearly Income].[$10K - $30K]} on columns," +
+                "{[Yearly Income2].[$150K +]} on rows from [Sales]"
+                , 
+                fold("Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Yearly Income].[All Yearly Incomes].[$10K - $30K]}\n" +
+                    "Axis #2:\n" +
+                    "{[Yearly Income2].[All Yearly Income2s].[$150K +]}\n" +
+                    "Row #0: \n"));
+        
         testContext.assertQueryReturns(
-            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,\n" +
-                "NON EMPTY Crossjoin({[Yearly Income].[All Yearly Incomes].Children},\n" +
-                "                     [Yearly Income2].[All Yearly Income2s].Children) ON ROWS\n" +
-                "from [Sales]",
-                "Not Sure Yet");
-        }
+                "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                    "NON EMPTY Crossjoin({[Yearly Income].[All Yearly Incomes].Children},\n" +
+                    "                     [Yearly Income2].[All Yearly Income2s].Children) ON ROWS\n" +
+                    "from [Sales]",
+                    fold(
+                            "Axis #0:\n" +
+                            "{}\n" +
+                            "Axis #1:\n" +
+                            "{[Measures].[Unit Sales]}\n" +
+                            "Axis #2:\n" +
+                            "{[Yearly Income].[All Yearly Incomes].[$10K - $30K], [Yearly Income2].[All Yearly Income2s].[$10K - $30K]}\n" +
+                            "{[Yearly Income].[All Yearly Incomes].[$110K - $130K], [Yearly Income2].[All Yearly Income2s].[$110K - $130K]}\n" +
+                            "{[Yearly Income].[All Yearly Incomes].[$130K - $150K], [Yearly Income2].[All Yearly Income2s].[$130K - $150K]}\n" +
+                            "{[Yearly Income].[All Yearly Incomes].[$150K +], [Yearly Income2].[All Yearly Income2s].[$150K +]}\n" +
+                            "{[Yearly Income].[All Yearly Incomes].[$30K - $50K], [Yearly Income2].[All Yearly Income2s].[$30K - $50K]}\n" +
+                            "{[Yearly Income].[All Yearly Incomes].[$50K - $70K], [Yearly Income2].[All Yearly Income2s].[$50K - $70K]}\n" +
+                            "{[Yearly Income].[All Yearly Incomes].[$70K - $90K], [Yearly Income2].[All Yearly Income2s].[$70K - $90K]}\n" +
+                            "{[Yearly Income].[All Yearly Incomes].[$90K - $110K], [Yearly Income2].[All Yearly Income2s].[$90K - $110K]}\n" +
+                            "Row #0: 57,950\n" +
+                            "Row #1: 11,561\n" +
+                            "Row #2: 14,392\n" +
+                            "Row #3: 5,629\n" +
+                            "Row #4: 87,310\n" +
+                            "Row #5: 44,967\n" +
+                            "Row #6: 33,045\n" +
+                            "Row #7: 11,919\n"));
+            
     }
 
     /**
@@ -464,7 +494,6 @@ public class SchemaTest extends FoodMartTestCase {
                         "<Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"#,###.00\"/>\n" +
                         "</Cube>",
                 null, null, null);
-       
         
         testContext.assertQueryReturns(
                 "select  {[Store].[USA].[South West]} on rows," +
@@ -536,7 +565,6 @@ public class SchemaTest extends FoodMartTestCase {
      * both using a table alias.
      */
     public void testTwoAliasesDimensionsShareTable() {
-        if (Bug.Bug1735839Fixed) {
         final TestContext testContext = TestContext.create(
                 null,
                 "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n" +
@@ -545,11 +573,11 @@ public class SchemaTest extends FoodMartTestCase {
                         "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">" +
                         "      <Table name=\"store\" alias=\"storea\"/>" +
                         "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
-                        "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\"/>" +
+                        "      <Level name=\"Store Name\"  column=\"store_name\" uniqueMembers=\"true\"/>" +
                         "    </Hierarchy>" + 
                         "  </Dimension>" +  
                         
-                        "  <Dimension name=\"StoreB\" foreignKey=\"customer_id\">" +
+                        "  <Dimension name=\"StoreB\" foreignKey=\"warehouse_id\">" +
                         "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">" +
                         "      <Table name=\"store\"  alias=\"storeb\"/>" +
                         "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
@@ -566,11 +594,18 @@ public class SchemaTest extends FoodMartTestCase {
                 null, null, null);
         
         testContext.assertQueryReturns(
-                "select NON EMPTY [StoreA].[USA].children on rows," +
-                "{[Measures].[Warehouse Cost]} on columns" +
+                "select {[StoreA].[USA]} on rows," +
+                "{[StoreB].[USA]} on columns" +
                 " from " +
-                "AliasedDimensionsTesting", "Not Sure Yet");
-        }
+                "AliasedDimensionsTesting",                 
+                fold(
+                        "Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[StoreB].[All StoreBs].[USA]}\n" +
+                        "Axis #2:\n" +
+                        "{[StoreA].[All StoreAs].[USA]}\n" +
+                        "Row #0: 10,425\n"));
     }
 
     /**
@@ -578,41 +613,48 @@ public class SchemaTest extends FoodMartTestCase {
      * both using a table alias.
      */
     public void testTwoAliasesDimensionsShareTableSameForeignKeys() {
-        if (Bug.Bug1735839Fixed) {
-            final TestContext testContext = TestContext.create(
-                    null,
-                    "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n" +
-                            "  <Table name=\"inventory_fact_1997\"/>\n" +
-                            "  <Dimension name=\"StoreA\" foreignKey=\"store_id\">" +
-                            "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">" +
-                            "      <Table name=\"store\" alias=\"storea\"/>" +
-                            "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
-                            "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\"/>" +
-                            "    </Hierarchy>" + 
-                            "  </Dimension>" +  
-                            
-                            "  <Dimension name=\"StoreB\" foreignKey=\"store_id\">" +
-                            "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">" +
-                            "      <Table name=\"store\"  alias=\"storeb\"/>" +
-                            "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
-                            "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\"/>" +
-                            "    </Hierarchy>" + 
-                            "  </Dimension>" +
-                            "  <Measure name=\"Store Invoice\" column=\"store_invoice\" " +
-                            "aggregator=\"sum\"/>\n" +
-                            "  <Measure name=\"Supply Time\" column=\"supply_time\" " +
-                            "aggregator=\"sum\"/>\n" +
-                            "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" " +
-                            "aggregator=\"sum\"/>\n" +
-                            "</Cube>",
-                    null, null, null);
-            
-            testContext.assertQueryReturns(
-                    "select NON EMPTY [StoreA].[USA].children on rows," +
-                    "{[Measures].[Warehouse Cost]} on columns" +
-                    " from " +
-                    "AliasedDimensionsTesting", "Not Sure Yet");
-        }
+        final TestContext testContext = TestContext.create(
+                null,
+                "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n" +
+                        "  <Table name=\"inventory_fact_1997\"/>\n" +
+                        "  <Dimension name=\"StoreA\" foreignKey=\"store_id\">" +
+                        "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">" +
+                        "      <Table name=\"store\" alias=\"storea\"/>" +
+                        "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
+                        "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\"/>" +
+                        "    </Hierarchy>" + 
+                        "  </Dimension>" +  
+                        
+                        "  <Dimension name=\"StoreB\" foreignKey=\"store_id\">" +
+                        "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">" +
+                        "      <Table name=\"store\"  alias=\"storeb\"/>" +
+                        "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
+                        "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\"/>" +
+                        "    </Hierarchy>" + 
+                        "  </Dimension>" +
+                        "  <Measure name=\"Store Invoice\" column=\"store_invoice\" " +
+                        "aggregator=\"sum\"/>\n" +
+                        "  <Measure name=\"Supply Time\" column=\"supply_time\" " +
+                        "aggregator=\"sum\"/>\n" +
+                        "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" " +
+                        "aggregator=\"sum\"/>\n" +
+                        "</Cube>",
+                null, null, null);
+        
+        testContext.assertQueryReturns(
+                "select {[StoreA].[USA]} on rows," +
+                "{[StoreB].[USA]} on columns" +
+                " from " +
+                "AliasedDimensionsTesting", 
+                    fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[StoreB].[All StoreBs].[USA]}\n" +
+                    "Axis #2:\n" +
+                    "{[StoreA].[All StoreAs].[USA]}\n" +
+                    "Row #0: 10,425\n")
+         );
     }
 
     /**
