@@ -34,6 +34,7 @@ import mondrian.olap.HierarchyBugTest;
 import mondrian.olap.QueryTest;
 import mondrian.olap.CellPropertyTest;
 import mondrian.rolap.*;
+import mondrian.rolap.sql.SqlQueryTest;
 import mondrian.rolap.aggmatcher.*;
 import mondrian.test.comp.ResultComparatorTest;
 import mondrian.udf.*;
@@ -242,6 +243,10 @@ public class Main extends TestSuite {
               suite.addTestSuite(NonEmptyTest.class);
             else
             logger.warn("skipping NonEmptyTests");
+
+            suite.addTestSuite(FastBatchingCellReaderTest.class);
+            suite.addTestSuite(SqlQueryTest.class);
+            suite.addTestSuite(GroupingSetQueryTest.class);
         }
         if (testName != null && !testName.equals("")) {
             // Filter the suite, so that only tests whose names match

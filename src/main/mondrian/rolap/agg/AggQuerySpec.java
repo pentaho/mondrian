@@ -19,6 +19,9 @@ import mondrian.rolap.sql.SqlQuery;
 
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * An AggStar's version of the {@link QuerySpec}. <p/>
  *
@@ -35,14 +38,15 @@ class AggQuerySpec {
     private final AggStar aggStar;
     private final Segment[] segments;
     private final boolean rollup;
+    private final GroupByGroupingSets groupByGroupingSets;
 
     AggQuerySpec(
-            final AggStar aggStar,
-            final Segment[] segments,
-            final boolean rollup) {
+        final AggStar aggStar,
+        final boolean rollup, GroupByGroupingSets groupByGroupingSets) {
         this.aggStar = aggStar;
-        this.segments = segments;
+        this.segments = groupByGroupingSets.getDefaultSegments();
         this.rollup = rollup;
+        this.groupByGroupingSets = groupByGroupingSets;
     }
 
     protected SqlQuery newSqlQuery() {
@@ -105,6 +109,25 @@ class AggQuerySpec {
         return sqlQuery.toString();
     }
 
+    private void addGroupingSets(SqlQuery sqlQuery) {
+        List<RolapStar.Column[]> groupingSetsColumns =
+            groupByGroupingSets.getGroupingSetsColumns();
+        for (RolapStar.Column[] groupingSetColumns : groupingSetsColumns) {
+            ArrayList<String> groupingColumnsExpr = new ArrayList<String>();
+
+            for (RolapStar.Column aColumnArr : groupingSetColumns) {
+                groupingColumnsExpr.add(findColumnExpr(aColumnArr, sqlQuery));
+            }
+            sqlQuery.addGroupingSet(groupingColumnsExpr);
+        }
+    }
+
+    private String findColumnExpr(RolapStar.Column columnj, SqlQuery sqlQuery) {
+        AggStar.Table.Column column =
+            aggStar.lookupColumn(columnj.getBitPosition());
+        return column.generateExprString(sqlQuery);
+    }
+
     protected void addMeasure(final int i, final SqlQuery query) {
         AggStar.FactTable.Measure column =
                 (AggStar.FactTable.Measure) getMeasureAsColumn(i);
@@ -159,6 +182,15 @@ class AggQuerySpec {
         // not measures.
         for (int i = 0, count = getMeasureCount(); i < count; i++) {
             addMeasure(i, sqlQuery);
+        }
+        addGroupingSets(sqlQuery);
+        addGroupingFunction(sqlQuery);
+    }
+
+    private void addGroupingFunction(SqlQuery sqlQuery) {
+        List<RolapStar.Column> list = groupByGroupingSets.getRollupColumns();
+        for (RolapStar.Column column : list) {
+            sqlQuery.addGroupingFunction(findColumnExpr(column, sqlQuery));
         }
     }
 }

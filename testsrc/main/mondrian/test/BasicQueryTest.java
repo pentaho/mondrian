@@ -5790,6 +5790,112 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #18: 715\n"));
     }
 
+    public void testRollupQuery() {
+        assertQueryReturns("SELECT {[Product].[Product Department].MEMBERS} ON AXIS(0),\n" +
+                "{{[Gender].[Gender].MEMBERS}, {[Gender].[All Gender]}} ON AXIS(1)\n" +
+                "FROM [Sales 2] WHERE {[Measures].[Unit Sales]}",
+            fold("Axis #0:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #1:\n" +
+                    "{[Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
+                    "{[Product].[All Products].[Drink].[Beverages]}\n" +
+                    "{[Product].[All Products].[Drink].[Dairy]}\n" +
+                    "{[Product].[All Products].[Food].[Baked Goods]}\n" +
+                    "{[Product].[All Products].[Food].[Baking Goods]}\n" +
+                    "{[Product].[All Products].[Food].[Breakfast Foods]}\n" +
+                    "{[Product].[All Products].[Food].[Canned Foods]}\n" +
+                    "{[Product].[All Products].[Food].[Canned Products]}\n" +
+                    "{[Product].[All Products].[Food].[Dairy]}\n" +
+                    "{[Product].[All Products].[Food].[Deli]}\n" +
+                    "{[Product].[All Products].[Food].[Eggs]}\n" +
+                    "{[Product].[All Products].[Food].[Frozen Foods]}\n" +
+                    "{[Product].[All Products].[Food].[Meat]}\n" +
+                    "{[Product].[All Products].[Food].[Produce]}\n" +
+                    "{[Product].[All Products].[Food].[Seafood]}\n" +
+                    "{[Product].[All Products].[Food].[Snack Foods]}\n" +
+                    "{[Product].[All Products].[Food].[Snacks]}\n" +
+                    "{[Product].[All Products].[Food].[Starchy Foods]}\n" +
+                    "{[Product].[All Products].[Non-Consumable].[Carousel]}\n" +
+                    "{[Product].[All Products].[Non-Consumable].[Checkout]}\n" +
+                    "{[Product].[All Products].[Non-Consumable].[Health and Hygiene]}\n" +
+                    "{[Product].[All Products].[Non-Consumable].[Household]}\n" +
+                    "{[Product].[All Products].[Non-Consumable].[Periodicals]}\n" +
+                    "Axis #2:\n" +
+                    "{[Gender].[All Gender].[F]}\n" +
+                    "{[Gender].[All Gender].[M]}\n" +
+                    "{[Gender].[All Gender]}\n" +
+                    "Row #0: 3,439\n" +
+                    "Row #0: 6,776\n" +
+                    "Row #0: 1,987\n" +
+                    "Row #0: 3,771\n" +
+                    "Row #0: 9,841\n" +
+                    "Row #0: 1,821\n" +
+                    "Row #0: 9,407\n" +
+                    "Row #0: 867\n" +
+                    "Row #0: 6,513\n" +
+                    "Row #0: 5,990\n" +
+                    "Row #0: 2,001\n" +
+                    "Row #0: 13,011\n" +
+                    "Row #0: 841\n" +
+                    "Row #0: 18,713\n" +
+                    "Row #0: 947\n" +
+                    "Row #0: 14,936\n" +
+                    "Row #0: 3,459\n" +
+                    "Row #0: 2,696\n" +
+                    "Row #0: 368\n" +
+                    "Row #0: 887\n" +
+                    "Row #0: 7,841\n" +
+                    "Row #0: 13,278\n" +
+                    "Row #0: 2,168\n" +
+                    "Row #1: 3,399\n" +
+                    "Row #1: 6,797\n" +
+                    "Row #1: 2,199\n" +
+                    "Row #1: 4,099\n" +
+                    "Row #1: 10,404\n" +
+                    "Row #1: 1,496\n" +
+                    "Row #1: 9,619\n" +
+                    "Row #1: 945\n" +
+                    "Row #1: 6,372\n" +
+                    "Row #1: 6,047\n" +
+                    "Row #1: 2,131\n" +
+                    "Row #1: 13,644\n" +
+                    "Row #1: 873\n" +
+                    "Row #1: 19,079\n" +
+                    "Row #1: 817\n" +
+                    "Row #1: 15,609\n" +
+                    "Row #1: 3,425\n" +
+                    "Row #1: 2,566\n" +
+                    "Row #1: 473\n" +
+                    "Row #1: 892\n" +
+                    "Row #1: 8,443\n" +
+                    "Row #1: 13,760\n" +
+                    "Row #1: 2,126\n" +
+                    "Row #2: 6,838\n" +
+                    "Row #2: 13,573\n" +
+                    "Row #2: 4,186\n" +
+                    "Row #2: 7,870\n" +
+                    "Row #2: 20,245\n" +
+                    "Row #2: 3,317\n" +
+                    "Row #2: 19,026\n" +
+                    "Row #2: 1,812\n" +
+                    "Row #2: 12,885\n" +
+                    "Row #2: 12,037\n" +
+                    "Row #2: 4,132\n" +
+                    "Row #2: 26,655\n" +
+                    "Row #2: 1,714\n" +
+                    "Row #2: 37,792\n" +
+                    "Row #2: 1,764\n" +
+                    "Row #2: 30,545\n" +
+                    "Row #2: 6,884\n" +
+                    "Row #2: 5,262\n" +
+                    "Row #2: 841\n" +
+                    "Row #2: 1,779\n" +
+                    "Row #2: 16,284\n" +
+                    "Row #2: 27,038\n" +
+                    "Row #2: 4,294\n"));
+    }
+
+
     /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.

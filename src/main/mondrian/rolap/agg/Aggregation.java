@@ -133,10 +133,11 @@ public class Aggregation {
      *   gender = unconstrained
      */
     public void load(
-            RolapStar.Column[] columns,
-            RolapStar.Measure[] measures,
-            StarColumnPredicate[] predicates,
-            RolapAggregationManager.PinSet pinnedSegments) {
+        RolapStar.Column[] columns, RolapStar.Measure[] measures,
+        StarColumnPredicate[] predicates,
+        RolapAggregationManager.PinSet pinnedSegments,
+        GroupingSetsCollector groupingSetsCollector)
+    {
         // all constrained columns
         if (this.columns == null) {
             this.columns = columns;
@@ -156,9 +157,17 @@ public class Aggregation {
                 measureBitKey, axes, pinnedSegments);
         // The constrained columns are simply the level and foreign columns
         BitKey levelBitKey = constrainedColumnsBitKey;
-        Segment.load(
-            segments, levelBitKey,
-            measureBitKey, pinnedSegments, axes);
+        GroupingSet groupingSet = new GroupingSet(segments,
+            levelBitKey, measureBitKey, axes, columns);
+        if (groupingSetsCollector.useGroupingSets()) {
+            groupingSetsCollector.add(groupingSet);
+            //Segments are loaded using group by grouping sets
+            // by CompositeBatch.loadAggregation
+        } else {
+            ArrayList<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
+            groupingSets.add(groupingSet);
+            new SegmentLoader().load(groupingSets, pinnedSegments);
+        }
     }
 
     private Segment[] addSegmentsToAggregation(

@@ -15,6 +15,9 @@ import mondrian.rolap.RolapStar;
 import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.sql.SqlQuery;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Provides the information necessary to generate a SQL statement to
  * retrieve a list of segments.
@@ -25,15 +28,18 @@ import mondrian.rolap.sql.SqlQuery;
  */
 class SegmentArrayQuerySpec extends AbstractQuerySpec {
     private final Segment[] segments;
+    private final GroupByGroupingSets groupByGroupingSets;
 
     /**
      * Creates a SegmentArrayQuerySpec.
      *
-     * @param segments Array of segments (must be at least one)
+     * @param groupByGroupingSets
      */
-    SegmentArrayQuerySpec(final Segment[] segments) {
-        super(segments[0].aggregation.getStar());
-        this.segments = segments;
+    SegmentArrayQuerySpec(
+        GroupByGroupingSets groupByGroupingSets) {
+        super(groupByGroupingSets.getStar());
+        this.segments = groupByGroupingSets.getDefaultSegments();
+        this.groupByGroupingSets = groupByGroupingSets;
         assert isValid(true);
     }
 
@@ -110,10 +116,30 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         } else {
             nonDistinctGenerateSql(sqlQuery, false, false);
         }
-
+        addGroupingFunction(sqlQuery);
+        addGroupingSets(sqlQuery);
         return sqlQuery.toString();
     }
 
+    private void addGroupingFunction(SqlQuery sqlQuery) {
+        List<RolapStar.Column> list = groupByGroupingSets.getRollupColumns();
+        for (RolapStar.Column column : list) {
+            sqlQuery.addGroupingFunction(column.generateExprString(sqlQuery));
+        }
+    }
+
+    private void addGroupingSets(SqlQuery sqlQuery) {
+        List<RolapStar.Column[]> groupingSetsColumns =
+            groupByGroupingSets.getGroupingSetsColumns();
+        for (RolapStar.Column[] groupingSetsColumn : groupingSetsColumns) {
+            ArrayList<String> groupingColumnsExpr = new ArrayList<String>();
+            for (RolapStar.Column aColumn : groupingSetsColumn) {
+                groupingColumnsExpr.add(aColumn.generateExprString(sqlQuery));
+            }
+            sqlQuery.addGroupingSet(groupingColumnsExpr);
+        }
+    }
+    
     /**
      * Returns the number of measures which are distinct.
      *

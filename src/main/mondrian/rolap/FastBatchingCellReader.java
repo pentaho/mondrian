@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggGen;
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 
 import org.apache.log4j.Logger;
@@ -169,13 +170,17 @@ public class FastBatchingCellReader implements CellReader {
         // Sort the batches into deterministic order.
         List<Batch> batchList = new ArrayList<Batch>(batches.values());
         Collections.sort(batchList, BatchComparator.instance);
-
-        // Load batches in turn.
-        for (Batch batch : batchList) {
-            if (query != null) {
-                query.checkCancelOrTimeout();
+        if (shouldUseGroupingFunction()) {
+            LOGGER.debug("Using grouping sets");
+            List<CompositeBatch> groupedBatches = groupBatches(batchList);
+            for (CompositeBatch batch : groupedBatches) {
+                loadAggregation(query, batch);
             }
-            (batch).loadAggregation();
+        } else {
+            // Load batches in turn.
+            for (Batch batch : batchList) {
+                loadAggregation(query, batch);
+            }
         }
         
         batches.clear();
@@ -189,6 +194,91 @@ public class FastBatchingCellReader implements CellReader {
         return true;
     }
 
+    private void loadAggregation(Query query, IBatch batch) {
+        if (query != null) {
+            query.checkCancelOrTimeout();
+        }
+        (batch).loadAggregation();
+    }
+
+    List<CompositeBatch> groupBatches(List<Batch> batchList) {
+        Map<BatchKey, CompositeBatch> batchGroups =
+            new HashMap<BatchKey, CompositeBatch>();
+        for (int i = 0; i < batchList.size(); i++) {
+            for (int j = 0; j < batchList.size() && i < batchList.size();) {
+                if (i == j) {
+                    j++;
+                    continue;
+                }
+                FastBatchingCellReader.Batch iBatch = batchList.get(i);
+                FastBatchingCellReader.Batch jBatch = batchList.get(j);
+                if (iBatch.canBatch(jBatch)) {
+                    batchList.remove(j);
+                    addToCompositeBatch(batchGroups, iBatch, jBatch);
+                } else if (jBatch.canBatch(iBatch)) {
+                    batchList.set(i, jBatch);
+                    batchList.remove(j);
+                    addToCompositeBatch(batchGroups, jBatch, iBatch);
+                } else {
+                    j++;
+                }
+            }
+        }
+
+        wrapNonBatchedBatchesWithCompositeBatches(batchList, batchGroups);
+        ArrayList<CompositeBatch> list =
+            new ArrayList<CompositeBatch>(batchGroups.values());
+        Collections.sort(list, CompositeBatchComparator.instance);
+        return list;
+    }
+
+    private void wrapNonBatchedBatchesWithCompositeBatches(
+        List<Batch> batchList,
+        Map<BatchKey, CompositeBatch> batchGroups)
+    {
+        for (int i = 0; i < batchList.size(); i++) {
+            Batch iBatch = batchList.get(i);
+            if (batchGroups.get(iBatch.batchKey) == null) {
+                batchGroups.put(iBatch.batchKey, new CompositeBatch(iBatch));
+            }
+        }
+    }
+
+
+    void addToCompositeBatch(Map<BatchKey, CompositeBatch> batchGroups,
+                             Batch detailedBatch, Batch summaryBatch)
+    {
+        CompositeBatch compositeBatch = batchGroups.get(detailedBatch.batchKey);
+
+        if (compositeBatch == null) {
+            compositeBatch = new CompositeBatch(detailedBatch);
+            batchGroups.put(detailedBatch.batchKey, compositeBatch);
+        }
+
+        FastBatchingCellReader.CompositeBatch compositeBatchOfSummaryBatch =
+            batchGroups.remove(summaryBatch.batchKey);
+
+        if (compositeBatchOfSummaryBatch != null) {
+            compositeBatch.merge(compositeBatchOfSummaryBatch);
+        } else {
+            compositeBatch.add(summaryBatch);
+        }
+
+    }
+
+    boolean shouldUseGroupingFunction() {
+        return MondrianProperties.instance().useGroupingSets.get() &&
+            doesDBSupportGroupingSets();
+    }
+
+    boolean doesDBSupportGroupingSets() {
+        return getDialect().isGroupingSetSupported();
+    }
+
+    SqlQuery.Dialect getDialect() {
+        return ((RolapSchema) cube.getSchema()).getDialect();
+    }
+
     /**
      * Sets the flag indicating that the reader has told a lie.
      */
@@ -196,15 +286,62 @@ public class FastBatchingCellReader implements CellReader {
         this.dirty = dirty;
     }
 
+    /**
+     * This class represents set of Batches which can grouped together
+     */
+    class CompositeBatch implements IBatch {
+        // Batch with most number of constraint columns
+        final Batch detailedBatch;
+
+        //Batches whose data can be fetched using rollup on detailed batch
+        List<Batch> summaryBatches = new ArrayList<Batch>();
+
+        CompositeBatch(Batch detailedBatch) {
+            this.detailedBatch = detailedBatch;
+        }
+
+        void add(Batch summaryBatch) {
+            summaryBatches.add(summaryBatch);
+        }
+
+        void merge(CompositeBatch summaryBatch) {
+            summaryBatches.add(summaryBatch.detailedBatch);
+            summaryBatches.addAll(summaryBatch.summaryBatches);
+        }
+
+        public void loadAggregation() {
+
+            GroupingSetsCollector batchCollector =
+                new GroupingSetsCollector(true);
+            this.detailedBatch.loadAggregation(batchCollector);
+
+            for (Batch batch : summaryBatches) {
+                batch.loadAggregation(batchCollector);
+            }
+
+            getSegmentLoader().load(batchCollector.getGroupingSets(),
+                 pinnedSegments);
+        }
+
+        SegmentLoader getSegmentLoader() {
+            return new SegmentLoader();
+        }
+    }
+
     private static final Logger BATCH_LOGGER = Logger.getLogger(Batch.class);
 
-    class Batch {
+    interface IBatch {
+        void loadAggregation();
+    }
+
+    class Batch implements IBatch {
         // these are the CellRequest's constrained columns
         final RolapStar.Column[] columns;
         // this is the CellRequest's constrained column BitKey
         final BitKey constrainedColumnsBitKey;
         final List<RolapStar.Measure> measuresList = new ArrayList<RolapStar.Measure>();
         final Set<StarColumnPredicate>[] valueSets;
+        final BatchKey batchKey;
 
         public Batch(CellRequest request) {
             columns = request.getConstrainedColumns();
@@ -213,6 +350,7 @@ public class FastBatchingCellReader implements CellReader {
             for (int i = 0; i < valueSets.length; i++) {
                 valueSets[i] = new HashSet<StarColumnPredicate>();
             }
+            batchKey = new BatchKey(constrainedColumnsBitKey, request.getMeasure().getStar());
         }
 
         public void add(CellRequest request) {
@@ -240,38 +378,94 @@ public class FastBatchingCellReader implements CellReader {
             return measure.getStar();
         }
 
-        void loadAggregation() {
+        public void loadAggregation() {
+            GroupingSetsCollector collectorWithGroupingSetsTurnedOff =
+                new GroupingSetsCollector(false);
+            loadAggregation(collectorWithGroupingSetsTurnedOff);
+        }
+
+        void loadAggregation(GroupingSetsCollector groupingSetsCollector) {
             if (generateAggregateSql) {
-                RolapCube cube = FastBatchingCellReader.this.cube;
-                if (cube == null || cube.isVirtual()) {
-                    StringBuilder buf = new StringBuilder(64);
-                    buf.append("AggGen: Sorry, can not create SQL for virtual Cube \"");
-                    buf.append(FastBatchingCellReader.this.cube.getName());
-                    buf.append("\", operation not currently supported");
-                    BATCH_LOGGER.error(buf.toString());
-
-                } else {
-                    AggGen aggGen = new AggGen(
-                            FastBatchingCellReader.this.cube.getStar(), columns);
-                    if (aggGen.isReady()) {
-                        // PRINT TO STDOUT - DO NOT USE BATCH_LOGGER
-                        System.out.println("createLost:" +
-                            Util.nl + aggGen.createLost());
-                        System.out.println("insertIntoLost:" +
-                            Util.nl + aggGen.insertIntoLost());
-                        System.out.println("createCollapsed:" +
-                            Util.nl + aggGen.createCollapsed());
-                        System.out.println("insertIntoCollapsed:" +
-                            Util.nl + aggGen.insertIntoCollapsed());
-                    } else {
-                        BATCH_LOGGER.error("AggGen failed");
-                    }
-                }
+                generateAggregateSql();
             }
-
+            StarColumnPredicate[] predicates = initPredicates();
             long t1 = System.currentTimeMillis();
 
             AggregationManager aggmgr = AggregationManager.instance();
+            // TODO: optimize key sets; drop a constraint if more than x% of
+            // the members are requested; whether we should get just the cells
+            // requested or expand to a n-cube
+
+            // If the database cannot execute "count(distinct ...)", split the
+            // distinct aggregations out.
+            SqlQuery.Dialect dialect = getStar().getSqlQueryDialect();
+            int distinctMeasureCount = getDistinctMeasureCount(measuresList);
+            boolean tooManyDistinctMeasures =
+                distinctMeasureCount > 0 &&
+                    !dialect.allowsCountDistinct() ||
+                    distinctMeasureCount > 1 &&
+                        !dialect.allowsMultipleCountDistinct();
+            if (tooManyDistinctMeasures) {
+                doSpecialHandlingOfDistinctCountMeasures(aggmgr, predicates,
+                    groupingSetsCollector);
+            }
+
+            final int measureCount = measuresList.size();
+            if (measureCount > 0) {
+                RolapStar.Measure[] measures =
+                    measuresList.toArray(new RolapStar.Measure[measureCount]);
+                aggmgr.loadAggregation(
+                    measures, columns,
+                    constrainedColumnsBitKey,
+                    predicates, pinnedSegments, groupingSetsCollector);
+            }
+
+            if (BATCH_LOGGER.isDebugEnabled()) {
+                long t2 = System.currentTimeMillis();
+                BATCH_LOGGER
+                    .debug("Batch.loadAggregation (millis) " + (t2 - t1));
+            }
+        }
+
+        private void doSpecialHandlingOfDistinctCountMeasures(
+            AggregationManager aggmgr, StarColumnPredicate[] predicates,
+            GroupingSetsCollector groupingSetsCollector)
+        {
+            while (true) {
+                // Scan for a measure based upon a distinct aggregation.
+                RolapStar.Measure distinctMeasure =
+                    getFirstDistinctMeasure(measuresList);
+                if (distinctMeasure == null) {
+                    break;
+                }
+                final String expr =
+                    distinctMeasure.getExpression().getGenericExpression();
+                final List<RolapStar.Measure> distinctMeasuresList =
+                    new ArrayList<RolapStar.Measure>();
+                for (int i = 0; i < measuresList.size();) {
+                    RolapStar.Measure measure =
+                        measuresList.get(i);
+                    if (measure.getAggregator().isDistinct() &&
+                        measure.getExpression().getGenericExpression().
+                            equals(expr)) {
+                        measuresList.remove(i);
+                        distinctMeasuresList.add(distinctMeasure);
+                    } else {
+                        i++;
+                    }
+                }
+                RolapStar.Measure[] measures =
+                    distinctMeasuresList.toArray(
+                        new RolapStar.Measure[distinctMeasuresList.size()]);
+                aggmgr.loadAggregation(
+                    measures, columns,
+                    constrainedColumnsBitKey,
+                    predicates,
+                    pinnedSegments, groupingSetsCollector);
+            }
+        }
+
+        private StarColumnPredicate[] initPredicates() {
             StarColumnPredicate[] predicates =
                     new StarColumnPredicate[columns.length];
             for (int j = 0; j < columns.length; j++) {
@@ -297,68 +491,34 @@ public class FastBatchingCellReader implements CellReader {
 
                 predicates[j] = predicate;
             }
-            // TODO: optimize key sets; drop a constraint if more than x% of
-            // the members are requested; whether we should get just the cells
-            // requested or expand to a n-cube
+            return predicates;
+        }
 
-            // If the database cannot execute "count(distinct ...)", split the
-            // distinct aggregations out.
-            SqlQuery.Dialect dialect = getStar().getSqlQueryDialect();
-            int distinctMeasureCount = getDistinctMeasureCount(measuresList);
-            boolean tooManyDistinctMeasures =
-                distinctMeasureCount > 0 &&
-                    !dialect.allowsCountDistinct() ||
-                    distinctMeasureCount > 1 &&
-                        !dialect.allowsMultipleCountDistinct();
-            if (tooManyDistinctMeasures) {
-                while (true) {
-                    // Scan for a measure based upon a distinct aggregation.
-                    RolapStar.Measure distinctMeasure =
-                        getFirstDistinctMeasure(measuresList);
-                    if (distinctMeasure == null) {
-                        break;
-                    }
-                    final String expr =
-                        distinctMeasure.getExpression().getGenericExpression();
-                    final List<RolapStar.Measure> distinctMeasuresList =
-                        new ArrayList<RolapStar.Measure>();
-                    for (int i = 0; i < measuresList.size();) {
-                        RolapStar.Measure measure =
-                            measuresList.get(i);
-                        if (measure.getAggregator().isDistinct() &&
-                            measure.getExpression().getGenericExpression().
-                                equals(expr))
-                        {
-                            measuresList.remove(i);
-                            distinctMeasuresList.add(distinctMeasure);
-                        } else {
-                            i++;
-                        }
-                    }
-                    RolapStar.Measure[] measures =
-                        distinctMeasuresList.toArray(
-                            new RolapStar.Measure[distinctMeasuresList.size()]);
-                    aggmgr.loadAggregation(
-                        measures, columns,
-                        constrainedColumnsBitKey,
-                        predicates,
-                        pinnedSegments);
+        private void generateAggregateSql() {
+            RolapCube cube = FastBatchingCellReader.this.cube;
+            if (cube == null || cube.isVirtual()) {
+                StringBuilder buf = new StringBuilder(64);
+                buf.append("AggGen: Sorry, can not create SQL for virtual Cube \"");
+                buf.append(FastBatchingCellReader.this.cube.getName());
+                buf.append("\", operation not currently supported");
+                BATCH_LOGGER.error(buf.toString());
+
+            } else {
+                AggGen aggGen = new AggGen(
+                        FastBatchingCellReader.this.cube.getStar(), columns);
+                if (aggGen.isReady()) {
+                    // PRINT TO STDOUT - DO NOT USE BATCH_LOGGER
+                    System.out.println("createLost:" +
+                        Util.nl + aggGen.createLost());
+                    System.out.println("insertIntoLost:" +
+                        Util.nl + aggGen.insertIntoLost());
+                    System.out.println("createCollapsed:" +
+                        Util.nl + aggGen.createCollapsed());
+                    System.out.println("insertIntoCollapsed:" +
+                        Util.nl + aggGen.insertIntoCollapsed());
+                } else {
+                    BATCH_LOGGER.error("AggGen failed");
                 }
-            }
-
-            final int measureCount = measuresList.size();
-            if (measureCount > 0) {
-                RolapStar.Measure[] measures =
-                    measuresList.toArray(new RolapStar.Measure[measureCount]);
-                aggmgr.loadAggregation(
-                    measures, columns,
-                    constrainedColumnsBitKey,
-                    predicates, pinnedSegments);
-            }
-
-            if (BATCH_LOGGER.isDebugEnabled()) {
-                long t2 = System.currentTimeMillis();
-                BATCH_LOGGER.debug("Batch.loadAggregation (millis) " + (t2 - t1));
             }
         }
 
@@ -389,6 +549,97 @@ public class FastBatchingCellReader implements CellReader {
             }
             return count;
         }
+
+        /**
+         * Other batch can be batched to this
+         * if columns list is super set of other batch's constraint columns and
+         * if both the batch does not have distinct count measure in it and
+         * if both have same Fact Table and
+         * if matching columns of this and other batch has the same value and
+         * if non matching columns of this batch have “All values”
+         */
+
+        boolean canBatch(Batch other) {
+            return hasOverlappingBitKeys(other) &&
+                !hasDistinctCountMeasure() &&
+                !other.hasDistinctCountMeasure() &&
+                haveSameStarAndAggregation(other) &&
+                haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(
+                    other);
+        }
+
+        boolean hasOverlappingBitKeys(Batch other) {
+            return constrainedColumnsBitKey
+                .isSuperSetOf(other.constrainedColumnsBitKey);
+        }
+
+        boolean hasDistinctCountMeasure() {
+            return getDistinctMeasureCount(measuresList) != 0;
+        }
+
+        boolean haveSameStarAndAggregation(Batch other) {
+            return (getStar().equals(other.getStar()) &&
+                getAgg() == other.getAgg());
+        }
+
+        private AggStar getAgg() {
+
+            AggregationManager aggregationManager =
+                AggregationManager.instance();
+            AggStar star =
+                aggregationManager.findAgg(getStar(),
+                    constrainedColumnsBitKey, makeMeasureBitKey(),
+                    new boolean[]{false});
+            return star;
+        }
+
+        private BitKey makeMeasureBitKey() {
+            BitKey bitKey = constrainedColumnsBitKey.emptyCopy();
+            for (RolapStar.Measure measure : measuresList) {
+                bitKey.set(measure.getBitPosition());
+            }
+            return bitKey;
+        }
+
+        boolean haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(
+            Batch other)
+        {
+            for (int j = 0; j < columns.length; j++) {
+                boolean isCommonColumn = false;
+                for (int i = 0; i < other.columns.length; i++) {
+                    if (areSameColumns(other.columns[i], columns[j])) {
+                        if (hasSameValues(other.valueSets[i], valueSets[j])) {
+                            isCommonColumn = true;
+                            break;
+                        } else
+                            return false;
+                    }
+                }
+                if (!isCommonColumn &&
+                    !hasAllValues(columns[j], valueSets[j])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private boolean hasAllValues(RolapStar.Column column,
+                                     Set<StarColumnPredicate> valueSet)
+        {
+            return column.getCardinality() == valueSet.size();
+        }
+
+        private boolean areSameColumns(RolapStar.Column otherColumn,
+                                       RolapStar.Column thisColumn)
+        {
+            return otherColumn.equals(thisColumn);
+        }
+
+        private boolean hasSameValues(Set<StarColumnPredicate> otherValueSet,
+                                      Set<StarColumnPredicate> thisValueSet)
+        {
+            return otherValueSet.equals(thisValueSet);
+        }
     }
 
     /**
@@ -418,6 +669,14 @@ public class FastBatchingCellReader implements CellReader {
         }
         public String toString() {
             return star.getFactTable().getTableName() + " " + key.toString();
+        }
+    }
+
+    private static class CompositeBatchComparator implements Comparator<CompositeBatch> {
+        static final CompositeBatchComparator instance = new CompositeBatchComparator();
+
+        public int compare(CompositeBatch o1, CompositeBatch o2) {
+            return BatchComparator.instance.compare(o1.detailedBatch, o2.detailedBatch);
         }
     }
 

@@ -111,6 +111,8 @@ public class SqlQuery {
     private final ClauseList groupBy;
     private final ClauseList having;
     private final ClauseList orderBy;
+    private final List<ClauseList> groupingSet;
+    private final ClauseList groupingFunction;
 
     /**
      * This list is used to keep track of what aliases have been  used in the
@@ -137,13 +139,14 @@ public class SqlQuery {
         this.select = new ClauseList(true);
         this.from = new ClauseList(true);
 
+        this.groupingFunction = new ClauseList(false);
         this.where = new ClauseList(false);
         this.groupBy = new ClauseList(false);
         this.having = new ClauseList(false);
         this.orderBy = new ClauseList(false);
         this.fromAliases = new ArrayList<String>();
         this.buf = new StringBuilder(128);
-
+        this.groupingSet = new ArrayList<ClauseList>();
         this.dialect = dialect;
     }
 
@@ -243,7 +246,7 @@ public class SqlQuery {
      * @pre alias != null
      * @return true if table was added
      */
-    private boolean addFromTable(
+    boolean addFromTable(
         final String schema,
         final String table,
         final String alias,
@@ -459,9 +462,16 @@ public class SqlQuery {
 
             select.toBuffer(buf,
                 distinct ? "select distinct " : "select ", ", ");
+            buf.append(getGroupingFunction(""));
             from.toBuffer(buf, " from ", ", ");
             where.toBuffer(buf, " where ", " and ");
-            groupBy.toBuffer(buf, " group by ", ", ");
+            if (hasGroupingSet()) {
+                StringWriter stringWriter = new StringWriter();
+                printGroupingSets(new PrintWriter(stringWriter), "");
+                buf.append(stringWriter.toString());
+            } else {
+                groupBy.toBuffer(buf, " group by ", ", ");
+            }
             having.toBuffer(buf, " having ", " and ");
             orderBy.toBuffer(buf, " order by ", ", ");
 
@@ -479,11 +489,55 @@ public class SqlQuery {
     public void print(PrintWriter pw, String prefix) {
         select.print(pw, prefix,
             distinct ? "select distinct " : "select ", ", ");
+        pw.print(getGroupingFunction(prefix));
         from.print(pw, prefix, "from ", ", ");
         where.print(pw, prefix, "where ", " and ");
-        groupBy.print(pw, prefix, "group by ", ", ");
+        if (hasGroupingSet()) {
+            printGroupingSets(pw, prefix);
+        } else {
+            groupBy.print(pw, prefix, "group by ", ", ");
+        }
         having.print(pw, prefix, "having ", " and ");
         orderBy.print(pw, prefix, "order by ", ", ");
+    }
+
+    private String getGroupingFunction(String prefix) {
+        if (!hasGroupingSet()) {
+            return "";
+        }
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < groupingFunction.size(); i++) {
+            if (generateFormattedSql) {
+                buf.append("    " + prefix);
+            }
+            buf.append(", ");
+            buf.append("grouping(");
+            buf.append(groupingFunction.get(i));
+            buf.append(") as ");
+            dialect.quoteIdentifier("g" + i, buf);
+            if (generateFormattedSql) {
+                buf.append(Util.nl);
+            }
+        }
+        return buf.toString();
+    }
+
+
+    private void printGroupingSets(PrintWriter pw, String prefix) {
+        pw.print(" group by grouping sets (");
+        for (int i = 0; i < groupingSet.size(); i++) {
+            if (i > 0) {
+                pw.print(",");
+            }
+            pw.print("(");
+            groupingSet.get(i).print(pw, prefix, "", ",", "", "");
+            pw.print(")");
+        }
+        pw.print(")");
+    }
+
+    private boolean hasGroupingSet() {
+        return !groupingSet.isEmpty();
     }
 
     public Dialect getDialect() {
@@ -520,7 +574,19 @@ public class SqlQuery {
         }
     }
 
-    private static class ClauseList extends ArrayList<String> {
+    public void addGroupingSet(List<String> groupingColumnsExpr) {
+        ClauseList groupingList = new ClauseList(false);
+        for (String columnExp : groupingColumnsExpr) {
+            groupingList.add(columnExp);
+        }
+        groupingSet.add(groupingList);
+    }
+
+    public void addGroupingFunction(String columnExpr) {
+        groupingFunction.add(columnExpr);
+    }
+
+    static class ClauseList extends ArrayList<String> {
         private final boolean allowDups;
 
         ClauseList(final boolean allowDups) {
@@ -562,23 +628,38 @@ public class SqlQuery {
                    final String prefix,
                    final String first,
                    final String sep) {
+            print(pw, prefix, first, sep, "", "");
+        }
+
+        void print(final PrintWriter pw,
+                   final String prefix,
+                   final String first,
+                   final String sep,
+                   final String suffix,
+                   final String last) {
             String subprefix = prefix + "    ";
             boolean firstTime = true;
-            for (Iterator it = iterator(); it.hasNext(); ) {
-                String s = (String) it.next();
-
+            for (String s : this) {
                 if (firstTime) {
-                    pw.print(prefix);
+                    if (generateFormattedSql) {
+                        pw.print(prefix);
+                    }
                     pw.print(first);
                     firstTime = false;
                 } else {
                     pw.print(sep);
                 }
-                pw.println();
-                pw.print(subprefix);
+                if (generateFormattedSql) {
+                    pw.println();
+                    pw.print(subprefix);
+                }
                 pw.print(s);
+                if (generateFormattedSql) {
+                    pw.print(suffix);
+                }
             }
-            if (! firstTime) {
+            pw.print(last);
+            if (!firstTime && generateFormattedSql) {
                 pw.println();
             }
         }
@@ -751,6 +832,14 @@ public class SqlQuery {
         public boolean isAS400() {
             // DB2/AS400 Product String = "DB2 UDB for AS/400"
             return productName.startsWith("DB2 UDB for AS/400");
+        }
+
+        /**
+         * This is used to determine if grouping sets should be used in sql.
+         * Grouping set is currently enabled only for Oracle, DB2 and Teradata
+         */
+        public boolean isGroupingSetSupported() {
+            return isOracle() || isDB2() || isTeradata();
         }
 
         public boolean isOldAS400() {

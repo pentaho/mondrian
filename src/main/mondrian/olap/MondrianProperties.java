@@ -965,6 +965,16 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final BooleanProperty NullDenominatorProducesInfinity = 
     	new BooleanProperty(
             this, "mondrian.olap.NullDenominatorProducesInfinity", true);
+
+    /**
+     * Whether the <code>GroupingSets</code> should be used in sql query for
+     * rollup. By default it is not enabled. Even if this property is set to
+     * true, grouping sets will be used only on supported Databases.
+     * {@link mondrian.rolap.sql.SqlQuery.Dialect#isGroupingSetSupported}
+     */
+    public transient final BooleanProperty useGroupingSets = new BooleanProperty(
+        this, "mondrian.rolap.groupingsets.enable", false);
+
 }
 
 // End MondrianProperties.java

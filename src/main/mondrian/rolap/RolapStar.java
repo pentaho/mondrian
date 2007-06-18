@@ -2040,6 +2040,21 @@ public class RolapStar {
                 : table;
         }
     }
+
+    /**
+     * Comparator to compare columns based on their name
+     */
+    public static class ColumnComparator implements Comparator<Column> {
+
+        public static ColumnComparator instance = new ColumnComparator();
+
+        private ColumnComparator() {
+        }
+
+        public int compare(Column o1, Column o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+    }
 }
 
 // End RolapStar.java

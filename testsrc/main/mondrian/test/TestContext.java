@@ -192,6 +192,17 @@ public class TestContext {
         return getFoodMartConnection();
     }
 
+    public synchronized void clearConnection() {
+        if (foodMartConnection != null) {
+            try {
+                foodMartConnection.getDataSource().getConnection().close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            foodMartConnection = null;
+        }
+    }
+
     /**
      * Returns a connection to the FoodMart database.
      */

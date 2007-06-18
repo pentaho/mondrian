@@ -57,16 +57,14 @@ public class InlineTableTest extends FoodMartTestCase {
                 "</Cube>",
             null, null, null);
         testContext.assertQueryReturns(
-            "select {[Alternative Promotion].members} ON COLUMNS\n" +
+            "select {[Alternative Promotion].[All Alternative Promotions].children} ON COLUMNS\n" +
                 "from [" + cubeName + "] ",
             fold(
                 "Axis #0:\n" +
                     "{}\n" +
                     "Axis #1:\n" +
-                    "{[Alternative Promotion].[All Alternative Promotions]}\n" +
                     "{[Alternative Promotion].[All Alternative Promotions].[Promo0]}\n" +
                     "{[Alternative Promotion].[All Alternative Promotions].[Promo1]}\n" +
-                    "Row #0: 266,773\n" +
                     "Row #0: 195,448\n" +
                     "Row #0: \n"));
     }
@@ -106,16 +104,14 @@ public class InlineTableTest extends FoodMartTestCase {
                 "</Cube>",
             null, null, null);
         testContext.assertQueryReturns(
-            "select {[Shared Alternative Promotion].members} ON COLUMNS\n" +
+            "select {[Shared Alternative Promotion].[All Shared Alternative Promotions].children} ON COLUMNS\n" +
                 "from [" + cubeName + "] ",
             fold(
                 "Axis #0:\n" +
                     "{}\n" +
                     "Axis #1:\n" +
-                    "{[Shared Alternative Promotion].[All Shared Alternative Promotions]}\n" +
                     "{[Shared Alternative Promotion].[All Shared Alternative Promotions].[First promo]}\n" +
                     "{[Shared Alternative Promotion].[All Shared Alternative Promotions].[Second promo]}\n" +
-                    "Row #0: 266,773\n" +
                     "Row #0: 195,448\n" +
                     "Row #0: \n"));
     }
