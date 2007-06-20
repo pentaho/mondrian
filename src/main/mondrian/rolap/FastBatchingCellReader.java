@@ -556,7 +556,7 @@ public class FastBatchingCellReader implements CellReader {
          * if both the batch does not have distinct count measure in it and
          * if both have same Fact Table and
          * if matching columns of this and other batch has the same value and
-         * if non matching columns of this batch have “All values”
+         * if non matching columns of this batch have ALL VALUES
          */
 
         boolean canBatch(Batch other) {
