@@ -599,3 +599,5 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
     }
 }
+
+// End FastBatchingCellReaderTest.java

@@ -159,3 +159,5 @@ public class SqlQueryTest extends FoodMartTestCase {
         }
     }
 }
+
+// End SqlQueryTest.java

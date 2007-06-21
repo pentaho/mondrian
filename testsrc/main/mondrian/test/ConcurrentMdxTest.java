@@ -13,7 +13,10 @@ package mondrian.test;
 import mondrian.olap.MondrianProperties;
 /**
  * Runs specified set of MDX queries concurrently.
- *  This Class is not added to the Main test suite. 
+ * This Class is not added to the Main test suite.
+ * Purpose of this test is to simulate Concurrent access to Aggregation and data
+ * load. Simulation will be more effective if we run this single test again and
+ * again with a fresh connection.
  *
  * @author Thiyagu,Ajit
  * @version $Id$
@@ -1262,3 +1265,4 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
         props = MondrianProperties.instance();
     }
 }
+// End ConcurrentMdxTest.java 

@@ -8,13 +8,19 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// Shishir, 08 May, 2007
 */
 
 package mondrian.olap;
 
 import junit.framework.TestCase;
 
+/**
+ * Test for <code>Cell Property<code>
+ *
+ * @author Shishir
+ * @version $Id$
+ * @since 08 May, 2007
+ */
 
 public class CellPropertyTest extends TestCase {
     private CellProperty cellProperty;
@@ -37,3 +43,5 @@ public class CellPropertyTest extends TestCase {
     }
 
 }
+
+// End CellPropertyTest.java

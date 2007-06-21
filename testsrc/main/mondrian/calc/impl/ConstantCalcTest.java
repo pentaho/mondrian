@@ -1,3 +1,13 @@
+/*
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2002-2007 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+//
+*/
+
 package mondrian.calc.impl;
 
 import junit.framework.TestCase;
@@ -5,11 +15,9 @@ import mondrian.olap.type.NullType;
 import mondrian.olap.fun.FunUtil;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Brightondev
- * Date: Apr 2, 2007
- * Time: 1:31:07 PM
- * To change this template use File | Settings | File Templates.
+ * Test for <code>ConstantCalc</code>
+ * @author Matt
+ * @version $Id$
  */
 public class ConstantCalcTest extends TestCase {
     public void testNullEvaluatesToConstantDoubleNull() {
@@ -22,3 +30,5 @@ public class ConstantCalcTest extends TestCase {
         assertEquals(FunUtil.IntegerNull,constantCalc.evaluateInteger(null));
     }
 }
+
+// End ConstantCalcTest.java

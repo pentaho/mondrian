@@ -8,13 +8,18 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// Shishir, 08 May, 2007
+//
 */
 package mondrian.olap;
 
 /**
- * Represents Cell Property
+ * Represents Cell Property.
+ *
+ * @author Shishir
+ * @version $Id$
+ * @since 08 May, 2007
  */
+
 public class CellProperty extends QueryPart {
     private String name;
 
@@ -35,3 +40,5 @@ public class CellProperty extends QueryPart {
         return name;
     }
 }
+
+// End CellProperty.java

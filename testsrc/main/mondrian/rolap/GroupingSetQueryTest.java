@@ -320,3 +320,5 @@ public class GroupingSetQueryTest extends BatchTestCase {
             patternsWithoutGS, cubeNameSales2);
     }
 }
+
+// End GroupingSetQueryTest.java
