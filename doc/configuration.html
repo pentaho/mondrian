@@ -806,6 +806,21 @@ href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported
       </td>
   </tr>
     <tr>
+      <td style="vertical-align: top;"><code>
+      <a href="api/mondrian/olap/MondrianProperties.html#useGroupingSets">
+      mondrian.rolap.groupingsets.enable</a></code></td>
+      <td style="vertical-align: top;">boolean</td>
+
+      <td style="vertical-align: top;">false</td>
+      <td style="vertical-align: top;">If enabled, some rollup queries will
+          be combined using <code>group by grouping sets</code>. Even if this
+          property is set to true, grouping sets will be used only on supported
+          Databases.
+          <p>Currently grouping sets will be used only against Oracle, DB2 and
+          Teradata.</p>
+      </td>
+  </tr>
+    <tr>
       <td style="vertical-align: top;" colspan="4">
 
       <b><br>
