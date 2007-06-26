@@ -296,6 +296,8 @@ public class DialectTest extends TestCase {
                 "Syntax error: Encountered \"SETS\" at line 6, column 19.",
                 // mysql
                 "(?s)You have an error in your SQL syntax; check .*",
+                // access
+                "(?s)\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression 'GROUPING SETS.*",
             };
             assertQueryFails(sql, errs);
         }
@@ -422,6 +424,8 @@ public class DialectTest extends TestCase {
      * Asserts that a query fails.
      *
      * @param sql SQL query
+     * @param patterns Array of expected patterns, generally one for each
+     *   SQL dialect for which the test is expected to fail
      */
     protected void assertQueryFails(String sql, String[] patterns) {
         Statement stmt = null;
