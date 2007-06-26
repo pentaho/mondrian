@@ -30,7 +30,8 @@ public class LevelType implements Type {
     /**
      * Creates a type representing a level.
      *
-     * @param dimension
+     * @param dimension Dimension which values of this type must belong to, or
+     *   null if not known
      * @param hierarchy Hierarchy which values of this type must belong to, or
      *   null if not known
      * @param level Level which values of this type must belong to, or null if
@@ -76,12 +77,9 @@ public class LevelType implements Type {
                 level);
     }
 
-    public boolean usesDimension(Dimension dimension, boolean maybe) {
-        if (this.dimension == null) {
-            return maybe;
-        } else {
-            return this.dimension == dimension;
-        }
+    public boolean usesDimension(Dimension dimension, boolean definitely) {
+        return this.dimension == dimension ||
+            (!definitely && this.dimension == null);
     }
 
     public Dimension getDimension() {

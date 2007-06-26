@@ -930,15 +930,10 @@ public class BuiltinFunTable extends FunTableImpl {
         });
 
         define(CrossJoinFunDef.Resolver);
-
         define(NonEmptyCrossJoinFunDef.Resolver);
-
         define(CrossJoinFunDef.StarResolver);
-
         define(DescendantsFunDef.Resolver);
-
         define(DistinctFunDef.instance);
-
         define(DrilldownLevelFunDef.Resolver);
 
         if (false) define(new FunDefBase(
@@ -1421,17 +1416,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 "<Set>.Current",
                 "Returns the current tuple from a set during an iteration.",
                 "ptx") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                throw new UnsupportedOperationException();
-            }
-        });
-
-        // we do not support the <String expression> arguments
-        if (false) define(new FunDefBase(
-                "Item",
-                "<Set>.Item(<String Expression>[, <String Expression>...] | <Index>)",
-                "Returns a tuple from a set.",
-                "mx*") {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 throw new UnsupportedOperationException();
             }

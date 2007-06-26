@@ -462,7 +462,7 @@ public class Query extends QueryPart {
                     resultStyle);
         }
     }
-    
+
     public ResultStyle getResultStyle() {
         return resultStyle;
     }
@@ -579,8 +579,7 @@ public class Query extends QueryPart {
                 } else {
                     axisExp = axes[j];
                 }
-                if (axisExp.getSet().getType().usesDimension(dimension,
-                    false)) {
+                if (axisExp.getSet().getType().usesDimension(dimension, true)) {
                     ++useCount;
                 }
             }

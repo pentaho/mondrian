@@ -29,8 +29,8 @@ public class DimensionType implements Type {
     /**
      * Creates a type representing a dimension.
      *
-     * @param dimension Dimension that values of this type must belong to.
-     *   Null if the dimension is unknown.
+     * @param dimension Dimension that values of this type must belong to, or
+     *   null if the dimension is unknown
      */
     public DimensionType(Dimension dimension) {
         this.dimension = dimension;
@@ -50,9 +50,9 @@ public class DimensionType implements Type {
         return new DimensionType(type.getDimension());
     }
 
-    public boolean usesDimension(Dimension dimension, boolean maybe) {
+    public boolean usesDimension(Dimension dimension, boolean definitely) {
         return this.dimension == dimension ||
-                (maybe && this.dimension == null);
+            (definitely && this.dimension == null);
     }
 
     public Hierarchy getHierarchy() {

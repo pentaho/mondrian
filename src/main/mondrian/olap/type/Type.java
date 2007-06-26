@@ -33,18 +33,21 @@ public interface Type {
      *     dimensions.</li>
      * </ul><p/>
      *
-     * The <code>maybe</code> parameter comes into play when the
+     * The <code>definitely</code> parameter comes into play when the
      * dimensional information is incomplete. For example, when applied to
      * <code>TupleType(MemberType(null), MemberType([Store]))</code>,
      * <code>usesDimension([Gender], false)</code> returns true because it
      * is possible that the expression returns a member of the
+     * <code>[Gender]</code> dimension; but
+     * <code>usesDimension([Gender], true)</code> returns true because it
+     * is possible that the expression returns a member of the
      * <code>[Gender]</code> dimension.
      *
      * @param dimension Dimension
-     * @param maybe If true, returns true only if this type definitely
+     * @param definitely If true, returns true only if this type definitely
      *    uses the dimension
      */
-    boolean usesDimension(Dimension dimension, boolean maybe);
+    boolean usesDimension(Dimension dimension, boolean definitely);
 
     /**
      * Returns the dimension of this type, or null if not known.

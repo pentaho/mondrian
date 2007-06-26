@@ -70,7 +70,17 @@ public class MemberValueCalc extends GenericCalc {
             return true;
         }
         for (MemberCalc memberCalc : memberCalcs) {
-            // If the expression
+            // If the expression definitely includes the dimension (in this
+            // case, that means it is a member of that dimension) then we
+            // do not depend on the dimension. For example, the scalar value of
+            //   [Store].[USA]
+            // does not depend on [Store].
+            //
+            // If the dimensionality of the expression is unknown, then the
+            // expression MIGHT include the dimension, so to be safe we have to
+            // say that it depends on the given dimension. For example,
+            //   Dimensions(3).CurrentMember.Parent
+            // may depend on [Store].
             if (memberCalc.getType().usesDimension(dimension, true)) {
                 return false;
             }

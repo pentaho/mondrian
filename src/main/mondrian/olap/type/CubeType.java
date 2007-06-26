@@ -35,7 +35,7 @@ public class CubeType implements Type {
         return cube;
     }
 
-    public boolean usesDimension(Dimension dimension, boolean maybe) {
+    public boolean usesDimension(Dimension dimension, boolean definitely) {
         return false;
     }
 

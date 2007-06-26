@@ -30,8 +30,8 @@ public class MemberType implements Type {
     /**
      * Creates a type representing a member.
      *
-     * @param dimension
-     * @param hierarchy Hierarchy the member belongs to, or null if not known.
+     * @param dimension Dimension the member belongs to, or null if not known
+     * @param hierarchy Hierarchy the member belongs to, or null if not known
      * @param level Level the member belongs to, or null if not known
      * @param member The precise member, or null if not known
      */
@@ -102,13 +102,9 @@ public class MemberType implements Type {
         return member;
     }
 
-    public boolean usesDimension(Dimension dimension, boolean maybe) {
-        if (this.dimension == null) {
-            return maybe;
-        } else {
-            return this.dimension == dimension ||
-                    (maybe && this.dimension == null);
-        }
+    public boolean usesDimension(Dimension dimension, boolean definitely) {
+        return this.dimension == dimension ||
+            (!definitely && this.dimension == null);
     }
 
     public Type getValueType() {

@@ -27,6 +27,11 @@ public class HierarchyType implements Type {
 
     /**
      * Creates a type representing a hierarchy.
+     *
+     * @param dimension Dimension that values of this type must belong to, or
+     *   null if the dimension is unknown
+     * @param hierarchy Hierarchy that values of this type must belong to,
+     *   null if the hierarchy is unknown
      */
     public HierarchyType(Dimension dimension, Hierarchy hierarchy) {
         this.dimension = dimension;
@@ -39,7 +44,6 @@ public class HierarchyType implements Type {
         }
         buf.append(">");
         this.digest = buf.toString();
-
     }
 
     public static HierarchyType forHierarchy(Hierarchy hierarchy) {
@@ -50,9 +54,9 @@ public class HierarchyType implements Type {
         return new HierarchyType(type.getDimension(), type.getHierarchy());
     }
 
-    public boolean usesDimension(Dimension dimension, boolean maybe) {
+    public boolean usesDimension(Dimension dimension, boolean definitely) {
         return this.dimension == dimension ||
-                (maybe && this.dimension == null);
+            (!definitely && this.dimension == null);
     }
 
     public Dimension getDimension() {

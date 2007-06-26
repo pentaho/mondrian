@@ -23,15 +23,17 @@ public class TupleType implements Type {
 
     /**
      * Creates a type representing a tuple whose fields are the given types.
+     *
+     * @param elementTypes Array of types of the members in this tuple
      */
     public TupleType(Type[] elementTypes) {
         assert elementTypes != null;
         this.elementTypes = elementTypes.clone();
     }
 
-    public boolean usesDimension(Dimension dimension, boolean maybe) {
+    public boolean usesDimension(Dimension dimension, boolean definitely) {
         for (Type elementType : elementTypes) {
-            if (elementType.usesDimension(dimension, maybe)) {
+            if (elementType.usesDimension(dimension, definitely)) {
                 return true;
             }
         }

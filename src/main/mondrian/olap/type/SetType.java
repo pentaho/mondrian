@@ -40,16 +40,18 @@ public class SetType implements Type {
 
     /**
      * Returns the type of the elements of this set.
+     *
+     * @return the type of the elements in this set
      */
     public Type getElementType() {
         return elementType;
     }
 
-    public boolean usesDimension(Dimension dimension, boolean maybe) {
+    public boolean usesDimension(Dimension dimension, boolean definitely) {
         if (elementType == null) {
-            return maybe;
+            return definitely;
         }
-        return elementType.usesDimension(dimension, maybe);
+        return elementType.usesDimension(dimension, definitely);
     }
 
     public Dimension getDimension() {

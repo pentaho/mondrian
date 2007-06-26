@@ -25,7 +25,7 @@ import mondrian.olap.Level;
  * @version $Id$
  */
 public class ScalarType implements Type {
-    public boolean usesDimension(Dimension dimension, boolean maybe) {
+    public boolean usesDimension(Dimension dimension, boolean definitely) {
         return false;
     }
 
