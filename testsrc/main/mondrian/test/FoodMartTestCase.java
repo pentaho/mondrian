@@ -213,8 +213,8 @@ public class FoodMartTestCase extends TestCase {
     }
 
     protected boolean isGroupingSetsSupported() {
-        return MondrianProperties.instance().useGroupingSets.get() &&
-                getTestContext().getDialect().isGroupingSetSupported();
+        return MondrianProperties.instance().EnableGroupingSets.get() &&
+                getTestContext().getDialect().supportsGroupingSets();
     }
 
     static class QueryAndResult {

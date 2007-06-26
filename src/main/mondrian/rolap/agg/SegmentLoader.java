@@ -38,33 +38,37 @@ public class SegmentLoader {
      * GROUP BY GROUPING SETS sql. Else if only one grouping set is passed in the
      * list data is loaded without using GROUP BY GROUPING SETS sql. If the database
      * does not support grouping sets
-     * {@link mondrian.rolap.sql.SqlQuery.Dialect#isGroupingSetSupported()} then
+     * {@link mondrian.rolap.sql.SqlQuery.Dialect#supportsGroupingSets()} then
      * grouping sets list should always have only one element in it.
      *
-     * For example :
-     * If list has 2 grouping sets with columns A,B,C and B,C respectively then
-     * sql -> group by grouping sets ((A,B,C),(B,C))
+     * <p>For example, if list has 2 grouping sets with columns A, B, C and B, C
+     * respectively, then the SQL will be
+     * "GROUP BY GROUPING SETS ((A, B, C), (B, C))".
      *
      * Else if the list has only one grouping set then sql would be without
      * grouping sets
      *
-     * First element of the groupingSets list should always be the detailed grouping
+     * <p>The <code>groupingSets</code> list should be topological order, with
+     * more detailed higher-level grouping sets occuring first. In other words, the first
+     * element of the list should always be the detailed grouping
      * set (default grouping set), followed by grouping sets which can be
      * rolled-up on this detailed grouping set.
-     * In the example (A,B,C) is the detailed grouping set and (B,C) is rolled-up
-     * using the detailed.
+     * In the example (A, B, C) is the detailed grouping set and (B, C) is
+     * rolled-up using the detailed.
      *
-     * @param groupingSets   - List of grouping sets whose segments are loaded
-     * @param pinnedSegments - Pinned segments
+     * @param groupingSets   List of grouping sets whose segments are loaded
+     * @param pinnedSegments Pinned segments
      */
     public void load(
         List<GroupingSet> groupingSets,
         RolapAggregationManager.PinSet pinnedSegments)
     {
-        GroupByGroupingSets groupByGroupingSets = new GroupByGroupingSets(groupingSets);
+        GroupByGroupingSets groupByGroupingSets =
+            new GroupByGroupingSets(groupingSets);
         boolean useGroupingSet = groupByGroupingSets.useGroupingSets();
-        RolapStar.Column[] defaultColumns = groupByGroupingSets.getDefaultColumns();
-        SqlStatement stmt = null; 
+        RolapStar.Column[] defaultColumns =
+            groupByGroupingSets.getDefaultColumns();
+        SqlStatement stmt = null;
         try {
             stmt = createExecuteSql(groupByGroupingSets);
             int arity = defaultColumns.length;
@@ -73,8 +77,10 @@ public class SegmentLoader {
 
             boolean[] axisContainsNull = new boolean[arity];
 
-            List<Object[]> rows = processData(stmt, axisContainsNull,
-                axisValueSets, groupByGroupingSets);
+            List<Object[]> rows =
+                processData(
+                    stmt, axisContainsNull,
+                    axisValueSets, groupByGroupingSets);
 
             boolean sparse =
                 setAxisDataAndDecideSparseUse(axisValueSets,
@@ -83,22 +89,26 @@ public class SegmentLoader {
 
             SegmentDataset[] nonGroupingDataSets = null;
 
-            final HashMap<BitKey, SegmentDataset[]> groupingDataSetsMap =
+            final Map<BitKey, SegmentDataset[]> groupingDataSetsMap =
                 new HashMap<BitKey, SegmentDataset[]>();
 
             if (useGroupingSet) {
-                populateDataSetMapOnGroupingColumnsBitKeys(groupByGroupingSets,
+                populateDataSetMapOnGroupingColumnsBitKeys(
+                    groupByGroupingSets,
                     sparse, groupingDataSetsMap);
             } else {
-                nonGroupingDataSets = createDataSets(sparse,
+                nonGroupingDataSets = createDataSets(
+                    sparse,
                     groupByGroupingSets.getDefaultSegments(),
                     groupByGroupingSets.getDefaultAxes());
             }
 
-            loadDataToDataSets(groupByGroupingSets, rows, groupingDataSetsMap,
+            loadDataToDataSets(
+                groupByGroupingSets, rows, groupingDataSetsMap,
                 nonGroupingDataSets, axisContainsNull, sparse);
 
-            setDataToSegments(groupByGroupingSets, nonGroupingDataSets,
+            setDataToSegments(
+                groupByGroupingSets, nonGroupingDataSets,
                 groupingDataSetsMap, pinnedSegments);
 
         } catch (SQLException e) {
@@ -130,7 +140,7 @@ public class SegmentLoader {
      */
     private void loadDataToDataSets(
         GroupByGroupingSets groupByGroupingSets, List<Object[]> rows,
-        HashMap<BitKey, SegmentDataset[]> groupingDataSetMap,
+        Map<BitKey, SegmentDataset[]> groupingDataSetMap,
         SegmentDataset[] nonGroupingDataSets, boolean[] axisContainsNull,
         boolean sparse)
     {
@@ -221,8 +231,9 @@ public class SegmentLoader {
     }
 
     private void setDataToSegments(
-        GroupByGroupingSets groupByGroupingSets, SegmentDataset[] detailedDataSet,
-        HashMap<BitKey, SegmentDataset[]> datasetsMap,
+        GroupByGroupingSets groupByGroupingSets,
+        SegmentDataset[] detailedDataSet,
+        Map<BitKey, SegmentDataset[]> datasetsMap,
         RolapAggregationManager.PinSet pinnedSegments)
     {
         List<GroupingSet> groupingSets = groupByGroupingSets.getGroupingSets();
@@ -242,8 +253,7 @@ public class SegmentLoader {
 
     private void populateDataSetMapOnGroupingColumnsBitKeys(
         GroupByGroupingSets groupByGroupingSets, boolean sparse,
-        HashMap<BitKey, SegmentDataset[]> datasetsMap
-    )
+        Map<BitKey, SegmentDataset[]> datasetsMap)
     {
         List<GroupingSet> groupingSets = groupByGroupingSets.getGroupingSets();
         List<BitKey> groupingColumnsBitKeyList =
@@ -310,7 +320,8 @@ public class SegmentLoader {
     }
 
     List<Object[]> processData(
-        SqlStatement stmt, boolean[] axisContainsNull,
+        SqlStatement stmt,
+        boolean[] axisContainsNull,
         SortedSet<Comparable<?>>[] axisValueSets,
         GroupByGroupingSets groupByGroupingSets) throws SQLException
     {

@@ -182,7 +182,7 @@ public class FastBatchingCellReader implements CellReader {
                 loadAggregation(query, batch);
             }
         }
-        
+
         batches.clear();
         dirty = false;
 
@@ -267,12 +267,12 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     boolean shouldUseGroupingFunction() {
-        return MondrianProperties.instance().useGroupingSets.get() &&
+        return MondrianProperties.instance().EnableGroupingSets.get() &&
             doesDBSupportGroupingSets();
     }
 
     boolean doesDBSupportGroupingSets() {
-        return getDialect().isGroupingSetSupported();
+        return getDialect().supportsGroupingSets();
     }
 
     SqlQuery.Dialect getDialect() {

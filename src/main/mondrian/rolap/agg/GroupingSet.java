@@ -15,8 +15,7 @@ import mondrian.rolap.RolapStar;
 /**
  * <p>The <code>GroupingSet</code> stores the information about an
  * {@link mondrian.rolap.agg.Aggregation} which can be represented
- * as a GROUP BY GROUPING SET in a sql. </p>
- * <p>
+ * as a GROUP BY GROUPING SET in a SQL query.</p>
  *
  * @author Thiyagu
  * @version $Id$
@@ -62,3 +61,5 @@ public class GroupingSet {
         return columns;
     }
 }
+
+// End GroupingSet.java

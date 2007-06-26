@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde and others
+// Copyright (C) 2007-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -17,7 +17,7 @@ import mondrian.rolap.agg.GroupingSet;
 import java.util.*;
 
 /**
- * Test for <p><code>FastBatchingCellReader</code></p>
+ * Test for <code>FastBatchingCellReader</code>.
  *
  * @author Thiyagu
  * @version $Id$
@@ -25,56 +25,52 @@ import java.util.*;
  */
 public class FastBatchingCellReaderTest extends BatchTestCase {
 
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnSupportedDB() {
-        boolean oldValue = MondrianProperties.instance().useGroupingSets.get();
-        MondrianProperties.instance().useGroupingSets.set(true);
+        boolean oldValue = MondrianProperties.instance().EnableGroupingSets.get();
+        MondrianProperties.instance().EnableGroupingSets.set(true);
         FastBatchingCellReader fbcr = new FastBatchingCellReader(null) {
             boolean doesDBSupportGroupingSets() {
                 return true;
             }
         };
         assertTrue(fbcr.shouldUseGroupingFunction());
-        MondrianProperties.instance().useGroupingSets.set(oldValue);
+        MondrianProperties.instance().EnableGroupingSets.set(oldValue);
     }
 
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnNonSupportedDB() {
-        boolean oldValue = MondrianProperties.instance().useGroupingSets.get();
-        MondrianProperties.instance().useGroupingSets.set(true);
+        boolean oldValue = MondrianProperties.instance().EnableGroupingSets.get();
+        MondrianProperties.instance().EnableGroupingSets.set(true);
         FastBatchingCellReader fbcr = new FastBatchingCellReader(null) {
             boolean doesDBSupportGroupingSets() {
                 return false;
             }
         };
         assertFalse(fbcr.shouldUseGroupingFunction());
-        MondrianProperties.instance().useGroupingSets.set(oldValue);
+        MondrianProperties.instance().EnableGroupingSets.set(oldValue);
     }
 
     public void testShouldUseGroupingFunctionOnPropertyFalseOnSupportedDB() {
-        boolean oldValue = MondrianProperties.instance().useGroupingSets.get();
-        MondrianProperties.instance().useGroupingSets.set(false);
+        boolean oldValue = MondrianProperties.instance().EnableGroupingSets.get();
+        MondrianProperties.instance().EnableGroupingSets.set(false);
         FastBatchingCellReader fbcr = new FastBatchingCellReader(null) {
             boolean doesDBSupportGroupingSets() {
                 return true;
             }
         };
         assertFalse(fbcr.shouldUseGroupingFunction());
-        MondrianProperties.instance().useGroupingSets.set(oldValue);
+        MondrianProperties.instance().EnableGroupingSets.set(oldValue);
     }
 
     public void testShouldUseGroupingFunctionOnPropertyFalseOnNonSupportedDB() {
-        boolean oldValue = MondrianProperties.instance().useGroupingSets.get();
-        MondrianProperties.instance().useGroupingSets.set(false);
+        boolean oldValue = MondrianProperties.instance().EnableGroupingSets.get();
+        MondrianProperties.instance().EnableGroupingSets.set(false);
         FastBatchingCellReader fbcr = new FastBatchingCellReader(null) {
             boolean doesDBSupportGroupingSets() {
                 return false;
             }
         };
         assertFalse(fbcr.shouldUseGroupingFunction());
-        MondrianProperties.instance().useGroupingSets.set(oldValue);
+        MondrianProperties.instance().EnableGroupingSets.set(oldValue);
     }
 
     public void testDoesDBSupportGroupingSets() {
@@ -601,3 +597,4 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 }
 
 // End FastBatchingCellReaderTest.java
+

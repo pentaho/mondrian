@@ -871,25 +871,30 @@ public class MondrianProperties extends TriggerableProperties {
     /**
      * Property which defines the
      * maximum number of passes allowable while evaluating an MDX expression.
-     * If evaluation exceeds this depth (for example, while evaluating a
+     * 
+     * <p>If evaluation exceeds this depth (for example, while evaluating a
      * very complex calculated member), Mondrian will throw an error.
      */
-    public transient final IntegerProperty MaxEvalDepth = new IntegerProperty(
+    public transient final IntegerProperty MaxEvalDepth =
+        new IntegerProperty(
             this, "mondrian.rolap.evaluate.MaxEvalDepth", 10);
 
 
-    public transient final StringProperty JdbcFactoryClass = new StringProperty(
+    public transient final StringProperty JdbcFactoryClass =
+        new StringProperty(
             this, "mondrian.rolap.aggregates.jdbcFactoryClass", null);
 
     /**
-     * Timeout value (in seconds) for queries; 0 indicates no timeout
+     * Property which defines
+     * the timeout value (in seconds) for queries; 0, the default, indicates no
+     * timeout.
      */
     public transient final IntegerProperty QueryTimeout = new IntegerProperty(
         this, "mondrian.rolap.queryTimeout", 0);
 
-
     /**
-     * Whether non-existent member errors should be ignored during schema
+     * Property which defines
+     * whether non-existent member errors should be ignored during schema
      * load.
      */
     public transient final BooleanProperty IgnoreInvalidMembers =
@@ -897,35 +902,44 @@ public class MondrianProperties extends TriggerableProperties {
             this, "mondrian.rolap.ignoreInvalidMembers", false);
 
     /**
-     * Whether non-existent member errors should be ignored during query
+     * Property which defines
+     * whether non-existent member errors should be ignored during query
      * validation.
      */
-    public transient final BooleanProperty IgnoreInvalidMembersDuringQuery
-        = new BooleanProperty(
+    public transient final BooleanProperty IgnoreInvalidMembersDuringQuery =
+        new BooleanProperty(
             this, "mondrian.rolap.ignoreInvalidMembersDuringQuery", false);
 
     /**
-     * Iteration limit when computing an aggregate; 0 indicates unlimited
+     * Property which defines
+     * the iteration limit when computing an aggregate; 0 indicates unlimited.
      */
-    public transient final IntegerProperty IterationLimit = new IntegerProperty(
-        this, "mondrian.rolap.iterationLimit", 0);
+    public transient final IntegerProperty IterationLimit =
+        new IntegerProperty(
+            this, "mondrian.rolap.iterationLimit", 0);
 
     /**
-     * Whether the <code>MemoryMonitor</code> should be enabled. By
+     * Property which defines
+     * whether the <code>MemoryMonitor</code> should be enabled. By
      * default for Java5 and above it is not enabled.
      */
-    public transient final BooleanProperty MemoryMonitor = new BooleanProperty(
-        this, "mondrian.util.memoryMonitor.enable", false);
+    public transient final BooleanProperty MemoryMonitor =
+        new BooleanProperty(
+            this, "mondrian.util.memoryMonitor.enable", false);
 
     /**
-     * The default <code>MemoryMonitor</code> percentage threshold.
+     * Property which defines
+     * the default <code>MemoryMonitor</code> percentage threshold.
      */
     public transient final IntegerProperty MemoryMonitorThreshold =
         new IntegerProperty(
             this, "mondrian.util.memoryMonitor.percentage.threshold", 90);
 
     /**
-     * The <code>MemoryMonitor</code> class property. If the value is
+     * Property which defines
+     * the name of the class used as a memory monitor.
+     *
+     * <p>If the value is
      * non-null, it is used by the <code>MemoryMonitorFactory</code>
      * to create the implementation.
      */
@@ -934,7 +948,10 @@ public class MondrianProperties extends TriggerableProperties {
             this, "mondrian.util.MemoryMonitor.class", null);
 
     /**
-     * The <code>ExpCompiler</code> class property. If the value is
+     * Property which defines
+     * the name of the class used to compile scalar expressions.
+     *
+     * <p>If the value is
      * non-null, it is used by the <code>ExpCompiler.Factory</code>
      * to create the implementation.
      */
@@ -942,7 +959,10 @@ public class MondrianProperties extends TriggerableProperties {
             this, "mondrian.calc.ExpCompiler.class", null);
 
     /**
-     * If a crossjoin input list's size is larger than this property's
+     * Property which defines
+     * when to apply the crossjoin optimization algorithm.
+     *
+     * <p>If a crossjoin input list's size is larger than this property's
      * value and the axis has the "NON EMPTY" qualifier, then
      * the crossjoin non-empty optimizer is applied.
      * Setting this value to '0' means that for all crossjoin
@@ -954,27 +974,33 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final IntegerProperty CrossJoinOptimizerSize =
         new IntegerProperty(
             this, "mondrian.olap.fun.crossjoin.optimizer.size", 0);
-    
+
     /**
-     * If a division has a non-null numerator and a null denominator,
+     * Property which defines
+     * the behavior of division if the denominator evaluates to zero.
+     *
+     * <p>If a division has a non-null numerator and a null denominator,
      * it evaluates to "Infinity", which conforms to MSAS behavior. However,
-     * the old semantics of evaluating this to NULL(non MSAS conforming), is
-     * useful in some applications. This properties controls whether the
+     * the old semantics of evaluating this to NULL (non MSAS-conforming), is
+     * useful in some applications. This property controls whether the
      * result should be "Infinity" or NULL.
      */
-    public transient final BooleanProperty NullDenominatorProducesInfinity = 
+    public transient final BooleanProperty NullDenominatorProducesInfinity =
     	new BooleanProperty(
             this, "mondrian.olap.NullDenominatorProducesInfinity", true);
 
     /**
-     * Whether the <code>GroupingSets</code> should be used in sql query for
-     * rollup. By default it is not enabled. Even if this property is set to
-     * true, grouping sets will be used only on supported Databases.
-     * {@link mondrian.rolap.sql.SqlQuery.Dialect#isGroupingSetSupported}
+     * Property which defines
+     * whether to generate SQL queries using the <code>GROUPING SETS</code>
+     * construct for rollup. By default it is not enabled.
+     *
+     * <p>Ignored on databases which do not support the
+     * <code>GROUPING SETS</code> construct (see
+     * {@link mondrian.rolap.sql.SqlQuery.Dialect#supportsGroupingSets}).
      */
-    public transient final BooleanProperty useGroupingSets = new BooleanProperty(
-        this, "mondrian.rolap.groupingsets.enable", false);
-
+    public transient final BooleanProperty EnableGroupingSets =
+        new BooleanProperty(
+            this, "mondrian.rolap.groupingsets.enable", false);
 }
 
 // End MondrianProperties.java

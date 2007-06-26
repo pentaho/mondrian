@@ -272,6 +272,35 @@ public class DialectTest extends TestCase {
         }
     }
 
+    /**
+     * Tests that the
+     * {@link mondrian.rolap.sql.SqlQuery.Dialect#supportsGroupingSets()}
+     * dialect property is accurate.
+     */
+    public void testAllowsGroupingSets() {
+        String sql =
+            dialectize("SELECT [customer_id],\n"
+                + " SUM([store_sales]),\n"
+                + " GROUPING([unit_sales]),\n"
+                + " GROUPING([customer_id])\n"
+                + "FROM [sales_fact_1997]\n"
+                + "GROUP BY GROUPING SETS(\n"
+                + " ([customer_id], [unit_sales]),\n"
+                + " [customer_id],\n"
+                + " ())");
+        if (getDialect().supportsGroupingSets()) {
+            assertQuerySucceeds(sql);
+        } else {
+            String[] errs = {
+                // derby
+                "Syntax error: Encountered \"SETS\" at line 6, column 19.",
+                // mysql
+                "(?s)You have an error in your SQL syntax; check .*",
+            };
+            assertQueryFails(sql, errs);
+        }
+    }
+
     public void testSupportsMultiValueInExpr() {
         String sql =
             dialectize("SELECT [unit_sales]\n" +

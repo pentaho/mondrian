@@ -834,14 +834,6 @@ public class SqlQuery {
             return productName.startsWith("DB2 UDB for AS/400");
         }
 
-        /**
-         * This is used to determine if grouping sets should be used in sql.
-         * Grouping set is currently enabled only for Oracle, DB2 and Teradata
-         */
-        public boolean isGroupingSetSupported() {
-            return isOracle() || isDB2() || isTeradata();
-        }
-
         public boolean isOldAS400() {
             if (!isAS400()) {
                 return false;
@@ -1551,6 +1543,16 @@ public class SqlQuery {
          */
         public boolean supportsGroupByExpressions() {
             return !(isDerby() || isCloudscape());
+        }
+
+        /**
+         * Returns whether this Dialect allows the GROUPING SETS construct in
+         * the GROUP BY clause. Currently Oracle, DB2 and Teradata.
+         *
+         * @return Whether this Dialect allows GROUPING SETS clause
+         */
+        public boolean supportsGroupingSets() {
+            return isOracle() || isDB2() || isTeradata();
         }
 
         /**

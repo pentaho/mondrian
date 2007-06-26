@@ -10,11 +10,11 @@
 package mondrian.rolap;
 
 import mondrian.rolap.agg.CellRequest;
-import mondrian.rolap.agg.SegmentLoader;
 import mondrian.olap.MondrianProperties;
 
 /**
- * <p>Test for GroupingSets functionality</p>
+ * Test support for generating SQL queries with the <code>GROUPING SETS</code>
+ * construct, if the DBMS supports it.
  *
  * @author Thiyagu
  * @version $Id$
@@ -31,7 +31,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        useGroupingSets = MondrianProperties.instance().useGroupingSets.get();
+        useGroupingSets = MondrianProperties.instance().EnableGroupingSets.get();
         formattedSql = MondrianProperties.instance().GenerateFormattedSql.get();
         MondrianProperties.instance().GenerateFormattedSql.set(false);
     }
@@ -39,12 +39,12 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
     protected void tearDown() throws Exception {
         super.tearDown();
-        MondrianProperties.instance().useGroupingSets.set(useGroupingSets);
-        MondrianProperties.instance().useGroupingSets.set(formattedSql);
+        MondrianProperties.instance().EnableGroupingSets.set(useGroupingSets);
+        MondrianProperties.instance().GenerateFormattedSql.set(formattedSql);
     }
 
     public void testGroupingSetForSingleColumnConstraint() {
-        MondrianProperties.instance().useGroupingSets.set(true);
+        MondrianProperties.instance().EnableGroupingSets.set(true);
         CellRequest request1 = createRequest(cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
 
@@ -65,7 +65,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
         assertRequestSql(new CellRequest[]{request3, request1, request2},
             patternsWithGS, cubeNameSales2);
 
-        MondrianProperties.instance().useGroupingSets.set(false);
+        MondrianProperties.instance().EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGS =
             {new SqlPattern(SqlPattern.ACCESS_DIALECT,
@@ -101,7 +101,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
         CellRequest request3 = createRequest(cubeNameSales,
             measureUnitSales, null, "", "");
 
-        MondrianProperties.instance().useGroupingSets.set(true);
+        MondrianProperties.instance().EnableGroupingSets.set(true);
 
         SqlPattern[] patternsWithoutGS =
             {new SqlPattern(SqlPattern.ACCESS_DIALECT,
@@ -124,7 +124,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testNotUsingGroupingSet() {
-        MondrianProperties.instance().useGroupingSets.set(true);
+        MondrianProperties.instance().EnableGroupingSets.set(true);
         CellRequest request1 = createRequest(cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
 
@@ -141,7 +141,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
         assertRequestSql(new CellRequest[]{request1, request2},
             patternsWithGSEnabled, cubeNameSales2);
 
-        MondrianProperties.instance().useGroupingSets.set(false);
+        MondrianProperties.instance().EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGS =
             {new SqlPattern(SqlPattern.ACCESS_DIALECT,
@@ -160,7 +160,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testGroupingSetForMultipleMeasureAndSingleConstraint() {
-        MondrianProperties.instance().useGroupingSets.set(true);
+        MondrianProperties.instance().EnableGroupingSets.set(true);
 
         CellRequest request1 = createRequest(cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
@@ -187,7 +187,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             request4, request5, request6},
             patternsWithGS, cubeNameSales2);
 
-        MondrianProperties.instance().useGroupingSets.set(false);
+        MondrianProperties.instance().EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGS =
             {new SqlPattern(SqlPattern.ACCESS_DIALECT,
@@ -209,7 +209,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testGroupingSetForASummaryCanBeGroupedWith2DetailBatch() {
-        MondrianProperties.instance().useGroupingSets.set(true);
+        MondrianProperties.instance().EnableGroupingSets.set(true);
         CellRequest request1 = createRequest(cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
         CellRequest request2 = createRequest(cubeNameSales2,
@@ -248,7 +248,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             request4, request5, request6},
             patternOfBatchNotGroupedTo2ndGroup, cubeNameSales2);
 
-        MondrianProperties.instance().useGroupingSets.set(false);
+        MondrianProperties.instance().EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGS =
             {new SqlPattern(SqlPattern.ACCESS_DIALECT,
@@ -266,7 +266,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testGroupingSetForMultipleColumnConstraint() {
-        MondrianProperties.instance().useGroupingSets.set(true);
+        MondrianProperties.instance().EnableGroupingSets.set(true);
         CellRequest request1 = createRequest(cubeNameSales2,
             measureUnitSales, new String[]{tableCustomer, tableTime},
             new String[]{fieldGender, fieldYear},
@@ -292,7 +292,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
         assertRequestSql(new CellRequest[]{request3, request1, request2},
             patternsWithGS, cubeNameSales2);
 
-        MondrianProperties.instance().useGroupingSets.set(false);
+        MondrianProperties.instance().EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGS =
             {new SqlPattern(SqlPattern.ACCESS_DIALECT,
