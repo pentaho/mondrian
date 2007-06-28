@@ -158,7 +158,7 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param patterns Set of patterns, one for each dialect.
      */
     protected void assertQuerySql(String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(mdxQuery, patterns, false);
+        assertQuerySqlOrNot(mdxQuery, patterns, false, true);
     }
 
     /**
@@ -169,7 +169,7 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param patterns Set of patterns, one for each dialect.
      */
     protected void assertNoQuerySql(String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(mdxQuery, patterns, true);
+        assertQuerySqlOrNot(mdxQuery, patterns, true, true);
     }
 
     /**
@@ -181,16 +181,17 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param negative false to assert if SQL is generated;
      *                 true to assert if SQL is NOT generated
      */
-    private void assertQuerySqlOrNot(
-        String mdxQuery, SqlPattern[] patterns, boolean negative)
+    protected void assertQuerySqlOrNot(
+        String mdxQuery, SqlPattern[] patterns, boolean negative,
+        boolean clearCache)
     {
         final TestContext testContext = getTestContext();
         final Connection connection = testContext.getConnection();
         final Query query = connection.parseQuery(mdxQuery);
         final Cube cube = query.getCube();
-        RolapStar star = ((RolapCube) cube).getStar();
+        RolapSchema schema = (RolapSchema) ((RolapCube) cube).getSchema();
 
-        SqlQuery.Dialect dialect = star.getSqlQueryDialect();
+        SqlQuery.Dialect dialect = schema.getDialect();
         int d = SqlPattern.getDialect(dialect);
         SqlPattern sqlPattern = SqlPattern.getPattern(d, patterns);
         if (sqlPattern == null) {
@@ -202,15 +203,17 @@ public class BatchTestCase extends FoodMartTestCase {
         String sql = sqlPattern.getSql();
         String trigger = sqlPattern.getTriggerSql();
 
-        // Clear the cache for the Sales cube, so the query runs as if for the
-        // first time. (TODO: Cleaner way to do this.)
-        RolapHierarchy hierarchy = (RolapHierarchy) getConnection().getSchema().
+        if (clearCache) {
+            // Clear the cache for the Sales cube, so the query runs as if for the
+            // first time. (TODO: Cleaner way to do this.)
+            RolapHierarchy hierarchy = (RolapHierarchy) getConnection().getSchema().
             lookupCube("Sales", true).lookupHierarchy("Store", false);
-        SmartMemberReader memberReader =
-            (SmartMemberReader) hierarchy.getMemberReader();
-        memberReader.mapLevelToMembers.cache.clear();
-        memberReader.mapMemberToChildren.cache.clear();
-
+            SmartMemberReader memberReader =
+                (SmartMemberReader) hierarchy.getMemberReader();
+            memberReader.mapLevelToMembers.cache.clear();
+            memberReader.mapMemberToChildren.cache.clear();
+        }
+        
         // Create a dummy DataSource which will throw a 'bomb' if it is asked
         // to execute a particular SQL statement, but will otherwise behave
         // exactly the same as the current DataSource.
@@ -218,10 +221,12 @@ public class BatchTestCase extends FoodMartTestCase {
 
         Bomb bomb;
         try {
-            // Flush the cache, to ensure that the query gets executed.
-            star.clearCachedAggregations(true);
-            CachePool.instance().flush();
-
+            if (clearCache) {
+                // Flush the cache, to ensure that the query gets executed.
+                ((RolapCube)cube).clearCachedAggregations(true);
+                CachePool.instance().flush();
+            }
+            
             final Result result = connection.execute(query);
             Util.discard(result);
             bomb = null;

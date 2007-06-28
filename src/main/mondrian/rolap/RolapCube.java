@@ -1128,15 +1128,15 @@ assert is not true.
      * Clear the in memory aggregate cache associated with this Cube, but
      * only if Disabling Caching has been enabled.
      */
-    public void clearCachedAggregations() {
+    public void clearCachedAggregations(boolean forced) {
         if (isVirtual()) {
             // TODO:
             // Currently a virtual cube does not keep a list of all of its
             // base cubes, so we need to iterate through each and flush
             // the ones that should be flushed
-            schema.flushRolapStarCaches(false);
+            schema.flushRolapStarCaches(forced);
         } else {
-            star.clearCachedAggregations(false);
+            star.clearCachedAggregations(forced);
         }
     }
 

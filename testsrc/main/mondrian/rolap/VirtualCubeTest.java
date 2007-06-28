@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.rolap.BatchTestCase.SqlPattern;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.List;
  * @since Feb 14, 2003
  * @version $Id$
  */
-public class VirtualCubeTest extends FoodMartTestCase {
+public class VirtualCubeTest extends BatchTestCase {
     public VirtualCubeTest() {
     }
     public VirtualCubeTest(String name) {
@@ -365,16 +366,7 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #0: $339,610.90\n" +
                 "Row #0: $2.21\n"));
     }
-    private Cube getCube(String cubeName) {
-        Cube[] cubes = getConnection().getSchema().getSchemaReader().getCubes();
-        for (int i = 0; i < cubes.length; i++) {
-            Cube cube = cubes[i];
-            if (cube.getName().equals(cubeName)) {
-                return cube;
-            }
-        }
-        return null;
-    }
+
     public void testLostData()
     {
         assertQueryReturns(
@@ -801,6 +793,93 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 queryWithDeflaultMeasureFilter, testContext);
     }
 
+    /**
+     * Checks that a given MDX query results in a particular SQL statement
+     * being generated.
+     *
+     * @param mdxQuery MDX query
+     * @param patterns Set of patterns, one for each dialect.
+     */
+    protected void assertQuerySql(
+        String mdxQuery, 
+        SqlPattern[] patterns,
+        boolean clearCache) {
+        assertQuerySqlOrNot(mdxQuery, patterns, false, clearCache);
+    }
+
+    /**
+     * 
+     *
+     */
+    public void testNativeSetCaching() {
+        String query1 = 
+            "With " + 
+            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([Product].[Product Family].Members, [Store].[Store Country].Members)' " + 
+            "Select " + 
+            "{[Store Sales]} on columns, " + 
+            "Non Empty Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Store].CurrentMember)}) on rows " + 
+            "From [Warehouse and Sales]";
+        
+        String query2 = 
+            "With " + 
+            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([Product].[Product Family].Members, [Store].[Store Country].Members)' " + 
+            "Select " + 
+            "{[Warehouse Sales]} on columns, " + 
+            "Non Empty Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Store].CurrentMember)}) on rows " + 
+            "From [Warehouse and Sales]";
+       
+        String necjSql1 =
+            "select " +
+            "\"product_class\".\"product_family\", " + 
+            "\"store\".\"store_country\" " + 
+            "from " +
+            "\"product\" as \"product\", " + 
+            "\"product_class\" as \"product_class\", " + 
+            "\"sales_fact_1997\" as \"sales_fact_1997\", " + 
+            "\"store\" as \"store\" " + 
+            "where " + 
+            "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " + 
+            "and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" " + 
+            "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " + 
+            "group by \"product_class\".\"product_family\", \"store\".\"store_country\" " + 
+            "order by 1 ASC, 2 ASC";
+            
+
+        String necjSql2 =
+            "select " +
+            "\"product_class\".\"product_family\", " + 
+            "\"store\".\"store_country\" " + 
+            "from " +
+            "\"product\" as \"product\", " + 
+            "\"product_class\" as \"product_class\", " + 
+            "\"inventory_fact_1997\" as \"inventory_fact_1997\", " + 
+            "\"store\" as \"store\" " + 
+            "where " + 
+            "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " + 
+            "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" " + 
+            "and \"inventory_fact_1997\".\"store_id\" = \"store\".\"store_id\" " + 
+            "group by \"product_class\".\"product_family\", \"store\".\"store_country\" " + 
+            "order by 1 ASC, 2 ASC";
+            
+        SqlPattern[] patterns1 = 
+            new SqlPattern[] {
+                new SqlPattern(SqlPattern.DERBY_DIALECT, necjSql1, necjSql1)
+            };
+        
+        SqlPattern[] patterns2 = 
+            new SqlPattern[] {
+                new SqlPattern(SqlPattern.DERBY_DIALECT, necjSql2, necjSql2)
+            };
+        
+        // Run query 1 with cleared cache;
+        // Make sure NECJ 1 is evaluated natively.
+        assertQuerySql(query1, patterns1, true);
+        
+        // Now run query 2 with warm cache;
+        // Make sure NECJ 2 does not reuse the cache result from NECJ 1, and
+        // NECJ 2 is evaluated natively.
+        assertQuerySql(query2, patterns2, false);
+    }
 }
 
 // End VirtualCubeTest.java
