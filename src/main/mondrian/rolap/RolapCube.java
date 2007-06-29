@@ -1128,6 +1128,13 @@ assert is not true.
      * Clear the in memory aggregate cache associated with this Cube, but
      * only if Disabling Caching has been enabled.
      */
+    public void clearCachedAggregations() {
+        clearCachedAggregations(false);
+    }
+
+    /**
+     * Clear the in memory aggregate cache associated with this Cube.
+     */
     public void clearCachedAggregations(boolean forced) {
         if (isVirtual()) {
             // TODO:

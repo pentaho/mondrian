@@ -84,7 +84,7 @@ class RolapResult extends ResultBase {
             // effect if caching has been disabled, otherwise
             // nothing happens.
             // Clear the local cache before a query has run
-            rcube.clearCachedAggregations(false);
+            rcube.clearCachedAggregations();
             // Check if there are modifications to the global aggregate cache
             rcube.checkAggregateModifications();
 
