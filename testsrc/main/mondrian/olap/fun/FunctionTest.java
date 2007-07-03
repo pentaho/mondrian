@@ -4245,29 +4245,30 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testDivide() {
         assertExprReturns("10 / 5", "2");
-        assertExprReturns("-2 / " + NullNumericExpr, "Infinity");
         assertExprReturns(NullNumericExpr + " / - 2", "");
         assertExprReturns(NullNumericExpr + " / " + NullNumericExpr, "");
-    }
 
-    public void testDivideByNull() {
-        boolean origNullDenominatorProducesInfinity =
-            MondrianProperties.instance().NullDenominatorProducesInfinity.get();
-
+        boolean origNullOrZeroDenominatorProducesNull =
+            MondrianProperties.instance().NullOrZeroDenominatorProducesNull.get();
         try {
-            MondrianProperties.instance().NullDenominatorProducesInfinity.set(false);
+            // default behavior
+            MondrianProperties.instance().NullOrZeroDenominatorProducesNull.set(false);
+            
+            assertExprReturns("-2 / " + NullNumericExpr, "Infinity");
+            assertExprReturns("0 / 0", "NaN");
+            assertExprReturns("-3 / (2 - 2)", "-Infinity");
+
+            // when NullOrZeroDenominatorProducesNull is set to true
+            MondrianProperties.instance().NullOrZeroDenominatorProducesNull.set(true);
 
             assertExprReturns("-2 / " + NullNumericExpr, "");
-            assertExprReturns(NullNumericExpr + " / - 2", "");
-            assertExprReturns(NullNumericExpr + " / " + NullNumericExpr, "");
+            assertExprReturns("0 / 0", "");
+            assertExprReturns("-3 / (2 - 2)", "");
+            
         } finally {
-            MondrianProperties.instance().NullDenominatorProducesInfinity.
-            set(origNullDenominatorProducesInfinity);
+            MondrianProperties.instance().NullOrZeroDenominatorProducesNull.
+            set(origNullOrZeroDenominatorProducesNull);
         }
-    }
-
-    public void testDivideByZero() {
-        assertExprReturns("-3 / (2 - 2)", "-Infinity");
     }
 
     public void testDividePrecedence() {

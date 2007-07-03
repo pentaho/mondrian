@@ -1527,6 +1527,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
+        
         define(new FunDefBase(
                 "/",
                 "<Numeric Expression> / <Numeric Expression>",
@@ -1535,36 +1536,49 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                final boolean isNullDenominatorProducesInfinity =
-                        MondrianProperties.instance().
-                        NullDenominatorProducesInfinity.get();
-                return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
-                    public double evaluateDouble(Evaluator evaluator) {
-                        final double v0 = calc0.evaluateDouble(evaluator);
-                        final double v1 = calc1.evaluateDouble(evaluator);
-                        // Null in numerator always returns DoubleNull.
-                        //
-                        // If the mondrian property
-                        // mondrian.olap.NullDenominatorProducesInfinity is true(default),
-                        // Null in denominator with numeric numerator returns infinity.
-                        // This is consistent with MSAS.
-                        //
-                        // If this property is false, Null in denominator returns Null.
-                        // This is only used by certain applications and does not conform
-                        // to MSAS behavior.
-                        if (v0 == DoubleNull) {
-                            return DoubleNull;
-                        } else if (v1 == DoubleNull) {
-                        	if (isNullDenominatorProducesInfinity) {
-                        	    return Double.POSITIVE_INFINITY;
-                        	} else {
-                        	    return DoubleNull;
-                        	}
-                        } else {
-                            return v0 / v1;
+                final boolean isNullOrZeroDenominatorProducesNull =
+                    MondrianProperties.instance().
+                    NullOrZeroDenominatorProducesNull.get();
+
+                // If the mondrian property
+                //   mondrian.olap.NullOrZeroDenominatorProducesNull 
+                // is false(default), Null in denominator with numeric numerator
+                // returns infinity. This is consistent with MSAS.
+                //
+                // If this property is true, Null or zero in denominator returns
+                // Null. This is only used by certain applications and does not
+                // conform to MSAS behavior.
+                if (isNullOrZeroDenominatorProducesNull != true) {
+                    return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
+                        public double evaluateDouble(Evaluator evaluator) {
+                            final double v0 = calc0.evaluateDouble(evaluator);
+                            final double v1 = calc1.evaluateDouble(evaluator);
+                            // Null in numerator always returns DoubleNull.
+                            //
+                            if (v0 == DoubleNull) {
+                                return DoubleNull;
+                            } else if (v1 == DoubleNull) {
+                                return Double.POSITIVE_INFINITY;
+                            } else {
+                                return v0 / v1;
+                            }
                         }
-                    }
-                };
+                    };
+                } else {
+                    return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
+                        public double evaluateDouble(Evaluator evaluator) {
+                            final double v0 = calc0.evaluateDouble(evaluator);
+                            final double v1 = calc1.evaluateDouble(evaluator);
+                            // Null in numerator always returns DoubleNull.
+                            //
+                            if (v0 == DoubleNull || v1 == DoubleNull || v1 == 0.0) {
+                                return DoubleNull;
+                            } else {
+                                return v0 / v1;
+                            }
+                        }
+                    };
+                }
             }
         });
 
