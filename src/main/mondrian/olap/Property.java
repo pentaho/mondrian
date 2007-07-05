@@ -408,6 +408,14 @@ public class Property extends EnumeratedValues.BasicValue {
      */
     public static final Property MEMBER_KEY =
             new Property("MEMBER_KEY", Datatype.TYPE_STRING, MEMBER_KEY_ORDINAL, false, true, false, "Member key.");
+
+     public static final int KEY_ORDINAL = 46;
+    /**
+     * Definition of the property which
+     * holds the key of the current member.
+     */
+    public static final Property KEY =
+            new Property("KEY", Datatype.TYPE_STRING, KEY_ORDINAL, false, true, false, "Key.");
     /**
      * The various property names which define a format string.
      */
@@ -541,6 +549,7 @@ public class Property extends EnumeratedValues.BasicValue {
                 VALUE,
                 DATATYPE,
                 MEMBER_KEY,
+                KEY    
             });
 
     static {

@@ -387,12 +387,34 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
     }
 
-    public void testExecuteWithMemberKeyDimensionProperty()
+    public void testExecuteWithMemberKeyDimensionPropertyForMemberWithoutKey()
                 throws Exception {
             String requestType = "EXECUTE";
 
             doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
-        }
+    }
+
+    public void testExecuteWithMemberKeyDimensionPropertyForMemberWithKey()
+            throws Exception {
+        String requestType = "EXECUTE";
+
+        doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+    }
+
+    public void testExecuteWithMemberKeyDimensionPropertyForAllMember()
+            throws Exception {
+        String requestType = "EXECUTE";
+
+        doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+    }
+
+    public void testExecuteWithKeyDimensionProperty()
+            throws Exception {
+        String requestType = "EXECUTE";
+
+        doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+    }
+
     public void testExecuteWithDimensionProperties()
                 throws Exception {
             String requestType = "EXECUTE";

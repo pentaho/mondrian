@@ -534,7 +534,8 @@ public class RolapMember extends MemberBase {
             case Property.VISIBLE_ORDINAL:
                 break;
             case Property.MEMBER_KEY_ORDINAL:
-                return this == this.getHierarchy().getAllMember() ? 0 : getCaption();
+            case Property.KEY_ORDINAL:
+                return this == this.getHierarchy().getAllMember() ? 0 : getKey();            
 
             default:
                 break;

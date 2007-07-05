@@ -271,6 +271,10 @@ public class FastBatchingCellReader implements CellReader {
             doesDBSupportGroupingSets();
     }
 
+    /**
+     * Uses Dialect to identify if grouping sets is supported by the
+     * database.
+     */
     boolean doesDBSupportGroupingSets() {
         return getDialect().supportsGroupingSets();
     }
