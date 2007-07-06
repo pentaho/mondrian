@@ -31,6 +31,32 @@ public class SchemaTest extends FoodMartTestCase {
         super(name);
     }
 
+    public void testSolveOrderInCalculatedMember(){
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",null,"<CalculatedMember\n" +
+            "      name=\"QuantumProfit\"\n" +
+            "      dimension=\"Measures\">\n" +
+            "    <Formula>[Measures].[Store Sales] / [Measures].[Store Cost]</Formula>\n" +
+            "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n" +
+            "  </CalculatedMember>, <CalculatedMember\n" +
+            "      name=\"foo\"\n" +
+            "      dimension=\"Gender\">\n" +
+            "    <Formula>Sum(Gender.Members)</Formula>\n" +
+            "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n" +
+            "    <CalculatedMemberProperty name=\"SOLVE_ORDER\" value=\'2000\'/>\n" +
+            "  </CalculatedMember>");
+
+         testContext.assertQueryReturns(
+            "select {[Measures].[QuantumProfit]} on 0, {(Gender.foo)} on 1 from sales",
+            fold("Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[QuantumProfit]}\n" +
+                    "Axis #2:\n" +
+                    "{[Gender].[foo]}\n" +
+                    "Row #0: $7.52\n"));
+    }
+
     public void testHierarchyDefaultMember() {
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",

@@ -913,8 +913,9 @@ return dim;
         for (int i = 0; i < propNames.size(); i++) {
             String name = propNames.get(i);
             String expr = propExprs.get(i);
-            buf.append(",").append(Util.nl)
-                    .append(name).append(" = ").append(expr);
+            buf.append(",").append(Util.nl);
+            expr = removeSurroundingQuotesIfNumericProperty(name, expr);
+            buf.append(name).append(" = ").append(expr);
         }
         // Flag that the calc members are defined against a cube; will
         // determine the value of Member.isCalculatedInQuery
@@ -929,6 +930,20 @@ return dim;
                     append(measureCount + j);
         }
         buf.append(Util.nl);
+    }
+
+    private String removeSurroundingQuotesIfNumericProperty(String name, String expr) {
+        Property prop = Property.lookup(name, false);
+        if (prop != null && prop.getType() == Property.Datatype.TYPE_NUMERIC &&
+                isSurroundedWithQuotes(expr) && expr.length() > 2) {
+            String stringWithoutSurroundingQuotes = expr.substring(1, expr.length() - 1);
+            return stringWithoutSurroundingQuotes;
+        }
+        return expr;
+    }
+
+    private boolean isSurroundedWithQuotes(String expr) {
+        return expr.startsWith("\"") && expr.endsWith("\"");
     }
 
     void processFormatStringAttribute(MondrianDef.CalculatedMember xmlCalcMember, StringBuilder buf) {
