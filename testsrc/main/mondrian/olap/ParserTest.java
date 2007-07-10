@@ -198,6 +198,27 @@ public class ParserTest extends TestCase {
                     "from [cube]\n"));
     }
 
+    public void testSetExpr() {
+        // bug 1751352: parser does not recognize ':' range operator in WITH SET
+        assertParseQuery("with set [Set1] as '[Product].[Drink]:[Product].[Food]' \n" +
+            "select [Set1] on columns, {[Measures].defaultMember} on rows \n" +
+            "from Sales",
+            TestContext.fold(
+                "with set [Set1] as '([Product].[Drink] : [Product].[Food])'\n" +
+                    "select [Set1] ON COLUMNS,\n" +
+                    "  {[Measures].defaultMember} ON ROWS\n" +
+                    "from [Sales]\n"));
+
+        // set expr in axes
+        assertParseQuery("select [Product].[Drink]:[Product].[Food] on columns,\n" +
+            " {[Measures].defaultMember} on rows \n" +
+            "from Sales",
+            TestContext.fold(
+                "select ([Product].[Drink] : [Product].[Food]) ON COLUMNS,\n" +
+                    "  {[Measures].defaultMember} ON ROWS\n" +
+                    "from [Sales]\n"));
+    }
+
     public void testDimensionProperties() {
         assertParseQuery(
                 "select {[foo]} properties p1,   p2 on columns from [cube]",

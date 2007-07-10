@@ -1231,12 +1231,11 @@ exp_list ::=
 //                         SELECT [<axis_specification>
 //                                [, <axis_specification>...]]
 //                         FROM [<cube_specification>]
-//                         WHERE [<slicer_specification>]
+//                         [WHERE <slicer_specification>]
 //                         [<cell_props>]
-// jhyde: The above is wrong... you can omit 'WHERE'.
 statement ::=
         select_statement
-    |   _VALUE_EXPRESSION value_expression:e {: RESULT = (QueryPart) e; :}
+    |   _VALUE_EXPRESSION expression:e {: RESULT = (QueryPart) e; :}
     ;
 
 select_statement ::=
