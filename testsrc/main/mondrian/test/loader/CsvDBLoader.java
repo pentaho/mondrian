@@ -34,8 +34,11 @@ import java.util.regex.Pattern;
  * list_of_csv_files : (csv_file)+
  * csv_file: table_definitions
  * table_definitions: (table_definition)+
- * table_definition: table_name column_names column_types
+ * table_definition: actions table_name column_names column_types
  *          ( file_name or nos_of_rows or rows )
+ * actions: (action)*
+ * action: '##' ( ActionBefore: | ActionAfter: ) action_type
+ * action_type: DropIndex index_name | CreateIndex index_name column_name
  * table_name: '##' TableName: table_name
  * column_names: '##' ColumnNames: column_name ( ',' column_name )*
  * column_types: '##' ColumnTypes: column_types ( '.' column_types )*
@@ -71,6 +74,11 @@ import java.util.regex.Pattern;
  */
 public class CsvDBLoader extends DBLoader {
 
+
+    public static final String ACTION_BEFORE_TAG = "ActionBefore:";
+    public static final String ACTION_AFTER_TAG = "ActionAfter:";
+    public static final String DROP_INDEX_TAG = "DropIndex";
+    public static final String CREATE_INDEX_TAG = "CreateIndex";
 
     public static final String TABLE_NAME_TAG = "TableName:";
     public static final String COLUMN_NAMES_TAG = "ColumnNames:";
@@ -171,6 +179,12 @@ public class CsvDBLoader extends DBLoader {
         return list.toArray(new Table[list.size()]);
     }
 
+    public Table[] getTables(Reader reader) throws Exception {
+        List<Table> list = new ArrayList<Table>();
+        loadTables(reader, list);
+        return list.toArray(new Table[list.size()]);
+    }
+
     public static class ListRowStream implements RowStream {
         private List<Row> list;
         ListRowStream() {
@@ -194,12 +208,19 @@ public class CsvDBLoader extends DBLoader {
         }
         public Iterator<Row> iterator() {
             return new Iterator<Row>() {
+String[] line;
                 public boolean hasNext() {
                     try {
                         boolean hasNext =
                             CsvLoaderRowStream.this.csvloader.hasNextLine();
                         if (! hasNext) {
                             CsvLoaderRowStream.this.csvloader.close();
+} else {
+line = CsvLoaderRowStream.this.csvloader.nextLine();
+// remove comment lines
+if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
+    return hasNext();
+}
                         }
                         return hasNext;
                     } catch (IOException ex) {
@@ -208,8 +229,11 @@ public class CsvDBLoader extends DBLoader {
                     return false;
                 }
                 public Row next() {
+                    return new RowDefault(line);
+/*
                     return new RowDefault(
                         CsvLoaderRowStream.this.csvloader.nextLine());
+*/
                 }
                 public void remove() { }
             };
@@ -217,10 +241,16 @@ public class CsvDBLoader extends DBLoader {
     }
 
     public void loadTables(File file, List<Table> tableList) throws Exception {
+        Reader reader = new FileReader(file);
+        loadTables(reader, tableList);
+    }
+    public void loadTables(Reader reader, List<Table> tableList) throws Exception {
 //System.out.println("CsvLoader.loadTables: TOP:");
         CsvLoader csvloader = null;
         try {
             Table table = null;
+            List<String> beforeActionList = new ArrayList<String>();
+            List<String> afterActionList = new ArrayList<String>();
             String tableName = null;
             String[] columnNames = null;
             String[] columnTypes = null;
@@ -228,7 +258,6 @@ public class CsvDBLoader extends DBLoader {
             int nosOfRowsStr = -1;
             boolean ok = false;
             Column[] columns;
-            Reader reader = new FileReader(file);
             csvloader = new CsvLoader(reader);
             int lineNos = 0;
             while (csvloader.hasNextLine()) {
@@ -243,6 +272,8 @@ public class CsvDBLoader extends DBLoader {
                 if (value0.startsWith("##") && (fileName == null)) {
                     if (table != null) {
                         table = null;
+                        beforeActionList.clear();
+                        afterActionList.clear();
                         tableName = null;
                         columnNames = null;
                         columnTypes = null;
@@ -250,7 +281,89 @@ public class CsvDBLoader extends DBLoader {
                         nosOfRowsStr = -1;
                     }
                     // meta info
-                    int index = value0.indexOf(TABLE_NAME_TAG);
+                    int index = value0.indexOf(ACTION_BEFORE_TAG);
+                    if (index != -1) {
+                        String s = value0.substring(
+                                index+ACTION_BEFORE_TAG.length());
+                        if (s.length() == 0) {
+                            String msg = "CSV File parse Error: " +
+                                " no action before sql" +
+                                ", linenos " +lineNos;
+                            throw new IOException(msg);
+                        }
+                        s = s.trim();
+                        if (! s.startsWith(DROP_INDEX_TAG)) {
+                            // only support dropping indexes currently
+                            String msg = "CSV File parse Error: " +
+                                " unknown before action" +
+                                s +
+                                ", linenos " +lineNos;
+                            throw new IOException(msg);
+                        }
+                        // get index name
+                        index = s.indexOf(' ');
+                        if (index < 0) {
+                            // only support dropping indexes currently
+                            String msg = "CSV File parse Error: " +
+                                " no index name in before action" +
+                                s +
+                                ", linenos " +lineNos;
+                            throw new IOException(msg);
+                        }
+                        s = s.substring(index+1);
+                        s = s.trim();
+                        beforeActionList.add(s);
+                        continue;
+                    }
+
+                    index = value0.indexOf(ACTION_AFTER_TAG);
+                    if (index != -1) {
+                        String s = value0.substring(
+                                index+ACTION_AFTER_TAG.length());
+                        if (s.length() == 0) {
+                            String msg = "CSV File parse Error: " +
+                                " no action after sql" +
+                                ", linenos " +lineNos;
+                            throw new IOException(msg);
+                        }
+                        s = s.trim();
+                        if (! s.startsWith(CREATE_INDEX_TAG)) {
+                            // only support creating indexes currently
+                            String msg = "CSV File parse Error: " +
+                                " unknown before action" +
+                                s +
+                                ", linenos " +lineNos;
+                            throw new IOException(msg);
+                        }
+                        // get index name
+                        index = s.indexOf(' ');
+                        if (index < 0) {
+                            // only support creating indexes currently
+                            String msg = "CSV File parse Error: " +
+                                " no index_name/column_name in after action" +
+                                s +
+                                ", linenos " +lineNos;
+                            throw new IOException(msg);
+                        }
+                        // CreateIndex index_name column_name
+                        s = s.substring(index+1);
+                        s = s.trim();
+                        index = s.indexOf(' ');
+                        // just check that there is a space and
+                        if (index < 0) {
+                            // only support creating indexes currently
+                            String msg = "CSV File parse Error: " +
+                                " no column_name after index_name "+
+                                "in after action" +
+                                s +
+                                ", linenos " +lineNos;
+                            throw new IOException(msg);
+                        }
+                        afterActionList.add(s);
+                        continue;
+                    }
+
+                    index = value0.indexOf(TABLE_NAME_TAG);
                     if (index != -1) {
                         String s = value0.substring(
                                 index+TABLE_NAME_TAG.length());
@@ -271,6 +384,7 @@ public class CsvDBLoader extends DBLoader {
                             throw new IOException(msg);
                         }
                         tableName = s;
+                        continue;
                     }
                     index = value0.indexOf(COLUMN_NAMES_TAG);
                     if (index != -1) {
@@ -290,6 +404,7 @@ public class CsvDBLoader extends DBLoader {
                         }
                         values[0] = s.trim();
                         columnNames = values;
+                        continue;
                     }
                     index = value0.indexOf(COLUMN_TYPES_TAG);
                     if (index != -1) {
@@ -320,6 +435,7 @@ public class CsvDBLoader extends DBLoader {
                                 "\", linenos " +lineNos;
                             throw new IOException(msg);
                         }
+                        continue;
                     }
 
                     ok = true;
@@ -341,6 +457,7 @@ public class CsvDBLoader extends DBLoader {
                             throw new IOException(msg);
                         }
                         fileName = s.trim();
+                        continue;
                     }
                     index = value0.indexOf(NOS_OF_ROWS_TAG);
                     if (index != -1) {
@@ -359,6 +476,7 @@ public class CsvDBLoader extends DBLoader {
                             throw new IOException(msg);
                         }
                         nosOfRowsStr = Integer.parseInt(s.trim());
+                        continue;
                     }
                 } else if (value0.startsWith("# ")) {
                     // comment, do nothing
@@ -387,13 +505,14 @@ public class CsvDBLoader extends DBLoader {
                     }
                     columns = loadColumns(columnNames, columnTypes, lineNos);
                     table = new Table(tableName, columns);
+                    table.setBeforeActions(beforeActionList);
+                    table.setAfterActions(afterActionList);
                     tableList.add(table);
-                    Controller controller = table.getController();
+                    Table.Controller controller = table.getController();
 
                     if (fileName != null) {
 //System.out.println("CsvLoader.loadTables: fileName="+fileName);
-                        RowStream rowStream =
-                            new CsvLoaderRowStream(
+                        RowStream rowStream = new CsvLoaderRowStream(
                                 new CsvLoader(fileName));
                         controller.setRowStream(rowStream);
                         csvloader.nextSet();
@@ -418,6 +537,11 @@ public class CsvDBLoader extends DBLoader {
                                 throw new Exception(msg);
                             }
                             values = csvloader.nextLine();
+value0 = values[0];
+if (value0.startsWith("# ")) {
+    nosOfRowsStr++;
+    continue;
+}
 //System.out.println("CsvLoader.loadTables: v0="+values[0]);
                             list.add(new RowDefault(values));
                             lineNos++;

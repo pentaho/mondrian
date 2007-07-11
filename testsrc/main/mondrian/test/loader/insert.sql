@@ -76,6 +76,39 @@ FROM "sales_fact_1997"
 GROUP BY "customer_id", "time_id";
 
 ##################################################################
+## agg_lc_06_sales_fact_1997 done
+##################################################################
+# collapse "customer_id"
+# lost "product_id" "promotion_id" "store_id"
+
+
+INSERT INTO "agg_lc_06_sales_fact_1997" (
+    "time_id",
+    "city",
+    "state_province",
+    "country",
+    "store_sales", 
+    "store_cost", 
+    "unit_sales", 
+    "fact_count"
+) SELECT
+    "B"."time_id",
+    "D"."city",
+    "D"."state_province",
+    "D"."country",
+    SUM("B"."store_sales") AS "store_sales",
+    SUM("B"."store_cost") AS "store_cost",
+    SUM("B"."unit_sales") AS "unit_sales",
+    COUNT(*) AS fact_count
+FROM "sales_fact_1997" "B", "customer" "D"
+WHERE 
+    "B"."customer_id" = "D"."customer_id"
+GROUP BY 
+         "D"."city",
+         "D"."state_province",
+         "D"."country";
+
+##################################################################
 ## agg_l_04_sales_fact_1997 done
 ##################################################################
 # logical

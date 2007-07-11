@@ -1269,6 +1269,16 @@ public class MondrianFoodMartLoader {
             new Column("customer_count", Type.Integer, false),
             new Column("fact_count", Type.Integer, false),
         }, false, true);
+        createTable("agg_lc_06_sales_fact_1997", new Column[] {
+            new Column("time_id", Type.Integer, false),
+            new Column("city", Type.Varchar30, false),
+            new Column("state_province", Type.Varchar30, false),
+            new Column("country", Type.Varchar30, false),
+            new Column("store_sales", Type.Currency, false),
+            new Column("store_cost", Type.Currency, false),
+            new Column("unit_sales", Type.Currency, false),
+            new Column("fact_count", Type.Integer, false),
+        }, false, true);
 
         createTable("currency", new Column[] {
             new Column("currency_id", Type.Integer, false),

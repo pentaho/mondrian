@@ -188,6 +188,15 @@ public abstract class DBLoader {
             "mondrian.test.loader.force";
 
     // suffixes of output files
+    public static final String DROP_TABLE_INDEX_PROP =
+            "mondrian.test.loader.drop.table.index.suffix";
+    public static final String DROP_TABLE_INDEX_SUFFIX_DEFAULT = 
+            "dropindex.sql";
+    public static final String CREATE_TABLE_INDEX_PROP =
+            "mondrian.test.loader.create.table.index.suffix";
+    public static final String CREATE_TABLE_INDEX_SUFFIX_DEFAULT = 
+            "createindex.sql";
+    
     public static final String DROP_TABLE_PROP =
             "mondrian.test.loader.drop.table.suffix";
     public static final String DROP_TABLE_SUFFIX_DEFAULT = "drop.sql";
@@ -258,7 +267,7 @@ public abstract class DBLoader {
      * rows by streaming them in, one does not have to have all
      * of the row data in memory.
      */
-    public interface RowStream extends Iterable<Row> {
+    public interface RowStream {
         Iterator<Row> iterator();
     }
 
@@ -269,55 +278,54 @@ public abstract class DBLoader {
         }
     };
 
-    public static class Controller {
-        private boolean dropTable;
-        private boolean dropRows;
-        private boolean createTable;
-        private boolean loadRows;
-        private RowStream rowStream;
-
-        private Controller() {
-            this.dropTable = true;
-            this.dropRows = true;
-            this.createTable = true;
-            this.loadRows = true;
-            this.rowStream = EMPTY_ROW_STREAM;
-        }
-        public boolean shouldDropTable() {
-            return this.dropTable;
-        }
-        public void setShouldDropTable(boolean dropTable) {
-            this.dropTable = dropTable;
-        }
-        public boolean shouldDropTableRows() {
-            return this.dropRows;
-        }
-        public void setShouldDropTableRows(boolean dropRows) {
-            this.dropRows = dropRows;
-        }
-        public boolean createTable() {
-            return this.createTable;
-        }
-        public void setCreateTable(boolean createTable) {
-            this.createTable = createTable;
-        }
-        public boolean loadRows() {
-            return this.loadRows;
-        }
-        public void setloadRows(boolean loadRows) {
-            this.loadRows = loadRows;
-        }
-        public void setRowStream(RowStream rowStream) {
-            this.rowStream = (rowStream == null)
-                ? EMPTY_ROW_STREAM
-                : rowStream;
-        }
-        public Iterator<Row> rows() {
-            return this.rowStream.iterator();
-        }
-    }
-
     public class Table {
+        public class Controller {
+            private boolean dropTable;
+            private boolean dropRows;
+            private boolean createTable;
+            private boolean loadRows;
+            private RowStream rowStream;
+
+            private Controller() {
+                this.dropTable = true;
+                this.dropRows = true;
+                this.createTable = true;
+                this.loadRows = true;
+                this.rowStream = EMPTY_ROW_STREAM;
+            }
+            public boolean shouldDropTable() {
+                return this.dropTable;
+            }
+            public void setShouldDropTable(boolean dropTable) {
+                this.dropTable = dropTable;
+            }
+            public boolean shouldDropTableRows() {
+                return this.dropRows;
+            }
+            public void setShouldDropTableRows(boolean dropRows) {
+                this.dropRows = dropRows;
+            }
+            public boolean createTable() {
+                return this.createTable;
+            }
+            public void setCreateTable(boolean createTable) {
+                this.createTable = createTable;
+            }
+            public boolean loadRows() {
+                return this.loadRows;
+            }
+            public void setloadRows(boolean loadRows) {
+                this.loadRows = loadRows;
+            }
+            public void setRowStream(RowStream rowStream) {
+                this.rowStream = (rowStream == null)
+                    ? EMPTY_ROW_STREAM
+                    : rowStream;
+            }
+            public Iterator<Row> rows() {
+                return this.rowStream.iterator();
+            }
+        }
 
         private final String name;
         private final Column[] columns;
@@ -325,11 +333,15 @@ public abstract class DBLoader {
         private String dropTableStmt;
         private String dropTableRowsStmt;
         private String createTableStmt;
+        private List<String> beforeActionList;
+        private List<String> afterActionList;
 
         public Table(String name, Column[] columns) {
             this.name = name;
             this.columns = columns;
             this.controller = new Controller();
+            this.beforeActionList = Collections.emptyList();
+            this.afterActionList = Collections.emptyList();
         }
 
         public String getName() {
@@ -353,6 +365,28 @@ public abstract class DBLoader {
         }
         public void setCreateTableStmt(String createTableStmt) {
             this.createTableStmt = createTableStmt;
+        }
+        public void setBeforeActions(List<String> beforeActionList) {
+            if (! beforeActionList.isEmpty()) {
+                if (this.beforeActionList == Collections.EMPTY_LIST) {
+                    this.beforeActionList = new ArrayList<String>();
+                }
+                this.beforeActionList.addAll(beforeActionList);
+            }
+        }
+        public void setAfterActions(List<String> afterActionList) {
+            if (! afterActionList.isEmpty()) {
+                if (this.afterActionList == Collections.EMPTY_LIST) {
+                    this.afterActionList = new ArrayList<String>();
+                }
+                this.afterActionList.addAll(afterActionList);
+            }
+        }
+        public List<String> getBeforeActions() {
+            return this.beforeActionList;
+        }
+        public List<String> getAfterActions() {
+            return this.afterActionList;
         }
 
         public Column[] getColumns() {
@@ -692,11 +726,29 @@ public abstract class DBLoader {
         Column[] columns = table.getColumns();
         initializeColumns(columns);
 
+        generateBeforeActions(table);
         generateDropTable(table);
         generateDropTableRows(table);
         generateCreateTable(table);
+        generateAfterActions(table);
     }
 
+
+    protected void generateBeforeActions(Table table) {
+        List<String> dropIndexList = table.getBeforeActions();
+        if (dropIndexList.isEmpty()) {
+            return;
+        }
+        String tableName = table.getName();
+        String quotedTableName = quoteId(tableName);
+        for (int i = 0; i < dropIndexList.size(); i++) {
+            String indexName = dropIndexList.get(i);
+            String quotedIndexName = quoteId(indexName);
+            String dropIndexStmt = "DROP INDEX " +
+                quotedIndexName + " ON " + quotedTableName;
+            dropIndexList.set(i, dropIndexStmt);
+        }
+    }
     protected void generateDropTable(Table table) {
         String tableName = table.getName();
         String dropTableStmt = "DROP TABLE " + quoteId(tableName);
@@ -725,7 +777,7 @@ public abstract class DBLoader {
             buf.append("    ");
             buf.append(quoteId(column.name));
             buf.append(" ");
-            buf.append(getDialectTypeName(column));
+            buf.append(column.typeName);
             String constraint = column.getConstraint();
             if (!constraint.equals("")) {
                 buf.append(" ");
@@ -738,12 +790,25 @@ public abstract class DBLoader {
         String ddl = buf.toString();
         table.setCreateTableStmt(ddl);
     }
-
-    private String getDialectTypeName(Column column) {
-        if (column.typeName.equals("DECIMAL(10,2)") && dialect.isAccess()) {
-            return "Currency";
+    protected void generateAfterActions(Table table) {
+        List<String> createIndexList = table.getAfterActions();
+        if (createIndexList.isEmpty()) {
+            return;
         }
-        return column.typeName;
+        String tableName = table.getName();
+        String quotedTableName = quoteId(tableName);
+        for (int i = 0; i < createIndexList.size(); i++) {
+            String indexAndColumnName = createIndexList.get(i);
+            int index = indexAndColumnName.indexOf(' ');
+            String indexName = indexAndColumnName.substring(0, index);
+            String columnName = indexAndColumnName.substring(index+1);
+            String quotedIndexName = quoteId(indexName.trim());
+            String quotedColumnName = quoteId(columnName.trim());
+            String createIndexStmt = "CREATE INDEX " +
+                quotedIndexName + " ON " + quotedTableName +
+                " ( " + quotedColumnName + " )";
+            createIndexList.set(i, createIndexStmt);
+        }
     }
 
     public void executeStatements(Table[] tables) throws Exception {
@@ -751,8 +816,9 @@ public abstract class DBLoader {
             table.executeStatements();
         }
     }
-
     protected void executeStatements(Table table) throws Exception {
+        executeBeforeActions(table);
+
         executeDropTable(table);
 
         executeDropTableRows(table);
@@ -760,6 +826,8 @@ public abstract class DBLoader {
         executeCreateTable(table);
 
         executeLoadTableRows(table);
+
+        executeAfterActions(table);
     }
 
     protected boolean makeFileWriter(Table table, String suffix)
@@ -831,9 +899,57 @@ public abstract class DBLoader {
         }
     }
 
+    protected void executeBeforeActions(Table table) throws Exception {
+        List<String> beforeActionList = table.getBeforeActions();
+        if (beforeActionList.isEmpty()) {
+            return;
+        }
+        String suffix = System.getProperty(DROP_TABLE_INDEX_PROP,
+                            DROP_TABLE_INDEX_SUFFIX_DEFAULT);
+        try {
+            if (makeFileWriter(table, "." + suffix )) {
+                for (String stmt : beforeActionList) {
+                    writeDDL(stmt);
+                }
+            } else {
+                for (String stmt : beforeActionList) {
+                    executeDDL(stmt);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.debug("Before Table actions of " + table.getName() +
+                    " failed. Ignored");
+        } finally {
+            closeFileWriter();
+        }
+    }
+    protected void executeAfterActions(Table table) throws Exception {
+        List<String> afterActionList = table.getAfterActions();
+        if (afterActionList.isEmpty()) {
+            return;
+        }
+        String suffix = System.getProperty(CREATE_TABLE_INDEX_PROP,
+                            CREATE_TABLE_INDEX_SUFFIX_DEFAULT);
+        try {
+            if (makeFileWriter(table, "." + suffix )) {
+                for (String stmt : afterActionList) {
+                    writeDDL(stmt);
+                }
+            } else {
+                for (String stmt : afterActionList) {
+                    executeDDL(stmt);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.debug("After Table actions of " + table.getName() +
+                    " failed. Ignored");
+        } finally {
+            closeFileWriter();
+        }
+    }
     protected boolean executeDropTableRows(Table table) throws Exception {
         try {
-            Controller controller = table.getController();
+            Table.Controller controller = table.getController();
             if (controller.shouldDropTableRows()) {
                 String suffix = System.getProperty(DROP_TABLE_ROWS_PROP,
                             DROP_TABLE_ROWS_SUFFIX_DEFAULT);
@@ -856,7 +972,7 @@ public abstract class DBLoader {
     protected boolean executeDropTable(Table table) {
         // If table does not exist, that is OK
         try {
-            Controller controller = table.getController();
+            Table.Controller controller = table.getController();
             if (controller.shouldDropTable()) {
                 String suffix = System.getProperty(DROP_TABLE_PROP,
                                 DROP_TABLE_SUFFIX_DEFAULT);
@@ -877,7 +993,7 @@ public abstract class DBLoader {
     }
     protected boolean executeCreateTable(Table  table) {
         try {
-            Controller controller = table.getController();
+            Table.Controller controller = table.getController();
             if (controller.createTable()) {
                 String suffix = System.getProperty(CREATE_TABLE_PROP,
                                 CREATE_TABLE_SUFFIX_DEFAULT);
@@ -903,7 +1019,7 @@ public abstract class DBLoader {
                             LOAD_TABLE_ROWS_SUFFIX_DEFAULT);
             makeFileWriter(table, "." + suffix );
 
-            Controller controller = table.getController();
+            Table.Controller controller = table.getController();
             if (controller.loadRows()) {
                 String[] batch = new String[this.batchSize];
                 int nosInBatch = 0;
@@ -940,7 +1056,6 @@ e.printStackTrace();
         }
         return rowsAdded;
     }
-
     protected String createInsertStatement(Table table, Object[] values)
             throws Exception {
 
@@ -1244,10 +1359,10 @@ e.printStackTrace();
 
     /**
      * If we are outputting to JDBC,
-     *      execute the given set of SQL statements;
+     *      Execute the given set of SQL statements
      *
      * Otherwise,
-     *      outputs the statements to a file.
+     *      output the statements to a file.
      *
      * @param batch         SQL statements to execute
      * @param batchSize     # SQL statements to execute
@@ -1299,7 +1414,6 @@ e.printStackTrace();
         }
         return batchSize;
     }
-
     protected void writeDDL(String ddl) throws Exception {
         LOGGER.debug(ddl);
 
@@ -1307,24 +1421,11 @@ e.printStackTrace();
         this.fileWriter.write(';');
         this.fileWriter.write(nl);
     }
-
     protected void executeDDL(String ddl) throws Exception {
         LOGGER.debug(ddl);
 
-        Statement statement = null;
-        try {
-            statement = getConnection().createStatement();
-            statement.execute(ddl);
-        } finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-        }
+        Statement statement = getConnection().createStatement();
+        statement.execute(ddl);
+
     }
 }
-
-// End DBLoader.java
