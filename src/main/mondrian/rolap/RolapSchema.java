@@ -282,8 +282,30 @@ public class RolapSchema implements Schema {
                     throw Util.newError("Cannot get virtual file content: " +
                         catalogUrl);
                 }
+
+                if (getLogger().isDebugEnabled()) {
+                    try {
+                        StringBuilder buf = new StringBuilder(1000);
+                        FileContent fileContent1 = file.getContent();
+                        InputStream in = fileContent1.getInputStream();
+                        int n = 0;
+                        while ((n = in.read()) != -1) {
+                            buf.append((char) n);
+                        }
+                        getLogger().debug("RolapSchema.load: content: \n" 
+                            +buf.toString());
+                    } catch (java.io.IOException ex) {
+                        getLogger().debug("RolapSchema.load: ex=" +ex); 
+                    }
+                }
+
                 def = xmlParser.parse(fileContent.getInputStream());
             } else {
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug("RolapSchema.load: catalogStr: \n" 
+                            +catalogStr);
+                }
+
                 def = xmlParser.parse(catalogStr);
             }
 

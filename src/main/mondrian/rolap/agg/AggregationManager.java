@@ -158,6 +158,7 @@ public class AggregationManager extends RolapAggregationManager {
                     StringBuilder buf = new StringBuilder(256);
                     buf.append("MATCH: ");
                     buf.append(star.getFactTable().getAlias());
+                    buf.append(Util.nl);
                     buf.append("   foreign=");
                     buf.append(levelBitKey);
                     buf.append(Util.nl);
@@ -183,6 +184,14 @@ public class AggregationManager extends RolapAggregationManager {
                     new AggQuerySpec(aggStar, rollup[0],
                         groupByGroupingSets);
                 String sql = aggQuerySpec.generateSqlQuery();
+
+                if (getLogger().isDebugEnabled()) {
+                    StringBuilder buf = new StringBuilder(256);
+                    buf.append("generateSqlQuery: sql=");
+                    buf.append(sql);
+                    getLogger().debug(buf.toString());
+                }
+
                 return sql;
             }
 
@@ -211,6 +220,14 @@ public class AggregationManager extends RolapAggregationManager {
         SegmentArrayQuerySpec spec =
             new SegmentArrayQuerySpec(groupByGroupingSets);
         String sql = spec.generateSqlQuery();
+
+        if (getLogger().isDebugEnabled()) {
+            StringBuilder buf = new StringBuilder(256);
+            buf.append("generateSqlQuery: sql=");
+            buf.append(sql);
+            getLogger().debug(buf.toString());
+        }
+
         return sql;
     }
 
