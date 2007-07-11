@@ -204,9 +204,27 @@ public class AggStar {
         this.columns = new AggStar.Table.Column[star.getColumnCount()];
     }
 
+    /** 
+     * Get the fact table. 
+     * 
+     * @return the fact table
+     */
     public AggStar.FactTable getFactTable() {
         return aggTable;
     }
+
+    /** 
+     * Find a table by name (alias) that is a descendant of the base
+     * fact table. 
+     * 
+     * @param name the table to find
+     * @return the table or null
+     */
+    public Table findTable(String name) {
+        AggStar.FactTable table = getFactTable();
+        return table.findDescendant(name);
+    }
+
 
     /**
      * Returns a measure of the IO cost of querying this table. It can be
@@ -411,6 +429,27 @@ public class AggStar {
              */
             public Table getTable() {
                 return AggStar.Table.this;
+            }
+
+            /**
+             * Return the left join expression. 
+             */
+            public MondrianDef.Expression getLeft() {
+                return this.left;
+            }
+
+            /** 
+             * Return the left join expression as string. 
+             */
+            public String getLeft(final SqlQuery query) {
+                return this.left.getExpression(query);
+            }
+
+            /** 
+             * Return the right join expression. 
+             */
+            public MondrianDef.Expression getRight() {
+                return this.right;
             }
 
             /**
@@ -689,6 +728,26 @@ public class AggStar {
          */
         public List<DimTable> getChildTables() {
             return children;
+        }
+
+        /** 
+         * Find descendant of fact table with given name or return null. 
+         * 
+         * @param name the child table name (alias).
+         * @return the child table or null.
+         */
+        public Table findDescendant(String name) {
+            if (getName().equals(name)) {
+                return this;
+            }
+
+            for (Table child : getChildTables()) {
+                Table found = child.findDescendant(name);
+                if (found != null) {
+                    return found;
+                }
+            }
+            return null;
         }
 
         /**
