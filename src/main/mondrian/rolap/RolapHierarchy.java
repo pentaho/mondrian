@@ -43,7 +43,7 @@ public class RolapHierarchy extends HierarchyBase {
      * {@link #getMemberReader(Role)}.
      */
     private MemberReader memberReader;
-    MondrianDef.Hierarchy xmlHierarchy;
+    private MondrianDef.Hierarchy xmlHierarchy;
     private String memberReaderClass;
     private MondrianDef.Relation relation;
     private Member defaultMember;
@@ -356,6 +356,10 @@ public class RolapHierarchy extends HierarchyBase {
 
     public MondrianDef.Relation getRelation() {
         return relation;
+    }
+
+    public MondrianDef.Hierarchy getXmlHierarchy() {
+        return xmlHierarchy;
     }
 
     public Member getDefaultMember() {

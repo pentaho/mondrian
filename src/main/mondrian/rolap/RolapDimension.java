@@ -247,7 +247,7 @@ class RolapDimension extends DimensionBase {
         for (int i = 0; i < hierarchies.length; i++) {
             final RolapHierarchy hierarchy = (RolapHierarchy) hierarchies[i];
             dimension.hierarchies[i] = new RolapHierarchy(cube, dimension,
-                hierarchy.xmlHierarchy, xmlCubeDimension);
+                hierarchy.getXmlHierarchy(), xmlCubeDimension);
         }
         return dimension;
     }
