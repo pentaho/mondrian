@@ -1378,6 +1378,8 @@ public class RolapStar {
                     if (columnExpr.name.equals(columnName)) {
                         return column;
                     }
+                } else if (column.getName().equals(columnName)) {
+                    return column;
                 }
             }
             return null;
@@ -1938,8 +1940,14 @@ public class RolapStar {
         public MondrianDef.Expression getLeft() {
             return left;
         }
+        public String getLeft(final SqlQuery query) {
+            return this.left.getExpression(query);
+        }
         public MondrianDef.Expression getRight() {
             return right;
+        }
+        public String getRight(final SqlQuery query) {
+            return this.right.getExpression(query);
         }
         public String toString(SqlQuery query) {
             return left.getExpression(query) + " = " + right.getExpression(query);
