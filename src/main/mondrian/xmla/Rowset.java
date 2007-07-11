@@ -325,10 +325,6 @@ abstract class Rowset implements XmlaConstants {
 
     RestrictionTest getRestrictionTest(RowsetDefinition.Column column) {
         final List<String> requiredValue = restrictions.get(column.name);
-/*
-System.out.println("Rowset.getRestrictionTest: column=" +column.name);
-System.out.println("Rowset.getRestrictionTest: requiredValue=" +requiredValue);
-*/
 
         if (requiredValue == null) {
             return new RestrictionTest() {
