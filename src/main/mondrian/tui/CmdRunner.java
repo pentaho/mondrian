@@ -2374,6 +2374,11 @@ public class CmdRunner {
             options = parseOptions(args);
         } catch (BadOption badOption) {
             usage(badOption.getMessage(), System.out);
+            Throwable t = badOption.getCause();
+            if (t != null) {
+                System.out.println(t);
+                t.printStackTrace();
+            }
             return;
         }
 
@@ -2514,6 +2519,9 @@ public class CmdRunner {
     private static class BadOption extends Exception {
         BadOption(String msg) {
             super(msg);
+        }
+        BadOption(String msg, Exception ex) {
+            super(msg, ex);
         }
     }
 }
