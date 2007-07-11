@@ -290,6 +290,15 @@ way too noisy
     public static String normalizeNumericString(String numericStr) {
         int index = numericStr.indexOf('.');
         if (index > 0) {
+            // If it uses exponential notation, 1.0E4, then it could
+            // have a trailing '0' that should not be stripped of,
+            // e.g., 1.0E10. This would be rather bad.
+            if (numericStr.indexOf('e') != -1) {
+                return numericStr;
+            } else if (numericStr.indexOf('E') != -1) {
+                return numericStr;
+            }
+
             boolean found = false;
             int p = numericStr.length();
             char c = numericStr.charAt(p - 1);
