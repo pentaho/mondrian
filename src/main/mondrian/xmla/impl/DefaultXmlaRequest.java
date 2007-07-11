@@ -13,6 +13,7 @@ import java.util.*;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.olap.Role;
 import mondrian.xmla.XmlaConstants;
 import mondrian.xmla.XmlaException;
 import mondrian.xmla.XmlaRequest;
@@ -41,7 +42,8 @@ public class DefaultXmlaRequest implements XmlaRequest,
     /* common content */
     private int method;
     private Map<String, String> properties;
-    private String role;
+    private final String roleName;
+    private final Role role;
 
     /* EXECUTE content */
     private String statement;
@@ -54,13 +56,25 @@ public class DefaultXmlaRequest implements XmlaRequest,
     private Map<String, List<String>> restrictions;
 
 
-    public DefaultXmlaRequest(Element xmlaRoot) {
-        this(xmlaRoot, null);
+    public DefaultXmlaRequest(final Element xmlaRoot) {
+        this(xmlaRoot, null, null);
     }
 
-    public DefaultXmlaRequest(Element xmlaRoot, String role)
+    public DefaultXmlaRequest(final Element xmlaRoot, final String roleName)
+            throws XmlaException {
+        this(xmlaRoot, roleName, null);
+    }
+
+    public DefaultXmlaRequest(final Element xmlaRoot, final Role role)
+            throws XmlaException {
+        this(xmlaRoot, null, role);
+    }
+    protected DefaultXmlaRequest(final Element xmlaRoot, 
+                                 final String roleName,
+                                 final Role role)
             throws XmlaException {
         init(xmlaRoot);
+        this.roleName = roleName;
         this.role = role;
     }
 
@@ -88,13 +102,19 @@ public class DefaultXmlaRequest implements XmlaRequest,
         return statement;
     }
 
-    public String getRole() {
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+/*
+    public void setRole(String roleName) {
         this.role = role;
     }
+*/
 
     public String getRequestType() {
         if (method != METHOD_DISCOVER)

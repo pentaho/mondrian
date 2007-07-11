@@ -36,6 +36,7 @@ import mondrian.xmla.XmlaResponse;
 import mondrian.xmla.XmlaServlet;
 import mondrian.xmla.XmlaUtil;
 import mondrian.olap.Util;
+import mondrian.olap.Role;
 import mondrian.xmla.XmlaRequestCallback;
 import mondrian.xmla.XmlaException;
 
@@ -210,7 +211,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
             HttpServletResponse response,
             Element[] requestSoapParts,
             byte[][] responseSoapParts,
-            Map<String, String> context) throws XmlaException {
+            Map<String, Object> context) throws XmlaException {
 
         try {
             Element hdrElem = requestSoapParts[0];
@@ -320,12 +321,12 @@ public class DefaultXmlaServlet extends XmlaServlet {
         }
     }
 
-    protected String generateSessionId(Map<String, String> context) {
+    protected String generateSessionId(Map<String, Object> context) {
         List<XmlaRequestCallback> callbacks = getCallbacks();
         if (callbacks.size() > 0) {
             // get only the first callback if it exists
             XmlaRequestCallback callback = callbacks.get(0);
-            return callback.generateSessionId(context);
+            return (String) callback.generateSessionId(context);
         } else {
             // what to do here, should Mondrian generate a Session Id?
             // TODO: Maybe Mondrian ought to generate all Session Ids and
@@ -334,7 +335,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
         }
     }
 
-    protected String getSessionId(Element e, Map<String, String> context)
+    protected String getSessionId(Element e, Map<String, Object> context)
             throws Exception {
         // extract the SessionId attrs value and put into context
         Attr attr = e.getAttributeNode(XMLA_SESSION_ID);
@@ -362,7 +363,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
         HttpServletResponse response,
         Element[] requestSoapParts,
         byte[][] responseSoapParts,
-        Map<String, String> context)
+        Map<String, Object> context)
         throws XmlaException
     {
         try {
@@ -391,9 +392,18 @@ public class DefaultXmlaServlet extends XmlaServlet {
             ByteArrayOutputStream osBuf = new ByteArrayOutputStream();
 
             // use context variable `role' as this request's XML/A role
-            XmlaRequest xmlaReq = new DefaultXmlaRequest(
-                xmlaReqElem,
-                context.get(CONTEXT_ROLE));
+            String roleName = (String) context.get(CONTEXT_ROLE_NAME);
+            Role role = (Role) context.get(CONTEXT_ROLE);
+
+            XmlaRequest xmlaReq = null;
+            if (role != null) {
+                xmlaReq = new DefaultXmlaRequest(xmlaReqElem, role);
+            } else if (roleName != null) {
+                xmlaReq = new DefaultXmlaRequest(xmlaReqElem, roleName);
+            } else {
+                xmlaReq = new DefaultXmlaRequest(xmlaReqElem);
+            }
+
             XmlaResponse xmlaRes = new DefaultXmlaResponse(osBuf, encoding);
 
             try {

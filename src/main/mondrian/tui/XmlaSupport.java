@@ -621,7 +621,7 @@ public class XmlaSupport {
             // request, and modify the connect string accordingly.)
             Util.PropertyList propertyList =
                 Util.parseConnectString(connectString);
-            String roleStr =
+            String roleName =
                 propertyList.get(RolapConnectionProperties.Role.name());
 
             byte[] reqBytes = requestText.getBytes();
@@ -629,8 +629,8 @@ public class XmlaSupport {
             MockHttpServletRequest req = new MockHttpServletRequest(reqBytes);
             req.setMethod("POST");
             req.setContentType("text/xml");
-            if (roleStr != null) {
-                req.setUserInRole(roleStr, true);
+            if (roleName != null) {
+                req.setUserInRole(roleName, true);
             }
 
             // make response
@@ -795,13 +795,12 @@ public class XmlaSupport {
         DataSourcesConfig.DataSources dataSources =
             getDataSources(connectString, catalogNameUrls);
         XmlaHandler handler = new XmlaHandler(dataSources, cl, "xmla");
-        XmlaRequest request = new DefaultXmlaRequest(requestElem, null);
         Util.PropertyList propertyList = Util.parseConnectString(connectString);
-        String roleStr =
+        String roleName =
             propertyList.get(RolapConnectionProperties.Role.name());
-        if (roleStr != null) {
-            ((DefaultXmlaRequest) request).setRole(roleStr);
-        }
+        XmlaRequest request = (roleName != null)
+            ? new DefaultXmlaRequest(requestElem, roleName)
+            : new DefaultXmlaRequest(requestElem);
 
         // make response
         ByteArrayOutputStream resBuf = new ByteArrayOutputStream();

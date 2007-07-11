@@ -87,7 +87,7 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         public boolean processHttpHeader(
             HttpServletRequest request,
             HttpServletResponse response,
-            Map<String, String> context) throws Exception
+            Map<String, Object> context) throws Exception
         {
             String expect = request.getHeader(XmlaRequestCallback.EXPECT);
             if ((expect != null) &&
@@ -104,22 +104,22 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         public void preAction(
                 HttpServletRequest request,
                 Element[] requestSoapParts,
-                Map<String, String> context) throws Exception {
+                Map<String, Object> context) throws Exception {
         }
 
-        private void setSessionId(Map<String, String> context) {
+        private void setSessionId(Map<String, Object> context) {
             context.put(MY_SESSION_ID, getSessionId("XmlaExcel2000Test", Action.CREATE));
         }
 
-        public String generateSessionId(Map<String, String> context) {
+        public String generateSessionId(Map<String, Object> context) {
             setSessionId(context);
-            return context.get(MY_SESSION_ID);
+            return (String) context.get(MY_SESSION_ID);
         }
         public void postAction(
                     HttpServletRequest request,
                     HttpServletResponse response,
                     byte[][] responseSoapParts,
-                    Map<String, String> context) throws Exception {
+                    Map<String, Object> context) throws Exception {
         }
     }
 

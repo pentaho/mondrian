@@ -9,6 +9,7 @@
 */
 package mondrian.xmla;
 
+import mondrian.olap.Role;
 import java.util.Map;
 import java.util.List;
 
@@ -41,9 +42,14 @@ public interface XmlaRequest {
     String getStatement();
 
     /**
-     * Role binds with this XML/A reqeust.
+     * Role name binds with this XML/A reqeust. Maybe null.
      */
-    String getRole();
+    String getRoleName();
+
+    /**
+     * Role binds with this XML/A reqeust. Maybe null.
+     */
+    Role getRole();
 
     /**
      * Request type of DISCOVER method.

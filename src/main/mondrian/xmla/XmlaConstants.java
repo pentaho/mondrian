@@ -58,6 +58,8 @@ public interface XmlaConstants {
     /*
      * Names of context keys known by both callbacks and Mondrian code.
      */
+    // context key for role name storage
+    public static final String CONTEXT_ROLE_NAME   = "role_name";
     // context key for role storage
     public static final String CONTEXT_ROLE   = "role";
     // context key for session id storage

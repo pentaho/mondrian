@@ -2886,11 +2886,11 @@ The default value for this property is an empty string.</PropertyDescription>
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
-
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
+
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute

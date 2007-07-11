@@ -277,8 +277,8 @@
                                 <xsd:any maxOccurs="unbounded" minOccurs="0" processContents="lax"/>
                               </xsd:sequence>
                             </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required"/>
                           </xsd:complexType>
-                          <xsd:attribute name="name" type="xsd:string" use="required"/>
                         </xsd:element>
                       </xsd:sequence>
                       <xsd:attribute name="name" type="xsd:string"/>

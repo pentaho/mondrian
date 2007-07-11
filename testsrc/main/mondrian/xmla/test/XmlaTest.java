@@ -126,7 +126,7 @@ public class XmlaTest extends TestCase {
                 context.dataSources(),
                 XmlaTestContext.CATALOG_LOCATOR,
                 "xmla");
-        XmlaRequest request = new DefaultXmlaRequest(requestElem, null);
+        XmlaRequest request = new DefaultXmlaRequest(requestElem);
         XmlaResponse response = new DefaultXmlaResponse(resBuf, "UTF-8");
         handler.process(request, response);
 

@@ -181,7 +181,7 @@ public abstract class XmlaServlet extends HttpServlet
 
             response.setContentType("text/xml");
 
-            Map<String, String> context = new HashMap<String, String>();
+            Map<String, Object> context = new HashMap<String, Object>();
 
             try {
                 if (LOGGER.isDebugEnabled()) {
@@ -382,7 +382,7 @@ public abstract class XmlaServlet extends HttpServlet
             HttpServletResponse response,
             Element[] requestSoapParts,
             byte[][] responseSoapParts,
-            Map<String, String> context) throws XmlaException;
+            Map<String, Object> context) throws XmlaException;
 
     /**
      * Implement to handle XML/A request.
@@ -391,7 +391,7 @@ public abstract class XmlaServlet extends HttpServlet
             HttpServletResponse response,
             Element[] requestSoapParts,
             byte[][] responseSoapParts,
-            Map<String, String> context) throws XmlaException;
+            Map<String, Object> context) throws XmlaException;
 
     /**
      * Implement to privode application specified SOAP marshalling algorithm.

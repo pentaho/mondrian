@@ -23,6 +23,7 @@ import org.xml.sax.SAXException;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
 import java.io.StringWriter;
@@ -56,6 +57,401 @@ public class XmlaHandler implements XmlaConstants {
                                     computeEmptyXsd(MD_DATA_SET);
 
     private static final String NS_XML_SQL = "urn:schemas-microsoft-com:xml-sql";
+    
+    //
+    // Some xml schema data types.
+    //
+    private static final String XSD_BOOLEAN = "xsd:boolean";
+    private static final String XSD_STRING = "xsd:string";
+    private static final String XSD_UNSIGNED_INT = "xsd:unsignedInt";
+
+    private static final String XSD_BYTE = "xsd:byte";
+    private static final byte XSD_BYTE_MAX_INCLUSIVE = 127;
+    private static final byte XSD_BYTE_MIN_INCLUSIVE = -128; 
+
+    private static final String XSD_SHORT = "xsd:short";
+    private static final short XSD_SHORT_MAX_INCLUSIVE = 32767;
+    private static final short XSD_SHORT_MIN_INCLUSIVE = -32768; 
+
+    private static final String XSD_INT = "xsd:int";
+    private static final int XSD_INT_MAX_INCLUSIVE = 2147483647;
+    private static final int XSD_INT_MIN_INCLUSIVE = -2147483648; 
+
+    private static final String XSD_LONG = "xsd:long";
+    private static final long XSD_LONG_MAX_INCLUSIVE = 9223372036854775807L;
+    private static final long XSD_LONG_MIN_INCLUSIVE = -9223372036854775808L; 
+
+    // xsd:double — IEEE 64-bit floating-point
+    private static final String XSD_DOUBLE = "xsd:double";
+
+    // xsd:decimal — Decimal numbers (BigDecimal)
+    private static final String XSD_DECIMAL = "xsd:decimal";
+    
+    // xsd:integer — Signed integers of arbitrary length (BigInteger)
+    private static final String XSD_INTEGER = "xsd:integer";
+
+    private static boolean isValidXsdInt(long l) {
+        return (l <= XSD_INT_MAX_INCLUSIVE) && (l >= XSD_INT_MIN_INCLUSIVE);
+    }
+
+    /** 
+     * Takes a DataType String ( null, Integer, Numeric or non-null )
+     * and Value Object (Integer, Double, String, other) and
+     * canonicalizes them to XSD data type and corresponding object.
+     * <p>
+     * If the input DataType is Integer, then it attempts to return
+     * an XSD_INT with value java.lang.Integer (and failing that an 
+     * XSD_LONG (java.lang.Long) or XSD_INTEGER (java.math.BigInteger)).
+     * Worst case is the value loses precision with any integral 
+     * representation and must be returned as a decimal type (Double
+     * or java.math.BigDecimal).
+     * <p>
+     * If the input DataType is Decimal, then it attempts to return
+     * an XSD_DOUBLE with value java.lang.Double (and failing that an 
+     * XSD_DECIMAL (java.math.BigDecimal)).
+     */
+    private static class ValueInfo {
+
+        /** 
+         * Returns XSD_INT, XSD_DOUBLE, XSD_STRING or null. 
+         * 
+         * @param dataType null, Integer, Numeric or non-null.
+         * @return 
+         */
+        protected static String getValueTypeHint(final String dataType) {
+            if (dataType != null) {
+                return (dataType.equals("Integer"))
+                    ? XSD_INT
+                    : ((dataType.equals("Numeric"))
+                        ? XSD_DOUBLE
+                        : XSD_STRING);
+            } else {
+                return null;
+            }
+        }
+
+        private String valueType;
+        private Object value;
+        private boolean isDecimal;
+
+        ValueInfo(final String dataType, final Object inputValue) {
+            final String valueTypeHint = getValueTypeHint(dataType);
+
+            // This is a hint: should it be a string, integer or decimal type.
+            // In the following, if the hint is integer, then there is
+            // an attempt that the value types
+            // be XSD_INT, XST_LONG, or XSD_INTEGER (but they could turn
+            // out to be XSD_DOUBLE or XSD_DECIMAL if precision is loss
+            // with the integral formats). It the hint is a decimal type
+            // (double, float, decimal), then a XSD_DOUBLE or XSD_DECIMAL
+            // is returned.
+            if (valueTypeHint != null) {
+                // The value type is a hint. If the value can be
+                // converted to the data type without precision loss, ok;
+                // otherwise value data type must be adjusted.
+    
+                if (valueTypeHint.equals(XSD_STRING)) {
+                    // For String types, nothing to do.
+                    this.valueType = valueTypeHint;
+                    this.value = inputValue;
+                    this.isDecimal = false;
+
+                } else if (valueTypeHint.equals(XSD_INT)) {
+                    // If valueTypeHint is XSD_INT, then see if value can be
+                    // converted to (first choice) integer, (second choice),
+                    // long and (last choice) BigInteger - otherwise must 
+                    // use double/decimal.
+
+                    // Most of the time value ought to be an Integer so
+                    // try it first
+                    if (inputValue instanceof Integer) {
+                        // For integer, its already the right type
+                        this.valueType = valueTypeHint;
+                        this.value = inputValue;
+                        this.isDecimal = false;
+
+                    } else if (inputValue instanceof Byte) {
+                        this.valueType = valueTypeHint;
+                        this.value = inputValue;
+                        this.isDecimal = false;
+
+                    } else if (inputValue instanceof Short) {
+                        this.valueType = valueTypeHint;
+                        this.value = inputValue;
+                        this.isDecimal = false;
+
+                    } else if (inputValue instanceof Long) {
+                        Long l = (Long) inputValue;
+                        // See if it can be an integer or long
+                        long lval = l.longValue();
+                        setValueAndType(lval);
+
+                    } else if (inputValue instanceof BigInteger) {
+                        BigInteger bi = (BigInteger) inputValue;
+                        // See if it can be an integer or long
+                        long lval = bi.longValue();
+                        if (bi.equals(BigInteger.valueOf(lval))) {
+                            // It can be converted from BigInteger to long
+                            // without loss of precision.
+                            setValueAndType(lval);
+                        } else {
+                            // It can not be converted to a long.
+                            this.valueType = XSD_INTEGER;
+                            this.value = inputValue;
+                            this.isDecimal = false;
+                        }
+
+                    } else if (inputValue instanceof Float) {
+                        Float f = (Float) inputValue;
+                        // See if it can be an integer or long
+                        long lval = f.longValue();
+                        if (f.equals(new Float(lval))) {
+                            // It can be converted from double to long
+                            // without loss of precision.
+                            setValueAndType(lval);
+
+                        } else {
+                            // It can not be converted to a long.
+                            this.valueType = XSD_DOUBLE;
+                            this.value = inputValue;
+                            this.isDecimal = true;
+                        }
+
+                    } else if (inputValue instanceof Double) {
+                        Double d = (Double) inputValue;
+                        // See if it can be an integer or long
+                        long lval = d.longValue();
+                        if (d.equals(new Double(lval))) {
+                            // It can be converted from double to long
+                            // without loss of precision.
+                            setValueAndType(lval);
+
+                        } else {
+                            // It can not be converted to a long.
+                            this.valueType = XSD_DOUBLE;
+                            this.value = inputValue;
+                            this.isDecimal = true;
+                        }
+
+                    } else if (inputValue instanceof BigDecimal) {
+                        // See if it can be an integer or long
+                        BigDecimal bd = (BigDecimal) inputValue;
+                        try {
+                            // Can it be converted to a long
+                            // Throws ArithmeticException on conversion failure.
+                            long lval = bd.longValueExact();
+
+                            setValueAndType(lval);
+
+                        } catch (ArithmeticException ex) {
+                            // No, it can not be converted to long
+                            
+                            try {
+                                // Can it be an integer
+                                BigInteger bi = bd.toBigIntegerExact();
+                                this.valueType = XSD_INTEGER;
+                                this.value = bi;
+                                this.isDecimal = false;
+
+                            } catch (ArithmeticException ex1) {
+                                // OK, its a decimal
+                                this.valueType = XSD_DECIMAL;
+                                this.value = inputValue;
+                                this.isDecimal = true;
+                            }
+                        }
+
+                    } else if (inputValue instanceof Number) {
+                        // Don't know what Number type we have here.
+                        // Note: this could result in precision loss.
+                        long lval = ((Number) inputValue).longValue();
+                        this.value = new Long(lval);
+                        this.valueType = valueTypeHint;
+                        this.isDecimal = false;
+
+                    } else {
+                        // Who knows what we are dealing with,
+                        // hope for the best?!?
+                        this.valueType = valueTypeHint;
+                        this.value = inputValue;
+                        this.isDecimal = false;
+                    }
+
+                } else if (valueTypeHint.equals(XSD_DOUBLE)) {
+                    // The desired type is double.
+                    
+                    // Most of the time value ought to be an Double so
+                    // try it first
+                    if (inputValue instanceof Double) {
+                        // For Double, its already the right type
+                        this.valueType = valueTypeHint;
+                        this.value = inputValue;
+                        this.isDecimal = true;
+
+                    } else if (inputValue instanceof Byte || 
+                            inputValue instanceof Short || 
+                            inputValue instanceof Integer || 
+                            inputValue instanceof Long) {
+                        // Convert from byte/short/integer/long to double
+                        double dval = ((Number) inputValue).doubleValue();
+                        this.value = new Double(dval);
+                        this.valueType = valueTypeHint;
+                        this.isDecimal = true;
+
+                    } else if (inputValue instanceof Float) {
+                        this.value = inputValue;
+                        this.valueType = valueTypeHint;
+                        this.isDecimal = true;
+
+                    } else if (inputValue instanceof BigDecimal) {
+                        BigDecimal bd = (BigDecimal) inputValue;
+                        double dval = bd.doubleValue();
+                        // Can it be a double
+                        if (bd.equals(new BigDecimal(dval))) {
+                            this.valueType = XSD_DOUBLE;
+                            this.value = new Double(dval);
+                        } else {
+                            this.valueType = XSD_DECIMAL;
+                            this.value = inputValue;
+                        }
+                        this.isDecimal = true;
+
+                    } else if (inputValue instanceof BigInteger) {
+                        // What should be done here? Convert ot BigDecimal
+                        // and see if it can be a double or not?
+                        // See if there is loss of precision in the convertion?
+                        // Don't know. For now, just keep it a integral
+                        // value.
+                        BigInteger bi = (BigInteger) inputValue;
+                        // See if it can be an integer or long
+                        long lval = bi.longValue();
+                        if (bi.equals(BigInteger.valueOf(lval))) {
+                            // It can be converted from BigInteger to long
+                            // without loss of precision.
+                            setValueAndType(lval);
+                        } else {
+                            // It can not be converted to a long.
+                            this.valueType = XSD_INTEGER;
+                            this.value = inputValue;
+                            this.isDecimal = true;
+                        }
+
+                    } else if (inputValue instanceof Number) {
+                        // Don't know what Number type we have here.
+                        // Note: this could result in precision loss.
+                        double dval = ((Number) inputValue).doubleValue();
+                        this.value = new Double(dval);
+                        this.valueType = valueTypeHint;
+                        this.isDecimal = true;
+
+                    } else {
+                        // Who knows what we are dealing with,
+                        // hope for the best?!?
+                        this.valueType = valueTypeHint;
+                        this.value = inputValue;
+                        this.isDecimal = true;
+                    }
+                }
+            } else {
+                // There is no valueType "hint", so just get it from the value.
+                if (inputValue instanceof String) {
+                    this.valueType = XSD_STRING;
+                    this.value = inputValue;
+                    this.isDecimal = false;
+
+                } else if (inputValue instanceof Integer) {
+                    this.valueType = XSD_INT;
+                    this.value = inputValue;
+                    this.isDecimal = false;
+
+                } else if (inputValue instanceof Byte) {
+                    Byte b = (Byte) inputValue;
+                    this.valueType = XSD_INT;
+                    this.value = new Integer(b.intValue());
+                    this.isDecimal = false;
+
+                } else if (inputValue instanceof Short) {
+                    Short s = (Short) inputValue;
+                    this.valueType = XSD_INT;
+                    this.value = new Integer(s.intValue());
+                    this.isDecimal = false;
+
+                } else if (inputValue instanceof Long) {
+                    Long l = (Long) inputValue;
+                    // See if it can be an integer or long
+                    long lval = l.longValue();
+                    setValueAndType(lval);
+
+                } else if (inputValue instanceof BigInteger) {
+                    BigInteger bi = (BigInteger) inputValue;
+                    // See if it can be an integer or long
+                    long lval = bi.longValue();
+                    if (bi.equals(BigInteger.valueOf(lval))) {
+                        // It can be converted from BigInteger to long
+                        // without loss of precision.
+                        setValueAndType(lval);
+                    } else {
+                        // It can not be converted to a long.
+                        this.valueType = XSD_INTEGER;
+                        this.value = inputValue;
+                        this.isDecimal = false;
+                    }
+
+                } else if (inputValue instanceof Float) {
+                    this.valueType = XSD_DOUBLE;
+                    this.value = inputValue;
+                    this.isDecimal = true;
+
+                } else if (inputValue instanceof Double) {
+                    this.valueType = XSD_DOUBLE;
+                    this.value = inputValue;
+                    this.isDecimal = true;
+
+                } else if (inputValue instanceof BigDecimal) {
+                    // See if it can be a double
+                    BigDecimal bd = (BigDecimal) inputValue;
+                    double dval = bd.doubleValue();
+                    if (bd.equals(new BigDecimal(dval))) {
+                        this.valueType = XSD_DOUBLE;
+                        this.value = new Double(dval);
+                    } else {
+                        this.valueType = XSD_DECIMAL;
+                        this.value = inputValue;
+                    }
+                    this.isDecimal = true;
+
+                } else if (inputValue instanceof Number) {
+                    // Don't know what Number type we have here.
+                    // Note: this could result in precision loss.
+                    long lval = ((Number) inputValue).longValue();
+                    this.value = new Long(lval);
+                    this.valueType = XSD_LONG;
+                    this.isDecimal = false;
+
+                } else {
+                    // Who knows what we are dealing with,
+                    // hope for the best?!?
+                    this.valueType = XSD_STRING;
+                    this.value = inputValue;
+                    this.isDecimal = false;
+                }
+            }
+        }
+        private void setValueAndType(long lval) {
+            if (! isValidXsdInt(lval)) {
+                // No, it can not be a integer, must be a long
+                this.valueType = XSD_LONG;
+                this.value = new Long(lval);
+            } else {
+                // Its an integer.
+                this.valueType = XSD_INT;
+                this.value = new Integer((int) lval);
+            }
+            this.isDecimal = false;
+        }
+    }
+
+
 
     private static String computeXsd(int settype) {
         final StringWriter sw = new StringWriter();
@@ -314,23 +710,23 @@ public class XmlaHandler implements XmlaConstants {
         writer.startElement("xsd:sequence");
         writer.element("xsd:element", new String[] {
             "name", "UName",
-            "type", "xsd:string",
+            "type", XSD_STRING
         });
         writer.element("xsd:element", new String[] {
             "name", "Caption",
-            "type", "xsd:string",
+            "type", XSD_STRING
         });
         writer.element("xsd:element", new String[] {
             "name", "LName",
-            "type", "xsd:string",
+            "type", XSD_STRING
         });
         writer.element("xsd:element", new String[] {
             "name", "LNum",
-            "type", "xsd:unsignedInt",
+            "type", XSD_UNSIGNED_INT
         });
         writer.element("xsd:element", new String[] {
             "name", "DisplayInfo",
-            "type", "xsd:unsignedInt",
+            "type", XSD_UNSIGNED_INT
         });
         writer.startElement("xsd:sequence", new String[] {
             "maxOccurs", "unbounded",
@@ -344,7 +740,7 @@ public class XmlaHandler implements XmlaConstants {
         writer.endElement(); // xsd:sequence
         writer.element("xsd:attribute", new String[] {
             "name", "Hierarchy",
-            "type", "xsd:string",
+            "type", XSD_STRING
         });
         writer.endElement(); // xsd:complexType name="MemberType"
 
@@ -355,7 +751,7 @@ public class XmlaHandler implements XmlaConstants {
         });
         writer.element("xsd:attribute", new String[] {
             "name", "name",
-            "type", "xsd:string",
+            "type", XSD_STRING
         });
         writer.endElement(); // xsd:complexType name="PropType"
 
@@ -389,7 +785,7 @@ public class XmlaHandler implements XmlaConstants {
         writer.endElement(); // xsd:sequence
         writer.element("xsd:attribute", new String[] {
             "name", "Hierarchy",
-            "type", "xsd:string",
+            "type", XSD_STRING
         });
         writer.endElement(); // xsd:complexType
 
@@ -430,7 +826,7 @@ public class XmlaHandler implements XmlaConstants {
         writer.endElement(); // xsd:sequence
         writer.element("xsd:attribute", new String[] {
             "name", "Size",
-            "type", "xsd:unsignedInt"
+            "type", XSD_UNSIGNED_INT
         });
         writer.endElement(); // xsd:complexType
 
@@ -458,7 +854,7 @@ public class XmlaHandler implements XmlaConstants {
 
                 writer.element("xsd:element", new String[] {
                     "name", "CubeName",
-                    "type", "xsd:string"
+                    "type", XSD_STRING
                 });
 
                 writer.endElement(); // xsd:sequence
@@ -535,18 +931,18 @@ public class XmlaHandler implements XmlaConstants {
                     writer.endElement(); // xsd:sequence
 
                     writer.endElement(); // xsd:sequence
-                    writer.endElement(); // xsd:complexType
                     writer.element("xsd:attribute", new String[] {
                         "name", "name",
-                        "type", "xsd:string",
+                        "type", XSD_STRING,
                         "use", "required"
                     });
+                    writer.endElement(); // xsd:complexType
                     writer.endElement(); // xsd:element name=HierarchyInfo
                 }
                 writer.endElement(); // xsd:sequence
                 writer.element("xsd:attribute", new String[] {
                     "name", "name",
-                    "type", "xsd:string"
+                    "type", XSD_STRING
                 });
                 writer.endElement(); // xsd:complexType
                 writer.endElement(); // xsd:element name=AxisInfo
@@ -672,7 +1068,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.endElement(); // xsd:choice
             writer.element("xsd:attribute", new String[] {
                 "name", "name",
-                "type", "xsd:string"
+                "type", XSD_STRING
             });
             writer.endElement(); // xsd:complexType
         }
@@ -702,19 +1098,19 @@ public class XmlaHandler implements XmlaConstants {
             });
             writer.element("xsd:element", new String[] {
                 "name", "FmtValue",
-                "type", "xsd:string"
+                "type", XSD_STRING
             });
             writer.element("xsd:element", new String[] {
                 "name", "BackColor",
-                "type", "xsd:unsignedInt"
+                "type", XSD_UNSIGNED_INT
             });
             writer.element("xsd:element", new String[] {
                 "name", "ForeColor",
-                "type", "xsd:unsignedInt"
+                "type", XSD_UNSIGNED_INT
             });
             writer.element("xsd:element", new String[] {
                 "name", "FontName",
-                "type", "xsd:string"
+                "type", XSD_STRING
             });
             writer.element("xsd:element", new String[] {
                 "name", "FontSize",
@@ -722,11 +1118,11 @@ public class XmlaHandler implements XmlaConstants {
             });
             writer.element("xsd:element", new String[] {
                 "name", "FontFlags",
-                "type", "xsd:unsignedInt"
+                "type", XSD_UNSIGNED_INT
             });
             writer.element("xsd:element", new String[] {
                 "name", "FormatString",
-                "type", "xsd:string"
+                "type", XSD_STRING
             });
             writer.element("xsd:element", new String[] {
                 "name", "NonEmptyBehavior",
@@ -734,25 +1130,25 @@ public class XmlaHandler implements XmlaConstants {
             });
             writer.element("xsd:element", new String[] {
                 "name", "SolveOrder",
-                "type", "xsd:unsignedInt"
+                "type", XSD_UNSIGNED_INT
             });
             writer.element("xsd:element", new String[] {
                 "name", "Updateable",
-                "type", "xsd:unsignedInt"
+                "type", XSD_UNSIGNED_INT
             });
             writer.element("xsd:element", new String[] {
                 "name", "Visible",
-                "type", "xsd:unsignedInt"
+                "type", XSD_UNSIGNED_INT
             });
             writer.element("xsd:element", new String[] {
                 "name", "Expression",
-                "type", "xsd:string"
+                "type", XSD_STRING
             });
             writer.endElement(); // xsd:choice
             writer.endElement(); // xsd:sequence
             writer.element("xsd:attribute", new String[] {
                 "name", "CellOrdinal",
-                "type", "xsd:unsignedInt",
+                "type", XSD_UNSIGNED_INT,
                 "use", "required"
             });
             writer.endElement(); // xsd:complexType
@@ -814,9 +1210,10 @@ public class XmlaHandler implements XmlaConstants {
 
         DataSourcesConfig.DataSource ds = getDataSource(request);
         DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
-        final Map<String, String> properties = request.getProperties();
+        String roleName = request.getRoleName();
+        Role role = request.getRole();
 
-        final Connection connection = getConnection(dsCatalog, request);
+        final Connection connection = getConnection(dsCatalog, role, roleName);
 
         final String statement = request.getStatement();
         final Query query = connection.parseQuery(statement);
@@ -836,6 +1233,7 @@ public class XmlaHandler implements XmlaConstants {
         java.sql.Connection sqlConn = null;
 
         try {
+            final Map<String, String> properties = request.getProperties();
             final String advancedFlag =
                 properties.get(PropertyDefinition.AdvancedFlag.name());
             if ("true".equals(advancedFlag)) {
@@ -1087,26 +1485,26 @@ public class XmlaHandler implements XmlaConstants {
             }
         }
 
-		public TabularRowSet(ResultSet rs) throws SQLException {
-			ResultSetMetaData md = rs.getMetaData();
-			int columnCount = md.getColumnCount();
+        public TabularRowSet(ResultSet rs) throws SQLException {
+            ResultSetMetaData md = rs.getMetaData();
+            int columnCount = md.getColumnCount();
 
-			// populate header
-			headers = new String[columnCount];
-			for (int i = 0; i < columnCount; i++) {
-				headers[i] = md.getColumnName(i + 1);
-			}
+            // populate header
+            headers = new String[columnCount];
+            for (int i = 0; i < columnCount; i++) {
+                headers[i] = md.getColumnName(i + 1);
+            }
 
-			// populate data
-			rows = new ArrayList<Object[]>();
-			while (rs.next()) {
-				Object[] row = new Object[columnCount];
-				for (int i = 0; i < columnCount; i++) {
-					row[i] = rs.getObject(i + 1);
-				}
-				rows.add(row);
-			}
-		}
+            // populate data
+            rows = new ArrayList<Object[]>();
+            while (rs.next()) {
+                Object[] row = new Object[columnCount];
+                for (int i = 0; i < columnCount; i++) {
+                    row[i] = rs.getObject(i + 1);
+                }
+                rows.add(row);
+            }
+        }
     }
 
     private QueryResult executeQuery(XmlaRequest request)
@@ -1124,8 +1522,11 @@ public class XmlaHandler implements XmlaConstants {
 
             DataSourcesConfig.DataSource ds = getDataSource(request);
             DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
 
-            final Connection connection = getConnection(dsCatalog, request);
+            final Connection connection = 
+                getConnection(dsCatalog, role, roleName);
 
             final Query query;
             try {
@@ -1179,7 +1580,6 @@ public class XmlaHandler implements XmlaConstants {
      * @param cell Cell
      * @param value Value of the cell
      * @return XSD data type (e.g. "xsd:int", "xsd:double", "xsd:string")
-     */
     protected static String deduceValueType(Cell cell, final Object value) {
         String datatype = (String)
                 cell.getPropertyValue(Property.DATATYPE.getName());
@@ -1219,6 +1619,7 @@ public class XmlaHandler implements XmlaConstants {
             return "xsd:string";
         }
     }
+     */
 
     static abstract class MDDataSet implements QueryResult {
         protected final Result result;
@@ -1711,8 +2112,9 @@ public class XmlaHandler implements XmlaConstants {
                 "CellOrdinal", Integer.toString(ordinal)});
             for (int i = 0; i < cellProps.length; i++) {
                 String cellPropLong = cellPropLongs[i];
-                final Object value = cell.getPropertyValue(cellPropLong);
+                Object value = cell.getPropertyValue(cellPropLong);
 
+/*
                 if (value != null && shouldReturnCellProperty(cellPropLong)) {
                     if (cellPropLong.equals(Property.VALUE.name)) {
                         String valueType = deduceValueType(evaluator, value);
@@ -1731,13 +2133,44 @@ public class XmlaHandler implements XmlaConstants {
                     writer.characters(valueString);
                     writer.endElement();
                 }
+*/
+                if (value == null) {
+                    continue;
+                }
+                if (! shouldReturnCellProperty(cellPropLong)) {
+                    continue;
+                }
+                boolean isDecimal = false;
+
+                if (cellPropLong.equals(Property.VALUE.name)) {
+                    final String dataType = (String)
+                        evaluator.getProperty(Property.DATATYPE.getName(), null);
+                    final ValueInfo vi = new ValueInfo(dataType, value);
+                    final String valueType = vi.valueType;
+                    value = vi.value;
+                    isDecimal = vi.isDecimal;
+
+                    writer.startElement(cellProps[i], 
+                            new String[] {"xsi:type", valueType});
+                } else {
+                    writer.startElement(cellProps[i]);
+                }
+                String valueString = value.toString();
+
+                if (isDecimal) {
+                    valueString = XmlaUtil.normalizeNumericString(valueString);
+                }
+
+                writer.characters(valueString);
+                writer.endElement();
             }
             writer.endElement(); // Cell
         }
 
         private boolean shouldReturnCellProperty(String cellPropLong) {
             Query query = result.getQuery();
-            return query.isCellPropertyEmpty() || query.hasCellProperty(cellPropLong);
+            return query.isCellPropertyEmpty() || 
+                    query.hasCellProperty(cellPropLong);
         }
     }
 
@@ -1780,12 +2213,31 @@ public class XmlaHandler implements XmlaConstants {
                 return;
             }
             Object value = cell.getValue();
+/*
             String valueString = value.toString();
             String valueType = deduceValueType(cell, value);
 
             writer.startElement(encodedName, new String[] {
                 "xsi:type", valueType});
             if (value instanceof Number) {
+                valueString = XmlaUtil.normalizeNumericString(valueString);
+            }
+            writer.characters(valueString);
+            writer.endElement();
+*/
+            final String dataType = (String)
+                    cell.getPropertyValue(Property.DATATYPE.getName());
+
+            final ValueInfo vi = new ValueInfo(dataType, value);
+            final String valueType = vi.valueType;
+            value = vi.value;
+            boolean isDecimal = vi.isDecimal;
+
+            String valueString = value.toString();
+
+            writer.startElement(encodedName, new String[] {
+                "xsi:type", valueType});
+            if (isDecimal) {
                 valueString = XmlaUtil.normalizeNumericString(valueString);
             }
             writer.characters(valueString);
@@ -1817,7 +2269,7 @@ public class XmlaHandler implements XmlaConstants {
                 "minOccurs", "0",
                 "name", encodedName,
                 "sql:field", name,
-                "type", "xsd:string",
+                "type", XSD_STRING
             });
         }
 
@@ -1986,7 +2438,7 @@ public class XmlaHandler implements XmlaConstants {
                     "name", "uuid",
                 });
                 writer.startElement("xsd:restriction", new String[] {
-                    "base", "xsd:string",
+                    "base", XSD_STRING
                 });
                 writer.element("xsd:pattern", new String[] {
                     "value", "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
@@ -2164,13 +2616,15 @@ public class XmlaHandler implements XmlaConstants {
      * source) and a user role.
      *
      * @param catalog Catalog
-     * @param request XMLA request
+     * @param role User role
+     * @param role User role name
      * @return Connection
      * @throws XmlaException If error occurs
      */
     protected Connection getConnection(
-            DataSourcesConfig.Catalog catalog,
-            XmlaRequest request)
+            final DataSourcesConfig.Catalog catalog,
+            final Role role,
+            final String roleName)
             throws XmlaException {
         DataSourcesConfig.DataSource ds = catalog.getDataSource();
 
@@ -2194,7 +2648,7 @@ public class XmlaHandler implements XmlaConstants {
         if (!DataSourcesConfig.DataSource.AUTH_MODE_UNAUTHENTICATED
             .equalsIgnoreCase(
                 ds.getAuthenticationMode()) &&
-            null == request)
+            (role == null) && (roleName == null) )
         {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
@@ -2205,15 +2659,17 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         // Role in request overrides role in connect string, if present.
-        String roleName = request.getRole();
         if (roleName != null) {
             connectProperties.put(
                 RolapConnectionProperties.Role.name(), roleName);
         }
 
-        Connection conn =
-            DriverManager.getConnection(
+        RolapConnection conn = (RolapConnection) DriverManager.getConnection(
                 connectProperties, null);
+
+        if (role != null) {
+            conn.setRole(role);
+        }
 
 if (LOGGER.isDebugEnabled()) {
 if (conn == null) {
@@ -2356,8 +2812,11 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
 
         DataSourcesConfig.DataSource ds = getDataSource(request);
         DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
+        String roleName = request.getRoleName();
+        Role role = request.getRole();
 
-        final Connection connection = getConnection(dsCatalog, request);
+        final Connection connection = getConnection(dsCatalog, role, roleName);
+
         final String statement = request.getStatement();
         final Query query = connection.parseQuery(statement);
         query.setResultStyle(ResultStyle.LIST);

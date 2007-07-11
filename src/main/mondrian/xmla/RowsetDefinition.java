@@ -2062,12 +2062,15 @@ enum RowsetDefinition {
         {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
+
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
                     continue;
                 }
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }
@@ -2241,12 +2244,15 @@ enum RowsetDefinition {
         {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
+
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
                     continue;
                 }
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }
@@ -2849,13 +2855,15 @@ TODO: see above
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                 handler.getCatalogs(request, ds);
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
                     continue;
                 }
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }
@@ -3137,13 +3145,15 @@ TODO: see above
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                 handler.getCatalogs(request, ds);
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
                     continue;
                 }
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }
@@ -3381,13 +3391,15 @@ TODO: see above
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                 handler.getCatalogs(request, ds);
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
                     continue;
                 }
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }
@@ -3624,6 +3636,8 @@ TODO: see above
                 handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                 handler.getCatalogs(request, ds);
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
@@ -3635,7 +3649,7 @@ TODO: see above
                 }
 
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }
@@ -3913,13 +3927,15 @@ TODO: see above
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                 handler.getCatalogs(request, ds);
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
                     continue;
                 }
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }
@@ -4211,6 +4227,8 @@ TODO: see above
                 handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                 handler.getCatalogs(request, ds);
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
@@ -4222,7 +4240,7 @@ TODO: see above
                 }
 
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }
@@ -4240,7 +4258,10 @@ TODO: see above
                 if (!cubeNameRT.passes(cube.getName())) {
                     continue;
                 }
-                SchemaReader schemaReader = connection.getSchemaReader();
+                // RME
+                //SchemaReader schemaReader = connection.getSchemaReader();
+                // want to pick up cube's 
+                SchemaReader schemaReader = cube.getSchemaReader(connection.getRole());
                 populateCube(schemaReader, catalogName, cube, rows);
             }
         }
@@ -4558,6 +4579,8 @@ TODO: see above
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                 handler.getCatalogs(request, ds);
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
@@ -4569,7 +4592,7 @@ TODO: see above
                 }
 
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }
@@ -4907,13 +4930,15 @@ TODO: see above
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                 handler.getCatalogs(request, ds);
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
                     continue;
                 }
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }
@@ -5270,13 +5295,15 @@ TODO: see above
                 handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                 handler.getCatalogs(request, ds);
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
                     continue;
                 }
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }
@@ -5851,13 +5878,15 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                 handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                 handler.getCatalogs(request, ds);
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
                     continue;
                 }
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }
@@ -6038,13 +6067,15 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                 handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                 handler.getCatalogs(request, ds);
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
                     continue;
                 }
                 Connection connection =
-                    handler.getConnection(dsCatalog, request);
+                    handler.getConnection(dsCatalog, role, roleName);
                 if (connection == null) {
                     continue;
                 }

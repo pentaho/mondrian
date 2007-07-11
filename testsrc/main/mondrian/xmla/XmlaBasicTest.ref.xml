@@ -10684,11 +10684,11 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -11073,11 +11073,11 @@ FROM Sales
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -11633,11 +11633,11 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -12152,11 +12152,11 @@ FROM Sales
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -12669,11 +12669,11 @@ FROM Sales
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -13187,11 +13187,11 @@ FROM Sales
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -13751,11 +13751,11 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -14307,11 +14307,11 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -14861,11 +14861,11 @@ Cell Properties Format_String, Formatted_Value
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -15417,11 +15417,11 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute

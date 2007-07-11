@@ -72,7 +72,7 @@ public class XmlaErrorTest extends XmlaBaseTestCase
         public boolean processHttpHeader(
             HttpServletRequest request,
             HttpServletResponse response,
-            Map<String, String> context) throws Exception
+            Map<String, Object> context) throws Exception
         {
 
             // look for authorization
@@ -157,20 +157,20 @@ System.out.println("password=" +password);
         public void preAction(
                 HttpServletRequest request,
                 Element[] requestSoapParts,
-                Map<String, String> context) throws Exception {
+                Map<String, Object> context) throws Exception {
 
             context.put(MY_SESSION_ID, getSessionId("XmlaExcelXPTest", Action.CREATE));
         }
 
-        public String generateSessionId(Map<String, String> context) {
-            return context.get(MY_SESSION_ID);
+        public String generateSessionId(Map<String, Object> context) {
+            return (String) context.get(MY_SESSION_ID);
         }
 
         public void postAction(
                     HttpServletRequest request,
                     HttpServletResponse response,
                     byte[][] responseSoapParts,
-                    Map<String, String> context) throws Exception {
+                    Map<String, Object> context) throws Exception {
         }
     }
 

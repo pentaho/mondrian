@@ -51,7 +51,7 @@ public interface XmlaRequestCallback {
         public static void generatedExpectResponse(
             HttpServletRequest request,
             HttpServletResponse response,
-            Map<String, String> context) throws Exception
+            Map<String, Object> context) throws Exception
         {
             response.reset();
             response.setStatus(HttpServletResponse.SC_CONTINUE);
@@ -84,7 +84,7 @@ public interface XmlaRequestCallback {
     boolean processHttpHeader(
         HttpServletRequest request,
         HttpServletResponse response,
-        Map<String, String> context) throws Exception;
+        Map<String, Object> context) throws Exception;
 
     /**
      * This is called after the headers have been process but before the
@@ -94,7 +94,7 @@ public interface XmlaRequestCallback {
     void preAction(
         HttpServletRequest request,
         Element[] requestSoapParts,
-        Map<String, String> context) throws Exception;
+        Map<String, Object> context) throws Exception;
 
     /**
      * The Callback is requested to generate a sequence id string. This
@@ -102,7 +102,7 @@ public interface XmlaRequestCallback {
      * for all subsequent communications in the Soap Header block.
      *
      */
-    String generateSessionId(Map<String, String> context);
+    String generateSessionId(Map<String, Object> context);
 
     /**
      * This is called after all Mondrian processing (DISCOVER/EXECUTE) has
@@ -112,7 +112,7 @@ public interface XmlaRequestCallback {
     void postAction(HttpServletRequest request,
                 HttpServletResponse response,
                 byte[][] responseSoapParts,
-                Map<String, String> context) throws Exception;
+                Map<String, Object> context) throws Exception;
 }
 
 // End XmlaRequestCallback.java

@@ -145,11 +145,11 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -872,8 +872,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All
-                                    Store Size in SQFTs]</UName>
+                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
                                     <Caption>All Store Size in SQFTs</Caption>
                                     <LName>[Store Size in SQFT].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -929,24 +928,21 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All
-                                    Education Levels]</UName>
+                                    <UName>[Education Level].[All Education Levels]</UName>
                                     <Caption>All Education Levels</Caption>
                                     <LName>[Education Level].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>5</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status]</UName>
+                                    <UName>[Marital Status].[All Marital Status]</UName>
                                     <Caption>All Marital Status</Caption>
                                     <LName>[Marital Status].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>111</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All
-                                    Yearly Incomes]</UName>
+                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
                                     <Caption>All Yearly Incomes</Caption>
                                     <LName>[Yearly Income].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -1322,11 +1318,11 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -1662,8 +1658,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All
-                                    Store Size in SQFTs]</UName>
+                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
                                     <Caption>All Store Size in SQFTs</Caption>
                                     <LName>[Store Size in SQFT].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -1712,8 +1707,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>51</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All
-                                    Education Levels]</UName>
+                                    <UName>[Education Level].[All Education Levels]</UName>
                                     <Caption>All Education Levels</Caption>
                                     <LName>[Education Level].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -1727,16 +1721,14 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>2</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status]</UName>
+                                    <UName>[Marital Status].[All Marital Status]</UName>
                                     <Caption>All Marital Status</Caption>
                                     <LName>[Marital Status].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>111</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All
-                                    Yearly Incomes]</UName>
+                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
                                     <Caption>All Yearly Incomes</Caption>
                                     <LName>[Yearly Income].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -1925,11 +1917,11 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -2261,8 +2253,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All
-                                    Store Size in SQFTs]</UName>
+                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
                                     <Caption>All Store Size in SQFTs</Caption>
                                     <LName>[Store Size in SQFT].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -2318,8 +2309,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All
-                                    Education Levels]</UName>
+                                    <UName>[Education Level].[All Education Levels]</UName>
                                     <Caption>All Education Levels</Caption>
                                     <LName>[Education Level].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -2333,16 +2323,14 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>2</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status]</UName>
+                                    <UName>[Marital Status].[All Marital Status]</UName>
                                     <Caption>All Marital Status</Caption>
                                     <LName>[Marital Status].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>111</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All
-                                    Yearly Incomes]</UName>
+                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
                                     <Caption>All Yearly Incomes</Caption>
                                     <LName>[Yearly Income].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -2553,11 +2541,11 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -2857,8 +2845,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All
-                                    Store Size in SQFTs]</UName>
+                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
                                     <Caption>All Store Size in SQFTs</Caption>
                                     <LName>[Store Size in SQFT].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -2914,24 +2901,21 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All
-                                    Education Levels]</UName>
+                                    <UName>[Education Level].[All Education Levels]</UName>
                                     <Caption>All Education Levels</Caption>
                                     <LName>[Education Level].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>5</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status]</UName>
+                                    <UName>[Marital Status].[All Marital Status]</UName>
                                     <Caption>All Marital Status</Caption>
                                     <LName>[Marital Status].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>111</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All
-                                    Yearly Incomes]</UName>
+                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
                                     <Caption>All Yearly Incomes</Caption>
                                     <LName>[Yearly Income].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -3104,11 +3088,11 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -3387,15 +3371,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[M]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>0</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -3410,15 +3392,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[S]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[S]</UName>
                                     <Caption>S</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -3433,15 +3413,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[M]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -3456,15 +3434,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[S]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[S]</UName>
                                     <Caption>S</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -3480,8 +3456,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All
-                                    Store Size in SQFTs]</UName>
+                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
                                     <Caption>All Store Size in SQFTs</Caption>
                                     <LName>[Store Size in SQFT].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -3537,16 +3512,14 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All
-                                    Education Levels]</UName>
+                                    <UName>[Education Level].[All Education Levels]</UName>
                                     <Caption>All Education Levels</Caption>
                                     <LName>[Education Level].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>5</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All
-                                    Yearly Incomes]</UName>
+                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
                                     <Caption>All Yearly Incomes</Caption>
                                     <LName>[Yearly Income].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -3728,11 +3701,11 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -4010,15 +3983,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[M]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>0</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -4033,15 +4004,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[S]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[S]</UName>
                                     <Caption>S</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -4056,15 +4025,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[M]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -4079,15 +4046,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[S]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[S]</UName>
                                     <Caption>S</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -4117,8 +4082,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All
-                                    Store Size in SQFTs]</UName>
+                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
                                     <Caption>All Store Size in SQFTs</Caption>
                                     <LName>[Store Size in SQFT].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -4160,16 +4124,14 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All
-                                    Education Levels]</UName>
+                                    <UName>[Education Level].[All Education Levels]</UName>
                                     <Caption>All Education Levels</Caption>
                                     <LName>[Education Level].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>5</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All
-                                    Yearly Incomes]</UName>
+                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
                                     <Caption>All Yearly Incomes</Caption>
                                     <LName>[Yearly Income].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -4350,11 +4312,11 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -4633,15 +4595,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[S]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[S]</UName>
                                     <Caption>S</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>0</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -4656,15 +4616,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[M]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -4679,15 +4637,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[S]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[S]</UName>
                                     <Caption>S</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -4702,15 +4658,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[M]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -4726,8 +4680,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All
-                                    Store Size in SQFTs]</UName>
+                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
                                     <Caption>All Store Size in SQFTs</Caption>
                                     <LName>[Store Size in SQFT].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -4783,16 +4736,14 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All
-                                    Education Levels]</UName>
+                                    <UName>[Education Level].[All Education Levels]</UName>
                                     <Caption>All Education Levels</Caption>
                                     <LName>[Education Level].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>5</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All
-                                    Yearly Incomes]</UName>
+                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
                                     <Caption>All Yearly Incomes</Caption>
                                     <LName>[Yearly Income].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -4975,11 +4926,11 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -5259,15 +5210,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[S]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[S]</UName>
                                     <Caption>S</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>0</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -5282,15 +5231,13 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[S]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[S]</UName>
                                     <Caption>S</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -5306,8 +5253,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All
-                                    Store Size in SQFTs]</UName>
+                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
                                     <Caption>All Store Size in SQFTs</Caption>
                                     <LName>[Store Size in SQFT].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -5363,16 +5309,14 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All
-                                    Education Levels]</UName>
+                                    <UName>[Education Level].[All Education Levels]</UName>
                                     <Caption>All Education Levels</Caption>
                                     <LName>[Education Level].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>5</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All
-                                    Yearly Incomes]</UName>
+                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
                                     <Caption>All Yearly Incomes</Caption>
                                     <LName>[Yearly Income].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -5547,11 +5491,11 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
-                                    </xsd:complexType>
 
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
+                                    </xsd:complexType>
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -5826,19 +5770,16 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <LNum>1</LNum>
                                     <DisplayInfo>0</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[M]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>0</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -5849,19 +5790,16 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[S]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[S]</UName>
                                     <Caption>S</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -5872,13 +5810,10 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital
-                                    Status].[COG_OQP_USR_Total(Marital Status)]</UName>
-
+                                    <UName>[Marital Status].[COG_OQP_USR_Total(Marital Status)]</UName>
                                     <Caption>COG_OQP_USR_Total(Marital Status)</Caption>
                                     <LName>[Marital Status].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -5894,19 +5829,16 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[M]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>0</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -5917,19 +5849,16 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status].[S]</UName>
+                                    <UName>[Marital Status].[All Marital Status].[S]</UName>
                                     <Caption>S</Caption>
                                     <LName>[Marital Status].[Marital Status]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-                                    <PARENT_UNIQUE_NAME>[Marital
-                                    Status].[All Marital Status]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Marital Status].[All Marital Status]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -5940,13 +5869,10 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131072</DisplayInfo>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
-
                                     <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital
-                                    Status].[COG_OQP_USR_Total(Marital Status)]</UName>
-
+                                    <UName>[Marital Status].[COG_OQP_USR_Total(Marital Status)]</UName>
                                     <Caption>COG_OQP_USR_Total(Marital Status)</Caption>
                                     <LName>[Marital Status].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -5964,8 +5890,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <PARENT_LEVEL>0</PARENT_LEVEL>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status]</UName>
+                                    <UName>[Marital Status].[All Marital Status]</UName>
                                     <Caption>All Marital Status</Caption>
                                     <LName>[Marital Status].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -5986,8 +5911,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All
-                                    Store Size in SQFTs]</UName>
+                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
                                     <Caption>All Store Size in SQFTs</Caption>
                                     <LName>[Store Size in SQFT].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -6043,16 +5967,14 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All
-                                    Education Levels]</UName>
+                                    <UName>[Education Level].[All Education Levels]</UName>
                                     <Caption>All Education Levels</Caption>
                                     <LName>[Education Level].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>5</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All
-                                    Yearly Incomes]</UName>
+                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
                                     <Caption>All Yearly Incomes</Caption>
                                     <LName>[Yearly Income].[(All)]</LName>
                                     <LNum>0</LNum>
