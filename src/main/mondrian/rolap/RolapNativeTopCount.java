@@ -30,18 +30,20 @@ import mondrian.rolap.sql.SqlQuery.Dialect;
  */
 public class RolapNativeTopCount extends RolapNativeSet {
 
-    boolean ascending;
-
     public RolapNativeTopCount() {
         super.setEnabled(MondrianProperties.instance().EnableNativeTopCount.get());
     }
 
-    class TopCountConstraint extends SetConstraint {
+    static class TopCountConstraint extends SetConstraint {
         String orderByExpr;
+        boolean ascending;
 
-        public TopCountConstraint(CrossJoinArg[] args, RolapEvaluator evaluator, String orderByExpr) {
+        public TopCountConstraint(
+            CrossJoinArg[] args, RolapEvaluator evaluator, 
+            String orderByExpr, boolean ascending) {
             super(args, evaluator, true);
             this.orderByExpr = orderByExpr;
+            this.ascending = ascending;
         }
 
         /**
@@ -51,7 +53,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
         protected boolean isJoinRequired() {
             return true;
         }
-
+        
         public void addConstraint(
             SqlQuery sqlQuery,
             Map<RolapLevel, RolapStar.Column> levelToColumnMap,
@@ -80,11 +82,13 @@ public class RolapNativeTopCount extends RolapNativeSet {
         }
     }
 
-    protected boolean isStrict() {
+    protected boolean restrictMemberTypes() {
         return true;
     }
 
     NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
+        boolean ascending;
+        
         if (!isEnabled())
             return null;
         if (!TopCountConstraint.isValidContext(evaluator)) {
@@ -104,7 +108,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
             return null;
         }
         // extract the set expression
-        CrossJoinArg[] cargs = checkCrossJoinArg(args[0]);
+        CrossJoinArg[] cargs = checkCrossJoinArg(evaluator, args[0]);
         if (cargs == null) {
             return null;
         }
@@ -135,7 +139,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
         LOGGER.debug("using native topcount");
         evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
 
-        TupleConstraint constraint = new TopCountConstraint(cargs, evaluator, orderByExpr);
+        TupleConstraint constraint = 
+            new TopCountConstraint(cargs, evaluator, orderByExpr, ascending);
         SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);
         sev.setMaxRows(count);
         return sev;

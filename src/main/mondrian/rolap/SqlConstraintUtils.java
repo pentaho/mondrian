@@ -40,7 +40,7 @@ public class SqlConstraintUtils {
      *
      * @param sqlQuery the query to modify
      * @param aggStar Aggregate table, or null if query is against fact table
-     * @param strict defines the behavior if the current context contains
+     * @param restrictMemberTypes defines the behavior if the current context contains
      *   calculated members.
      *   If true, an exception is thrown.
      * @param evaluator Evaluator
@@ -49,12 +49,13 @@ public class SqlConstraintUtils {
         SqlQuery sqlQuery,
         AggStar aggStar,
         Evaluator evaluator,
-        boolean strict) {
+        boolean restrictMemberTypes) {
 
         Member[] members = evaluator.getMembers();
-        if (strict) {
+        if (restrictMemberTypes) {
             if (containsCalculatedMember(members)) {
-                throw Util.newInternal("can not restrict SQL to calculated Members");
+                throw Util.newInternal(
+                    "can not restrict SQL to calculated Members");
             }
         } else {
             members = removeCalculatedMembers(members);
@@ -64,7 +65,7 @@ public class SqlConstraintUtils {
         CellRequest request =
                 RolapAggregationManager.makeRequest(members, false, false);
         if (request == null) {
-            if (strict) {
+            if (restrictMemberTypes) {
                 throw Util.newInternal("CellRequest is null - why?");
             }
             // One or more of the members was null or calculated, so the
@@ -128,7 +129,7 @@ public class SqlConstraintUtils {
      * </pre>
      * the <code>[Customer].[All].children</code> is evaluated with the default
      * member <code>[Time].[1997]</code> in the evaluator context. This is wrong
-     * because the NON EMPTY must filter out Customres with no rows in the fact
+     * because the NON EMPTY must filter out Customers with no rows in the fact
      * table for 1998 not 1997. So we do not restrict the time dimension and
      * fetch all children.
      *
@@ -158,7 +159,7 @@ public class SqlConstraintUtils {
         return result.toArray(new Member[result.size()]);
     }
 
-    private static boolean containsCalculatedMember(Member[] members) {
+    public static boolean containsCalculatedMember(Member[] members) {
         for (Member member : members) {
             if (member.isCalculated()) {
                 return true;
@@ -211,7 +212,7 @@ public class SqlConstraintUtils {
      * @param relationNamesToStarTableMap map to disambiguate table aliases
      * @param aggStar Definition of the aggregate table, or null
      * @param parent the list of parent members
-     * @param strict defines the behavior if <code>parent</code>
+     * @param restrictMemberTypes defines the behavior if <code>parent</code>
      * is a calculated member. If true, an exception is thrown
      */
     public static void addMemberConstraint(
@@ -220,12 +221,12 @@ public class SqlConstraintUtils {
         Map<String, RolapStar.Table> relationNamesToStarTableMap,
         AggStar aggStar,
         RolapMember parent,
-        boolean strict)
+        boolean restrictMemberTypes)
     {
         List<RolapMember> list = Collections.singletonList(parent);
         addMemberConstraint(
             sqlQuery, levelToColumnMap, relationNamesToStarTableMap,
-            aggStar, list, strict, false);
+            aggStar, list, restrictMemberTypes, false);
     }
 
     /**
@@ -245,7 +246,7 @@ public class SqlConstraintUtils {
      * @param relationNamesToStarTableMap map to disambiguate table aliases
      * @param aggStar (not used)
      * @param parents the list of parent members
-     * @param strict defines the behavior if <code>parents</code>
+     * @param restrictMemberTypes defines the behavior if <code>parents</code>
      *   contains calculated members.
      *   If true, and one of the members is calculated, an exception is thrown.
      * @param crossJoin true if constraint is being generated as part of
@@ -257,7 +258,7 @@ public class SqlConstraintUtils {
         Map<String, RolapStar.Table> relationNamesToStarTableMap,
         AggStar aggStar,
         List<RolapMember> parents,
-        boolean strict,
+        boolean restrictMemberTypes,
         boolean crossJoin)
     {
         if (parents.size() == 0) {
@@ -280,11 +281,14 @@ public class SqlConstraintUtils {
                     levelToColumnMap,
                     relationNamesToStarTableMap,
                     parents,
-                    strict);
+                    restrictMemberTypes);
                 return;
             }
         }
 
+        int maxConstraints = 
+            MondrianProperties.instance().MaxConstraints.get();
+        
         for (Collection<RolapMember> c = parents;
             !c.isEmpty();
             c = getUniqueParentMembers(c))
@@ -294,7 +298,7 @@ public class SqlConstraintUtils {
                 continue;
             }
             if (m.isCalculated()) {
-                if (strict) {
+                if (restrictMemberTypes) {
                     throw Util.newInternal("addMemberConstraint: cannot " +
                         "restrict SQL to calculated member :" + m);
                 }
@@ -320,10 +324,9 @@ public class SqlConstraintUtils {
                 hierarchy.addToFrom(sqlQuery, level.getKeyExp());                
             }
             
-            if (!strict &&
-                cc instanceof ListColumnPredicate &&
-                ((ListColumnPredicate) cc).getPredicates().size() >=
-                    MondrianProperties.instance().MaxConstraints.get())
+            if (cc instanceof ListColumnPredicate &&
+                ((ListColumnPredicate) cc).getPredicates().size() > 
+                    maxConstraints)
             {
                 // Simply get them all, do not create where-clause.
                 // Below are two alternative approaches (and code). They
@@ -335,6 +338,7 @@ public class SqlConstraintUtils {
                     sqlQuery.addWhere(where);
                 }
             }
+            
             if (level.isUnique()) {
                 break; // no further qualification needed
             }
@@ -381,14 +385,14 @@ public class SqlConstraintUtils {
      * @param levelToColumnMap where to find each level's key
      * @param query the query that the sql expression will be added to
      * @param members list of constraining members
-     * @param strict defines the behavior when calculated members are present
+     * @param restrictMemberTypes defines the behavior when calculated members are present
      */
     private static void constrainMultiLevelMembers(
         SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
         Map<String, RolapStar.Table> relationNamesToStarTableMap,        
         List<RolapMember> members,
-        boolean strict)
+        boolean restrictMemberTypes)
     {
         if (sqlQuery.getDialect().supportsMultiValueInExpr()) {
             if (generateMultiValueInExpr(
@@ -396,7 +400,7 @@ public class SqlConstraintUtils {
                 levelToColumnMap,
                 relationNamesToStarTableMap,
                 members, 
-                strict)) {
+                restrictMemberTypes)) {
                 return;
             }
         }
@@ -407,7 +411,7 @@ public class SqlConstraintUtils {
         boolean firstMember = true;
         for (RolapMember m : members) {
             if (m.isCalculated()) {
-                if (strict) {
+                if (restrictMemberTypes) {
                     throw Util.newInternal("addMemberConstraint: cannot " +
                         "restrict SQL to calculated member :" + m);
                 }
@@ -585,7 +589,7 @@ public class SqlConstraintUtils {
      * @param levelToColumnMap where to find each level's key
      * @param relationNamesToStarTableMap map to disambiguate table aliases
      * @param members list of constraining members
-     * @param strict defines the behavior when calculated members are present
+     * @param restrictMemberTypes defines the behavior when calculated members are present
      *
      * @return Whether it was possible to generate a multi-value IN expression
      */
@@ -594,7 +598,7 @@ public class SqlConstraintUtils {
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
         Map<String, RolapStar.Table> relationNamesToStarTableMap,        
         List<RolapMember> members,
-        boolean strict)
+        boolean restrictMemberTypes)
     {
         final StringBuilder columnBuf = new StringBuilder();
         columnBuf.append("(");
@@ -604,7 +608,7 @@ public class SqlConstraintUtils {
         boolean firstMember = true;
         for (RolapMember m : members) {
             if (m.isCalculated()) {
-                if (strict) {
+                if (restrictMemberTypes) {
                     throw Util.newInternal("addMemberConstraint: cannot " +
                         "restrict SQL to calculated member :" + m);
                 }

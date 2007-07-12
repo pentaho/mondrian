@@ -11,6 +11,8 @@ package mondrian.rolap;
 import java.util.*;
 import java.sql.*;
 
+import mondrian.calc.ExpCompiler;
+import mondrian.calc.ListCalc;
 import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
@@ -45,14 +47,18 @@ public abstract class RolapNativeSet extends RolapNative {
         new SoftSmartCache<Object, List<List<RolapMember>>>();
 
     /**
-     * Returns whether calculated members should be accepted (and ignored).
+     * Returns whether certain member types(e.g. calculated members) should
+     * disable native SQL evaluation for expressions containing them.
      *
-     * <p>If true, calc members will be ignored and the computation still will
-     * be done in SQL returning more members than requested.
-     * If false, expressions containing calculated members will rejected to the
-     * interpreter.
+     * <p>
+     * If true, expressions containing calculated members will be evaluated by
+     * the interpreter, instead of using SQL.
+     * 
+     * If false, calc members will be ignored and the computation will be done
+     * in SQL, returning more members than requested.
+     * </p>
      */
-    protected abstract boolean isStrict();
+    protected abstract boolean restrictMemberTypes();
 
     /**
      * Constraint for non empty {crossjoin, member.children,
@@ -389,21 +395,74 @@ public abstract class RolapNativeSet extends RolapNative {
         private boolean strict;
         private boolean hasCalcMembers;
         private boolean hasNonCalcMembers;
-
+        private boolean hasAllMember;
+        
         private MemberListCrossJoinArg(
             RolapLevel level, RolapMember[] members, boolean strict,
-            boolean hasCalcMembers, boolean hasNonCalcMembers) {
+            boolean hasCalcMembers, boolean hasNonCalcMembers, boolean hasAllMember) {
             this.level = level;
             this.members = members;
             this.strict = strict;
             this.hasCalcMembers = hasCalcMembers;
             this.hasNonCalcMembers = hasNonCalcMembers;
+            this.hasAllMember = hasAllMember;
+        }
+
+        /**
+         * Creates an instance of {@link RolapNativeSet.CrossJoinArg}.
+         * 
+         * @param args members in the list
+         * @param strict whether calculated members are allowed
+         * @return MemberListCrossJoinArg if member list is well formed, 
+         * NULL if not.
+         */
+        static CrossJoinArg create(Exp[] args, boolean strict) {
+            if (args.length == 0) {
+                return null;
+            }
+            
+            RolapMember[] memberList = new RolapMember[args.length];
+            for (int i = 0; i < args.length; i++) {
+                if (!(args[i] instanceof MemberExpr)) {
+                    return null;
+                }
+                memberList[i] = 
+                    (RolapMember)(((MemberExpr)args[i]).getMember());
+            }
+            
+            return create(memberList, strict);
+        }
+
+        /**
+         * Creates an instance of {@link RolapNativeSet.CrossJoinArg}.
+         * 
+         * @param args members in the list
+         * @param strict whether calculated members are allowed
+         * @return MemberListCrossJoinArg if member list is well formed, 
+         * NULL if not.
+         */
+        static CrossJoinArg create(List args, boolean strict) {
+            if (args.isEmpty()) {
+                return null;
+            }
+            
+            RolapMember[] memberList = new RolapMember[args.size()];
+            for (int i = 0; i < args.size(); i++) {
+                if (!(args.get(i) instanceof RolapMember)) {
+                    return null;
+                }
+                memberList[i] = (RolapMember) args.get(i);
+            }
+            
+            return create(memberList, strict);
         }
 
         /**
          * Creates an instance of {@link RolapNativeSet.CrossJoinArg},
-         * or returns null if the arguments are invalid.
-         *
+         * or returns null if the arguments are invalid. This method also 
+         * records properties of the member list such as containing
+         * calc/non calc members, and containing the All member.
+         * 
          * <p>To be valid, the arguments must be non-calculated members of the
          * same level (after filtering out any null members).  There must be at
          * least one member to begin with (may be null).  If all members are
@@ -414,22 +473,26 @@ public abstract class RolapNativeSet extends RolapNative {
          * members are presented (and then it's flagged appropriately
          * for special handling downstream).
          */
-        static CrossJoinArg create(Exp[] args, boolean strict) {
-            if (args.length == 0) {
-                return null;
-            }
+        static CrossJoinArg create(RolapMember[] args, boolean strict) {
+
             RolapLevel level = null;
             RolapLevel nullLevel = null;
             boolean hasCalcMembers = false;
             boolean hasNonCalcMembers = false;
+            boolean hasAllMember = false;
+            
+            // First check that the member list will not result in a predicate
+            // longer than the underlying DB could support.
+            if (args.length >
+                MondrianProperties.instance().MaxConstraints.get()) {
+                return null;
+            }
+            
             int nNullMembers = 0;
             for (int i = 0; i < args.length; i++) {
-                if (!(args[i] instanceof MemberExpr)) {
-                    return null;
-                }
-                RolapMember m =
-                    (RolapMember) ((MemberExpr) args[i]).getMember();
-
+                
+                RolapMember m = args[i];
+                
                 if (m.isNull()) {
                     // we're going to filter out null members anyway;
                     // don't choke on the fact that their level
@@ -439,6 +502,20 @@ public abstract class RolapNativeSet extends RolapNative {
                     continue;
                 }
                 
+                // If "All" member, native evaluation is not possible
+                // because "All" member does not have a corresponding
+                // relational representation.
+                //
+                // "All" member is ignored during SQL generation.
+                // The complete MDX query can be evaluated natively only
+                // if there is non all member on at least one level; otherwise
+                // the generated SQL is an empty string.
+                // See SqlTupleReader.addLevelMemberSql()
+                //
+                if (m.isAll()) {
+                    hasAllMember = true;
+                }
+
                 if (m.isCalculated()) {
                     if (strict) {
                         return null;
@@ -450,6 +527,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 if (level == null) {
                     level = m.getLevel();
                 } else if (!level.equals(m.getLevel())) {
+                    // Members should be on the same level.
                     return null;
                 }
             }
@@ -467,8 +545,8 @@ public abstract class RolapNativeSet extends RolapNative {
             
             int j = 0;
             for (int i = 0; i < args.length; ++i) {
-                RolapMember m =
-                    (RolapMember) ((MemberExpr) args[i]).getMember();
+                RolapMember m = args[i];
+
                 if (m.isNull()) {
                     // filter out null members
                     continue;
@@ -478,7 +556,8 @@ public abstract class RolapNativeSet extends RolapNative {
             }
             
             return new MemberListCrossJoinArg(
-                level, members, strict, hasCalcMembers, hasNonCalcMembers);
+                level, members, strict, 
+                hasCalcMembers, hasNonCalcMembers, hasAllMember);
         }
 
         public RolapLevel getLevel() {
@@ -505,6 +584,10 @@ public abstract class RolapNativeSet extends RolapNative {
             return hasCalcMembers;
         }
 
+        public boolean hasAllMember() {
+            return hasAllMember;
+        }
+        
         public int hashCode() {
             int c = 12;
             for (RolapMember member : members) {
@@ -608,6 +691,10 @@ public abstract class RolapNativeSet extends RolapNative {
         if (args.length != 1) {
             return null;
         }
+        
+        /*
+         * Note: <Dimension>.Children is not recognized as a native expression.
+         */
         if (!(args[0] instanceof MemberExpr)) {
             return null;
         }
@@ -635,16 +722,25 @@ public abstract class RolapNativeSet extends RolapNative {
         if (!"{}".equalsIgnoreCase(fun.getName())) {
             return null;
         }
-        return MemberListCrossJoinArg.create(args, isStrict());
+        return MemberListCrossJoinArg.create(args, restrictMemberTypes());
     }
+
 
     /**
      * Checks for <code>CrossJoin(&lt;set1&gt;, &lt;set2&gt)</code>, where
      * set1 and set2 are one of
      * <code>member.children</code>, <code>level.members</code> or
      * <code>member.descendants</code>.
+     * 
+     * @param evaluator RolapEvaluator to use if inputs are to be evaluated 
+     * @param fun the CrossJoin function, either "CrossJoin" or "NonEmptyCrossJoin". 
+     * @param args inputs to the CrossJoin
+     * @return array of CrossJoinArg representing the inputs.
      */
-    protected CrossJoinArg[] checkCrossJoin(FunDef fun, Exp[] args) {
+    protected CrossJoinArg[] checkCrossJoin(
+        RolapEvaluator evaluator,
+        FunDef fun,
+        Exp[] args) {
         // is this "CrossJoin([A].children, [B].children)"
         if (!"Crossjoin".equalsIgnoreCase(fun.getName()) &&
             !"NonEmptyCrossJoin".equalsIgnoreCase(fun.getName()))
@@ -654,14 +750,46 @@ public abstract class RolapNativeSet extends RolapNative {
         if (args.length != 2) {
             return null;
         }
-        CrossJoinArg[] arg0 = checkCrossJoinArg(args[0]);
+        ExpCompiler compiler = evaluator.getQuery().createCompiler();
+        
+        // Check if the arguments can be natively evaluated.
+        // If not, try evaluating this argument and turning the result into
+        // MemberListCrossJoinArg.
+        // If either the inputs can be natively evaluated, or the result list
+        CrossJoinArg[] arg0 = checkCrossJoinArg(evaluator, args[0]);
         if (arg0 == null) {
-            return null;
+            if (MondrianProperties.instance().ExpandNonNative.get()) {
+                ListCalc listCalc0 = compiler.compileList(args[0]);
+                List list0 = listCalc0.evaluateList(evaluator);
+                CrossJoinArg arg =
+                    MemberListCrossJoinArg.create(list0, restrictMemberTypes());
+                if (arg != null) {
+                    arg0 = new CrossJoinArg[] {arg};
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
         }
-        CrossJoinArg[] arg1 = checkCrossJoinArg(args[1]);
+        
+        CrossJoinArg[] arg1 = checkCrossJoinArg(evaluator, args[1]);
         if (arg1 == null) {
-            return null;
+            if (MondrianProperties.instance().ExpandNonNative.get()) {
+                ListCalc listCalc1 = compiler.compileList(args[1]);
+                List list1 = listCalc1.evaluateList(evaluator);
+                CrossJoinArg arg = 
+                    MemberListCrossJoinArg.create(list1, restrictMemberTypes());
+                if (arg != null) {
+                    arg1 = new CrossJoinArg[] {arg};
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
         }
+        
         CrossJoinArg[] ret = new CrossJoinArg[arg0.length + arg1.length];
         System.arraycopy(arg0, 0, ret, 0, arg0.length);
         System.arraycopy(arg1, 0, ret, arg0.length, arg1.length);
@@ -671,7 +799,9 @@ public abstract class RolapNativeSet extends RolapNative {
     /**
      * Scans for memberChildren, levelMembers, memberDescendants, crossJoin.
      */
-    protected CrossJoinArg[] checkCrossJoinArg(Exp exp) {
+    protected CrossJoinArg[] checkCrossJoinArg(
+        RolapEvaluator evaluator,
+        Exp exp) {
         if (exp instanceof NamedSetExpr) {
             NamedSet namedSet = ((NamedSetExpr) exp).getNamedSet();
             exp = namedSet.getExp();
@@ -700,7 +830,7 @@ public abstract class RolapNativeSet extends RolapNative {
         if (arg != null) {
             return new CrossJoinArg[] {arg};
         }
-        return checkCrossJoin(fun, args);
+        return checkCrossJoin(evaluator, fun, args);
     }
 
     /**

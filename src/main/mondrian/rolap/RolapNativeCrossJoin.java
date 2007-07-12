@@ -53,12 +53,13 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
      */
     static class NonEmptyCrossJoinConstraint extends SetConstraint {
         NonEmptyCrossJoinConstraint(CrossJoinArg[] args, RolapEvaluator evaluator) {
+            // Cross join ignores calculated members, including the ones from
+            // the slicer.
             super(args, evaluator, false);
         }
-
     }
 
-    protected boolean isStrict() {
+    protected boolean restrictMemberTypes() {
         return false;
     }
 
@@ -70,7 +71,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         }
         RolapCube cube = (RolapCube) evaluator.getCube();
 
-        CrossJoinArg[] cargs = checkCrossJoin(fun, args);
+        CrossJoinArg[] cargs = checkCrossJoin(evaluator, fun, args);
+        
         if (cargs == null) {
             // Something in the arguments to the crossjoin prevented
             // native evaluation; may need to alert
@@ -80,6 +82,29 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
                 "arguments not supported");
             return null;
         }
+        
+        // check if all CrossJoinArgs are "All" members
+        // "All" members do not have relational representation.
+        boolean inputListsContainNonAllMember = false;
+        
+        for (CrossJoinArg arg : cargs) {
+            if (!(arg instanceof MemberListCrossJoinArg)  ||
+                !((MemberListCrossJoinArg)arg).hasAllMember()) {
+                inputListsContainNonAllMember = true;
+                break;
+            }
+        }
+
+        if (!inputListsContainNonAllMember) {
+            // All inputs contain "All" members.
+            // Native evaluation is not feasible.
+            alertCrossJoinNonNative(
+                evaluator,
+                fun,
+                "All arguments contain the ALL member");
+            return null;
+        }
+        
         if (isPreferInterpreter(cargs, true)) {
             // Native evaluation wouldn't buy us anything, so no
             // need to alert

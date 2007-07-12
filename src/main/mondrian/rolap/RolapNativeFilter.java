@@ -35,7 +35,7 @@ public class RolapNativeFilter extends RolapNativeSet {
         super.setEnabled(MondrianProperties.instance().EnableNativeFilter.get());
     }
 
-    class FilterConstraint extends SetConstraint {
+    static class FilterConstraint extends SetConstraint {
         String filterExpr;
 
         public FilterConstraint(CrossJoinArg[] args, RolapEvaluator evaluator, String filterByExpr) {
@@ -50,7 +50,7 @@ public class RolapNativeFilter extends RolapNativeSet {
         protected boolean isJoinRequired() {
             return true;
         }
-
+        
         public void addConstraint(
             SqlQuery sqlQuery,
             Map<RolapLevel, RolapStar.Column> levelToColumnMap,
@@ -67,7 +67,7 @@ public class RolapNativeFilter extends RolapNativeSet {
         }
     }
 
-    protected boolean isStrict() {
+    protected boolean restrictMemberTypes() {
         return true;
     }
 
@@ -89,7 +89,7 @@ public class RolapNativeFilter extends RolapNativeSet {
         }
 
         // extract the set expression
-        CrossJoinArg[] cargs = checkCrossJoinArg(args[0]);
+        CrossJoinArg[] cargs = checkCrossJoinArg(evaluator, args[0]);
         if (cargs == null) {
             return null;
         }

@@ -1015,6 +1015,10 @@ public class Query extends QueryPart {
         return calc;
     }
 
+    public ExpCompiler createCompiler() {
+        return createCompiler(RolapEvaluator.create(this), createValidator());
+    }
+    
     private ExpCompiler createCompiler(
             final Evaluator evaluator, final Validator validator) {
 

@@ -708,6 +708,14 @@ public class MondrianProperties extends TriggerableProperties {
             this, "mondrian.rolap.nonempty", false);
 
     /**
+     * When looking for native evaluation of an expression, expand non native
+     * subexpressions into MemberLists.
+     */
+    public transient final BooleanProperty ExpandNonNative =
+        new BooleanProperty(
+            this, "mondrian.native.ExpandNonNative", false);
+
+    /**
      * Boolean property which controls whether sibling members are
      * compared according to order key value fetched from their ordinal
      * expression.  The default is false (only database ORDER BY is used).

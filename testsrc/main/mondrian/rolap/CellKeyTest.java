@@ -9,6 +9,8 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Connection;
+import mondrian.olap.MondrianProperties;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 
@@ -285,6 +287,16 @@ public class CellKeyTest extends FoodMartTestCase {
             "Row #0: 52\n" +
             "Row #0: 8\n";
         
+        /*
+         * Make sure ExpandNonNative is not set. Otherwise, the query is evaluated
+         * natively. For the given data set(which contains NULL members), native 
+         * evaluation produces results in a different order from the non-native 
+         * evaluation.
+         */
+        boolean origExpandNonNative =
+            MondrianProperties.instance().ExpandNonNative.get();
+        MondrianProperties.instance().ExpandNonNative.set(false);
+        
         TestContext testContext =
             TestContext.create(
              null,
@@ -294,5 +306,6 @@ public class CellKeyTest extends FoodMartTestCase {
              null);
 
         testContext.assertQueryReturns(query, fold(result));
+        MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
     }
 }
