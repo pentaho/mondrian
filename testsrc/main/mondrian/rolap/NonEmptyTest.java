@@ -232,54 +232,54 @@ public class NonEmptyTest extends FoodMartTestCase {
           + "where ([Store].[All Stores].[USA].[CA], [Time].[1997])";
 
         String result =
-              "Axis #0:" + nl +
-              "{[Store].[All Stores].[USA].[CA], [Time].[1997]}" + nl +
-              "Axis #1:" + nl +
-              "{[Measures].[Unit Sales]}" + nl +
-              "{[Measures].[Store Cost]}" + nl +
-              "{[Measures].[Rendite]}" + nl +
-              "{[Measures].[Store Sales]}" + nl +
-              "Axis #2:" + nl +
-              "{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[Plato].[Plato Extra Chunky Peanut Butter]}" + nl +
-              "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Horatio].[Horatio Buttered Popcorn]}" + nl +
-              "{[Product].[All Products].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Better].[Better Canned Tuna in Oil]}" + nl +
-              "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit].[High Top].[High Top Cantelope]}" + nl +
-              "{[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[Denny].[Denny 75 Watt Lightbulb]}" + nl +
-              "{[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Johnson].[Johnson Oatmeal]}" + nl +
-              "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Light Wine]}" + nl +
-              "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony].[Ebony Squash]}" + nl +
-              "Row #0: 42" + nl +
-              "Row #0: 24.06" + nl +
-              "Row #0: 1.93" + nl +
-              "Row #0: 70.56" + nl +
-              "Row #1: 36" + nl +
-              "Row #1: 29.02" + nl +
-              "Row #1: 1.91" + nl +
-              "Row #1: 84.60" + nl +
-              "Row #2: 39" + nl +
-              "Row #2: 20.55" + nl +
-              "Row #2: 1.85" + nl +
-              "Row #2: 58.50" + nl +
-              "Row #3: 25" + nl +
-              "Row #3: 21.76" + nl +
-              "Row #3: 1.84" + nl +
-              "Row #3: 61.75" + nl +
-              "Row #4: 43" + nl +
-              "Row #4: 59.62" + nl +
-              "Row #4: 1.83" + nl +
-              "Row #4: 168.99" + nl +
-              "Row #5: 34" + nl +
-              "Row #5: 7.20" + nl +
-              "Row #5: 1.83" + nl +
-              "Row #5: 20.40" + nl +
-              "Row #6: 36" + nl +
-              "Row #6: 33.10" + nl +
-              "Row #6: 1.83" + nl +
-              "Row #6: 93.60" + nl +
-              "Row #7: 46" + nl +
-              "Row #7: 28.34" + nl +
-              "Row #7: 1.81" + nl +
-              "Row #7: 79.58" + nl;
+              "Axis #0:\n" +
+              "{[Store].[All Stores].[USA].[CA], [Time].[1997]}\n" +
+              "Axis #1:\n" +
+              "{[Measures].[Unit Sales]}\n" +
+              "{[Measures].[Store Cost]}\n" +
+              "{[Measures].[Rendite]}\n" +
+              "{[Measures].[Store Sales]}\n" +
+              "Axis #2:\n" +
+              "{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[Plato].[Plato Extra Chunky Peanut Butter]}\n" +
+              "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Horatio].[Horatio Buttered Popcorn]}\n" +
+              "{[Product].[All Products].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Better].[Better Canned Tuna in Oil]}\n" +
+              "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit].[High Top].[High Top Cantelope]}\n" +
+              "{[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[Denny].[Denny 75 Watt Lightbulb]}\n" +
+              "{[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Johnson].[Johnson Oatmeal]}\n" +
+              "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Light Wine]}\n" +
+              "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony].[Ebony Squash]}\n" +
+              "Row #0: 42\n" +
+              "Row #0: 24.06\n" +
+              "Row #0: 1.93\n" +
+              "Row #0: 70.56\n" +
+              "Row #1: 36\n" +
+              "Row #1: 29.02\n" +
+              "Row #1: 1.91\n" +
+              "Row #1: 84.60\n" +
+              "Row #2: 39\n" +
+              "Row #2: 20.55\n" +
+              "Row #2: 1.85\n" +
+              "Row #2: 58.50\n" +
+              "Row #3: 25\n" +
+              "Row #3: 21.76\n" +
+              "Row #3: 1.84\n" +
+              "Row #3: 61.75\n" +
+              "Row #4: 43\n" +
+              "Row #4: 59.62\n" +
+              "Row #4: 1.83\n" +
+              "Row #4: 168.99\n" +
+              "Row #5: 34\n" +
+              "Row #5: 7.20\n" +
+              "Row #5: 1.83\n" +
+              "Row #5: 20.40\n" +
+              "Row #6: 36\n" +
+              "Row #6: 33.10\n" +
+              "Row #6: 1.83\n" +
+              "Row #6: 93.60\n" +
+              "Row #7: 46\n" +
+              "Row #7: 28.34\n" +
+              "Row #7: 1.81\n" +
+              "Row #7: 79.58\n";
         
         boolean origNativeFilter =
             MondrianProperties.instance().EnableNativeFilter.get();
