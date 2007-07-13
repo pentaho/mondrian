@@ -812,6 +812,7 @@ public class VirtualCubeTest extends BatchTestCase {
      *
      */
     public void testNativeSetCaching() {
+        
         String query1 = 
             "With " + 
             "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([Product].[Product Family].Members, [Store].[Store Country].Members)' " + 
@@ -828,39 +829,70 @@ public class VirtualCubeTest extends BatchTestCase {
             "Non Empty Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Store].CurrentMember)}) on rows " + 
             "From [Warehouse and Sales]";
        
-        String necjSql1 =
-            "select " +
-            "\"product_class\".\"product_family\", " + 
-            "\"store\".\"store_country\" " + 
-            "from " +
-            "\"product\" as \"product\", " + 
-            "\"product_class\" as \"product_class\", " + 
-            "\"sales_fact_1997\" as \"sales_fact_1997\", " + 
-            "\"store\" as \"store\" " + 
-            "where " + 
-            "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " + 
-            "and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" " + 
-            "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " + 
-            "group by \"product_class\".\"product_family\", \"store\".\"store_country\" " + 
-            "order by 1 ASC, 2 ASC";
-            
 
-        String necjSql2 =
-            "select " +
-            "\"product_class\".\"product_family\", " + 
-            "\"store\".\"store_country\" " + 
-            "from " +
-            "\"product\" as \"product\", " + 
-            "\"product_class\" as \"product_class\", " + 
-            "\"inventory_fact_1997\" as \"inventory_fact_1997\", " + 
-            "\"store\" as \"store\" " + 
-            "where " + 
-            "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " + 
-            "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" " + 
-            "and \"inventory_fact_1997\".\"store_id\" = \"store\".\"store_id\" " + 
-            "group by \"product_class\".\"product_family\", \"store\".\"store_country\" " + 
-            "order by 1 ASC, 2 ASC";
+        String necjSql1;
+        String necjSql2;
+        
+        if (MondrianProperties.instance().EnableNativeCrossJoin.get()) {
+            necjSql1 =
+                "select " +
+                "\"product_class\".\"product_family\", " + 
+                "\"store\".\"store_country\" " + 
+                "from " +
+                "\"product\" as \"product\", " + 
+                "\"product_class\" as \"product_class\", " + 
+                "\"sales_fact_1997\" as \"sales_fact_1997\", " + 
+                "\"store\" as \"store\" " + 
+                "where " + 
+                "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " + 
+                "and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" " + 
+                "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " + 
+                "group by \"product_class\".\"product_family\", \"store\".\"store_country\" " + 
+                "order by 1 ASC, 2 ASC";
+
+
+            necjSql2 =
+                "select " +
+                "\"product_class\".\"product_family\", " + 
+                "\"store\".\"store_country\" " + 
+                "from " +
+                "\"product\" as \"product\", " + 
+                "\"product_class\" as \"product_class\", " + 
+                "\"inventory_fact_1997\" as \"inventory_fact_1997\", " + 
+                "\"store\" as \"store\" " + 
+                "where " + 
+                "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " + 
+                "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" " + 
+                "and \"inventory_fact_1997\".\"store_id\" = \"store\".\"store_id\" " + 
+                "group by \"product_class\".\"product_family\", \"store\".\"store_country\" " + 
+                "order by 1 ASC, 2 ASC";
+        } else {
+            // NECJ is truend off so native NECJ SQL will not be generated;
+            // however, each NECJ input will still be joined with the correct
+            // fact table since the NECJ set should not find match in the cache.
+            necjSql1 =
+                "select " +
+                "\"store\".\"store_country\" " +
+                "from " +
+                "\"store\" as \"store\", " +
+                "\"sales_fact_1997\" as \"sales_fact_1997\" " +
+                "where " +
+                "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+                "group by \"store\".\"store_country\" " +
+                "order by 1 ASC";
             
+            necjSql2 =
+                "select " +
+                "\"store\".\"store_country\" " +
+                "from " +
+                "\"store\" as \"store\", " +
+                "\"inventory_fact_1997\" as \"inventory_fact_1997\" " +
+                "where " +
+                "\"inventory_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+                "group by \"store\".\"store_country\" " +
+                "order by 1 ASC";
+        }
+        
         SqlPattern[] patterns1 = 
             new SqlPattern[] {
                 new SqlPattern(SqlPattern.DERBY_DIALECT, necjSql1, necjSql1)

@@ -1622,6 +1622,12 @@ public class NonEmptyTest extends FoodMartTestCase {
      * put into the slicer.
      */
     public void testCrossjoin() {
+        if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
+            // Dependency testing causes extra SQL reads, and makes this
+            // test fail.
+            return;
+        }
+        
         TestCase c = new TestCase(
                 45,
                 4,
