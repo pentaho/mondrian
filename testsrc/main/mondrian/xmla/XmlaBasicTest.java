@@ -10,6 +10,15 @@
 package mondrian.xmla;
 
 import mondrian.olap.Util;
+import mondrian.olap.Role;
+import mondrian.olap.RoleImpl;
+import mondrian.olap.Access;
+//import javax.servlet.ServletConfig;
+//import javax.servlet.ServletException;
+//import javax.servlet.http.HttpServletRequest;
+//import javax.servlet.http.HttpServletResponse;
+//import org.w3c.dom.Element;
+import mondrian.olap.Cube;
 import mondrian.olap.MondrianProperties;
 import mondrian.test.TestContext;
 import mondrian.test.DiffRepository;
@@ -28,6 +37,8 @@ import java.util.Properties;
 import java.util.Map;
 
 import junit.framework.AssertionFailedError;
+
+
 
 /**
  * Test XML/A functionality.
@@ -70,8 +81,50 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         return DiffRepository.lookup(XmlaBasicTest.class);
     }
 
+/*
+    static class R extends RoleImpl {
+        public R() {
+        }
+        public Access getAccess(Cube cube) {
+            if (cube.getName().equals("Sales")) {
+                return Access.NONE;
+            } else {
+                return super.getAccess(cube);
+            }
+        }
+    }
+    static class CallBack implements XmlaRequestCallback {
+        public CallBack() {
+        }
+        public void init(ServletConfig servletConfig) throws ServletException {
+        }
+        public boolean processHttpHeader(
+                HttpServletRequest request,
+                HttpServletResponse response,
+                Map<String, Object> context) throws Exception {
+            return true;
+        }
+        public void preAction(
+            HttpServletRequest request,
+            Element[] requestSoapParts,
+            Map<String, Object> context) throws Exception {
+        }
+        public String generateSessionId(Map<String, Object> context) {
+            return null;
+        }
+        public void postAction(HttpServletRequest request,
+                    HttpServletResponse response,
+                    byte[][] responseSoapParts,
+                    Map<String, Object> context) throws Exception {
+        }
+    }
+*/
     protected Class<? extends XmlaRequestCallback> getServletCallbackClass() {
         return null;
+/*
+System.out.println("XmlaBasicTest.getServletCallbackClass");
+        return CallBack.class;
+*/
     }
 
     protected String extractSoapResponse(
@@ -453,6 +506,104 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
        doTestInline(
            requestType, request, "${response}", props, TestContext.instance());
    }
+    
+    /** 
+     * This test returns the same result as testExecuteCrossjoin above
+     * except that the Role used disables accessing 
+     * [Customers].[All Customers].[Mexico].
+     */
+    public void testExecuteCrossjoinRole() throws Exception {
+       String requestType = "EXECUTE";
+        String query = "SELECT CrossJoin({[Product].[All Products].children}, {[Customers].[All Customers].children}) ON columns FROM Sales";
+        String request = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+           "<soapenv:Envelope\n" +
+           "    xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"\n" +
+           "    xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"\n" +
+           "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+           "    <soapenv:Body>\n" +
+           "        <Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\">\n" +
+           "        <Command>\n" +
+           "        <Statement>\n" +
+           query + "\n" +
+           "         </Statement>\n" +
+           "        </Command>\n" +
+           "        <Properties>\n" +
+           "          <PropertyList>\n" +
+           "            <Catalog>${catalog}</Catalog>\n" +
+           "            <DataSourceInfo>${data.source.info}</DataSourceInfo>\n" +
+           "            <Format>${format}</Format>\n" +
+           "            <AxisFormat>TupleFormat</AxisFormat>\n" +
+           "          </PropertyList>\n" +
+           "        </Properties>\n" +
+           "</Execute>\n" +
+           "</soapenv:Body>\n" +
+           "</soapenv:Envelope>";
+
+        class RR extends mondrian.olap.RoleImpl {
+            public RR() {
+            }
+            public Access getAccess(mondrian.olap.Cube cube) {
+                return Access.ALL;
+            }
+            public Access getAccess(mondrian.olap.Schema schema) {
+                return Access.ALL;
+            }
+            public Access getAccess(mondrian.olap.Dimension dimension) {
+                return Access.ALL;
+            }
+            public Access getAccess(mondrian.olap.Hierarchy hierarchy) {
+                String mname = "[Customers]";
+                if (hierarchy.getUniqueName().equals(mname)) {
+                    return Access.CUSTOM;
+                } else {
+                    return Access.ALL;
+                }
+            }
+            public HierarchyAccess getAccessDetails(mondrian.olap.Hierarchy hierarchy) {
+                String hname = "[Customers]";
+                if (hierarchy.getUniqueName().equals(hname)) {
+                    return new HierarchyAccess() {
+                        public Access getAccess(mondrian.olap.Member member) {
+                            String mname = "[Customers].[All Customers].[Mexico]";
+                            if (member.getUniqueName().equals(mname)) {
+                                return Access.NONE;
+                            } else {
+                                return Access.ALL;
+                            }
+                        }
+                        public int getTopLevelDepth() {
+                            return 0;
+                        }
+                        public int getBottomLevelDepth() {
+                            return 4;
+                        }
+                    };
+
+                } else {
+                    return super.getAccessDetails(hierarchy);
+                }
+            }
+
+            public Access getAccess(mondrian.olap.Level level) {
+                return Access.ALL;
+            }
+
+            public Access getAccess(mondrian.olap.Member member) {
+                String mname = "[Customers].[All Customers]";
+                if (member.getUniqueName().equals(mname)) {
+                    return Access.ALL;
+                } else {
+                    return Access.ALL;
+                }
+            }
+        }
+
+        Role role = new RR();
+
+        Properties props = getDefaultRequestProperties(requestType);
+        doTestInline(requestType, request, "${response}", 
+            props, TestContext.instance(), role);
+    }
 
     /*
      * NOT IMPLEMENTED MDSCHEMA_SETS_out.xml

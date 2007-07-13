@@ -14,6 +14,7 @@ import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.CatalogLocatorImpl;
 import mondrian.xmla.DataSourcesConfig;
 import mondrian.olap.Util;
+import mondrian.olap.Role;
 import mondrian.xmla.XmlaConstants;
 import mondrian.xmla.XmlaHandler;
 import mondrian.xmla.XmlaRequest;
@@ -760,8 +761,17 @@ public class XmlaSupport {
         Map<String, String> catalogNameUrls)
         throws IOException, SAXException, XOMException
     {
+        return processXmla(file, connectString, catalogNameUrls, null);
+    }
+    public static byte[] processXmla(
+        File file,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        Role role)
+        throws IOException, SAXException, XOMException
+    {
         String requestText = XmlaSupport.readFile(file);
-        return processXmla(requestText, connectString, catalogNameUrls);
+        return processXmla(requestText, connectString, catalogNameUrls, role);
     }
 
     public static byte[] processXmla(
@@ -770,8 +780,17 @@ public class XmlaSupport {
         Map<String, String> catalogNameUrls)
         throws IOException, SAXException, XOMException
     {
+        return processXmla(requestText, connectString, catalogNameUrls, null);
+    }
+    public static byte[] processXmla(
+        String requestText,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        Role role)
+        throws IOException, SAXException, XOMException
+    {
         Document requestDoc = XmlUtil.parseString(requestText);
-        return processXmla(requestDoc, connectString, catalogNameUrls);
+        return processXmla(requestDoc, connectString, catalogNameUrls, role);
     }
 
     public static byte[] processXmla(
@@ -781,13 +800,33 @@ public class XmlaSupport {
         throws IOException, XOMException
     {
         Element requestElem = requestDoc.getDocumentElement();
-        return processXmla(requestElem, connectString, catalogNameUrls);
+        return processXmla(requestElem, connectString, catalogNameUrls, null);
+    }
+
+    public static byte[] processXmla(
+        Document requestDoc,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        Role role)
+        throws IOException, XOMException
+    {
+        Element requestElem = requestDoc.getDocumentElement();
+        return processXmla(requestElem, connectString, catalogNameUrls, role);
+    }
+    public static byte[] processXmla(
+        Element requestElem,
+        String connectString,
+        Map<String, String> catalogNameUrls)
+        throws IOException, XOMException
+    {
+        return processXmla(requestElem, connectString, catalogNameUrls, null);
     }
 
     public static byte[] processXmla(
         Element requestElem,
         String connectString,
-        Map<String, String> catalogNameUrls)
+        Map<String, String> catalogNameUrls,
+        Role role)
         throws IOException, XOMException
     {
         // make request
@@ -798,9 +837,15 @@ public class XmlaSupport {
         Util.PropertyList propertyList = Util.parseConnectString(connectString);
         String roleName =
             propertyList.get(RolapConnectionProperties.Role.name());
-        XmlaRequest request = (roleName != null)
-            ? new DefaultXmlaRequest(requestElem, roleName)
-            : new DefaultXmlaRequest(requestElem);
+
+        XmlaRequest request = null;
+        if (role != null) {
+            request = new DefaultXmlaRequest(requestElem, role);
+        } else if (roleName != null) {
+            request = new DefaultXmlaRequest(requestElem, roleName);
+        } else {
+            request = new DefaultXmlaRequest(requestElem);
+        }
 
         // make response
         ByteArrayOutputStream resBuf = new ByteArrayOutputStream();

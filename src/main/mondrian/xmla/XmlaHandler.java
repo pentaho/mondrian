@@ -24,6 +24,7 @@ import org.xml.sax.SAXException;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.sql.*;
 import java.util.*;
 import java.io.StringWriter;
@@ -61,36 +62,36 @@ public class XmlaHandler implements XmlaConstants {
     //
     // Some xml schema data types.
     //
-    private static final String XSD_BOOLEAN = "xsd:boolean";
-    private static final String XSD_STRING = "xsd:string";
-    private static final String XSD_UNSIGNED_INT = "xsd:unsignedInt";
+    public static final String XSD_BOOLEAN = "xsd:boolean";
+    public static final String XSD_STRING = "xsd:string";
+    public static final String XSD_UNSIGNED_INT = "xsd:unsignedInt";
 
-    private static final String XSD_BYTE = "xsd:byte";
-    private static final byte XSD_BYTE_MAX_INCLUSIVE = 127;
-    private static final byte XSD_BYTE_MIN_INCLUSIVE = -128; 
+    public static final String XSD_BYTE = "xsd:byte";
+    public static final byte XSD_BYTE_MAX_INCLUSIVE = 127;
+    public static final byte XSD_BYTE_MIN_INCLUSIVE = -128; 
 
-    private static final String XSD_SHORT = "xsd:short";
-    private static final short XSD_SHORT_MAX_INCLUSIVE = 32767;
-    private static final short XSD_SHORT_MIN_INCLUSIVE = -32768; 
+    public static final String XSD_SHORT = "xsd:short";
+    public static final short XSD_SHORT_MAX_INCLUSIVE = 32767;
+    public static final short XSD_SHORT_MIN_INCLUSIVE = -32768; 
 
-    private static final String XSD_INT = "xsd:int";
-    private static final int XSD_INT_MAX_INCLUSIVE = 2147483647;
-    private static final int XSD_INT_MIN_INCLUSIVE = -2147483648; 
+    public static final String XSD_INT = "xsd:int";
+    public static final int XSD_INT_MAX_INCLUSIVE = 2147483647;
+    public static final int XSD_INT_MIN_INCLUSIVE = -2147483648; 
 
-    private static final String XSD_LONG = "xsd:long";
-    private static final long XSD_LONG_MAX_INCLUSIVE = 9223372036854775807L;
-    private static final long XSD_LONG_MIN_INCLUSIVE = -9223372036854775808L; 
+    public static final String XSD_LONG = "xsd:long";
+    public static final long XSD_LONG_MAX_INCLUSIVE = 9223372036854775807L;
+    public static final long XSD_LONG_MIN_INCLUSIVE = -9223372036854775808L; 
 
     // xsd:double — IEEE 64-bit floating-point
-    private static final String XSD_DOUBLE = "xsd:double";
+    public static final String XSD_DOUBLE = "xsd:double";
 
     // xsd:decimal — Decimal numbers (BigDecimal)
-    private static final String XSD_DECIMAL = "xsd:decimal";
+    public static final String XSD_DECIMAL = "xsd:decimal";
     
     // xsd:integer — Signed integers of arbitrary length (BigInteger)
-    private static final String XSD_INTEGER = "xsd:integer";
+    public static final String XSD_INTEGER = "xsd:integer";
 
-    private static boolean isValidXsdInt(long l) {
+    public static boolean isValidXsdInt(long l) {
         return (l <= XSD_INT_MAX_INCLUSIVE) && (l >= XSD_INT_MIN_INCLUSIVE);
     }
 
@@ -110,7 +111,7 @@ public class XmlaHandler implements XmlaConstants {
      * an XSD_DOUBLE with value java.lang.Double (and failing that an 
      * XSD_DECIMAL (java.math.BigDecimal)).
      */
-    private static class ValueInfo {
+    static class ValueInfo {
 
         /** 
          * Returns XSD_INT, XSD_DOUBLE, XSD_STRING or null. 
@@ -118,7 +119,7 @@ public class XmlaHandler implements XmlaConstants {
          * @param dataType null, Integer, Numeric or non-null.
          * @return 
          */
-        protected static String getValueTypeHint(final String dataType) {
+        static String getValueTypeHint(final String dataType) {
             if (dataType != null) {
                 return (dataType.equals("Integer"))
                     ? XSD_INT
@@ -130,9 +131,9 @@ public class XmlaHandler implements XmlaConstants {
             }
         }
 
-        private String valueType;
-        private Object value;
-        private boolean isDecimal;
+        String valueType;
+        Object value;
+        boolean isDecimal;
 
         ValueInfo(final String dataType, final Object inputValue) {
             final String valueTypeHint = getValueTypeHint(dataType);
@@ -306,11 +307,20 @@ public class XmlaHandler implements XmlaConstants {
                     } else if (inputValue instanceof BigDecimal) {
                         BigDecimal bd = (BigDecimal) inputValue;
                         double dval = bd.doubleValue();
-                        // Can it be a double
-                        if (bd.equals(new BigDecimal(dval))) {
-                            this.valueType = XSD_DOUBLE;
-                            this.value = new Double(dval);
-                        } else {
+                        // make with same scale as Double
+                        try {
+                            BigDecimal bd2 = new BigDecimal(dval,
+                                               MathContext.DECIMAL64);
+                            // Can it be a double
+                            // Must use compareTo - see BigDecimal.equals
+                            if (bd.compareTo(bd2) == 0) {
+                                this.valueType = XSD_DOUBLE;
+                                this.value = new Double(dval);
+                            } else {
+                                this.valueType = XSD_DECIMAL;
+                                this.value = inputValue;
+                            }
+                        } catch (NumberFormatException ex) {
                             this.valueType = XSD_DECIMAL;
                             this.value = inputValue;
                         }
@@ -411,10 +421,20 @@ public class XmlaHandler implements XmlaConstants {
                     // See if it can be a double
                     BigDecimal bd = (BigDecimal) inputValue;
                     double dval = bd.doubleValue();
-                    if (bd.equals(new BigDecimal(dval))) {
-                        this.valueType = XSD_DOUBLE;
-                        this.value = new Double(dval);
-                    } else {
+                    // make with same scale as Double
+                    try {
+                        BigDecimal bd2 = new BigDecimal(dval,
+                                               MathContext.DECIMAL64);
+                        // Can it be a double
+                        // Must use compareTo - see BigDecimal.equals
+                        if (bd.compareTo(bd2) == 0) {
+                            this.valueType = XSD_DOUBLE;
+                            this.value = new Double(dval);
+                        } else {
+                            this.valueType = XSD_DECIMAL;
+                            this.value = inputValue;
+                        } 
+                    } catch (NumberFormatException ex) {
                         this.valueType = XSD_DECIMAL;
                         this.value = inputValue;
                     }
@@ -1567,60 +1587,6 @@ public class XmlaHandler implements XmlaConstants {
         }
     }
 
-    /**
-     * Deduces the XML datatype from the declared datatype
-     * of the measure, if present. (It comes from the
-     * "datatype" attribute of the "Measure" element.) If
-     * not present, use the value type to guess.
-     *
-     * <p>The value type depends upon the RDBMS and the JDBC
-     * driver, so it tends to produce inconsistent results
-     * between platforms.
-     *
-     * @param cell Cell
-     * @param value Value of the cell
-     * @return XSD data type (e.g. "xsd:int", "xsd:double", "xsd:string")
-    protected static String deduceValueType(Cell cell, final Object value) {
-        String datatype = (String)
-                cell.getPropertyValue(Property.DATATYPE.getName());
-        if (datatype != null) {
-            if (datatype.equals("Integer")) {
-                return "xsd:int";
-            } else if (datatype.equals("Numeric")) {
-                return "xsd:double";
-            } else {
-                return "xsd:string";
-            }
-        } else if (value instanceof Integer || value instanceof Long) {
-            return "xsd:int";
-        } else if (value instanceof Double || value instanceof BigDecimal) {
-            return "xsd:double";
-        } else {
-            return "xsd:string";
-        }
-    }
-    protected static String deduceValueType(Evaluator evaluator,
-                                            final Object value) {
-        String datatype = (String)
-                evaluator.getProperty(Property.DATATYPE.getName(), null);
-        if (datatype != null) {
-            if (datatype.equals("Integer")) {
-                return "xsd:int";
-            } else if (datatype.equals("Numeric")) {
-                return "xsd:double";
-            } else {
-                return "xsd:string";
-            }
-        } else if (value instanceof Integer || value instanceof Long) {
-            return "xsd:int";
-        } else if (value instanceof Double || value instanceof BigDecimal) {
-            return "xsd:double";
-        } else {
-            return "xsd:string";
-        }
-    }
-     */
-
     static abstract class MDDataSet implements QueryResult {
         protected final Result result;
 
@@ -2617,7 +2583,7 @@ public class XmlaHandler implements XmlaConstants {
      *
      * @param catalog Catalog
      * @param role User role
-     * @param role User role name
+     * @param roleName User role name
      * @return Connection
      * @throws XmlaException If error occurs
      */
