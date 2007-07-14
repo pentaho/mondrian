@@ -41,6 +41,12 @@ public abstract class MemberBase
     protected final int flags;
     protected final String parentUniqueName;
 
+    /**
+     * Cached values of {@link mondrian.olap.Member.MemberType} enumeration.
+     * Without caching, get excessive calls to {@link Object#clone}.
+     */
+    private static final MemberType[] MEMBER_TYPE_VALUES = MemberType.values();
+
     protected MemberBase(
         Member parentMember,
         Level level,
@@ -94,7 +100,7 @@ public abstract class MemberBase
     }
 
     public final MemberType getMemberType() {
-        return MemberType.values()[flags & 7];
+        return MEMBER_TYPE_VALUES[flags & 7];
     }
 
     public String getDescription() {
