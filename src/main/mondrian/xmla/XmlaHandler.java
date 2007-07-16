@@ -240,7 +240,10 @@ public class XmlaHandler implements XmlaConstants {
                         try {
                             // Can it be converted to a long
                             // Throws ArithmeticException on conversion failure.
-                            long lval = bd.longValueExact();
+                            // The following line is only available in
+                            // Java5 and above:
+                            //long lval = bd.longValueExact();
+                            long lval = bd.longValue();
 
                             setValueAndType(lval);
 

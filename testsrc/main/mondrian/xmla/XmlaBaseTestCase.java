@@ -347,7 +347,9 @@ if (DEBUG) {
                                                 callBackClassName);
         } finally {
             if (role != null) {
-                roles.remove();
+                // Java4 does not support the ThreadLocal remove() method
+                // so we use the set(null).
+                roles.set(null);
             }
         }
         response = new String(bytes);
