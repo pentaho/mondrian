@@ -484,9 +484,10 @@ abstract class Recognizer {
                         // making sure that this HierarchyUsage's
                         // foreign key is not in the list.
                         String foreignKey = hierarchyUsage.getForeignKey();
-                        boolean b = inNotSeenForeignKeys(
-                            foreignKey,
-                            notSeenForeignKeys);
+                        boolean b = foreignKey == null ||
+                            inNotSeenForeignKeys(
+                                foreignKey,
+                                notSeenForeignKeys);
                         if (!b) {
                             // It was not in the not seen list, so ignore
                             continue;
@@ -740,26 +741,22 @@ abstract class Recognizer {
      */
     protected void checkUnusedColumns() {
         msgRecorder.pushContextName("Recognizer.checkUnusedColumns");
+        // Collection of messages for unused columns, sorted by column name
+        // so that tests are deterministic.
+        SortedMap<String, String> unusedColumnMsgs =
+            new TreeMap<String, String>();
         for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
             if (! aggColumn.hasUsage()) {
-
                 String msg = mres.AggUnknownColumn.str(
                     aggTable.getName(),
                     dbFactTable.getName(),
                     aggColumn.getName()
                 );
-                // This is a fatal error for explicit recognizer
-/*
-                 if (this instanceof ExplicitRecognizer) {
-                    msgRecorder.reportError(msg);
-                } else {
-                    msgRecorder.reportWarning(msg);
-                }
-
-                Make this just a warning
-*/
-                msgRecorder.reportWarning(msg);
+                unusedColumnMsgs.put(aggColumn.getName(), msg);
             }
+        }
+        for (String msg : unusedColumnMsgs.values()) {
+            msgRecorder.reportWarning(msg);
         }
         msgRecorder.popContextName();
     }
@@ -862,8 +859,8 @@ abstract class Recognizer {
      * Given an aggregate table column usage, find the column name of the
      * table's fact count column usage.
      *
-     * @param aggUsage
-     * @return
+     * @param aggUsage Aggregate table column usage
+     * @return The name of the column which holds the fact count.
      */
     private String getFactCountExpr(final JdbcSchema.Table.Column.Usage aggUsage) {
         // get the fact count column name.

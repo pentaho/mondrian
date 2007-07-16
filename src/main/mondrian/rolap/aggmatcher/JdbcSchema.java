@@ -1100,11 +1100,15 @@ public class JdbcSchema {
     private String schema;
     private String catalog;
     private boolean allTablesLoaded;
-    private Map<String, Table> tables;
+
+    /**
+     * Tables by name. We use a sorted map so {@link #getTables()}'s output
+     * is in deterministic order.
+     */
+    private final SortedMap<String, Table> tables = new TreeMap<String, Table>();
 
     JdbcSchema(final DataSource dataSource) {
         this.dataSource = dataSource;
-        this.tables = new HashMap<String, Table>();
     }
 
     /**
@@ -1203,14 +1207,14 @@ public class JdbcSchema {
     }
 
     /**
-     * Get iterator over the database's tables.
+     * Returns the database's tables. The collection is sorted by table name.
      */
     public synchronized Collection<Table> getTables() {
         return getTablesMap().values();
     }
 
     /**
-     * Get a table by name.
+     * Gets a table by name.
      */
     public synchronized Table getTable(final String tableName) {
         return getTablesMap().get(tableName);
@@ -1299,7 +1303,7 @@ public class JdbcSchema {
         tables.put(table.getName(), table);
     }
 
-    private Map<String, Table> getTablesMap() {
+    private SortedMap<String, Table> getTablesMap() {
         return tables;
     }
 

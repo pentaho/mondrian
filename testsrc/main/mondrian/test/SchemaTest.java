@@ -141,7 +141,7 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     /**
-     * This result is somewhat peculiar. If two dimensions share a foreign key, what 
+     * This result is somewhat peculiar. If two dimensions share a foreign key, what
      * is the expected result?  Also, in this case, they share the same table without
      * an alias, and the system doesn't complain.
      */
@@ -157,16 +157,16 @@ public class SchemaTest extends FoodMartTestCase {
         testContext.assertQueryReturns(
             "select from [Sales]",
             fold("Axis #0:\n" +
-                 "{}\n" + 
+                 "{}\n" +
                  "266,773"));
-        
+
         /** NonEmptyCrossJoin Fails
         testContext.assertQueryReturns(
                 "select NonEmptyCrossJoin({[Yearly Income2].[All Yearly Income2s]},{[Customers].[All Customers]}) on rows," +
                 "NON EMPTY {[Measures].[Unit Sales]} on columns" +
                 " from [Sales]",
                 fold("Axis #0:\n" +
-                     "{}\n" + 
+                     "{}\n" +
                      "266,773"));
         */
     }
@@ -185,10 +185,10 @@ public class SchemaTest extends FoodMartTestCase {
                 "    <Level name=\"Yearly Income\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n" +
                 "  </Hierarchy>\n" +
                 "</Dimension>");
-        
+
         testContext.assertQueryReturns("select {[Yearly Income].[$10K - $30K]} on columns," +
                 "{[Yearly Income2].[$150K +]} on rows from [Sales]"
-                , 
+                ,
                 fold("Axis #0:\n" +
                     "{}\n" +
                     "Axis #1:\n" +
@@ -353,16 +353,16 @@ public class SchemaTest extends FoodMartTestCase {
                     "    <Level name=\"Yearly Income\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n" +
                     "  </Hierarchy>\n" +
                     "</Dimension>");
-            
+
             testContext.assertQueryReturns(
                     "select NonEmptyCrossJoin({[Yearly Income2].[All Yearly Income2s]},{[Customers].[All Customers]}) on rows," +
                     "NON EMPTY {[Measures].[Unit Sales]} on columns" +
                     " from [Sales]",
-                    fold("Axis #0:\n" + 
+                    fold("Axis #0:\n" +
                          "{}\n" +
-                         "Axis #1:\n" + 
-                         "{[Measures].[Unit Sales]}\n" + 
-                         "Axis #2:\n" + 
+                         "Axis #1:\n" +
+                         "{[Measures].[Unit Sales]}\n" +
+                         "Axis #2:\n" +
                          "{[Yearly Income2].[All Yearly Income2s], [Customers].[All Customers]}\n" +
                          "Row #0: 266,773\n"));
         }
@@ -371,7 +371,7 @@ public class SchemaTest extends FoodMartTestCase {
     /**
      * Tests two dimensions using same table with same foreign key
      * one table uses an alias.
-     * 
+     *
      */
     public void testDimensionsShareTableSameForeignKeys() {
         final TestContext testContext = TestContext.createSubstitutingCube(
@@ -382,10 +382,10 @@ public class SchemaTest extends FoodMartTestCase {
                 "    <Level name=\"Yearly Income\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n" +
                 "  </Hierarchy>\n" +
                 "</Dimension>");
-        
+
         testContext.assertQueryReturns("select {[Yearly Income].[$10K - $30K]} on columns," +
                 "{[Yearly Income2].[$150K +]} on rows from [Sales]"
-                , 
+                ,
                 fold("Axis #0:\n" +
                     "{}\n" +
                     "Axis #1:\n" +
@@ -393,7 +393,7 @@ public class SchemaTest extends FoodMartTestCase {
                     "Axis #2:\n" +
                     "{[Yearly Income2].[All Yearly Income2s].[$150K +]}\n" +
                     "Row #0: \n"));
-        
+
         testContext.assertQueryReturns(
                 "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,\n" +
                     "NON EMPTY Crossjoin({[Yearly Income].[All Yearly Incomes].Children},\n" +
@@ -421,7 +421,7 @@ public class SchemaTest extends FoodMartTestCase {
                             "Row #5: 44,967\n" +
                             "Row #6: 33,045\n" +
                             "Row #7: 11,919\n"));
-            
+
     }
 
     /**
@@ -435,7 +435,7 @@ public class SchemaTest extends FoodMartTestCase {
                     "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n" +
                             "  <Table name=\"sales_fact_1997\"/>\n" +
                             "<Dimension name=\"Store\" foreignKey=\"store_id\">\n" +
-                            
+
                             "<Hierarchy hasAll=\"true\" primaryKeyTable=\"store\" primaryKey=\"store_id\">\n" +
                             "    <Join leftKey=\"region_id\" rightKey=\"region_id\">\n" +
                             "      <Table name=\"store\"/>\n" +
@@ -456,7 +456,7 @@ public class SchemaTest extends FoodMartTestCase {
                             "  <Level name=\"Region\"  table=\"region\"   column=\"sales_region\"                 uniqueMembers=\"true\"/>\n" +
                             "  <Level name=\"City\"    table=\"customer\" column=\"city\"                         uniqueMembers=\"false\"/>\n" +
                             "  <Level name=\"Name\"    table=\"customer\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n" +
-                            "</Hierarchy>\n" + 
+                            "</Hierarchy>\n" +
                             "</Dimension>\n" +
                             "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
                             "<Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"#,###.00\"/>\n" +
@@ -467,7 +467,7 @@ public class SchemaTest extends FoodMartTestCase {
                     "select  {[Store].[USA].[South West]} on rows," +
                     "{[Customers].[USA].[South West]} on columns" +
                     " from " +
-                    "AliasedDimensionsTesting", 
+                    "AliasedDimensionsTesting",
                     fold("Axis #0:\n" +
                          "{}\n" +
                          "Axis #1:\n" +
@@ -514,18 +514,18 @@ public class SchemaTest extends FoodMartTestCase {
                         "  <Level name=\"Region\"  table=\"customer_region\"   column=\"sales_region\"                 uniqueMembers=\"true\"/>\n" +
                         "  <Level name=\"City\"    table=\"customer\" column=\"city\"                         uniqueMembers=\"false\"/>\n" +
                         "  <Level name=\"Name\"    table=\"customer\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n" +
-                        "</Hierarchy>\n" + 
+                        "</Hierarchy>\n" +
                         "</Dimension>\n" +
                         "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
                         "<Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"#,###.00\"/>\n" +
                         "</Cube>",
                 null, null, null);
-        
+
         testContext.assertQueryReturns(
                 "select  {[Store].[USA].[South West]} on rows," +
                 "{[Customers].[USA].[South West]} on columns" +
                 " from " +
-                "AliasedDimensionsTesting", 
+                "AliasedDimensionsTesting",
                 fold("Axis #0:\n" +
                      "{}\n" +
                      "Axis #1:\n" +
@@ -534,7 +534,7 @@ public class SchemaTest extends FoodMartTestCase {
                      "{[Store].[All Stores].[USA].[South West]}\n" +
                      "Row #0: 72,631\n"));
     }
-    
+
     /**
      * Tests two dimensions using same table (via different join paths).
      * both using a table alias.
@@ -565,18 +565,18 @@ public class SchemaTest extends FoodMartTestCase {
                         "  <Level name=\"Region\"  table=\"customer_region\"   column=\"sales_region\"                 uniqueMembers=\"true\"/>\n" +
                         "  <Level name=\"City\"    table=\"customer\" column=\"city\"                         uniqueMembers=\"false\"/>\n" +
                         "  <Level name=\"Name\"    table=\"customer\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n" +
-                        "</Hierarchy>\n" + 
+                        "</Hierarchy>\n" +
                         "</Dimension>\n" +
                         "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
                         "<Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"#,###.00\"/>\n" +
                         "</Cube>",
                 null, null, null);
-        
+
         testContext.assertQueryReturns(
                 "select  {[Store].[USA].[South West]} on rows," +
                 "{[Customers].[USA].[South West]} on columns" +
                 " from " +
-                "AliasedDimensionsTesting", 
+                "AliasedDimensionsTesting",
                 fold("Axis #0:\n" +
                      "{}\n" +
                      "Axis #1:\n" +
@@ -585,7 +585,7 @@ public class SchemaTest extends FoodMartTestCase {
                      "{[Store].[All Stores].[USA].[South West]}\n" +
                      "Row #0: 72,631\n"));
     }
-    
+
     /**
      * Tests two dimensions using same table (via different join paths).
      * both using a table alias.
@@ -600,15 +600,15 @@ public class SchemaTest extends FoodMartTestCase {
                         "      <Table name=\"store\" alias=\"storea\"/>" +
                         "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
                         "      <Level name=\"Store Name\"  column=\"store_name\" uniqueMembers=\"true\"/>" +
-                        "    </Hierarchy>" + 
-                        "  </Dimension>" +  
-                        
+                        "    </Hierarchy>" +
+                        "  </Dimension>" +
+
                         "  <Dimension name=\"StoreB\" foreignKey=\"warehouse_id\">" +
                         "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">" +
                         "      <Table name=\"store\"  alias=\"storeb\"/>" +
                         "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
                         "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\"/>" +
-                        "    </Hierarchy>" + 
+                        "    </Hierarchy>" +
                         "  </Dimension>" +
                         "  <Measure name=\"Store Invoice\" column=\"store_invoice\" " +
                         "aggregator=\"sum\"/>\n" +
@@ -618,12 +618,12 @@ public class SchemaTest extends FoodMartTestCase {
                         "aggregator=\"sum\"/>\n" +
                         "</Cube>",
                 null, null, null);
-        
+
         testContext.assertQueryReturns(
                 "select {[StoreA].[USA]} on rows," +
                 "{[StoreB].[USA]} on columns" +
                 " from " +
-                "AliasedDimensionsTesting",                 
+                "AliasedDimensionsTesting",
                 fold(
                         "Axis #0:\n" +
                         "{}\n" +
@@ -648,15 +648,15 @@ public class SchemaTest extends FoodMartTestCase {
                         "      <Table name=\"store\" alias=\"storea\"/>" +
                         "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
                         "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\"/>" +
-                        "    </Hierarchy>" + 
-                        "  </Dimension>" +  
-                        
+                        "    </Hierarchy>" +
+                        "  </Dimension>" +
+
                         "  <Dimension name=\"StoreB\" foreignKey=\"store_id\">" +
                         "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">" +
                         "      <Table name=\"store\"  alias=\"storeb\"/>" +
                         "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>" +
                         "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\"/>" +
-                        "    </Hierarchy>" + 
+                        "    </Hierarchy>" +
                         "  </Dimension>" +
                         "  <Measure name=\"Store Invoice\" column=\"store_invoice\" " +
                         "aggregator=\"sum\"/>\n" +
@@ -666,12 +666,12 @@ public class SchemaTest extends FoodMartTestCase {
                         "aggregator=\"sum\"/>\n" +
                         "</Cube>",
                 null, null, null);
-        
+
         testContext.assertQueryReturns(
                 "select {[StoreA].[USA]} on rows," +
                 "{[StoreB].[USA]} on columns" +
                 " from " +
-                "AliasedDimensionsTesting", 
+                "AliasedDimensionsTesting",
                     fold(
                     "Axis #0:\n" +
                     "{}\n" +
@@ -691,7 +691,7 @@ public class SchemaTest extends FoodMartTestCase {
         if (false) {
             TestContext testContext = TestContext.create(
                 null,
-    
+
                 "<Cube name=\"Sales Two Dimensions\">\n" +
                     "  <Table name=\"sales_fact_1997\"/>\n" +
                     "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
@@ -703,7 +703,7 @@ public class SchemaTest extends FoodMartTestCase {
                     "   formatString=\"#,###.00\"/>\n" +
                     "</Cube>",
                 null, null, null);
-    
+
             testContext.assertQueryReturns(
                 "select\n" +
                     " {[Time2].[1997]} on columns,\n" +
@@ -713,14 +713,14 @@ public class SchemaTest extends FoodMartTestCase {
                     "{[Warehouse].[USA]}\n" +
                     "Axis #1:\n" +
                     "{[Time2].[1997]}\n" +
-                    
+
                     "Axis #2:\n" +
                     "{[Time].[1997].[Q3]}\n" +
                     "Row #0: UNKNOWN\n"));
         }
     }
-    
-    
+
+
     /**
      * Tests a cube whose fact table is a &lt;View&gt; element.
      */
@@ -977,12 +977,90 @@ public class SchemaTest extends FoodMartTestCase {
         // It is used as a level in the degenerate dimension [Time Degenerate].
         assertEquals(
             fold("WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'customer_count' with unknown usage.\n" +
+                "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'month_of_year' with unknown usage.\n" +
                 "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'quarter' with unknown usage.\n" +
                 "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'the_year' with unknown usage.\n" +
                 "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'unit_sales' with unknown usage.\n" +
-                "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'month_of_year' with unknown usage.\n" +
-                "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_lc_100_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'unit_sales' with unknown usage.\n" +
-                "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_lc_100_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'customer_id' with unknown usage.\n"),
+                "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_lc_100_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'customer_id' with unknown usage.\n" +
+                "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_lc_100_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'unit_sales' with unknown usage.\n"),
+            sw.toString());
+    }
+
+    public void testUnknownUsages1() {
+        if (!MondrianProperties.instance().ReadAggregates.get()) {
+            return;
+        }
+        final Logger logger = Logger.getLogger(AggTableManager.class);
+        final StringWriter sw = new StringWriter();
+        final Appender appender =
+            new WriterAppender(new SimpleLayout(), sw);
+        final LevelRangeFilter filter = new LevelRangeFilter();
+        filter.setLevelMin(Level.WARN);
+        appender.addFilter(filter);
+        logger.addAppender(appender);
+        try {
+            TestContext testContext = TestContext.create(
+                "<?xml version=\"1.0\"?>\n" +
+                    "<Schema name=\"FoodMart\">\n" +
+                    "<Cube name=\"Denormalized Sales\">\n" +
+                    "  <Table name=\"sales_fact_1997\">\n" +
+                    "    <AggExclude pattern=\"agg_c_14_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_l_05_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_g_ms_pcat_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_ll_01_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_c_special_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_l_04_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_pl_01_sales_fact_1997\"/>\n" +
+                    "    <AggExclude pattern=\"agg_c_10_sales_fact_1997\"/>\n" +
+                    "    <AggName name=\"agg_l_03_sales_fact_1997\">\n" +
+                    "      <AggFactCount column=\"fact_count\"/>\n" +
+                    "      <AggMeasure name=\"[Measures].[Store Cost]\" column=\"store_cost\" />\n" +
+                    "      <AggMeasure name=\"[Measures].[Store Sales]\" column=\"store_sales\" />\n" +
+                    "      <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\" />\n" +
+                    "      <AggLevel name=\"[Customer].[Customer ID]\" column=\"customer_id\" />\n" +
+                    "      <AggForeignKey factColumn=\"time_id\" aggColumn=\"time_id\" />\n" +
+                    "     </AggName>\n" +
+                    "  </Table>\n" +
+                    "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n" +
+                    "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n" +
+                    "      <Table name=\"time_by_day\"/>\n" +
+                    "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n" +
+                    "          levelType=\"TimeYears\"/>\n" +
+                    "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n" +
+                    "          levelType=\"TimeQuarters\"/>\n" +
+                    "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n" +
+                    "          levelType=\"TimeMonths\"/>\n" +
+                    "    </Hierarchy>\n" +
+                    "  </Dimension>\n" +
+                    "  <Dimension name=\"Customer\">\n" +
+                    "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n" +
+                    "      <Level name=\"Customer ID\" column=\"customer_id\"/>\n" +
+                    "    </Hierarchy>" +
+                    "  </Dimension>" +
+                    "  <Dimension name=\"Product\">\n" +
+                    "    <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n" +
+                    "      <Level name=\"Product ID\" column=\"product_id\"/>\n" +
+                    "    </Hierarchy>" +
+                    "  </Dimension>" +
+                    "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n" +
+                    "      formatString=\"#,###.00\"/>\n" +
+                    "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
+                    "      formatString=\"#,###.00\"/>\n" +
+                    "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
+                    "      formatString=\"#,###\"/>\n" +
+                    "</Cube>\n" +
+                    "</Schema>");
+            testContext.assertQueryReturns(
+                "select from [Denormalized Sales]",
+                fold(
+                    "Axis #0:\n" +
+                        "{}\n" +
+                        "225,627.23"));
+        } finally {
+            logger.removeAppender(appender);
+        }
+        assertEquals(
+            fold("WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_l_03_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'time_id' with unknown usage.\n"),
             sw.toString());
     }
 }
