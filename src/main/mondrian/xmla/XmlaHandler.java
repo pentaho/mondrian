@@ -24,7 +24,6 @@ import org.xml.sax.SAXException;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 import java.sql.*;
 import java.util.*;
 import java.io.StringWriter;
@@ -312,8 +311,8 @@ public class XmlaHandler implements XmlaConstants {
                         double dval = bd.doubleValue();
                         // make with same scale as Double
                         try {
-                            BigDecimal bd2 = new BigDecimal(dval,
-                                               MathContext.DECIMAL64);
+                            BigDecimal bd2 = 
+                                Util.makeBigDecimalFromDouble(dval);
                             // Can it be a double
                             // Must use compareTo - see BigDecimal.equals
                             if (bd.compareTo(bd2) == 0) {
@@ -426,8 +425,8 @@ public class XmlaHandler implements XmlaConstants {
                     double dval = bd.doubleValue();
                     // make with same scale as Double
                     try {
-                        BigDecimal bd2 = new BigDecimal(dval,
-                                               MathContext.DECIMAL64);
+                        BigDecimal bd2 = 
+                                Util.makeBigDecimalFromDouble(dval);
                         // Can it be a double
                         // Must use compareTo - see BigDecimal.equals
                         if (bd.compareTo(bd2) == 0) {

@@ -10,6 +10,7 @@
 package mondrian.util;
 
 import java.util.Set;
+import java.math.BigDecimal;
 
 /**
  * Interface containing methods which are implemented differently in different
@@ -20,6 +21,7 @@ import java.util.Set;
  * <li>{@link mondrian.olap.Util#enumSetOf(Enum, Enum[])}</li>
  * <li>{@link mondrian.olap.Util#enumSetNoneOf(Class)}</li>
  * <li>{@link mondrian.olap.Util#enumSetAllOf(Class)}</li>
+ * <li>{@link mondrian.olap.Util#makeBigDecimalFromDouble(double)}</li>
  * </ul></p>
  *
  * <p>This interface could in principle be extended to allow native
@@ -34,6 +36,8 @@ public interface UtilCompatible {
     <E extends Enum<E>> Set<E> enumSetOf(E first, E... rest);
     <E extends Enum<E>> Set<E> enumSetNoneOf(Class<E> elementType);
     <E extends Enum<E>> Set<E> enumSetAllOf(Class<E> elementType);
+
+    BigDecimal makeBigDecimalFromDouble(double d);
 }
 
 // End UtilCompatible.java

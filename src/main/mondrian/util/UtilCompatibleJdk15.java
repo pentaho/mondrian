@@ -11,6 +11,9 @@ package mondrian.util;
 
 import java.util.Set;
 import java.util.EnumSet;
+import java.math.BigDecimal;
+// Only in Java5 and above
+import java.math.MathContext;
 
 /**
  * Implementation of {@link UtilCompatible} which runs in
@@ -35,6 +38,17 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
 
     public <E extends Enum<E>> Set<E> enumSetAllOf(Class<E> elementType) {
         return EnumSet.allOf(elementType);
+    }
+
+    /** 
+     * This generates a BigDecimal with a precision reflecting
+     * the precision of the input double.
+     * 
+     * @param d input double
+     * @return BigDecimal
+     */
+    public BigDecimal makeBigDecimalFromDouble(double d) {
+        return new BigDecimal(d, MathContext.DECIMAL64);
     }
 }
 

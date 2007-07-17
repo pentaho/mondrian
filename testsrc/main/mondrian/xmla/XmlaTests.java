@@ -10,10 +10,12 @@
 package mondrian.xmla;
 
 import junit.framework.Assert;
+import mondrian.olap.Util;
 import mondrian.test.FoodMartTestCase;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
+// Only in Java5 and above
+//import java.math.MathContext;
 
 
 /**
@@ -178,8 +180,11 @@ public class XmlaTests extends FoodMartTestCase {
         isDecimal = false;
         doXmlaHandlerValueInfo(dataType, inputValue, 
                                 valueType, value, isDecimal);
-        valueType = XmlaHandler.XSD_DECIMAL;
-        value = inputValue;
+        valueType = (Util.PreJdk15)
+            ? XmlaHandler.XSD_DOUBLE : XmlaHandler.XSD_DECIMAL;
+        value = (Util.PreJdk15)
+            ? Double.valueOf("-9.223372036854776E18")
+            : inputValue;
         isDecimal = true;
         doXmlaHandlerValueInfo(null, inputValue, 
                                 valueType, value, isDecimal);
@@ -213,13 +218,15 @@ public class XmlaTests extends FoodMartTestCase {
 
         // MAX_VALUE = 1.7976931348623157e+308
         // one less decimal point than max value
-        dataType = "Numeric";
-        inputValue = new BigDecimal("1.797693134862315e+308");
-        valueType = XmlaHandler.XSD_DOUBLE;
-        value = Double.valueOf("1.797693134862315e+308");
-        isDecimal = true;
-        doXmlaHandlerValueInfo(dataType, inputValue, 
+        if (! Util.PreJdk15) {
+            dataType = "Numeric";
+            inputValue = new BigDecimal("1.797693134862315e+308");
+            valueType = XmlaHandler.XSD_DOUBLE;
+            value = Double.valueOf("1.797693134862315e+308");
+            isDecimal = true;
+            doXmlaHandlerValueInfo(dataType, inputValue, 
                                 valueType, value, isDecimal);
+        }
 
 /*
  does not work - BigDecimal converts double 4.9E-323

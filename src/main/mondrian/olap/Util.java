@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.math.BigDecimal;
 
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
@@ -1883,6 +1884,18 @@ public class Util extends XOMUtil {
      */
     public static <E extends Enum<E>> Set<E> enumSetAllOf(Class<E> elementType) {
         return compatible.enumSetAllOf(elementType);
+    }
+
+    /** 
+     * Make a BigDecimal from a double. On JDK 1.5 or later, the BigDecimal
+     * precision reflects the precision of the double while with JDK 1.4
+     * this is not the case.
+     * 
+     * @param d the input double
+     * @return the BigDecimal
+     */
+    public static BigDecimal makeBigDecimalFromDouble(double d) {
+        return compatible.makeBigDecimalFromDouble(d);
     }
 }
 
