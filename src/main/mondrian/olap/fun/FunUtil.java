@@ -546,7 +546,7 @@ public class FunUtil extends Util {
      * but this is different than Java semantics, specifically with regard
      * to {@link Double#NaN}.
      */
-    static int compareValues(double d1, double d2) {
+    public static int compareValues(double d1, double d2) {
         if (Double.isNaN(d1)) {
             if (d2 == Double.POSITIVE_INFINITY) {
                 return -1;
@@ -582,7 +582,7 @@ public class FunUtil extends Util {
         }
     }
 
-    static int compareValues(int i, int j) {
+    public static int compareValues(int i, int j) {
         return (i == j)
             ? 0
             : (i < j)
@@ -602,7 +602,7 @@ public class FunUtil extends Util {
      * @return -1, 0, or 1, depending upon whether first cell value is less
      *   than, equal to, or greater than the second
      */
-    static int compareValues(Object value0, Object value1) {
+    public static int compareValues(Object value0, Object value1) {
         if (value0 == value1) {
             return 0;
         }
