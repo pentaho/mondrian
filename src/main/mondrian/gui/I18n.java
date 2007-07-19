@@ -27,10 +27,10 @@ public class I18n {
 
     private static String defaultIcon = "nopic";
     
-    public static Vector languageChangedListeners = null;
+    public static Vector<LanguageChangedListener> languageChangedListeners = null;
     
     static {
-        languageChangedListeners = new Vector();
+        languageChangedListeners = new Vector<LanguageChangedListener>();
     }
 
     public static void addOnLanguageChangedListener(LanguageChangedListener listener) {
@@ -44,7 +44,7 @@ public class I18n {
 
 
     public static List getListOfAvailableLanguages(Class cl) {
-        java.util.List supportedLocales = new ArrayList();
+        java.util.List<Locale> supportedLocales = new ArrayList<Locale>();
         
         try {
             Set names = getResourcesInPackage( cl, cl.getName() );
@@ -113,7 +113,7 @@ public class I18n {
         // Sort the list. Probably should use the current locale when getting the
         // DisplayLanguage so the sort order is correct for the user.
         
-        Collections.sort( supportedLocales, new Comparator() {
+        Collections.sort( supportedLocales, new Comparator<Object>() {
             public int compare(Object lhs, Object rhs) {
                 String ls = ((Locale)lhs).getDisplayLanguage();
                 String rs = ((Locale)rhs).getDisplayLanguage();
@@ -141,6 +141,7 @@ public class I18n {
      * on the java.sun.com message boards.
      * http://forum.java.sun.com/thread.jsp?forum=22&thread=30984
      *
+     * @param coreClass Class for class loader to find the resources
      * @param packageName The package to enumerate
      * @return A Set of Strings for each resouce in the package.
      */
@@ -156,7 +157,7 @@ public class I18n {
             
             Enumeration dirEnum = cl.getResources( localPackageName );
             
-            Set names = new HashSet();
+            Set<String> names = new HashSet<String>();
 
             // Loop CLASSPATH directories
             while( dirEnum.hasMoreElements() ) {
@@ -258,13 +259,19 @@ public class I18n {
     
     /**
      * Retreive a resource string using the current locale.
-     * @param cID The resouce sting identifier
+     * @param stringID The resource string identifier
      * @return The locale specific string
      */
     public String getString(String stringID) {
         return getString(stringID, getCurrentLocale() );
     }
 
+    /**
+     * Retreive a resource string using the current locale, with a default.
+     * @param stringID The resource string identifier
+     * @param defaultValue if no resource for the stringID is specified, use this default value
+     * @return The locale specific string
+     */
     public String getString(String stringID, String defaultValue) {
         return getString(stringID, getCurrentLocale(), defaultValue );
     }
@@ -284,10 +291,23 @@ public class I18n {
     }
 
 
+    /**
+     * Retreive a resource string using the given locale. The stringID is the default.
+     * @param stringID The resource string identifier
+     * @param currentLocale required Locale for resource
+     * @return The locale specific string
+     */
     private String getString(String stringID, Locale currentLocale) {
         return getString(stringID, currentLocale, stringID);
     }
 
+    /**
+     * Retreive a resource string using the given locale. Use the default if there is nothing for the given Locale.
+     * @param stringID The resource string identifier
+     * @param currentLocale required Locale for resource
+     * @param defaultValue The default value for the resource string
+     * @return The locale specific string
+     */
     public String getString(String stringID, Locale currentLocale, String defaultValue) {
         try {
             if (languageBundle == null) {
