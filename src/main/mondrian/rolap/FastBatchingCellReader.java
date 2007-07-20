@@ -582,18 +582,27 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         boolean haveSameStarAndAggregation(Batch other) {
-            return (getStar().equals(other.getStar()) &&
-                getAgg() == other.getAgg());
+            boolean rollup[] = new boolean[1];
+            boolean otherRollup[] = new boolean [1];
+            boolean hasSameAggregation = getAgg(rollup) == other.getAgg(otherRollup);
+            boolean hasSameRollupOption = rollup[0] == otherRollup[0];
+
+            boolean hasSameStar = getStar().equals(other.getStar());
+            return (hasSameStar && hasSameAggregation && hasSameRollupOption);
         }
 
-        private AggStar getAgg() {
+        /**
+         * @param rollup Out parameter
+         * @return AggStar
+         */
+        private AggStar getAgg(boolean[] rollup) {
 
             AggregationManager aggregationManager =
                 AggregationManager.instance();
             AggStar star =
                 aggregationManager.findAgg(getStar(),
                     constrainedColumnsBitKey, makeMeasureBitKey(),
-                    new boolean[]{false});
+                    rollup);
             return star;
         }
 

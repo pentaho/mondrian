@@ -470,6 +470,36 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         assertFalse(aggregationBatch.canBatch(detailedBatch));
     }
 
+    public void testCanBatchForBatchesFromSameAggregationButDifferentRollupOption() {
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+
+        FastBatchingCellReader.Batch batch1 =
+                createBatch(fbcr,
+                        new String[]{tableTime}, new String[]{fieldYear},
+                        new String[][]{fieldValuesYear}, cubeNameSales,
+                        measureUnitSales);
+
+        FastBatchingCellReader.Batch batch2 =
+                createBatch(fbcr,
+                        new String[]{tableTime, tableTime, tableTime},
+                        new String[]{fieldYear, "quarter", "month_of_year"},
+                        new String[][]{fieldValuesYear, {"Q1", "Q2", "Q3",
+                                "Q4"},
+                                {"1", "2", "3", "4", "5", "6", "7", "8",
+                                        "9", "10", "11", "12"}},
+                        cubeNameSales,
+                        measureUnitSales);
+
+        if (MondrianProperties.instance().UseAggregates.get()
+                && MondrianProperties.instance().ReadAggregates.get()) {
+
+            assertFalse(batch2.canBatch(batch1));
+            assertFalse(batch1.canBatch(batch2));
+        } else {
+            assertTrue(batch2.canBatch(batch1));
+        }
+    }
+
     public void testCanBatchForBatchWithSuperSetOfContraintColumnBitKeyAndDifferentValuesForOverlappingColumns() {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
 
