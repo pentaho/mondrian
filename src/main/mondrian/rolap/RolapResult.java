@@ -1778,7 +1778,7 @@ class RolapResult extends ResultBase {
                 break;
             }
             // reset to start of List
-//            pl1 = axis1.getPositions();
+            pl1 = axis1.getPositions();
         }
         if (arrayLen == 1) {
             // single Member per position
