@@ -1696,7 +1696,7 @@ assert is not true.
     //
 
     /**
-     * Formats a {@link MondrianDef.Relation} indenting joins for
+     * Formats a {@link mondrian.olap.MondrianDef.Relation}, indenting joins for
      * readability.
      *
      * @param relation
@@ -1776,7 +1776,7 @@ assert is not true.
     }
 
     /**
-     * Attempts to transform a {@link MondrianDef.Relation}
+     * Attempts to transform a {@link mondrian.olap.MondrianDef.Relation}
      * into the "canonical" form.
      *
      * <p>What is the canonical form? It is only relevant
@@ -2045,7 +2045,7 @@ assert is not true.
     }
 
     /**
-     * Copies a {@link MondrianDef.Relation}.
+     * Copies a {@link mondrian.olap.MondrianDef.Relation}.
      *
      * @param relation
      */

@@ -308,7 +308,7 @@ public class RolapConnection extends ConnectionBase {
     /**
      * Creates a {@link Properties} object containing all of the JDBC
      * connection properties present in the
-     * {@link Util.PropertyList connectInfo}.
+     * {@link mondrian.olap.Util.PropertyList connectInfo}.
      *
      * @param connectInfo Connection properties
      * @return The JDBC connection properties.

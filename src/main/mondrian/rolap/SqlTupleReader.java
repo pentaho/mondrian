@@ -355,12 +355,13 @@ public class SqlTupleReader implements TupleReader {
             int currPartialResultIdx = 0;
             if (execQuery) {
                 moreRows = resultSet.next();
-                ++stmt.rowCount;
+                if (moreRows) {
+                    ++stmt.rowCount;
+                }
             } else {
                 moreRows = currPartialResultIdx < partialResult.size();
             }
             while (moreRows) {
-
                 if (limit > 0 && limit < ++fetchCount) {
                     // result limit exceeded, throw an exception
                     throw MondrianResource.instance().MemberFetchLimitExceeded
@@ -371,8 +372,7 @@ public class SqlTupleReader implements TupleReader {
                     int column = 0;
                     for (Target target : targets) {
                         target.currMember = null;
-                        column =
-                            target.addRow(resultSet, column);
+                        column = target.addRow(resultSet, column);
                     }
                 } else {
                     // find the first enum target, then call addTargets()
@@ -383,8 +383,7 @@ public class SqlTupleReader implements TupleReader {
                     for ( ; firstEnumTarget < targets.size();
                         firstEnumTarget++)
                     {
-                        if (targets.get(firstEnumTarget).
-                            srcMembers != null) {
+                        if (targets.get(firstEnumTarget).srcMembers != null) {
                             break;
                         }
                     }
@@ -405,6 +404,9 @@ public class SqlTupleReader implements TupleReader {
 
                 if (execQuery) {
                     moreRows = resultSet.next();
+                    if (moreRows) {
+                        ++stmt.rowCount;
+                    }
                 } else {
                     currPartialResultIdx++;
                     moreRows = currPartialResultIdx < partialResult.size();

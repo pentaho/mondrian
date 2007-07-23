@@ -57,7 +57,7 @@ public class XmlaHandler implements XmlaConstants {
                                     computeEmptyXsd(MD_DATA_SET);
 
     private static final String NS_XML_SQL = "urn:schemas-microsoft-com:xml-sql";
-    
+
     //
     // Some xml schema data types.
     //
@@ -67,26 +67,26 @@ public class XmlaHandler implements XmlaConstants {
 
     public static final String XSD_BYTE = "xsd:byte";
     public static final byte XSD_BYTE_MAX_INCLUSIVE = 127;
-    public static final byte XSD_BYTE_MIN_INCLUSIVE = -128; 
+    public static final byte XSD_BYTE_MIN_INCLUSIVE = -128;
 
     public static final String XSD_SHORT = "xsd:short";
     public static final short XSD_SHORT_MAX_INCLUSIVE = 32767;
-    public static final short XSD_SHORT_MIN_INCLUSIVE = -32768; 
+    public static final short XSD_SHORT_MIN_INCLUSIVE = -32768;
 
     public static final String XSD_INT = "xsd:int";
     public static final int XSD_INT_MAX_INCLUSIVE = 2147483647;
-    public static final int XSD_INT_MIN_INCLUSIVE = -2147483648; 
+    public static final int XSD_INT_MIN_INCLUSIVE = -2147483648;
 
     public static final String XSD_LONG = "xsd:long";
     public static final long XSD_LONG_MAX_INCLUSIVE = 9223372036854775807L;
-    public static final long XSD_LONG_MIN_INCLUSIVE = -9223372036854775808L; 
+    public static final long XSD_LONG_MIN_INCLUSIVE = -9223372036854775808L;
 
     // xsd:double — IEEE 64-bit floating-point
     public static final String XSD_DOUBLE = "xsd:double";
 
     // xsd:decimal — Decimal numbers (BigDecimal)
     public static final String XSD_DECIMAL = "xsd:decimal";
-    
+
     // xsd:integer — Signed integers of arbitrary length (BigInteger)
     public static final String XSD_INTEGER = "xsd:integer";
 
@@ -94,29 +94,29 @@ public class XmlaHandler implements XmlaConstants {
         return (l <= XSD_INT_MAX_INCLUSIVE) && (l >= XSD_INT_MIN_INCLUSIVE);
     }
 
-    /** 
+    /**
      * Takes a DataType String ( null, Integer, Numeric or non-null )
      * and Value Object (Integer, Double, String, other) and
      * canonicalizes them to XSD data type and corresponding object.
      * <p>
      * If the input DataType is Integer, then it attempts to return
-     * an XSD_INT with value java.lang.Integer (and failing that an 
+     * an XSD_INT with value java.lang.Integer (and failing that an
      * XSD_LONG (java.lang.Long) or XSD_INTEGER (java.math.BigInteger)).
-     * Worst case is the value loses precision with any integral 
+     * Worst case is the value loses precision with any integral
      * representation and must be returned as a decimal type (Double
      * or java.math.BigDecimal).
      * <p>
      * If the input DataType is Decimal, then it attempts to return
-     * an XSD_DOUBLE with value java.lang.Double (and failing that an 
+     * an XSD_DOUBLE with value java.lang.Double (and failing that an
      * XSD_DECIMAL (java.math.BigDecimal)).
      */
     static class ValueInfo {
 
-        /** 
-         * Returns XSD_INT, XSD_DOUBLE, XSD_STRING or null. 
-         * 
+        /**
+         * Returns XSD_INT, XSD_DOUBLE, XSD_STRING or null.
+         *
          * @param dataType null, Integer, Numeric or non-null.
-         * @return 
+         * @return Returns the suggested XSD type for a given datatype
          */
         static String getValueTypeHint(final String dataType) {
             if (dataType != null) {
@@ -149,7 +149,7 @@ public class XmlaHandler implements XmlaConstants {
                 // The value type is a hint. If the value can be
                 // converted to the data type without precision loss, ok;
                 // otherwise value data type must be adjusted.
-    
+
                 if (valueTypeHint.equals(XSD_STRING)) {
                     // For String types, nothing to do.
                     this.valueType = valueTypeHint;
@@ -159,7 +159,7 @@ public class XmlaHandler implements XmlaConstants {
                 } else if (valueTypeHint.equals(XSD_INT)) {
                     // If valueTypeHint is XSD_INT, then see if value can be
                     // converted to (first choice) integer, (second choice),
-                    // long and (last choice) BigInteger - otherwise must 
+                    // long and (last choice) BigInteger - otherwise must
                     // use double/decimal.
 
                     // Most of the time value ought to be an Integer so
@@ -248,7 +248,7 @@ public class XmlaHandler implements XmlaConstants {
 
                         } catch (ArithmeticException ex) {
                             // No, it can not be converted to long
-                            
+
                             try {
                                 // Can it be an integer
                                 BigInteger bi = bd.toBigIntegerExact();
@@ -282,7 +282,7 @@ public class XmlaHandler implements XmlaConstants {
 
                 } else if (valueTypeHint.equals(XSD_DOUBLE)) {
                     // The desired type is double.
-                    
+
                     // Most of the time value ought to be an Double so
                     // try it first
                     if (inputValue instanceof Double) {
@@ -291,9 +291,9 @@ public class XmlaHandler implements XmlaConstants {
                         this.value = inputValue;
                         this.isDecimal = true;
 
-                    } else if (inputValue instanceof Byte || 
-                            inputValue instanceof Short || 
-                            inputValue instanceof Integer || 
+                    } else if (inputValue instanceof Byte ||
+                            inputValue instanceof Short ||
+                            inputValue instanceof Integer ||
                             inputValue instanceof Long) {
                         // Convert from byte/short/integer/long to double
                         double dval = ((Number) inputValue).doubleValue();
@@ -311,7 +311,7 @@ public class XmlaHandler implements XmlaConstants {
                         double dval = bd.doubleValue();
                         // make with same scale as Double
                         try {
-                            BigDecimal bd2 = 
+                            BigDecimal bd2 =
                                 Util.makeBigDecimalFromDouble(dval);
                             // Can it be a double
                             // Must use compareTo - see BigDecimal.equals
@@ -425,7 +425,7 @@ public class XmlaHandler implements XmlaConstants {
                     double dval = bd.doubleValue();
                     // make with same scale as Double
                     try {
-                        BigDecimal bd2 = 
+                        BigDecimal bd2 =
                                 Util.makeBigDecimalFromDouble(dval);
                         // Can it be a double
                         // Must use compareTo - see BigDecimal.equals
@@ -435,7 +435,7 @@ public class XmlaHandler implements XmlaConstants {
                         } else {
                             this.valueType = XSD_DECIMAL;
                             this.value = inputValue;
-                        } 
+                        }
                     } catch (NumberFormatException ex) {
                         this.valueType = XSD_DECIMAL;
                         this.value = inputValue;
@@ -1547,7 +1547,7 @@ public class XmlaHandler implements XmlaConstants {
             String roleName = request.getRoleName();
             Role role = request.getRole();
 
-            final Connection connection = 
+            final Connection connection =
                 getConnection(dsCatalog, role, roleName);
 
             final Query query;
@@ -2118,7 +2118,7 @@ public class XmlaHandler implements XmlaConstants {
                     value = vi.value;
                     isDecimal = vi.isDecimal;
 
-                    writer.startElement(cellProps[i], 
+                    writer.startElement(cellProps[i],
                             new String[] {"xsi:type", valueType});
                 } else {
                     writer.startElement(cellProps[i]);
@@ -2137,7 +2137,7 @@ public class XmlaHandler implements XmlaConstants {
 
         private boolean shouldReturnCellProperty(String cellPropLong) {
             Query query = result.getQuery();
-            return query.isCellPropertyEmpty() || 
+            return query.isCellPropertyEmpty() ||
                     query.hasCellProperty(cellPropLong);
         }
     }

@@ -102,20 +102,21 @@ public class HierarchyUsage {
      * (Usually the table of the lowest level of the hierarchy.)
      */
     private MondrianDef.Relation joinTable;
+
     /**
-     * The expression (usually a {@link MondrianDef.Column}) by which the
-     * hierarchy which is joined to the fact table.
+     * The expression (usually a {@link mondrian.olap.MondrianDef.Column}) by
+     * which the hierarchy which is joined to the fact table.
      */
     private MondrianDef.Expression joinExp;
 
     private final Kind kind;
 
     /**
+     * Creates a HierarchyUsage.
      *
-     *
-     * @param cube
-     * @param hierarchy
-     * @param cubeDim
+     * @param cube Cube
+     * @param hierarchy Hierarchy
+     * @param cubeDim XML definition of a dimension which belongs to a cube
      */
     HierarchyUsage(RolapCube cube,
                    RolapHierarchy hierarchy,
@@ -347,7 +348,7 @@ public class HierarchyUsage {
             this.joinTable = findJoinTable(hierarchy, joinLevel.getKeyExp().getTableAlias());
             this.joinExp = joinLevel.getKeyExp();
         } else if (hierarchy.getXmlHierarchy() != null &&
-                hierarchy.getXmlHierarchy().primaryKey != null) { 
+                hierarchy.getXmlHierarchy().primaryKey != null) {
             // 2. Specify a "primaryKey" attribute of in <Hierarchy>. You must
             //    also specify the "primaryKeyTable" attribute if the hierarchy
             //    is a join (hence has more than one table).
@@ -364,10 +365,6 @@ public class HierarchyUsage {
                 joinLevel.getKeyExp().getTableAlias());
             this.joinExp = joinLevel.getKeyExp();
         }
-/*
-RME
-        Util.assertTrue(Util.equals(foreignKey, hierarchy.foreignKey));
-*/
 
         // Unless this hierarchy is drawing from the fact table, we need
         // a join expresion and a foreign key.

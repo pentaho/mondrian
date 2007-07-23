@@ -310,20 +310,31 @@ public class ExplicitRules {
      */
     private interface Exclude {
         /**
-         * Return true if the tableName is exculed.
+         * Return true if the tableName is excluded.
          *
-         * @param tableName
-         * @return
+         * @param tableName Table name
+         * @return whether table name is excluded
          */
         boolean isExcluded(final String tableName);
 
+        /**
+         * Validate that the exclude name matches the table pattern.
+         *
+         * @param msgRecorder Message recorder
+         */
         void validate(final MessageRecorder msgRecorder);
 
+        /**
+         * Prints this rule to a PrintWriter.
+         *
+         * @param pw PrintWriter
+         * @param prefix Line prefix, for indentation
+         */
         void print(final PrintWriter pw, final String prefix);
     }
 
     /**
-     * This class is an exact name matching Exclude implementation.
+     * Implementation of Exclude which matches names exactly.
      */
     private static class ExcludeName implements Exclude {
         private final String name;
@@ -335,7 +346,7 @@ public class ExplicitRules {
         }
 
         /**
-         * Get the name that is to be matched.
+         * Returns the name to be matched.
          */
         public String getName() {
             return name;
@@ -348,23 +359,12 @@ public class ExplicitRules {
             return ignoreCase;
         }
 
-        /**
-         * Return true if the tableName is exculed.
-         *
-         * @param tableName
-         * @return
-         */
         public boolean isExcluded(final String tableName) {
             return (this.ignoreCase)
                 ? this.name.equals(tableName)
                 : this.name.equalsIgnoreCase(tableName);
         }
 
-        /**
-         * Validate that the exclude name matches the table pattern.
-         *
-         * @param msgRecorder
-         */
         public void validate(final MessageRecorder msgRecorder) {
             msgRecorder.pushContextName("ExcludeName");
             try {
@@ -435,21 +435,10 @@ RME TODO
                     Pattern.compile(pattern);
         }
 
-        /**
-         * Return true if the tableName is exculed.
-         *
-         * @param tableName
-         * @return
-         */
         public boolean isExcluded(final String tableName) {
             return pattern.matcher(tableName).matches();
         }
 
-        /**
-         * Validate that the exclude pattern overlaps with table pattern.
-         *
-         * @param msgRecorder
-         */
         public void validate(final MessageRecorder msgRecorder) {
             msgRecorder.pushContextName("ExcludePattern");
             try {

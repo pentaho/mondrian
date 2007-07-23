@@ -882,7 +882,23 @@ doc/**/*.xml"
         style="misc/Meta.xsl"/>
   </target>
 
-  <target name="javadoc">
+  <target name="javadoc-strict" description="
+Generates javadoc as part of the nightly regress,
+to make sure that all javadoc references are valid.">
+    <antcall target="javadoc-internal">
+      <param name="additionalparam" value=""/>
+      <param name="access" value="private"/>
+    </antcall>
+  </target>
+
+  <target name="javadoc" description="Generates javadoc for public site">
+    <antcall target="javadoc-internal">
+      <param name="additionalparam" value="-linksource"/>
+      <param name="access" value="package"/>
+    </antcall>
+  </target>
+
+  <target name="javadoc-internal">
     <mkdir dir="${javadoc.dir}" />
     <delete quiet="true" file="${javadoc.dir}/index.html"/>
     <javadoc sourcepath="${java.dir}:${javatest.dir}"
@@ -893,9 +909,9 @@ doc/**/*.xml"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
         author="true"
         source="1.5"
-        access="package"
+        access="${access}"
         Windowtitle="Mondrian OLAP Server, version ${version}"
-        additionalparam="-linksource"
+        additionalparam="${additionalparam}"
       >
       <tag name="pre" description="Pre-condition:"
            scope="constructors,methods"/>

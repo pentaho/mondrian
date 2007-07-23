@@ -21,10 +21,7 @@ import org.eigenbase.util.property.StringProperty;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 import mondrian.calc.ExpCompiler;
 
@@ -81,9 +78,11 @@ public class RolapUtil {
 
     /**
      * Names of classes of drivers we've loaded (or have tried to load).
-     * @synchronization Lock the {@link RolapConnection} class.
+     *
+     * <p>NOTE: Synchronization policy: Lock the {@link RolapConnection} class
+     * before modifying or using this member.
      */
-    private static final HashSet<String> loadedDrivers = new HashSet<String>();
+    private static final Set<String> loadedDrivers = new HashSet<String>();
 
     static RolapMember[] toArray(List<RolapMember> v) {
         return v.isEmpty()
