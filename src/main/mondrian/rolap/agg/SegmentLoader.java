@@ -152,8 +152,9 @@ public class SegmentLoader {
         List<Integer> pos = new ArrayList<Integer>(arity);
         for (Object[] row : rows) {
             final SegmentDataset[] datasets;
+            int groupingBitKeyIndex = arity + segmentLength;
             if (useGroupingSet) {
-                BitKey groupingBitKey = (BitKey) row[arity + segmentLength];
+                BitKey groupingBitKey = (BitKey) row[groupingBitKeyIndex];
                 datasets = groupingDataSetMap.get(groupingBitKey);
             } else {
                 datasets = nonGroupingDataSets;
@@ -161,8 +162,8 @@ public class SegmentLoader {
             int k = 0;
             for (int j = 0; j < arity; j++) {
                 Object o = row[j];
-                if (o.equals(RolapUtil.sqlNullValue) &&
-                    !axisContainsNull[j]) {
+                if (useGroupingSet &&
+                        isRollupNull(groupByGroupingSets, row, groupingBitKeyIndex, j)) {
                     continue;
                 }
                 Aggregation.Axis axis = axes[j];
@@ -186,6 +187,15 @@ public class SegmentLoader {
             }
             pos.clear();
         }
+    }
+
+    private boolean isRollupNull(
+            GroupByGroupingSets groupByGroupingSets, Object[] row,
+            int groupingBitKeyIndex, int j) {
+        BitKey groupingBitKey = (BitKey) row[groupingBitKeyIndex];
+        boolean isGroupingBitSet =
+                groupingBitKey.get(groupByGroupingSets.findGroupingFunctionIndex(j));
+        return row[j].equals(RolapUtil.sqlNullValue) && isGroupingBitSet;
     }
 
     private int[] toArray(List<Integer> pos) {

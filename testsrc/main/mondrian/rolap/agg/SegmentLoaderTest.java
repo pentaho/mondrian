@@ -66,6 +66,35 @@ public class SegmentLoaderTest extends BatchTestCase {
         verifyUnitSalesAggregate(groupingSets.get(1).getSegments()[0]);
     }
 
+    public void testLoadWithMockResultsForLoadingSummaryAndDetailedSegmentsWithNullInRollupColumn() {
+        GroupingSet groupableSetsInfo = getGroupingSetRollupOnGender();
+
+        GroupingSet groupingSetsInfo = getDefaultGroupingSet();
+        ArrayList<GroupingSet> groupingSets =
+            new ArrayList<GroupingSet>();
+        groupingSets.add(groupingSetsInfo);
+        groupingSets.add(groupableSetsInfo);
+        SegmentLoader loader = new SegmentLoader() {
+
+            SqlStatement createExecuteSql(
+                    GroupByGroupingSets groupByGroupingSets)
+            {
+                return null;
+            }
+
+
+            List<Object[]> loadData(SqlStatement stmt,
+                                    GroupByGroupingSets groupByGroupingSets)
+                    throws SQLException
+            {
+                return getDataWithNullInRollupColumn(true);
+            }
+        };
+        loader.load(groupingSets, null);
+        Segment detailedSegment = groupingSets.get(0).getSegments()[0];
+        assertEquals(3, detailedSegment.getCellCount());
+    }
+
     public void testLoadWithMockResultsForLoadingSummaryAndDetailedSegmentsUsingSparse() {
         GroupingSet groupableSetsInfo = getGroupingSetRollupOnGender();
 
@@ -678,6 +707,17 @@ public class SegmentLoaderTest extends BatchTestCase {
         if (incSummaryData)
             data.add(new Object[]{"1997", "Non-Consumable", "Carousel", null,
                 "841", 1});
+        return data;
+    }
+
+    private List<Object[]> getDataWithNullInRollupColumn(boolean incSummaryData) {
+        List<Object[]> data = new ArrayList<Object[]>();
+        data.add(new Object[]{"1997", "Food", "Deli", "F", "5990", 0});
+        data.add(new Object[]{"1997", "Food", "Deli", "M", "6047", 0});
+        data.add(new Object[]{"1997", "Food", "Deli", null, "867", 0});
+        if (incSummaryData) {
+            data.add(new Object[]{"1997", "Food", "Deli", null, "12037", 1});
+        }
         return data;
     }
 
