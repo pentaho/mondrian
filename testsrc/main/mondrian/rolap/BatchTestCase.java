@@ -158,7 +158,20 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param patterns Set of patterns, one for each dialect.
      */
     protected void assertQuerySql(String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(mdxQuery, patterns, false, true);
+        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, true);
+    }
+
+    /**
+     * Checks that a given MDX query results in a particular SQL statement
+     * being generated.
+     *
+     * @param testConext non-default test context if required
+     * @param mdxQuery MDX query
+     * @param patterns Set of patterns, one for each dialect.
+     */
+    protected void assertQuerySql(
+        TestContext testContext, String mdxQuery, SqlPattern[] patterns) {
+        assertQuerySqlOrNot(testContext, mdxQuery, patterns, false, true);
     }
 
     /**
@@ -169,23 +182,25 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param patterns Set of patterns, one for each dialect.
      */
     protected void assertNoQuerySql(String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(mdxQuery, patterns, true, true);
+        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, true, true);
     }
 
     /**
      * Checks that a given MDX query results (or does not result) in a
      * particular SQL statement being generated.
      *
+     * @param testConext non-default test context if required
      * @param mdxQuery MDX query
      * @param patterns Set of patterns, one for each dialect.
      * @param negative false to assert if SQL is generated;
      *                 true to assert if SQL is NOT generated
+     * @param clearCache whether to clear cache before executing the MDX query               
      */
     protected void assertQuerySqlOrNot(
+        TestContext testContext,
         String mdxQuery, SqlPattern[] patterns, boolean negative,
         boolean clearCache)
     {
-        final TestContext testContext = getTestContext();
         final Connection connection = testContext.getConnection();
         final Query query = connection.parseQuery(mdxQuery);
         final Cube cube = query.getCube();

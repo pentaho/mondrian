@@ -104,6 +104,7 @@ FROM "sales_fact_1997" "B", "customer" "D"
 WHERE 
     "B"."customer_id" = "D"."customer_id"
 GROUP BY 
+         "B"."time_id",
          "D"."city",
          "D"."state_province",
          "D"."country";

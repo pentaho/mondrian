@@ -799,17 +799,18 @@ public class VirtualCubeTest extends BatchTestCase {
      *
      * @param mdxQuery MDX query
      * @param patterns Set of patterns, one for each dialect.
+     * @param clearCache whether to clear cache before running the query
      */
     protected void assertQuerySql(
         String mdxQuery, 
         SqlPattern[] patterns,
         boolean clearCache) {
-        assertQuerySqlOrNot(mdxQuery, patterns, false, clearCache);
-    }
+        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, clearCache);
+}
 
     /**
-     * 
-     *
+     * Checks that native set caching considers base cubes in the cache key.
+     * Native sets referencing different base cubes do not share the cached result.
      */
     public void testNativeSetCaching() {
         

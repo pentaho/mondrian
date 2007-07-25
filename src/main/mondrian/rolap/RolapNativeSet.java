@@ -392,17 +392,17 @@ public abstract class RolapNativeSet extends RolapNative {
     protected static class MemberListCrossJoinArg implements CrossJoinArg {
         private RolapMember[] members;
         private RolapLevel level = null;
-        private boolean strict;
+        private boolean restrictMemberTypes;
         private boolean hasCalcMembers;
         private boolean hasNonCalcMembers;
         private boolean hasAllMember;
         
         private MemberListCrossJoinArg(
-            RolapLevel level, RolapMember[] members, boolean strict,
+            RolapLevel level, RolapMember[] members, boolean restrictMemberTypes,
             boolean hasCalcMembers, boolean hasNonCalcMembers, boolean hasAllMember) {
             this.level = level;
             this.members = members;
-            this.strict = strict;
+            this.restrictMemberTypes = restrictMemberTypes;
             this.hasCalcMembers = hasCalcMembers;
             this.hasNonCalcMembers = hasNonCalcMembers;
             this.hasAllMember = hasAllMember;
@@ -412,11 +412,11 @@ public abstract class RolapNativeSet extends RolapNative {
          * Creates an instance of {@link RolapNativeSet.CrossJoinArg}.
          * 
          * @param args members in the list
-         * @param strict whether calculated members are allowed
+         * @param restrictMemberTypes whether calculated members are allowed
          * @return MemberListCrossJoinArg if member list is well formed, 
          * NULL if not.
          */
-        static CrossJoinArg create(Exp[] args, boolean strict) {
+        static CrossJoinArg create(Exp[] args, boolean restrictMemberTypes) {
             if (args.length == 0) {
                 return null;
             }
@@ -430,18 +430,18 @@ public abstract class RolapNativeSet extends RolapNative {
                     (RolapMember)(((MemberExpr)args[i]).getMember());
             }
             
-            return create(memberList, strict);
+            return create(memberList, restrictMemberTypes);
         }
 
         /**
          * Creates an instance of {@link RolapNativeSet.CrossJoinArg}.
          * 
          * @param args members in the list
-         * @param strict whether calculated members are allowed
+         * @param restrictMemberTypes whether calculated members are allowed
          * @return MemberListCrossJoinArg if member list is well formed, 
          * NULL if not.
          */
-        static CrossJoinArg create(List args, boolean strict) {
+        static CrossJoinArg create(List args, boolean restrictMemberTypes) {
             if (args.isEmpty()) {
                 return null;
             }
@@ -454,7 +454,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 memberList[i] = (RolapMember) args.get(i);
             }
             
-            return create(memberList, strict);
+            return create(memberList, restrictMemberTypes);
         }
 
         /**
@@ -473,7 +473,7 @@ public abstract class RolapNativeSet extends RolapNative {
          * members are presented (and then it's flagged appropriately
          * for special handling downstream).
          */
-        static CrossJoinArg create(RolapMember[] args, boolean strict) {
+        static CrossJoinArg create(RolapMember[] args, boolean restrictMemberTypes) {
 
             RolapLevel level = null;
             RolapLevel nullLevel = null;
@@ -517,7 +517,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 }
 
                 if (m.isCalculated()) {
-                    if (strict) {
+                    if (restrictMemberTypes) {
                         return null;
                     }
                     hasCalcMembers = true;
@@ -556,7 +556,7 @@ public abstract class RolapNativeSet extends RolapNative {
             }
             
             return new MemberListCrossJoinArg(
-                level, members, strict, 
+                level, members, restrictMemberTypes, 
                 hasCalcMembers, hasNonCalcMembers, hasAllMember);
         }
 
@@ -593,7 +593,7 @@ public abstract class RolapNativeSet extends RolapNative {
             for (RolapMember member : members) {
                 c = 31 * c + member.hashCode();
             }
-            if (strict) {
+            if (restrictMemberTypes) {
                 c += 1;
             }
             return c;
@@ -604,7 +604,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 return false;
             }
             MemberListCrossJoinArg that = (MemberListCrossJoinArg) obj;
-            if (this.strict != that.strict) {
+            if (this.restrictMemberTypes != that.restrictMemberTypes) {
                 return false;
             }
             for (int i = 0; i < members.length; i++) {
@@ -621,7 +621,7 @@ public abstract class RolapNativeSet extends RolapNative {
             Map<String, RolapStar.Table> relationNamesToStarTableMap) {
             SqlConstraintUtils.addMemberConstraint(
                 sqlQuery, levelToColumnMap, relationNamesToStarTableMap, null,
-                Arrays.asList(members), strict, true);
+                Arrays.asList(members), restrictMemberTypes, true);
         }
     }
 

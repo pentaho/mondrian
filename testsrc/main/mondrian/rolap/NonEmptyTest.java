@@ -24,6 +24,7 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
 import mondrian.olap.NativeEvaluationUnsupportedException;
+import mondrian.rolap.BatchTestCase.SqlPattern;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
 import mondrian.rolap.RolapNative.Listener;
 import mondrian.rolap.RolapNative.NativeEvent;
@@ -32,6 +33,7 @@ import mondrian.rolap.cache.CachePool;
 import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
@@ -48,7 +50,7 @@ import org.eigenbase.util.property.*;
  * @since Nov 21, 2005
  * @version $Id$
  */
-public class NonEmptyTest extends FoodMartTestCase {
+public class NonEmptyTest extends BatchTestCase {
     private static Logger logger = Logger.getLogger(NonEmptyTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
 
@@ -60,7 +62,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     public NonEmptyTest(String name) {
         super(name);
     }
-    
+        
     public void testStrMeasure() {
         TestContext ctx = TestContext.create(
             null,
@@ -1253,6 +1255,121 @@ public class NonEmptyTest extends FoodMartTestCase {
                         + "  [Time].[1997].[Q1].[1])");
     }
 
+    /**
+     * Check that multi-level member list generates compact form of SQL where clause:
+     * (1) User IN list if possible
+     * (2) Group members sharing the same parent
+     * (3) Only need to compare up to the first unique parent level.
+     * 
+     * Note: matching SQL pattern only works if the SQL is run in the same
+     * thread, which is the case with Derby. For LucidDB dialect, the 
+     * generated SQL is verified manually.
+     */
+    public void testMultiLevelMemberConstraint() {
+        String query =
+            "with " + 
+            "set [Filtered Store City Set] as {[Store].[USA].[OR].[Portland], [Store].[USA].[OR].[Salem], [Store].[USA].[CA].[San Francisco], [Store].[USA].[WA].[Tacoma]} " +
+            "set [NECJ] as NonEmptyCrossJoin([Filtered Store City Set], {[Product].[Product Family].Food}) " +
+            "select [NECJ] on rows from [Sales]";
+
+        String necjSql =
+                "select " +
+                "\"store\".\"store_country\", \"store\".\"store_state\", \"store\".\"store_city\", " +
+                "\"product_class\".\"product_family\" " +
+                "from " +
+                "\"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
+                "\"product\" as \"product\", \"product_class\" as \"product_class\" " +
+                "where " +
+                "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
+                "and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" " +
+                "and ((\"store\".\"store_state\" = 'WA' and \"store\".\"store_city\" = 'Tacoma') " +
+                "or (\"store\".\"store_state\" = 'CA' and \"store\".\"store_city\" = 'San Francisco') " +
+                "or (\"store\".\"store_state\" = 'OR' and \"store\".\"store_city\" in ('Portland', 'Salem'))) " +
+                "and (\"product_class\".\"product_family\" = 'Food') " +
+                "group by \"store\".\"store_country\", \"store\".\"store_state\", \"store\".\"store_city\", \"product_class\".\"product_family\" " +
+                "order by \"store\".\"store_country\" ASC, \"store\".\"store_state\" ASC, \"store\".\"store_city\" ASC, \"product_class\".\"product_family\" ASC";
+        
+        SqlPattern[] patterns = 
+            new SqlPattern[] {
+                new SqlPattern(SqlPattern.DERBY_DIALECT, necjSql, necjSql)
+            };  
+        
+        assertQuerySql(query, patterns);        
+    }
+    
+    /**
+     * Check that multi-level member list generates compact form of SQL where clause:
+     * (1) User IN list if possible(not possible if there are null values)
+     * (2) Group members sharing the same parent
+     * (3) Only need to compare up to the first unique parent level.
+     */
+    public void testMultiLevelMemberConstraintWithNull() {
+        String dimension =
+            "<Dimension name=\"Warehouse2\">\n" +
+            "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n" +
+            "    <Table name=\"warehouse\"/>\n" +
+            "    <Level name=\"address3\" column=\"wa_address3\" uniqueMembers=\"true\"/>\n" +
+            "    <Level name=\"address2\" column=\"wa_address2\" uniqueMembers=\"false\"/>\n" +
+            "    <Level name=\"address1\" column=\"wa_address1\" uniqueMembers=\"false\"/>\n" +
+            "    <Level name=\"name\" column=\"warehouse_name\" uniqueMembers=\"false\"/>\n" +
+            "  </Hierarchy>\n" +
+            "</Dimension>\n";
+            
+        String cube =
+            "<Cube name=\"Warehouse2\">\n" +
+            "  <Table name=\"inventory_fact_1997\"/>\n" +
+            "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n" +
+            "  <DimensionUsage name=\"Warehouse2\" source=\"Warehouse2\" foreignKey=\"warehouse_id\"/>\n" +
+            "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n" +
+            "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n" +
+            "</Cube>";
+        
+        String query =
+            "with\n" + 
+            "set [Filtered Warehouse Set] as {[Warehouse2].[#null].[#null].[5617 Saclan Terrace].[Arnold and Sons], [Warehouse2].[#null].[#null].[3377 Coachman Place].[Jones International]}\n" +
+            "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food})\n" +
+            "select [NECJ] on rows from [Warehouse2]\n";
+
+        String necjSql =
+            "select " +
+            "\"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", " +
+            "\"product_class\".\"product_family\" " +
+            "from " +
+            "\"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", " +
+            "\"product\" as \"product\", \"product_class\" as \"product_class\" " +
+            "where " +
+            "\"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" " +
+            "and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
+            "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" " +
+            "and ((\"warehouse\".\"wa_address1\" = '5617 Saclan Terrace' and \"warehouse\".\"wa_address2\" is null " +
+            "and \"warehouse\".\"wa_address3\" is null and \"warehouse\".\"warehouse_name\" = 'Arnold and Sons') " +
+            "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"wa_address2\" is null " +
+            "and \"warehouse\".\"wa_address3\" is null and \"warehouse\".\"warehouse_name\" = 'Jones International')) " +
+            "and (\"product_class\".\"product_family\" = 'Food') " +
+            "group by " +
+            "\"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", " +
+            "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" " +
+            "order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, \"warehouse\".\"wa_address1\" ASC, " +
+            "\"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
+        
+        TestContext testContext =
+            TestContext.create(
+             dimension,
+             cube,
+             null,
+             null,
+             null);
+
+        SqlPattern[] patterns = 
+            new SqlPattern[] {
+                new SqlPattern(
+                    SqlPattern.getDialect(testContext.getDialect()), 
+                    necjSql, necjSql)
+            };  
+        
+        assertQuerySql(testContext, query, patterns);
+    }
+    
     public void testNonEmptyUnionQuery() {
         Result result = executeQuery(
                 "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,\n" +
