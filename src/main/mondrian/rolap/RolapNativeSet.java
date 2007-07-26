@@ -9,7 +9,6 @@
 package mondrian.rolap;
 
 import java.util.*;
-import java.sql.*;
 
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ListCalc;

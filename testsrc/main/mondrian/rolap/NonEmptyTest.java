@@ -1260,10 +1260,6 @@ public class NonEmptyTest extends BatchTestCase {
      * (1) User IN list if possible
      * (2) Group members sharing the same parent
      * (3) Only need to compare up to the first unique parent level.
-     * 
-     * Note: matching SQL pattern only works if the SQL is run in the same
-     * thread, which is the case with Derby. For LucidDB dialect, the 
-     * generated SQL is verified manually.
      */
     public void testMultiLevelMemberConstraint() {
         String query =
@@ -1272,7 +1268,7 @@ public class NonEmptyTest extends BatchTestCase {
             "set [NECJ] as NonEmptyCrossJoin([Filtered Store City Set], {[Product].[Product Family].Food}) " +
             "select [NECJ] on rows from [Sales]";
 
-        String necjSql =
+        String necjSqlDerby =
                 "select " +
                 "\"store\".\"store_country\", \"store\".\"store_state\", \"store\".\"store_city\", " +
                 "\"product_class\".\"product_family\" " +
@@ -1291,7 +1287,7 @@ public class NonEmptyTest extends BatchTestCase {
         
         SqlPattern[] patterns = 
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.DERBY_DIALECT, necjSql, necjSql)
+                new SqlPattern(SqlPattern.DERBY_DIALECT, necjSqlDerby, necjSqlDerby)
             };  
         
         assertQuerySql(query, patterns);        
@@ -1299,7 +1295,8 @@ public class NonEmptyTest extends BatchTestCase {
     
     /**
      * Check that multi-level member list generates compact form of SQL where clause:
-     * (1) User IN list if possible(not possible if there are null values)
+     * (1) User IN list if possible(not possible if there are null values because 
+     *     NULLs do not match)
      * (2) Group members sharing the same parent
      * (3) Only need to compare up to the first unique parent level.
      */
@@ -1330,7 +1327,7 @@ public class NonEmptyTest extends BatchTestCase {
             "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food})\n" +
             "select [NECJ] on rows from [Warehouse2]\n";
 
-        String necjSql =
+        String necjSqlDerby =
             "select " +
             "\"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", " +
             "\"product_class\".\"product_family\" " +
@@ -1362,9 +1359,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         SqlPattern[] patterns = 
             new SqlPattern[] {
-                new SqlPattern(
-                    SqlPattern.getDialect(testContext.getDialect()), 
-                    necjSql, necjSql)
+                new SqlPattern(SqlPattern.DERBY_DIALECT, necjSqlDerby, necjSqlDerby)
             };  
         
         assertQuerySql(testContext, query, patterns);

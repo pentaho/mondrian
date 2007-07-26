@@ -729,15 +729,16 @@ public class SqlConstraintUtils {
                     sqlQuery.getDialect(),
                     level.getDatatype());
                 
-                if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(value)) {   
+                if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(value)) {
+                    RolapMember mp = m.getParentMember();
                     // Add to the nullParent map
                     List<RolapMember> childrenList = 
-                        parentWithNullToChildrenMap.get(p);
+                        parentWithNullToChildrenMap.get(mp);
                     if (childrenList == null) {
                         childrenList = new ArrayList<RolapMember>();
                     }
                     childrenList.add(m);
-                    parentWithNullToChildrenMap.put(m.getParentMember(), childrenList);
+                    parentWithNullToChildrenMap.put(mp, childrenList);
                     // Skip generating condition for this parent
                     containsNull = true;
                     break;
