@@ -375,7 +375,7 @@ public class SqlConstraintUtils {
         String condition = "";
         Map<RolapMember, List<RolapMember>> parentChildrenMap = 
             new HashMap<RolapMember, List<RolapMember>>();
-        
+
         // First try to generate IN list for all members
         if (sqlQuery.getDialect().supportsMultiValueInExpr()) {
             condition +=
@@ -423,6 +423,8 @@ public class SqlConstraintUtils {
             firstParent = false;
         }
 
+        RolapLevel memberLevel = members.get(0).getLevel();
+        
         // The children for each parent are turned into IN list so they
         // should not contain null.
         for (RolapMember p : parentChildrenMap.keySet()) {
@@ -490,18 +492,42 @@ public class SqlConstraintUtils {
 
             // If no children to be generated for this parent then we are done
             if (!children.isEmpty()) {
+                Map<RolapMember, List<RolapMember>> tmpParentChildrenMap = 
+                    new HashMap<RolapMember, List<RolapMember>>();
+
                 condition += " and ";
 
-                // Because this is method is used for multi-level member lists,
-                // the children set should be non-empty.
-                condition +=
-                    generateSingleValueInExpr(
-                        sqlQuery, 
-                        levelToColumnMap,
-                        relationNamesToStarTableMap,
-                        children,
-                        children.get(0).getLevel(),
-                        restrictMemberTypes);  
+                RolapLevel childrenLevel = 
+                    (RolapLevel)(p.getLevel().getChildLevel());
+                
+                if (sqlQuery.getDialect().supportsMultiValueInExpr() &&
+                    childrenLevel != memberLevel) {
+                    // Multi-level children and multi-value IN list supported
+                    condition +=
+                        generateMultiValueInExpr(
+                            sqlQuery, 
+                            levelToColumnMap,
+                            relationNamesToStarTableMap,
+                            children,
+                            childrenLevel,
+                            restrictMemberTypes,
+                            tmpParentChildrenMap);
+                    assert (tmpParentChildrenMap.isEmpty());
+                } else {
+                    // Can only be single level children
+                    // If multi-value IN list not supported, children will be on
+                    // the same level as members list. Only single value IN list
+                    // needs to be generated for this case.
+                    assert (childrenLevel == memberLevel);
+                    condition +=
+                        generateSingleValueInExpr(
+                            sqlQuery, 
+                            levelToColumnMap,
+                            relationNamesToStarTableMap,
+                            children,
+                            childrenLevel,
+                            restrictMemberTypes);
+                }
             }
             // SQL is complete for this parent-children group.
             condition += ")";
@@ -730,15 +756,19 @@ public class SqlConstraintUtils {
                     level.getDatatype());
                 
                 if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(value)) {
-                    RolapMember mp = m.getParentMember();
                     // Add to the nullParent map
                     List<RolapMember> childrenList = 
-                        parentWithNullToChildrenMap.get(mp);
+                        parentWithNullToChildrenMap.get(p);
                     if (childrenList == null) {
                         childrenList = new ArrayList<RolapMember>();
+                        parentWithNullToChildrenMap.put(p, childrenList);
                     }
-                    childrenList.add(m);
-                    parentWithNullToChildrenMap.put(mp, childrenList);
+                    
+                    // If p has children
+                    if (m != p) {
+                        childrenList.add(m);
+                    }
+                    
                     // Skip generating condition for this parent
                     containsNull = true;
                     break;

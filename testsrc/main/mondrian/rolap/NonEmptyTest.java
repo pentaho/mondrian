@@ -1284,10 +1284,26 @@ public class NonEmptyTest extends BatchTestCase {
                 "and (\"product_class\".\"product_family\" = 'Food') " +
                 "group by \"store\".\"store_country\", \"store\".\"store_state\", \"store\".\"store_city\", \"product_class\".\"product_family\" " +
                 "order by \"store\".\"store_country\" ASC, \"store\".\"store_state\" ASC, \"store\".\"store_city\" ASC, \"product_class\".\"product_family\" ASC";
-        
+        String necjSqlMySql =
+            "select " +
+            "`store`.`store_country` as `c0`, `store`.`store_state` as `c1`, " +
+            "`store`.`store_city` as `c2`, `product_class`.`product_family` as `c3` " +
+            "from " +
+            "`store` as `store`, `sales_fact_1997` as `sales_fact_1997`, " +
+            "`product` as `product`, `product_class` as `product_class` " +
+            "where " +
+            "`sales_fact_1997`.`store_id` = `store`.`store_id` and `product`.`product_class_id` = `product_class`.`product_class_id` " +
+            "and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
+            "and ((`store`.`store_city`,`store`.`store_state`) in (('Portland','OR'),('Salem','OR'),('San Francisco','CA'),('Tacoma','WA'))) " +
+            "and (`product_class`.`product_family` = 'Food') " +
+            "group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `product_class`.`product_family` " +
+            "order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC, ISNULL(`store`.`store_state`), `store`.`store_state` ASC, " +
+            "ISNULL(`store`.`store_city`), `store`.`store_city` ASC, ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+
         SqlPattern[] patterns = 
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.DERBY_DIALECT, necjSqlDerby, necjSqlDerby)
+                new SqlPattern(SqlPattern.DERBY_DIALECT, necjSqlDerby, necjSqlDerby),
+                new SqlPattern(SqlPattern.MY_SQL_DIALECT, necjSqlMySql, necjSqlMySql)
             };  
         
         assertQuerySql(query, patterns);        
@@ -1348,7 +1364,32 @@ public class NonEmptyTest extends BatchTestCase {
             "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" " +
             "order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, \"warehouse\".\"wa_address1\" ASC, " +
             "\"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
-        
+    
+        String necjSqlMySql =
+            "select " +
+            "`warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, " +
+            "`warehouse`.`wa_address1` as `c2`, `warehouse`.`warehouse_name` as `c3`, `product_class`.`product_family` as `c4` " +
+            "from " +
+            "`warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, " +
+            "`product` as `product`, `product_class` as `product_class` " +
+            "where " +
+            "`inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` " +
+            "and `product`.`product_class_id` = `product_class`.`product_class_id` " +
+            "and `inventory_fact_1997`.`product_id` = `product`.`product_id` " +
+            "and ((`warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null " +
+            "and (`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`) " +
+            "in (('Arnold and Sons','5617 Saclan Terrace'),('Jones International','3377 Coachman Place')))) " +
+            "and (`product_class`.`product_family` = 'Food') " +
+            "group by " +
+            "`warehouse`.`wa_address3`, `warehouse`.`wa_address2`, `warehouse`.`wa_address1`, " +
+            "`warehouse`.`warehouse_name`, `product_class`.`product_family` " +
+            "order by " +
+            "ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, " +
+            "ISNULL(`warehouse`.`wa_address2`), `warehouse`.`wa_address2` ASC, " +
+            "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, " +
+            "ISNULL(`warehouse`.`warehouse_name`), `warehouse`.`warehouse_name` ASC, " +
+            "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+            
         TestContext testContext =
             TestContext.create(
              dimension,
@@ -1359,7 +1400,8 @@ public class NonEmptyTest extends BatchTestCase {
 
         SqlPattern[] patterns = 
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.DERBY_DIALECT, necjSqlDerby, necjSqlDerby)
+                new SqlPattern(SqlPattern.DERBY_DIALECT, necjSqlDerby, necjSqlDerby),
+                new SqlPattern(SqlPattern.MY_SQL_DIALECT, necjSqlMySql, necjSqlMySql)
             };  
         
         assertQuerySql(testContext, query, patterns);
