@@ -182,10 +182,14 @@ public class SqlStatement {
         }
         long time = System.currentTimeMillis();
         long totalMs = time - startTime;
+        String status = ", exec+fetch " + totalMs + " ms, " + rowCount + " rows";
         if (trace != null) {
-            trace.println(
-                ", exec+fetch " + totalMs + " ms, " + rowCount + " rows");
+            trace.println(status);
         }
+        if (RolapUtil.LOGGER.isDebugEnabled()) {
+            RolapUtil.LOGGER.debug(component + ": done executing sql [" +
+                sql + "]" + status);
+        }        
     }
 
     public ResultSet getResultSet() {
