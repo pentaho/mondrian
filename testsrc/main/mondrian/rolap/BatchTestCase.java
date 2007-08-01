@@ -357,6 +357,7 @@ public class BatchTestCase extends FoodMartTestCase {
         protected static final int POSTGRES_DIALECT = 0x00000200;
         protected static final int MY_SQL_DIALECT = 0x00000400;
         protected static final int SYBASE_DIALECT = 0x00000800;
+        protected static final int LUCIDDB_DIALECT = 0x00001000;
 
         public static int getDialect(SqlQuery.Dialect dialect) {
             if (dialect.isAccess()) {
@@ -383,6 +384,8 @@ public class BatchTestCase extends FoodMartTestCase {
                 return MY_SQL_DIALECT;
             } else if (dialect.isSybase()) {
                 return SYBASE_DIALECT;
+            } else if (dialect.isLucidDB()){
+                return LUCIDDB_DIALECT;
             } else {
                 return UNKNOWN_DIALECT;
             }

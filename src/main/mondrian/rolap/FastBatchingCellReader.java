@@ -403,17 +403,34 @@ public class FastBatchingCellReader implements CellReader {
             // If the database cannot execute "count(distinct ...)", split the
             // distinct aggregations out.
             SqlQuery.Dialect dialect = getStar().getSqlQueryDialect();
+            
             int distinctMeasureCount = getDistinctMeasureCount(measuresList);
             boolean tooManyDistinctMeasures =
                 distinctMeasureCount > 0 &&
-                    !dialect.allowsCountDistinct() ||
-                    distinctMeasureCount > 1 &&
-                        !dialect.allowsMultipleCountDistinct();
+                !dialect.allowsCountDistinct() ||
+                distinctMeasureCount > 1 &&
+                !dialect.allowsMultipleCountDistinct();
+            
             if (tooManyDistinctMeasures) {
                 doSpecialHandlingOfDistinctCountMeasures(aggmgr, predicates,
                     groupingSetsCollector);
             }
 
+            // Load agg(distinct <SQL expression>) measures individually 
+            // in LucidDB.
+            if (dialect.isLucidDB()) {
+                List<RolapStar.Measure> distinctSqlMeasureList =
+                    getDistinctSqlMeasures(measuresList);
+                for (RolapStar.Measure measure : distinctSqlMeasureList) {
+                    RolapStar.Measure[] measures = {measure};
+                    aggmgr.loadAggregation(
+                        measures, columns,
+                        constrainedColumnsBitKey,
+                        predicates, pinnedSegments, groupingSetsCollector);
+                    measuresList.remove(measure);
+                }
+            }
+            
             final int measureCount = measuresList.size();
             if (measureCount > 0) {
                 RolapStar.Measure[] measures =
@@ -458,6 +475,9 @@ public class FastBatchingCellReader implements CellReader {
                         i++;
                     }
                 }
+                
+                // Load all the distinct measures based on the same expression
+                // together
                 RolapStar.Measure[] measures =
                     distinctMeasuresList.toArray(
                         new RolapStar.Measure[distinctMeasuresList.size()]);
@@ -468,7 +488,7 @@ public class FastBatchingCellReader implements CellReader {
                     pinnedSegments, groupingSetsCollector);
             }
         }
-
+        
         private StarColumnPredicate[] initPredicates() {
             StarColumnPredicate[] predicates =
                     new StarColumnPredicate[columns.length];
@@ -555,6 +575,29 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         /**
+         * Returns the list of measures based upon a distinct aggregation
+         * containing SQL measure expressions(as opposed to column expressions).
+         * 
+         * This method was initially intended for only those measures that are
+         * defined using subqueries(for DBs that support them). However, since
+         * Mondrian does not parse the SQL string, the method will count both
+         * queries as well as non query SQL expressions, e.g. "col1" + "col2".
+         */
+        List<RolapStar.Measure> getDistinctSqlMeasures(
+            List<RolapStar.Measure> measuresList) {
+            List<RolapStar.Measure> distinctSqlMeasureList =
+                new ArrayList<RolapStar.Measure>();
+            for (RolapStar.Measure measure : measuresList) {
+                if (measure.getAggregator().isDistinct() &&
+                    measure.getExpression() instanceof 
+                        MondrianDef.MeasureExpression) {
+                    distinctSqlMeasureList.add(measure);
+                }
+            }
+            return distinctSqlMeasureList;
+        }
+        
+        /**
          * Other batch can be batched to this
          * if columns list is super set of other batch's constraint columns and
          * if both the batch does not have distinct count measure in it and
@@ -578,7 +621,7 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         boolean hasDistinctCountMeasure() {
-            return getDistinctMeasureCount(measuresList) != 0;
+            return getDistinctMeasureCount(measuresList) > 0;
         }
 
         boolean haveSameStarAndAggregation(Batch other) {
