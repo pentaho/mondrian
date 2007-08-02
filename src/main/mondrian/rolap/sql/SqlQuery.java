@@ -1289,6 +1289,17 @@ public class SqlQuery {
         }
 
         /**
+         * Returns whether this Dialect has performant support of distinct SQL
+         * measures in the same query.
+         * 
+         * @return whether this dialect supports multiple count(distinct subquery)
+         * measures in one query.
+         */
+        public boolean allowsMultipleDistinctSqlMeasures() {
+            return allowsMultipleCountDistinct() && !isLucidDB();
+        }
+        
+        /**
          * Generates a SQL statement to represent an inline dataset.
          *
          * <p>For example, for Oracle, generates

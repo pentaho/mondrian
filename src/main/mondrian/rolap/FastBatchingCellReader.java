@@ -417,8 +417,18 @@ public class FastBatchingCellReader implements CellReader {
             }
 
             // Load agg(distinct <SQL expression>) measures individually 
-            // in LucidDB.
-            if (dialect.isLucidDB()) {
+            // for DBs that does allow multiple distinct SQL measures.
+            if (!dialect.allowsMultipleDistinctSqlMeasures()) {
+                
+                // Note that the intention was orignially to capture the subquery
+                // SQL measures and separate them out; However, without parsing
+                // the SQL string, Mondrian cannot distinguish between
+                // "col1" + "col2" and subquery. Here the measure list contains
+                // both types.
+                
+                // See the test case testLoadDistinctSqlMeasure() in
+                //  mondrian.rolap.FastBatchingCellReaderTest
+
                 List<RolapStar.Measure> distinctSqlMeasureList =
                     getDistinctSqlMeasures(measuresList);
                 for (RolapStar.Measure measure : distinctSqlMeasureList) {
