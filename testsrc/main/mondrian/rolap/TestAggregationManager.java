@@ -17,6 +17,7 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.test.TestContext;
+import mondrian.test.SqlPattern;
 
 /**
  * Unit test for {@link AggregationManager}.
@@ -61,7 +62,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
                 "select `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0`," +
                 " sum(`agg_g_ms_pcat_sales_fact_1997`.`unit_sales`) as `m0` " +
                 "from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` " +
@@ -86,7 +87,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
                 "select `customer`.`gender` as `c0`," +
                 " sum(`agg_l_03_sales_fact_1997`.`unit_sales`) as `m0` " +
                 "from `customer` as `customer`," +
@@ -129,7 +130,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
                 "select `store`.`store_state` as `c0`," +
                 " `customer`.`gender` as `c1`," +
                 " sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0`," +
@@ -172,7 +173,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
                 "select `customer`.`gender` as `c0`," +
                 " `store`.`store_state` as `c1`," +
                 " sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0`," +
@@ -242,7 +243,7 @@ public class TestAggregationManager extends BatchTestCase {
                 MondrianProperties.instance().ReadAggregates.get()) {
             patterns = new SqlPattern[] {
                 new SqlPattern(
-                        SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                    Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
                         "select `store`.`store_state` as `c0`," +
                     " `agg_c_14_sales_fact_1997`.`the_year` as `c1`," +
                     " sum(`agg_c_14_sales_fact_1997`.`unit_sales`) as `m0` " +
@@ -260,7 +261,7 @@ public class TestAggregationManager extends BatchTestCase {
             // Note -- no references to store_country!!
             patterns = new SqlPattern[] {
                 new SqlPattern(
-                        SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                    Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
                         "select `store`.`store_state` as `c0`," +
                     " `time_by_day`.`the_year` as `c1`," +
                     " sum(`sales_fact_1997`.`unit_sales`) as `m0` from `store` as `store`," +
@@ -295,7 +296,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.DERBY_DIALECT,
+                SqlPattern.Dialect.DERBY,
                 sql,
                 sql
             )
@@ -319,7 +320,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
                 "select `store`.`store_type` as `c0`," +
                 " sum(`store`.`store_sqft`) as `m0` " +
                 "from `store` as `store` " +
@@ -341,7 +342,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT,
+                SqlPattern.Dialect.ACCESS,
                 "select" +
                 " `d0` as `c0`," +
                 " `d1` as `c1`," +
@@ -362,7 +363,7 @@ public class TestAggregationManager extends BatchTestCase {
                 26
             ),
             new SqlPattern(
-                SqlPattern.MY_SQL_DIALECT,
+                SqlPattern.Dialect.MYSQL,
                 "select" +
                 " `time_by_day`.`the_year` as `c0`," +
                 " `time_by_day`.`quarter` as `c1`," +
@@ -394,7 +395,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT,
+                SqlPattern.Dialect.ACCESS,
                 "select " +
                 "`agg_c_10_sales_fact_1997`.`the_year` as `c0`, " +
                 "`agg_c_10_sales_fact_1997`.`quarter` as `c1`, " +
@@ -424,7 +425,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.MY_SQL_DIALECT,
+                SqlPattern.Dialect.MYSQL,
                 "select" +
                 " `time_by_day`.`the_year` as `c0`," +
                 " `time_by_day`.`quarter` as `c1`," +
@@ -445,7 +446,7 @@ public class TestAggregationManager extends BatchTestCase {
                 " `product_class`.`product_family`",
                 23),
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT,
+                SqlPattern.Dialect.ACCESS,
                 "select" +
                 " `d0` as `c0`," +
                 " `d1` as `c1`," +
@@ -505,7 +506,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.MY_SQL_DIALECT | SqlPattern.ACCESS_DIALECT,
+                Util.enumSetOf(SqlPattern.Dialect.MYSQL, SqlPattern.Dialect.ACCESS),
                 "select `agg_g_ms_pcat_sales_fact_1997`.`the_year` as `c0`," +
                 " `agg_g_ms_pcat_sales_fact_1997`.`quarter` as `c1`," +
                 " `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` as `c2`," +
@@ -548,7 +549,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.MY_SQL_DIALECT | SqlPattern.ACCESS_DIALECT,
+                Util.enumSetOf(SqlPattern.Dialect.MYSQL, SqlPattern.Dialect.ACCESS),
                 "select `agg_g_ms_pcat_sales_fact_1997`.`the_year` as `c0`," +
                 " `agg_g_ms_pcat_sales_fact_1997`.`quarter` as `c1`," +
                 " `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` as `c2`," +
@@ -592,7 +593,7 @@ public class TestAggregationManager extends BatchTestCase {
         }
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT,
+                SqlPattern.Dialect.ACCESS,
                 "select `store`.`store_country` as `c0` " +
                     "from `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`," +
                     " `store` as `store` " +
@@ -602,7 +603,7 @@ public class TestAggregationManager extends BatchTestCase {
                     "order by `store`.`store_country` ASC",
                 26),
             new SqlPattern(
-                SqlPattern.MY_SQL_DIALECT,
+                SqlPattern.Dialect.MYSQL,
                 "select `store`.`store_country` as `c0` " +
                     "from `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`," +
                     " `store` as `store` " +

@@ -11,6 +11,7 @@ package mondrian.rolap;
 
 import mondrian.rolap.agg.CellRequest;
 import mondrian.olap.MondrianProperties;
+import mondrian.test.SqlPattern;
 
 /**
  * Test support for generating SQL queries with the <code>GROUPING SETS</code>
@@ -54,7 +55,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
         CellRequest request3 = createRequest(cubeNameSales2,
             measureUnitSales, null, "", "");
 
-        SqlPattern[] patternsWithGS = {new SqlPattern(SqlPattern.ORACLE_DIALECT,
+        SqlPattern[] patternsWithGS = {
+            new SqlPattern(
+                SqlPattern.Dialect.ORACLE,
             "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
                 "grouping(\"customer\".\"gender\") as \"g0\" " +
                 "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
@@ -68,12 +71,12 @@ public class GroupingSetQueryTest extends BatchTestCase {
         MondrianProperties.instance().EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGS =
-            {new SqlPattern(SqlPattern.ACCESS_DIALECT,
+            {new SqlPattern(SqlPattern.Dialect.ACCESS,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by \"customer\".\"gender\"", 26),
-                new SqlPattern(SqlPattern.ORACLE_DIALECT,
+                new SqlPattern(SqlPattern.Dialect.ORACLE,
                     "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                         "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
                         "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
@@ -104,13 +107,13 @@ public class GroupingSetQueryTest extends BatchTestCase {
         MondrianProperties.instance().EnableGroupingSets.set(true);
 
         SqlPattern[] patternsWithoutGS =
-            {new SqlPattern(SqlPattern.ACCESS_DIALECT,
+            {new SqlPattern(SqlPattern.Dialect.ACCESS,
                 "select \"agg_g_ms_pcat_sales_fact_1997\".\"gender\" as \"c0\", " +
                     "sum(\"agg_g_ms_pcat_sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"agg_g_ms_pcat_sales_fact_1997\" as \"agg_g_ms_pcat_sales_fact_1997\" " +
                     "group by \"agg_g_ms_pcat_sales_fact_1997\".\"gender\"",
                 26),
-                new SqlPattern(SqlPattern.ORACLE_DIALECT,
+                new SqlPattern(SqlPattern.Dialect.ORACLE,
                     "select \"agg_g_ms_pcat_sales_fact_1997\".\"gender\" as \"c0\", " +
                         "sum(\"agg_g_ms_pcat_sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                         "from \"agg_g_ms_pcat_sales_fact_1997\" \"agg_g_ms_pcat_sales_fact_1997\" " +
@@ -132,7 +135,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             measureUnitSales, tableCustomer, fieldGender, "F");
 
         SqlPattern[] patternsWithGSEnabled =
-            {new SqlPattern(SqlPattern.ORACLE_DIALECT,
+            {new SqlPattern(SqlPattern.Dialect.ORACLE,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
@@ -144,12 +147,12 @@ public class GroupingSetQueryTest extends BatchTestCase {
         MondrianProperties.instance().EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGS =
-            {new SqlPattern(SqlPattern.ACCESS_DIALECT,
+            {new SqlPattern(SqlPattern.Dialect.ACCESS,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by \"customer\".\"gender\"", 72),
-                new SqlPattern(SqlPattern.ORACLE_DIALECT,
+                new SqlPattern(SqlPattern.Dialect.ORACLE,
                     "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                         "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
                         "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
@@ -175,7 +178,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
         CellRequest request6 = createRequest(cubeNameSales2,
             measureStoreSales, null, "", "");
 
-        SqlPattern[] patternsWithGS = {new SqlPattern(SqlPattern.ORACLE_DIALECT,
+        SqlPattern[] patternsWithGS = {new SqlPattern(SqlPattern.Dialect.ORACLE,
             "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
                 "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\", grouping(\"customer\".\"gender\") as \"g0\" " +
                 "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
@@ -190,13 +193,13 @@ public class GroupingSetQueryTest extends BatchTestCase {
         MondrianProperties.instance().EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGS =
-            {new SqlPattern(SqlPattern.ACCESS_DIALECT,
+            {new SqlPattern(SqlPattern.Dialect.ACCESS,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
                     "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\" " +
                     "from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by \"customer\".\"gender\"", 26),
-                new SqlPattern(SqlPattern.ORACLE_DIALECT,
+                new SqlPattern(SqlPattern.Dialect.ORACLE,
                     "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
                         "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\" " +
                         "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
@@ -224,7 +227,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             measureUnitSales, null, "", "");
 
         SqlPattern[] patternOfBatchGroupedWith1stGroup =
-            {new SqlPattern(SqlPattern.ORACLE_DIALECT,
+            {new SqlPattern(SqlPattern.Dialect.ORACLE,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
                     "grouping(\"customer\".\"gender\") as \"g0\" " +
                     "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
@@ -237,7 +240,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             patternOfBatchGroupedWith1stGroup, cubeNameSales2);
 
         SqlPattern[] patternOfBatchNotGroupedTo2ndGroup =
-            {new SqlPattern(SqlPattern.ORACLE_DIALECT,
+            {new SqlPattern(SqlPattern.Dialect.ORACLE,
                 "select \"customer\".\"marital_status\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
@@ -251,11 +254,11 @@ public class GroupingSetQueryTest extends BatchTestCase {
         MondrianProperties.instance().EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGS =
-            {new SqlPattern(SqlPattern.ACCESS_DIALECT,
+            {new SqlPattern(SqlPattern.Dialect.ACCESS,
                 "select sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"sales_fact_1997\" as \"sales_fact_1997\"",
                 40),
-                new SqlPattern(SqlPattern.ORACLE_DIALECT,
+                new SqlPattern(SqlPattern.Dialect.ORACLE,
                     "select sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                         "from \"sales_fact_1997\" \"sales_fact_1997\"",
                     40)
@@ -280,7 +283,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
         CellRequest request3 = createRequest(cubeNameSales2,
             measureUnitSales, tableTime, fieldYear, "1997");
 
-        SqlPattern[] patternsWithGS = {new SqlPattern(SqlPattern.ORACLE_DIALECT,
+        SqlPattern[] patternsWithGS = {new SqlPattern(SqlPattern.Dialect.ORACLE,
             "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
                 "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", grouping(\"customer\".\"gender\") as \"g0\" " +
                 "from \"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", \"customer\" \"customer\" " +
@@ -295,7 +298,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
         MondrianProperties.instance().EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGS =
-            {new SqlPattern(SqlPattern.ACCESS_DIALECT,
+            {new SqlPattern(SqlPattern.Dialect.ACCESS,
                 "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
                     "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
@@ -305,7 +308,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                     "\"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"",
                 50),
-                new SqlPattern(SqlPattern.ORACLE_DIALECT,
+                new SqlPattern(SqlPattern.Dialect.ORACLE,
                     "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
                         "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                         "from \"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", " +

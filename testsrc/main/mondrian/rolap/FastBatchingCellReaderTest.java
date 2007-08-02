@@ -12,10 +12,10 @@ package mondrian.rolap;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.rolap.BatchTestCase.SqlPattern;
 import mondrian.rolap.agg.SegmentLoader;
 import mondrian.rolap.agg.GroupingSet;
 import mondrian.test.TestContext;
+import mondrian.test.SqlPattern;
 
 import java.util.*;
 
@@ -631,40 +631,53 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             groupingSets.get(1).getLevelBitKey());
 
     }
-    
+
     /**
-     * Check that distinct aggregates based on SQL expressions, 
-     * e.g. count(distinct "col1" + "col2"), count(distinct query)
+     * Checks that in dialects that request it (e.g. LucidDB),
+     * distinct aggregates based on SQL expressions,
+     * e.g. <code>count(distinct "col1" + "col2"), count(distinct query)</code>,
      * are loaded individually, and separately from the other aggregates.
      */
     public void testLoadDistinctSqlMeasure() {
+        // Some databases cannot handle scalar subqueries inside
+        // count(distinct).
+        final SqlQuery.Dialect dialect = getTestContext().getDialect();
+        switch (SqlPattern.Dialect.get(dialect)) {
+        case ORACLE: // gives 'feature not supported' in Express 10.2
+            return;
+        }
+
         String cube =
             "<Cube name=\"Warehouse2\">" +
             "   <Table name=\"warehouse\"/>" +
             "   <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"stores_id\"/>" +
             "   <Measure name=\"Count Distinct of Warehouses (Large Owned)\" aggregator=\"distinct count\" formatString=\"#,##0\">" +
             "       <MeasureExpression>" +
-            "       <SQL dialect=\"generic\">select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" from \"warehouse_class\" AS \"warehouse_class\" where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Owned'</SQL>" +
+            "       <SQL dialect=\"generic\">(select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Owned')</SQL>" +
             "       </MeasureExpression>" +
             "   </Measure>" +
             "   <Measure name=\"Count Distinct of Warehouses (Large Independent)\" aggregator=\"distinct count\" formatString=\"#,##0\">" +
             "       <MeasureExpression>" +
-            "       <SQL dialect=\"generic\">select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" from \"warehouse_class\" AS \"warehouse_class\" where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent'</SQL>" +
+            "       <SQL dialect=\"generic\">(select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Independent')</SQL>" +
             "       </MeasureExpression>" +
             "   </Measure>" +
             "   <Measure name=\"Count All of Warehouses (Large Independent)\" aggregator=\"count\" formatString=\"#,##0\">" +
             "       <MeasureExpression>" +
-            "           <SQL dialect=\"generic\">select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" from \"warehouse_class\" AS \"warehouse_class\" where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent'</SQL>" +
+            "           <SQL dialect=\"generic\">(select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Independent')</SQL>" +
             "       </MeasureExpression>" +
             "   </Measure>" +
             "   <Measure name=\"Count Distinct Store+Warehouse\" aggregator=\"distinct count\" formatString=\"#,##0\">" +
-            "       <MeasureExpression><SQL dialect=\"generic\">\"store_id\"+\"warehouse_id\"</SQL></MeasureExpression>" +
+            "       <MeasureExpression><SQL dialect=\"generic\">`store_id`+`warehouse_id`</SQL></MeasureExpression>" +
             "   </Measure>" +
             "   <Measure name=\"Count All Store+Warehouse\" aggregator=\"count\" formatString=\"#,##0\">" +
-            "       <MeasureExpression><SQL dialect=\"generic\">\"store_id\"+\"warehouse_id\"</SQL></MeasureExpression>" +
+            "       <MeasureExpression><SQL dialect=\"generic\">`store_id`+`warehouse_id`</SQL></MeasureExpression>" +
             "   </Measure>" +
             "   <Measure name=\"Store Count\" column=\"stores_id\" aggregator=\"count\" formatString=\"#,###\"/>" +
             "</Cube>";
+        cube = cube.replaceAll("`", dialect.getQuoteIdentifierString());
+        if (dialect.isOracle()) {
+            cube = cube.replaceAll(" AS ", " ");
+        }
 
         String query =
             "select " +
@@ -677,7 +690,70 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "    [Measures].[Store Count]} on columns " +
             "from [Warehouse2]";
 
-        String loadCountDistinct1 =
+        TestContext testContext =
+            TestContext.create(
+             null,
+             cube,
+             null,
+             null,
+             null);
+
+        testContext.assertQueryReturns(
+            query,
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Count Distinct of Warehouses (Large Owned)]}\n" +
+                "{[Measures].[Count Distinct of Warehouses (Large Independent)]}\n" +
+                "{[Measures].[Count All of Warehouses (Large Independent)]}\n" +
+                "{[Measures].[Count Distinct Store+Warehouse]}\n" +
+                "{[Measures].[Count All Store+Warehouse]}\n" +
+                "{[Measures].[Store Count]}\n" +
+                "Axis #2:\n" +
+                "{[Store Type].[All Store Types].[Deluxe Supermarket]}\n" +
+                "{[Store Type].[All Store Types].[Gourmet Supermarket]}\n" +
+                "{[Store Type].[All Store Types].[HeadQuarters]}\n" +
+                "{[Store Type].[All Store Types].[Mid-Size Grocery]}\n" +
+                "{[Store Type].[All Store Types].[Small Grocery]}\n" +
+                "{[Store Type].[All Store Types].[Supermarket]}\n" +
+                "Row #0: 1\n" +
+                "Row #0: 0\n" +
+                "Row #0: 0\n" +
+                "Row #0: 6\n" +
+                "Row #0: 6\n" +
+                "Row #0: 6\n" +
+                "Row #1: 1\n" +
+                "Row #1: 0\n" +
+                "Row #1: 0\n" +
+                "Row #1: 2\n" +
+                "Row #1: 2\n" +
+                "Row #1: 2\n" +
+                "Row #2: \n" +
+                "Row #2: \n" +
+                "Row #2: \n" +
+                "Row #2: \n" +
+                "Row #2: \n" +
+                "Row #2: \n" +
+                "Row #3: 0\n" +
+                "Row #3: 1\n" +
+                "Row #3: 1\n" +
+                "Row #3: 4\n" +
+                "Row #3: 4\n" +
+                "Row #3: 4\n" +
+                "Row #4: 0\n" +
+                "Row #4: 1\n" +
+                "Row #4: 1\n" +
+                "Row #4: 4\n" +
+                "Row #4: 4\n" +
+                "Row #4: 4\n" +
+                "Row #5: 0\n" +
+                "Row #5: 1\n" +
+                "Row #5: 3\n" +
+                "Row #5: 8\n" +
+                "Row #5: 8\n" +
+                "Row #5: 8\n"));
+
+        String loadCountDistinct_luciddb1 =
             "select " +
             "\"store\".\"store_type\" as \"c0\", " +
             "count(distinct " +
@@ -687,8 +763,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" " +
             "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" " +
             "group by \"store\".\"store_type\"";
-            
-        String loadCountDistinct2 =
+
+        String loadCountDistinct_luciddb2 =
             "select " +
             "\"store\".\"store_type\" as \"c0\", " +
             "count(distinct " +
@@ -699,60 +775,58 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" " +
             "group by \"store\".\"store_type\"";
 
-        String loadCountDistinct3 =
+        String loadCountDistinct_luciddb3 =
             "select \"store\".\"store_type\" as \"c0\", count(distinct \"store_id\"+\"warehouse_id\") as \"m0\" " +
             "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" " +
             "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
 
-        String loadOtherAggs =
+        String loadOtherAggs_luciddb =
             "select " +
             "\"store\".\"store_type\" as \"c0\", " +
             "count(" +
             "select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" " +
             "from \"warehouse_class\" AS \"warehouse_class\" " +
             "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent') as \"m0\", " +
-            "count(\"store_id\"+\"warehouse_id\") as \"m1\", " + 
+            "count(\"store_id\"+\"warehouse_id\") as \"m1\", " +
             "count(\"warehouse\".\"stores_id\") as \"m2\" " +
             "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" " +
             "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" " +
             "group by \"store\".\"store_type\"";
-        
-        TestContext testContext =
-            TestContext.create(
-             null,
-             cube,
-             null,
-             null,
-             null);
 
-        SqlPattern[] patterns;
-        
-        patterns = 
-            new SqlPattern[] {
-                new SqlPattern(SqlPattern.LUCIDDB_DIALECT, loadCountDistinct1, loadCountDistinct1)
-            };  
-        
-        assertQuerySql(testContext, query, patterns);
+        // Derby splits into multiple statements.
+        String loadCountDistinct_derby1 = "select \"store\".\"store_type\" as \"c0\", count(distinct (select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" from \"warehouse_class\" AS \"warehouse_class\" where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Owned')) as \"m0\" from \"store\" as \"store\", \"warehouse\" as \"warehouse\" where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
+            String loadCountDistinct_derby2 = "select \"store\".\"store_type\" as \"c0\", count(distinct (select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" from \"warehouse_class\" AS \"warehouse_class\" where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent')) as \"m0\" from \"store\" as \"store\", \"warehouse\" as \"warehouse\" where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
+            String loadCountDistinct_derby3 = "select \"store\".\"store_type\" as \"c0\", count(distinct \"store_id\"+\"warehouse_id\") as \"m0\" from \"store\" as \"store\", \"warehouse\" as \"warehouse\" where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
+            String loadOtherAggs_derby = "select \"store\".\"store_type\" as \"c0\", count((select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" from \"warehouse_class\" AS \"warehouse_class\" where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent')) as \"m0\", count(\"store_id\"+\"warehouse_id\") as \"m1\", count(\"warehouse\".\"stores_id\") as \"m2\" from \"store\" as \"store\", \"warehouse\" as \"warehouse\" where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
 
-        patterns = 
-            new SqlPattern[] {
-                new SqlPattern(SqlPattern.LUCIDDB_DIALECT, loadCountDistinct2, loadCountDistinct2)
-            };  
-        
-        assertQuerySql(testContext, query, patterns);
-        
-        patterns = 
-            new SqlPattern[] {
-                new SqlPattern(SqlPattern.LUCIDDB_DIALECT, loadCountDistinct3, loadCountDistinct3)
-            };  
-        
-        assertQuerySql(testContext, query, patterns);
+        // MySQL does it in one statement.
+        String load_mysql = "select"
+            + " `store`.`store_type` as `c0`,"
+            + " count(distinct (select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Owned')) as `m0`,"
+            + " count(distinct (select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Independent')) as `m1`,"
+            + " count((select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Independent')) as `m2`,"
+            + " count(distinct `store_id`+`warehouse_id`) as `m3`,"
+            + " count(`store_id`+`warehouse_id`) as `m4`,"
+            + " count(`warehouse`.`stores_id`) as `m5` "
+            + "from `store` as `store`,"
+            + " `warehouse` as `warehouse` "
+            + "where `warehouse`.`stores_id` = `store`.`store_id` "
+            + "group by `store`.`store_type`";
 
-        patterns = 
-            new SqlPattern[] {
-                new SqlPattern(SqlPattern.LUCIDDB_DIALECT, loadOtherAggs, loadOtherAggs)                
-            };  
-        
+        SqlPattern[] patterns = {
+            new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadCountDistinct_luciddb1, loadCountDistinct_luciddb1),
+            new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadCountDistinct_luciddb2, loadCountDistinct_luciddb2),
+            new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadCountDistinct_luciddb3, loadCountDistinct_luciddb3),
+            new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadOtherAggs_luciddb, loadOtherAggs_luciddb),
+
+            new SqlPattern(SqlPattern.Dialect.DERBY, loadCountDistinct_derby1, loadCountDistinct_derby1),
+            new SqlPattern(SqlPattern.Dialect.DERBY, loadCountDistinct_derby2, loadCountDistinct_derby2),
+            new SqlPattern(SqlPattern.Dialect.DERBY, loadCountDistinct_derby3, loadCountDistinct_derby3),
+            new SqlPattern(SqlPattern.Dialect.DERBY, loadOtherAggs_derby, loadOtherAggs_derby),
+
+            new SqlPattern(SqlPattern.Dialect.MYSQL, load_mysql, load_mysql),
+        };
+
         assertQuerySql(testContext, query, patterns);
     }
 }

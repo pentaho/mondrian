@@ -11,6 +11,7 @@ package mondrian.rolap;
 
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
+import mondrian.test.SqlPattern;
 import mondrian.rolap.agg.GroupingSet;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.agg.ValueColumnPredicate;
@@ -78,12 +79,15 @@ public class BatchTestCase extends FoodMartTestCase {
 
     }
 
-    private void addRequests(FastBatchingCellReader.Batch batch,
-                             String cubeName,
-                             String measure,
-                             String[] tableNames, String[] fieldNames,
-                             String[][] fieldValues,
-                             List<String> selectedValues, int currPos)
+    private void addRequests(
+        FastBatchingCellReader.Batch batch,
+        String cubeName,
+        String measure,
+        String[] tableNames,
+        String[] fieldNames,
+        String[][] fieldValues,
+        List<String> selectedValues,
+        int currPos)
     {
         if (currPos < fieldNames.length) {
             for (int j = 0; j < fieldValues[currPos].length; j++) {
@@ -116,8 +120,8 @@ public class BatchTestCase extends FoodMartTestCase {
         CellRequest[] requests, SqlPattern[] patterns, String cubeName)
     {
         RolapStar star = requests[0].getMeasure().getStar();
-        SqlQuery.Dialect dialect = star.getSqlQueryDialect();
-        int d = SqlPattern.getDialect(dialect);
+        SqlQuery.Dialect sqlDialect = star.getSqlQueryDialect();
+        SqlPattern.Dialect d = SqlPattern.Dialect.get(sqlDialect);
         SqlPattern sqlPattern = SqlPattern.getPattern(d, patterns);
         if (sqlPattern == null) {
             // If the dialect is not one in the pattern set, do not run the
@@ -155,7 +159,7 @@ public class BatchTestCase extends FoodMartTestCase {
      * being generated.
      *
      * @param mdxQuery MDX query
-     * @param patterns Set of patterns, one for each dialect.
+     * @param patterns Set of patterns for expected SQL statements
      */
     protected void assertQuerySql(String mdxQuery, SqlPattern[] patterns) {
         assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, true);
@@ -165,9 +169,9 @@ public class BatchTestCase extends FoodMartTestCase {
      * Checks that a given MDX query results in a particular SQL statement
      * being generated.
      *
-     * @param testConext non-default test context if required
+     * @param testContext non-default test context if required
      * @param mdxQuery MDX query
-     * @param patterns Set of patterns, one for each dialect.
+     * @param patterns Set of patterns for expected SQL statements
      */
     protected void assertQuerySql(
         TestContext testContext, String mdxQuery, SqlPattern[] patterns) {
@@ -179,7 +183,7 @@ public class BatchTestCase extends FoodMartTestCase {
      * statement being generated.
      *
      * @param mdxQuery MDX query
-     * @param patterns Set of patterns, one for each dialect.
+     * @param patterns Set of patterns for expected SQL statements
      */
     protected void assertNoQuerySql(String mdxQuery, SqlPattern[] patterns) {
         assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, true, true);
@@ -189,76 +193,88 @@ public class BatchTestCase extends FoodMartTestCase {
      * Checks that a given MDX query results (or does not result) in a
      * particular SQL statement being generated.
      *
-     * @param testConext non-default test context if required
+     * <p>Runs the MDX query once for each SQL pattern in the current
+     * dialect. If there are multiple patterns, runs the MDX query multiple
+     * times, and expects to see each SQL statement appear. If there are no
+     * patterns in this dialect, the test trivially succeeds.
+     *
+     * @param testContext non-default test context if required
      * @param mdxQuery MDX query
-     * @param patterns Set of patterns, one for each dialect.
+     * @param patterns Set of patterns
      * @param negative false to assert if SQL is generated;
      *                 true to assert if SQL is NOT generated
-     * @param clearCache whether to clear cache before executing the MDX query               
+     * @param clearCache whether to clear cache before executing the MDX query
      */
     protected void assertQuerySqlOrNot(
         TestContext testContext,
-        String mdxQuery, SqlPattern[] patterns, boolean negative,
+        String mdxQuery,
+        SqlPattern[] patterns,
+        boolean negative,
         boolean clearCache)
     {
         final Connection connection = testContext.getConnection();
         final Query query = connection.parseQuery(mdxQuery);
         final Cube cube = query.getCube();
-        RolapSchema schema = (RolapSchema) ((RolapCube) cube).getSchema();
+        RolapSchema schema = (RolapSchema) cube.getSchema();
 
+        // Run the test once for each pattern in this dialect.
+        // (We could optimize and run it once, collecting multiple queries, and
+        // comparing all queries at the end.)
         SqlQuery.Dialect dialect = schema.getDialect();
-        int d = SqlPattern.getDialect(dialect);
-        SqlPattern sqlPattern = SqlPattern.getPattern(d, patterns);
-        if (sqlPattern == null) {
-            // If the dialect is not one in the pattern set, do not run the
-            // test. We do not print any warning message.
-            return;
-        }
+        SqlPattern.Dialect d = SqlPattern.Dialect.get(dialect);
+        for (SqlPattern sqlPattern : patterns) {
+            if (!sqlPattern.hasDialect(d)) {
+                // If the dialect is not one in the pattern set, do not run the
+                // test. We do not print any warning message.
+                continue;
+            }
 
-        String sql = sqlPattern.getSql();
-        String trigger = sqlPattern.getTriggerSql();
+            String sql = sqlPattern.getSql();
+            String trigger = sqlPattern.getTriggerSql();
 
-        if (clearCache) {
-            // Clear the cache for the Sales cube, so the query runs as if for the
-            // first time. (TODO: Cleaner way to do this.)
-            RolapHierarchy hierarchy = (RolapHierarchy) getConnection().getSchema().
-            lookupCube("Sales", true).lookupHierarchy("Store", false);
-            SmartMemberReader memberReader =
-                (SmartMemberReader) hierarchy.getMemberReader();
-            memberReader.mapLevelToMembers.cache.clear();
-            memberReader.mapMemberToChildren.cache.clear();
-        }
-        
-        // Create a dummy DataSource which will throw a 'bomb' if it is asked
-        // to execute a particular SQL statement, but will otherwise behave
-        // exactly the same as the current DataSource.
-        RolapUtil.threadHooks.set(new TriggerHook(trigger));
-
-        Bomb bomb;
-        try {
             if (clearCache) {
-                // Flush the cache, to ensure that the query gets executed.
-                ((RolapCube)cube).clearCachedAggregations(true);
-                CachePool.instance().flush();
+                // Clear the cache for the Sales cube, so the query runs as if
+                // for the first time. (TODO: Cleaner way to do this.)
+                RolapHierarchy hierarchy =
+                    (RolapHierarchy) getConnection().getSchema().
+                    lookupCube("Sales", true).lookupHierarchy("Store", false);
+                SmartMemberReader memberReader =
+                    (SmartMemberReader) hierarchy.getMemberReader();
+                memberReader.mapLevelToMembers.cache.clear();
+                memberReader.mapMemberToChildren.cache.clear();
             }
-            
-            final Result result = connection.execute(query);
-            Util.discard(result);
-            bomb = null;
-        } catch (Bomb e) {
-            bomb = e;
-        } finally {
-            RolapUtil.threadHooks.set(null);
-        }
-        if (negative) {
-            if (bomb != null) {
-                fail("forbidden query [" + sql + "] detected");
+
+            // Create a dummy DataSource which will throw a 'bomb' if it is
+            // asked to execute a particular SQL statement, but will otherwise
+            // behave exactly the same as the current DataSource.
+            RolapUtil.threadHooks.set(new TriggerHook(trigger));
+
+            Bomb bomb;
+            try {
+                if (clearCache) {
+                    // Flush the cache, to ensure that the query gets executed.
+                    ((RolapCube)cube).clearCachedAggregations(true);
+                    CachePool.instance().flush();
+                }
+
+                final Result result = connection.execute(query);
+                Util.discard(result);
+                bomb = null;
+            } catch (Bomb e) {
+                bomb = e;
+            } finally {
+                RolapUtil.threadHooks.set(null);
             }
-        } else {
-            if (bomb == null) {
-                fail("expected query [" + sql + "] did not occur");
+            if (negative) {
+                if (bomb != null) {
+                    fail("forbidden query [" + sql + "] detected");
+                }
+            } else {
+                if (bomb == null) {
+                    fail("expected query [" + sql + "] did not occur");
+                }
+                assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
             }
-            assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
         }
     }
 
@@ -339,106 +355,6 @@ public class BatchTestCase extends FoodMartTestCase {
         }
     }
 
-    static class SqlPattern {
-        /**
-         * Duplicating information in SqlQuery. Switch from type "int" to
-         * "long" if we get more than 32 dialects
-         */
-        protected static final int UNKNOWN_DIALECT = 0x00000000;
-        protected static final int ACCESS_DIALECT = 0x00000001;
-        protected static final int DERBY_DIALECT = 0x00000002;
-        protected static final int CLOUDSCAPE_DIALECT = 0x00000004;
-        protected static final int DB2_DIALECT = 0x00000008;
-        protected static final int AS400_DIALECT = 0x00000010;
-        protected static final int OLD_AS400_DIALECT = 0x00000020;
-        protected static final int INFOMIX_DIALECT = 0x00000040;
-        protected static final int MS_SQL_DIALECT = 0x00000080;
-        protected static final int ORACLE_DIALECT = 0x00000100;
-        protected static final int POSTGRES_DIALECT = 0x00000200;
-        protected static final int MY_SQL_DIALECT = 0x00000400;
-        protected static final int SYBASE_DIALECT = 0x00000800;
-        protected static final int LUCIDDB_DIALECT = 0x00001000;
-
-        public static int getDialect(SqlQuery.Dialect dialect) {
-            if (dialect.isAccess()) {
-                return ACCESS_DIALECT;
-            } else if (dialect.isDerby()) {
-                return DERBY_DIALECT;
-            } else if (dialect.isCloudscape()) {
-                return CLOUDSCAPE_DIALECT;
-            } else if (dialect.isDB2()) {
-                return DB2_DIALECT;
-            } else if (dialect.isAS400()) {
-                return AS400_DIALECT;
-            } else if (dialect.isOldAS400()) {
-                return OLD_AS400_DIALECT;
-            } else if (dialect.isInformix()) {
-                return INFOMIX_DIALECT;
-            } else if (dialect.isMSSQL()) {
-                return MS_SQL_DIALECT;
-            } else if (dialect.isOracle()) {
-                return ORACLE_DIALECT;
-            } else if (dialect.isPostgres()) {
-                return POSTGRES_DIALECT;
-            } else if (dialect.isMySQL()) {
-                return MY_SQL_DIALECT;
-            } else if (dialect.isSybase()) {
-                return SYBASE_DIALECT;
-            } else if (dialect.isLucidDB()){
-                return LUCIDDB_DIALECT;
-            } else {
-                return UNKNOWN_DIALECT;
-            }
-        }
-
-        public static SqlPattern getPattern(int d, SqlPattern[] patterns) {
-            if (patterns == null) {
-                return null;
-            }
-            if (d == UNKNOWN_DIALECT) {
-                return null;
-            }
-            for (SqlPattern pattern : patterns) {
-                if (pattern.hasDialect(d)) {
-                    return pattern;
-                }
-            }
-            return null;
-        }
-
-        private final int dialect;
-        private final String sql;
-        private final String triggerSql;
-
-        protected SqlPattern(final int dialect,
-                             final String sql,
-                             final int startsWithLen)
-        {
-            this(dialect, sql, sql.substring(0, startsWithLen));
-        }
-
-        protected SqlPattern(final int dialect,
-                             final String sql,
-                             final String triggerSql)
-        {
-            this.dialect = dialect;
-            this.sql = sql;
-            this.triggerSql = triggerSql;
-        }
-
-        public boolean hasDialect(int d) {
-            return (dialect & d) != 0;
-        }
-
-        public String getSql() {
-            return sql;
-        }
-
-        public String getTriggerSql() {
-            return triggerSql;
-        }
-    }
-
     private static class TriggerHook implements RolapUtil.ExecuteQueryHook {
         private final String trigger;
 
@@ -464,3 +380,5 @@ public class BatchTestCase extends FoodMartTestCase {
         }
     }
 }
+
+// End BatchTestCase.java

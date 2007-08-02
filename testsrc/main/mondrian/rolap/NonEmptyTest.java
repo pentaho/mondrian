@@ -24,7 +24,6 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
 import mondrian.olap.NativeEvaluationUnsupportedException;
-import mondrian.rolap.BatchTestCase.SqlPattern;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
 import mondrian.rolap.RolapNative.Listener;
 import mondrian.rolap.RolapNative.NativeEvent;
@@ -33,9 +32,8 @@ import mondrian.rolap.cache.CachePool;
 import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
-import mondrian.rolap.sql.SqlQuery;
-import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
+import mondrian.test.SqlPattern;
 import mondrian.util.Bug;
 
 import org.apache.log4j.*;
@@ -62,7 +60,7 @@ public class NonEmptyTest extends BatchTestCase {
     public NonEmptyTest(String name) {
         super(name);
     }
-        
+
     public void testStrMeasure() {
         TestContext ctx = TestContext.create(
             null,
@@ -76,7 +74,7 @@ public class NonEmptyTest extends BatchTestCase {
             "  <Measure name=\"Media\" column=\"media_type\" aggregator=\"max\" datatype=\"String\"/> \n" +
             "</Cube> \n",
             null,null,null);
-        
+
         ctx.assertQueryReturns(
             "select {[Measures].[Media]} on columns " +
             "from [StrMeasure]",
@@ -85,7 +83,7 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #1:" + nl +
             "{[Measures].[Media]}" + nl +
             "Row #0: TV" + nl
-            
+
         );
     }
 
@@ -209,16 +207,16 @@ public class NonEmptyTest extends BatchTestCase {
             + "Order(Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name]), ([Measures].[Store Sales] > 200.0)), [Measures].[Store Sales], DESC) ON ROWS "
             + "from [Sales] "
             + "where ([Time].[1997])";
-        
+
         boolean origNativeFilter =
             MondrianProperties.instance().EnableNativeFilter.get();
         MondrianProperties.instance().EnableNativeFilter.set(true);
-        
+
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(32, 18, query, null, requestFreshConnection);
-        
+
         MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
     }
 
@@ -226,7 +224,7 @@ public class NonEmptyTest extends BatchTestCase {
      * Executes a Filter() whose condition contains a calculated member.
      */
     public void testCmNativeFilter() {
-        String query = 
+        String query =
             "with member [Measures].[Rendite] as '([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]' "
           + "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Rendite], [Measures].[Store Sales]} ON COLUMNS, "
           + "NON EMPTY Order(Filter([Product].[Product Name].Members, ([Measures].[Rendite] > 1.8)), [Measures].[Rendite], BDESC) ON ROWS "
@@ -282,20 +280,20 @@ public class NonEmptyTest extends BatchTestCase {
               "Row #7: 28.34\n" +
               "Row #7: 1.81\n" +
               "Row #7: 79.58\n";
-        
+
         boolean origNativeFilter =
             MondrianProperties.instance().EnableNativeFilter.get();
         MondrianProperties.instance().EnableNativeFilter.set(true);
-        
+
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(0, 8, query, fold(result), requestFreshConnection);
-        
+
         MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
-        
+
     }
-    
+
     public void testNonNativeFilterWithNullMeasure() {
         String query =
             "select Filter([Store].[Store Name].members, " +
@@ -321,23 +319,23 @@ public class NonEmptyTest extends BatchTestCase {
             "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n" +
             "Row #0: 36,509\n" +
             "Row #0: 22,450\n" +
-            "Row #1: \n" + 
-            "Row #1: \n" + 
+            "Row #1: \n" +
+            "Row #1: \n" +
             "Row #2: 30,797\n" +
             "Row #2: 20,141\n" +
-            "Row #3: \n" + 
-            "Row #3: \n" + 
+            "Row #3: \n" +
+            "Row #3: \n" +
             "Row #4: \n" +
-            "Row #4: \n" + 
+            "Row #4: \n" +
             "Row #5: 39,696\n" +
             "Row #5: 24,390\n" +
             "Row #6: 33,858\n" +
             "Row #6: 22,123\n" +
             "Row #7: \n" +
-            "Row #7: \n" + 
-            "Row #8: \n" + 
+            "Row #7: \n" +
+            "Row #8: \n" +
             "Row #8: \n";
-    
+
         boolean origNativeFilter =
             MondrianProperties.instance().EnableNativeFilter.get();
         MondrianProperties.instance().EnableNativeFilter.set(false);
@@ -345,9 +343,9 @@ public class NonEmptyTest extends BatchTestCase {
         checkNotNative(9, query, fold(result));
 
         MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
-        
+
     }
-    
+
     public void testNativeFilterWithNullMeasure() {
         // Currently this behaves differently from the non-native evaluation.
         String query =
@@ -386,7 +384,7 @@ public class NonEmptyTest extends BatchTestCase {
         TestContext context = getTestContext(conn);
         context.assertQueryReturns(query, fold(result));
 
-        MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);        
+        MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
     }
 
     public void testNonNativeFilterWithCalcMember() {
@@ -399,7 +397,7 @@ public class NonEmptyTest extends BatchTestCase {
             "Filter ([Store].[Store State].members, [Measures].[Store Cost] > 100) ON rows\n" +
             "from [Sales]\n" +
             "where [Time].[Date Range]\n";
-        
+
         String result =
             "Axis #0:\n" +
             "{[Time].[Date Range]}\n" +
@@ -412,7 +410,7 @@ public class NonEmptyTest extends BatchTestCase {
             "Row #0: 74,748\n" +
             "Row #1: 67,659\n" +
             "Row #2: 124,366\n";
-        
+
         boolean origNativeFilter =
             MondrianProperties.instance().EnableNativeFilter.get();
         MondrianProperties.instance().EnableNativeFilter.set(false);
@@ -420,7 +418,7 @@ public class NonEmptyTest extends BatchTestCase {
         checkNotNative(3, query, fold(result));
         MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
     }
-    
+
     /**
      * Verify that filter with Not IsEmpty(storedMeasure) can be natively
      * evaluated.
@@ -432,16 +430,16 @@ public class NonEmptyTest extends BatchTestCase {
             "                        Not IsEmpty([Measures].[Store Sqft]) ) on rows, " +
             "{[Measures].[Store Sqft]} on columns " +
             "from [Store]";
-            
+
         boolean origNativeFilter =
             MondrianProperties.instance().EnableNativeFilter.get();
         MondrianProperties.instance().EnableNativeFilter.set(true);
-        
+
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(0, 20, query, null, requestFreshConnection);
-        
+
         MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
     }
 
@@ -449,19 +447,19 @@ public class NonEmptyTest extends BatchTestCase {
      * Verify that CrossJoins with two non native inputs can be natively evaluated.
      */
     public void testExpandAllNonNativeInputs() {
-        
+
         // This query will not run natively unless the <Dimension>.Children
         // expression is expanded to a member list.
         //
         // Note: Both dimensions only have one hierarchy, which has the All
         // member. <Dimension>.Children is interpreted as the children of
         // the All member.
-        
+
         String query =
             "select " +
             "NonEmptyCrossJoin([Gender].Children, [Store].Children) on rows " +
             "from [Sales]";
-        
+
         String result =
             "Axis #0:\n" +
             "{}\n" +
@@ -477,12 +475,12 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().ExpandNonNative.set(true);
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
-        
+
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(0, 2, query, fold(result), requestFreshConnection);
-        
+
         MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCrossJoin);
     }
@@ -491,36 +489,36 @@ public class NonEmptyTest extends BatchTestCase {
      * Verify that CrossJoins with one non native inputs can be natively evaluated.
      */
     public void testExpandOneNonNativeInput() {
-        
+
         // This query will not be evaluated natively unless the Filter
         // expression is expanded to a member list.
-        
-        String query =            
+
+        String query =
             "With " +
             "Set [*Filtered_Set] as Filter([Product].[Product Name].Members, [Product].CurrentMember IS [Product].[Product Name].[Fast Raisins]) " +
             "Set [*NECJ_Set] as NonEmptyCrossJoin([Store].[Store Country].Members, [*Filtered_Set]) " +
             "select [*NECJ_Set] on columns " +
             "From [Sales]";
-        
+
         String result =
             "Axis #0:\n" +
             "{}\n" +
             "Axis #1:\n" +
             "{[Store].[All Stores].[USA], [Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fast].[Fast Raisins]}\n" +
             "Row #0: 152\n";
-        
+
         boolean origExpandNonNative =
             MondrianProperties.instance().ExpandNonNative.get();
         boolean origNativeCrossJoin =
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().ExpandNonNative.set(true);
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
-        
+
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(0, 1, query, fold(result), requestFreshConnection);
-        
+
         MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCrossJoin);
     }
@@ -530,11 +528,11 @@ public class NonEmptyTest extends BatchTestCase {
      * evaluation, even when ExpandNonNative is true.
      */
     public void testExpandAllMembersInAllInputs() {
-        
+
         // This query will not be evaluated natively, even if the Hierarchize
         // expression is expanded to a member list. The reason is that the
         // expanded list contains ALL members.
-        
+
         String query =
             "select NON EMPTY {[Time].[1997]} ON COLUMNS,\n" +
             "       NON EMPTY Crossjoin(Hierarchize(Union({[Store].[All Stores]},\n" +
@@ -542,7 +540,7 @@ public class NonEmptyTest extends BatchTestCase {
             "           ON ROWS\n" +
             "    from [Sales]\n" +
             "    where [Measures].[Unit Sales]";
-        
+
         String result =
             "Axis #0:\n" +
             "{[Measures].[Unit Sales]}\n" +
@@ -551,7 +549,7 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #2:\n" +
             "{[Store].[All Stores], [Product].[All Products]}\n" +
             "Row #0: 266,773\n";
-        
+
         boolean origExpandNonNative =
             MondrianProperties.instance().ExpandNonNative.get();
         boolean origNativeCrossJoin =
@@ -560,24 +558,24 @@ public class NonEmptyTest extends BatchTestCase {
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
 
         checkNotNative(1, query, fold(result));
-        
+
         MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCrossJoin);
     }
-    
+
     /**
      * Verify that evaluation is native for expressions with nested non native
      * inputs that preduce MemberList results.
      */
     public void testExpandNestedNonNativeInputs() {
-        
+
         String query =
             "select " +
             "NonEmptyCrossJoin(" +
             "  NonEmptyCrossJoin([Gender].Children, [Store].Children), " +
             "  [Product].Children) on rows " +
             "from [Sales]";
-        
+
         String result =
             "Axis #0:\n" +
             "{}\n" +
@@ -594,7 +592,7 @@ public class NonEmptyTest extends BatchTestCase {
             "Row #0: 12,395\n" +
             "Row #0: 97,126\n" +
             "Row #0: 25,694\n";
-        
+
         boolean origExpandNonNative =
             MondrianProperties.instance().ExpandNonNative.get();
         boolean origNativeCrossJoin =
@@ -606,7 +604,7 @@ public class NonEmptyTest extends BatchTestCase {
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(0, 6, query, fold(result), requestFreshConnection);
-        
+
         MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCrossJoin);
     }
@@ -621,7 +619,7 @@ public class NonEmptyTest extends BatchTestCase {
             "    Filter([Store Type].Children, [Measures].[Unit Sales] > 10000), " +
             "    [Product].Children) on rows " +
             "from [Sales]";
-        
+
         String result =
             "Axis #0:\n" +
             "{}\n" +
@@ -650,14 +648,14 @@ public class NonEmptyTest extends BatchTestCase {
             "Row #0: 14,092\n" +
             "Row #0: 108,188\n" +
             "Row #0: 28,275\n";
-        
-        int origMaxConstraint = 
+
+        int origMaxConstraint =
             MondrianProperties.instance().MaxConstraints.get();
         boolean origExpandNonNative =
             MondrianProperties.instance().ExpandNonNative.get();
         MondrianProperties.instance().MaxConstraints.set(2);
         MondrianProperties.instance().ExpandNonNative.set(true);
-        
+
         try {
             checkNotNative(12, query, fold(result));
         } finally {
@@ -665,7 +663,7 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         }
     }
-    
+
     /**
      * Verify that native evaluation is not enabled if expanded member list will
      * contain members from different levels, even if ExpandNonNative is set.
@@ -674,21 +672,21 @@ public class NonEmptyTest extends BatchTestCase {
     public void testExpandDifferentLevels() {
         String query =
             "select NonEmptyCrossJoin(" +
-            "    Descendants([Customers].[All Customers].[USA].[WA].[Yakima]), " + 
+            "    Descendants([Customers].[All Customers].[USA].[WA].[Yakima]), " +
             "    [Product].Children) on rows " +
             "from [Sales]";
-        
+
         boolean origExpandNonNative =
             MondrianProperties.instance().ExpandNonNative.get();
         MondrianProperties.instance().ExpandNonNative.set(true);
-        
+
         try {
             checkNotNative(278, query, null);
         } finally {
             MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         }
     }
-    
+
     /**
      * Verify that naitve evaluation is possible when calculated members are present
      * expanded member list inputs to NECJ.
@@ -701,7 +699,7 @@ public class NonEmptyTest extends BatchTestCase {
         // the Filter, whose result is not affected by the calc members in its input.
         String query =
             "with " +
-            "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) " + 
+            "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) " +
             "set [Enum Store Types] as {" +
             "    [Store Type].[All Store Types].[Small Grocery], " +
             "    [Store Type].[All Store Types].[Supermarket], " +
@@ -709,7 +707,7 @@ public class NonEmptyTest extends BatchTestCase {
             "    [Store Type].[All Store Types].[S]} " +
             "set [Filtered Enum Store Types] as Filter([Enum Store Types], [Measures].[Unit Sales] > 0)" +
             "select NonEmptyCrossJoin([Product].[All Products].Children, [Filtered Enum Store Types])  on rows from [Sales]";
-        
+
         String result =
             "Axis #0:\n" +
             "{}\n" +
@@ -732,23 +730,23 @@ public class NonEmptyTest extends BatchTestCase {
             "Row #0: 1,219\n" +
             "Row #0: 28,275\n" +
             "Row #0: 50,236\n";
-        
+
         boolean origExpandNonNative =
             MondrianProperties.instance().ExpandNonNative.get();
         MondrianProperties.instance().ExpandNonNative.set(true);
-        
+
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
-        boolean requestFreshConnection = true;        
+        boolean requestFreshConnection = true;
         try {
             checkNative(0, 9, query, fold(result), requestFreshConnection);
         } finally {
             MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         }
     }
-    
+
     /**
-     * Verify that native evaluation is turned off for tuple inputs, even if 
+     * Verify that native evaluation is turned off for tuple inputs, even if
      * ExpandNonNative is set.
      */
     public void testExpandTupleInputs() {
@@ -758,33 +756,33 @@ public class NonEmptyTest extends BatchTestCase {
             "set [Filtered Tuple Set] as Filter([Tuple Set], 1=1) " +
             "set [NECJ] as NonEmptyCrossJoin([Filtered Tuple Set], [Store].Children) " +
             "select [NECJ] on rows from [Sales]";
-            
+
         String result =
             "Axis #0:\n" +
             "{}\n" +
             "Axis #1:\n" +
             "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food], [Store].[All Stores].[USA]}\n" +
             "Row #0: 108,188\n";
-            
+
         boolean origExpandNonNative =
             MondrianProperties.instance().ExpandNonNative.get();
         MondrianProperties.instance().ExpandNonNative.set(true);
-        
+
         try {
             checkNotNative(1, query, fold(result));
         } finally {
             MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         }
     }
-    
+
     /**
      * Verify that native MemberLists inputs are subject to SQL constriant
      * limitation. If mondrian.rolap.maxConstraints is set too low, native
-     * evaluations will be turned off. 
+     * evaluations will be turned off.
      */
     public void testEnumLowMaxConstraints() {
         String query =
-            "with " + 
+            "with " +
             "set [All Store Types] as {" +
                 "[Store Type].[All Store Types].[Deluxe Supermarket], " +
                 "[Store Type].[All Store Types].[Gourmet Supermarket], " +
@@ -797,10 +795,10 @@ public class NonEmptyTest extends BatchTestCase {
                 "[Product].[All Products].[Non-Consumable]} " +
             "select " +
             "NonEmptyCrossJoin( " +
-                "Filter([All Store Types], ([Measures].[Unit Sales] > 10000)), " + 
+                "Filter([All Store Types], ([Measures].[Unit Sales] > 10000)), " +
                 "[All Products]) on rows " +
             "from [Sales]";
-            
+
         String result =
             "Axis #0:\n" +
             "{}\n" +
@@ -829,66 +827,66 @@ public class NonEmptyTest extends BatchTestCase {
             "Row #0: 14,092\n" +
             "Row #0: 108,188\n" +
             "Row #0: 28,275\n";
-        
-        int origMaxConstraint = 
+
+        int origMaxConstraint =
             MondrianProperties.instance().MaxConstraints.get();
         MondrianProperties.instance().MaxConstraints.set(2);
-        
+
         try {
             checkNotNative(12, query, fold(result));
         } finally {
             MondrianProperties.instance().MaxConstraints.set(origMaxConstraint);
         }
     }
-    
+
     /**
      * Verify that the presence of All member in all the inputs disables native
      * evaluation.
-     */ 
+     */
     public void testAllMembersNECJ1() {
-        
+
         // This query cannot be evaluated natively because of the "All" member.
-        
+
         String query =
             "select " +
             "NonEmptyCrossJoin({[Store].[All Stores]}, {[Product].[All Products]}) on rows " +
             "from [Sales]";
-        
+
         String result =
             "Axis #0:\n" +
             "{}\n" +
             "Axis #1:\n" +
             "{[Store].[All Stores], [Product].[All Products]}\n" +
             "Row #0: 266,773\n";
-        
+
         boolean origNativeCrossJoin =
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
 
         checkNotNative(1, query, fold(result));
-        
+
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCrossJoin);
     }
-    
+
     /**
      * Verify that the native evaluation is possible if one input does not
      * contain the All member.
-     */ 
+     */
     public void testAllMembersNECJ2() {
-        
-        // This query can be evaluated natively because there is at least one 
+
+        // This query can be evaluated natively because there is at least one
         // non "All" member.
         //
-        // It can also be rewritten to use 
+        // It can also be rewritten to use
         // Filter([Product].[All Products].Children, Is NotEmpty([Measures].[Unit Sales]))
         // which can be natively evaluated
-        
+
         String query =
             "select " +
             "NonEmptyCrossJoin([Product].[All Products].Children, {[Store].[All Stores]}) on rows " +
             "from [Sales]";
-        
-        String result = 
+
+        String result =
             "Axis #0:\n" +
             "{}\n" +
             "Axis #1:\n" +
@@ -898,16 +896,16 @@ public class NonEmptyTest extends BatchTestCase {
             "Row #0: 24,597\n" +
             "Row #0: 191,940\n" +
             "Row #0: 50,236\n";
-        
+
         boolean origNativeCrossJoin =
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
-        
+
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(0, 3, query, fold(result), requestFreshConnection);
-        
+
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCrossJoin);
     }
 
@@ -952,7 +950,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     /** check that top count is executed native unless disabled */
     public void testNativeTopCount() {
-        
+
         String query =
             "select {[Measures].[Store Sales]} on columns,"
             + "  NON EMPTY TopCount("
@@ -961,17 +959,17 @@ public class NonEmptyTest extends BatchTestCase {
             + " from [Sales] where ("
             + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
             + "  [Time].[1997].[Q1].[1])";
-            
+
         boolean origNativeTopCount =
             MondrianProperties.instance().EnableNativeTopCount.get();
         MondrianProperties.instance().EnableNativeTopCount.set(true);
-        
+
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(3, 3, query, null, requestFreshConnection);
-        
-        MondrianProperties.instance().EnableNativeTopCount.set(origNativeTopCount);        
+
+        MondrianProperties.instance().EnableNativeTopCount.set(origNativeTopCount);
     }
 
     /** check that top count is executed native with calculated member */
@@ -987,13 +985,13 @@ public class NonEmptyTest extends BatchTestCase {
         boolean origNativeTopCount =
             MondrianProperties.instance().EnableNativeTopCount.get();
         MondrianProperties.instance().EnableNativeTopCount.set(true);
-        
+
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(3, 3, query, null, requestFreshConnection);
-        
-        MondrianProperties.instance().EnableNativeTopCount.set(origNativeTopCount);        
+
+        MondrianProperties.instance().EnableNativeTopCount.set(origNativeTopCount);
     }
 
     public void testMeasureAndAggregateInSlicer() {
@@ -1078,7 +1076,7 @@ public class NonEmptyTest extends BatchTestCase {
         int origMaxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         int minConstraints = 2;
-        
+
         if (origMaxConstraints < minConstraints) {
             MondrianProperties.instance().MaxConstraints.set(minConstraints);
         }
@@ -1091,7 +1089,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "NonEmptyCrossjoin({[Product].[All Products].[Drink].[Beverages], [Product].[All Products].[Drink].[Dairy]}, {[Customers].[All Customers].[USA].[OR].[Portland], [Customers].[All Customers].[USA].[OR].[Salem]}) ON ROWS "
                 + "from [Sales] ");
         } finally {
-            MondrianProperties.instance().MaxConstraints.set(origMaxConstraints);            
+            MondrianProperties.instance().MaxConstraints.set(origMaxConstraints);
         }
     }
 
@@ -1132,7 +1130,7 @@ public class NonEmptyTest extends BatchTestCase {
         int origMaxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         int minConstraints = 2;
-        
+
         if (origMaxConstraints < minConstraints) {
             MondrianProperties.instance().MaxConstraints.set(minConstraints);
         }
@@ -1148,7 +1146,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "from [Sales] "
                 + "where ([Promotions].[All Promotions].[Bag Stuffers])");
         } finally {
-            MondrianProperties.instance().MaxConstraints.set(origMaxConstraints);            
+            MondrianProperties.instance().MaxConstraints.set(origMaxConstraints);
         }
     }
 
@@ -1157,7 +1155,7 @@ public class NonEmptyTest extends BatchTestCase {
         int origMaxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         int minConstraints = 2;
-        
+
         if (origMaxConstraints < minConstraints) {
             MondrianProperties.instance().MaxConstraints.set(minConstraints);
         }
@@ -1172,11 +1170,11 @@ public class NonEmptyTest extends BatchTestCase {
                 + "  [Customers].[All Customers].[USA].[WA].Children) ON ROWS "
                 + "from [Sales] " + "where ([Promotions].[All Promotions].[Bag Stuffers])");
         } finally {
-            MondrianProperties.instance().MaxConstraints.set(origMaxConstraints);            
+            MondrianProperties.instance().MaxConstraints.set(origMaxConstraints);
         }
     }
 
-    /** {} contains members from different levels, this can not be handled by 
+    /** {} contains members from different levels, this can not be handled by
      * the current native crossjoin.
      */
     public void testCjEnumDifferentLevelsChildren() {
@@ -1263,7 +1261,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMultiLevelMemberConstraint() {
         String query =
-            "with " + 
+            "with " +
             "set [Filtered Store City Set] as {[Store].[USA].[OR].[Portland], [Store].[USA].[OR].[Salem], [Store].[USA].[CA].[San Francisco], [Store].[USA].[WA].[Tacoma]} " +
             "set [NECJ] as NonEmptyCrossJoin([Filtered Store City Set], {[Product].[Product Family].Food}) " +
             "select [NECJ] on rows from [Sales]";
@@ -1300,18 +1298,18 @@ public class NonEmptyTest extends BatchTestCase {
             "order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC, ISNULL(`store`.`store_state`), `store`.`store_state` ASC, " +
             "ISNULL(`store`.`store_city`), `store`.`store_city` ASC, ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
 
-        SqlPattern[] patterns = 
+        SqlPattern[] patterns =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.DERBY_DIALECT, necjSqlDerby, necjSqlDerby),
-                new SqlPattern(SqlPattern.MY_SQL_DIALECT, necjSqlMySql, necjSqlMySql)
-            };  
-        
-        assertQuerySql(query, patterns);        
+                new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
+                new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
+            };
+
+        assertQuerySql(query, patterns);
     }
-    
+
     /**
      * Check that multi-level member list generates compact form of SQL where clause:
-     * (1) User IN list if possible(not possible if there are null values because 
+     * (1) User IN list if possible(not possible if there are null values because
      *     NULLs do not match)
      * (2) Group members sharing the same parent
      * (3) Only need to compare up to the first unique parent level.
@@ -1327,7 +1325,7 @@ public class NonEmptyTest extends BatchTestCase {
             "    <Level name=\"name\" column=\"warehouse_name\" uniqueMembers=\"false\"/>\n" +
             "  </Hierarchy>\n" +
             "</Dimension>\n";
-            
+
         String cube =
             "<Cube name=\"Warehouse2\">\n" +
             "  <Table name=\"inventory_fact_1997\"/>\n" +
@@ -1336,9 +1334,9 @@ public class NonEmptyTest extends BatchTestCase {
             "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n" +
             "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n" +
             "</Cube>";
-        
+
         String query =
-            "with\n" + 
+            "with\n" +
             "set [Filtered Warehouse Set] as {[Warehouse2].[#null].[#null].[5617 Saclan Terrace].[Arnold and Sons], [Warehouse2].[#null].[#null].[3377 Coachman Place].[Jones International]}\n" +
             "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food})\n" +
             "select [NECJ] on rows from [Warehouse2]\n";
@@ -1364,7 +1362,7 @@ public class NonEmptyTest extends BatchTestCase {
             "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" " +
             "order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, \"warehouse\".\"wa_address1\" ASC, " +
             "\"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
-    
+
         String necjSqlMySql =
             "select " +
             "`warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, " +
@@ -1389,7 +1387,7 @@ public class NonEmptyTest extends BatchTestCase {
             "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, " +
             "ISNULL(`warehouse`.`warehouse_name`), `warehouse`.`warehouse_name` ASC, " +
             "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
-            
+
         TestContext testContext =
             TestContext.create(
              dimension,
@@ -1398,15 +1396,15 @@ public class NonEmptyTest extends BatchTestCase {
              null,
              null);
 
-        SqlPattern[] patterns = 
+        SqlPattern[] patterns =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.DERBY_DIALECT, necjSqlDerby, necjSqlDerby),
-                new SqlPattern(SqlPattern.MY_SQL_DIALECT, necjSqlMySql, necjSqlMySql)
-            };  
-        
+                new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
+                new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
+            };
+
         assertQuerySql(testContext, query, patterns);
     }
-    
+
     public void testNonEmptyUnionQuery() {
         Result result = executeQuery(
                 "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,\n" +
@@ -1781,7 +1779,7 @@ public class NonEmptyTest extends BatchTestCase {
             // test fail.
             return;
         }
-        
+
         TestCase c = new TestCase(
                 45,
                 4,
@@ -2162,7 +2160,7 @@ public class NonEmptyTest extends BatchTestCase {
         // Native evaluation of NECJ is incorrect.
         String query =
             "with " +
-            "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) " + 
+            "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) " +
             "set [Enum Store Types] as {" +
             "    [Store Type].[All Store Types].[HeadQuarters], " +
             "    [Store Type].[All Store Types].[Small Grocery], " +
@@ -2171,7 +2169,7 @@ public class NonEmptyTest extends BatchTestCase {
             "select " +
             "    NonEmptyCrossJoin([Product].[All Products].Children, [Enum Store Types]) on rows " +
             "from [Sales]";
-        
+
         String wrongResult =
             "Axis #0:\n" +
             "{}\n" +
@@ -2188,7 +2186,7 @@ public class NonEmptyTest extends BatchTestCase {
             "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Small Grocery]}\n" +
             "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Supermarket]}\n" +
             "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[S]}\n" +
-            "Row #0: \n" + 
+            "Row #0: \n" +
             "Row #0: 574\n" +
             "Row #0: 14,092\n" +
             "Row #0: 24,597\n" +
@@ -2199,26 +2197,26 @@ public class NonEmptyTest extends BatchTestCase {
             "Row #0: \n" +
             "Row #0: 1,219\n" +
             "Row #0: 28,275\n" +
-            "Row #0: 50,236\n";            
-            
+            "Row #0: 50,236\n";
+
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);
         context.assertQueryReturns(query, fold(wrongResult));
     }
-    
+
     public void testCjEnumEmptyCalcMembers()
     {
         // Make sure maxConstraint settting is high enough
         int origMaxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         int minConstraints = 3;
-        
+
         if (origMaxConstraints < minConstraints) {
             MondrianProperties.instance().MaxConstraints.set(minConstraints);
         }
-        
+
         try {
             // enumerated list of calculated members results in some empty cells
             checkNative(
@@ -2241,7 +2239,7 @@ public class NonEmptyTest extends BatchTestCase {
                 "        [Education Level].[Education Level].Members) " +
                 "    on rows " +
                 "from [Sales]");
-        } finally {        
+        } finally {
             MondrianProperties.instance().MaxConstraints.set(origMaxConstraints);
         }
     }
@@ -2333,7 +2331,7 @@ public class NonEmptyTest extends BatchTestCase {
         int origMaxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         int minConstraints = 3;
-        
+
         if (origMaxConstraints < minConstraints) {
             MondrianProperties.instance().MaxConstraints.set(minConstraints);
         }
@@ -2375,7 +2373,7 @@ public class NonEmptyTest extends BatchTestCase {
         int origMaxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         int minConstraints = 6;
-        
+
         if (origMaxConstraints < minConstraints) {
             MondrianProperties.instance().MaxConstraints.set(minConstraints);
         }
@@ -2402,7 +2400,7 @@ public class NonEmptyTest extends BatchTestCase {
         int origMaxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         int minConstraints = 2;
-        
+
         if (origMaxConstraints < minConstraints) {
             MondrianProperties.instance().MaxConstraints.set(minConstraints);
         }
@@ -2420,7 +2418,7 @@ public class NonEmptyTest extends BatchTestCase {
                 "on rows from Sales");
         } finally {
             MondrianProperties.instance().MaxConstraints.set(origMaxConstraints);
-        }        
+        }
     }
 
     public void testCrossJoinSetWithUniqueLevel()
@@ -2429,7 +2427,7 @@ public class NonEmptyTest extends BatchTestCase {
         int origMaxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         int minConstraints = 2;
-        
+
         if (origMaxConstraints < minConstraints) {
             MondrianProperties.instance().MaxConstraints.set(minConstraints);
         }
@@ -2447,7 +2445,7 @@ public class NonEmptyTest extends BatchTestCase {
                 "on rows from Sales");
         } finally {
             MondrianProperties.instance().MaxConstraints.set(origMaxConstraints);
-        }        
+        }
     }
 
     public void testCrossJoinMultiInExprAllMember()
@@ -2528,7 +2526,7 @@ public class NonEmptyTest extends BatchTestCase {
         int origMaxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         int minConstraints = 2;
-        
+
         if (origMaxConstraints < minConstraints) {
             MondrianProperties.instance().MaxConstraints.set(minConstraints);
         }
@@ -2837,21 +2835,21 @@ public class NonEmptyTest extends BatchTestCase {
 
     /**
      * Make sure the mdx runs correctly and not in native mode.
-     * 
+     *
      * @param rowCount number of rows returned
      * @param mdx query
-     */    
+     */
     private void checkNotNative(int rowCount, String mdx) {
         checkNotNative(rowCount, mdx, null);
     }
 
     /**
      * Make sure the mdx runs correctly and not in native mode.
-     * 
+     *
      * @param rowCount number of rows returned
      * @param mdx query
      * @param expectedResult expected result string
-     */    
+     */
     private void checkNotNative(int rowCount, String mdx, String expectedResult) {
         CachePool.instance().flush();
         Connection con = getTestContext().getFoodMartConnection(false);
@@ -2867,10 +2865,10 @@ public class NonEmptyTest extends BatchTestCase {
             public void excutingSql(TupleEvent e) {
             }
         });
-        
+
         TestCase c = new TestCase(con, 0, rowCount, mdx);
         Result result = c.run();
-        
+
         if (expectedResult != null) {
             String nonNativeResult = toString(result);
             if (!nonNativeResult.equals(expectedResult)) {
@@ -2890,8 +2888,8 @@ public class NonEmptyTest extends BatchTestCase {
 
     /**
      * Runs a query twice, with native crossjoin optimization enabled and
-     * disabled. If both results are equal, its considered correct. 
-     *  
+     * disabled. If both results are equal, its considered correct.
+     *
      * @param resultLimit maximum result size of all the MDX operations in this
      *  query. This might be hard to estimate as it is usually larger than the
      *  rowCount of the final result. Setting it to 0 will cause this limit to
@@ -2903,7 +2901,7 @@ public class NonEmptyTest extends BatchTestCase {
         int resultLimit, int rowCount, String mdx) {
         checkNative(resultLimit, rowCount, mdx, null, false);
     }
-    
+
     /**
      * Runs a query twice, with native crossjoin optimization enabled and
      * disabled. If both results are equal,and both aggree with the expected
@@ -2911,7 +2909,7 @@ public class NonEmptyTest extends BatchTestCase {
      * fresh connection. This is useful if the test case sets its certain
      * mondrian properties, e.g. native properties like:
      *   mondrian.native.filter.enable
-     * 
+     *
      * @param resultLimit maximum result size of all the MDX operations in this
      *  query. This might be hard to estimate as it is usually larger than the
      *  rowCount of the final result. Setting it to 0 will cause this limit to
@@ -2920,9 +2918,9 @@ public class NonEmptyTest extends BatchTestCase {
      * @param mdx query
      * @param expectedResult expected result string
      * @param freshConnection set to true if fresh connection is required
-     */    
+     */
     private void checkNative(
-        int resultLimit, int rowCount, String mdx, String expectedResult, 
+        int resultLimit, int rowCount, String mdx, String expectedResult,
         boolean freshConnection) {
         // Don't run the test if we're testing expression dependencies.
         // Expression dependencies cause spurious interval calls to
@@ -2935,7 +2933,7 @@ public class NonEmptyTest extends BatchTestCase {
         try {
             logger.debug("*** Native: " + mdx);
             boolean reuseConnection = !freshConnection;
-            Connection con = 
+            Connection con =
                 getTestContext().getFoodMartConnection(reuseConnection);
             RolapNativeRegistry reg = getRegistry(con);
             reg.useHardCache(true);
@@ -2981,7 +2979,7 @@ public class NonEmptyTest extends BatchTestCase {
                     interpretedResult, expectedResult, false,
                     "Interpreter implementation returned different result than expected; MDX=" + mdx);
             }
-            
+
             if (!nativeResult.equals(interpretedResult)) {
                 TestContext.assertEqualsVerbose(
                     nativeResult, interpretedResult, false,
