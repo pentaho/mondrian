@@ -285,6 +285,48 @@ Axis #2:
             "</Cube>"
             ;
     }
+	
+	public void testNonAllPromotionMembers() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+                "Sales",
+                "<Dimension name=\"Promotions2\" foreignKey=\"promotion_id\">\n" +
+                "  <Hierarchy hasAll=\"false\" primaryKey=\"promotion_id\">\n" +
+                "    <Table name=\"promotion\"/>\n" +
+                "    <Level name=\"Promotion2 Name\" column=\"promotion_name\" uniqueMembers=\"true\"/>\n" +
+                "  </Hierarchy>\n" +
+                "</Dimension>");
+
+        testContext.assertQueryReturns(
+			"select {[Promotion2 Name].[Price Winners], [Promotion2 Name].[Sale Winners]} * {Tail([Time].[Year].Members,3)} ON COLUMNS, " +
+			"NON EMPTY Crossjoin({[Store].CurrentMember.Children},  {[Store Type].[All Store Types].Children}) ON ROWS " +
+			"from [Sales]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Promotions2].[Price Winners], [Time].[1997]}\n" +
+                "{[Promotions2].[Price Winners], [Time].[1998]}\n" +
+                "{[Promotions2].[Sale Winners], [Time].[1997]}\n" +
+                "{[Promotions2].[Sale Winners], [Time].[1998]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Mid-Size Grocery]}\n" +
+                "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Small Grocery]}\n" +
+                "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Supermarket]}\n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: 444\n" +
+                "Row #0: \n" +
+                "Row #1: 23\n" +
+                "Row #1: \n" +
+                "Row #1: \n" +
+                "Row #1: \n" +
+                "Row #2: 1,271\n" +
+                "Row #2: \n" +
+                "Row #2: \n" +
+                "Row #2: \n"));
+    }
+	
+
 }
 
 // End RolapResultTest.java

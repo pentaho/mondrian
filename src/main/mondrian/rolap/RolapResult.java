@@ -1828,6 +1828,44 @@ class RolapResult extends ResultBase {
                 }
             }
             list.addAll(extras);
+
+            // if there are unique members on both axes, verify the member
+            // order and create a replacement sorted list if needed        
+            if (list.size() > 0 && extras.size() > 0) {
+                String[] names = new String[list.size()];            
+                int i = 0;
+                for (final Member memArray[]: list) {
+                    StringBuilder name = new StringBuilder(100);
+                    for (final Member mem: memArray) {
+                        final String uniqueName = mem.getUniqueName();
+                        name.append(uniqueName);
+                    }
+                    names[i] = name.toString();
+                    i++;
+                }
+                String[] namesCopy = names.clone();
+                java.util.Arrays.sort(names);
+                if (!java.util.Arrays.equals(names, namesCopy)) {                
+                    // create a sorted list from the original list
+                    List<Member[]> sortedList = new ArrayList<Member[]>();
+                    for (int j = 0; j < names.length; j++) {
+                        final String name = names[j];
+                        for (final Member memArray[]: list) {
+                            StringBuilder name2 = new StringBuilder(100);
+                            for (final Member mem: memArray) {
+                                final String uniqueName = mem.getUniqueName();
+                                name2.append(uniqueName);
+                            }
+                            if (name.equals(name2.toString())) {
+                                sortedList.add(memArray);
+                                break;
+                            }
+                        }
+                    }   
+                    return new RolapAxis.MemberArrayList(sortedList);
+                }                
+            }
+
             return new RolapAxis.MemberArrayList(list);
         }
     }
