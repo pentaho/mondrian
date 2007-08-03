@@ -591,7 +591,7 @@ public class FastBatchingCellReader implements CellReader {
          * This method was initially intended for only those measures that are
          * defined using subqueries(for DBs that support them). However, since
          * Mondrian does not parse the SQL string, the method will count both
-         * queries as well as non query SQL expressions, e.g. "col1" + "col2".
+         * queries as well as some non query SQL expressions.
          */
         List<RolapStar.Measure> getDistinctSqlMeasures(
             List<RolapStar.Measure> measuresList) {
@@ -601,7 +601,17 @@ public class FastBatchingCellReader implements CellReader {
                 if (measure.getAggregator().isDistinct() &&
                     measure.getExpression() instanceof
                         MondrianDef.MeasureExpression) {
-                    distinctSqlMeasureList.add(measure);
+                    MondrianDef.MeasureExpression measureExpr =
+                        (MondrianDef.MeasureExpression) measure.getExpression();
+                    MondrianDef.SQL measureSql = measureExpr.expressions[0];
+                    // Checks if the SQL contains "SELECT" to detect the case a 
+                    // subquery is used to define the measure. This is not a
+                    // perfect check, because a SQL expression on column names
+                    // containing "SELECT" will also be detected. e,g, 
+                    // count("select beef" + "regular beef").
+                    if (measureSql.cdata.toUpperCase().contains("SELECT ")) {
+                        distinctSqlMeasureList.add(measure);
+                    }
                 }
             }
             return distinctSqlMeasureList;

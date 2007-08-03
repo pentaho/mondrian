@@ -757,9 +757,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "select " +
             "\"store\".\"store_type\" as \"c0\", " +
             "count(distinct " +
-            "select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" " +
+            "(select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" " +
             "from \"warehouse_class\" AS \"warehouse_class\" " +
-            "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Owned') as \"m0\" " +
+            "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Owned')) as \"m0\" " +
             "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" " +
             "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" " +
             "group by \"store\".\"store_type\"";
@@ -768,27 +768,23 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "select " +
             "\"store\".\"store_type\" as \"c0\", " +
             "count(distinct " +
-            "select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" " +
+            "(select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" " +
             "from \"warehouse_class\" AS \"warehouse_class\" " +
-            "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent') as \"m0\" " +
+            "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent')) as \"m0\" " +
             "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" " +
             "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" " +
             "group by \"store\".\"store_type\"";
-
-        String loadCountDistinct_luciddb3 =
-            "select \"store\".\"store_type\" as \"c0\", count(distinct \"store_id\"+\"warehouse_id\") as \"m0\" " +
-            "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" " +
-            "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
 
         String loadOtherAggs_luciddb =
             "select " +
             "\"store\".\"store_type\" as \"c0\", " +
             "count(" +
-            "select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" " +
+            "(select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" " +
             "from \"warehouse_class\" AS \"warehouse_class\" " +
-            "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent') as \"m0\", " +
-            "count(\"store_id\"+\"warehouse_id\") as \"m1\", " +
-            "count(\"warehouse\".\"stores_id\") as \"m2\" " +
+            "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent')) as \"m0\", " +
+            "count(distinct \"store_id\"+\"warehouse_id\") as \"m1\", " +
+            "count(\"store_id\"+\"warehouse_id\") as \"m2\", " +
+            "count(\"warehouse\".\"stores_id\") as \"m3\" " +
             "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" " +
             "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" " +
             "group by \"store\".\"store_type\"";
@@ -816,7 +812,6 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadCountDistinct_luciddb1, loadCountDistinct_luciddb1),
             new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadCountDistinct_luciddb2, loadCountDistinct_luciddb2),
-            new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadCountDistinct_luciddb3, loadCountDistinct_luciddb3),
             new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadOtherAggs_luciddb, loadOtherAggs_luciddb),
 
             new SqlPattern(SqlPattern.Dialect.DERBY, loadCountDistinct_derby1, loadCountDistinct_derby1),
