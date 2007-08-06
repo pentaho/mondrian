@@ -81,10 +81,6 @@ public class CompoundQuerySpec extends AbstractQuerySpec {
         return 1;
     }
 
-    protected void addMeasure(int i, SqlQuery sqlQuery) {
-        throw new UnsupportedOperationException();
-    }
-
     protected boolean isAggregate() {
         return true;
     }
