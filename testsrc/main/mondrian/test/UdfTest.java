@@ -12,6 +12,7 @@ package mondrian.test;
 import mondrian.olap.*;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
+import mondrian.olap.type.StringType;
 import mondrian.spi.UserDefinedFunction;
 
 import java.util.*;
@@ -44,8 +45,9 @@ public class UdfTest extends FoodMartTestCase {
     private final TestContext tc = TestContext.create(
         null,
         null,
-        null, null, "<UserDefinedFunction name=\"PlusOne\" className=\"" +
-    PlusOneUdf.class.getName() + "\"/>" + nl);
+        null, null,
+        "<UserDefinedFunction name=\"PlusOne\" className=\"" +
+            PlusOneUdf.class.getName() + "\"/>" + nl);
 
     public TestContext getTestContext() {
         return tc;
@@ -624,6 +626,24 @@ public class UdfTest extends FoodMartTestCase {
     }
 
     /**
+     * Tests that the inferred return type is correct for a UDF whose return
+     * type is not the same as would be guessed by
+     * {@link mondrian.olap.fun.FunDefBase#guessResultType}.
+     */
+    public void testNonGuessableReturnType() {
+        TestContext tc = TestContext.create(
+            null,
+            null,
+            null, null,
+            "<UserDefinedFunction name=\"StringMult\" className=\"" +
+                StringMultUdf.class.getName() + "\"/>" + nl);
+        // guessResultType would assume that StringMult(int, string) returns
+        // an int, whereas it returns a string.
+        tc.assertExprReturns(
+            "StringMult(5, 'foo') || 'bar'", "foofoofoofoofoobar");
+    }
+
+    /**
      * A simple user-defined function which adds one to its argument.
      */
     public static class PlusOneUdf implements UserDefinedFunction {
@@ -650,7 +670,7 @@ public class UdfTest extends FoodMartTestCase {
         public Object execute(Evaluator evaluator, Argument[] arguments) {
             final Object argValue = arguments[0].evaluateScalar(evaluator);
             if (argValue instanceof Number) {
-                return new Double(((Number) argValue).doubleValue() + 1);
+                return ((Number) argValue).doubleValue() + 1.0;
             } else {
                 // Argument might be a RuntimeException indicating that
                 // the cache does not yet have the required cell value. The
@@ -680,6 +700,67 @@ public class UdfTest extends FoodMartTestCase {
 
         public Type getReturnType(Type[] parameterTypes) {
             // Will cause error.
+            return null;
+        }
+    }
+
+    /**
+     * The "TimesString" user-defined function. We wanted a function whose
+     * actual return type (string) is not the same as the guessed return type
+     * (integer).
+     */
+    public static class StringMultUdf implements UserDefinedFunction {
+        public String getName() {
+            return "StringMult";
+        }
+
+        public String getDescription() {
+            return "Returns N copies of its string argument";
+        }
+
+        public Syntax getSyntax() {
+            return Syntax.Function;
+        }
+
+        public Type getReturnType(Type[] parameterTypes) {
+            return new StringType();
+        }
+
+        public Type[] getParameterTypes() {
+            return new Type[] {
+                new NumericType(), new StringType()
+            };
+        }
+
+        public Object execute(Evaluator evaluator, Argument[] arguments) {
+            final Object argValue = arguments[0].evaluateScalar(evaluator);
+            int n;
+            if (argValue instanceof Number) {
+                n = ((Number) argValue).intValue();
+            } else {
+                // Argument might be a RuntimeException indicating that
+                // the cache does not yet have the required cell value. The
+                // function will be called again when the cache is loaded.
+                return null;
+            }
+            String s;
+            final Object argValue2 = arguments[1].evaluateScalar(evaluator);
+            if (argValue2 instanceof String) {
+                s = (String) argValue2;
+            } else {
+                return null;
+            }
+            if (n < 0) {
+                return null;
+            }
+            StringBuilder buf = new StringBuilder(s.length() * n);
+            for (int i = 0; i < n; i++) {
+                buf.append(s);
+            }
+            return buf.toString();
+        }
+
+        public String[] getReservedWords() {
             return null;
         }
     }

@@ -633,6 +633,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         final SqlQuery.Dialect dialect = getTestContext().getDialect();
         switch (SqlPattern.Dialect.get(dialect)) {
         case ORACLE: // gives 'feature not supported' in Express 10.2
+        case ACCESS:
             return;
         }
 
@@ -969,18 +970,17 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         final String accessSql = "select count(`c`) as `c0` " +
             "from (" +
             "select distinct `sales_fact_1997`.`customer_id` as `c` " +
-            "from `time_by_day` as `time_by_day`," +
+            "from `store` as `store`," +
             " `sales_fact_1997` as `sales_fact_1997`," +
-            " `store` as `store` " +
-            "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-            "and `time_by_day`.`the_year` = 1997 " +
-            "and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
+            " `time_by_day` as `time_by_day` " +
+            "where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
             // not quite right: should be
             //   store_state = 'CA' and store_country = 'USA' or store_country = 'USA'
-            "and (`store`.`store_state` = 'CA'" +
-            " or `store`.`store_country` = 'USA') " +
+            "and (`store`.`store_state` = 'CA' or `store`.`store_country` = 'USA') " +
+            "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
             "and ((`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997)" +
-            " or (`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997))) as `dummyname`";
+            " or (`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997))" +
+            ") as `dummyname`";
         assertQuerySql(mdxQuery, new SqlPattern[] {
             new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql)
         });

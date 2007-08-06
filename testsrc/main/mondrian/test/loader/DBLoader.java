@@ -588,6 +588,9 @@ public abstract class DBLoader {
             }
             // for extra types
             if (name.startsWith("DECIMAL(")) {
+                if (dialect.isAccess()) {
+                    return "CURRENCY";
+                }
                 return name;
             } else if (name.startsWith("VARCHAR(")) {
                 return name;

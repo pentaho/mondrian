@@ -10,12 +10,7 @@
 
 package mondrian.test.loader;
 
-import java.io.FileInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.FileReader;
-import java.io.FilenameFilter;
+import java.io.*;
 import java.util.Properties;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -240,10 +235,35 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
         }
     }
 
+    /**
+     * Looks for a file relative to the current directory and all of its
+     * parent directories. This gives a little flexibility if you invoke a
+     * test in a sub-directory.
+     *
+     * @param file File
+     * @return File within current directory or a parent directory.
+     */
+    private static File resolveFile(File file) {
+        if (file.isAbsolute()) {
+            return file;
+        } else {
+            File base = new File(System.getProperty("user.dir"));
+            while (base != null) {
+                File file2 = new File(base, file.getPath());
+                if (file2.exists()) {
+                    return file2;
+                }
+                base = base.getParentFile();
+            }
+        }
+        return file;
+    }
+
     public void loadTables(File file, List<Table> tableList) throws Exception {
-        Reader reader = new FileReader(file);
+        Reader reader = new FileReader(resolveFile(file));
         loadTables(reader, tableList);
     }
+
     public void loadTables(Reader reader, List<Table> tableList) throws Exception {
 //System.out.println("CsvLoader.loadTables: TOP:");
         CsvLoader csvloader = null;
