@@ -150,21 +150,14 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             createRequest(cubeNameSales, measureUnitSales,
                 "customer", "country", "F")) {
             boolean canBatch(FastBatchingCellReader.Batch batch) {
-                if (batch.equals(group1Agg2)) {
-                    return true;
-                }
-                return false;
+                return batch.equals(group1Agg2);
             }
         };
         FastBatchingCellReader.Batch group1Detailed = fbcr.new Batch(
             createRequest(cubeNameSales, measureUnitSales,
                 new String[0], new String[0], new String[0])) {
             boolean canBatch(FastBatchingCellReader.Batch batch) {
-                if (batch.equals(group1Agg1)) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return batch.equals(group1Agg1);
             }
         };
         final FastBatchingCellReader.Batch group2Agg1 = fbcr.new Batch(
@@ -178,11 +171,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             createRequest(cubeNameSales, measureUnitSales,
                 "customer", "yearly_income", "")) {
             boolean canBatch(FastBatchingCellReader.Batch batch) {
-                if (batch.equals(group2Agg1)) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return batch.equals(group2Agg1);
             }
         };
         ArrayList<FastBatchingCellReader.Batch> batchList =
@@ -824,7 +813,178 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
         assertQuerySql(testContext, query, patterns);
     }
+
+    public void testAggregateDistinctCount() {
+        // solve_order=1 says to aggregate [CA] and [OR] before computing their
+        // sums
+        assertQueryReturns(
+            "WITH MEMBER [Time].[1997 Q1 plus Q2] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q2]})', solve_order=1\n" +
+                "SELECT {[Measures].[Customer Count]} ON COLUMNS,\n" +
+                "      {[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997 Q1 plus Q2]} ON ROWS\n" +
+                "FROM Sales\n" +
+                "WHERE ([Store].[USA].[CA])",
+            fold("Axis #0:\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Axis #2:\n" +
+                "{[Time].[1997].[Q1]}\n" +
+                "{[Time].[1997].[Q2]}\n" +
+                "{[Time].[1997 Q1 plus Q2]}\n" +
+                "Row #0: 1,110\n" +
+                "Row #1: 1,173\n" +
+                "Row #2: 1,854\n"));
+    }
+
+    /**
+     *  As {@link #testAggregateDistinctCount()}, but (a) calc member includes
+     * members from different levels and (b) also display [unit sales].
+     */
+    public void testAggregateDistinctCount2() {
+        assertQueryReturns(
+            "WITH MEMBER [Time].[1997 Q1 plus July] AS\n" +
+                " 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n" +
+                "SELECT {[Measures].[Unit Sales], [Measures].[Customer Count]} ON COLUMNS,\n" +
+                "      {[Time].[1997].[Q1],\n" +
+                "       [Time].[1997].[Q2],\n" +
+                "       [Time].[1997].[Q3].[7],\n" +
+                "       [Time].[1997 Q1 plus July]} ON ROWS\n" +
+                "FROM Sales\n" +
+                "WHERE ([Store].[USA].[CA])",
+            fold("Axis #0:\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Axis #2:\n" +
+                "{[Time].[1997].[Q1]}\n" +
+                "{[Time].[1997].[Q2]}\n" +
+                "{[Time].[1997].[Q3].[7]}\n" +
+                "{[Time].[1997 Q1 plus July]}\n" +
+                "Row #0: 16,890\n" +
+                "Row #0: 1,110\n" +
+                "Row #1: 18,052\n" +
+                "Row #1: 1,173\n" +
+                "Row #2: 5,403\n" +
+                "Row #2: 412\n" + // !!!
+                "Row #3: 22,293\n" + // = 16,890 + 5,403
+                "Row #3: 1,386\n")); // between 1,110 and 1,110 + 412
+    }
+
+    /**
+     *  As {@link #testAggregateDistinctCount2()}, but with two calc members
+     * simultaneously.
+     */
+    public void testAggregateDistinctCount3() {
+        final String mdxQuery = "WITH\n" +
+            "  MEMBER [Promotion Media].[TV plus Radio] AS 'AGGREGATE({[Promotion Media].[TV], [Promotion Media].[Radio]})', solve_order=1\n" +
+            "  MEMBER [Time].[1997 Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n" +
+            "SELECT {[Promotion Media].[TV plus Radio],\n" +
+            "        [Promotion Media].[TV],\n" +
+            "        [Promotion Media].[Radio]} ON COLUMNS,\n" +
+            "       {[Time].[1997],\n" +
+            "        [Time].[1997].[Q1],\n" +
+            "        [Time].[1997 Q1 plus July]} ON ROWS\n" +
+            "FROM Sales\n" +
+            "WHERE [Measures].[Customer Count]";
+
+        assertQueryReturns(
+            mdxQuery,
+            fold("Axis #0:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Axis #1:\n" +
+                "{[Promotion Media].[TV plus Radio]}\n" +
+                "{[Promotion Media].[All Media].[TV]}\n" +
+                "{[Promotion Media].[All Media].[Radio]}\n" +
+                "Axis #2:\n" +
+                "{[Time].[1997]}\n" +
+                "{[Time].[1997].[Q1]}\n" +
+                "{[Time].[1997 Q1 plus July]}\n" +
+                "Row #0: 455\n" +
+                "Row #0: 274\n" +
+                "Row #0: 186\n" +
+                "Row #1: 139\n" +
+                "Row #1: 99\n" +
+                "Row #1: 40\n" +
+                "Row #2: 139\n" +
+                "Row #2: 99\n" +
+                "Row #2: 40\n"));
+
+        // Each of the 9 cells has its own SQL statement. This one is for the
+        // most complex cell, the one bounded by an aggregate member on each
+        // axis ([TV plus Radio] on columns and [1997 Q1 plus July] on rows).
+        final String accessSql = "select count(`c`) as `c0` " +
+            "from (" +
+            "select distinct `sales_fact_1997`.`customer_id` as `c` " +
+            "from `time_by_day` as `time_by_day`," +
+            " `sales_fact_1997` as `sales_fact_1997`," +
+            " `promotion` as `promotion` " +
+            "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
+            "and ((`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997)" +
+            " or (`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997)) " +
+            "and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` " +
+            "and `promotion`.`media_type` in ('TV', 'Radio')) as `dummyname`";
+        final String oracleSql =
+            "select count(distinct \"sales_fact_1997\".\"customer_id\") as \"c\" "
+                + "from \"sales_fact_1997\" \"sales_fact_1997\","
+                + " \"time_by_day\" \"time_by_day\","
+                + " \"promotion\" \"promotion\" "
+                + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+                + "and ((\"time_by_day\".\"quarter\" = 'Q1' and \"time_by_day\".\"the_year\" = 1997)"
+                + " or (\"time_by_day\".\"month_of_year\" = 7 and \"time_by_day\".\"quarter\" = 'Q3' and \"time_by_day\".\"the_year\" = 1997)) "
+                + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
+                + "and \"promotion\".\"media_type\" in ('TV', 'Radio')";
+        assertQuerySql(mdxQuery, new SqlPattern[] {
+            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
+            new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql),
+        });
+    }
+
+    /**
+     * Distinct count over aggregate member which contains overlapping
+     * members. Need to count them twice for rollable measures such as
+     * [Unit Sales], but not for distinct-count measures such as
+     * [Customer Count].
+     */
+    public void testAggregateDistinctCount4() {
+        // CA and USA are overlapping members
+        final String mdxQuery = "WITH\n" +
+            "  MEMBER [Store].[CA plus USA] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA]})', solve_order=1\n" +
+            "  MEMBER [Time].[Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n" +
+            "SELECT {[Measures].[Customer Count], [Measures].[Unit Sales]} ON COLUMNS,\n" +
+            "      {[Store].[CA plus USA]} * {[Time].[Q1 plus July]} ON ROWS\n" +
+            "FROM Sales";
+        assertQueryReturns(
+            mdxQuery,
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[CA plus USA], [Time].[Q1 plus July]}\n" +
+                "Row #0: 3,505\n" +
+                "Row #0: 112,347\n"));
+
+        final String accessSql = "select count(`c`) as `c0` " +
+            "from (" +
+            "select distinct `sales_fact_1997`.`customer_id` as `c` " +
+            "from `time_by_day` as `time_by_day`," +
+            " `sales_fact_1997` as `sales_fact_1997`," +
+            " `store` as `store` " +
+            "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
+            "and `time_by_day`.`the_year` = 1997 " +
+            "and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
+            // not quite right: should be
+            //   store_state = 'CA' and store_country = 'USA' or store_country = 'USA'
+            "and (`store`.`store_state` = 'CA'" +
+            " or `store`.`store_country` = 'USA') " +
+            "and ((`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997)" +
+            " or (`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997))) as `dummyname`";
+        assertQuerySql(mdxQuery, new SqlPattern[] {
+            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql)
+        });
+    }
 }
 
 // End FastBatchingCellReaderTest.java
-

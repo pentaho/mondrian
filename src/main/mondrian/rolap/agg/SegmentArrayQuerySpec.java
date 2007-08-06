@@ -28,19 +28,34 @@ import java.util.List;
  */
 class SegmentArrayQuerySpec extends AbstractQuerySpec {
     private final Segment[] segments;
-    private final GroupByGroupingSets groupByGroupingSets;
+    private final GroupingSetsList groupingSetsList;
 
     /**
      * Creates a SegmentArrayQuerySpec.
      *
-     * @param groupByGroupingSets
+     * @param groupingSetsList Collection of grouping sets
      */
     SegmentArrayQuerySpec(
-        GroupByGroupingSets groupByGroupingSets) {
-        super(groupByGroupingSets.getStar());
-        this.segments = groupByGroupingSets.getDefaultSegments();
-        this.groupByGroupingSets = groupByGroupingSets;
+        GroupingSetsList groupingSetsList)
+    {
+        super(groupingSetsList.getStar(), false);
+        this.segments = groupingSetsList.getDefaultSegments();
+        this.groupingSetsList = groupingSetsList;
         assert isValid(true);
+    }
+
+    /**
+     * Alternative constructor for derived class.
+     *
+     * @param star Star
+     *
+     * @param countOnly If true, generate no GROUP BY clause, so the query
+     * returns a single row containing a grand total
+     */
+    SegmentArrayQuerySpec(RolapStar star, boolean countOnly) {
+        super(star, countOnly);
+        this.segments = null;
+        this.groupingSetsList = null;
     }
 
     /**
@@ -105,32 +120,16 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         return segments[0].axes[i].getPredicate();
     }
 
-    public String generateSqlQuery() {
-        SqlQuery sqlQuery = newSqlQuery();
-
-        int k = getDistinctMeasureCount();
-        final SqlQuery.Dialect dialect = sqlQuery.getDialect();
-        if (!dialect.allowsCountDistinct() && k > 0 ||
-            !dialect.allowsMultipleCountDistinct() && k > 1) {
-            distinctGenerateSql(sqlQuery);
-        } else {
-            nonDistinctGenerateSql(sqlQuery, false, false);
-        }
-        addGroupingFunction(sqlQuery);
-        addGroupingSets(sqlQuery);
-        return sqlQuery.toString();
-    }
-
-    private void addGroupingFunction(SqlQuery sqlQuery) {
-        List<RolapStar.Column> list = groupByGroupingSets.getRollupColumns();
+    protected void addGroupingFunction(SqlQuery sqlQuery) {
+        List<RolapStar.Column> list = groupingSetsList.getRollupColumns();
         for (RolapStar.Column column : list) {
             sqlQuery.addGroupingFunction(column.generateExprString(sqlQuery));
         }
     }
 
-    private void addGroupingSets(SqlQuery sqlQuery) {
+    protected void addGroupingSets(SqlQuery sqlQuery) {
         List<RolapStar.Column[]> groupingSetsColumns =
-            groupByGroupingSets.getGroupingSetsColumns();
+            groupingSetsList.getGroupingSetsColumns();
         for (RolapStar.Column[] groupingSetsColumn : groupingSetsColumns) {
             ArrayList<String> groupingColumnsExpr = new ArrayList<String>();
             for (RolapStar.Column aColumn : groupingSetsColumn) {
@@ -139,98 +138,9 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
             sqlQuery.addGroupingSet(groupingColumnsExpr);
         }
     }
-    
-    /**
-     * Returns the number of measures which are distinct.
-     *
-     * @return the number of measures which are distinct
-     */
-    protected int getDistinctMeasureCount() {
-        int k = 0;
-        for (int i = 0, count = getMeasureCount(); i < count; i++) {
-            RolapStar.Measure measure = getMeasure(i);
-            if (measure.getAggregator().isDistinct()) {
-                ++k;
-            }
-        }
-        return k;
-    }
-
-    protected void addMeasure(final int i, final SqlQuery sqlQuery) {
-        RolapStar.Measure measure = getMeasure(i);
-        Util.assertTrue(measure.getTable() == getStar().getFactTable());
-        measure.getTable().addToFrom(sqlQuery, false, true);
-
-        String exprInner = measure.generateExprString(sqlQuery);
-        String exprOuter = measure.getAggregator().getExpression(exprInner);
-        sqlQuery.addSelect(exprOuter, getMeasureAlias(i));
-    }
 
     protected boolean isAggregate() {
         return true;
-    }
-
-    /**
-     * Generates a SQL query to retrieve the values in this segment using
-     * an algorithm which converts distinct-aggregates to non-distinct
-     * aggregates over subqueries.
-     *
-     * @param outerSqlQuery Query to modify
-     */
-    protected void distinctGenerateSql(final SqlQuery outerSqlQuery) {
-        final SqlQuery.Dialect dialect = outerSqlQuery.getDialect();
-        // Generate something like
-        //  select d0, d1, count(m0)
-        //  from (
-        //    select distinct x as d0, y as d1, z as m0
-        //    from t) as foo
-        //  group by d0, d1
-
-        final SqlQuery innerSqlQuery = newSqlQuery();
-        innerSqlQuery.setDistinct(true);
-
-        // add constraining dimensions
-        RolapStar.Column[] columns = getColumns();
-        int arity = columns.length;
-        for (int i = 0; i < arity; i++) {
-            RolapStar.Column column = columns[i];
-            RolapStar.Table table = column.getTable();
-            if (table.isFunky()) {
-                // this is a funky dimension -- ignore for now
-                continue;
-            }
-            table.addToFrom(innerSqlQuery, false, true);
-            String expr = column.generateExprString(innerSqlQuery);
-            StarColumnPredicate predicate = getColumnPredicate(i);
-            final String where = RolapStar.Column.createInExpr(
-                expr,
-                predicate,
-                column.getDatatype(),
-                innerSqlQuery.getDialect());
-            if (!where.equals("true")) {
-                innerSqlQuery.addWhere(where);
-            }
-            final String alias = "d" + i;
-            innerSqlQuery.addSelect(expr, alias);
-            final String quotedAlias = dialect.quoteIdentifier(alias);
-            outerSqlQuery.addSelect(quotedAlias);
-            outerSqlQuery.addGroupBy(quotedAlias);
-        }
-        for (int i = 0, count = getMeasureCount(); i < count; i++) {
-            RolapStar.Measure measure = getMeasure(i);
-
-            Util.assertTrue(measure.getTable() == getStar().getFactTable());
-            measure.getTable().addToFrom(innerSqlQuery, false, true);
-
-            String alias = getMeasureAlias(i);
-            String expr = measure.generateExprString(outerSqlQuery);
-            innerSqlQuery.addSelect(expr, alias);
-
-            outerSqlQuery.addSelect(
-                measure.getAggregator().getNonDistinctAggregator().getExpression(
-                    dialect.quoteIdentifier(alias)));
-        }
-        outerSqlQuery.addFrom(innerSqlQuery, "dummyname", true);
     }
 }
 

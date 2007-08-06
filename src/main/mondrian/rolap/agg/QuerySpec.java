@@ -45,3 +45,5 @@ public interface QuerySpec {
 
     String generateSqlQuery();
 }
+
+// End QuerySpec.java

@@ -13,7 +13,6 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
-import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
@@ -41,9 +40,6 @@ public class RolapCube extends CubeBase {
     private final RolapHierarchy measuresHierarchy;
     /** For SQL generator. Fact table. */
     final MondrianDef.Relation fact;
-
-    /** To access all measures stored in the fact table. */
-    private final CellReader cellReader;
 
     /**
      * Mapping such that
@@ -99,7 +95,6 @@ public class RolapCube extends CubeBase {
         this.schema = schema;
         this.fact = fact;
         this.hierarchyUsages = new ArrayList<HierarchyUsage>();
-        this.cellReader = AggregationManager.instance();
         this.calculatedMembers = new Formula[0];
         this.namedSets = new Formula[0];
         this.load = load;
@@ -786,7 +781,7 @@ return dim;
         MondrianDef.NamedSet xmlNamedSet = xmlNamedSets[i];
         Util.discard(xmlNamedSet);
         Formula formula = queryExp.formulas[offset + i];
-        namedSets = (Formula[]) RolapUtil.addElement(namedSets, formula);
+        namedSets = RolapUtil.addElement(namedSets, formula);
         formulaList.add(formula);
     }
 
@@ -1111,10 +1106,6 @@ assert is not true.
 
     int getOrdinal(int globalOrdinal) {
         return this.localDimensionOrdinals[globalOrdinal];
-    }
-
-    CellReader getCellReader() {
-        return this.cellReader;
     }
 
     /**

@@ -19,7 +19,6 @@ import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.util.Format;
-import mondrian.util.Bug;
 import mondrian.util.ObjectPool;
 
 import org.apache.log4j.Logger;
@@ -50,7 +49,8 @@ class RolapResult extends ResultBase {
 
     private CellInfoContainer cellInfos;
     private FastBatchingCellReader batchingReader;
-    AggregatingCellReader aggregatingReader = new AggregatingCellReader();
+    private final CellReader aggregatingReader =
+        AggregationManager.instance().getCacheCellReader();
     private Modulos modulos = null;
     private final int maxEvalDepth =
             MondrianProperties.instance().MaxEvalDepth.get();
@@ -363,8 +363,8 @@ class RolapResult extends ResultBase {
 
                     if (! nonAllMembers.isEmpty()) {
                         List<Position> pl = axisResult.getPositions();
-                        for (Position p: pl) {
-                            for (Member m: p) {
+                        for (Position p : pl) {
+                            for (Member m : p) {
                                 if (m.isCalculated()) {
                                     CalculatedMeasureVisitor visitor =
                                         new CalculatedMeasureVisitor();
@@ -489,48 +489,6 @@ class RolapResult extends ResultBase {
             return null;
         }
     }
-    private static class MeasureVisitor extends mondrian.mdx.MdxVisitorImpl {
-        List<Member> measures;
-        MeasureVisitor() {
-            measures = new ArrayList<Member>();
-        }
-        public Object visit(mondrian.olap.Formula formula) {
-            return null;
-        }
-        public Object visit(mondrian.mdx.ResolvedFunCall call) {
-            return null;
-        }
-        public Object visit(mondrian.olap.Id id) {
-            return null;
-        }
-        public Object visit(mondrian.mdx.ParameterExpr parameterExpr) {
-            return null;
-        }
-        public Object visit(mondrian.mdx.DimensionExpr dimensionExpr) {
-            return null;
-        }
-        public Object visit(mondrian.mdx.HierarchyExpr hierarchyExpr) {
-            return null;
-        }
-        public Object visit(mondrian.mdx.LevelExpr levelExpr) {
-            return null;
-        }
-        public Object visit(mondrian.mdx.MemberExpr memberExpr)  {
-            Member member = memberExpr.getMember();
-            if (member.isMeasure()) {
-                if (! measures.contains(member)) {
-                    measures.add(member);
-                }
-            }
-            return null;
-        }
-        public Object visit(mondrian.mdx.NamedSetExpr namedSetExpr) {
-            return null;
-        }
-        public Object visit(mondrian.olap.Literal literal) {
-            return null;
-        }
-    }
 
     protected boolean replaceNonAllMembers(List<Member[]> nonAllMembers,
                                             AxisMember axisMembers) {
@@ -634,8 +592,7 @@ class RolapResult extends ResultBase {
     {
         SchemaReader schemaReader = evaluator.getSchemaReader();
         Member[] evalMembers = evaluator.getMembers();
-        for (int i = 0; i < evalMembers.length; i++) {
-            Member em = evalMembers[i];
+        for (Member em : evalMembers) {
             if (em.isCalculated()) {
                 continue;
             }
@@ -644,7 +601,7 @@ class RolapResult extends ResultBase {
             if (d.getDimensionType() == DimensionType.TimeDimension) {
                 continue;
             }
-            if (! em.isAll()) {
+            if (!em.isAll()) {
                 Member[] rootMembers = schemaReader.getHierarchyRootMembers(h);
                 if (em.isMeasure()) {
                     for (Member mm : rootMembers) {
@@ -846,25 +803,6 @@ class RolapResult extends ResultBase {
         ev.setCellReader(aggregatingReader);
         Object value = calc.evaluate(ev);
         return value;
-    }
-
-    /**
-     * An <code>AggregatingCellReader</code> reads cell values from the
-     * {@link RolapAggregationManager}.
-     */
-    private static class AggregatingCellReader implements CellReader {
-        private final RolapAggregationManager aggMan =
-            AggregationManager.instance();
-
-        // implement CellReader
-        public Object get(Evaluator evaluator) {
-            final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-            return aggMan.getCellFromCache(rolapEvaluator.getMembers());
-        }
-
-        public int getMissCount() {
-            return aggMan.getMissCount();
-        }
     }
 
     private void executeStripe(int axisOrdinal, RolapEvaluator revaluator) {
@@ -1771,8 +1709,8 @@ class RolapResult extends ResultBase {
         if (arrayLen == -1) {
             // Avoid materialization of axis
             arrayLen = 0;
-            for (Position p1: pl1) {
-                for (Member m1: p1) {
+            for (Position p1 : pl1) {
+                for (Member m1 : p1) {
                     arrayLen++;
                 }
                 break;
@@ -1783,13 +1721,13 @@ class RolapResult extends ResultBase {
         if (arrayLen == 1) {
             // single Member per position
             List<Member> list = new ArrayList<Member>();
-            for (Position p1: pl1) {
-                for (Member m1: p1) {
+            for (Position p1 : pl1) {
+                for (Member m1 : p1) {
                     list.add(m1);
                 }
             }
-            for (Position p2: pl2) {
-                for (Member m2: p2) {
+            for (Position p2 : pl2) {
+                for (Member m2 : p2) {
                     if (! list.contains(m2)) {
                         list.add(m2);
                     }

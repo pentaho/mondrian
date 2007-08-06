@@ -17,6 +17,7 @@ import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.DataSourceChangeListener;
+import mondrian.util.Bug;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.Property;
@@ -951,6 +952,23 @@ public class RolapStar {
             }
         }
 
+        /**
+         * Fake column.
+         *
+         * @param datatype Datatype
+         */
+        protected Column(SqlQuery.Datatype datatype)
+        {
+            this.table = null;
+            this.expression = null;
+            this.datatype = datatype;
+            this.name = null;
+            this.parentColumn = null;
+            this.nameColumn = null;
+            this.usagePrefix = null;
+            this.bitPosition = 0;
+        }
+
         public boolean equals(Object obj) {
             if (! (obj instanceof RolapStar.Column)) {
                 return false;
@@ -1091,99 +1109,29 @@ public class RolapStar {
          * </ul>
          */
         public static String createInExpr(
-            String expr,
+            final String expr,
             StarColumnPredicate predicate,
             SqlQuery.Datatype datatype,
-            SqlQuery.Dialect dialect)
+            SqlQuery sqlQuery)
         {
-            if (predicate instanceof ValueColumnPredicate) {
-                final ValueColumnPredicate valuePredicate =
-                    (ValueColumnPredicate) predicate;
-                Object key = valuePredicate.getValue();
-                if (key == RolapUtil.sqlNullValue) {
-                    return expr + " is null";
-                } else {
-                    StringBuilder buf = new StringBuilder(64);
-                    buf.append(expr);
-                    buf.append(" = ");
-                    dialect.quote(buf, key, datatype);
-                    return buf.toString();
-                }
-            } else if (predicate instanceof ListColumnPredicate) {
-                ListColumnPredicate valueListColumnPredicate =
-                    (ListColumnPredicate) predicate;
-                List<StarColumnPredicate> predicates =
-                    valueListColumnPredicate.getPredicates();
-                if (predicates.size() == 1) {
-                    return createInExpr(
-                        expr, predicates.get(0), datatype, dialect);
-                }
-
-                int notNullCount = 0;
-                StringBuilder sb = new StringBuilder(expr);
-                ValueColumnPredicate firstNotNull = null;
-                sb.append(" in (");
-                for (StarColumnPredicate predicate1 : predicates) {
-                    final ValueColumnPredicate predicate2 =
-                        (ValueColumnPredicate) predicate1;
-                    Object key = predicate2.getValue();
-                    if (key == RolapUtil.sqlNullValue) {
-                        continue;
+            // Sometimes a column predicate is created without a column. This
+            // is unfortunate, and we will fix it some day. For now, create
+            // a fake column with all of the information needed by the toSql
+            // method, and a copy of the predicate wrapping that fake column.
+            if (!Bug.Bug1767775Fixed ||
+                !Bug.Bug1767779Fixed && predicate.getConstrainedColumn() == null)
+            {
+                Column column = new Column(datatype) {
+                    public String generateExprString(SqlQuery query) {
+                        return expr;
                     }
-                    if (notNullCount > 0) {
-                        sb.append(", ");
-                    } else {
-                        firstNotNull = predicate2;
-                    }
-                    ++notNullCount;
-                    dialect.quote(sb, key, datatype);
-                }
-                sb.append(')');
-                if (notNullCount < predicates.size()) {
-                    // There was at least one null.
-                    StringBuilder buf;
-                    switch (notNullCount) {
-                    case 0:
-                        // Special case -- there were no values besides null.
-                        // Return, for example, "x is null".
-                        return expr + " is null";
-                    case 1:
-                        // Special case -- one not-null value, and null, for
-                        // example "(x = 1 or x is null)".
-                        assert firstNotNull != null;
-                        buf = new StringBuilder(64);
-                        buf.append('(');
-                        buf.append(expr);
-                        buf.append(" = ");
-                        dialect.quote(
-                            buf,
-                            firstNotNull.getValue(),
-                            datatype);
-                        buf.append(" or ");
-                        buf.append(expr);
-                        buf.append(" is null)");
-                        return buf.toString();
-                    default:
-                        // Nulls and values, for example,
-                        // "(x in (1, 2) or x IS NULL)".
-                        buf = new StringBuilder(64);
-                        buf.append('(');
-                        buf.append(sb.toString());
-                        buf.append(" or ");
-                        buf.append(expr);
-                        buf.append(" is null)");
-                        return buf.toString();
-                    }
-                } else {
-                    // No nulls. Return, for example, "x in (1, 2, 3)".
-                    return sb.toString();
-                }
-            } else if (predicate instanceof LiteralStarPredicate) {
-                return predicate.toString();
-            } else {
-                throw Util.newInternal(
-                    "Unexpected constraint type: " + predicate);
+                };
+                predicate = predicate.cloneWithColumn(column);
             }
+
+            StringBuilder buf = new StringBuilder(64);
+            predicate.toSql(sqlQuery, buf);
+            return buf.toString();
         }
 
         public String toString() {

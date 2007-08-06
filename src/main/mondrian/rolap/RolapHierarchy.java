@@ -148,6 +148,7 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             RolapLevel.HideMemberCondition.Never,
             LevelType.Regular, ALL_LEVEL_CARDINALITY);
+        allLevel.init(cube, xmlCubeDimension);
         this.allMember = new RolapMember(
             null, allLevel, null, allMemberName, Member.MemberType.ALL);
         // assign "all member" caption

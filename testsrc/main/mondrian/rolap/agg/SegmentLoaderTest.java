@@ -38,14 +38,14 @@ public class SegmentLoaderTest extends BatchTestCase {
         SegmentLoader loader = new SegmentLoader() {
 
             SqlStatement createExecuteSql(
-                GroupByGroupingSets groupByGroupingSets)
+                GroupingSetsList groupingSetsList)
             {
                 return null;
             }
 
 
             List<Object[]> loadData(SqlStatement stmt,
-                                    GroupByGroupingSets groupByGroupingSets) throws
+                                    GroupingSetsList groupingSetsList) throws
                 SQLException
             {
                 return getData(true);
@@ -77,14 +77,14 @@ public class SegmentLoaderTest extends BatchTestCase {
         SegmentLoader loader = new SegmentLoader() {
 
             SqlStatement createExecuteSql(
-                    GroupByGroupingSets groupByGroupingSets)
+                    GroupingSetsList groupingSetsList)
             {
                 return null;
             }
 
 
             List<Object[]> loadData(SqlStatement stmt,
-                                    GroupByGroupingSets groupByGroupingSets)
+                                    GroupingSetsList groupingSetsList)
                     throws SQLException
             {
                 return getDataWithNullInRollupColumn(true);
@@ -106,14 +106,14 @@ public class SegmentLoaderTest extends BatchTestCase {
         SegmentLoader loader = new SegmentLoader() {
 
             SqlStatement createExecuteSql(
-                GroupByGroupingSets groupByGroupingSets)
+                GroupingSetsList groupingSetsList)
             {
                 return null;
             }
 
 
             List<Object[]> loadData(SqlStatement stmt,
-                                    GroupByGroupingSets groupByGroupingSets) throws
+                                    GroupingSetsList groupingSetsList) throws
                 SQLException
             {
                 return getData(true);
@@ -148,14 +148,14 @@ public class SegmentLoaderTest extends BatchTestCase {
         SegmentLoader loader = new SegmentLoader() {
 
             SqlStatement createExecuteSql(
-                GroupByGroupingSets groupByGroupingSets)
+                GroupingSetsList groupingSetsList)
             {
                 return null;
             }
 
 
             List<Object[]> loadData(SqlStatement stmt,
-                                    GroupByGroupingSets groupByGroupingSets) throws
+                                    GroupingSetsList groupingSetsList) throws
                 SQLException
             {
                 return getData(false);
@@ -183,7 +183,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
         SegmentLoader loader = new SegmentLoader() {
             List<Object[]> loadData(SqlStatement stmt,
-                                    GroupByGroupingSets groupByGroupingSets) throws
+                                    GroupingSetsList groupingSetsList) throws
                 SQLException
             {
                 return getData(true);
@@ -195,7 +195,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         boolean[] axisContainsNull = new boolean[axisCount];
 
         List<Object[]> list = loader.processData(null, axisContainsNull,
-            axisValueSet, new GroupByGroupingSets(groupingSets));
+            axisValueSet, new GroupingSetsList(groupingSets));
         int totalNoOfRows = 12;
         int lengthOfRowWithBitKey = 6;
         Object[] detailedRow = list.get(0);
@@ -242,7 +242,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
         SegmentLoader loader = new SegmentLoader() {
             List<Object[]> loadData(SqlStatement stmt,
-                                    GroupByGroupingSets groupByGroupingSets) throws
+                                    GroupingSetsList groupingSetsList) throws
                 SQLException
             {
                 return getDataWithNullInAxisColumn(false);
@@ -256,7 +256,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(groupingSetsInfo);
 
         loader.processData(null, axisContainsNull,
-            axisValueSet, new GroupByGroupingSets(groupingSets));
+            axisValueSet, new GroupingSetsList(groupingSets));
 
         assertFalse(axisContainsNull[0]);
         assertFalse(axisContainsNull[1]);
@@ -271,7 +271,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
         SegmentLoader loader = new SegmentLoader() {
             List<Object[]> loadData(SqlStatement stmt,
-                                    GroupByGroupingSets groupByGroupingSets) throws
+                                    GroupingSetsList groupingSetsList) throws
                 SQLException
             {
 
@@ -291,7 +291,7 @@ public class SegmentLoaderTest extends BatchTestCase {
             loader.getDistinctValueWorkspace(4);
         List<Object[]> list = loader.processData(null, new boolean[4],
             axisValueSet,
-            new GroupByGroupingSets(groupingSets));
+            new GroupingSetsList(groupingSets));
         int totalNoOfRows = 3;
         assertEquals(totalNoOfRows, list.size());
         int lengthOfRowWithoutBitKey = 5;
@@ -402,7 +402,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         List<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
         groupingSets.add(getDefaultGroupingSet());
         groupingSets.add(getGroupingSetRollupOnGender());
-        GroupByGroupingSets detail = new GroupByGroupingSets(groupingSets);
+        GroupingSetsList detail = new GroupingSetsList(groupingSets);
 
         List<BitKey> bitKeysList = detail.getRollupColumnsBitKeyList();
         int columnsCount = 4;
@@ -415,7 +415,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets = new ArrayList<GroupingSet>();
         groupingSets.add(getDefaultGroupingSet());
         groupingSets.add(getGroupingSetRollupOnGenderAndProductFamily());
-        bitKeysList = new GroupByGroupingSets(groupingSets)
+        bitKeysList = new GroupingSetsList(groupingSets)
             .getRollupColumnsBitKeyList();
         assertEquals(BitKey.Factory.makeBitKey(columnsCount),
             bitKeysList.get(0));
@@ -424,7 +424,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         key.set(1);
         assertEquals(key, bitKeysList.get(1));
 
-        assertTrue(new GroupByGroupingSets(new ArrayList<GroupingSet>())
+        assertTrue(new GroupingSetsList(new ArrayList<GroupingSet>())
             .getRollupColumnsBitKeyList().isEmpty());
     }
 
@@ -449,7 +449,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(getDefaultGroupingSet());
         groupingSets.add(getGroupingSetRollupOnProductDepartment());
         groupingSets.add(getGroupingSetRollupOnGenderAndProductDepartment());
-        GroupByGroupingSets detail = new GroupByGroupingSets(groupingSets);
+        GroupingSetsList detail = new GroupingSetsList(groupingSets);
 
         List<RolapStar.Column> rollupColumnsList = detail.getRollupColumns();
         assertEquals(2, rollupColumnsList.size());
@@ -458,7 +458,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
         groupingSets
             .add(getGroupingSetRollupOnGenderAndProductDepartmentAndYear());
-        detail = new GroupByGroupingSets(groupingSets);
+        detail = new GroupingSetsList(groupingSets);
         rollupColumnsList = detail.getRollupColumns();
         assertEquals(3, rollupColumnsList.size());
         assertEquals(gender, rollupColumnsList.get(0));
@@ -467,7 +467,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
         groupingSets
             .add(getGroupingSetRollupOnProductFamilyAndProductDepartment());
-        detail = new GroupByGroupingSets(groupingSets);
+        detail = new GroupingSetsList(groupingSets);
         rollupColumnsList = detail.getRollupColumns();
         assertEquals(4, rollupColumnsList.size());
         assertEquals(gender, rollupColumnsList.get(0));
@@ -475,7 +475,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         assertEquals(productFamily, rollupColumnsList.get(2));
         assertEquals(year, rollupColumnsList.get(3));
 
-        assertTrue(new GroupByGroupingSets(new ArrayList<GroupingSet>())
+        assertTrue(new GroupingSetsList(new ArrayList<GroupingSet>())
             .getRollupColumns().isEmpty());
 
     }
@@ -533,7 +533,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(getDefaultGroupingSet());
         groupingSets.add(getGroupingSetRollupOnProductDepartment());
         groupingSets.add(getGroupingSetRollupOnGenderAndProductDepartment());
-        GroupByGroupingSets detail = new GroupByGroupingSets(groupingSets);
+        GroupingSetsList detail = new GroupingSetsList(groupingSets);
 
         List<RolapStar.Column> rollupColumnsList = detail.getRollupColumns();
         assertEquals(2, rollupColumnsList.size());
@@ -542,7 +542,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
         groupingSets
             .add(getGroupingSetRollupOnGenderAndProductDepartmentAndYear());
-        detail = new GroupByGroupingSets(groupingSets);
+        detail = new GroupingSetsList(groupingSets);
         rollupColumnsList = detail.getRollupColumns();
         assertEquals(3, rollupColumnsList.size());
         assertEquals(gender, rollupColumnsList.get(0));
@@ -551,7 +551,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
         groupingSets
             .add(getGroupingSetRollupOnProductFamilyAndProductDepartment());
-        detail = new GroupByGroupingSets(groupingSets);
+        detail = new GroupingSetsList(groupingSets);
         rollupColumnsList = detail.getRollupColumns();
         assertEquals(4, rollupColumnsList.size());
         assertEquals(gender, rollupColumnsList.get(0));
@@ -559,7 +559,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         assertEquals(productFamily, rollupColumnsList.get(2));
         assertEquals(year, rollupColumnsList.get(3));
 
-        assertTrue(new GroupByGroupingSets(new ArrayList<GroupingSet>())
+        assertTrue(new GroupingSetsList(new ArrayList<GroupingSet>())
             .getRollupColumns().isEmpty());
 
     }
@@ -569,20 +569,20 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(getDefaultGroupingSet());
         groupingSets.add(getGroupingSetRollupOnProductDepartment());
         groupingSets.add(getGroupingSetRollupOnGenderAndProductDepartment());
-        GroupByGroupingSets detail = new GroupByGroupingSets(groupingSets);
+        GroupingSetsList detail = new GroupingSetsList(groupingSets);
         assertEquals(0, detail.findGroupingFunctionIndex(3));
         assertEquals(1, detail.findGroupingFunctionIndex(2));
 
         groupingSets
             .add(getGroupingSetRollupOnGenderAndProductDepartmentAndYear());
-        detail = new GroupByGroupingSets(groupingSets);
+        detail = new GroupingSetsList(groupingSets);
         assertEquals(0, detail.findGroupingFunctionIndex(3));
         assertEquals(1, detail.findGroupingFunctionIndex(2));
         assertEquals(2, detail.findGroupingFunctionIndex(0));
 
         groupingSets
             .add(getGroupingSetRollupOnProductFamilyAndProductDepartment());
-        detail = new GroupByGroupingSets(groupingSets);
+        detail = new GroupingSetsList(groupingSets);
         assertEquals(0, detail.findGroupingFunctionIndex(3));
         assertEquals(1, detail.findGroupingFunctionIndex(2));
         assertEquals(2, detail.findGroupingFunctionIndex(1));
@@ -607,12 +607,12 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(groupableSetsInfo);
 
         List<RolapStar.Column[]> groupingColumns =
-            new GroupByGroupingSets(groupingSets).getGroupingSetsColumns();
+            new GroupingSetsList(groupingSets).getGroupingSetsColumns();
         assertEquals(2, groupingColumns.size());
         assertEquals(detailedColumns, groupingColumns.get(0));
         assertEquals(summaryColumns, groupingColumns.get(1));
 
-        groupingColumns = new GroupByGroupingSets(new ArrayList<GroupingSet>())
+        groupingColumns = new GroupingSetsList(new ArrayList<GroupingSet>())
             .getGroupingSetsColumns();
         assertEquals(0, groupingColumns.size());
 
@@ -623,7 +623,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         List<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
         groupingSets.add(getDefaultGroupingSet());
         new SegmentLoader()
-            .setFailOnStillLoadingSegments(new GroupByGroupingSets(groupingSets));
+            .setFailOnStillLoadingSegments(new GroupingSetsList(groupingSets));
 
         for (GroupingSet groupingSet : groupingSets) {
             for (Segment segment : groupingSet.getSegments()) {
@@ -635,7 +635,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(getDefaultGroupingSet());
         groupingSets.add(getGroupingSetRollupOnGender());
         new SegmentLoader()
-            .setFailOnStillLoadingSegments(new GroupByGroupingSets(groupingSets));
+            .setFailOnStillLoadingSegments(new GroupingSetsList(groupingSets));
         for (GroupingSet groupingSet : groupingSets) {
             for (Segment segment : groupingSet.getSegments()) {
                 assertTrue(segment.isFailed());

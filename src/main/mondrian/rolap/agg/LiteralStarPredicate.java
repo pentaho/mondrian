@@ -12,6 +12,7 @@ package mondrian.rolap.agg;
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.StarColumnPredicate;
+import mondrian.rolap.sql.SqlQuery;
 
 import java.util.Collection;
 import java.util.List;
@@ -70,7 +71,7 @@ public class LiteralStarPredicate extends AbstractColumnPredicate {
         return Boolean.toString(value);
     }
 
-    public void values(Collection collection) {
+    public void values(Collection<Object> collection) {
     }
 
     public boolean evaluate(Object value) {
@@ -110,8 +111,17 @@ public class LiteralStarPredicate extends AbstractColumnPredicate {
         }
     }
 
+    public StarColumnPredicate cloneWithColumn(RolapStar.Column column) {
+        return this;
+    }
+
     public boolean getValue() {
         return value;
+    }
+
+    public void toSql(SqlQuery sqlQuery, StringBuilder buf) {
+        // e.g. "true"
+        buf.append(value);
     }
 }
 

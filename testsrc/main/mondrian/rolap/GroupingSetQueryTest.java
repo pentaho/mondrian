@@ -292,6 +292,16 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 "group by grouping sets ((\"time_by_day\".\"the_year\",\"customer\".\"gender\"),(\"time_by_day\".\"the_year\"))",
             150)
         };
+
+        // Sometimes this query causes Oracle 10.2 XE to give
+        //   ORA-12516, TNS:listener could not find available handler with
+        //   matching protocol stack
+        //
+        // You need to configure Oracle:
+        //  $ su - oracle
+        //  $ sqlplus / as sysdba
+        //  SQL> ALTER SYSTEM SET sessions=320 SCOPE=SPFILE;
+        //  SQL> SHUTDOWN
         assertRequestSql(new CellRequest[]{request3, request1, request2},
             patternsWithGS, cubeNameSales2);
 

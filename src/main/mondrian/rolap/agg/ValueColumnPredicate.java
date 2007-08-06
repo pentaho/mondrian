@@ -12,6 +12,8 @@ package mondrian.rolap.agg;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.StarColumnPredicate;
+import mondrian.rolap.RolapUtil;
+import mondrian.rolap.sql.SqlQuery;
 
 import java.util.Collection;
 
@@ -40,6 +42,7 @@ public class ValueColumnPredicate
         Object value)
     {
         super(constrainedColumn);
+//        assert constrainedColumn != null;
         assert value != null;
         assert ! (value instanceof StarColumnPredicate);
         this.value = value;
@@ -93,7 +96,7 @@ public class ValueColumnPredicate
         return 0;
     }
 
-    public void values(Collection collection) {
+    public void values(Collection<Object> collection) {
         collection.add(value);
     }
 
@@ -119,6 +122,23 @@ public class ValueColumnPredicate
             return LiteralStarPredicate.FALSE;
         } else {
             return this;
+        }
+    }
+
+    public StarColumnPredicate cloneWithColumn(RolapStar.Column column) {
+        return new ValueColumnPredicate(column, value);
+    }
+
+    public void toSql(SqlQuery sqlQuery, StringBuilder buf) {
+        final RolapStar.Column column = getConstrainedColumn();
+        String expr = column.generateExprString(sqlQuery);
+        buf.append(expr);
+        Object key = getValue();
+        if (key == RolapUtil.sqlNullValue) {
+            buf.append(" is null");
+        } else {
+            buf.append(" = ");
+            sqlQuery.getDialect().quote(buf, key, column.getDatatype());
         }
     }
 }

@@ -60,10 +60,21 @@ public class RolapEvaluator implements Evaluator {
     private final Member[] calcMembers;
     private int calcMemberCount;
 
+    /**
+     * List of lists of tuples or members, rarely used, but overrides the
+     * ordinary dimensional context if set when a cell value comes to be
+     * evaluated.
+     */
+    protected List<List<Member>> aggregationLists;
+
     private final List<Member> slicerMembers;
 
     /**
      * Creates an evaluator.
+     *
+     * @param root Root context for stack of evaluators (contains information
+     *   which does not change during the evaluation)
+     * @param parent Parent evaluator, or null if this is the root
      */
     protected RolapEvaluator(
             RolapEvaluatorRoot root,
@@ -81,6 +92,7 @@ public class RolapEvaluator implements Evaluator {
             calcMembers = new Member[this.currentMembers.length];
             calcMemberCount = 0;
             slicerMembers = new ArrayList<Member>();
+            aggregationLists = null;
         } else {
             depth = parent.depth + 1;
             nonEmpty = parent.nonEmpty;
@@ -90,6 +102,12 @@ public class RolapEvaluator implements Evaluator {
             calcMembers = parent.calcMembers.clone();
             calcMemberCount = parent.calcMemberCount;
             slicerMembers = new ArrayList<Member> (parent.slicerMembers);
+            if (parent.aggregationLists != null) {
+                aggregationLists =
+                        new ArrayList<List<Member>>(parent.aggregationLists);
+            } else {
+                aggregationLists = null;
+            }
         }
     }
 
@@ -117,9 +135,11 @@ public class RolapEvaluator implements Evaluator {
                     .ex(hier.getUniqueName());
             }
 
-            HierarchyUsage[] hierarchyUsages = this.root.cube.getUsages(hier);
-            if (hierarchyUsages.length != 0) {
-                ((RolapMember) member).makeUniqueName(hierarchyUsages[0]);
+            // This fragment is a concurrency bottleneck, so use a cache of
+            // hierarchy usages.
+            HierarchyUsage hierarchyUsage = this.root.cube.getFirstUsage(hier);
+            if (hierarchyUsage != null) {
+                ((RolapMember) member).makeUniqueName(hierarchyUsage);
             }
 
             currentMembers[ordinal] = member;
@@ -198,15 +218,15 @@ public class RolapEvaluator implements Evaluator {
         public Object getParameterValue(ParameterSlot slot) {
             throw new UnsupportedOperationException();
         }
-        
+
         /**
          * Put result in cache.
-         * 
+         *
          * @param key key
          * @param result value to be cached
          * @param isValidResult indicate if this result is valid
          */
-        public void putCacheResult(Object key, Object result, 
+        public void putCacheResult(Object key, Object result,
             boolean isValidResult) {
             if (isValidResult) {
                 expResultCache.put(key, result);
@@ -214,10 +234,10 @@ public class RolapEvaluator implements Evaluator {
                 tmpExpResultCache.put(key, result);
             }
         }
-        
+
         /**
          * Get result from cache
-         * 
+         *
          * @param key cache key
          * @return cached expression
          */
@@ -228,10 +248,10 @@ public class RolapEvaluator implements Evaluator {
             }
             return result;
         }
-        
+
         /**
          * Clear the expression result cache.
-         * 
+         *
          * @param clearValidResult whether to clear valid expression results
          */
         public void clearResultCache(boolean clearValidResult) {
@@ -305,6 +325,18 @@ public class RolapEvaluator implements Evaluator {
         return parent;
     }
 
+    public Evaluator pushAggregation(List<Member> list) {
+        RolapEvaluator newEvaluator = _push();
+        if (newEvaluator.aggregationLists == null) {
+            newEvaluator.aggregationLists = new ArrayList<List<Member>>();
+        }
+        newEvaluator.aggregationLists.add(list);
+        // clear this hierarchy from the regular context
+        newEvaluator.setContext(
+            ((RolapHierarchy) list.get(0).getHierarchy()).getAllMember());
+        return newEvaluator;
+    }
+
     /**
      * Returns true if the other object is a {@link RolapEvaluator} with
      * identical context.
@@ -320,22 +352,6 @@ public class RolapEvaluator implements Evaluator {
     public int hashCode() {
         return Util.hashArray(0, this.currentMembers);
     }
-
-/**
- * RME remove before checkin
- * This is for debugging only
- * For use in debugging Checkin_7634
- */
-public void printCurrentMemberNames() {
-    for (int i = 0; i < currentMembers.length; i++) {
-        Member m = currentMembers[i];
-        if (m == null) {
-        System.out.println("RolapEvaluator.printCurrentMemberNames: i="+i+", member NULL");
-        } else {
-        System.out.println("RolapEvaluator.printCurrentMemberNames: i="+i+", member="+m.getUniqueName());
-        }
-    }
-}
 
     /**
      * Replace the current member of a given hierarchy with member parameter
@@ -369,8 +385,8 @@ public void printCurrentMemberNames() {
             // Is the ever possible?
             return setContext(member);
         } else {
-            Hierarchy heirarchy = m.getHierarchy();
-            Member defaultMember = heirarchy.getDefaultMember();
+            Hierarchy hierarchy = m.getHierarchy();
+            Member defaultMember = hierarchy.getDefaultMember();
             if (previous.equals(defaultMember) && ! previous.equals(member)) {
                 return setContext(member);
             } else {
@@ -460,6 +476,9 @@ public void printCurrentMemberNames() {
         // calculated members.
         Member maxSolveMember = peekCalcMember();
         if (maxSolveMember == null) {
+            if (aggregationLists != null) {
+                return cellReader.getCompound(this, aggregationLists);
+            }
             Object o = cellReader.get(this);
             if (o == Util.nullValue) {
                 o = null;
@@ -705,10 +724,10 @@ public void printCurrentMemberNames() {
             int aggregateCacheMissCountAfter = cellReader.getMissCount();
 
             boolean isValidResult;
-            
-            if (aggregateCacheMissCountBefore == 
+
+            if (aggregateCacheMissCountBefore ==
                 aggregateCacheMissCountAfter) {
-                // Cache the evaluation result as valid result  if the 
+                // Cache the evaluation result as valid result  if the
                 // evaluation did not use any missing aggregates. If missing
                 // aggregates are seen, the aggregateCacheMissCount will
                 // increase.
@@ -725,7 +744,7 @@ public void printCurrentMemberNames() {
         } else if (result == nullResult) {
             result = null;
         }
-        
+
         return result;
     }
 

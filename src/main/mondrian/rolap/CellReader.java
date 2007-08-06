@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2006 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,6 +14,9 @@
 package mondrian.rolap;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Util;
+import mondrian.olap.Member;
+
+import java.util.List;
 
 /**
  * A <code>CellReader</code> finds the cell value for the current context
@@ -43,8 +46,25 @@ interface CellReader {
      * <p>If no aggregation contains the required cell, returns null.
      *
      * <p>If the value is null, returns {@link Util#nullValue}.
+     *
+     * @return Cell value, or null if not found, or {@link Util#nullValue} if
+     * the value is null
      */
-    Object get(Evaluator evaluator);
+    Object get(RolapEvaluator evaluator);
+
+    /**
+     * Returns the value of the cell which has the context described by the
+     * given Evaluator, overlaid with one or more compound members.
+     *
+     * <p>NOTE: Could generalize to allow lists of tuples
+     *
+     * @param evaluator Evaluator
+     * @param aggregationLists List of lists of members or tuples
+     * @return As {@link #get(RolapEvaluator)}
+     */
+    Object getCompound(
+        RolapEvaluator evaluator,
+        List<List<Member>> aggregationLists);
 
     /**
      * Returns the number of times this cell reader has told a lie because the

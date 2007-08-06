@@ -38,22 +38,45 @@ public interface Evaluator {
     Query getQuery();
 
     /**
-     * Creates a new evaluator with each given member overriding the state of
-     * the current validator for its dimension. Other dimensions retain the
-     * same state as this validator.
+     * Creates a new Evaluator with each given member overriding the context of
+     * the current Evaluator for its dimension. Other dimensions retain the
+     * same context as this Evaluator.
+     *
+     * <p>You can retrieve this Evaluator by calling the new Evaluator's
+     * {@link #pop()} method, but it is not necessary to call <code>pop</code>.
+     *
+     * @param members Array of members to add to the context
+     * @return Evaluator with each given member overriding the state of the
+     *   current Evaluator for its dimension
      */
     Evaluator push(Member[] members);
 
     /**
-     * Creates a new evaluator with the same state.
+     * Creates a new Evaluator with the same context as this evaluator.
      * Equivalent to {@link #push(Member[]) push(new Member[0])}.
+     *
+     * <p>This method is typically called before evaluating an expression which
+     * is known to corrupt the evaluation context.
+     *
+     * <p>You can retrieve this Evaluator by calling the new Evaluator's
+     * {@link #pop()} method, but it is not necessary to call <code>pop</code>.
+     *
+     * @return Evaluator with each given member overriding the state of the
+     *   current Evaluator for its dimension
      */
     Evaluator push();
 
     /**
-     * Creates a new evaluator with the same state except for one member.
+     * Creates a new Evaluator with the same context except for one member.
      * Equivalent to
      * {@link #push(Member[]) push(new Member[] &#124;member&#125;)}.
+     *
+     * <p>You can retrieve this Evaluator by calling the new Evaluator's
+     * {@link #pop()} method, but it is not necessary to call <code>pop</code>.
+     *
+     * @param member Member to add to the context
+     * @return Evaluator with each given member overriding the state of the
+     *   current Evaluator for its dimension
      */
     Evaluator push(Member member);
 
@@ -215,6 +238,17 @@ public interface Evaluator {
      * @param evalAxes true if evaluating axes
      */
     void setEvalAxes(boolean evalAxes);
+
+    /**
+     * Returns a new Aggregator whose aggregation context adds a given list of
+     * members or tuples, and whose dimensional context is the same as this
+     * Aggregator.
+     *
+     * @param list List of members
+     * @return Aggregator with <code>list</code> added to its aggregation
+     *   context
+     */
+    Evaluator pushAggregation(List<Member> list);
 }
 
 // End Evaluator.java

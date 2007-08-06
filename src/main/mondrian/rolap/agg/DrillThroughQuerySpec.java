@@ -30,16 +30,14 @@ import java.util.Set;
  */
 class DrillThroughQuerySpec extends AbstractQuerySpec {
     private final CellRequest request;
-    private final boolean countOnly;
     private final String[] columnNames;
 
     public DrillThroughQuerySpec(
         CellRequest request,
         boolean countOnly)
     {
-        super(request.getMeasure().getStar());
+        super(request.getMeasure().getStar(), countOnly);
         this.request = request;
-        this.countOnly = countOnly;
         this.columnNames = computeDistinctColumnNames();
     }
 
@@ -111,7 +109,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
 
     public String generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
-        nonDistinctGenerateSql(sqlQuery, true, countOnly);
+        nonDistinctGenerateSql(sqlQuery);
         return sqlQuery.toString();
     }
 
@@ -127,6 +125,10 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
 
     protected boolean isAggregate() {
         return false;
+    }
+
+    protected boolean isOrdered() {
+        return true;
     }
 }
 

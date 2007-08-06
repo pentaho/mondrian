@@ -880,8 +880,9 @@ public class SqlConstraintUtils {
                 // Below are two alternative approaches (and code). They
                 // both have problems.
             } else {
-                final String where = RolapStar.Column.createInExpr(
-                    q, cc, level.getDatatype(), sqlQuery.getDialect());
+                final String where =
+                    RolapStar.Column.createInExpr(
+                        q, cc, level.getDatatype(), sqlQuery);
                 if (!where.equals("true")) {
                     if (!firstLevel) {
                         condition += " and ";

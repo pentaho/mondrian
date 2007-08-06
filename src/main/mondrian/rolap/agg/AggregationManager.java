@@ -138,15 +138,15 @@ public class AggregationManager extends RolapAggregationManager {
      * Generates the query to retrieve the cells for a list of segments.
      * Called by Segment.load
      */
-    public String generateSql(GroupByGroupingSets groupByGroupingSets) {
+    public String generateSql(GroupingSetsList groupingSetsList) {
 
-        BitKey levelBitKey = groupByGroupingSets.getDefaultLevelBitKey();
-        BitKey measureBitKey = groupByGroupingSets.getDefaultMeasureBitKey();
+        BitKey levelBitKey = groupingSetsList.getDefaultLevelBitKey();
+        BitKey measureBitKey = groupingSetsList.getDefaultMeasureBitKey();
 
 
         // Check if using aggregates is enabled.
         if (MondrianProperties.instance().UseAggregates.get()) {
-            RolapStar star = groupByGroupingSets.getStar();
+            RolapStar star = groupingSetsList.getStar();
 
             final boolean[] rollup = {false};
             AggStar aggStar = findAgg(star, levelBitKey, measureBitKey, rollup);
@@ -182,7 +182,7 @@ public class AggregationManager extends RolapAggregationManager {
 
                 AggQuerySpec aggQuerySpec =
                     new AggQuerySpec(aggStar, rollup[0],
-                        groupByGroupingSets);
+                        groupingSetsList);
                 String sql = aggQuerySpec.generateSqlQuery();
 
                 if (getLogger().isDebugEnabled()) {
@@ -199,7 +199,7 @@ public class AggregationManager extends RolapAggregationManager {
         }
 
         if (getLogger().isDebugEnabled()) {
-            RolapStar star = groupByGroupingSets.getStar();
+            RolapStar star = groupingSetsList.getStar();
 
             StringBuilder buf = new StringBuilder(256);
             buf.append("NO MATCH: ");
@@ -218,7 +218,7 @@ public class AggregationManager extends RolapAggregationManager {
 
         // Fact table query
         SegmentArrayQuerySpec spec =
-            new SegmentArrayQuerySpec(groupByGroupingSets);
+            new SegmentArrayQuerySpec(groupingSetsList);
         String sql = spec.generateSqlQuery();
 
         if (getLogger().isDebugEnabled()) {

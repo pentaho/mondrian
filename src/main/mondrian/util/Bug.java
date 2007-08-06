@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -59,6 +59,20 @@ public class Bug {
      * is fixed.
      */
     public static final boolean Bug1735827Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1767775&group_id=35302&atid=414613">bug 1767775, "Predicate references RolapStar.Column when used in AggStar"</a>
+     * is fixed.
+     */
+    public static final boolean Bug1767775Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1767779&group_id=35302&atid=414613">bug 1767779, "Predicate sometimes has null RolapStar.Column"</a>
+     * is fixed.
+     */
+    public static final boolean Bug1767779Fixed = false;
 
     /**
      * Returns whether to avoid a test because the memory monitor may cause it

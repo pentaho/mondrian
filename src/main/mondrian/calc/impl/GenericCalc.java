@@ -12,7 +12,6 @@ package mondrian.calc.impl;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.calc.*;
-import mondrian.util.UnsupportedList;
 
 import java.util.Iterator;
 import java.util.ArrayList;
@@ -44,13 +43,12 @@ public abstract class GenericCalc
             // Iterable
             final Iterable iter = (Iterable) o;
             Iterator it = iter.iterator();
-            List list = new ArrayList<Object>();
+            List<Object> list = new ArrayList<Object>();
             while (it.hasNext()) {
                 list.add(it.next());
             }
             return list;
         }
-        //return (List) evaluate(evaluator);
     }
 
     public Iterable evaluateIterable(Evaluator evaluator) {
@@ -83,6 +81,10 @@ public abstract class GenericCalc
     public double evaluateDouble(Evaluator evaluator) {
         final Object o = evaluate(evaluator);
         final Number number = (Number) o;
+        return numberToDouble(number);
+    }
+
+    public static double numberToDouble(Number number) {
         return number == null ?
                 FunUtil.DoubleNull :
                 number.doubleValue();

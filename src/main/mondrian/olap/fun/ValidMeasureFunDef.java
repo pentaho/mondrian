@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde and others
+// Copyright (C) 2006-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,6 +14,7 @@ import mondrian.calc.ExpCompiler;
 import mondrian.calc.MemberCalc;
 import mondrian.calc.TupleCalc;
 import mondrian.calc.impl.AbstractCalc;
+import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.type.TypeUtil;
 import mondrian.olap.*;
@@ -54,7 +55,7 @@ public class ValidMeasureFunDef extends FunDefBase
     }
 
     private static class CalcImpl
-        extends AbstractCalc {
+        extends GenericCalc {
         private final Calc calc;
 
         public CalcImpl(ResolvedFunCall call, Calc calc) {

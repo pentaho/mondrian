@@ -14,8 +14,6 @@ import java.util.Collection;
 /**
  * Refinement of {@link StarPredicate} which constrains precisely one column.
  *
- * <p>The convenience methods
- *
  * @author jhyde
  * @version $Id$
  * @since Jan 15, 2007
@@ -23,14 +21,19 @@ import java.util.Collection;
 public interface StarColumnPredicate extends StarPredicate {
     /**
      * Adds the values in this constraint to a collection.
+     *
+     * @param collection Collection to add values to
      */
-    public abstract void values(Collection collection);
+    void values(Collection<Object> collection);
 
     /**
      * Returns whether this constraint would return <code>true</code> for a
      * given value.
+     *
+     * @param value Value
+     * @return Whether predicate is true
      */
-    public abstract boolean evaluate(Object value);
+    boolean evaluate(Object value);
 
     /**
      * Returns the column constrained by this predicate.
@@ -46,7 +49,8 @@ public interface StarColumnPredicate extends StarPredicate {
      * or partial overlap (so the constraint will need to be replaced with
      * a stronger constraint, say 'x > 10' is replaced with 'x > 20').
      *
-     * @param predicate
+     * @param predicate Predicate
+     * @return description of overlap between predicates, if any
      */
     Overlap intersect(StarColumnPredicate predicate);
 
@@ -63,6 +67,36 @@ public interface StarColumnPredicate extends StarPredicate {
     // override with stricter return type
     StarColumnPredicate minus(StarPredicate predicate);
 
+    /**
+     * Returns this union of this Predicate with another.
+     *
+     * <p>Unlike {@link #or}, the other predicate must be on this column, and
+     * the result is a column predicate.
+     *
+     * @param predicate Another predicate on this column
+     * @return Union predicate on this column
+     */
+    StarColumnPredicate orColumn(StarColumnPredicate predicate);
+
+    /**
+     * This method is required because unfortunately some ColumnPredicate
+     * objects are created without a column.
+     *
+     * <p>We call this method to provide a fake column, then call
+     * {@link #toSql(mondrian.rolap.sql.SqlQuery, StringBuilder)}.
+     *
+     * <p>todo: remove this method when
+     * {@link mondrian.util.Bug#Bug1767775Fixed bug 1767776} and
+     * {@link mondrian.util.Bug#Bug1767779Fixed bug 1767779} are fixed.
+     */
+    StarColumnPredicate cloneWithColumn(RolapStar.Column column);
+
+    /**
+     * Returned by
+     * {@link mondrian.rolap.StarColumnPredicate#intersect},
+     * describes whether two predicates overlap, and if so, the remaining
+     * predicate.
+     */
     public static class Overlap {
         public final boolean matched;
         public final StarColumnPredicate remaining;

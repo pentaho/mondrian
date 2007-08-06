@@ -13,7 +13,6 @@
 
 package mondrian.rolap;
 
-import mondrian.olap.Evaluator;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Level;
 import mondrian.olap.Member;
@@ -36,7 +35,7 @@ import java.io.PrintWriter;
  * @since 30 August, 2001
  * @version $Id$
  */
-public abstract class RolapAggregationManager implements CellReader {
+public abstract class RolapAggregationManager {
 
     /**
      * Creates a request to evaluate the cell identified by
@@ -56,19 +55,18 @@ public abstract class RolapAggregationManager implements CellReader {
             final Member[] members,
             final boolean extendedContext,
             final boolean drillThrough) {
-
-        if (! (members[0] instanceof RolapStoredMeasure)) {
+        if (!(members[0] instanceof RolapStoredMeasure)) {
             return null;
         }
 
         final RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
         final RolapStar.Measure starMeasure =
-                    (RolapStar.Measure) measure.getStarMeasure();
+            (RolapStar.Measure) measure.getStarMeasure();
         assert starMeasure != null;
         final RolapStar star = starMeasure.getStar();
-        final CellRequest request = 
+        final CellRequest request =
             new CellRequest(starMeasure, extendedContext, drillThrough);
-        final Map<RolapLevel, RolapStar.Column> levelToColumnMap = 
+        final Map<RolapLevel, RolapStar.Column> levelToColumnMap =
             star.getLevelToColumnMap(measure.getCube());
 
         // Since 'request.extendedContext == false' is a well-worn code path,
@@ -81,7 +79,7 @@ public abstract class RolapAggregationManager implements CellReader {
                 final RolapLevel level = member.getLevel();
                 final boolean needToReturnNull =
                     level.getLevelReader().constrainRequest(
-                        member, levelToColumnMap, request);
+                        member, levelToColumnMap, request, null);
                 if (needToReturnNull) {
                     return null;
                 }
@@ -92,7 +90,7 @@ public abstract class RolapAggregationManager implements CellReader {
                 final RolapLevel level = member.getLevel();
                 final boolean needToReturnNull =
                     level.getLevelReader().constrainRequest(
-                        member, levelToColumnMap, request);
+                        member, levelToColumnMap, request, null);
                 if (needToReturnNull) {
                     return null;
                 }
@@ -165,28 +163,33 @@ public abstract class RolapAggregationManager implements CellReader {
             : getCellFromCache(request);
     }
 
+    /**
+     * Retrieves the value of a cell from the cache.
+     *
+     * @param request Cell request
+     * @pre request != null
+     * @return Cell value, or null if cell is not in any aggregation in cache,
+     *   or {@link Util#nullValue} if cell's value is null
+     */
     public abstract Object getCellFromCache(CellRequest request);
 
     public abstract Object getCellFromCache(
         CellRequest request,
         PinSet pinSet);
 
-    public Object getCell(final Member[] members) {
+    private Object getCellFromStar(
+        Member[] members,
+        List<List<Member>> aggregationLists)
+    {
         final CellRequest request = makeRequest(members, false, false);
         final RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
-        final RolapStar.Measure starMeasure = (RolapStar.Measure)
-                measure.getStarMeasure();
+        final RolapStar.Measure starMeasure =
+            (RolapStar.Measure) measure.getStarMeasure();
 
         assert starMeasure != null;
 
         final RolapStar star = starMeasure.getStar();
         return star.getCell(request);
-    }
-
-    // implement CellReader
-    public Object get(final Evaluator evaluator) {
-        final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-        return getCell(rolapEvaluator.getMembers());
     }
 
     /**
@@ -200,10 +203,6 @@ public abstract class RolapAggregationManager implements CellReader {
     public abstract String getDrillThroughSql(
         CellRequest request,
         boolean countOnly);
-
-    public int getMissCount() {
-        return 0; // never lies
-    }
 
     /**
      * Returns an API with which to explicitly manage the contents of the cache.
@@ -256,7 +255,7 @@ public abstract class RolapAggregationManager implements CellReader {
             if (!(measure instanceof RolapStoredMeasure)) {
                 continue;
             }
-            final RolapStoredMeasure storedMeasure = 
+            final RolapStoredMeasure storedMeasure =
                 (RolapStoredMeasure) measure;
             final RolapStar.Measure starMeasure =
                 (RolapStar.Measure) storedMeasure.getStarMeasure();
@@ -328,11 +327,129 @@ public abstract class RolapAggregationManager implements CellReader {
     }
 
     /**
+     * Returns a {@link mondrian.rolap.CellReader} which reads cells from cache.
+     */
+    public CellReader getCacheCellReader() {
+        return new CellReader() {
+            // implement CellReader
+            public Object get(RolapEvaluator evaluator) {
+                Member[] members = evaluator.getMembers();
+                return getCellFromCache(members);
+            }
+
+            public int getMissCount() {
+                return 0; // RolapAggregationManager never lies
+            }
+
+            public Object getCompound(
+                RolapEvaluator evaluator, List<List<Member>> aggregationLists)
+            {
+                Member[] members = evaluator.getMembers();
+                return getCellFromStar(members, aggregationLists);
+            }
+        };
+    }
+
+    /**
      * Creates a {@link PinSet}.
      *
      * @return a new PinSet
      */
     public abstract PinSet createPinSet();
+
+    /**
+     * Generates a SQL query to retrieve a cell value for an evaluation
+     * context where some of the dimensions have more than one member.
+     *
+     * <p>Returns null if the request is unsatisfiable. This would happen, say,
+     * if one of the members is null.
+     *
+     * @param evaluator Provides evaluation context
+     * @param aggregationLists List of aggregations, each of which is a set
+     *   of members in the same hierarchy which need to be summed together.
+     * @return SQL query, or null if request is unsatisfiable
+     */
+    public static String generateMultiSql(
+        RolapEvaluator evaluator,
+        List<List<RolapMember>> aggregationLists)
+    {
+        final RolapCube cube = (RolapCube) evaluator.getCube();
+        final Map<RolapLevel, RolapStar.Column> levelToColumnMap =
+            cube.getStar().getLevelToColumnMap(cube);
+
+        // Given an eval context with a compound member:
+        //
+        //   [Measures].[Customer Count]
+        //   [Time].[1997].[Q1]
+        //   [Store Type].[All Store Types]
+        //   {[Store].[USA].[CA], [Store].[USA].[OR]}
+        //   ... everything else 'all'
+        //
+        // return
+        //
+        //   SELECT COUNT(DISTINCT cust_id)
+        //   FROM sales_fact_1997 AS sales, store, time
+        //   WHERE store.store_id = sales.store_id
+        //   AND time.time_id = sales.time_id
+        //   AND time.year = 1997
+        //   AND time.quarter = 'Q1'
+        //   AND store.store_state IN ('CA', 'OR')
+
+        // Use a CellRequest to convert members in evaluator into
+        // (column, value) pairs; or more accurately, (column, predicate)
+        // pairs.
+        CellRequest request =
+            makeRequest(
+                evaluator.getMembers(), false, false);
+
+        // Add in the extra constraints in the aggregation list.
+        int[] groupOrdinals = {0, 0, 0};
+        for (List<RolapMember> aggregationList : aggregationLists) {
+            // The aggregation list is compound if it contains members of
+            // different levels.
+            int k = 0;
+            boolean compound = false;
+            final RolapLevel level0 = aggregationList.get(0).getLevel();
+            for (RolapMember member : aggregationList) {
+                if (k++ > 0) {
+                    RolapLevel level = member.getLevel();
+                    if (level != level0) {
+                        compound = true;
+                        if (level.getHierarchy() != level0.getHierarchy()) {
+                            throw Util.newInternal(
+                                "mixed hierarchies in compound member");
+                        }
+                    }
+                }
+            }
+
+            // Compound aggregation lists constrain more than one column.
+            // For example,
+            //   {[Time].[1997].[Q1], [Time].[1997].[Q3].[7]}
+            // generates the SQL predicate
+            //  (  (year = 1997 and quarter = 'Q1')
+            //  or (year = 1997 and quarter = 'Q3' and month = 7) )
+            for (RolapMember member : aggregationList) {
+                final boolean unsatisfiable =
+                    member.getLevel().getLevelReader().constrainRequest(
+                        member, levelToColumnMap, request, groupOrdinals);
+                if (unsatisfiable) {
+                    return null;
+                }
+                ++groupOrdinals[1];
+                Arrays.fill(groupOrdinals, 2, groupOrdinals.length, 0);
+            }
+            ++groupOrdinals[0];
+            Arrays.fill(groupOrdinals, 1, groupOrdinals.length, 0);
+        }
+
+        // Convert the predicates into a SQL query.
+        return CompoundQuerySpec.compoundGenerateSql(
+            request.getMeasure(),
+            request.getConstrainedColumns(),
+            request.getValueList(),
+            request.getPredicateList());
+    }
 
     /**
      * A set of segments which are pinned for a short duration as a result of a

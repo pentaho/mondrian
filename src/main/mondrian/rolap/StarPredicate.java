@@ -9,6 +9,8 @@
 */
 package mondrian.rolap;
 
+import mondrian.rolap.sql.SqlQuery;
+
 import java.util.List;
 
 /**
@@ -65,6 +67,9 @@ public interface StarPredicate {
      * other constraint. This is weaker than {@link Object#equals(Object)}: it
      * is possible for two different members to constrain the same column in the
      * same way.
+     *
+     * @param that Other predicate
+     * @return whether the other predicate is equivalent
      */
     boolean equalConstraint(StarPredicate that);
 
@@ -73,13 +78,37 @@ public interface StarPredicate {
      * which holds whenever this predicate holds but the other does not.
      *
      * @pre predicate != null
+     * @param predicate Predicate
+     * @return Combined predicate
      */
     StarPredicate minus(StarPredicate predicate);
+
+    /**
+     * Returns this union of this Predicate with another. The result is a
+     * Predicate which holds whenever either predicate holds.
+     *
+     * @pre predicate != null
+     * @param predicate Predicate
+     * @return Combined predicate
+     */
+    StarPredicate or(StarPredicate predicate);
+
+    /**
+     * Returns this intersection of this Predicate with another. The result is a
+     * Predicate which holds whenever both predicates hold.
+     *
+     * @pre predicate != null
+     * @param predicate Predicate
+     * @return Combined predicate
+     */
+    StarPredicate and(StarPredicate predicate);
 
     /**
      * Wildcard value for {@link #evaluate(java.util.List)}.
      */
     Object WILDCARD = new Object();
+
+    void toSql(SqlQuery sqlQuery, StringBuilder buf);
 }
 
 // End StarPredicate.java

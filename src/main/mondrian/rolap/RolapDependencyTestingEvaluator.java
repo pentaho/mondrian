@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -36,7 +36,10 @@ import java.io.PrintWriter;
 public class RolapDependencyTestingEvaluator extends RolapEvaluator {
 
     /**
-     * Creates an evaluator.
+     * Creates an dependency-testing evaluator.
+     *
+     * @param result Result we are building
+     * @param expDeps Number of dependencies to check
      */
     RolapDependencyTestingEvaluator(RolapResult result, int expDeps) {
         super(new DteRoot(result, expDeps));
@@ -46,15 +49,17 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
      * Creates a child evaluator.
      */
     private RolapDependencyTestingEvaluator(
-            RolapEvaluatorRoot root,
-            RolapDependencyTestingEvaluator evaluator) {
+        RolapEvaluatorRoot root,
+        RolapDependencyTestingEvaluator evaluator)
+    {
         super(root, evaluator);
     }
 
     public Object evaluate(
-            Calc calc,
-            Dimension[] independentDimensions,
-            String mdxString) {
+        Calc calc,
+        Dimension[] independentDimensions,
+        String mdxString)
+    {
         final DteRoot dteRoot =
                 (DteRoot) root;
         if (dteRoot.faking) {
@@ -132,7 +137,6 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         return new RolapDependencyTestingEvaluator(root, this);
     }
 
-
     private boolean equals(Object o1, Object o2) {
         if (o1 == null) {
             return o2 == null;
@@ -156,12 +160,10 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
             return false;
         }
         if (o1 instanceof List) {
-            if (o2 instanceof List) {
-                return equals(
-                        ((List) o1).toArray(),
-                        ((List) o2).toArray());
-            }
-            return false;
+            return o2 instanceof List &&
+                equals(
+                    ((List) o1).toArray(),
+                    ((List) o2).toArray());
         }
         return o1.equals(o2);
     }
@@ -221,8 +223,9 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
          * The member will come from all levels with the same probability.
          * Calculated members are not included.
          *
-         * @param save
-         * @param schemaReader
+         * @param save Previous member
+         * @param schemaReader Schema reader
+         * @return other member of same hierarchy
          */
         private Member chooseOtherMember(
                 final Member save, SchemaReader schemaReader) {
@@ -287,7 +290,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         }
 
         public List evaluateList(Evaluator evaluator) {
-            List list = super.evaluateList(evaluator);
+            List<?> list = super.evaluateList(evaluator);
             if (!mutableList) {
                 list = Collections.unmodifiableList(list);
             }

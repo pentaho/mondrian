@@ -13,9 +13,12 @@ package mondrian.rolap.agg;
 import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.StarPredicate;
+import mondrian.rolap.sql.SqlQuery;
+import mondrian.olap.Util;
 
 import java.util.List;
 import java.util.Collections;
+import java.util.ArrayList;
 
 /**
  * A <code>AbstractColumnPredicate</code> is an abstract implementation for
@@ -52,7 +55,70 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
         return false;
     }
 
+    public StarPredicate or(StarPredicate predicate) {
+        if (predicate instanceof StarColumnPredicate) {
+            StarColumnPredicate starColumnPredicate =
+                (StarColumnPredicate) predicate;
+            if (starColumnPredicate.getConstrainedColumn() ==
+                getConstrainedColumn()) {
+                return orColumn(starColumnPredicate);
+            }
+        }
+        final List<StarPredicate> list = new ArrayList<StarPredicate>(2);
+        list.add(this);
+        list.add(predicate);
+        return new OrPredicate(list);
+    }
 
+    public StarColumnPredicate orColumn(StarColumnPredicate predicate) {
+        assert predicate.getConstrainedColumn() == getConstrainedColumn();
+        if (predicate instanceof ListColumnPredicate) {
+            ListColumnPredicate that = (ListColumnPredicate) predicate;
+            final List<StarColumnPredicate> list =
+                new ArrayList<StarColumnPredicate>();
+            list.add(this);
+            list.addAll(that.getPredicates());
+            return new ListColumnPredicate(
+                getConstrainedColumn(),
+                list);
+        } else {
+            final List<StarColumnPredicate> list =
+                new ArrayList<StarColumnPredicate>(2);
+            list.add(this);
+            list.add(predicate);
+            return new ListColumnPredicate(
+                getConstrainedColumn(),
+                list);
+        }
+    }
+
+    public StarPredicate and(StarPredicate predicate) {
+        final List<StarPredicate> list = new ArrayList<StarPredicate>(2);
+        list.add(this);
+        list.add(predicate);
+        return new AndPredicate(list);
+    }
+
+    public void toSql(SqlQuery sqlQuery, StringBuilder buf) {
+        throw Util.needToImplement(this);
+    }
+
+    protected static List<StarColumnPredicate> cloneListWithColumn(
+        RolapStar.Column column,
+        List<StarColumnPredicate> list)
+    {
+        List<StarColumnPredicate> newList =
+            new ArrayList<StarColumnPredicate>(list.size());
+        for (StarColumnPredicate predicate : list) {
+            newList.add(predicate.cloneWithColumn(column));
+        }
+        return newList;
+    }
+
+    /**
+     * Factory for {@link mondrian.rolap.StarPredicate}s and
+     * {@link mondrian.rolap.StarColumnPredicate}s.
+     */
     public static class Factory {
         /**
          * Returns a predicate which tests whether the column's
@@ -73,6 +139,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
         /**
          * Returns predicate which is the OR of a list of predicates.
          *
+         * @param column Column being constrained
          * @param list List of predicates
          * @return Predicate which is an OR of the list of predicates
          */

@@ -14,6 +14,7 @@ import mondrian.rolap.StarPredicate;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapMember;
+import mondrian.rolap.sql.SqlQuery;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -144,6 +145,14 @@ public class MemberTuplePredicate implements StarPredicate {
         throw new UnsupportedOperationException();
     }
 
+    public StarPredicate or(StarPredicate predicate) {
+        throw new UnsupportedOperationException();
+    }
+
+    public StarPredicate and(StarPredicate predicate) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Evaluates a constraint against a list of values.
      *
@@ -223,6 +232,23 @@ public class MemberTuplePredicate implements StarPredicate {
         String getOp() {
             return op;
         }
+
+        /**
+         * If this is a strict operator (LT, GT) returns the non-strict
+         * equivalent (LE, GE); otherwise returns this operator.
+         *
+         * @return less strict version of this operator
+         */
+        public RelOp desctrict() {
+            switch (this) {
+            case GT:
+                return RelOp.GE;
+            case LT:
+                return RelOp.LE;
+            default:
+                return this;
+            }
+        }
     }
 
     private static class Bound {
@@ -241,14 +267,7 @@ public class MemberTuplePredicate implements StarPredicate {
                     break;
                 }
                 member = member.getParentMember();
-                switch (relOp) {
-                case GT:
-                    relOp = RelOp.GE;
-                    break;
-                case LT:
-                    relOp = RelOp.LE;
-                    break;
-                }
+                relOp = relOp.desctrict();
             }
             this.values = valueList.toArray(new Object[valueList.size()]);
             this.relOps = relOpList.toArray(new RelOp[relOpList.size()]);
@@ -272,6 +291,10 @@ public class MemberTuplePredicate implements StarPredicate {
                 return false;
             }
         }
+    }
+
+    public void toSql(SqlQuery sqlQuery, StringBuilder buf) {
+        throw Util.needToImplement(this);
     }
 }
 

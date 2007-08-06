@@ -38,15 +38,15 @@ class AggQuerySpec {
     private final AggStar aggStar;
     private final Segment[] segments;
     private final boolean rollup;
-    private final GroupByGroupingSets groupByGroupingSets;
+    private final GroupingSetsList groupingSetsList;
 
     AggQuerySpec(
         final AggStar aggStar,
-        final boolean rollup, GroupByGroupingSets groupByGroupingSets) {
+        final boolean rollup, GroupingSetsList groupingSetsList) {
         this.aggStar = aggStar;
-        this.segments = groupByGroupingSets.getDefaultSegments();
+        this.segments = groupingSetsList.getDefaultSegments();
         this.rollup = rollup;
-        this.groupByGroupingSets = groupByGroupingSets;
+        this.groupingSetsList = groupingSetsList;
     }
 
     protected SqlQuery newSqlQuery() {
@@ -111,7 +111,7 @@ class AggQuerySpec {
 
     private void addGroupingSets(SqlQuery sqlQuery) {
         List<RolapStar.Column[]> groupingSetsColumns =
-            groupByGroupingSets.getGroupingSetsColumns();
+            groupingSetsList.getGroupingSetsColumns();
         for (RolapStar.Column[] groupingSetColumns : groupingSetsColumns) {
             ArrayList<String> groupingColumnsExpr = new ArrayList<String>();
 
@@ -159,7 +159,7 @@ class AggQuerySpec {
                 expr,
                 predicate,
                 column.getDatatype(),
-                sqlQuery.getDialect());
+                sqlQuery);
             if (!where.equals("true")) {
                 sqlQuery.addWhere(where);
             }
@@ -188,7 +188,7 @@ class AggQuerySpec {
     }
 
     private void addGroupingFunction(SqlQuery sqlQuery) {
-        List<RolapStar.Column> list = groupByGroupingSets.getRollupColumns();
+        List<RolapStar.Column> list = groupingSetsList.getRollupColumns();
         for (RolapStar.Column column : list) {
             sqlQuery.addGroupingFunction(findColumnExpr(column, sqlQuery));
         }

@@ -88,7 +88,7 @@ public class RangeColumnPredicate extends AbstractColumnPredicate {
         }
     }
 
-    public void values(Collection collection) {
+    public void values(Collection<Object> collection) {
         // Besides the end points, don't know what values may be in the range.
         // FIXME: values() is only a half-useful method. Replace it?
         throw new UnsupportedOperationException();
@@ -152,6 +152,11 @@ public class RangeColumnPredicate extends AbstractColumnPredicate {
         // Range minus true/false
         return new MinusStarPredicate(
             this, (StarColumnPredicate) predicate);
+    }
+
+    public StarColumnPredicate cloneWithColumn(RolapStar.Column column) {
+        return new RangeColumnPredicate(
+            column, lowerInclusive, lowerBound, upperInclusive, upperBound);
     }
 
     public ValueColumnPredicate getLowerBound() {

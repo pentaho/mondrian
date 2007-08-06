@@ -65,10 +65,10 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
         return plus.getConstrainedColumn();
     }
 
-    public void values(Collection collection) {
-        Set plusValues = new HashSet();
+    public void values(Collection<Object> collection) {
+        Set<Object> plusValues = new HashSet<Object>();
         plus.values(plusValues);
-        List minusValues = new ArrayList();
+        List<Object> minusValues = new ArrayList<Object>();
         minus.values(minusValues);
         plusValues.removeAll(minusValues);
         collection.addAll(plusValues);
@@ -144,6 +144,12 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
         return new MinusStarPredicate(
             this,
             (StarColumnPredicate) predicate);
+    }
+
+    public StarColumnPredicate cloneWithColumn(RolapStar.Column column) {
+        return new MinusStarPredicate(
+            plus.cloneWithColumn(column),
+            minus.cloneWithColumn(column));
     }
 }
 

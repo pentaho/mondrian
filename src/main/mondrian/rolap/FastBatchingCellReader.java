@@ -20,6 +20,8 @@ import org.eigenbase.util.property.*;
 import org.eigenbase.util.property.Property;
 
 import java.util.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * A <code>FastBatchingCellReader</code> doesn't really Read cells: when asked
@@ -71,16 +73,24 @@ public class FastBatchingCellReader implements CellReader {
      */
     private boolean dirty;
 
+    /**
+     * Cached copy of dialect. Could be derived from cube each usage, but we
+     * call {@link #getDialect()} a lot.
+     */
+    private final SqlQuery.Dialect dialect;
+
     public FastBatchingCellReader(RolapCube cube) {
         this.cube = cube;
         this.batches = new HashMap<BatchKey, Batch>();
+        this.dialect =
+            cube == null ? null :
+            ((RolapSchema) cube.getSchema()).getDialect();
     }
 
-    public Object get(Evaluator evaluator) {
-        final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-        Member[] currentMembers = rolapEvaluator.getMembers();
+    public Object get(RolapEvaluator evaluator) {
+        Member[] currentMembers = evaluator.getMembers();
         CellRequest request =
-                RolapAggregationManager.makeRequest(currentMembers, false, false);
+            RolapAggregationManager.makeRequest(currentMembers, false, false);
         if (request == null || request.isUnsatisfiable()) {
             return Util.nullValue; // request out of bounds
         }
@@ -104,6 +114,43 @@ public class FastBatchingCellReader implements CellReader {
 
     public int getMissCount() {
         return requestCount;
+    }
+
+    public Object getCompound(
+        RolapEvaluator evaluator,
+        List<List<Member>> aggregationLists)
+    {
+        // Aggregates with compound members cannot be stored in cache.
+        // Therefore, it's no use generating a miss, because next time around
+        // we still won't have the value. The present strategy is to generate
+        // and execute a statement which retrieves a single cell. The value
+        // isn't even cached. Obviously, this strategy could be improved.
+
+        String sql = RolapAggregationManager.generateMultiSql(
+            evaluator, (List) aggregationLists);
+        final SqlStatement stmt =
+            RolapUtil.executeQuery(
+                cube.getStar().getDataSource(), sql,
+                "FastBatchingCellReader.getCompound",
+                "while fetching a cell with compound members");
+        final ResultSet resultSet = stmt.getResultSet();
+        try {
+            final int columnCount = resultSet.getMetaData().getColumnCount();
+            if (!resultSet.next()) {
+                throw Util.newInternal("expected precisely one row, got 0");
+            }
+            ++stmt.rowCount;
+            final Object o = resultSet.getObject(columnCount);
+            if (resultSet.next()) {
+                ++stmt.rowCount;
+                throw Util.newInternal("expected precisely one row, got 2");
+            }
+            return o;
+        } catch (SQLException e) {
+            throw stmt.handle(e);
+        } finally {
+            stmt.close();
+        }
     }
 
     void recordCellRequest(CellRequest request) {
@@ -146,8 +193,7 @@ public class FastBatchingCellReader implements CellReader {
         return dirty || !batches.isEmpty();
     }
 
-    boolean loadAggregations()
-    {
+    boolean loadAggregations() {
         return loadAggregations(null);
     }
 
@@ -194,7 +240,7 @@ public class FastBatchingCellReader implements CellReader {
         return true;
     }
 
-    private void loadAggregation(Query query, IBatch batch) {
+    private void loadAggregation(Query query, Loadable batch) {
         if (query != null) {
             query.checkCancelOrTimeout();
         }
@@ -236,17 +282,18 @@ public class FastBatchingCellReader implements CellReader {
         List<Batch> batchList,
         Map<BatchKey, CompositeBatch> batchGroups)
     {
-        for (int i = 0; i < batchList.size(); i++) {
-            Batch iBatch = batchList.get(i);
-            if (batchGroups.get(iBatch.batchKey) == null) {
-                batchGroups.put(iBatch.batchKey, new CompositeBatch(iBatch));
+        for (Batch batch : batchList) {
+            if (batchGroups.get(batch.batchKey) == null) {
+                batchGroups.put(batch.batchKey, new CompositeBatch(batch));
             }
         }
     }
 
 
-    void addToCompositeBatch(Map<BatchKey, CompositeBatch> batchGroups,
-                             Batch detailedBatch, Batch summaryBatch)
+    void addToCompositeBatch(
+        Map<BatchKey, CompositeBatch> batchGroups,
+        Batch detailedBatch,
+        Batch summaryBatch)
     {
         CompositeBatch compositeBatch = batchGroups.get(detailedBatch.batchKey);
 
@@ -280,7 +327,7 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     SqlQuery.Dialect getDialect() {
-        return ((RolapSchema) cube.getSchema()).getDialect();
+        return dialect;
     }
 
     /**
@@ -291,14 +338,14 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     /**
-     * This class represents set of Batches which can grouped together
+     * Set of Batches which can grouped together.
      */
-    class CompositeBatch implements IBatch {
-        // Batch with most number of constraint columns
+    class CompositeBatch implements Loadable {
+        /** Batch with most number of constraint columns */
         final Batch detailedBatch;
 
-        //Batches whose data can be fetched using rollup on detailed batch
-        List<Batch> summaryBatches = new ArrayList<Batch>();
+        /** Batches whose data can be fetched using rollup on detailed batch */
+        final List<Batch> summaryBatches = new ArrayList<Batch>();
 
         CompositeBatch(Batch detailedBatch) {
             this.detailedBatch = detailedBatch;
@@ -314,7 +361,6 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         public void loadAggregation() {
-
             GroupingSetsCollector batchCollector =
                 new GroupingSetsCollector(true);
             this.detailedBatch.loadAggregation(batchCollector);
@@ -323,8 +369,9 @@ public class FastBatchingCellReader implements CellReader {
                 batch.loadAggregation(batchCollector);
             }
 
-            getSegmentLoader().load(batchCollector.getGroupingSets(),
-                 pinnedSegments);
+            getSegmentLoader().load(
+                batchCollector.getGroupingSets(),
+                pinnedSegments);
         }
 
         SegmentLoader getSegmentLoader() {
@@ -334,16 +381,22 @@ public class FastBatchingCellReader implements CellReader {
 
     private static final Logger BATCH_LOGGER = Logger.getLogger(Batch.class);
 
-    interface IBatch {
+    /**
+     * Encapsulates a common property of {@link Batch} and
+     * {@link CompositeBatch}, namely, that they can be asked to load their
+     * aggregations into the cache.
+     */
+    interface Loadable {
         void loadAggregation();
     }
 
-    class Batch implements IBatch {
-        // these are the CellRequest's constrained columns
+    class Batch implements Loadable {
+        // the CellRequest's constrained columns
         final RolapStar.Column[] columns;
-        // this is the CellRequest's constrained column BitKey
+        // the CellRequest's constrained column BitKey
         final BitKey constrainedColumnsBitKey;
-        final List<RolapStar.Measure> measuresList = new ArrayList<RolapStar.Measure>();
+        final List<RolapStar.Measure> measuresList =
+            new ArrayList<RolapStar.Measure>();
         final Set<StarColumnPredicate>[] valueSets;
         final BatchKey batchKey;
 
@@ -354,7 +407,9 @@ public class FastBatchingCellReader implements CellReader {
             for (int i = 0; i < valueSets.length; i++) {
                 valueSets[i] = new HashSet<StarColumnPredicate>();
             }
-            batchKey = new BatchKey(constrainedColumnsBitKey, request.getMeasure().getStar());
+            batchKey =
+                new BatchKey(
+                    constrainedColumnsBitKey, request.getMeasure().getStar());
         }
 
         public void add(CellRequest request) {
@@ -373,9 +428,12 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         /**
-         * This can only be called after the add method has been called.
+         * Returns the RolapStar associated with the Batch's first Measure.
          *
-         * @return the RolapStar associated with the Batch's first Measure.
+         * <p>This method can only be called after the {@link #add} method has
+         * been called.
+         *
+         * @return the RolapStar associated with the Batch's first Measure
          */
         private RolapStar getStar() {
             RolapStar.Measure measure = measuresList.get(0);
@@ -419,13 +477,13 @@ public class FastBatchingCellReader implements CellReader {
             // Load agg(distinct <SQL expression>) measures individually
             // for DBs that does allow multiple distinct SQL measures.
             if (!dialect.allowsMultipleDistinctSqlMeasures()) {
-                
+
                 // Note that the intention was orignially to capture the subquery
                 // SQL measures and separate them out; However, without parsing
                 // the SQL string, Mondrian cannot distinguish between
                 // "col1" + "col2" and subquery. Here the measure list contains
                 // both types.
-                
+
                 // See the test case testLoadDistinctSqlMeasure() in
                 //  mondrian.rolap.FastBatchingCellReaderTest
 
@@ -474,8 +532,7 @@ public class FastBatchingCellReader implements CellReader {
                 final List<RolapStar.Measure> distinctMeasuresList =
                     new ArrayList<RolapStar.Measure>();
                 for (int i = 0; i < measuresList.size();) {
-                    RolapStar.Measure measure =
-                        measuresList.get(i);
+                    RolapStar.Measure measure = measuresList.get(i);
                     if (measure.getAggregator().isDistinct() &&
                         measure.getExpression().getGenericExpression().
                             equals(expr)) {
@@ -604,10 +661,10 @@ public class FastBatchingCellReader implements CellReader {
                     MondrianDef.MeasureExpression measureExpr =
                         (MondrianDef.MeasureExpression) measure.getExpression();
                     MondrianDef.SQL measureSql = measureExpr.expressions[0];
-                    // Checks if the SQL contains "SELECT" to detect the case a 
+                    // Checks if the SQL contains "SELECT" to detect the case a
                     // subquery is used to define the measure. This is not a
                     // perfect check, because a SQL expression on column names
-                    // containing "SELECT" will also be detected. e,g, 
+                    // containing "SELECT" will also be detected. e,g,
                     // count("select beef" + "regular beef").
                     if (measureSql.cdata.toUpperCase().contains("SELECT ")) {
                         distinctSqlMeasureList.add(measure);
@@ -618,14 +675,17 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         /**
-         * Other batch can be batched to this
-         * if columns list is super set of other batch's constraint columns and
-         * if both the batch does not have distinct count measure in it and
-         * if both have same Fact Table and
-         * if matching columns of this and other batch has the same value and
-         * if non matching columns of this batch have ALL VALUES
+         * Returns whether another Batch can be batched to this Batch.
+         *
+         * <p>This is possible if:
+         * <li>columns list is super set of other batch's constraint columns;
+         *     and
+         * <li>both the batch does not have distinct count measure in it; and
+         * <li>both have same Fact Table; and
+         * <li>matching columns of this and other batch has the same value; and
+         * <li>non matching columns of this batch have ALL VALUES
+         * </ul>
          */
-
         boolean canBatch(Batch other) {
             return hasOverlappingBitKeys(other) &&
                 !hasDistinctCountMeasure() &&

@@ -11,6 +11,9 @@ package mondrian.rolap.agg;
 
 import mondrian.rolap.RolapMember;
 import mondrian.rolap.RolapStar;
+import mondrian.rolap.StarColumnPredicate;
+
+import java.util.List;
 
 /**
  * Column constraint defined by a member.
@@ -38,6 +41,10 @@ public class MemberColumnPredicate extends ValueColumnPredicate {
         return member.getUniqueName();
     }
 
+    public List<RolapStar.Column> getConstrainedColumnList() {
+        return super.getConstrainedColumnList();    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
     /**
      * Returns the <code>Member</code>.
      *
@@ -61,6 +68,10 @@ public class MemberColumnPredicate extends ValueColumnPredicate {
 
     public void describe(StringBuilder buf) {
         buf.append(member.getUniqueName());
+    }
+
+    public StarColumnPredicate cloneWithColumn(RolapStar.Column column) {
+        return new MemberColumnPredicate(column, member);
     }
 }
 

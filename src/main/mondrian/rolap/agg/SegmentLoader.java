@@ -19,7 +19,8 @@ import java.sql.SQLException;
 
 /**
  * <p>The <code>SegmentLoader</code> queries database and loads the data into
- * the given set of segments</p>
+ * the given set of segments.</p>
+ *
  * <p>It reads a segment of <code>measure</code>, where <code>columns</code> are
  * constrained to <code>values</code>.  Each entry in <code>values</code>
  * can be null, meaning don't constrain, or can have several values. For
@@ -35,9 +36,9 @@ public class SegmentLoader {
     /**
      * Loads data for all the segments of the GroupingSets. If the grouping sets
      * list contains more than one Grouping Set then data is loaded using the
-     * GROUP BY GROUPING SETS sql. Else if only one grouping set is passed in the
-     * list data is loaded without using GROUP BY GROUPING SETS sql. If the database
-     * does not support grouping sets
+     * GROUP BY GROUPING SETS sql. Else if only one grouping set is passed in
+     * the list data is loaded without using GROUP BY GROUPING SETS sql. If the
+     * database does not support grouping sets
      * {@link mondrian.rolap.sql.SqlQuery.Dialect#supportsGroupingSets()} then
      * grouping sets list should always have only one element in it.
      *
@@ -45,12 +46,12 @@ public class SegmentLoader {
      * respectively, then the SQL will be
      * "GROUP BY GROUPING SETS ((A, B, C), (B, C))".
      *
-     * Else if the list has only one grouping set then sql would be without
-     * grouping sets
+     * <p>Else if the list has only one grouping set then sql would be without
+     * grouping sets.
      *
      * <p>The <code>groupingSets</code> list should be topological order, with
-     * more detailed higher-level grouping sets occuring first. In other words, the first
-     * element of the list should always be the detailed grouping
+     * more detailed higher-level grouping sets occuring first. In other words,
+     * the first element of the list should always be the detailed grouping
      * set (default grouping set), followed by grouping sets which can be
      * rolled-up on this detailed grouping set.
      * In the example (A, B, C) is the detailed grouping set and (B, C) is
@@ -63,14 +64,14 @@ public class SegmentLoader {
         List<GroupingSet> groupingSets,
         RolapAggregationManager.PinSet pinnedSegments)
     {
-        GroupByGroupingSets groupByGroupingSets =
-            new GroupByGroupingSets(groupingSets);
-        boolean useGroupingSet = groupByGroupingSets.useGroupingSets();
+        GroupingSetsList groupingSetsList =
+            new GroupingSetsList(groupingSets);
+        boolean useGroupingSet = groupingSetsList.useGroupingSets();
         RolapStar.Column[] defaultColumns =
-            groupByGroupingSets.getDefaultColumns();
+            groupingSetsList.getDefaultColumns();
         SqlStatement stmt = null;
         try {
-            stmt = createExecuteSql(groupByGroupingSets);
+            stmt = createExecuteSql(groupingSetsList);
             int arity = defaultColumns.length;
             SortedSet<Comparable<?>>[] axisValueSets =
                 getDistinctValueWorkspace(arity);
@@ -80,11 +81,11 @@ public class SegmentLoader {
             List<Object[]> rows =
                 processData(
                     stmt, axisContainsNull,
-                    axisValueSets, groupByGroupingSets);
+                    axisValueSets, groupingSetsList);
 
             boolean sparse =
                 setAxisDataAndDecideSparseUse(axisValueSets,
-                    axisContainsNull, groupByGroupingSets,
+                    axisContainsNull, groupingSetsList,
                     rows);
 
             SegmentDataset[] nonGroupingDataSets = null;
@@ -94,38 +95,38 @@ public class SegmentLoader {
 
             if (useGroupingSet) {
                 populateDataSetMapOnGroupingColumnsBitKeys(
-                    groupByGroupingSets,
+                    groupingSetsList,
                     sparse, groupingDataSetsMap);
             } else {
                 nonGroupingDataSets = createDataSets(
                     sparse,
-                    groupByGroupingSets.getDefaultSegments(),
-                    groupByGroupingSets.getDefaultAxes());
+                    groupingSetsList.getDefaultSegments(),
+                    groupingSetsList.getDefaultAxes());
             }
 
             loadDataToDataSets(
-                groupByGroupingSets, rows, groupingDataSetsMap,
+                groupingSetsList, rows, groupingDataSetsMap,
                 nonGroupingDataSets, axisContainsNull, sparse);
 
             setDataToSegments(
-                groupByGroupingSets, nonGroupingDataSets,
+                groupingSetsList, nonGroupingDataSets,
                 groupingDataSetsMap, pinnedSegments);
 
         } catch (SQLException e) {
             throw stmt.handle(e);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (RuntimeException e) {
+            throw e;
         } finally {
             if (stmt != null) {
                 stmt.close();
             }
             // Any segments which are still loading have failed.
-            setFailOnStillLoadingSegments(groupByGroupingSets);
+            setFailOnStillLoadingSegments(groupingSetsList);
         }
     }
 
-    void setFailOnStillLoadingSegments(GroupByGroupingSets groupByGroupingSets) {
-        for (GroupingSet groupingset : groupByGroupingSets.getGroupingSets()) {
+    void setFailOnStillLoadingSegments(GroupingSetsList groupingSetsList) {
+        for (GroupingSet groupingset : groupingSetsList.getGroupingSets()) {
             for (Segment segment : groupingset.getSegments()) {
                 segment.setFailIfStillLoading();
             }
@@ -139,15 +140,15 @@ public class SegmentLoader {
      * nonGroupingDataSets.
      */
     private void loadDataToDataSets(
-        GroupByGroupingSets groupByGroupingSets, List<Object[]> rows,
+        GroupingSetsList groupingSetsList, List<Object[]> rows,
         Map<BitKey, SegmentDataset[]> groupingDataSetMap,
         SegmentDataset[] nonGroupingDataSets, boolean[] axisContainsNull,
         boolean sparse)
     {
-        int arity = groupByGroupingSets.getDefaultColumns().length;
-        boolean useGroupingSet = groupByGroupingSets.useGroupingSets();
-        Aggregation.Axis[] axes = groupByGroupingSets.getDefaultAxes();
-        int segmentLength = groupByGroupingSets.getDefaultSegments().length;
+        int arity = groupingSetsList.getDefaultColumns().length;
+        boolean useGroupingSet = groupingSetsList.useGroupingSets();
+        Aggregation.Axis[] axes = groupingSetsList.getDefaultAxes();
+        int segmentLength = groupingSetsList.getDefaultSegments().length;
 
         List<Integer> pos = new ArrayList<Integer>(arity);
         for (Object[] row : rows) {
@@ -163,7 +164,7 @@ public class SegmentLoader {
             for (int j = 0; j < arity; j++) {
                 Object o = row[j];
                 if (useGroupingSet &&
-                        isRollupNull(groupByGroupingSets, row, groupingBitKeyIndex, j)) {
+                        isRollupNull(groupingSetsList, row, groupingBitKeyIndex, j)) {
                     continue;
                 }
                 Aggregation.Axis axis = axes[j];
@@ -190,11 +191,11 @@ public class SegmentLoader {
     }
 
     private boolean isRollupNull(
-            GroupByGroupingSets groupByGroupingSets, Object[] row,
+            GroupingSetsList groupingSetsList, Object[] row,
             int groupingBitKeyIndex, int j) {
         BitKey groupingBitKey = (BitKey) row[groupingBitKeyIndex];
         boolean isGroupingBitSet =
-                groupingBitKey.get(groupByGroupingSets.findGroupingFunctionIndex(j));
+                groupingBitKey.get(groupingSetsList.findGroupingFunctionIndex(j));
         return row[j].equals(RolapUtil.sqlNullValue) && isGroupingBitSet;
     }
 
@@ -209,11 +210,11 @@ public class SegmentLoader {
     private boolean setAxisDataAndDecideSparseUse(
         SortedSet<Comparable<?>>[] axisValueSets,
         boolean[] axisContainsNull,
-        GroupByGroupingSets groupByGroupingSets,
+        GroupingSetsList groupingSetsList,
         List<Object[]> rows)
     {
-        Aggregation.Axis[] axes = groupByGroupingSets.getDefaultAxes();
-        RolapStar.Column[] allColumns = groupByGroupingSets.getDefaultColumns();
+        Aggregation.Axis[] axes = groupingSetsList.getDefaultAxes();
+        RolapStar.Column[] allColumns = groupingSetsList.getDefaultColumns();
         // Figure out size of dense array, and allocate it, or use a sparse
         // array if appropriate.
         boolean sparse = false;
@@ -222,7 +223,7 @@ public class SegmentLoader {
             Aggregation.Axis axis = axes[i];
             SortedSet<Comparable<?>> valueSet = axisValueSets[i];
             int size = axis.loadKeys(valueSet, axisContainsNull[i]);
-            setAxisDataToGroupableList(groupByGroupingSets, valueSet,
+            setAxisDataToGroupableList(groupingSetsList, valueSet,
                 axisContainsNull[i], allColumns[i]);
             int previous = n;
             n *= size;
@@ -241,17 +242,17 @@ public class SegmentLoader {
     }
 
     private void setDataToSegments(
-        GroupByGroupingSets groupByGroupingSets,
+        GroupingSetsList groupingSetsList,
         SegmentDataset[] detailedDataSet,
         Map<BitKey, SegmentDataset[]> datasetsMap,
         RolapAggregationManager.PinSet pinnedSegments)
     {
-        List<GroupingSet> groupingSets = groupByGroupingSets.getGroupingSets();
-        boolean useGroupingSet = groupByGroupingSets.useGroupingSets();
+        List<GroupingSet> groupingSets = groupingSetsList.getGroupingSets();
+        boolean useGroupingSet = groupingSetsList.useGroupingSets();
         for (int i = 0; i < groupingSets.size(); i++) {
             Segment[] groupedSegments = groupingSets.get(i).getSegments();
             SegmentDataset[] dataSets = useGroupingSet ? datasetsMap
-                .get(groupByGroupingSets.getRollupColumnsBitKeyList().get(i)) :
+                .get(groupingSetsList.getRollupColumnsBitKeyList().get(i)) :
                 detailedDataSet;
             for (int j = 0; j < groupedSegments.length; j++) {
                 Segment groupedSegment = groupedSegments[j];
@@ -262,12 +263,12 @@ public class SegmentLoader {
     }
 
     private void populateDataSetMapOnGroupingColumnsBitKeys(
-        GroupByGroupingSets groupByGroupingSets, boolean sparse,
+        GroupingSetsList groupingSetsList, boolean sparse,
         Map<BitKey, SegmentDataset[]> datasetsMap)
     {
-        List<GroupingSet> groupingSets = groupByGroupingSets.getGroupingSets();
+        List<GroupingSet> groupingSets = groupingSetsList.getGroupingSets();
         List<BitKey> groupingColumnsBitKeyList =
-            groupByGroupingSets.getRollupColumnsBitKeyList();
+            groupingSetsList.getRollupColumnsBitKeyList();
         for (int i = 0; i < groupingSets.size(); i++) {
             GroupingSet groupingSet = groupingSets.get(i);
             SegmentDataset[] datasets = createDataSets(sparse,
@@ -305,11 +306,11 @@ public class SegmentLoader {
     }
 
     private void setAxisDataToGroupableList(
-        GroupByGroupingSets groupByGroupingSets,
+        GroupingSetsList groupingSetsList,
         SortedSet<Comparable<?>> valueSet, boolean axisContainsNull,
         RolapStar.Column column)
     {
-        for (GroupingSet groupingSet : groupByGroupingSets.getRollupGroupingSets()) {
+        for (GroupingSet groupingSet : groupingSetsList.getRollupGroupingSets()) {
             RolapStar.Column[] columns = groupingSet.getColumns();
             for (int i = 0; i < columns.length; i++) {
                 if (columns[i].equals(column)) {
@@ -320,10 +321,19 @@ public class SegmentLoader {
         }
     }
 
-    SqlStatement createExecuteSql(GroupByGroupingSets groupByGroupingSets) {
-        RolapStar star = groupByGroupingSets.getStar();
+    /**
+     * Creates and executes a SQL statement to retrieve the set of cells
+     * specified by a GroupingSetsList.
+     *
+     * <p>This method may be overridden in tests.
+     *
+     * @param groupingSetsList Grouping
+     * @return An executed SQL statement, or null
+     */
+    SqlStatement createExecuteSql(GroupingSetsList groupingSetsList) {
+        RolapStar star = groupingSetsList.getStar();
         String sql =
-            AggregationManager.instance().generateSql(groupByGroupingSets);
+            AggregationManager.instance().generateSql(groupingSetsList);
         return RolapUtil.executeQuery(
             star.getDataSource(), sql, "Segment.load",
             "Error while loading segment");
@@ -333,19 +343,19 @@ public class SegmentLoader {
         SqlStatement stmt,
         boolean[] axisContainsNull,
         SortedSet<Comparable<?>>[] axisValueSets,
-        GroupByGroupingSets groupByGroupingSets) throws SQLException
+        GroupingSetsList groupingSetsList) throws SQLException
     {
-        Segment[] segments = groupByGroupingSets.getDefaultSegments();
+        Segment[] segments = groupingSetsList.getDefaultSegments();
         int measureCount = segments.length;
-        List<Object[]> rawData = loadData(stmt, groupByGroupingSets);
+        List<Object[]> rawData = loadData(stmt, groupingSetsList);
         List<Object[]> processedRows = new ArrayList<Object[]>(rawData.size());
 
         int arity = axisValueSets.length;
         int groupingColumnStartIndex = arity + measureCount;
         for (Object[] row : rawData) {
             Object[] processedRow =
-                groupByGroupingSets.useGroupingSets() ?
-                    new Object[row.length - (groupByGroupingSets
+                groupingSetsList.useGroupingSets() ?
+                    new Object[row.length - (groupingSetsList
                         .getRollupColumns().size()) + 1] :
                     new Object[row.length];
             // get the columns
@@ -355,9 +365,9 @@ public class SegmentLoader {
                 Object o = row[columnIndex];
                 if (o == null) {
                     o = RolapUtil.sqlNullValue;
-                    if (!groupByGroupingSets.useGroupingSets() ||
+                    if (!groupingSetsList.useGroupingSets() ||
                         !isAggregateNull(row, groupingColumnStartIndex,
-                            groupByGroupingSets, axisIndex)) {
+                            groupingSetsList, axisIndex)) {
                         axisContainsNull[axisIndex] = true;
                     }
                 } else {
@@ -385,9 +395,9 @@ public class SegmentLoader {
                 }
                 processedRow[columnIndex] = o;
             }
-            if (groupByGroupingSets.useGroupingSets()) {
+            if (groupingSetsList.useGroupingSets()) {
                 processedRow[columnIndex] = getRollupBitKey(
-                    groupByGroupingSets.getRollupColumns().size(), row,
+                    groupingSetsList.getRollupColumns().size(), row,
                     columnIndex);
             }
             processedRows.add(processedRow);
@@ -409,36 +419,40 @@ public class SegmentLoader {
         return groupingBitKey;
     }
 
-    private boolean isOne(Object o) {
+    private static boolean isOne(Object o) {
         return ((Number) o).intValue() == 1;
     }
 
-    private boolean isAggregateNull(Object[] row, int groupingColumnStartIndex,
-                                    GroupByGroupingSets groupByGroupingSets,
-                                    int axisIndex)
+    private boolean isAggregateNull(
+        Object[] row,
+        int groupingColumnStartIndex,
+        GroupingSetsList groupingSetsList,
+        int axisIndex)
     {
         int groupingFunctionIndex =
-            groupByGroupingSets.findGroupingFunctionIndex(axisIndex);
-        if (groupingFunctionIndex == -1) { //Not a rollup column
+            groupingSetsList.findGroupingFunctionIndex(axisIndex);
+        if (groupingFunctionIndex == -1) {
+            // Not a rollup column
             return false;
         }
         return isOne(row[groupingColumnStartIndex + groupingFunctionIndex]);
     }
 
-    List<Object[]> loadData(SqlStatement stmt,
-                            GroupByGroupingSets groupByGroupingSets)
+    List<Object[]> loadData(
+        SqlStatement stmt,
+        GroupingSetsList groupingSetsList)
         throws SQLException
     {
-        int arity = groupByGroupingSets.getDefaultColumns().length;
-        int measureCount = groupByGroupingSets.getDefaultSegments().length;
-        int groupingFunctionsCount = groupByGroupingSets.getRollupColumns().size();
+        int arity = groupingSetsList.getDefaultColumns().length;
+        int measureCount = groupingSetsList.getDefaultSegments().length;
+        int groupingFunctionsCount = groupingSetsList.getRollupColumns().size();
 
         List<Object[]> rows = new ArrayList<Object[]>();
         ResultSet resultSet = stmt.getResultSet();
         while (resultSet.next()) {
             ++stmt.rowCount;
             Object[] row =
-                groupByGroupingSets.useGroupingSets() ?
+                groupingSetsList.useGroupingSets() ?
                     new Object[arity + measureCount +
                         groupingFunctionsCount] :
                     new Object[arity + measureCount];
@@ -468,10 +482,7 @@ public class SegmentLoader {
         return groupingColumns;
     }
 
-
-    SortedSet<Comparable<?>>[] getDistinctValueWorkspace(
-        int arity)
-    {
+    SortedSet<Comparable<?>>[] getDistinctValueWorkspace(int arity) {
         // Workspace to build up lists of distinct values for each axis.
         SortedSet<Comparable<?>>[] axisValueSets = new SortedSet[arity];
         for (int i = 0; i < axisValueSets.length; i++) {
@@ -494,8 +505,7 @@ public class SegmentLoader {
                                         return -1;
                                     }
                                 } else {
-                                    return ((Comparable) o1)
-                                        .compareTo(o2);
+                                    return ((Comparable) o1).compareTo(o2);
                                 }
                             }
                         }
@@ -557,182 +567,4 @@ public class SegmentLoader {
     }
 }
 
-/**
- * Class for using GROUP BY GROUPING SETS sql query.
- * Eg: Three groupings sets are (a,b,c), (a,b) and (b,c)
- * detailed grouping set -> (a,b,c)
- * rolled-up grouping sets -> (a,b),(b,c)
- * rollup columns -> c, a (c for (a,b) and a for (b, c))
- * rollup columns bitkey ->
- *    (a,b,c) grouping set represented as 0,0,0
- *    (a,b) grouping set represented as 0,0,1
- *    (b,c) grouping set represented as 1,0,0
- */
-class GroupByGroupingSets {
-
-    private List<RolapStar.Column> rollupColumns =
-        new ArrayList<RolapStar.Column>();
-
-    private final List<RolapStar.Column[]> groupingSetsColumns;
-    private final boolean useGroupingSet;
-
-    private final List<BitKey> rollupColumnsBitKeyList =
-        new ArrayList<BitKey>();
-
-    /**
-     * This map stores (column index to grouping function index)
-     */
-    private final Map<Integer, Integer> columnIndexToGroupingIndexMap =
-        new HashMap<Integer, Integer>();
-    private List<GroupingSet> groupingSets;
-
-    /**
-     * First element of the groupingSets list should be the detailed grouping
-     * set (default grouping set), followed by grouping sets which can be
-     * rolled-up.
-     */
-    public GroupByGroupingSets(List<GroupingSet> groupingSets) {
-        this.groupingSets = groupingSets;
-        this.useGroupingSet = groupingSets.size() > 1;
-        if (useGroupingSet) {
-            this.groupingSetsColumns = getGroupingColumnsList(groupingSets);
-            populateGroupingSetsDetail();
-        } else {
-            this.groupingSetsColumns = new ArrayList<RolapStar.Column[]>();
-        }
-    }
-
-    List<RolapStar.Column[]> getGroupingColumnsList(
-        List<GroupingSet> groupingSets)
-    {
-        List<RolapStar.Column[]> groupingColumns =
-            new ArrayList<RolapStar.Column[]>();
-        for (GroupingSet aggBatchDetail : groupingSets) {
-            groupingColumns.add(aggBatchDetail.getSegments()[0]
-                .aggregation.getColumns());
-
-        }
-        return groupingColumns;
-    }
-
-    public List<RolapStar.Column> getRollupColumns() {
-        return rollupColumns;
-    }
-
-    public List<RolapStar.Column[]> getGroupingSetsColumns() {
-        return groupingSetsColumns;
-    }
-
-    public List<BitKey> getRollupColumnsBitKeyList() {
-        return rollupColumnsBitKeyList;
-    }
-
-    public BitKey getDetailedColumnsBitKey() {
-        return rollupColumnsBitKeyList.get(0);
-    }
-
-    private void populateGroupingSetsDetail() {
-        findRollupColumns();
-        loadRollupIndex();
-        loadGroupingColumnBitKeys();
-    }
-
-    private void loadGroupingColumnBitKeys() {
-        int bitKeyLength = getDefaultColumns().length;
-        for (RolapStar.Column[] groupingSetColumns : groupingSetsColumns) {
-            BitKey groupingColumnsBitKey =
-                BitKey.Factory.makeBitKey(bitKeyLength);
-            Set<RolapStar.Column> columns =
-                convertToSet(groupingSetColumns);
-            int bitPosition = 0;
-            for (RolapStar.Column rollupColumn : rollupColumns) {
-                if (!columns.contains(rollupColumn)) {
-                    groupingColumnsBitKey.set(bitPosition);
-                }
-                bitPosition++;
-            }
-            rollupColumnsBitKeyList.add(groupingColumnsBitKey);
-        }
-    }
-
-    private void loadRollupIndex() {
-        RolapStar.Column[] detailedColumns = getDefaultColumns();
-        for (int columnIndex = 0; columnIndex < detailedColumns.length;
-             columnIndex++) {
-            int rollupIndex =
-                rollupColumns.indexOf(detailedColumns[columnIndex]);
-            columnIndexToGroupingIndexMap.put(columnIndex, rollupIndex);
-        }
-    }
-
-    private void findRollupColumns() {
-        Set<RolapStar.Column> rollupSet = new TreeSet<RolapStar.Column>(
-            RolapStar.ColumnComparator.instance);
-        for (RolapStar.Column[] groupingSetColumn : groupingSetsColumns) {
-            Set<RolapStar.Column> summaryColumns =
-                convertToSet(groupingSetColumn);
-            for (RolapStar.Column column : getDefaultColumns()) {
-                if (!summaryColumns.contains(column)) {
-                    rollupSet.add(column);
-                }
-            }
-        }
-        rollupColumns = new ArrayList<RolapStar.Column>(rollupSet);
-    }
-
-    private Set<RolapStar.Column> convertToSet(RolapStar.Column[] columns) {
-        HashSet<RolapStar.Column> columnSet = new HashSet<RolapStar.Column>();
-        for (RolapStar.Column column : columns) {
-            columnSet.add(column);
-        }
-        return columnSet;
-    }
-
-    public boolean useGroupingSets() {
-        return useGroupingSet;
-    }
-
-    public int findGroupingFunctionIndex(int columnIndex) {
-        return columnIndexToGroupingIndexMap.get(columnIndex);
-    }
-
-    public Aggregation.Axis[] getDefaultAxes() {
-        return getDefaultGroupingSet().getAxes();
-    }
-
-    protected GroupingSet getDefaultGroupingSet() {
-        return groupingSets.get(0);
-    }
-
-    public RolapStar.Column[] getDefaultColumns() {
-        return getDefaultGroupingSet().getSegments()[0].aggregation
-            .getColumns();
-    }
-
-    public Segment[] getDefaultSegments() {
-        return getDefaultGroupingSet().getSegments();
-    }
-
-    public BitKey getDefaultLevelBitKey() {
-        return getDefaultGroupingSet().getLevelBitKey();
-    }
-
-    public BitKey getDefaultMeasureBitKey() {
-        return getDefaultGroupingSet().getMeasureBitKey();
-    }
-
-    public RolapStar getStar() {
-        return getDefaultSegments()[0].aggregation.getStar();
-    }
-
-    public List<GroupingSet> getGroupingSets() {
-        return groupingSets;
-    }
-
-    public List<GroupingSet> getRollupGroupingSets() {
-        ArrayList<GroupingSet> rollupGroupingSets =
-            new ArrayList<GroupingSet>(groupingSets);
-        rollupGroupingSets.remove(0);
-        return rollupGroupingSets;
-    }
-}
+// End SegmentLoader.java

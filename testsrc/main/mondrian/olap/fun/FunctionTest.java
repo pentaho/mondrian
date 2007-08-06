@@ -494,6 +494,50 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(query, fold(expectedResult));
     }
 
+    public void _testValidMeasureNonEmpty() {
+        // Note that [with VM2] is NULL where it needs to be - and therefore
+        // does not prevent NON EMPTY from eliminating empty rows.
+        assertQueryReturns(
+            "with set [Foo] as ' Crossjoin({[Time].Children}, {[Measures].[Warehouse Sales]}) '\n" +
+                " member [Measures].[with VM] as 'ValidMeasure([Measures].[Unit Sales])'\n" +
+                " member [Measures].[with VM2] as 'Iif(Count(Filter([Foo], not isempty([Measures].CurrentMember))) > 0, ValidMeasure([Measures].[Unit Sales]), NULL)'\n" +
+                "select NON EMPTY Crossjoin({[Time].Children}, {[Measures].[with VM2], [Measures].[Warehouse Sales]}) ON COLUMNS,\n" +
+                "  NON EMPTY {[Warehouse].[All Warehouses].[USA].[WA].Children} ON ROWS\n" +
+                "from [Warehouse and Sales]\n" +
+                "where [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]",
+            fold("Axis #0:\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1997].[Q1], [Measures].[with VM2]}\n" +
+                "{[Time].[1997].[Q1], [Measures].[Warehouse Sales]}\n" +
+                "{[Time].[1997].[Q2], [Measures].[with VM2]}\n" +
+                "{[Time].[1997].[Q2], [Measures].[Warehouse Sales]}\n" +
+                "{[Time].[1997].[Q3], [Measures].[with VM2]}\n" +
+                "{[Time].[1997].[Q4], [Measures].[with VM2]}\n" +
+                "Axis #2:\n" +
+                "{[Warehouse].[All Warehouses].[USA].[WA].[Seattle]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[WA].[Tacoma]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[WA].[Yakima]}\n" +
+                "Row #0: 26\n" +
+                "Row #0: 34.793\n" +
+                "Row #0: 25\n" +
+                "Row #0: \n" +
+                "Row #0: 36\n" +
+                "Row #0: 28\n" +
+                "Row #1: 26\n" +
+                "Row #1: \n" +
+                "Row #1: 25\n" +
+                "Row #1: 64.615\n" +
+                "Row #1: 36\n" +
+                "Row #1: 28\n" +
+                "Row #2: 26\n" +
+                "Row #2: 79.657\n" +
+                "Row #2: 25\n" +
+                "Row #2: \n" +
+                "Row #2: 36\n" +
+                "Row #2: 28\n"));
+    }
+
     public void testValidMeasureTupleHasAnotherMember() {
         String query = "with\n" +
             "member measures.[with VM] as 'validmeasure(( [measures].[unit sales],[customers].[all customers]))'\n" +
@@ -1827,7 +1871,7 @@ public class FunctionTest extends FoodMartTestCase {
         getTestContext().assertExprDependsOn(
             "([Measures].[Unit Sales], [Gender].[F])", s12);
         // Depends on everything except Customers, Measures, Gender
-        String s13 = TestContext.allDimsExcept(new String[] {"[Customers]", "[Measures]", "[Gender]"});
+        String s13 = TestContext.allDimsExcept(new String[] {"[Customers]", "[Gender]"});
         getTestContext().assertExprDependsOn(
             "Aggregate([Customers].Members, ([Measures].[Unit Sales], [Gender].[F]))",
             s13);
@@ -2028,6 +2072,46 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #1: 31,931.88\n" +
                     "Row #2: 3,845\n" +
                     "Row #2: 8,173.22\n"));
+    }
+
+    /**
+     * Tests behavior where CurrentMember occurs in calculated members and
+     * that member is a set.
+     *
+     * <p>Mosha discusses this behavior in the article
+     * <a href="http://www.mosha.com/msolap/articles/mdxmultiselectcalcs.htm">
+     * Multiselect friendly MDX calculations</a>.
+     *
+     * <p>Mondrian's behavior is consistent with MSAS 2K: it returns zeroes.
+     * SSAS 2005 returns an error, which can be fixed by reformulating the
+     * calculated members.
+     *
+     * @see mondrian.rolap.FastBatchingCellReaderTest#testAggregateDistinctCount()
+     */
+    public void testMultiselectCalculations() {
+        assertQueryReturns(
+            "WITH\n" +
+                "MEMBER [Measures].[Declining Stores Count] AS\n" +
+                " ' Count(Filter(Descendants(Store.CurrentMember, Store.[Store Name]), [Store Sales] < ([Store Sales],Time.PrevMember))) '\n" +
+                " MEMBER \n" +
+                "  [Store].[XL_QZX] AS 'Aggregate ( { [Store].[All Stores].[USA].[WA] , [Store].[All Stores].[USA].[CA] } )' \n" +
+                "SELECT \n" +
+                "  NON EMPTY HIERARCHIZE(AddCalculatedMembers({DrillDownLevel({[Product].[All Products]})})) \n" +
+                "    DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON COLUMNS \n" +
+                "FROM [Sales] \n" +
+                "WHERE ([Measures].[Declining Stores Count], [Time].[1998].[Q3], [Store].[XL_QZX])",
+            fold(
+                "Axis #0:\n" +
+                    "{[Measures].[Declining Stores Count], [Time].[1998].[Q3], [Store].[XL_QZX]}\n" +
+                    "Axis #1:\n" +
+                    "{[Product].[All Products]}\n" +
+                    "{[Product].[All Products].[Drink]}\n" +
+                    "{[Product].[All Products].[Food]}\n" +
+                    "{[Product].[All Products].[Non-Consumable]}\n" +
+                    "Row #0: .00\n" +
+                    "Row #0: .00\n" +
+                    "Row #0: .00\n" +
+                    "Row #0: .00\n"));
     }
 
     public void testAvg() {
@@ -3097,6 +3181,22 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Time].[1997].[Q1].[3]\n" +
                     "[Time].[1997].[Q2].[4]\n" +
                     "[Time].[1997].[Q2].[5]")); // not parents
+
+        // testcase for bug XXXXX: braces required
+        assertQueryReturns("with set [Set1] as '[Product].[Drink]:[Product].[Food]' \n" +
+            "\n" +
+            "select [Set1] on columns, {[Measures].defaultMember} on rows \n" +
+            "\n" +
+            "from Sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Product].[All Products].[Drink]}\n" +
+                "{[Product].[All Products].[Food]}\n" +
+                "Axis #2:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Row #0: 24,597\n" +
+                "Row #0: 191,940\n"));
     }
 
     /**
@@ -3616,6 +3716,26 @@ public class FunctionTest extends FoodMartTestCase {
                 "");
     }
 
+    public void testTupleAppliedToUnknownHierarchy() {
+        // manifestation of bug 1735821
+        assertQueryReturns(
+            "with \n" +
+                "member [Product].[Test] as '([Product].[Food],Dimensions(0).defaultMember)' \n" +
+                "select \n" +
+                "{[Product].[Test], [Product].[Food]} on columns, \n" +
+                "{[Measures].[Store Sales]} on rows \n" +
+                "from Sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Product].[Test]}\n" +
+                "{[Product].[All Products].[Food]}\n" +
+                "Axis #2:\n" +
+                "{[Measures].[Store Sales]}\n" +
+                "Row #0: 191,940.00\n" +
+                "Row #0: 409,035.59\n"));
+    }
+
     public void testItemNull()
     {
         // In the following queries, MSAS returns 'Formula error - object type
@@ -3697,16 +3817,16 @@ public class FunctionTest extends FoodMartTestCase {
                     assertTrue("Expected null value", cell.isNull());
                 } else if (cell.isNull()) {
                     fail(
-                            "Cell at (" + row + ", " + col +
-                            ") was null, but was expecting " +
-                            expectedValue);
+                        "Cell at (" + row + ", " + col +
+                        ") was null, but was expecting " +
+                        expectedValue);
                 } else {
                     assertEquals(
-                            "Incorrect value returned at (" + row + ", " +
-                            col + ")",
-                            expectedValue.doubleValue(),
-                            ((Number) cell.getValue()).doubleValue(),
-                            tolerance);
+                        "Incorrect value returned at (" + row + ", " +
+                        col + ")",
+                        expectedValue,
+                        ((Number) cell.getValue()).doubleValue(),
+                        tolerance);
                 }
             }
         }
@@ -4253,7 +4373,7 @@ public class FunctionTest extends FoodMartTestCase {
         try {
             // default behavior
             MondrianProperties.instance().NullOrZeroDenominatorProducesNull.set(false);
-            
+
             assertExprReturns("-2 / " + NullNumericExpr, "Infinity");
             assertExprReturns("0 / 0", "NaN");
             assertExprReturns("-3 / (2 - 2)", "-Infinity");
@@ -4264,7 +4384,7 @@ public class FunctionTest extends FoodMartTestCase {
             assertExprReturns("-2 / " + NullNumericExpr, "");
             assertExprReturns("0 / 0", "");
             assertExprReturns("-3 / (2 - 2)", "");
-            
+
         } finally {
             MondrianProperties.instance().NullOrZeroDenominatorProducesNull.
             set(origNullOrZeroDenominatorProducesNull);
