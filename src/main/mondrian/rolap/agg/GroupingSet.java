@@ -60,6 +60,15 @@ public class GroupingSet {
     public RolapStar.Column[] getColumns() {
         return columns;
     }
+
+    /**
+     * Sets all the segments which are in loading state as failed
+     */
+    public void setSegmentsFailed() {
+        for (Segment segment : segments) {
+            segment.setFailIfStillLoading();
+        }
+    }    
 }
 
 // End GroupingSet.java
