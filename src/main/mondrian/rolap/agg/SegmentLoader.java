@@ -114,8 +114,6 @@ public class SegmentLoader {
 
         } catch (SQLException e) {
             throw stmt.handle(e);
-        } catch (RuntimeException e) {
-            throw e;
         } finally {
             if (stmt != null) {
                 stmt.close();

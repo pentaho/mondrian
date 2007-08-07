@@ -134,6 +134,7 @@ class Segment {
 
         this.data = data;
         this.state = State.Ready;
+
         notifyAll();
     }
 
@@ -174,7 +175,7 @@ class Segment {
             buf.append(columns[i].getExpression().getGenericExpression());
             final Aggregation.Axis axis = axes[i];
             axis.getPredicate().describe(buf);
-            if (values) {
+            if (values && isReady()) {
                 Object[] keys = axis.getKeys();
                 buf.append(", values={");
                 for (int j = 0; j < keys.length; j++) {
@@ -309,7 +310,7 @@ class Segment {
      * already loaded, returns immediately.
      */
     public synchronized void waitUntilLoaded() {
-        if (!isReady()) {
+        if (isLoading()) {
             try {
                 LOGGER.debug("Waiting on " + printSegmentHeaderInfo(","));
                 wait();
@@ -325,6 +326,10 @@ class Segment {
                 throw Util.badValue(state);
             }
         }
+    }
+
+    private boolean isLoading() {
+        return state == State.Loading;
     }
 
     /**

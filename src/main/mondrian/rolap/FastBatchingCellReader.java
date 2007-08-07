@@ -251,11 +251,7 @@ public class FastBatchingCellReader implements CellReader {
         Map<BatchKey, CompositeBatch> batchGroups =
             new HashMap<BatchKey, CompositeBatch>();
         for (int i = 0; i < batchList.size(); i++) {
-            for (int j = 0; j < batchList.size() && i < batchList.size();) {
-                if (i == j) {
-                    j++;
-                    continue;
-                }
+            for (int j = i + 1; j < batchList.size() && i < batchList.size();) {
                 FastBatchingCellReader.Batch iBatch = batchList.get(i);
                 FastBatchingCellReader.Batch jBatch = batchList.get(j);
                 if (iBatch.canBatch(jBatch)) {
@@ -265,6 +261,7 @@ public class FastBatchingCellReader implements CellReader {
                     batchList.set(i, jBatch);
                     batchList.remove(j);
                     addToCompositeBatch(batchGroups, jBatch, iBatch);
+                    j = i + 1;
                 } else {
                     j++;
                 }

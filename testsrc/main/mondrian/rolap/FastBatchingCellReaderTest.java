@@ -191,6 +191,99 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         assertTrue(groupedBatches.get(1).summaryBatches.contains(group2Agg1));
     }
 
+    public void testGroupBatchesForTwoSetOfGroupableBatches() {
+        String[] fieldValuesStoreType = {"Deluxe Supermarket", "Gourmet Supermarket", "HeadQuarters",
+                "Mid-Size Grocery", "Small Grocery", "Supermarket"};
+        String fieldStoreType = "store_type";
+        String tableStore = "store";
+
+        String[] fieldValuesWarehouseCountry = {"Canada", "Mexico", "USA"};
+        String fieldWarehouseCountry = "warehouse_country";
+        String tableWarehouse = "warehouse";
+
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader.Batch batch1RollupOnGender =
+                createBatch(fbcr,
+                        new String[]{tableTime, tableStore, tableProductClass},
+                        new String[]{fieldYear, fieldStoreType, fieldProductFamily},
+                        new String[][]{fieldValuesYear, fieldValuesStoreType, fieldValuesProductFamily},
+                        cubeNameSales,
+                        measureUnitSales);
+
+        FastBatchingCellReader.Batch batch1RollupOnGenderAndProductDepartment =
+                createBatch(fbcr, new String[]{tableTime, tableProductClass},
+                        new String[]{fieldYear, fieldProductFamily},
+                        new String[][]{fieldValuesYear, fieldValuesProductFamily},
+                        cubeNameSales, measureUnitSales);
+
+        FastBatchingCellReader.Batch batch1RollupOnStoreTypeAndProductDepartment =
+                createBatch(fbcr,
+                        new String[]{tableTime, tableCustomer},
+                        new String[]{fieldYear, fieldGender},
+                        new String[][]{fieldValuesYear, fieldValuesGender},
+                        cubeNameSales, measureUnitSales);
+
+        FastBatchingCellReader.Batch batch1Detailed =
+                createBatch(fbcr,
+                        new String[]{tableTime, tableStore,
+                                tableProductClass, tableCustomer},
+                        new String[]{fieldYear, fieldStoreType, fieldProductFamily,
+                                fieldGender},
+                        new String[][]{fieldValuesYear, fieldValuesStoreType,
+                                fieldValuesProductFamily,
+                                fieldValuesGender},
+                        cubeNameSales,
+                        measureUnitSales);
+
+
+        String warehouseCube = "Warehouse";
+        String measure2 = "[Measures].[Warehouse Sales]";
+        FastBatchingCellReader.Batch batch2RollupOnStoreType =
+                createBatch(fbcr,
+                        new String[]{tableWarehouse, tableTime, tableProductClass
+                        }, new String[]{fieldWarehouseCountry, fieldYear,
+                        fieldProductFamily},
+                        new String[][]{fieldValuesWarehouseCountry, fieldValuesYear,
+                                fieldValuesProductFamily}, warehouseCube,
+                        measure2);
+
+        FastBatchingCellReader.Batch batch2RollupOnStoreTypeAndWareHouseCountry =
+                createBatch(fbcr, new String[]{tableTime,tableProductClass},
+                        new String[]{fieldYear,fieldProductFamily},
+                        new String[][]{fieldValuesYear,fieldValuesProductFamily},
+                        warehouseCube, measure2);
+
+        FastBatchingCellReader.Batch batch2RollupOnProductFamilyAndWareHouseCountry =
+                createBatch(fbcr,
+                        new String[]{tableTime, tableStore},
+                        new String[]{fieldYear, fieldStoreType},
+                        new String[][]{fieldValuesYear, fieldValuesStoreType},
+                        warehouseCube, measure2);
+
+        FastBatchingCellReader.Batch batch2Detailed =
+                createBatch(fbcr,
+                        new String[]{tableWarehouse, tableTime, tableStore, tableProductClass},
+                        new String[]{fieldWarehouseCountry, fieldYear, fieldStoreType, fieldProductFamily},
+                        new String[][]{fieldValuesWarehouseCountry, fieldValuesYear, fieldValuesStoreType,
+                                fieldValuesProductFamily},
+                        warehouseCube,
+                        measure2);
+
+        List<FastBatchingCellReader.Batch> batchList = new ArrayList<FastBatchingCellReader.Batch>();
+
+        batchList.add(batch1RollupOnGender);
+        batchList.add(batch2RollupOnStoreType);
+        batchList.add(batch2RollupOnStoreTypeAndWareHouseCountry);
+        batchList.add(batch2RollupOnProductFamilyAndWareHouseCountry);
+        batchList.add(batch1RollupOnGenderAndProductDepartment);
+        batchList.add(batch1RollupOnStoreTypeAndProductDepartment);
+        batchList.add(batch2Detailed);
+        batchList.add(batch1Detailed);
+        List<FastBatchingCellReader.CompositeBatch> groupedBatches =
+                fbcr.groupBatches(batchList);
+        assertEquals(2, groupedBatches.size());
+    }
+
     public void testAddToCompositeBatchForBothBatchesNotPartOfCompositeBatch() {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
         FastBatchingCellReader.Batch batch1 = fbcr.new Batch(
@@ -594,6 +687,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                             RolapAggregationManager.PinSet pinnedSegments)
                         {
                             groupingSets.addAll(sets);
+                            for (GroupingSet groupingSet : sets) {
+                                groupingSet.setSegmentsFailed();
+                            }
                         }
                     };
                 }
@@ -603,20 +699,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         compositeBatch.loadAggregation();
 
         assertEquals(2, groupingSets.size());
-        GroupingSetsCollector detailedCollector =
-            new GroupingSetsCollector(true);
-        detailedBatch.loadAggregation(detailedCollector);
-        List<GroupingSet> baseGroupingSet =
-            detailedCollector.getGroupingSets();
-        GroupingSetsCollector summaryCollector =
-            new GroupingSetsCollector(true);
-        summaryBatch.loadAggregation(summaryCollector);
-        List<GroupingSet> groupingSet =
-            summaryCollector.getGroupingSets();
-
-        assertEquals(baseGroupingSet.get(0).getLevelBitKey(),
+        assertEquals(detailedBatch.constrainedColumnsBitKey,
             groupingSets.get(0).getLevelBitKey());
-        assertEquals(groupingSet.get(0).getLevelBitKey(),
+        assertEquals(summaryBatch.constrainedColumnsBitKey,
             groupingSets.get(1).getLevelBitKey());
 
     }
