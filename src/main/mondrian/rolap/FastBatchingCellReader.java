@@ -666,7 +666,7 @@ public class FastBatchingCellReader implements CellReader {
                     // perfect check, because a SQL expression on column names
                     // containing "SELECT" will also be detected. e,g,
                     // count("select beef" + "regular beef").
-                    if (measureSql.cdata.toUpperCase().contains("SELECT ")) {
+                    if (measureSql.cdata.toUpperCase().contains("SELECT")) {
                         distinctSqlMeasureList.add(measure);
                     }
                 }
