@@ -218,13 +218,16 @@ public class TestContext {
 
     /**
      * Returns a connection to the FoodMart database
-     * with a dynamic schema processor.
+     * with a dynamic schema processor and disables use of RolapSchema Pool.
      */
     public synchronized Connection getFoodMartConnection(Class dynProcClass) {
         Util.PropertyList properties = getFoodMartConnectionProperties();
         properties.put(
             RolapConnectionProperties.DynamicSchemaProcessor.name(),
             dynProcClass.getName());
+        properties.put(
+            RolapConnectionProperties.UseSchemaPool.name(),
+            "false");
         return DriverManager.getConnection(properties, null, null);
     }
 
