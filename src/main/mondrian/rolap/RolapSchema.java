@@ -737,13 +737,11 @@ public class RolapSchema implements Schema {
                         RolapConnectionProperties.UseContentChecksum.name()));
 
             // Use the schema pool unless "UseSchemaPool" is explicitly false.
-            // If a dynamic schema processor is specified never use the pool.
             final boolean useSchemaPool =
                 Boolean.parseBoolean(
                     connectInfo.get(
                         RolapConnectionProperties.UseSchemaPool.name(),
-                        "true")) &&
-                Util.isEmpty(dynProcName);
+                        "true"));
 
             // If there is a dynamic processor registered, use it. This
             // implies there is not MD5 based caching, but, as with the previous
