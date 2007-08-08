@@ -1255,14 +1255,18 @@ public class NonEmptyTest extends BatchTestCase {
 
     /**
      * Check that multi-level member list generates compact form of SQL where clause:
-     * (1) User IN list if possible
+     * (1) Use IN list if possible
      * (2) Group members sharing the same parent
      * (3) Only need to compare up to the first unique parent level.
      */
-    public void testMultiLevelMemberConstraint() {
+    public void testMultiLevelMemberConstraintNonNullParent() {
         String query =
             "with " +
-            "set [Filtered Store City Set] as {[Store].[USA].[OR].[Portland], [Store].[USA].[OR].[Salem], [Store].[USA].[CA].[San Francisco], [Store].[USA].[WA].[Tacoma]} " +
+            "set [Filtered Store City Set] as " +
+            "{[Store].[USA].[OR].[Portland], " +
+            " [Store].[USA].[OR].[Salem], " +
+            " [Store].[USA].[CA].[San Francisco], " +
+            " [Store].[USA].[WA].[Tacoma]} " +
             "set [NECJ] as NonEmptyCrossJoin([Filtered Store City Set], {[Product].[Product Family].Food}) " +
             "select [NECJ] on rows from [Sales]";
 
@@ -1309,18 +1313,18 @@ public class NonEmptyTest extends BatchTestCase {
 
     /**
      * Check that multi-level member list generates compact form of SQL where clause:
-     * (1) User IN list if possible(not possible if there are null values because
-     *     NULLs do not match)
-     * (2) Group members sharing the same parent
-     * (3) Only need to compare up to the first unique parent level.
+     * (1) Use IN list if possible(not possible if there are null values because
+     *     NULLs in IN lists do not match)
+     * (2) Group members sharing the same parent, including parents with NULLs.
+     * (3) If parent levels include NULLs, comparision includes any unique level.
      */
-    public void testMultiLevelMemberConstraintWithNull() {
+    public void testMultiLevelMemberConstraintNullParent() {
         String dimension =
             "<Dimension name=\"Warehouse2\">\n" +
             "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n" +
             "    <Table name=\"warehouse\"/>\n" +
             "    <Level name=\"address3\" column=\"wa_address3\" uniqueMembers=\"true\"/>\n" +
-            "    <Level name=\"address2\" column=\"wa_address2\" uniqueMembers=\"false\"/>\n" +
+            "    <Level name=\"address2\" column=\"wa_address2\" uniqueMembers=\"true\"/>\n" +
             "    <Level name=\"address1\" column=\"wa_address1\" uniqueMembers=\"false\"/>\n" +
             "    <Level name=\"name\" column=\"warehouse_name\" uniqueMembers=\"false\"/>\n" +
             "  </Hierarchy>\n" +
@@ -1337,57 +1341,35 @@ public class NonEmptyTest extends BatchTestCase {
 
         String query =
             "with\n" +
-            "set [Filtered Warehouse Set] as {[Warehouse2].[#null].[#null].[5617 Saclan Terrace].[Arnold and Sons], [Warehouse2].[#null].[#null].[3377 Coachman Place].[Jones International]}\n" +
-            "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food})\n" +
-            "select [NECJ] on rows from [Warehouse2]\n";
+            "set [Filtered Warehouse Set] as " +
+            "{[Warehouse2].[#null].[#null].[5617 Saclan Terrace].[Arnold and Sons]," +
+            " [Warehouse2].[#null].[#null].[3377 Coachman Place].[Jones International]} " +
+            "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) " +
+            "select [NECJ] on rows from [Warehouse2]";
 
         String necjSqlDerby =
-            "select " +
-            "\"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", " +
-            "\"product_class\".\"product_family\" " +
-            "from " +
-            "\"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", " +
-            "\"product\" as \"product\", \"product_class\" as \"product_class\" " +
-            "where " +
-            "\"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" " +
-            "and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
-            "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" " +
-            "and ((\"warehouse\".\"wa_address1\" = '5617 Saclan Terrace' and \"warehouse\".\"wa_address2\" is null " +
-            "and \"warehouse\".\"wa_address3\" is null and \"warehouse\".\"warehouse_name\" = 'Arnold and Sons') " +
-            "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"wa_address2\" is null " +
-            "and \"warehouse\".\"wa_address3\" is null and \"warehouse\".\"warehouse_name\" = 'Jones International')) " +
-            "and (\"product_class\".\"product_family\" = 'Food') " +
-            "group by " +
-            "\"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", " +
-            "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" " +
-            "order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, \"warehouse\".\"wa_address1\" ASC, " +
-            "\"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
-
+            "select \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" " +
+            "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" " +
+            "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
+            "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" and " +
+            "((\"warehouse\".\"wa_address1\" = '5617 Saclan Terrace' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"warehouse_name\" = 'Arnold and Sons') " +
+            "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"warehouse_name\" = 'Jones International')) " +
+            "and (\"product_class\".\"product_family\" = 'Food') group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", " +
+            "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, " +
+            "\"warehouse\".\"wa_address1\" ASC, \"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
+        
         String necjSqlMySql =
-            "select " +
-            "`warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, " +
-            "`warehouse`.`wa_address1` as `c2`, `warehouse`.`warehouse_name` as `c3`, `product_class`.`product_family` as `c4` " +
-            "from " +
-            "`warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, " +
-            "`product` as `product`, `product_class` as `product_class` " +
-            "where " +
-            "`inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` " +
-            "and `product`.`product_class_id` = `product_class`.`product_class_id` " +
-            "and `inventory_fact_1997`.`product_id` = `product`.`product_id` " +
-            "and ((`warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null " +
-            "and (`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`) " +
-            "in (('Arnold and Sons','5617 Saclan Terrace'),('Jones International','3377 Coachman Place')))) " +
-            "and (`product_class`.`product_family` = 'Food') " +
-            "group by " +
-            "`warehouse`.`wa_address3`, `warehouse`.`wa_address2`, `warehouse`.`wa_address1`, " +
-            "`warehouse`.`warehouse_name`, `product_class`.`product_family` " +
-            "order by " +
-            "ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, " +
-            "ISNULL(`warehouse`.`wa_address2`), `warehouse`.`wa_address2` ASC, " +
-            "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, " +
-            "ISNULL(`warehouse`.`warehouse_name`), `warehouse`.`warehouse_name` ASC, " +
+            "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`wa_address1` as `c2`, `warehouse`.`warehouse_name` as `c3`, " +
+            "`product_class`.`product_family` as `c4` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, `product` as `product`, " +
+            "`product_class` as `product_class` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and " +
+            "`product`.`product_class_id` = `product_class`.`product_class_id` and `inventory_fact_1997`.`product_id` = `product`.`product_id` and " +
+            "((`warehouse`.`wa_address2` is null and (`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`) in (('Arnold and Sons','5617 Saclan Terrace')," +
+            "('Jones International','3377 Coachman Place')))) and (`product_class`.`product_family` = 'Food') group by `warehouse`.`wa_address3`, " +
+            "`warehouse`.`wa_address2`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`, `product_class`.`product_family` " +
+            "order by ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`), `warehouse`.`wa_address2` ASC, " +
+            "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`), `warehouse`.`warehouse_name` ASC, " +
             "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
-
+        
         TestContext testContext =
             TestContext.create(
              dimension,
@@ -1405,6 +1387,170 @@ public class NonEmptyTest extends BatchTestCase {
         assertQuerySql(testContext, query, patterns);
     }
 
+    /**
+     * Check that multi-level member list generates compact form of SQL where clause:
+     * (1) Use IN list if possible(not possible if there are null values because
+     *     NULLs in IN lists do not match)
+     * (2) Group members sharing the same parent, including parents with NULLs.
+     * (3) If parent levels include NULLs, comparision includes any unique level.
+     * (4) Can handle predicates correctly if the member list contains both NULL
+     * and non NULL parent levels.
+     */
+    public void testMultiLevelMemberConstraintMixedNullNonNullParent() {
+        String dimension =
+            "<Dimension name=\"Warehouse2\">\n" +
+            "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n" +
+            "    <Table name=\"warehouse\"/>\n" +
+            "    <Level name=\"fax\" column=\"warehouse_fax\" uniqueMembers=\"true\"/>\n" +
+            "    <Level name=\"address1\" column=\"wa_address1\" uniqueMembers=\"false\"/>\n" +
+            "    <Level name=\"name\" column=\"warehouse_name\" uniqueMembers=\"false\"/>\n" +
+            "  </Hierarchy>\n" +
+            "</Dimension>\n";
+
+        String cube =
+            "<Cube name=\"Warehouse2\">\n" +
+            "  <Table name=\"inventory_fact_1997\"/>\n" +
+            "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n" +
+            "  <DimensionUsage name=\"Warehouse2\" source=\"Warehouse2\" foreignKey=\"warehouse_id\"/>\n" +
+            "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n" +
+            "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n" +
+            "</Cube>";
+
+        String query =
+            "with\n" +
+            "set [Filtered Warehouse Set] as " +
+            "{[Warehouse2].[#null].[234 West Covina Pkwy].[Freeman And Co]," +
+            " [Warehouse2].[971-555-6213].[3377 Coachman Place].[Jones International]} " +
+            "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) " +
+            "select [NECJ] on rows from [Warehouse2]";
+
+        String necjSqlDerby =
+            "select \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" " +
+            "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" " +
+            "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
+            "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" and " +
+            "((\"warehouse\".\"wa_address1\" = '234 West Covina Pkwy' and \"warehouse\".\"warehouse_fax\" is null and \"warehouse\".\"warehouse_name\" = 'Freeman And Co') " +
+            "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"warehouse_fax\" = '971-555-6213' and \"warehouse\".\"warehouse_name\" = 'Jones International')) " +
+            "and (\"product_class\".\"product_family\" = 'Food') " +
+            "group by \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" " +
+            "order by \"warehouse\".\"warehouse_fax\" ASC, \"warehouse\".\"wa_address1\" ASC, " +
+            "\"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
+
+        String necjSqlMySql =
+            "select `warehouse`.`warehouse_fax` as `c0`, `warehouse`.`wa_address1` as `c1`, " +
+            "`warehouse`.`warehouse_name` as `c2`, `product_class`.`product_family` as `c3` " +
+            "from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, " +
+            "`product` as `product`, `product_class` as `product_class` " +
+            "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and " +
+            "`product`.`product_class_id` = `product_class`.`product_class_id` and " +
+            "`inventory_fact_1997`.`product_id` = `product`.`product_id` and " +
+            "((`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`,`warehouse`.`warehouse_fax`) in (('Jones International','3377 Coachman Place','971-555-6213')) " +
+            "or (`warehouse`.`warehouse_fax` is null and " +
+            "(`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`) in (('Freeman And Co','234 West Covina Pkwy')))) " +
+            "and (`product_class`.`product_family` = 'Food') " +
+            "group by `warehouse`.`warehouse_fax`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`, `product_class`.`product_family` " +
+            "order by ISNULL(`warehouse`.`warehouse_fax`), `warehouse`.`warehouse_fax` ASC, " +
+            "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`), " +
+            "`warehouse`.`warehouse_name` ASC, ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+        
+        TestContext testContext =
+            TestContext.create(
+             dimension,
+             cube,
+             null,
+             null,
+             null);
+
+        SqlPattern[] patterns =
+            new SqlPattern[] {
+                new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
+                new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
+            };
+
+        assertQuerySql(testContext, query, patterns);
+    }
+    
+    /**
+     * Check that multi-level member list generates compact form of SQL where clause:
+     * (1) Use IN list if possible(not possible if there are null values because
+     *     NULLs in IN lists do not match)
+     * (2) Group members sharing the same parent
+     * (3) Only need to compare up to the first unique parent level.
+     * (4) Can handle predicates correctly if the member list contains both NULL
+     * and non NULL child levels.
+     */
+    public void testMultiLevelMemberConstraintWithMixedNullNonNullChild() {
+        String dimension =
+            "<Dimension name=\"Warehouse2\">\n" +
+            "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n" +
+            "    <Table name=\"warehouse\"/>\n" +
+            "    <Level name=\"address3\" column=\"wa_address3\" uniqueMembers=\"true\"/>\n" +
+            "    <Level name=\"address2\" column=\"wa_address2\" uniqueMembers=\"false\"/>\n" +
+            "    <Level name=\"fax\" column=\"warehouse_fax\" uniqueMembers=\"false\"/>\n" +
+            "  </Hierarchy>\n" +
+            "</Dimension>\n";
+        
+        String cube =
+            "<Cube name=\"Warehouse2\">\n" +
+            "  <Table name=\"inventory_fact_1997\"/>\n" +
+            "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n" +
+            "  <DimensionUsage name=\"Warehouse2\" source=\"Warehouse2\" foreignKey=\"warehouse_id\"/>\n" +
+            "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n" +
+            "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n" +
+            "</Cube>";
+
+        String query =
+            "with\n" +
+            "set [Filtered Warehouse Set] as " +
+            "{[Warehouse2].[#null].[#null].[#null]," +
+            " [Warehouse2].[#null].[#null].[971-555-6213]} " +
+            "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) " +
+            "select [NECJ] on rows from [Warehouse2]";
+        
+        String necjSqlDerby =
+            "select \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" " +
+            "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" " +
+            "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and " +
+            "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" " +
+            "and ((\"warehouse\".\"warehouse_fax\" = '971-555-6213' or \"warehouse\".\"warehouse_fax\" is null) and " +
+            "\"warehouse\".\"wa_address2\" is null and \"warehouse\".\"wa_address3\" is null) and " +
+            "(\"product_class\".\"product_family\" = 'Food') " +
+            "group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" " +
+            "order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, \"warehouse\".\"warehouse_fax\" ASC, " +
+            "\"product_class\".\"product_family\" ASC";
+
+        String necjSqlMySql =
+            "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`warehouse_fax` as `c2`, " +
+            "`product_class`.`product_family` as `c3` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, " +
+            "`product` as `product`, `product_class` as `product_class` " +
+            "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and " +
+            "`inventory_fact_1997`.`product_id` = `product`.`product_id` and " +
+            "((`warehouse`.`warehouse_fax` = '971-555-6213' or `warehouse`.`warehouse_fax` is null) and " +
+            "`warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null) and " +
+            "(`product_class`.`product_family` = 'Food') " +
+            "group by `warehouse`.`wa_address3`, `warehouse`.`wa_address2`, `warehouse`.`warehouse_fax`, " +
+            "`product_class`.`product_family` " +
+            "order by ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`), " +
+            "`warehouse`.`wa_address2` ASC, ISNULL(`warehouse`.`warehouse_fax`), `warehouse`.`warehouse_fax` ASC, " +
+            "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+        
+        TestContext testContext =
+            TestContext.create(
+             dimension,
+             cube,
+             null,
+             null,
+             null);
+
+        SqlPattern[] patterns =
+            new SqlPattern[] {
+                new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
+                new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
+            };
+
+        assertQuerySql(testContext, query, patterns);
+    }
+    
     public void testNonEmptyUnionQuery() {
         Result result = executeQuery(
                 "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,\n" +

@@ -270,11 +270,9 @@ public class SqlConstraintUtils {
             return;
         }
 
-        // If this constraint is part of a native cross join and there
-        // are multiple values for the parent members, then we can't
-        // use IN clauses
+        // Find out the first(lowest) unqiue parent level.
+        // Only need to compare members up to that level.
         RolapMember member = members.get(0);
-
         RolapLevel memberLevel = member.getLevel();
         RolapMember firstUniqueParent = member;
         RolapLevel firstUniqueParentLevel = null;
@@ -289,6 +287,10 @@ public class SqlConstraintUtils {
         }
 
         String condition = "(";
+        
+        // If this constraint is part of a native cross join and there
+        // are multiple values for the parent members, then we can't
+        // use single value IN clauses
         if (crossJoin &&
             !memberLevel.isUnique() && !membersAreCrossProduct(members)) {
             assert (member.getParentMember() != null);
@@ -387,12 +389,41 @@ public class SqlConstraintUtils {
                     fromLevel,
                     restrictMemberTypes,
                     parentChildrenMap);
+            
+            // The members list might contain NULL values in the member levels.
+            //
+            // e.g.
+            //   [USA].[CA].[San Jose]
+            //   [null].[null].[San Francisco]
+            //   [null].[null].[Los Angeles]
+            //   [null].[CA].[San Diego] 
+            //   [null].[CA].[Sacramento] 
+            //
+            // Pick out such members to generate SQL later.
+            // These members are organized in a map that maps the parant levels
+            // containing NULL to all its children members in the list. e.g. the
+            // member list above becomes the following map, after SQL is generated
+            // for [USA].[CA].[San Jose] in the call above.
+            //
+            //   [null].[null]->([San Francisco], [Los Angeles])
+            //   [null]->([CA].[San Diego], [CA].[Sacramento])
+            //
             if (parentChildrenMap.isEmpty()) {
                 return condition;
             }
         } else {
             // Multi-value IN list not supported
             // Classify members into List that share the same parent.
+            //
+            // Using the same example as above, the resulting map will be
+            //   [USA].[CA]->[San Jose]
+            //   [null].[null]->([San Francisco], [Los Angesles])
+            //   [null].[CA]->([San Diego],[Sacramento])
+            //
+            // The idea is to be able to "compress" the original member list into
+            // groups that can use single value IN list for part of the comparison
+            // that does not involve NULLs.
+            //
             for (RolapMember m : members) {            
                 if (m.isCalculated()) {
                     if (restrictMemberTypes) {
@@ -675,6 +706,8 @@ public class SqlConstraintUtils {
         final StringBuilder valueBuf = new StringBuilder();
 
         columnBuf.append("(");
+
+        // generate the left-hand side of the IN expression
         boolean isFirstLevelInMultiple = true;        
         for (RolapMember m = members.get(0); m != null; m = m.getParentMember()) {
             if (m.isAll()) {
@@ -682,7 +715,6 @@ public class SqlConstraintUtils {
             }
             RolapLevel level = m.getLevel();
 
-            // generate the left-hand side of the IN expression
             RolapHierarchy hierarchy =
                 (RolapHierarchy) level.getHierarchy();
             RolapStar.Column column = levelToColumnMap.get(level);
@@ -718,6 +750,7 @@ public class SqlConstraintUtils {
             
             columnBuf.append(columnString);
             
+            // Only needs to compare up to the first(lowest) unique level.
             if (m.getLevel() == fromLevel) {
                 break;
             }
@@ -725,7 +758,7 @@ public class SqlConstraintUtils {
         
         columnBuf.append(")");
         
-        // build IN list valueBuf
+        // generate the RHS of the IN predicate
         valueBuf.append("(");
         boolean isFirstMember = true;
         String memberString;
@@ -740,11 +773,12 @@ public class SqlConstraintUtils {
             
             isFirstLevelInMultiple = true;
             memberString = "(";
-            boolean memberSQLGenerated = false;
+
             boolean containsNull = false;
             for (RolapMember p = m; p != null; p = p.getParentMember()) {
                 
                 if (p.isAll()) {
+                    // Ignore the ALL level.
                     // Generate SQL condition for the next level
                     continue;
                 }
@@ -755,6 +789,8 @@ public class SqlConstraintUtils {
                     sqlQuery.getDialect(),
                     level.getDatatype());
                 
+                // If parent at a level is NULL, record this parent and all
+                // its children(if there's any)
                 if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(value)) {
                     // Add to the nullParent map
                     List<RolapMember> childrenList = 
@@ -783,15 +819,17 @@ public class SqlConstraintUtils {
                 final StringBuilder buf = new StringBuilder();
                 sqlQuery.getDialect().quote(buf, value, level.getDatatype());
                 memberString += buf.toString();
-                memberSQLGenerated = true;
-
+                
+                // Only needs to compare up to the first(lowest) unique level.
                 if (p.getLevel() == fromLevel) {
                     break;
                 }
             }
             
             // now check if sql string is sucessfully generated for this member
-            if (!containsNull && memberSQLGenerated) {
+            // If parent levels do not contain NULL then SQL must have been generated
+            //successfully.
+            if (!containsNull) {
                 memberString += ")";
                 if (!isFirstMember) {
                     valueBuf.append(",");
