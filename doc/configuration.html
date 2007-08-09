@@ -1144,6 +1144,56 @@ method:</p>
 </blockquote>
 <p>The cache is only used when creating new connections; existing connections
 retain their schemas.</p>
+<p>
+There are four connect string properties that control the use of the 
+Schema cache:
+UseSchemaPool.
+UseContentChecksum,
+CatalogContent and
+DynamicSchemaProcessor.
+</p>
+<p>
+The UseSchemaPool property controls whether or not the cache is used
+regardless of the values of any of the other properties. It UseSchemaPool
+is "false", then the cache is not used; each request for a new schema
+object creates a new one (entailing the re-parsing of the schema definition
+and re-scanning of the database for meta data and aggregate tables - 
+very slow, and, in addition, there is no reuse of the in-memory aggregate
+cache).
+</p>
+<p>
+Next, if UseContentChecksum is "true", then a check sum (MD5) is created
+from the schema definition content (not URL) and it is this check sum
+that is used as the key to lookup previously cached versions of the 
+schema definition. If two schema definitions produce different check
+sums, then one can safely assume that they are different schemas (of course,
+it is possible that only a comment or some whitespace in the schema 
+definition changed in which case the two schemas would actually be the 
+same, but because their check sums are different, different schema 
+objects are used). If UseContentChecksum is "false", then no check sum
+is created and used as the lookup key, rather, a combination of 
+the connection attributes 
+"catalogUrl", 
+"connectionKey", 
+"jdbcUser", 
+"dataSourceStr"
+or 
+"catalogUrl", 
+"dataSource" 
+are used to create the key.
+</p>
+<p>
+If the CatalogContent is specified, then it is used as the schema
+definition content. If, in fact, it is specified, then the value of
+DynamicSchemaProcessor, if any, is ignored.
+</p>
+<p>
+Finally, the DynamicSchemaProcessor connection string property is the
+class name of a class that implements the DynamicSchemaProcessor
+interface. If set, an instance of the class is created for each
+schema request and its "processSchema" method is called which
+returns the schema definition content.
+</p>
 
 </font>
 
