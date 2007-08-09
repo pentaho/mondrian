@@ -281,7 +281,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         batchList.add(batch1Detailed);
         List<FastBatchingCellReader.CompositeBatch> groupedBatches =
                 fbcr.groupBatches(batchList);
-        assertEquals(2, groupedBatches.size());
+        if ((MondrianProperties.instance().UseAggregates.get()
+                && MondrianProperties.instance().ReadAggregates.get()) || Util.PreJdk15) {
+            assertEquals(4, groupedBatches.size());
+        } else {
+            assertEquals(2, groupedBatches.size());
+        }
+
     }
 
     public void testAddToCompositeBatchForBothBatchesNotPartOfCompositeBatch() {
