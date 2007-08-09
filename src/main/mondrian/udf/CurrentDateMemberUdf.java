@@ -76,7 +76,8 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
     }
 
     public String getDescription() {
-        return "Returns the closest or exact member within the specified dimension corresponding to the current date, in the format specified by the format parameter.";
+        return "Returns the closest or exact member within the specified dimension corresponding to the current date, in the format specified by the format parameter. "
+            + "Format strings are the same as used by the MDX Format function, namely the Visual Basic format strings. See http://www.apostate.com/programming/vb-format.html.";
     }
 
     public String getName() {

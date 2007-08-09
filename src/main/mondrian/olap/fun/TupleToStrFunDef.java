@@ -22,6 +22,11 @@ import mondrian.olap.Member;
 /**
  * Definition of the <code>TupleToStr</code> MDX function.
  *
+ * <p>Syntax:
+ * <blockquote><code>
+ * TupleToStr(&lt;Tuple&gt;)
+ * </code></blockquote>
+ * 
  * @author jhyde
  * @version $Id$
  * @since Aug 3, 2006
@@ -30,7 +35,7 @@ class TupleToStrFunDef extends FunDefBase {
     static final TupleToStrFunDef instance = new TupleToStrFunDef();
 
     private TupleToStrFunDef() {
-        super("TupleToStr", "TupleToStr(<Tuple>)", "Constructs a string from a tuple.", "fSt");
+        super("TupleToStr", "Constructs a string from a tuple.", "fSt");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {

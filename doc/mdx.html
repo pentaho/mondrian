@@ -481,7 +481,7 @@ FROM [Sales]
 </tr>
 <tr>
   <td valign=top><code>Cast</code></td>
-  <td>Converts values to another type
+  <td>Converts values to another type.
     <h1>Syntax</h1>
     Cast(&lt;Expression&gt; AS &lt;Type&gt;)
   </td>
@@ -565,14 +565,14 @@ FROM [Sales]
 </tr>
 <tr>
   <td valign=top><code>CurrentDateMember</code></td>
-  <td>Returns the member within the specified dimension corresponding to the current date, in the format specified by the format parameter.
+  <td>Returns the exact member within the specified dimension corresponding to the current date, in the format specified by the format parameter. If there is no such date, returns the NULL member. Format strings are the same as used by the MDX Format function, namely the Visual Basic format strings. See http://www.apostate.com/programming/vb-format.html.
     <h1>Syntax</h1>
     &lt;Member&gt; CurrentDateMember(&lt;Hierarchy&gt;, &lt;String&gt;)
   </td>
 </tr>
 <tr>
   <td valign=top><code>CurrentDateMember</code></td>
-  <td>Returns the closest or exact member within the specified dimension corresponding to the current date, in the format specified by the format parameter.
+  <td>Returns the closest or exact member within the specified dimension corresponding to the current date, in the format specified by the format parameter. Format strings are the same as used by the MDX Format function, namely the Visual Basic format strings. See http://www.apostate.com/programming/vb-format.html.
     <h1>Syntax</h1>
     &lt;Member&gt; CurrentDateMember(&lt;Hierarchy&gt;, &lt;String&gt;, &lt;Symbol&gt;)
   </td>
@@ -704,6 +704,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Extract</code></td>
+  <td>Returns a set of tuples from extracted dimension elements. The opposite of Crossjoin.
+    <h1>Syntax</h1>
+    Extract(&lt;Set&gt;, &lt;Dimension&gt;[, &lt;Dimension&gt;...])
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Filter</code></td>
   <td>Returns the set resulting from filtering a set based on a search condition.
     <h1>Syntax</h1>
@@ -749,6 +756,14 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Generate</code></td>
+  <td>Applies a set to a string expression and joins resulting sets by string concatenation.
+    <h1>Syntax</h1>
+    &lt;String&gt; Generate(&lt;Set&gt;, &lt;String&gt;)<br/>
+    &lt;String&gt; Generate(&lt;Set&gt;, &lt;String&gt;, &lt;String&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Head</code></td>
   <td>Returns the first specified number of elements in a set.
     <h1>Syntax</h1>
@@ -780,6 +795,13 @@ FROM [Sales]
 </tr>
 <tr>
   <td valign=top><code>IIf</code></td>
+  <td>Returns boolean determined by a logical test.
+    <h1>Syntax</h1>
+    &lt;Logical Expression&gt; IIf(&lt;Logical Expression&gt;, &lt;Logical Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IIf</code></td>
   <td>Returns one of two numeric values determined by a logical test.
     <h1>Syntax</h1>
     &lt;Numeric Expression&gt; IIf(&lt;Logical Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
@@ -794,22 +816,6 @@ FROM [Sales]
 </tr>
 <tr>
   <td valign=top><code>IS</code></td>
-  <td>Returns whether an object is null
-    <h1>Syntax</h1>
-    &lt;Member&gt; IS &lt;Null&gt;<br/>
-    &lt;Level&gt; IS &lt;Null&gt;<br/>
-    &lt;Hierarchy&gt; IS &lt;Null&gt;<br/>
-    &lt;Dimension&gt; IS &lt;Null&gt;
-  </td>
-</tr>
-<tr>
-  <td valign=top>IN</td>
-  <td>Returns whether a member is contained in a set.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; IN &lt;Set&gt;</code><br/>
-  </td>
-</tr>
-<tr>
-  <td valign=top><code>IS</code></td>
   <td>Returns whether two objects are the same
     <h1>Syntax</h1>
     &lt;Member&gt; IS &lt;Member&gt;<br/>
@@ -817,6 +823,31 @@ FROM [Sales]
     &lt;Hierarchy&gt; IS &lt;Hierarchy&gt;<br/>
     &lt;Dimension&gt; IS &lt;Dimension&gt;<br/>
     &lt;Tuple&gt; IS &lt;Tuple&gt;
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IS EMPTY</code></td>
+  <td>Determines if an expression evaluates to the empty cell value.
+    <h1>Syntax</h1>
+    &lt;Member&gt; IS EMPTY<br/>
+    &lt;Tuple&gt; IS EMPTY
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IS NULL</code></td>
+  <td>Returns whether an object is null
+    <h1>Syntax</h1>
+    &lt;Member&gt; IS NULL<br/>
+    &lt;Level&gt; IS NULL<br/>
+    &lt;Hierarchy&gt; IS NULL<br/>
+    &lt;Dimension&gt; IS NULL
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>InStr</code></td>
+  <td>Returns the position of the first occurrence of one string within another. Implements very basic form of InStr
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; InStr(&lt;String&gt;, &lt;String&gt;)
   </td>
 </tr>
 <tr>
@@ -890,6 +921,20 @@ FROM [Sales]
   <td>Returns a member further along the specified member&#39;s dimension.
     <h1>Syntax</h1>
     &lt;Member&gt; &lt;Member&gt;.Lead(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Left</code></td>
+  <td>Returns a specified number of characters from the left side of a string
+    <h1>Syntax</h1>
+    &lt;String&gt; Left(&lt;String&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Len</code></td>
+  <td>Returns the number of characters in a string
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Len(&lt;String&gt;)
   </td>
 </tr>
 <tr>
@@ -1004,6 +1049,20 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Mid</code></td>
+  <td>Returns a specified number of characters from a string
+    <h1>Syntax</h1>
+    &lt;String&gt; Mid(&lt;String&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Mid</code></td>
+  <td>Returns all the characters starting from specified index from the string
+    <h1>Syntax</h1>
+    &lt;String&gt; Mid(&lt;String&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Min</code></td>
   <td>Returns the minimum value of a numeric expression evaluated over a set.
     <h1>Syntax</h1>
@@ -1091,7 +1150,9 @@ FROM [Sales]
   <td valign=top><code>OpeningPeriod</code></td>
   <td>Returns the first descendant of a member at a level.
     <h1>Syntax</h1>
-    <p>&lt;Member&gt; OpeningPeriod()<br/>&lt;Member&gt; OpeningPeriod(&lt;Level&gt;)<br/>&lt;Member&gt; OpeningPeriod(&lt;Level&gt;, &lt;Member&gt;)
+    &lt;Member&gt; OpeningPeriod()<br/>
+    &lt;Member&gt; OpeningPeriod(&lt;Level&gt;)<br/>
+    &lt;Member&gt; OpeningPeriod(&lt;Level&gt;, &lt;Member&gt;)
   </td>
 </tr>
 <tr>
@@ -1243,7 +1304,7 @@ FROM [Sales]
   <td valign=top><code>StrToSet</code></td>
   <td>Constructs a set from a string expression.
     <h1>Syntax</h1>
-    StrToSet(&lt;String Expression&gt;)
+    &lt;Set&gt; StrToSet(&lt;String Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -1327,6 +1388,13 @@ FROM [Sales]
   <td>Constructs a string from a tuple.
     <h1>Syntax</h1>
     &lt;String&gt; TupleToStr(&lt;Tuple&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>UCase</code></td>
+  <td>Returns a string that has been converted to uppercase
+    <h1>Syntax</h1>
+    &lt;String&gt; UCase(&lt;String&gt;)
   </td>
 </tr>
 <tr>

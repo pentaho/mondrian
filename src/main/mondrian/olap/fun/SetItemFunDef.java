@@ -20,7 +20,13 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * Definition of the <code>&lt;Set&gt;.Item(&lt;Index&gt;)</code> MDX function.
+ * Definition of the <code>&lt;Set&gt;.Item</code> MDX function.
+ *
+ * <p>Syntax:
+ * <blockquote><code>
+ * &lt;Set&gt;.Item(&lt;Index&gt;)<br/>
+ * &lt;Set&gt;.Item(&lt;String Expression&gt; [, ...])
+ * </code></blockquote>
  *
  * @author jhyde
  * @version $Id$

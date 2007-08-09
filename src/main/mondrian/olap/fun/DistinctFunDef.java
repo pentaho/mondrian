@@ -26,17 +26,16 @@ import java.util.ArrayList;
  *
  * <p>Syntax:
  * <blockquote><code>Distinct(&lt;Set&gt;)</code></blockquote>
-*
-* @author jhyde
-* @version $Id$
-* @since Jun 10, 2007
+ *
+ * @author jhyde
+ * @version $Id$
+ * @since Jun 10, 2007
 */
 class DistinctFunDef extends FunDefBase {
     public static final DistinctFunDef instance = new DistinctFunDef();
 
     private DistinctFunDef() {
         super("Distinct",
-            "Distinct(<Set>)",
             "Eliminates duplicate tuples from a set.",
             "fxx");
     }

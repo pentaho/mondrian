@@ -32,7 +32,7 @@ class SetToStrFunDef extends FunDefBase {
     public static final FunDefBase instance = new SetToStrFunDef();
 
     private SetToStrFunDef() {
-        super("SetToStr", "SetToStr(<Set>)", "Constructs a string from a set.", "fSx");
+        super("SetToStr", "Constructs a string from a set.", "fSx");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {

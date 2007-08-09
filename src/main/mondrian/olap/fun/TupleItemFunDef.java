@@ -21,8 +21,13 @@ import mondrian.calc.impl.AbstractMemberCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 /**
- * Definition of the <code>&lt;Tuple&gt;.Item(&lt;Index&gt;)</code> MDX function.
+ * Definition of the <code>&lt;Tuple&gt;.Item</code> MDX function.
  *
+ * <p>Syntax:
+ * <blockquote><code>
+ * &lt;Tuple&gt;.Item(&lt;Index&gt;)<br/>
+ * </code></blockquote>
+ * 
  * @author jhyde
  * @version $Id$
  * @since Mar 23, 2006
@@ -32,10 +37,9 @@ class TupleItemFunDef extends FunDefBase {
 
     private TupleItemFunDef() {
         super(
-                "Item",
-                "<Tuple>.Item(<Index>)",
-                "Returns a member from the tuple specified in <Tuple>. The member to be returned is specified by the zero-based position of the member in the set in <Index>.",
-                "mmtn");
+            "Item",
+            "Returns a member from the tuple specified in <Tuple>. The member to be returned is specified by the zero-based position of the member in the set in <Index>.",
+            "mmtn");
     }
 
     public Type getResultType(Validator validator, Exp[] args) {

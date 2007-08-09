@@ -29,6 +29,10 @@ import java.util.Iterator;
 /**
  * Definition of the <code>Filter</code> MDX function.
  *
+ * <p>Syntax:
+ * <blockquote><code>Filter(&lt;Set&gt;, &lt;Search Condition&gt;)</code></blockquote>
+ *
+ *
  * @author jhyde
  * @version $Id$
  * @since Mar 23, 2006
@@ -38,23 +42,22 @@ class FilterFunDef extends FunDefBase {
 
     private FilterFunDef() {
         super(
-                "Filter",
-                "Filter(<Set>, <Search Condition>)",
-                "Returns the set resulting from filtering a set based on a search condition.",
-                "fxxb");
+            "Filter",
+            "Returns the set resulting from filtering a set based on a search condition.",
+            "fxxb");
     }
 
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
         ResultStyle[] rs = compiler.getAcceptableResultStyles();
         // What is the desired return type?
-        for (int i = 0; i < rs.length; i++) {
-            switch (rs[i]) {
-            case ITERABLE :
-            case ANY :
+        for (ResultStyle r : rs) {
+            switch (r) {
+            case ITERABLE:
+            case ANY:
                 // Consumer wants ITERABLE or ANY
                 return compileCallIterable(call, compiler);
             case MUTABLE_LIST:
-            case LIST :
+            case LIST:
                 // Consumer wants MUTABLE_LIST or LIST
                 return compileCallList(call, compiler);
             }
@@ -178,12 +181,12 @@ class FilterFunDef extends FunDefBase {
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push();
-            List members = lcalc.evaluateList(evaluator);
+            List<Member> members = lcalc.evaluateList(evaluator);
 
             // Not mutable, must create new list
-            List result = new ArrayList();
+            List<Member> result = new ArrayList<Member>();
             for (int i = 0, count = members.size(); i < count; i++) {
-                Member member = (Member) members.get(i);
+                Member member = members.get(i);
                 evaluator2.setContext(member);
                 if (bcalc.evaluateBoolean(evaluator2)) {
                     result.add(member);
@@ -204,10 +207,9 @@ class FilterFunDef extends FunDefBase {
             final Evaluator evaluator2 = evaluator.push();
             // This does dynamics, just in time,
             // as needed filtering
-            final Iterable<Member> iter = (Iterable<Member>)
-                    icalc.evaluateIterable(evaluator);
+            final Iterable<Member> iter = icalc.evaluateIterable(evaluator);
 
-            Iterable result = new Iterable<Member>() {
+            return new Iterable<Member>() {
                 public Iterator<Member> iterator() {
                     return new Iterator<Member>() {
                         Iterator<Member> it = iter.iterator();
@@ -243,7 +245,6 @@ class FilterFunDef extends FunDefBase {
                     };
                 }
             };
-            return result;
         }
     }
 
@@ -283,12 +284,12 @@ class FilterFunDef extends FunDefBase {
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push();
-            List members = lcalc.evaluateList(evaluator);
+            List<Member[]> members = lcalc.evaluateList(evaluator);
 
             // Not mutable, must create new list
-            List result = new ArrayList();
+            List<Member[]> result = new ArrayList<Member[]>();
             for (int i = 0, count = members.size(); i < count; i++) {
-                Member[] member = (Member[]) members.get(i);
+                Member[] member = members.get(i);
                 evaluator2.setContext(member);
                 if (bcalc.evaluateBoolean(evaluator2)) {
                     result.add(member);
@@ -310,9 +311,8 @@ class FilterFunDef extends FunDefBase {
 
             // This does dynamics, just in time,
             // as needed filtering
-            final Iterable<Member[]> iter = (Iterable<Member[]>)
-                    icalc.evaluateIterable(evaluator);
-            Iterable result = new Iterable<Member[]>() {
+            final Iterable<Member[]> iter = icalc.evaluateIterable(evaluator);
+            return new Iterable<Member[]>() {
                 public Iterator<Member[]> iterator() {
                     return new Iterator<Member[]>() {
                         Iterator<Member[]> it = iter.iterator();
@@ -348,7 +348,6 @@ class FilterFunDef extends FunDefBase {
                     };
                 }
             };
-            return result;
         }
     }
 
@@ -463,12 +462,12 @@ class FilterFunDef extends FunDefBase {
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push();
-            List members = lcalc.evaluateList(evaluator);
+            List<Member> members = lcalc.evaluateList(evaluator);
 
             // Not mutable, must create new list
-            List result = new ArrayList();
+            List<Member> result = new ArrayList<Member>();
             for (int i = 0, count = members.size(); i < count; i++) {
-                Member member = (Member) members.get(i);
+                Member member = members.get(i);
                 evaluator2.setContext(member);
                 if (bcalc.evaluateBoolean(evaluator2)) {
                     result.add(member);
@@ -513,12 +512,12 @@ class FilterFunDef extends FunDefBase {
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push();
-            List members = lcalc.evaluateList(evaluator);
+            List<Member[]> members = lcalc.evaluateList(evaluator);
 
             // Not mutable, must create new list
-            List result = new ArrayList();
+            List<Member[]> result = new ArrayList<Member[]>();
             for (int i = 0, count = members.size(); i < count; i++) {
-                Member[] member = (Member[]) members.get(i);
+                Member[] member = members.get(i);
                 evaluator2.setContext(member);
                 if (bcalc.evaluateBoolean(evaluator2)) {
                     result.add(member);

@@ -30,8 +30,7 @@ public class LevelHierarchyFunDef extends FunDefBase {
     static final LevelHierarchyFunDef instance = new LevelHierarchyFunDef();
 
     private LevelHierarchyFunDef() {
-        super("Hierarchy", "<Level>.Hierarchy",
-                "Returns a level's hierarchy.", "phl");
+        super("Hierarchy", "Returns a level's hierarchy.", "phl");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {

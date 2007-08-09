@@ -18,9 +18,10 @@ import mondrian.mdx.ResolvedFunCall;
 import java.util.List;
 
 /**
- * Definition of the
- * <code>&lt;Member&gt;.CalculatedChild(&lt;String&gt;)</code> MDX
- * function.
+ * Definition of the <code>CalculatedChild</code> MDX function.
+ *
+ * <p>Syntax:
+ * <blockquote><code>&lt;Member&gt;CalculatedChild(&lt;String&gt;)</code></blockquote>
  *
  * @author bchow
  * @version $Id$
@@ -30,8 +31,9 @@ public class CalculatedChildFunDef extends FunDefBase {
     public static final CalculatedChildFunDef instance = new CalculatedChildFunDef();
 
     CalculatedChildFunDef() {
-        super("CalculatedChild", "<Member>.CalculatedChild(<String>)",
-                "Returns an existing calculated child member with name <String> from the specified <Member>.", "mmmS");
+        super("CalculatedChild",
+            "Returns an existing calculated child member with name <String> from the specified <Member>.",
+            "mmmS");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {

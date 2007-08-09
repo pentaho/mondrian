@@ -20,7 +20,11 @@ import mondrian.olap.Evaluator;
 import mondrian.olap.Dimension;
 
 /**
- * Definition of the <code>&lt;Dimension&gt;.CurrentMember</code> MDX builtin function.
+ * Definition of the <code>&lt;Dimension&gt;.CurrentMember</code> MDX builtin
+ * function.
+ *
+ * <p>Syntax:
+ * <blockquote><code>&lt;Dimension&gt;.CurrentMember</code></blockquote>
  *
  * @author jhyde
  * @version $Id$
@@ -31,7 +35,7 @@ public class DimensionCurrentMemberFunDef extends FunDefBase {
             new DimensionCurrentMemberFunDef();
 
     private DimensionCurrentMemberFunDef() {
-        super("CurrentMember", "<Dimension>.CurrentMember",
+        super("CurrentMember",
                 "Returns the current member along a dimension during an iteration.",
                 "pmd");
     }

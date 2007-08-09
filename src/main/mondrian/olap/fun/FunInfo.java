@@ -48,7 +48,12 @@ public class FunInfo implements Comparable<FunInfo> {
         this.name = funDef.getName();
         this.returnTypes = new int[] { funDef.getReturnCategory() };
         this.parameterTypes = new int[][] { funDef.getParameterCategories() };
-        this.sigs = makeSigs(syntax, name, returnTypes, parameterTypes);
+
+        // use explicit signature if it has one, otherwise generate a set
+        this.sigs = funDef instanceof FunDefBase
+            && ((FunDefBase) funDef).signature != null
+            ? new String[] {((FunDefBase) funDef).signature}
+            : makeSigs(syntax, name, returnTypes, parameterTypes);
         this.description = funDef.getDescription();
     }
 
@@ -83,8 +88,11 @@ public class FunInfo implements Comparable<FunInfo> {
     }
 
     private static String[] makeSigs(
-            Syntax syntax,
-            String name, int[] returnTypes, int[][] parameterTypes) {
+        Syntax syntax,
+        String name,
+        int[] returnTypes,
+        int[][] parameterTypes)
+    {
         if (parameterTypes == null) {
             return null;
         }

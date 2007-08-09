@@ -24,9 +24,13 @@ import java.util.*;
 /**
  * Definition of the <code>AddCalculatedMembers</code> MDX function.
  *
- * AddCalculatedMembers adds calculated members that are siblings
+ * <p>AddCalculatedMembers adds calculated members that are siblings
  * of the members in the set. The set is limited to one dimension.
  *
+ * <p>Syntax:
+ *
+ * <blockquote><pre>AddCalculatedMembers(&lt;Set&gt;)</pre></blockquote>
+
  * @author jhyde
  * @version $Id$
  * @since Mar 23, 2006
@@ -41,7 +45,6 @@ class AddCalculatedMembersFunDef extends FunDefBase {
     private AddCalculatedMembersFunDef() {
         super(
             "AddCalculatedMembers",
-            "AddCalculatedMembers(<Set>)",
             "Adds calculated members to a set.",
             FLAG);
     }

@@ -39,7 +39,7 @@ class StrToTupleFunDef extends FunDefBase {
 
     private StrToTupleFunDef(int[] parameterTypes) {
         super("StrToTuple",
-            "StrToTuple(<String Expression>)",
+            null,
             "Constructs a tuple from a string.",
             Syntax.Function, Category.Tuple, parameterTypes);
     }

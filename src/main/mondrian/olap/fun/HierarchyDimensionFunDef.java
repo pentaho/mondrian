@@ -30,9 +30,10 @@ public class HierarchyDimensionFunDef extends FunDefBase {
     static final HierarchyDimensionFunDef instance = new HierarchyDimensionFunDef();
 
     private HierarchyDimensionFunDef() {
-        super("Dimension", "<Hierarchy>.Dimension",
-                "Returns the dimension that contains a specified hierarchy.",
-                "pdh");
+        super(
+            "Dimension",
+            "Returns the dimension that contains a specified hierarchy.",
+            "pdh");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {

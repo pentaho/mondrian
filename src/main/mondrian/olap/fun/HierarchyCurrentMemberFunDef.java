@@ -28,9 +28,10 @@ public class HierarchyCurrentMemberFunDef extends FunDefBase {
             new HierarchyCurrentMemberFunDef();
 
     private HierarchyCurrentMemberFunDef() {
-        super("CurrentMember", "<Hierarchy>.CurrentMember",
-                "Returns the current member along a hierarchy during an iteration.",
-                "pmh");
+        super(
+            "CurrentMember",
+            "Returns the current member along a hierarchy during an iteration.",
+            "pmh");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {

@@ -81,6 +81,7 @@ import java.io.PrintWriter;
 public abstract class FunDefBase extends FunUtil implements FunDef {
     protected final int flags;
     private final String name;
+    final String signature;
     private final String description;
     protected final int returnCategory;
     protected final int[] parameterCategories;
@@ -101,14 +102,15 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
      *                       each parameter.
      */
     FunDefBase(
-            String name,
-            String signature,
-            String description,
-            Syntax syntax,
-            int returnCategory,
-            int[] parameterCategories) {
+        String name,
+        String signature,
+        String description,
+        Syntax syntax,
+        int returnCategory,
+        int[] parameterCategories)
+    {
         this.name = name;
-        Util.discard(signature);
+        this.signature = signature;
         this.description = description;
         this.flags = syntax.ordinal();
         this.returnCategory = returnCategory;
@@ -117,6 +119,40 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
 
     /**
      * Creates an operator.
+     *
+     * @param name        Name of the function, for example "Members".
+     * @param description Description of the function, for example
+     *                    "Returns the set of all members in a dimension."
+     * @param flags       Encoding of the syntactic type, return type, and parameter
+     *                    types of this operator. The "Members" operator has a syntactic
+     *                    type "pxd" which means "an operator with
+     *                    {@link Syntax#Property property} syntax (p) which returns a set
+     *                    (x) and takes a dimension (d) as its argument".
+     *                    See {@link FunUtil#decodeSyntacticType(String)},
+     *                    {@link FunUtil#decodeReturnCategory(String)},
+     *                    {@link FunUtil#decodeParameterCategories(String)}.
+     */
+    protected FunDefBase(
+        String name,
+        String description,
+        String flags)
+    {
+        this(
+            name,
+            null,
+            description,
+            decodeSyntacticType(flags),
+            decodeReturnCategory(flags),
+            decodeParameterCategories(flags));
+    }
+
+    /**
+     * Creates an operator with an explicit signature.
+     *
+     * <p>In most cases, the signature can be generated automatically, and
+     * you should use the constructor which creates an implicit signature,
+     * {@link #FunDefBase(String, String, String, String)}
+     * instead.
      *
      * @param name        Name of the function, for example "Members".
      * @param signature   Signature of the function, for example
@@ -132,16 +168,19 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
      *                    {@link FunUtil#decodeReturnCategory(String)},
      *                    {@link FunUtil#decodeParameterCategories(String)}.
      */
-    protected FunDefBase(String name,
-            String signature,
-            String description,
-            String flags) {
-        this(name,
-                signature,
-                description,
-                decodeSyntacticType(flags),
-                decodeReturnCategory(flags),
-                decodeParameterCategories(flags));
+    protected FunDefBase(
+        String name,
+        String signature,
+        String description,
+        String flags)
+    {
+        this(
+            name,
+            signature,
+            description,
+            decodeSyntacticType(flags),
+            decodeReturnCategory(flags),
+            decodeParameterCategories(flags));
     }
 
     /**

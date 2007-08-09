@@ -13,7 +13,6 @@ import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.MemberCalc;
 import mondrian.calc.TupleCalc;
-import mondrian.calc.impl.AbstractCalc;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.type.TypeUtil;
@@ -29,6 +28,11 @@ import java.util.List;
  * <p>Returns a valid measure in a virtual cube by forcing inapplicable
  * dimensions to their top level.
  *
+ * <p>Syntax:
+ * <blockquote><code>
+ * ValidMeasure(&lt;Tuple&gt;)
+ * </code></blockquote>
+ *
  * @author kwalker, mpflug
  * @version $Id$
  */
@@ -37,10 +41,10 @@ public class ValidMeasureFunDef extends FunDefBase
     static final ValidMeasureFunDef instance = new ValidMeasureFunDef();
 
     private ValidMeasureFunDef() {
-        super("ValidMeasure",
-                "ValidMeasure(<Tuple>)",
-                "Returns a valid measure in a virtual cube by forcing inapplicable dimensions to their top level.",
-                "fnt");
+        super(
+            "ValidMeasure",
+            "Returns a valid measure in a virtual cube by forcing inapplicable dimensions to their top level.",
+            "fnt");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {

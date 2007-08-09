@@ -30,8 +30,7 @@ public class MemberHierarchyFunDef extends FunDefBase {
     static final MemberHierarchyFunDef instance = new MemberHierarchyFunDef();
 
     private MemberHierarchyFunDef() {
-        super("Hierarchy", "<Member>.Hierarchy",
-                "Returns a member's hierarchy.", "phm");
+        super("Hierarchy", "Returns a member's hierarchy.", "phm");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {

@@ -29,7 +29,7 @@ public class MemberLevelFunDef extends FunDefBase {
     static final MemberLevelFunDef instance = new MemberLevelFunDef();
 
     private MemberLevelFunDef() {
-        super("Level", "<Member>.Level", "Returns a member's level.", "plm");
+        super("Level", "Returns a member's level.", "plm");
     }
 
     public Type getResultType(Validator validator, Exp[] args) {
