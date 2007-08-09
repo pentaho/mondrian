@@ -4,11 +4,9 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2006 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 10 August, 2001
 */
 package mondrian.rolap;
 
@@ -23,6 +21,9 @@ import org.apache.log4j.Logger;
 
 /**
  * <code>RolapProperty</code> is the definition of a member property.
+ *
+ * @version $Id$
+ * @author jhyde
  */
 class RolapProperty extends Property {
 
@@ -40,19 +41,29 @@ class RolapProperty extends Property {
 
     /**
      * Creates a RolapProperty.
+     *
+     * @param name Name of property
+     * @param type Datatype
+     * @param exp Expression for property's value; often a literal
+     * @param formatterDef Name of formatter class (must implement
+     *                     {@link PropertyFormatter}), or null
+     * @param caption Caption
+     * @param internal Whether property is internal
      */
     RolapProperty(
-            String name,
-            Datatype type,
-            MondrianDef.Expression exp,
-            String formatterDef,
-            String caption) {
-        super(name, type, -1, false, false, false, null);
+        String name,
+        Datatype type,
+        MondrianDef.Expression exp,
+        String formatterDef,
+        String caption,
+        boolean internal)
+    {
+        super(name, type, -1, internal, false, false, null);
         this.exp = exp;
         this.caption = caption;
         this.formatter = makePropertyFormatter(formatterDef);
-
     }
+
     private PropertyFormatter makePropertyFormatter(String formatterDef) {
         if (!Util.isEmpty(formatterDef)) {
             // there is a special property formatter class
