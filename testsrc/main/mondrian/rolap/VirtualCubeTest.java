@@ -814,6 +814,13 @@ public class VirtualCubeTest extends BatchTestCase {
      */
     public void testNativeSetCaching() {
 
+        if (!MondrianProperties.instance().EnableNativeCrossJoin.get() &&
+            !MondrianProperties.instance().EnableNativeNonEmpty.get()) {
+            // Only run the tests if either native CrossJoin or native NonEmpty
+            // is enabled.
+            return;
+        }
+        
         String query1 =
             "With " +
             "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([Product].[Product Family].Members, [Store].[Store Country].Members)' " +
@@ -869,8 +876,9 @@ public class VirtualCubeTest extends BatchTestCase {
                 "order by 1 ASC, 2 ASC";
         } else {
             // NECJ is truend off so native NECJ SQL will not be generated;
-            // however, each NECJ input will still be joined with the correct
-            // fact table since the NECJ set should not find match in the cache.
+            // however, because the NECJ set should not find match in the cache,
+            // each NECJ input will still be joined with the correct
+            // fact table if NonEmpty condition is natively evaluated.
             necjSql1 =
                 "select " +
                 "\"store\".\"store_country\" " +
