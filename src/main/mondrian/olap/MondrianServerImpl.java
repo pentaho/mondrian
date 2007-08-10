@@ -183,7 +183,8 @@ class MondrianServerImpl extends MondrianServer {
                     vendor = matcher.group(3);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                // ignore exception - it's OK if file is not found
+                Util.discard(e);
             }
         }
 
