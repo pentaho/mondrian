@@ -39,8 +39,9 @@ public class ExplicitRules {
      * consideration as a candidate aggregate table.
      */
     public static boolean excludeTable(
-            final String tableName,
-            final List<Group> aggGroups) {
+        final String tableName,
+        final List<Group> aggGroups)
+    {
         for (Group group : aggGroups) {
             if (group.excludeTable(tableName)) {
                 return true;
@@ -781,13 +782,14 @@ RME TODO
                         }
                         RolapStar star = cube.getStar();
                         rolapMeasure =
-                            star.getFactTable().lookupMeasureByName(names[1]);
+                            star.getFactTable().lookupMeasureByName(
+                                cube.getName(), names[1]);
                         if (rolapMeasure == null) {
                             msgRecorder.reportError(
-                                    mres.BadMeasureName.str(
-                                       msgRecorder.getContext(),
-                                       names[1],
-                                       cube.getName()));
+                                mres.BadMeasureName.str(
+                                    msgRecorder.getContext(),
+                                    names[1],
+                                    cube.getName()));
                         }
                         symbolicName = names[1];
                     }
@@ -951,18 +953,20 @@ RME TODO
         }
 
         /**
-         * Checks that ALL of the columns in the dbTable have a mapping in in the
+         * Checks that ALL of the columns in the dbTable have a mapping in the
          * tableDef.
          *
          * <p>It is an error if there is a column that does not have a mapping.
          */
         public boolean columnsOK(
-                final RolapStar star,
-                final JdbcSchema.Table dbFactTable,
-                final JdbcSchema.Table dbTable,
-                final MessageRecorder msgRecorder) {
-            Recognizer cb = new ExplicitRecognizer(
-                    this, star, dbFactTable, dbTable, msgRecorder);
+            final RolapStar star,
+            final JdbcSchema.Table dbFactTable,
+            final JdbcSchema.Table dbTable,
+            final MessageRecorder msgRecorder)
+        {
+            Recognizer cb =
+                new ExplicitRecognizer(
+                    this, star, getCube(), dbFactTable, dbTable, msgRecorder);
             return cb.check();
         }
 
@@ -1007,7 +1011,7 @@ RME TODO
         }
 
         /**
-         * Add a Measure.
+         * Adds a Measure.
          */
         protected void add(final Measure measure) {
             if (this.measures == Collections.EMPTY_LIST) {
@@ -1191,15 +1195,17 @@ RME TODO
 
     static class NameTableDef extends ExplicitRules.TableDef {
         /**
-         * Make a NameTableDef from the calalog schema.
+         * Makes a NameTableDef from the catalog schema.
          */
         static ExplicitRules.NameTableDef make(
-                final MondrianDef.AggName aggName,
-                final ExplicitRules.Group group) {
+            final MondrianDef.AggName aggName,
+            final ExplicitRules.Group group)
+        {
             ExplicitRules.NameTableDef name =
-                new ExplicitRules.NameTableDef(aggName.getNameAttribute(),
-                                     aggName.isIgnoreCase(),
-                                     group);
+                new ExplicitRules.NameTableDef(
+                    aggName.getNameAttribute(),
+                    aggName.isIgnoreCase(),
+                    group);
 
             ExplicitRules.TableDef.add(name, aggName);
 

@@ -96,7 +96,7 @@ public class RolapStar {
     	cubeToRelationNamesToStarTableMapMap;
 
     /** Holds all global aggregations of this star. */
-    private Map<BitKey,Aggregation> aggregations;
+    private final Map<BitKey,Aggregation> aggregations;
 
     /** Holds all thread-local aggregations of this star. */
     private final ThreadLocal<Map<BitKey, Aggregation>>
@@ -157,9 +157,10 @@ public class RolapStar {
      * {@link RolapStar}.
      */
     RolapStar(
-            final RolapSchema schema,
-            final DataSource dataSource,
-            final MondrianDef.Relation fact) {
+        final RolapSchema schema,
+        final DataSource dataSource,
+        final MondrianDef.Relation fact)
+    {
         this.cacheAggregations = true;
         this.schema = schema;
         this.dataSource = dataSource;
@@ -314,12 +315,14 @@ public class RolapStar {
     }
 
     /**
-     * Get the <String, Table> map associated with a cube.
-     * @param cube
-     * @return the <String, RolapStar.Table> map
+     * Gets the (String, Table) map associated with a cube.
+     *
+     * @param cube Cube
+     * @return the (String, RolapStar.Table) map
      */
     Map<String, RolapStar.Table> getRelationNamesToStarTableMap(
-    		RolapCube cube) {
+        RolapCube cube)
+    {
         Map<String, RolapStar.Table> relationNamesToStarTableMap =
             this.cubeToRelationNamesToStarTableMapMap.get(cube);
         if (relationNamesToStarTableMap == null) {
@@ -1167,15 +1170,19 @@ public class RolapStar {
      * {@link #aggregator} defines how it is to be rolled up.
      */
     public static class Measure extends Column {
+        private final String cubeName;
         private final RolapAggregator aggregator;
 
         private Measure(
-                String name,
-                RolapAggregator aggregator,
-                Table table,
-                MondrianDef.Expression expression,
-                SqlQuery.Datatype datatype) {
+            String name,
+            String cubeName,
+            RolapAggregator aggregator,
+            Table table,
+            MondrianDef.Expression expression,
+            SqlQuery.Datatype datatype)
+        {
             super(name, table, expression, datatype);
+            this.cubeName = cubeName;
             this.aggregator = aggregator;
         }
 
@@ -1183,16 +1190,22 @@ public class RolapStar {
             return aggregator;
         }
 
-        public boolean equals(Object obj) {
-            if (! super.equals(obj)) {
+        public boolean equals(Object o) {
+            if (! (o instanceof RolapStar.Measure)) {
                 return false;
             }
-            if (! (obj instanceof RolapStar.Measure)) {
+            RolapStar.Measure that = (RolapStar.Measure) o;
+            if (!super.equals(that)) {
                 return false;
             }
-            RolapStar.Measure other = (RolapStar.Measure) obj;
+            // Measure names are only unique within their cube - and remember
+            // that a given RolapStar can support multiple cubes if they have
+            // the same fact table.
+            if (!cubeName.equals(that.cubeName)) {
+                return false;
+            }
             // Note: both measure have to have the same aggregator
-            return (other.aggregator == this.aggregator);
+            return (that.aggregator == this.aggregator);
         }
 
         public int hashCode() {
@@ -1212,6 +1225,10 @@ public class RolapStar {
             pw.print(getBitPosition());
             pw.print("): ");
             pw.print(aggregator.getExpression(generateExprString(sqlQuery)));
+        }
+
+        public String getCubeName() {
+            return cubeName;
         }
     }
 
@@ -1304,8 +1321,7 @@ public class RolapStar {
          */
         public Column[] lookupColumns(String columnName) {
             List<Column> l = new ArrayList<Column>();
-            for (Iterator<Column> it = getColumns().iterator(); it.hasNext(); ) {
-                Column column = it.next();
+            for (Column column : getColumns()) {
                 if (column.getExpression() instanceof MondrianDef.Column) {
                     MondrianDef.Column columnExpr =
                         (MondrianDef.Column) column.getExpression();
@@ -1314,12 +1330,11 @@ public class RolapStar {
                     }
                 }
             }
-            return (Column[]) l.toArray(new Column[0]);
+            return l.toArray(new Column[l.size()]);
         }
 
         public Column lookupColumn(String columnName) {
-            for (Iterator<Column> it = getColumns().iterator(); it.hasNext(); ) {
-                Column column = it.next();
+            for (Column column : getColumns()) {
                 if (column.getExpression() instanceof MondrianDef.Column) {
                     MondrianDef.Column columnExpr =
                         (MondrianDef.Column) column.getExpression();
@@ -1338,9 +1353,8 @@ public class RolapStar {
          * or null.
          */
         public Column lookupColumnByExpression(MondrianDef.Expression xmlExpr) {
-            for (Iterator<Column> it = getColumns().iterator(); it.hasNext(); ) {
-                Column column = it.next();
-                if (column instanceof RolapStar.Measure) {
+            for (Column column : getColumns()) {
+                if (column instanceof Measure) {
                     continue;
                 }
                 if (column.getExpression().equals(xmlExpr)) {
@@ -1351,25 +1365,19 @@ public class RolapStar {
         }
 
         public boolean containsColumn(Column column) {
-            for (Iterator<Column> it = getColumns().iterator(); it.hasNext(); ) {
-                Column other = it.next();
-                if (column.equals(other)) {
-                    return true;
-                }
-            }
-            return false;
+            return getColumns().contains(column);
         }
 
         /**
          * Look up a {@link Measure} by its name.
          * Returns null if not found.
          */
-        public Measure lookupMeasureByName(String name) {
-            for (Iterator<Column> it = getColumns().iterator(); it.hasNext(); ) {
-                Column column = it.next();
+        public Measure lookupMeasureByName(String cubeName, String name) {
+            for (Column column : getColumns()) {
                 if (column instanceof Measure) {
                     Measure measure = (Measure) column;
-                    if (measure.getName().equals(name)) {
+                    if (measure.getName().equals(name) &&
+                        measure.getCubeName().equals(cubeName)) {
                         return measure;
                     }
                 }
@@ -1417,9 +1425,13 @@ public class RolapStar {
                 return null;
             }
         }
+
         synchronized void makeMeasure(RolapBaseCubeMeasure measure) {
+            assert lookupMeasureByName(
+                measure.getCube().getName(), measure.getName()) == null;
             RolapStar.Measure starMeasure = new RolapStar.Measure(
                 measure.getName(),
+                measure.getCube().getName(),
                 measure.getAggregator(),
                 this,
                 measure.getMondrianDefExpression(),
@@ -1440,9 +1452,9 @@ public class RolapStar {
          * Updates the RolapLevel to RolapStar.Column mapping associated with
          * this cube.
          *
-         * @param cube
-         * @param level
-         * @param parentColumn
+         * @param cube Cube
+         * @param level Level
+         * @param parentColumn Parent column
          */
         synchronized Column makeColumns(
                 RolapCube cube,
@@ -1559,7 +1571,8 @@ public class RolapStar {
         public void registerTableAlias(
             RolapCube cube,
             MondrianDef.Relation relation,
-            RolapStar.Table starTable) {
+            RolapStar.Table starTable)
+        {
             Map<String, RolapStar.Table> map =
                 star.getRelationNamesToStarTableMap(cube);
             String relationNames =
@@ -1639,12 +1652,13 @@ public class RolapStar {
         }
 
         /**
-         * Returns a child relation which maps onto a given relation, or null if
-         * there is none.
+         * Returns a child relation which maps onto a given relation, or null
+         * if there is none.
          */
         public Table findChild(
             MondrianDef.Relation relation,
-            Condition joinCondition) {
+            Condition joinCondition)
+        {
             for (Table child : getChildren()) {
                 if (child.relation.equals(relation)) {
                     Condition condition = joinCondition;
@@ -1748,7 +1762,8 @@ public class RolapStar {
          * while characterizing the fact table columns.
          */
         public RolapStar.Table findTableWithLeftJoinCondition(
-                final String columnName) {
+            final String columnName)
+        {
             for (Table child : getChildren()) {
                 Condition condition = child.joinCondition;
                 if (condition != null) {
@@ -1771,7 +1786,8 @@ public class RolapStar {
          * the child table with the matching left join condition.
          */
         public RolapStar.Table findTableWithLeftCondition(
-                final MondrianDef.Expression left) {
+            final MondrianDef.Expression left)
+        {
             for (Table child : getChildren()) {
                 Condition condition = child.joinCondition;
                 if (condition != null) {
@@ -1794,6 +1810,7 @@ public class RolapStar {
         public boolean isFunky() {
             return (relation == null);
         }
+
         public boolean equals(Object obj) {
             if (!(obj instanceof Table)) {
                 return false;
@@ -1835,8 +1852,7 @@ public class RolapStar {
             pw.println("Columns:");
             String subsubprefix = subprefix + "  ";
 
-            for (Iterator<Column> it = getColumns().iterator(); it.hasNext(); ) {
-                Column column = it.next();
+            for (Column column : getColumns()) {
                 column.print(pw, subsubprefix);
                 pw.println();
             }

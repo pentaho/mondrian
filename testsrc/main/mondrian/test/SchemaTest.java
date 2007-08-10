@@ -1063,6 +1063,50 @@ public class SchemaTest extends FoodMartTestCase {
             fold("WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_l_03_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'time_id' with unknown usage.\n"),
             sw.toString());
     }
+
+    /**
+     * Bug 1578545, "ClassCastException in AggQuerySpec" occurs when two cubes
+     * have the same fact table, distinct aggregate tables, and measures with
+     * the same name.
+     *
+     * <p>This test case attempts to reproduce this issue by creating that
+     * environment, but it found a different issue: a measure came back with a
+     * cell value which was from a different measure. The root cause is
+     * probably the same: when measures are registered in a star, they should
+     * be qualified by cube name.
+     */
+    public void testBug1578545() {
+        final TestContext testContext =
+            TestContext.create(
+                null,
+                "<Cube name=\"Sales2\" defaultMeasure=\"Unit Sales\">"
+                    + "  <Table name=\"sales_fact_1997\">\n"
+                    + "  </Table>\n"
+                    + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+                    + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
+                    + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+                    + "      formatString=\"Standard\"/>\n"
+                    + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+                    + "      formatString=\"#,###.00\"/>\n"
+                    + "</Cube>",
+                null, null, null);
+        
+        // With bug, and with aggregates enabled, query against Sales returns
+        // 565,238, which is actually the total for [Store Sales]. I think the
+        // aggregate tables are getting crossed.
+        final String expected =
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Row #0: 266,773\n");
+        testContext.assertQueryReturns(
+            "select {[Measures]} on 0 from [Sales2]",
+            expected);
+        testContext.assertQueryReturns(
+            "select {[Measures]} on 0 from [Sales]",
+            expected);
+    }
 }
 
 // End SchemaTest.java

@@ -26,15 +26,19 @@ import java.util.Iterator;
  */
 class ExplicitRecognizer extends Recognizer {
     private ExplicitRules.TableDef tableDef;
+    private RolapCube cube;
 
     ExplicitRecognizer(
-            final ExplicitRules.TableDef tableDef,
-            final RolapStar star,
-            final JdbcSchema.Table dbFactTable,
-            final JdbcSchema.Table aggTable,
-            final MessageRecorder msgRecorder) {
+        final ExplicitRules.TableDef tableDef,
+        final RolapStar star,
+        RolapCube cube,
+        final JdbcSchema.Table dbFactTable,
+        final JdbcSchema.Table aggTable,
+        final MessageRecorder msgRecorder)
+    {
         super(star, dbFactTable, aggTable, msgRecorder);
         this.tableDef = tableDef;
+        this.cube = cube;
     }
 
     /**
@@ -103,7 +107,8 @@ class ExplicitRecognizer extends Recognizer {
                         String nameLast = parts[parts.length - 1];
 
                         RolapStar.Measure m =
-                            star.getFactTable().lookupMeasureByName(nameLast);
+                            star.getFactTable().lookupMeasureByName(
+                                cube.getName(), nameLast);
                         RolapAggregator agg = null;
                         if (m != null) {
                             agg = m.getAggregator();
