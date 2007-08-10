@@ -11,7 +11,7 @@
 package mondrian.util;
 
 import mondrian.test.*;
-import mondrian.calc.ExpCompiler.ResultStyle;
+import mondrian.calc.ResultStyle;
 import mondrian.olap.Query;
 import mondrian.olap.Connection;
 import mondrian.olap.MondrianProperties;
@@ -19,10 +19,8 @@ import mondrian.olap.Result;
 import mondrian.olap.Util;
 import mondrian.olap.MemoryLimitExceededException;
 
-import junit.framework.TestCase;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Iterator;
 
 /**
  * Test case for {@link ObjectPool}.

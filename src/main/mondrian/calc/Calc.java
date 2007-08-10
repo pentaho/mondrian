@@ -135,7 +135,7 @@ public interface Calc {
      *
      * @see ExpCompiler#compileList(mondrian.olap.Exp, boolean)
      */
-    ExpCompiler.ResultStyle getResultStyle();
+    ResultStyle getResultStyle();
 }
 
 // End Calc.java

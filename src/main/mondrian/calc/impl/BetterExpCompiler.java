@@ -27,8 +27,12 @@ public class BetterExpCompiler extends AbstractExpCompiler {
     public BetterExpCompiler(Evaluator evaluator, Validator validator) {
         super(evaluator, validator);
     }
-    public BetterExpCompiler(Evaluator evaluator, Validator validator,
-            ResultStyle[] resultStyles) {
+
+    public BetterExpCompiler(
+        Evaluator evaluator,
+        Validator validator,
+        List<ResultStyle> resultStyles)
+    {
         super(evaluator, validator, resultStyles);
     }
 

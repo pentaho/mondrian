@@ -11,8 +11,12 @@ package mondrian.calc;
 
 import org.eigenbase.util.property.StringProperty;
 import mondrian.olap.*;
+import mondrian.olap.type.Type;
 import mondrian.util.ObjectFactory;
 import mondrian.util.CreationException;
+import mondrian.calc.impl.BetterExpCompiler;
+
+import java.util.List;
 
 /**
  * Mediates the compilation of an expression ({@link mondrian.olap.Exp})
@@ -23,6 +27,7 @@ import mondrian.util.CreationException;
  * @since Sep 28, 2005
  */
 public interface ExpCompiler {
+
     /**
      * Returns the evaluator to be used for evaluating expressions during the
      * compilation process.
@@ -47,12 +52,27 @@ public interface ExpCompiler {
     /**
      * Compiles an expression to a given result type.
      *
+     * <p>If <code>resultType</code> is not null, casts the expression to that
+     * type. Throws an exception if that conversion is not allowed by the
+     * type system.
+     *
+     * <p>The <code>preferredResultStyles</code> parameter specifies a list
+     * of desired result styles. It must not be null, but may be empty.
+     *
      * @param exp Expression
-     * @param preferredResultTypes List of result types, in descending order
-     *   of preference. Never null.
+     *
+     * @param resultType Desired result type, or null to use expression's
+     *                   current type
+     *
+     * @param preferredResultStyles List of result types, in descending order
+     *                   of preference. Never null.
+     *
      * @return Compiled expression, or null if none can satisfy
      */
-    Calc compile(Exp exp, ResultStyle[] preferredResultTypes);
+    Calc compileAs(
+        Exp exp,
+        Type resultType,
+        List<ResultStyle> preferredResultStyles);
 
     /**
      * Compiles an expression which yields a {@link Member} result.
@@ -165,99 +185,10 @@ public interface ExpCompiler {
     ParameterSlot registerParameter(Parameter parameter);
 
     /**
-     * Returns a list of the {@link mondrian.calc.ExpCompiler.ResultStyle}s
+     * Returns a list of the {@link ResultStyle}s
      * acceptable to the caller.
      */
-    ResultStyle[] getAcceptableResultStyles();
-
-    /**
-     * Enumeration of ways that a compiled expression can return its result to
-     * its caller.
-     *
-     * <p>In future, we may have an "ITERABLE" result style, which allows us
-     * to handle large lists without holding them in memory.
-     */
-    enum ResultStyle {
-        /**
-         * Indicates that caller will accept any applicable style.
-         */
-        ANY,
-
-        /**
-         * Indicates that the expression returns its result as a list which may
-         * safely be modified by the caller.
-         */
-        MUTABLE_LIST,
-
-        /**
-         * Indicates that the expression returns its result as a list which must
-         * not be modified by the caller.
-         */
-        LIST,
-
-        /**
-         * Indicates that the expression returns its result as an Iterable
-         * which must not be modified by the caller.
-         */
-        ITERABLE,
-
-        /**
-         * Indicates that the expression results its result as an immutable
-         * value. This is typical for expressions which return string and
-         * numeric values.
-         */
-        VALUE
-    }
-
-    ResultStyle[] ANY_RESULT_STYLE_ARRAY =
-        new ResultStyle[] {
-            ResultStyle.ANY
-        };
-    ResultStyle[] ITERABLE_RESULT_STYLE_ARRAY =
-        new ResultStyle[] {
-            ResultStyle.ITERABLE
-        };
-    ResultStyle[] MUTABLE_LIST_RESULT_STYLE_ARRAY =
-        new ResultStyle[] {
-            ResultStyle.MUTABLE_LIST
-        };
-    ResultStyle[] LIST_RESULT_STYLE_ARRAY =
-        new ResultStyle[] {
-            ResultStyle.LIST
-        };
-
-    ResultStyle[] ITERABLE_ANY_RESULT_STYLE_ARRAY =
-        new ResultStyle[] {
-            ResultStyle.ITERABLE,
-            ResultStyle.ANY
-        };
-    ResultStyle[] ITERABLE_LIST_RESULT_STYLE_ARRAY =
-        new ResultStyle[] {
-            ResultStyle.ITERABLE,
-            ResultStyle.LIST
-        };
-    ResultStyle[] ITERABLE_MUTABLE_LIST_RESULT_STYLE_ARRAY =
-        new ResultStyle[] {
-            ResultStyle.ITERABLE,
-            ResultStyle.MUTABLE_LIST
-        };
-    ResultStyle[] ITERABLE_LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY =
-        new ResultStyle[] {
-            ResultStyle.ITERABLE,
-            ResultStyle.LIST,
-            ResultStyle.MUTABLE_LIST
-        };
-    ResultStyle[] LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY =
-        new ResultStyle[] {
-            ResultStyle.LIST,
-            ResultStyle.MUTABLE_LIST
-        };
-    ResultStyle[] MUTABLE_LIST_LIST_RESULT_STYLE_ARRAY =
-        new ResultStyle[] {
-            ResultStyle.MUTABLE_LIST,
-            ResultStyle.LIST
-        };
-
+    List<ResultStyle> getAcceptableResultStyles();
 
     /**
      * The <code>ExpCompiler.Factory</code> is used to access
@@ -267,7 +198,7 @@ public interface ExpCompiler {
      * <code>System</code> property with the <code>ExpCompiler</code>
      * class name.
      */
-    public class Factory extends ObjectFactory<ExpCompiler> {
+    public static final class Factory extends ObjectFactory<ExpCompiler> {
         private static final Factory factory;
         private static final Class[] CLASS_ARRAY;
         static {
@@ -288,10 +219,11 @@ public interface ExpCompiler {
          * @return the new <code>ExpCompiler</code> compiler
          * @throws CreationException if the compiler can not be created
          */
-        public static ExpCompiler getExpCompiler(final Evaluator evaluator,
+        public static ExpCompiler getExpCompiler(
+            final Evaluator evaluator,
             final Validator validator)
                 throws CreationException {
-            return getExpCompiler(evaluator, validator, ANY_RESULT_STYLE_ARRAY);
+            return getExpCompiler(evaluator, validator, ResultStyle.ANY_LIST);
         }
 
         /**
@@ -304,16 +236,19 @@ public interface ExpCompiler {
          * @return the new <code>ExpCompiler</code> compiler
          * @throws CreationException if the compiler can not be created
          */
-        public static ExpCompiler getExpCompiler(final Evaluator evaluator,
+        public static ExpCompiler getExpCompiler(
+            final Evaluator evaluator,
             final Validator validator,
-            final ResultStyle[] resultStyles)
-                throws CreationException {
-            return factory.getObject(CLASS_ARRAY,
-                            new Object[] {
-                                evaluator,
-                                validator,
-                                resultStyles
-                            });
+            final List<ResultStyle> resultStyles)
+                throws CreationException
+        {
+            return factory.getObject(
+                CLASS_ARRAY,
+                new Object[] {
+                    evaluator,
+                    validator,
+                    resultStyles
+                });
         }
 
         /**
@@ -393,20 +328,23 @@ public interface ExpCompiler {
          * @throws CreationException if the <code>ExpCompiler</code> can not be
          * created.
          */
-        protected ExpCompiler getDefault(final Class[] parameterTypes,
+        protected ExpCompiler getDefault(
+            final Class[] parameterTypes,
             final Object[] parameterValues)
-                throws CreationException {
+            throws CreationException
+        {
             // Strong typed above so don't need to check here
             Evaluator evaluator = (Evaluator) parameterValues[0];
             Validator validator = (Validator) parameterValues[1];
-            ResultStyle[] resultStyles = (ResultStyle[]) parameterValues[2];
+            List<ResultStyle> resultStyles =
+                (List<ResultStyle>) parameterValues[2];
 
             // Here there is bleed-through from the "calc.impl" implementation
             // directory into the "calc" interface definition directory.
             // This can be avoided if we were to use reflection to
             // create this the default ExpCompiler implementation.
-            return new mondrian.calc.impl.BetterExpCompiler(
-                            evaluator, validator, resultStyles);
+            return new BetterExpCompiler(
+                evaluator, validator, resultStyles);
         }
 
         /**

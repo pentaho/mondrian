@@ -14,9 +14,7 @@ import mondrian.olap.Exp;
 import mondrian.olap.type.SetType;
 import mondrian.calc.IterCalc;
 import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-
-import java.util.List;
+import mondrian.calc.ResultStyle;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.IterCalc} interface.
@@ -58,8 +56,8 @@ public abstract class AbstractIterCalc
         return calcs;
     }
 
-    public ExpCompiler.ResultStyle getResultStyle() {
-        return ExpCompiler.ResultStyle.ITERABLE;
+    public ResultStyle getResultStyle() {
+        return ResultStyle.ITERABLE;
     }
 }
 

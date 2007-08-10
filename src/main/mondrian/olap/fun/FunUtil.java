@@ -16,7 +16,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler.ResultStyle;
+import mondrian.calc.ResultStyle;
 import mondrian.calc.DoubleCalc;
 import mondrian.mdx.*;
 
@@ -85,13 +85,13 @@ public class FunUtil extends Util {
         return new MondrianEvaluationException(throwable.getMessage());
     }
 
-    public static final boolean isMemberType(Calc calc) {
+    public static boolean isMemberType(Calc calc) {
         Type type = calc.getType();
         return (type instanceof SetType) &&
           (((SetType) type).getElementType() instanceof MemberType);
     }
 
-    public static final void checkIterListResultStyles(Calc calc) {
+    public static void checkIterListResultStyles(Calc calc) {
         switch (calc.getResultStyle()) {
         case ITERABLE:
         case LIST:
@@ -99,30 +99,22 @@ public class FunUtil extends Util {
             break;
         default:
             throw ResultStyleException.generateBadType(
-                new ResultStyle[] {
-                    ResultStyle.ITERABLE,
-                    ResultStyle.LIST,
-                    ResultStyle.MUTABLE_LIST
-                },
+                ResultStyle.ITERABLE_LIST_MUTABLELIST,
                 calc.getResultStyle());
         }
     }
 
-    public static final void checkListResultStyles(Calc calc) {
+    public static void checkListResultStyles(Calc calc) {
         switch (calc.getResultStyle()) {
         case LIST:
         case MUTABLE_LIST:
             break;
         default:
             throw ResultStyleException.generateBadType(
-                new ResultStyle[] {
-                    ResultStyle.LIST,
-                    ResultStyle.MUTABLE_LIST
-                },
+                ResultStyle.LIST_MUTABLELIST,
                 calc.getResultStyle());
         }
     }
-
 
     /**
      * Returns an argument whose value is a literal.

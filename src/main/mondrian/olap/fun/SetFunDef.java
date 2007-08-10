@@ -16,7 +16,6 @@ import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.impl.AbstractIterCalc;
 import mondrian.calc.impl.AbstractVoidCalc;
-import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
@@ -73,8 +72,9 @@ public class SetFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final Exp[] args = call.getArgs();
-        return new ListSetCalc(call, args, compiler,
-                    ExpCompiler.LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY);
+        return new ListSetCalc(
+            call, args, compiler,
+            ResultStyle.LIST_MUTABLELIST);
     }
 
     /**
@@ -93,8 +93,10 @@ public class SetFunDef extends FunDefBase {
         private List result = new ArrayList();
         private final VoidCalc[] voidCalcs;
 
-        public ListSetCalc(Exp exp, Exp[] args, ExpCompiler compiler,
-                ResultStyle[] resultStyles) {
+        public ListSetCalc(
+            Exp exp, Exp[] args, ExpCompiler compiler,
+            List<ResultStyle> resultStyles)
+        {
             super(exp, null);
             voidCalcs = compileSelf(args, compiler, resultStyles);
         }
@@ -105,7 +107,7 @@ public class SetFunDef extends FunDefBase {
 
         private VoidCalc[] compileSelf(Exp[] args,
                 ExpCompiler compiler,
-                ResultStyle[] resultStyles) {
+                List<ResultStyle> resultStyles) {
             VoidCalc[] voidCalcs = new VoidCalc[args.length];
             for (int i = 0; i < args.length; i++) {
                 voidCalcs[i] = createCalc(args[i], compiler, resultStyles);
@@ -113,9 +115,11 @@ public class SetFunDef extends FunDefBase {
             return voidCalcs;
         }
 
-        private VoidCalc createCalc(Exp arg,
-                ExpCompiler compiler,
-                ResultStyle[] resultStyles) {
+        private VoidCalc createCalc(
+            Exp arg,
+            ExpCompiler compiler,
+            List<ResultStyle> resultStyles)
+        {
             final Type type = arg.getType();
             if (type instanceof SetType) {
                 // TODO use resultStyles
@@ -124,10 +128,10 @@ public class SetFunDef extends FunDefBase {
                 if (elementType instanceof MemberType) {
                     return new AbstractVoidCalc(arg, new Calc[] {listCalc}) {
                         public void evaluateVoid(Evaluator evaluator) {
-                            List list = listCalc.evaluateList(evaluator);
+                            List<Member> list =
+                                listCalc.evaluateList(evaluator);
                             // Add only members which are not null.
-                            for (int i = 0; i < list.size(); i++) {
-                                Member member = (Member) list.get(i);
+                            for (Member member : list) {
                                 if (member == null || member.isNull()) {
                                     continue;
                                 }
@@ -142,14 +146,13 @@ public class SetFunDef extends FunDefBase {
                 } else {
                     return new AbstractVoidCalc(arg, new Calc[] {listCalc}) {
                         public void evaluateVoid(Evaluator evaluator) {
-                            List list = listCalc.evaluateList(evaluator);
+                            List<Member[]> list =
+                                listCalc.evaluateList(evaluator);
                             // Add only tuples which are not null. Tuples with
                             // any null members are considered null.
                             list:
-                            for (int i = 0; i < list.size(); i++) {
-                                Member[] members = (Member[]) list.get(i);
-                                for (int j = 0; j < members.length; j++) {
-                                    Member member = members[j];
+                            for (Member[] members : list) {
+                                for (Member member : members) {
                                     if (member == null || member.isNull()) {
                                         continue list;
                                     }
@@ -197,8 +200,8 @@ public class SetFunDef extends FunDefBase {
 
         public List evaluateList(Evaluator evaluator) {
             result.clear();
-            for (int i = 0; i < voidCalcs.length; i++) {
-                voidCalcs[i].evaluateVoid(evaluator);
+            for (VoidCalc voidCalc : voidCalcs) {
+                voidCalc.evaluateVoid(evaluator);
             }
             return new ArrayList(result);
         }
@@ -206,8 +209,12 @@ public class SetFunDef extends FunDefBase {
     public static class IterSetCalc extends AbstractIterCalc {
         private final IterCalc[] iterCalcs;
 
-        public IterSetCalc(Exp exp, Exp[] args, ExpCompiler compiler,
-                ResultStyle[] resultStyles) {
+        public IterSetCalc(
+            Exp exp,
+            Exp[] args,
+            ExpCompiler compiler,
+            List<ResultStyle> resultStyles)
+        {
             super(exp, null);
             iterCalcs = compileSelf(args, compiler, resultStyles);
         }
@@ -216,9 +223,11 @@ public class SetFunDef extends FunDefBase {
             return iterCalcs;
         }
 
-        private IterCalc[] compileSelf(Exp[] args,
-                ExpCompiler compiler,
-                ResultStyle[] resultStyles) {
+        private IterCalc[] compileSelf(
+            Exp[] args,
+            ExpCompiler compiler,
+            List<ResultStyle> resultStyles)
+        {
             IterCalc[] iterCalcs = new IterCalc[args.length];
             for (int i = 0; i < args.length; i++) {
                 iterCalcs[i] = createCalc(args[i], compiler, resultStyles);
@@ -226,106 +235,93 @@ public class SetFunDef extends FunDefBase {
             return iterCalcs;
         }
 
-        private IterCalc createCalc(Exp arg,
-                ExpCompiler compiler,
-                ResultStyle[] resultStyles) {
-
+        private IterCalc createCalc(
+            Exp arg,
+            ExpCompiler compiler,
+            List<ResultStyle> resultStyles)
+        {
             final Type type = arg.getType();
             if (type instanceof SetType) {
-                final Calc calc = compiler.compile(arg, resultStyles);
+                final Calc calc = compiler.compileAs(arg, null, resultStyles);
                 final Type elementType = ((SetType) type).getElementType();
                 if (elementType instanceof MemberType) {
                     switch (calc.getResultStyle()) {
-                    case ITERABLE :
-                    return new AbstractIterCalc(arg, new Calc[] {calc}) {
-                        private final IterCalc iterCalc = (IterCalc) calc;
-                        public Iterable evaluateIterable(Evaluator evaluator) {
-                            Iterable iterable =
-                                iterCalc.evaluateIterable(evaluator);
-                            return iterable;
-                        }
-                        protected String getName() {
-                            return "Sublist";
-                        }
-                    };
-                    case LIST :
-                    case MUTABLE_LIST :
-                    return new AbstractIterCalc(arg, new Calc[] {calc}) {
-                        private final ListCalc listCalc = (ListCalc) calc;
-                        public Iterable evaluateIterable(Evaluator evaluator) {
-                            List result = new ArrayList();
-                            List list = listCalc.evaluateList(evaluator);
-                            // Add only members which are not null.
-                            for (int i = 0; i < list.size(); i++) {
-                                Member member = (Member) list.get(i);
-                                if (member == null || member.isNull()) {
-                                    continue;
-                                }
-                                result.add(member);
+                    case ITERABLE:
+                        return new AbstractIterCalc(arg, new Calc[] {calc}) {
+                            private final IterCalc iterCalc = (IterCalc) calc;
+                            public Iterable evaluateIterable(Evaluator evaluator) {
+                                return iterCalc.evaluateIterable(evaluator);
                             }
-                            return result;
-                        }
-                        protected String getName() {
-                            return "Sublist";
-                        }
-                    };
+                            protected String getName() {
+                                return "Sublist";
+                            }
+                        };
+                    case LIST:
+                    case MUTABLE_LIST:
+                        return new AbstractIterCalc(arg, new Calc[] {calc}) {
+                            private final ListCalc listCalc = (ListCalc) calc;
+                            public Iterable evaluateIterable(Evaluator evaluator) {
+                                List result = new ArrayList();
+                                List<Member> list =
+                                    listCalc.evaluateList(evaluator);
+                                // Add only members which are not null.
+                                for (Member member : list) {
+                                    if (member == null || member.isNull()) {
+                                        continue;
+                                    }
+                                    result.add(member);
+                                }
+                                return result;
+                            }
+                            protected String getName() {
+                                return "Sublist";
+                            }
+                        };
                     }
                     throw ResultStyleException.generateBadType(
-                        new ResultStyle[] {
-                            ResultStyle.ITERABLE,
-                            ResultStyle.LIST,
-                            ResultStyle.MUTABLE_LIST
-                        }, calc.getResultStyle());
+                        ResultStyle.ITERABLE_LIST_MUTABLELIST,
+                        calc.getResultStyle());
                 } else {
                     switch (calc.getResultStyle()) {
-                    case ITERABLE :
-                    return new AbstractIterCalc(arg, new Calc[] {calc}) {
-                        private final IterCalc iterCalc = (IterCalc) calc;
-                        public Iterable evaluateIterable(Evaluator evaluator) {
-                            Iterable iterable =
-                                iterCalc.evaluateIterable(evaluator);
-                            return iterable;
-                        }
-                        protected String getName() {
-                            return "Sublist";
-                        }
-                    };
-                    case LIST :
-                    case MUTABLE_LIST :
-                    return new AbstractIterCalc(arg, new Calc[] {calc}) {
-                        private final ListCalc listCalc = (ListCalc) calc;
-                        public Iterable evaluateIterable(Evaluator evaluator) {
-                            List result = new ArrayList();
-                            List list = listCalc.evaluateList(evaluator);
-                            // Add only tuples which are not null. Tuples with
-                            // any null members are considered null.
-                            list:
-                            for (int i = 0; i < list.size(); i++) {
-                                Member[] members = (Member[]) list.get(i);
-                                for (int j = 0; j < members.length; j++) {
-                                    Member member = members[j];
-                                    if (member == null || member.isNull()) {
-                                        continue list;
-                                    }
-                                }
-                                result.add(members);
+                    case ITERABLE:
+                        return new AbstractIterCalc(arg, new Calc[] {calc}) {
+                            private final IterCalc iterCalc = (IterCalc) calc;
+                            public Iterable evaluateIterable(Evaluator evaluator) {
+                                return iterCalc.evaluateIterable(evaluator);
                             }
-                            return result;
-                        }
+                            protected String getName() {
+                                return "Sublist";
+                            }
+                        };
+                    case LIST:
+                    case MUTABLE_LIST:
+                        return new AbstractIterCalc(arg, new Calc[] {calc}) {
+                            private final ListCalc listCalc = (ListCalc) calc;
+                            public Iterable evaluateIterable(Evaluator evaluator) {
+                                List result = new ArrayList();
+                                List<Member[]> list = listCalc.evaluateList(evaluator);
+                                // Add only tuples which are not null. Tuples with
+                                // any null members are considered null.
+                                list:
+                                for (Member[] members : list) {
+                                    for (Member member : members) {
+                                        if (member == null || member.isNull()) {
+                                            continue list;
+                                        }
+                                    }
+                                    result.add(members);
+                                }
+                                return result;
+                            }
 
-                        protected String getName() {
-                            return "Sublist";
-                        }
-                    };
+                            protected String getName() {
+                                return "Sublist";
+                            }
+                        };
                     }
                     throw ResultStyleException.generateBadType(
-                        new ResultStyle[] {
-                            ResultStyle.ITERABLE,
-                            ResultStyle.LIST,
-                            ResultStyle.MUTABLE_LIST
-                        },
+                        ResultStyle.ITERABLE_LIST_MUTABLELIST,
                         calc.getResultStyle());
-
                 }
             } else if (TypeUtil.couldBeMember(type)) {
                 final MemberCalc memberCalc = compiler.compileMember(arg);
@@ -333,7 +329,7 @@ public class SetFunDef extends FunDefBase {
                     public Iterable evaluateIterable(Evaluator evaluator) {
                         final Member member =
                             memberCalc.evaluateMember(evaluator);
-                        Iterable<Member> iterable = new Iterable<Member>() {
+                        return new Iterable<Member>() {
                             public Iterator<Member> iterator() {
                                 return new Iterator<Member>() {
                                     private Member m = member;
@@ -353,7 +349,6 @@ public class SetFunDef extends FunDefBase {
                                 };
                             }
                         };
-                        return iterable;
                     }
                     protected String getName() {
                         return "Sublist";
@@ -365,7 +360,7 @@ public class SetFunDef extends FunDefBase {
                 return new AbstractIterCalc(arg, new Calc[] {tupleCalc}) {
                     public Iterable evaluateIterable(Evaluator evaluator) {
                         final Member[] members = tupleCalc.evaluateTuple(evaluator);
-                        Iterable<Member[]> iterable = new Iterable<Member[]>() {
+                        return new Iterable<Member[]>() {
                             public Iterator<Member[]> iterator() {
                                 return new Iterator<Member[]>() {
                                     private Member[] m = members;
@@ -385,7 +380,6 @@ public class SetFunDef extends FunDefBase {
                                 };
                             }
                         };
-                        return iterable;
                     }
                     protected String getName() {
                         return "Sublist";
@@ -395,7 +389,7 @@ public class SetFunDef extends FunDefBase {
         }
 
         public Iterable evaluateIterable(final Evaluator evaluator) {
-            Iterable result = new Iterable<Member>() {
+            return new Iterable<Member>() {
                 public Iterator<Member> iterator() {
                     return new Iterator<Member>() {
                         int index = 0;
@@ -446,7 +440,6 @@ public class SetFunDef extends FunDefBase {
                     };
                 }
             };
-            return result;
         }
     }
 

@@ -68,8 +68,8 @@ class TopBottomPercentSumFunDef extends FunDefBase {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc = (ListCalc) compiler.compile(call.getArg(0),
-                    ExpCompiler.MUTABLE_LIST_RESULT_STYLE_ARRAY);
+        final ListCalc listCalc = (ListCalc) compiler.compileAs(call.getArg(0),
+            null, ResultStyle.MUTABLELIST_ONLY);
         final DoubleCalc doubleCalc = compiler.compileDouble(call.getArg(1));
         final Calc calc = compiler.compileScalar(call.getArg(2), true);
         return new CalcImpl(call, listCalc, doubleCalc, calc);

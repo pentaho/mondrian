@@ -10,12 +10,9 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.IntegerCalc;
-import mondrian.calc.ListCalc;
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
-import mondrian.calc.ExpCompiler.ResultStyle;
+import mondrian.calc.ResultStyle;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.TupleType;

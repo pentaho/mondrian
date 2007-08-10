@@ -9,12 +9,7 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ExpCompiler.ResultStyle;
-import mondrian.calc.IterCalc;
-import mondrian.calc.ListCalc;
-import mondrian.calc.BooleanCalc;
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.impl.AbstractIterCalc;
 import mondrian.mdx.ResolvedFunCall;
@@ -48,9 +43,8 @@ class FilterFunDef extends FunDefBase {
     }
 
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
-        ResultStyle[] rs = compiler.getAcceptableResultStyles();
         // What is the desired return type?
-        for (ResultStyle r : rs) {
+        for (ResultStyle r : compiler.getAcceptableResultStyles()) {
             switch (r) {
             case ITERABLE:
             case ANY:
@@ -63,14 +57,8 @@ class FilterFunDef extends FunDefBase {
             }
         }
         throw ResultStyleException.generate(
-            new ResultStyle[] {
-                ResultStyle.ITERABLE,
-                ResultStyle.LIST,
-                ResultStyle.MUTABLE_LIST,
-                ResultStyle.ANY
-            },
-            rs
-        );
+            ResultStyle.ITERABLE_LIST_MUTABLELIST_ANY,
+            compiler.getAcceptableResultStyles());
     }
 
 
@@ -91,8 +79,8 @@ class FilterFunDef extends FunDefBase {
         ExpCompiler compiler)
     {
         // want iterable, mutable list or immutable list in that order
-        Calc imlcalc = compiler.compile(call.getArg(0),
-                    ExpCompiler.ITERABLE_LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY);
+        Calc imlcalc = compiler.compileAs(call.getArg(0),
+            null, ResultStyle.ITERABLE_LIST_MUTABLELIST);
         BooleanCalc bcalc = compiler.compileBoolean(call.getArg(1));
         Calc[] calcs = new Calc[] {imlcalc, bcalc};
 
@@ -363,9 +351,9 @@ class FilterFunDef extends FunDefBase {
         final ResolvedFunCall call,
             ExpCompiler compiler)
     {
-        Calc ilcalc = compiler.compile(
+        Calc ilcalc = compiler.compileAs(
             call.getArg(0),
-            ExpCompiler.MUTABLE_LIST_LIST_RESULT_STYLE_ARRAY);
+            null, ResultStyle.MUTABLELIST_LIST);
         BooleanCalc bcalc = compiler.compileBoolean(call.getArg(1));
         Calc[] calcs = new Calc[] {ilcalc, bcalc};
 
@@ -378,10 +366,7 @@ class FilterFunDef extends FunDefBase {
                 return new MutableMemberListCalc(call, calcs);
             }
             throw ResultStyleException.generateBadType(
-                new ResultStyle[] {
-                    ResultStyle.LIST,
-                    ResultStyle.MUTABLE_LIST
-                },
+                ResultStyle.MUTABLELIST_LIST,
                 ilcalc.getResultStyle());
 
         } else {
@@ -393,10 +378,7 @@ class FilterFunDef extends FunDefBase {
                 return new MutableMemberArrayListCalc(call, calcs);
             }
             throw ResultStyleException.generateBadType(
-                new ResultStyle[] {
-                    ResultStyle.LIST,
-                    ResultStyle.MUTABLE_LIST
-                },
+                ResultStyle.MUTABLELIST_LIST,
                 ilcalc.getResultStyle());
         }
     }

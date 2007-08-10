@@ -9,7 +9,7 @@
 */
 package mondrian.olap;
 
-import mondrian.calc.ExpCompiler.ResultStyle;
+import mondrian.calc.ResultStyle;
 
 /**
  * Allows expressions to be evaluated native, e.g. in SQL.

@@ -75,15 +75,42 @@ public class MemberType implements Type {
     }
 
     public static MemberType forHierarchy(Hierarchy hierarchy) {
-        return new MemberType(hierarchy.getDimension(), hierarchy, null, null);
+        final Dimension dimension;
+        if (hierarchy == null) {
+            dimension = null;
+        } else {
+            dimension = hierarchy.getDimension();
+        }
+        return new MemberType(dimension, hierarchy, null, null);
     }
 
     public static MemberType forLevel(Level level) {
-        return new MemberType(level.getDimension(), level.getHierarchy(), level, null);
+        final Dimension dimension;
+        final Hierarchy hierarchy;
+        if (level == null) {
+            dimension = null;
+            hierarchy = null;
+        } else {
+            dimension = level.getDimension();
+            hierarchy = level.getHierarchy();
+        }
+        return new MemberType(dimension, hierarchy, level, null);
     }
 
     public static MemberType forMember(Member member) {
-        return new MemberType(member.getDimension(), member.getHierarchy(), member.getLevel(), member);
+        final Dimension dimension;
+        final Hierarchy hierarchy;
+        final Level level;
+        if (member == null) {
+            dimension = null;
+            hierarchy = null;
+            level = null;
+        } else {
+            dimension = member.getDimension();
+            hierarchy = member.getHierarchy();
+            level = member.getLevel();
+        }
+        return new MemberType(dimension, hierarchy, level, member);
     }
 
     public String toString() {

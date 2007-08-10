@@ -15,13 +15,14 @@ package mondrian.olap;
 
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
-import mondrian.calc.ExpCompiler.ResultStyle;
+import mondrian.calc.ResultStyle;
 import mondrian.mdx.*;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.TypeUtil;
 import mondrian.resource.MondrianResource;
 
 import java.io.PrintWriter;
+import java.util.List;
 
 /**
  * An axis in an MDX query. For example, the typical MDX query has two axes,
@@ -102,13 +103,13 @@ public class QueryAxis extends QueryPart {
         return o;
     }
 
-    public Calc compile(ExpCompiler compiler, ResultStyle[] resultStyles) {
+    public Calc compile(ExpCompiler compiler, List<ResultStyle> resultStyles) {
         Exp exp = this.exp;
         if (axisOrdinal == AxisOrdinal.SLICER) {
             exp = normalizeSlicerExpression(exp);
             exp = exp.accept(compiler.getValidator());
         }
-        return compiler.compile(exp, resultStyles);
+        return compiler.compileAs(exp, null, resultStyles);
     }
 
     private static Exp normalizeSlicerExpression(Exp exp) {

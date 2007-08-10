@@ -14,7 +14,7 @@ import mondrian.olap.Exp;
 import mondrian.olap.type.SetType;
 import mondrian.calc.ListCalc;
 import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
+import mondrian.calc.ResultStyle;
 
 import java.util.List;
 
@@ -73,10 +73,10 @@ public abstract class AbstractListCalc
         return calcs;
     }
 
-    public ExpCompiler.ResultStyle getResultStyle() {
+    public ResultStyle getResultStyle() {
         return mutable ?
-            ExpCompiler.ResultStyle.MUTABLE_LIST :
-            ExpCompiler.ResultStyle.LIST;
+            ResultStyle.MUTABLE_LIST :
+            ResultStyle.LIST;
     }
 }
 

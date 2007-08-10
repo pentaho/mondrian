@@ -10,9 +10,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
-import mondrian.olap.type.NumericType;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.StringType;
+import mondrian.olap.type.*;
 import mondrian.spi.UserDefinedFunction;
 
 import java.util.*;
@@ -644,6 +642,41 @@ public class UdfTest extends FoodMartTestCase {
     }
 
     /**
+     * Tests a UDF whose return type is not the same as its first
+     * parameter. The return type needs to have full dimensional information;
+     * in this case, HierarchyType(dimension=Time, hierarchy=unknown).
+     *
+     * <p>Also tests applying a UDF to arguments of coercible type. In this
+     * case, applies f(member,dimension) to args(member,hierarchy). 
+     */
+    public void testAnotherMemberFun() {
+        final TestContext tc = TestContext.create(
+            null,
+            null,
+            null, null, "<UserDefinedFunction name=\"PlusOne\" className=\"" +
+            PlusOneUdf.class.getName() + "\"/>" + nl +
+            "<UserDefinedFunction name=\"AnotherMemberError\" className=\"" +
+            AnotherMemberErrorUdf.class.getName() + "\"/>");
+
+        tc.assertQueryReturns(
+                "WITH MEMBER [Measures].[Test] AS "+
+                "'([Measures].[Store Sales],[Product].[Food],AnotherMemberError([Product].[Drink],[Time]))'" + nl +
+                "SELECT {[Measures].[Test]} ON COLUMNS, " + nl +
+                "  {[Customers].DefaultMember} ON ROWS " + nl +
+                "FROM [Sales]",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Test]}" + nl +
+                "Axis #2:" + nl +
+                "{[Customers].[All Customers]}" + nl +
+                "Row #0: 409,035.59" + nl);
+    }
+
+    // ~ Inner classes --------------------------------------------------------
+
+    /**
      * A simple user-defined function which adds one to its argument.
      */
     public static class PlusOneUdf implements UserDefinedFunction {
@@ -758,6 +791,52 @@ public class UdfTest extends FoodMartTestCase {
                 buf.append(s);
             }
             return buf.toString();
+        }
+
+        public String[] getReservedWords() {
+            return null;
+        }
+    }
+
+    /**
+     * A user-defined function which returns ignores its first parameter (a
+     * member) and returns the default member from the second parameter (a
+     * hierarchy).
+     */
+    public static class AnotherMemberErrorUdf implements UserDefinedFunction {
+        public String getName() {
+            return "AnotherMemberError";
+        }
+
+        public String getDescription() {
+            return "Returns default member from hierarchy, specified as a second parameter. "+
+                "First parameter - any member from any hierarchy";
+        }
+
+        public Syntax getSyntax() {
+            return Syntax.Function;
+        }
+
+        public Type getReturnType(Type[] parameterTypes) {
+            HierarchyType hierType = (HierarchyType) parameterTypes[1];
+            return MemberType.forType(hierType);
+        }
+
+        public Type[] getParameterTypes() {
+            return new Type[] {
+                // The first argument must be a member.
+                MemberType.Unknown,
+                // The second argument must be a hierarchy.
+                HierarchyType.Unknown
+            };
+        }
+
+        public Object execute(Evaluator evaluator, Argument[] arguments) {
+            // Simply ignore first parameter
+            Member member = (Member)arguments[0].evaluate(evaluator);
+            Util.discard(member);
+            Hierarchy hierarchy = (Hierarchy)arguments[1].evaluate(evaluator);
+            return hierarchy.getDefaultMember();
         }
 
         public String[] getReservedWords() {

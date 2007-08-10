@@ -11,7 +11,6 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.calc.impl.AbstractIterCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.MdxVisitorImpl;
@@ -89,10 +88,10 @@ class CrossJoinFunDef extends FunDefBase {
             list.add(type);
         }
     }
+
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
-        ResultStyle[] rs = compiler.getAcceptableResultStyles();
         // What is the desired return type?
-        for (ResultStyle r : rs) {
+        for (ResultStyle r : compiler.getAcceptableResultStyles()) {
             switch (r) {
             case ITERABLE:
             case ANY:
@@ -107,14 +106,8 @@ class CrossJoinFunDef extends FunDefBase {
             }
         }
         throw ResultStyleException.generate(
-            new ResultStyle[] {
-                ResultStyle.ITERABLE,
-                ResultStyle.LIST,
-                ResultStyle.MUTABLE_LIST,
-                ResultStyle.ANY
-            },
-            rs
-        );
+            ResultStyle.ITERABLE_LIST_MUTABLELIST_ANY,
+            compiler.getAcceptableResultStyles());
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -214,15 +207,15 @@ class CrossJoinFunDef extends FunDefBase {
         final Type type = exp.getType();
         if (type instanceof SetType) {
             // this can return an IterCalc or ListCalc
-            return compiler.compile(exp,
-                ExpCompiler.ITERABLE_LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY);
+            return compiler.compileAs(exp,
+                null, ResultStyle.ITERABLE_LIST_MUTABLELIST);
         } else {
             // this always returns an IterCalc
             return new SetFunDef.IterSetCalc(
                 new DummyExp(new SetType(type)),
                 new Exp[] {exp},
                 compiler,
-                ExpCompiler.ITERABLE_LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY);
+                ResultStyle.ITERABLE_LIST_MUTABLELIST);
         }
     }
     private abstract class BaseIterCalc extends AbstractIterCalc {
@@ -1038,15 +1031,15 @@ class CrossJoinFunDef extends FunDefBase {
         // a mutable list.
         final Type type = exp.getType();
         if (type instanceof SetType) {
-            return (ListCalc) compiler.compile(exp,
-                ExpCompiler.LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY);
+            return (ListCalc) compiler.compileAs(exp,
+                null, ResultStyle.LIST_MUTABLELIST);
         } else {
             return new SetFunDef.ListSetCalc(
                     new DummyExp(new SetType(type)),
                     new Exp[] {exp},
                     compiler,
-                    ExpCompiler.LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY
-                    );
+                    ResultStyle.LIST_MUTABLELIST
+            );
         }
     }
 

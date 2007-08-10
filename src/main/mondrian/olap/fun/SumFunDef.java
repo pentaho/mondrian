@@ -10,16 +10,13 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ExpCompiler.ResultStyle;
-import mondrian.calc.ListCalc;
-import mondrian.calc.IterCalc;
+import mondrian.calc.*;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
+import java.util.Collections;
 
 /**
  * Definition of the <code>Sum</code> MDX function.
@@ -41,41 +38,40 @@ class SumFunDef extends AbstractAggregateFunDef {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        ResultStyle[] rs = compiler.getAcceptableResultStyles();
         // What is the desired type to use to get the underlying values
-        for (int i = 0; i < rs.length; i++) {
-            switch (rs[i]) {
-            case ITERABLE :
-            case ANY :
+        for (ResultStyle r : compiler.getAcceptableResultStyles()) {
+            switch (r) {
+            case ITERABLE:
+            case ANY:
                 // Consumer wants ITERABLE or ANY to be used
                 //return compileCallIterable(call, compiler);
                 return compileCall(call, compiler, ResultStyle.ITERABLE);
             case MUTABLE_LIST:
                 // Consumer wants MUTABLE_LIST
                 return compileCall(call, compiler, ResultStyle.MUTABLE_LIST);
-            case LIST :
+            case LIST:
                 // Consumer wants LIST to be used
                 //return compileCallList(call, compiler);
                 return compileCall(call, compiler, ResultStyle.LIST);
             }
         }
         throw ResultStyleException.generate(
-            new ResultStyle[] {
-                ResultStyle.ITERABLE,
-                ResultStyle.LIST,
-                ResultStyle.MUTABLE_LIST,
-                ResultStyle.ANY
-            },
-            rs
-        );
+            ResultStyle.ITERABLE_LIST_MUTABLELIST_ANY,
+            compiler.getAcceptableResultStyles());
     }
-    protected Calc compileCall(final ResolvedFunCall call,
-            ExpCompiler compiler, ResultStyle resultStyle) {
-        final Calc ncalc = compiler.compile(call.getArg(0),
-                    new ResultStyle[] { resultStyle});
+
+    protected Calc compileCall(
+        final ResolvedFunCall call,
+        ExpCompiler compiler,
+        ResultStyle resultStyle)
+    {
+        final Calc ncalc = compiler.compileAs(
+            call.getArg(0),
+            null,
+            Collections.singletonList(resultStyle));
         final Calc calc = call.getArgCount() > 1 ?
-                compiler.compileScalar(call.getArg(1), true) :
-                new ValueCalc(call);
+            compiler.compileScalar(call.getArg(1), true) :
+            new ValueCalc(call);
         // we may have asked for one sort of Calc, but here's what we got.
         if (ncalc instanceof ListCalc) {
             return genListCalc(call, ncalc, calc);

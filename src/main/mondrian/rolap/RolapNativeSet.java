@@ -10,9 +10,7 @@ package mondrian.rolap;
 
 import java.util.*;
 
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ListCalc;
-import mondrian.calc.ExpCompiler.ResultStyle;
+import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.cache.HardSmartCache;
@@ -143,23 +141,17 @@ public abstract class RolapNativeSet extends RolapNative {
 
         public Object execute(ResultStyle desiredResultStyle) {
             switch (desiredResultStyle) {
-            case ITERABLE :
+            case ITERABLE:
                 return executeIterable();
-            case MUTABLE_LIST :
-            case LIST :
+            case MUTABLE_LIST:
+            case LIST:
                 return executeList();
             }
             throw ResultStyleException.generate(
-                new ResultStyle[] {
-                    ResultStyle.ITERABLE,
-                    ResultStyle.MUTABLE_LIST,
-                    ResultStyle.LIST
-                },
-                new ResultStyle[] {
-                    desiredResultStyle
-                }
-            );
+                ResultStyle.ITERABLE_MUTABLELIST_LIST,
+                Collections.singletonList(desiredResultStyle));
         }
+
         protected Object executeIterable() {
             final List list = executeList();
             if (args.length == 1) {

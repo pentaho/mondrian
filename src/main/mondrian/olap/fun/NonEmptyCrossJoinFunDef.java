@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Collections;
 
 import mondrian.olap.*;
-import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;

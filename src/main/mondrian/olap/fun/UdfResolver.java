@@ -63,8 +63,7 @@ public class UdfResolver implements Resolver {
             parameterCategories[i] = TypeUtil.typeToCategory(parameterTypes[i]);
         }
         Type returnType = udf.getReturnType(parameterTypes);
-        int returnCategory = TypeUtil.typeToCategory(returnType);
-        return new UdfFunDef(returnCategory, parameterCategories);
+        return new UdfFunDef(parameterCategories, returnType);
     }
 
     public FunDef resolve(
@@ -75,6 +74,7 @@ public class UdfResolver implements Resolver {
         }
         int[] parameterCategories = new int[parameterTypes.length];
         Type[] argTypes = new Type[parameterTypes.length];
+        Type[] castArgTypes = new Type[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             Type parameterType = parameterTypes[i];
             final Exp arg = args[i];
@@ -87,11 +87,11 @@ public class UdfResolver implements Resolver {
                     arg, parameterCategory, conversionCount)) {
                 return null;
             }
+            castArgTypes[i] = FunDefBase.castType(argType, parameterCategory);
             parameterCategories[i] = parameterCategory;
         }
-        final Type returnType = udf.getReturnType(argTypes);
-        final int returnCategory = TypeUtil.typeToCategory(returnType);
-        return new UdfFunDef(returnCategory, parameterCategories);
+        final Type returnType = udf.getReturnType(castArgTypes);
+        return new UdfFunDef(parameterCategories, returnType);
     }
 
     public boolean requiresExpression(int k) {
@@ -108,18 +108,31 @@ public class UdfResolver implements Resolver {
      * {@link FunDef}.
      */
     private class UdfFunDef extends FunDefBase {
-        public UdfFunDef(int returnCategory, int[] parameterCategories) {
-            super(UdfResolver.this, returnCategory, parameterCategories);
+        private Type returnType;
+
+        public UdfFunDef(int[] parameterCategories, Type returnType) {
+            super(
+                UdfResolver.this,
+                TypeUtil.typeToCategory(returnType),
+                parameterCategories);
+            this.returnType = returnType;
+        }
+
+        public Type getResultType(Validator validator, Exp[] args) {
+            return returnType;
         }
 
         public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
             final Exp[] args = call.getArgs();
             Calc[] calcs = new Calc[args.length];
             UserDefinedFunction.Argument[] expCalcs =
-                    new UserDefinedFunction.Argument[args.length];
+                new UserDefinedFunction.Argument[args.length];
             for (int i = 0; i < args.length; i++) {
                 Exp arg = args[i];
-                final Calc calc = compiler.compile(arg);
+                final Calc calc = compiler.compileAs(
+                    arg,
+                    castType(arg.getType(), parameterCategories[i]),
+                    ResultStyle.ANY_LIST);
                 final Calc scalarCalc = compiler.compileScalar(arg, true);
                 expCalcs[i] = new CalcExp(calc, scalarCalc);
             }

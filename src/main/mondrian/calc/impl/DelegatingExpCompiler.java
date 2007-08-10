@@ -10,7 +10,10 @@
 package mondrian.calc.impl;
 
 import mondrian.olap.*;
+import mondrian.olap.type.Type;
 import mondrian.calc.*;
+
+import java.util.List;
 
 /**
  * Abstract implementation of {@link mondrian.calc.ExpCompiler}
@@ -45,8 +48,12 @@ public class DelegatingExpCompiler implements ExpCompiler {
         return parent.compile(exp);
     }
 
-    public Calc compile(Exp exp, ResultStyle[] preferredResultTypes) {
-        return parent.compile(exp, preferredResultTypes);
+    public Calc compileAs(
+        Exp exp,
+        Type resultType,
+        List<ResultStyle> preferredResultTypes)
+    {
+        return parent.compileAs(exp, resultType, preferredResultTypes);
     }
 
     public MemberCalc compileMember(Exp exp) {
@@ -117,7 +124,7 @@ public class DelegatingExpCompiler implements ExpCompiler {
         return parent.registerParameter(parameter);
     }
 
-    public ResultStyle[] getAcceptableResultStyles() {
+    public List<ResultStyle> getAcceptableResultStyles() {
         return parent.getAcceptableResultStyles();
     }
 }

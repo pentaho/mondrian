@@ -19,6 +19,8 @@ import mondrian.calc.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.ExpCompiler} interface.
@@ -32,7 +34,7 @@ public class AbstractExpCompiler implements ExpCompiler {
     private final Validator validator;
     private final Map<Parameter, ParameterSlotImpl> parameterSlots =
         new HashMap<Parameter, ParameterSlotImpl>();
-    private ResultStyle[] resultStyles;
+    private List<ResultStyle> resultStyles;
 
     /**
      * Creates an AbstractExpCompiler
@@ -41,7 +43,7 @@ public class AbstractExpCompiler implements ExpCompiler {
      * @param validator Validator
      */
     public AbstractExpCompiler(Evaluator evaluator, Validator validator) {
-        this(evaluator, validator, ANY_RESULT_STYLE_ARRAY);
+        this(evaluator, validator, ResultStyle.ANY_LIST);
     }
 
     /**
@@ -51,17 +53,16 @@ public class AbstractExpCompiler implements ExpCompiler {
      * @param evaluator Evaluator
      * @param validator Validator
      * @param resultStyles List of result styles, preferred first, must not be
-     *   null
      */
     public AbstractExpCompiler(
         Evaluator evaluator,
         Validator validator,
-        ResultStyle[] resultStyles)
+        List<ResultStyle> resultStyles)
     {
         this.evaluator = evaluator;
         this.validator = validator;
         this.resultStyles = (resultStyles == null)
-            ? ANY_RESULT_STYLE_ARRAY : resultStyles;
+            ? ResultStyle.ANY_LIST : resultStyles;
     }
 
     public Evaluator getEvaluator() {
@@ -86,23 +87,41 @@ public class AbstractExpCompiler implements ExpCompiler {
      *
      * Uses a new ResultStyle to compile the expression.
      */
-    public Calc compile(Exp exp, ResultStyle[] preferredResultTypes) {
+    public Calc compileAs(
+        Exp exp,
+        Type resultType,
+        List<ResultStyle> preferredResultTypes)
+    {
         assert preferredResultTypes != null;
         if (Util.PreJdk15) {
             // Copy and replace ITERABLE
             // A number of functions declare that they can accept
             // ITERABLEs so here is where that those are
             // converted to innocent, for jdk1.4,  LISTs
-            ResultStyle[] tmp = new ResultStyle[preferredResultTypes.length];
-            for (int i = 0; i < preferredResultTypes.length; i++) {
-                tmp[i] = (preferredResultTypes[i] == ResultStyle.ITERABLE)
-                    ? ResultStyle.LIST : preferredResultTypes[i];
+            List<ResultStyle> tmp =
+                new ArrayList<ResultStyle>(preferredResultTypes.size());
+            for (ResultStyle preferredResultType : preferredResultTypes) {
+                tmp.add(
+                    (preferredResultType == ResultStyle.ITERABLE)
+                        ? ResultStyle.LIST
+                        : preferredResultType);
             }
             preferredResultTypes = tmp;
         }
-        ResultStyle[] save = this.resultStyles;
+        List<ResultStyle> save = this.resultStyles;
         try {
             this.resultStyles = preferredResultTypes;
+            if (resultType != null && resultType != exp.getType()) {
+                if (resultType instanceof MemberType) {
+                    return compileMember(exp);
+                } else if (resultType instanceof LevelType) {
+                    return compileLevel(exp);
+                } else if (resultType instanceof HierarchyType) {
+                    return compileHierarchy(exp);
+                } else if (resultType instanceof DimensionType) {
+                    return compileDimension(exp);
+                }
+            }
             return compile(exp);
         } finally {
             this.resultStyles = save;
@@ -197,14 +216,14 @@ public class AbstractExpCompiler implements ExpCompiler {
 
     public ListCalc compileList(Exp exp, boolean mutable) {
         if (mutable) {
-            return (ListCalc) compile(exp, MUTABLE_LIST_RESULT_STYLE_ARRAY);
+            return (ListCalc) compileAs(exp, null, ResultStyle.MUTABLELIST_ONLY);
         } else {
-            return (ListCalc) compile(exp, LIST_RESULT_STYLE_ARRAY);
+            return (ListCalc) compileAs(exp, null, ResultStyle.LIST_ONLY);
         }
     }
 
     public IterCalc compileIter(Exp exp) {
-        return (IterCalc) compile(exp, ITERABLE_RESULT_STYLE_ARRAY);
+        return (IterCalc) compileAs(exp, null, ResultStyle.ITERABLE_ONLY);
     }
 
     /**
@@ -315,7 +334,7 @@ public class AbstractExpCompiler implements ExpCompiler {
         return slot2;
     }
 
-    public ResultStyle[] getAcceptableResultStyles() {
+    public List<ResultStyle> getAcceptableResultStyles() {
         return resultStyles;
     }
 

@@ -14,7 +14,7 @@
 package mondrian.olap;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
-import mondrian.calc.ExpCompiler.ResultStyle;
+import mondrian.calc.ResultStyle;
 import mondrian.mdx.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.olap.fun.ParameterFunDef;
@@ -452,14 +452,10 @@ public class Query extends QueryPart {
         case MUTABLE_LIST:
             this.resultStyle = resultStyle;
             break;
-        default :
+        default:
             throw ResultStyleException.generateBadType(
-                    new ResultStyle[] {
-                        ResultStyle.ITERABLE,
-                        ResultStyle.LIST,
-                        ResultStyle.MUTABLE_LIST
-                    },
-                    resultStyle);
+                ResultStyle.ITERABLE_LIST_MUTABLELIST,
+                resultStyle);
         }
     }
 
@@ -482,13 +478,15 @@ public class Query extends QueryPart {
         if (axes != null) {
             axisCalcs = new Calc[axes.length];
             for (int i = 0; i < axes.length; i++) {
-                axisCalcs[i] = axes[i].compile(compiler,
-                                    new ResultStyle[] { resultStyle });
+                axisCalcs[i] = axes[i].compile(
+                    compiler,
+                    Collections.singletonList(resultStyle));
             }
         }
         if (slicerAxis != null) {
-            slicerCalc = slicerAxis.compile(compiler,
-                                new ResultStyle[] { resultStyle });
+            slicerCalc = slicerAxis.compile(
+                compiler,
+                Collections.singletonList(resultStyle));
         }
     }
 
@@ -1026,9 +1024,10 @@ public class Query extends QueryPart {
             ExpCompiler.Factory.getExpCompiler(
                 evaluator,
                 validator,
-                new ResultStyle[] { resultStyle });
+                Collections.singletonList(resultStyle));
 
-        final int expDeps = MondrianProperties.instance().TestExpDependencies.get();
+        final int expDeps =
+            MondrianProperties.instance().TestExpDependencies.get();
         if (expDeps > 0) {
             compiler = RolapUtil.createDependencyTestingCompiler(compiler);
         }

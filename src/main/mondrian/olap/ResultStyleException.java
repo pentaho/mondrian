@@ -9,46 +9,56 @@
 */
 package mondrian.olap;
 
-import mondrian.calc.ExpCompiler.ResultStyle;
+import mondrian.calc.ResultStyle;
+
+import java.util.List;
+
 /**
- * Exception which indicates some resource limit was exceeded.
+ * Exception that indicates a compiler could not implement an expression in any
+ * of the result styles requested by the client.
  *
  * @version $Id$
+ * @author Richard Emberson
  */
 public class ResultStyleException extends MondrianException {
-    public static ResultStyleException generate(ResultStyle[] producer,
-            ResultStyle[] consumer) {
-        StringBuffer buf = new StringBuffer();
+    public static ResultStyleException generate(
+        List<ResultStyle> producer,
+        List<ResultStyle> consumer)
+    {
+        StringBuilder buf = new StringBuilder();
         buf.append("Producer expected ResultStyles: ");
         buf.append('{');
-        for (int i = 0; i < producer.length; i++) {
+        for (int i = 0; i < producer.size(); i++) {
             if (i > 0) {
                 buf.append(',');
             }
-            buf.append(producer[i]);
+            buf.append(producer.get(i));
         }
         buf.append('}');
         buf.append(" but Consumer wanted: ");
         buf.append('{');
-        for (int i = 0; i < consumer.length; i++) {
+        for (int i = 0; i < consumer.size(); i++) {
             if (i > 0) {
                 buf.append(',');
             }
-            buf.append(consumer[i]);
+            buf.append(consumer.get(i));
         }
         buf.append('}');
         throw new ResultStyleException(buf.toString());
     }
-    public static ResultStyleException generateBadType(ResultStyle[] wanted,
-            ResultStyle got) {
+
+    public static ResultStyleException generateBadType(
+        List<ResultStyle> wanted,
+        ResultStyle got)
+    {
         StringBuffer buf = new StringBuffer();
         buf.append("Wanted ResultStyles: ");
         buf.append('{');
-        for (int i = 0; i < wanted.length; i++) {
+        for (int i = 0; i < wanted.size(); i++) {
             if (i > 0) {
                 buf.append(',');
             }
-            buf.append(wanted[i]);
+            buf.append(wanted.get(i));
         }
         buf.append('}');
         buf.append(" but got: ");

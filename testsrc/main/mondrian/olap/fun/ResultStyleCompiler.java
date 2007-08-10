@@ -17,6 +17,7 @@ import mondrian.calc.impl.DelegatingExpCompiler;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * The <code>ResultStyleCompiler</code> can be used to assure that
@@ -50,14 +51,16 @@ public class ResultStyleCompiler extends DelegatingExpCompiler {
         System.out.println("ResultStyleCompiler being used");
     }
 
-    private static ExpCompiler generateCompiler(Evaluator evaluator,
-            Validator validator,
-            ResultStyle[] resultStyles) {
+    private static ExpCompiler generateCompiler(
+        Evaluator evaluator,
+        Validator validator,
+        List<ResultStyle> resultStyles)
+    {
         // pop and then push class name
         Object context = ExpCompiler.Factory.getFactory().removeContext();
         try {
             return ExpCompiler.Factory.getExpCompiler(
-                                evaluator, validator, resultStyles);
+                evaluator, validator, resultStyles);
         } finally {
             // reset ExpCompiler.Factory test context
             ExpCompiler.Factory.getFactory().restoreContext(context);
@@ -70,25 +73,31 @@ public class ResultStyleCompiler extends DelegatingExpCompiler {
      * is a wrapper.
      *
      */
-    public ResultStyleCompiler(Evaluator evaluator, Validator validator,
-            ResultStyle[] resultStyles) {
+    public ResultStyleCompiler(
+        Evaluator evaluator,
+        Validator validator,
+        List<ResultStyle> resultStyles)
+    {
         super(generateCompiler(evaluator, validator, resultStyles));
     }
 
     public Calc compile(Exp exp) {
-        ResultStyle[] resultStyles = getAcceptableResultStyles();
-        return compile(exp, resultStyles);
+        List<ResultStyle> resultStyles = getAcceptableResultStyles();
+        return compileAs(exp, null, resultStyles);
     }
 
-    public Calc compile(Exp exp, ResultStyle[] resultStyles) {
-        //return compiler.compile(exp, resultStyles);
+    public Calc compileAs(
+        Exp exp,
+        Type resultType,
+        List<ResultStyle> resultStyles)
+    {
         // This applies only to the ITERABE, LIST and MUTABLE_LIST
         // ResultStyles. For each we compile and save the Calc
         // in a Multi-Calc, then during evaluation, each of the
         // calcs are evaluated and results compared.
         // If the request is for a MUTABLE_LIST, then that result HAS to
         // be returned to caller.
-        if (resultStyles.length > 0) {
+        if (resultStyles.size() > 0) {
             boolean foundIterable = false;
             boolean foundList = false;
             boolean foundMutableList = false;
@@ -107,22 +116,29 @@ public class ResultStyleCompiler extends DelegatingExpCompiler {
             }
             // found at least one of the container Calcs
             if (foundIterable || foundList || foundMutableList) {
-                Calc calcIter = compile(exp,
-                                new ResultStyle[] { ResultStyle.ITERABLE });
-                Calc calcList = compile(exp,
-                                new ResultStyle[] { ResultStyle.LIST });
-                Calc calcMList = compile(exp,
-                                new ResultStyle[] { ResultStyle.MUTABLE_LIST });
-                return new MultiCalc(calcIter, calcList, calcMList,
-                                // only a mutable list was requested
-                                // so that is the one that MUST be returned
-                                ! (foundList || foundIterable));
-            } else {
-                return compile(exp);
+                Calc calcIter =
+                    compileAs(
+                        exp,
+                        resultType,
+                        ResultStyle.ITERABLE_ONLY);
+                Calc calcList =
+                    compileAs(
+                        exp,
+                        resultType,
+                        ResultStyle.LIST_ONLY);
+                Calc calcMList =
+                    compileAs(
+                        exp,
+                        resultType,
+                        ResultStyle.MUTABLELIST_ONLY);
+                return new MultiCalc(
+                    calcIter, calcList, calcMList,
+                    // only a mutable list was requested
+                    // so that is the one that MUST be returned
+                    ! (foundList || foundIterable));
             }
-        } else {
-            return compile(exp);
         }
+        return compile(exp);
     }
 
     /**
@@ -131,10 +147,11 @@ public class ResultStyleCompiler extends DelegatingExpCompiler {
      */
     static class MultiCalc implements Calc {
         static int counter = 0;
-        Calc calcIter;
-        Calc calcList;
-        Calc calcMList;
-        boolean onlyMutableList;
+
+        final Calc calcIter;
+        final Calc calcList;
+        final Calc calcMList;
+        final boolean onlyMutableList;
         int lineNumber;
 
         int cnt;
@@ -216,7 +233,7 @@ System.out.println("MultiCalc.evaluator: lists EQUALS cnt="+cnt);
         public void accept(CalcWriter calcWriter) {
             calcIter.accept(calcWriter);
         }
-        public ExpCompiler.ResultStyle getResultStyle() {
+        public ResultStyle getResultStyle() {
             return calcIter.getResultStyle();
         }
         protected boolean compare(Object v1, Object v2) {

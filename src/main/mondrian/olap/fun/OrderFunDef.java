@@ -131,7 +131,7 @@ class OrderFunDef extends FunDefBase {
             boolean brk)
         {
             super(call, new Calc[]{listCalc, expCalc});
-            assert listCalc.getResultStyle() == ExpCompiler.ResultStyle.MUTABLE_LIST;
+            assert listCalc.getResultStyle() == ResultStyle.MUTABLE_LIST;
             this.listCalc = listCalc;
             this.expCalc = expCalc;
             this.desc = desc;
@@ -204,7 +204,7 @@ class OrderFunDef extends FunDefBase {
             }
             return calc.dependsOn(dimension);
         }
-        public ExpCompiler.ResultStyle getResultStyle() {
+        public ResultStyle getResultStyle() {
             return calc.getResultStyle();
         }
     }

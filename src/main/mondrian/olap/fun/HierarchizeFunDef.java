@@ -9,9 +9,7 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ListCalc;
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Evaluator;
@@ -41,8 +39,8 @@ class HierarchizeFunDef extends FunDefBase {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc = (ListCalc) compiler.compile(call.getArg(0),
-                    ExpCompiler.MUTABLE_LIST_RESULT_STYLE_ARRAY);
+        final ListCalc listCalc = (ListCalc) compiler.compileAs(
+            call.getArg(0), null, ResultStyle.MUTABLELIST_ONLY);
         String order = getLiteralArg(call, 1, "PRE", prePost);
         final boolean post = order.equals("POST");
         return new AbstractListCalc(call, new Calc[] {listCalc}) {

@@ -17,6 +17,7 @@ import mondrian.olap.type.Type;
 import mondrian.rolap.cache.CachePool;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.util.Bug;
+import mondrian.calc.ResultStyle;
 
 import java.util.regex.Pattern;
 import java.util.*;
@@ -5614,7 +5615,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             MondrianProperties.instance().IterationLimit.set(11);
             Connection connection = getConnection();
             Query query = connection.parseQuery(queryString);
-            query.setResultStyle(mondrian.calc.ExpCompiler.ResultStyle.LIST);
+            query.setResultStyle(ResultStyle.LIST);
             connection.execute(query);
         } catch (Throwable ex) {
             throwable = ex;

@@ -25,6 +25,8 @@ public class HierarchyType implements Type {
     private final Hierarchy hierarchy;
     private final String digest;
 
+    public static final HierarchyType Unknown = new HierarchyType(null, null);
+
     /**
      * Creates a type representing a hierarchy.
      *

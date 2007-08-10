@@ -297,7 +297,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
             return list;
         }
 
-        public ExpCompiler.ResultStyle getResultStyle() {
+        public ResultStyle getResultStyle() {
             return calc.getResultStyle();
         }
     }

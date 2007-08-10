@@ -258,27 +258,18 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
     }
 
     /**
-     * Returns a first approximation as to the type of a function call,
-     * assuming that the return type is in some way related to the type of
-     * the first argument.<p/>
+     * Converts a type to a different category, maintaining as much type
+     * information as possible.
      *
-     * So, this function serves as a good default implementation for
-     * {@link #getResultType}. Methods whose arguments don't follow the
-     * requirements of this implementation should use a different
-     * implementation.<p/>
+     * For example, given <code>LevelType(dimension=Time, hierarchy=unknown,
+     * level=unkown)</code> and category=Hierarchy, returns
+     * <code>HierarchyType(dimension=Time)</code>.
      *
-     * If the function definition says it returns a literal type (numeric,
-     * string, symbol) then it's a fair guess that the function call
-     * returns the same kind of value.<p/>
-     *
-     * If the function definition says it returns an object type (cube,
-     * dimension, hierarchy, level, member) then we check the first
-     * argument of the function. Suppose that the function definition says
-     * that it returns a hierarchy, and the first argument of the function
-     * happens to be a member. Then it's reasonable to assume that this
-     * function returns a member.
+     * @param type Type
+     * @param category Desired category
+     * @return Type after conversion to desired category
      */
-    static Type guessResultType(Exp[] args, int category, String name) {
+    static Type castType(Type type, int category) {
         switch (category) {
         case Category.Logical:
             return new BooleanType();
@@ -293,31 +284,27 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
         case Category.Value:
             return new ScalarType();
         case Category.Cube:
-            if (args.length > 0 && args[0] instanceof Cube) {
-                return new CubeType((Cube) args[0]);
+            if (type instanceof Cube) {
+                return new CubeType((Cube) type);
             }
-            break;
+            return null;
         case Category.Dimension:
-            if (args.length > 0) {
-                final Type type = args[0].getType();
+            if (type != null) {
                 return DimensionType.forType(type);
             }
-            break;
+            return null;
         case Category.Hierarchy:
-            if (args.length > 0) {
-                final Type type = args[0].getType();
+            if (type != null) {
                 return HierarchyType.forType(type);
             }
-            break;
+            return null;
         case Category.Level:
-            if (args.length > 0) {
-                final Type type = args[0].getType();
+            if (type != null) {
                 return LevelType.forType(type);
             }
-            break;
+            return null;
         case Category.Member:
-            if (args.length > 0) {
-                final Type type = args[0].getType();
+            if (type != null) {
                 final MemberType memberType = TypeUtil.toMemberType(type);
                 if (memberType != null) {
                     return memberType;
@@ -326,36 +313,60 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
             // Take a wild guess.
             return MemberType.Unknown;
         case Category.Tuple:
-            if (args.length > 0) {
-                final Type type = args[0].getType();
+            if (type != null) {
                 final Type memberType = TypeUtil.toMemberOrTupleType(type);
                 if (memberType != null) {
                     return memberType;
                 }
             }
-            break;
+            return null;
         case Category.Set:
-            if (args.length > 0) {
-                final Type type = args[0].getType();
+            if (type != null) {
                 final Type memberType = TypeUtil.toMemberOrTupleType(type);
                 if (memberType != null) {
                     return new SetType(memberType);
                 }
             }
-            break;
+            return null;
         default:
             throw Category.instance.badValue(category);
         }
-        throw Util.newInternal("Cannot deduce type of call to function '" +
-                name + "'");
     }
 
     /**
      * Returns the type of a call to this function with a given set of
-     * arguments.
+     * arguments.<p/>
+     *
+     * The default implementation makes the coarse assumption that the return
+     * type is in some way related to the type of the first argument.
+     * Operators whose arguments don't follow the requirements of this
+     * implementation should override this method.<p/>
+     *
+     * If the function definition says it returns a literal type (numeric,
+     * string, symbol) then it's a fair guess that the function call
+     * returns the same kind of value.<p/>
+     *
+     * If the function definition says it returns an object type (cube,
+     * dimension, hierarchy, level, member) then we check the first
+     * argument of the function. Suppose that the function definition says
+     * that it returns a hierarchy, and the first argument of the function
+     * happens to be a member. Then it's reasonable to assume that this
+     * function returns a member.
+     *
+     * @param validator Validator
+     * @param args Arguments to the call to this operator
      */
     public Type getResultType(Validator validator, Exp[] args) {
-        return guessResultType(args, getReturnCategory(), this.name);
+        Type firstArgType =
+            args.length > 0 ?
+                args[0].getType() :
+                null;
+        Type type = castType(firstArgType, getReturnCategory());
+        if (type != null) {
+            return type;
+        }
+        throw Util.newInternal(
+            "Cannot deduce type of call to function '" + this.name + "'");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {

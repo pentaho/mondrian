@@ -13,11 +13,7 @@ import mondrian.olap.FunDef;
 import mondrian.olap.Literal;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Dimension;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ExpCompiler.ResultStyle;
-import mondrian.calc.IterCalc;
-import mondrian.calc.ListCalc;
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractIntegerCalc;
 import mondrian.mdx.ResolvedFunCall;
 
@@ -46,9 +42,9 @@ class CountFunDef extends AbstractAggregateFunDef {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final Calc calc = compiler.compile(call.getArg(0),
-                                ExpCompiler.ITERABLE_ANY_RESULT_STYLE_ARRAY
-                                );
+        final Calc calc = compiler.compileAs(call.getArg(0),
+            null, ResultStyle.ITERABLE_ANY
+        );
         final boolean includeEmpty =
                 call.getArgCount() < 2 ||
                 ((Literal) call.getArg(1)).getValue().equals(

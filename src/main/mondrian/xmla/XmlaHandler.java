@@ -8,7 +8,7 @@
 */
 package mondrian.xmla;
 
-import mondrian.calc.ExpCompiler.ResultStyle;
+import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
