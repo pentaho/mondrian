@@ -184,7 +184,7 @@ public class ObjectPoolTest extends TestCase {
         int expectedDistinct,
         int expectedHits)
     {
-        final boolean print = true;
+        final boolean print = false;
         final long t1 = System.currentTimeMillis();
         assert density > 0 && density <= 1;
         int space = (int) (entryCount / density);
