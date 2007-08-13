@@ -29,11 +29,13 @@ class SetBase extends OlapElementBase implements NamedSet {
     private static final Logger LOGGER = Logger.getLogger(SetBase.class);
 
     private String name;
+    private final String uniqueName;
     private final Exp exp;
 
     SetBase(String name, Exp exp) {
         this.name = name;
         this.exp = exp;
+        this.uniqueName = "[" + name + "]";        
     }
 
     public Object clone() {
@@ -45,7 +47,7 @@ class SetBase extends OlapElementBase implements NamedSet {
     }
 
     public String getUniqueName() {
-        return "[" + name + "]";
+        return uniqueName;
     }
 
     public String getName() {

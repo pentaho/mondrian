@@ -27,7 +27,7 @@ import java.io.PrintWriter;
  * @version $Id$
  * @since Jan 6, 2006
  */
-public class ResolvedFunCall extends ExpBase implements FunCall {
+public final class ResolvedFunCall extends ExpBase implements FunCall {
 
     /**
      * The arguments to the function call.  Note that for methods, 0-th arg is

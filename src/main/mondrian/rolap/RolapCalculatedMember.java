@@ -54,7 +54,7 @@ public class RolapCalculatedMember extends RolapMember {
         }
     }
 
-    public boolean isCalculated() {
+    protected boolean computeCalculated() {
         return true;
     }
 

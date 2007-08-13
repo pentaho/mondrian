@@ -28,6 +28,9 @@ public abstract class OlapElementBase
 
     private String caption = null;
 
+    // cache hash-code because it is often used and elements are immutable
+    private int hash;
+
     protected OlapElementBase() {
     }
 
@@ -45,10 +48,19 @@ public abstract class OlapElementBase
     }
 
     public int hashCode() {
-        int i = (getClass().hashCode() << 8),
-                j = getUniqueName().hashCode(),
-                k = i ^ j;
-        return k;
+       if (hash == 0) {
+           hash = computeHashCode();
+       }
+       return hash;
+    }
+
+    /**
+     * Computes this object's hash code. Called at most once.
+     *
+     * @return hash code
+     */
+    protected int computeHashCode() {
+        return (getClass().hashCode() << 8) ^ getUniqueName().hashCode();
     }
 
     public String toString() {

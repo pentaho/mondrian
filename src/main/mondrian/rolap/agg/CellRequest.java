@@ -37,8 +37,11 @@ public class CellRequest {
      */
     private final List<RolapStar.Column> constrainedColumnList =
         new ArrayList<RolapStar.Column>();
-    private List<StarColumnPredicate> valueList =
+
+    private final List<StarColumnPredicate> columnPredicateList =
         new ArrayList<StarColumnPredicate>();
+
+    private Object[] singleValues;
 
     /**
      * After all of the columns are loaded into the constrainedColumnList instance
@@ -70,9 +73,9 @@ public class CellRequest {
     private boolean unsatisfiable;
 
     /**
-     * The valueList and columnsCache must be set after all constraints
+     * The columnPredicateList and columnsCache must be set after all constraints
      * have been added. This is used by access methods to determine if
-     * both valueList and columnsCache need to be generated.
+     * both columnPredicateList and columnsCache need to be generated.
      */
     private boolean isDirty = true;
 
@@ -87,9 +90,10 @@ public class CellRequest {
      * @param drillThrough Whether this is a request for a drill-through set
      */
     public CellRequest(
-            RolapStar.Measure measure,
-            boolean extendedContext,
-            boolean drillThrough) {
+        RolapStar.Measure measure,
+        boolean extendedContext,
+        boolean drillThrough)
+    {
         this.measure = measure;
         this.extendedContext = extendedContext;
         this.drillThrough = drillThrough;
@@ -120,7 +124,7 @@ public class CellRequest {
      *   output without applying constraint
      * @param mode Whether to combine with existing constraint using AND or OR
      */
-    public void addConstrainedColumn(
+    public final void addConstrainedColumn(
         RolapStar.Column column,
         StarColumnPredicate predicate,
         Mode mode)
@@ -134,7 +138,7 @@ public class CellRequest {
             // unconstrained) the request will never return any results.
             int index = constrainedColumnList.indexOf(column);
             assert index >= 0;
-            final StarColumnPredicate prevValue = valueList.get(index);
+            final StarColumnPredicate prevValue = columnPredicateList.get(index);
             if (prevValue == null) {
                 // Previous column was unconstrained. Constrain on new
                 // value.
@@ -161,12 +165,12 @@ public class CellRequest {
                     throw Util.unexpected(mode);
                 }
             }
-            valueList.set(index, predicate);
+            columnPredicateList.set(index, predicate);
 
         } else {
             this.constrainedColumnList.add(column);
             this.constrainedColumnsBitKey.set(bitPosition);
-            this.valueList.add(predicate);
+            this.columnPredicateList.add(predicate);
         }
     }
 
@@ -193,15 +197,19 @@ public class CellRequest {
     }
 
     /**
-     * Builds the columnsCache and reorders the valueList
+     * Builds the {@link #columnsCache} and reorders the
+     * {@link #columnPredicateList}
      * based upon bit key position of the columns.
      */
     private void check() {
         if (isDirty) {
             final int size = constrainedColumnList.size();
             this.columnsCache = new RolapStar.Column[size];
-            List<StarColumnPredicate> vl = new ArrayList<StarColumnPredicate>();
-            int cnt = 0;
+            final StarColumnPredicate[] oldColumnPredicates =
+                columnPredicateList.toArray(
+                    new StarColumnPredicate[columnPredicateList.size()]);
+            columnPredicateList.clear();
+            int i = 0;
             for (int bitPos : constrainedColumnsBitKey) {
                 // NOTE: If the RolapStar.Column were stored in maybe a Map
                 // rather than the constrainedColumnList List, we would
@@ -210,22 +218,21 @@ public class CellRequest {
                     RolapStar.Column rc = constrainedColumnList.get(j);
                     if (rc.getBitPosition() == bitPos) {
                         int index = constrainedColumnList.indexOf(rc);
-                        final StarColumnPredicate value = valueList.get(index);
-                        vl.add(value);
-                        columnsCache[cnt++] = rc;
+                        final StarColumnPredicate value =
+                            oldColumnPredicates[index];
+                        columnPredicateList.add(value);
+                        columnsCache[i++] = rc;
                         break;
                     }
                 }
             }
-            valueList = vl;
-
             isDirty = false;
         }
     }
 
     public List<StarColumnPredicate> getValueList() {
         check();
-        return valueList;
+        return columnPredicateList;
     }
 
     /**
@@ -249,16 +256,17 @@ public class CellRequest {
      */
     public Object[] getSingleValues() {
         assert !unsatisfiable;
-        check();
-        // Currently, this is called only once per CellRequest instance
-        // so there is no need to cache the value.
-        Object[] a = new Object[valueList.size()];
-        for (int i = 0, n = valueList.size(); i < n; i++) {
-            ValueColumnPredicate constr =
-                (ValueColumnPredicate) valueList.get(i);
-            a[i] = constr.getValue();
+        if (singleValues == null) {
+            check();
+            singleValues = new Object[columnPredicateList.size()];
+            final int size = columnPredicateList.size();
+            for (int i = 0; i < size; i++) {
+                ValueColumnPredicate predicate =
+                    (ValueColumnPredicate) columnPredicateList.get(i);
+                singleValues[i] = predicate.getValue();
+            }
         }
-        return a;
+        return singleValues;
     }
 
     /**

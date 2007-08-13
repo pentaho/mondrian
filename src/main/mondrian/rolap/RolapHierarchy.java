@@ -95,7 +95,7 @@ public class RolapHierarchy extends HierarchyBase {
         this.allMemberName = "All " + name + "s";
         if (hasAll) {
             Util.discard(newLevel(this.allLevelName,
-                RolapLevel.ALL | RolapLevel.UNIQUE));
+                RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE));
         }
 
         // The null member belongs to a level with very similar properties to
@@ -103,7 +103,7 @@ public class RolapHierarchy extends HierarchyBase {
         this.nullLevel = new RolapLevel(
                 this, 0, this.allLevelName, null, null, null, null, null, null,
                 null, RolapProperty.emptyArray,
-                RolapLevel.ALL | RolapLevel.UNIQUE,
+                RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE,
                 null,
                 RolapLevel.HideMemberCondition.Never,
                 LevelType.Null, "");
@@ -144,7 +144,7 @@ public class RolapHierarchy extends HierarchyBase {
         RolapLevel allLevel = new RolapLevel(
             this, 0, this.allLevelName, null, null, null, null, null, null,
             null, RolapProperty.emptyArray,
-            RolapLevel.ALL | RolapLevel.UNIQUE,
+            RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE,
             null,
             RolapLevel.HideMemberCondition.Never,
             LevelType.Regular, ALL_LEVEL_CARDINALITY);
@@ -255,10 +255,11 @@ public class RolapHierarchy extends HierarchyBase {
         }
     }
 
-    public int hashCode() {
-        return super.hashCode() ^ (sharedHierarchyName == null
-            ? 0
-            : sharedHierarchyName.hashCode());
+    protected int computeHashCode() {
+        return super.computeHashCode()
+            ^ (sharedHierarchyName == null
+                ? 0
+                : sharedHierarchyName.hashCode());
     }
 
     /**
@@ -298,19 +299,22 @@ public class RolapHierarchy extends HierarchyBase {
             }
         }
     }
+
     void setMemberReader(MemberReader memberReader) {
         this.memberReader = memberReader;
     }
+
     MemberReader getMemberReader() {
         return this.memberReader;
     }
 
     RolapLevel newLevel(String name, int flags) {
-        RolapLevel level = new RolapLevel(
+        RolapLevel level =
+            new RolapLevel(
                 this, this.levels.length, name, null, null, null, null,
                 null, null, null, RolapProperty.emptyArray, flags, null,
                 RolapLevel.HideMemberCondition.Never, LevelType.Regular, "");
-        this.levels = (RolapLevel[]) RolapUtil.addElement(this.levels, level);
+        this.levels = RolapUtil.addElement(this.levels, level);
         return level;
     }
 
@@ -797,7 +801,7 @@ public class RolapHierarchy extends HierarchyBase {
         // This represents all groups of descendants. For example, in the
         // Employee closure hierarchy, this level has a row for every employee.
         int index = peerHier.levels.length;
-        int flags = src.getFlags() &~ RolapLevel.UNIQUE;
+        int flags = src.getFlags() &~ RolapLevel.FLAG_UNIQUE;
         MondrianDef.Expression keyExp =
             new MondrianDef.Column(clos.table.name, clos.parentColumn);
 
@@ -812,15 +816,14 @@ public class RolapHierarchy extends HierarchyBase {
             src.getHideMemberCondition(),
             src.getLevelType(),
             "");
-        peerHier.levels =
-            (RolapLevel[]) RolapUtil.addElement(peerHier.levels, level);
+        peerHier.levels = RolapUtil.addElement(peerHier.levels, level);
 
         // Create lower level.
         // This represents individual items. For example, in the Employee
         // closure hierarchy, this level has a row for every direct and
         // indirect report of every employee (which is more than the number
         // of employees).
-        flags = src.getFlags() | RolapLevel.UNIQUE;
+        flags = src.getFlags() | RolapLevel.FLAG_UNIQUE;
         keyExp = new MondrianDef.Column(clos.table.name, clos.childColumn);
         RolapLevel sublevel = new RolapLevel(
             peerHier,
@@ -838,8 +841,7 @@ public class RolapHierarchy extends HierarchyBase {
             src.getDatatype(),
             src.getHideMemberCondition(),
             src.getLevelType(), "");
-        peerHier.levels =
-            (RolapLevel[]) RolapUtil.addElement(peerHier.levels, sublevel);
+        peerHier.levels = RolapUtil.addElement(peerHier.levels, sublevel);
 
 /*
 RME HACK
@@ -871,10 +873,6 @@ RME HACK
         RolapNullMember(final RolapLevel level) {
             super(null, level, null, "#Null", MemberType.NULL);
             assert level != null;
-        }
-
-        public boolean isNull() {
-            return true;
         }
     }
 

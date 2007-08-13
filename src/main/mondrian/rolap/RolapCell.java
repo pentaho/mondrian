@@ -61,8 +61,9 @@ class RolapCell implements Cell {
     public String getDrillThroughSQL(boolean extendedContext) {
         RolapAggregationManager aggMan = AggregationManager.instance();
         final Member[] currentMembers = getMembers();
-        CellRequest cellRequest = RolapAggregationManager.makeRequest(
-                currentMembers, extendedContext, true);
+        CellRequest cellRequest =
+            RolapAggregationManager.makeDrillThroughRequest(
+                currentMembers, extendedContext);
         return (cellRequest == null)
             ? null
             : aggMan.getDrillThroughSql(cellRequest, false);
@@ -72,8 +73,9 @@ class RolapCell implements Cell {
     public int getDrillThroughCount() {
         RolapAggregationManager aggMan = AggregationManager.instance();
         final Member[] currentMembers = getMembers();
-        CellRequest cellRequest = RolapAggregationManager.makeRequest(
-            currentMembers, false, true);
+        CellRequest cellRequest =
+            RolapAggregationManager.makeDrillThroughRequest(
+                currentMembers, false);
         if (cellRequest == null) {
             return -1;
         }

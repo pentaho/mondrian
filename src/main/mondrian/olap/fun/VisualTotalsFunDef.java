@@ -207,7 +207,7 @@ public class VisualTotalsFunDef extends FunDefBase {
             this.exp = exp;
         }
 
-        public boolean isCalculated() {
+        protected boolean computeCalculated() {
             return true;
         }
 

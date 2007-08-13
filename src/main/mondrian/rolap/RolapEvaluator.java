@@ -34,6 +34,13 @@ import java.util.*;
  * so that you can revert to the original context once the operation has
  * completed.
  *
+ * <h3>Developers note</h3>
+ *
+ * <p>Many of the methods in this class are performance-critical. Where
+ * possible they are declared 'final' so that the JVM can optimize calls to
+ * these methods. If future functionality requires it, the 'final' modifier
+ * can be removed and these methods can be overridden.
+ *
  * @author jhyde
  * @since 10 August, 2001
  * @version $Id$
@@ -46,7 +53,7 @@ public class RolapEvaluator implements Evaluator {
      */
     private static final Object nullResult = new Object();
 
-    private final Member[] currentMembers;
+    private final RolapMember[] currentMembers;
     private final Evaluator parent;
     protected CellReader cellReader;
     private final int depth;
@@ -88,7 +95,7 @@ public class RolapEvaluator implements Evaluator {
             nonEmpty = false;
             evalAxes = false;
             cellReader = null;
-            currentMembers = new Member[root.cube.getDimensions().length];
+            currentMembers = new RolapMember[root.cube.getDimensions().length];
             calcMembers = new Member[this.currentMembers.length];
             calcMemberCount = 0;
             slicerMembers = new ArrayList<Member>();
@@ -121,13 +128,14 @@ public class RolapEvaluator implements Evaluator {
 
         // we expect client to set CellReader
 
-        SchemaReader scr = this.root.connection.getSchemaReader();
-        Dimension[] dimensions = this.root.cube.getDimensions();
+        final SchemaReader scr = this.root.connection.getSchemaReader();
+        final Dimension[] dimensions = this.root.cube.getDimensions();
         for (final Dimension dimension : dimensions) {
             final int ordinal = dimension.getOrdinal(this.root.cube);
             final Hierarchy hier = dimension.getHierarchy();
 
-            Member member = scr.getHierarchyDefaultMember(hier);
+            final RolapMember member =
+                (RolapMember) scr.getHierarchyDefaultMember(hier);
 
             // If there is no member, we cannot continue.
             if (member == null) {
@@ -137,9 +145,10 @@ public class RolapEvaluator implements Evaluator {
 
             // This fragment is a concurrency bottleneck, so use a cache of
             // hierarchy usages.
-            HierarchyUsage hierarchyUsage = this.root.cube.getFirstUsage(hier);
+            final HierarchyUsage hierarchyUsage =
+                this.root.cube.getFirstUsage(hier);
             if (hierarchyUsage != null) {
-                ((RolapMember) member).makeUniqueName(hierarchyUsage);
+                member.makeUniqueName(hierarchyUsage);
             }
 
             currentMembers[ordinal] = member;
@@ -183,7 +192,7 @@ public class RolapEvaluator implements Evaluator {
          *
          * <p>TODO: Save compiled expressions somewhere better.
          */
-        Calc getCompiled(Exp exp, boolean scalar) {
+        final Calc getCompiled(Exp exp, boolean scalar) {
             Calc calc = compiledExps.get(exp);
             if (calc == null) {
                 calc = query.compileExpression(exp, scalar);
@@ -220,14 +229,17 @@ public class RolapEvaluator implements Evaluator {
         }
 
         /**
-         * Put result in cache.
+         * Puts result in cache.
          *
          * @param key key
          * @param result value to be cached
          * @param isValidResult indicate if this result is valid
          */
-        public void putCacheResult(Object key, Object result,
-            boolean isValidResult) {
+        public final void putCacheResult(
+            Object key,
+            Object result,
+            boolean isValidResult)
+        {
             if (isValidResult) {
                 expResultCache.put(key, result);
             } else {
@@ -236,12 +248,12 @@ public class RolapEvaluator implements Evaluator {
         }
 
         /**
-         * Get result from cache
+         * Gets result from cache.
          *
          * @param key cache key
          * @return cached expression
          */
-        public Object getCacheResult(Object key) {
+        public final Object getCacheResult(Object key) {
             Object result = expResultCache.get(key);
             if (result == null) {
                 result = tmpExpResultCache.get(key);
@@ -250,11 +262,11 @@ public class RolapEvaluator implements Evaluator {
         }
 
         /**
-         * Clear the expression result cache.
+         * Clears the expression result cache.
          *
          * @param clearValidResult whether to clear valid expression results
          */
-        public void clearResultCache(boolean clearValidResult) {
+        public final void clearResultCache(boolean clearValidResult) {
             if (clearValidResult) {
                 expResultCache.clear();
             }
@@ -262,31 +274,31 @@ public class RolapEvaluator implements Evaluator {
         }
     }
 
-    protected Logger getLogger() {
+    protected final Logger getLogger() {
         return LOGGER;
     }
 
-    public Member[] getMembers() {
+    public final Member[] getMembers() {
         return currentMembers;
     }
 
-    void setCellReader(CellReader cellReader) {
+    final void setCellReader(CellReader cellReader) {
         this.cellReader = cellReader;
     }
 
-    public Cube getCube() {
+    public final RolapCube getCube() {
         return root.cube;
     }
 
-    public Query getQuery() {
+    public final Query getQuery() {
         return root.query;
     }
 
-    public int getDepth() {
+    public final int getDepth() {
         return depth;
     }
 
-    public Evaluator getParent() {
+    public final Evaluator getParent() {
         return parent;
     }
 
@@ -294,19 +306,19 @@ public class RolapEvaluator implements Evaluator {
         return root.schemaReader;
     }
 
-    public Evaluator push(Member[] members) {
+    public final RolapEvaluator push(Member[] members) {
         final RolapEvaluator evaluator = _push();
         evaluator.setContext(members);
         return evaluator;
     }
 
-    public Evaluator push(Member member) {
+    public final RolapEvaluator push(Member member) {
         final RolapEvaluator evaluator = _push();
         evaluator.setContext(member);
         return evaluator;
     }
 
-    public Evaluator push() {
+    public final RolapEvaluator push() {
         return _push();
     }
 
@@ -315,17 +327,14 @@ public class RolapEvaluator implements Evaluator {
      */
     protected RolapEvaluator _push() {
         getQuery().checkCancelOrTimeout();
-
-        RolapEvaluator newEvaluator = new RolapEvaluator(root, this);
-
-        return newEvaluator;
+        return new RolapEvaluator(root, this);
     }
 
-    public Evaluator pop() {
+    public final Evaluator pop() {
         return parent;
     }
 
-    public Evaluator pushAggregation(List<Member> list) {
+    public final Evaluator pushAggregation(List<Member> list) {
         RolapEvaluator newEvaluator = _push();
         if (newEvaluator.aggregationLists == null) {
             newEvaluator.aggregationLists = new ArrayList<List<Member>>();
@@ -341,7 +350,7 @@ public class RolapEvaluator implements Evaluator {
      * Returns true if the other object is a {@link RolapEvaluator} with
      * identical context.
      */
-    public boolean equals(Object obj) {
+    public final boolean equals(Object obj) {
         if (!(obj instanceof RolapEvaluator)) {
             return false;
         }
@@ -349,7 +358,7 @@ public class RolapEvaluator implements Evaluator {
         return Arrays.equals(this.currentMembers, that.currentMembers);
     }
 
-    public int hashCode() {
+    public final int hashCode() {
         return Util.hashArray(0, this.currentMembers);
     }
 
@@ -364,10 +373,12 @@ public class RolapEvaluator implements Evaluator {
      * the default member of its hierarchy (so the checks for null, measure and
      * all may not be needed).
      *
-     * @param member
+     * @param member New member
      * @return Previous member
+     *
+     * @deprecated Not used??
      */
-    Member setContextConditional(Member member) {
+    private Member setContextConditional(Member member) {
         RolapMember m = (RolapMember) member;
         int ordinal = m.getDimension().getOrdinal(root.cube);
         // should never happend
@@ -403,7 +414,7 @@ public class RolapEvaluator implements Evaluator {
      *
      * @param member a member in the slicer
      */
-    public void setSlicerContext(Member member) {
+    public final void setSlicerContext(Member member) {
         setContext(member);
         slicerMembers.add(member);
     }
@@ -412,14 +423,14 @@ public class RolapEvaluator implements Evaluator {
      * Return the list of slicer members in the current evaluator context.
      * @return slicerMembers
      */
-    public List<Member> getSlicerMembers() {
+    public final List<Member> getSlicerMembers() {
         return slicerMembers;
     }
 
-    public Member setContext(Member member) {
-        RolapMember m = (RolapMember) member;
-        int ordinal = m.getDimension().getOrdinal(root.cube);
-        Member previous = currentMembers[ordinal];
+    public final Member setContext(Member member) {
+        final RolapMember m = (RolapMember) member;
+        final int ordinal = m.getDimension().getOrdinal(root.cube);
+        final Member previous = currentMembers[ordinal];
         if (previous.isCalculated()) {
             removeCalcMember(previous);
         }
@@ -432,7 +443,7 @@ public class RolapEvaluator implements Evaluator {
 
     public void setContext(List<Member> memberList) {
         int i = 0;
-        for (Member member: memberList) {
+        for (Member member : memberList) {
             // more than one usage
             if (member == null) {
                 if (getLogger().isDebugEnabled()) {
@@ -447,9 +458,10 @@ public class RolapEvaluator implements Evaluator {
             i++;
         }
     }
-    public void setContext(Member[] members) {
+
+    public final void setContext(Member[] members) {
         for (int i = 0; i < members.length; i++) {
-            Member member = members[i];
+            final Member member = members[i];
 
             // more than one usage
             if (member == null) {
@@ -466,41 +478,41 @@ public class RolapEvaluator implements Evaluator {
         }
     }
 
-    public Member getContext(Dimension dimension) {
+    public final RolapMember getContext(Dimension dimension) {
         return currentMembers[dimension.getOrdinal(root.cube)];
     }
 
-    public Object evaluateCurrent() {
+    public final Object evaluateCurrent() {
         // Get the member in the current context which is (a) calculated, and
         // (b) has the highest solve order; returns null if there are no
         // calculated members.
-        Member maxSolveMember = peekCalcMember();
+        final Member maxSolveMember = peekCalcMember();
         if (maxSolveMember == null) {
             if (aggregationLists != null) {
                 return cellReader.getCompound(this, aggregationLists);
             }
-            Object o = cellReader.get(this);
+            final Object o = cellReader.get(this);
             if (o == Util.nullValue) {
-                o = null;
+                return null;
             }
             return o;
         }
-        RolapMember defaultMember = (RolapMember)
-                maxSolveMember.getHierarchy().getDefaultMember();
-        RolapEvaluator evaluator = (RolapEvaluator) push(defaultMember);
+        final RolapMember defaultMember =
+            (RolapMember) maxSolveMember.getHierarchy().getDefaultMember();
+        final RolapEvaluator evaluator = push(defaultMember);
         evaluator.setExpanding(maxSolveMember);
         final Exp exp = maxSolveMember.getExpression();
-        Calc calc = root.getCompiled(exp, true);
-        Object o = calc.evaluate(evaluator);
+        final Calc calc = root.getCompiled(exp, true);
+        final Object o = calc.evaluate(evaluator);
         if (o == Util.nullValue) {
-            o = null;
+            return null;
         }
         return o;
     }
 
     private void setExpanding(Member member) {
         expandingMember = member;
-        int memberCount = currentMembers.length;
+        final int memberCount = currentMembers.length;
         if (depth > memberCount) {
             if (depth % memberCount == 0) {
                 checkRecursion((RolapEvaluator) parent);
@@ -512,6 +524,7 @@ public class RolapEvaluator implements Evaluator {
      * Makes sure that there is no evaluator with identical context on the
      * stack.
      *
+     * @param eval Evaluator
      * @throws mondrian.olap.fun.MondrianEvaluationException if there is a loop
      */
     private static void checkRecursion(RolapEvaluator eval) {
@@ -536,7 +549,7 @@ public class RolapEvaluator implements Evaluator {
                 continue;
             }
             for (int i = 0; i < eval.currentMembers.length; i++) {
-                Member member = eval2.currentMembers[i];
+                final Member member = eval2.currentMembers[i];
 
                 // more than one usage
                 if (member == null) {
@@ -548,7 +561,8 @@ public class RolapEvaluator implements Evaluator {
                     continue;
                 }
 
-                Member parentMember = eval.getContext(member.getDimension());
+                final RolapMember parentMember =
+                    eval.getContext(member.getDimension());
                 if (member != parentMember) {
                     continue outer;
                 }
@@ -561,8 +575,8 @@ public class RolapEvaluator implements Evaluator {
     }
 
     private String getContextString() {
-        boolean skipDefaultMembers = true;
-        StringBuilder buf = new StringBuilder("{");
+        final boolean skipDefaultMembers = true;
+        final StringBuilder buf = new StringBuilder("{");
         int frameCount = 0;
         for (RolapEvaluator eval = this; eval != null;
                  eval = (RolapEvaluator) eval.getParent()) {
@@ -590,11 +604,11 @@ public class RolapEvaluator implements Evaluator {
         return buf.toString();
     }
 
-    public Object getProperty(String name, Object defaultValue) {
+    public final Object getProperty(String name, Object defaultValue) {
         Object o = defaultValue;
         int maxSolve = Integer.MIN_VALUE;
         for (int i = 0; i < currentMembers.length; i++) {
-            Member member = currentMembers[i];
+            final Member member = currentMembers[i];
 
             // more than one usage
             if (member == null) {
@@ -606,9 +620,9 @@ public class RolapEvaluator implements Evaluator {
                 continue;
             }
 
-            Object p = member.getPropertyValue(name);
+            final Object p = member.getPropertyValue(name);
             if (p != null) {
-                int solve = member.getSolveOrder();
+                final int solve = member.getSolveOrder();
                 if (solve > maxSolve) {
                     o = p;
                     maxSolve = solve;
@@ -625,13 +639,14 @@ public class RolapEvaluator implements Evaluator {
      *
      * @post return != null
      */
-    public String getFormatString() {
-        Exp formatExp = (Exp) getProperty(Property.FORMAT_EXP.name, null);
+    public final String getFormatString() {
+        final Exp formatExp =
+            (Exp) getProperty(Property.FORMAT_EXP.name, null);
         if (formatExp == null) {
             return "Standard";
         }
-        Calc formatCalc = root.getCompiled(formatExp, true);
-        Object o = formatCalc.evaluate(this);
+        final Calc formatCalc = root.getCompiled(formatExp, true);
+        final Object o = formatCalc.evaluate(this);
         if (o == null) {
             return "Standard";
         }
@@ -639,7 +654,7 @@ public class RolapEvaluator implements Evaluator {
     }
 
     private Format getFormat() {
-        String formatString = getFormatString();
+        final String formatString = getFormatString();
         return getFormat(formatString);
     }
 
@@ -647,19 +662,11 @@ public class RolapEvaluator implements Evaluator {
         return Format.get(formatString, root.connection.getLocale());
     }
 
-    public Locale getConnectionLocale() {
+    public final Locale getConnectionLocale() {
         return root.connection.getLocale();
     }
 
-    /**
-     * Converts a value of this member into a string according to this member's
-     * format specification.
-     */
-    String format(Evaluator evaluator, Object o) {
-        return getFormat().format(o);
-    }
-
-    public String format(Object o) {
+    public final String format(Object o) {
         if (o == Util.nullValue) {
             Format format = getFormat();
             return format.format(null);
@@ -673,7 +680,7 @@ public class RolapEvaluator implements Evaluator {
         }
     }
 
-    public String format(Object o, String formatString) {
+    public final String format(Object o, String formatString) {
         if (o == Util.nullValue) {
             Format format = getFormat(formatString);
             return format.format(null);
@@ -693,12 +700,13 @@ public class RolapEvaluator implements Evaluator {
      * expression is dependent upon.
      */
     private Object getExpResultCacheKey(ExpCacheDescriptor descriptor) {
-        List<Object> key = new ArrayList<Object>();
+        final List<Object> key = new ArrayList<Object>();
         key.add(descriptor.getExp());
-        int[] dimensionOrdinals = descriptor.getDependentDimensionOrdinals();
+        final int[] dimensionOrdinals =
+            descriptor.getDependentDimensionOrdinals();
         for (int i = 0; i < dimensionOrdinals.length; i++) {
-            int dimensionOrdinal = dimensionOrdinals[i];
-            Member member = currentMembers[dimensionOrdinal];
+            final int dimensionOrdinal = dimensionOrdinals[i];
+            final Member member = currentMembers[dimensionOrdinal];
 
             // more than one usage
             if (member == null) {
@@ -713,10 +721,10 @@ public class RolapEvaluator implements Evaluator {
         return key;
     }
 
-    public Object getCachedResult(ExpCacheDescriptor cacheDescriptor) {
+    public final Object getCachedResult(ExpCacheDescriptor cacheDescriptor) {
         // Look up a cached result, and if not present, compute one and add to
         // cache. Use a dummy value to represent nulls.
-        Object key = getExpResultCacheKey(cacheDescriptor);
+        final Object key = getExpResultCacheKey(cacheDescriptor);
         Object result = root.getCacheResult(key);
         if (result == null) {
             int aggregateCacheMissCountBefore = cellReader.getMissCount();
@@ -748,35 +756,35 @@ public class RolapEvaluator implements Evaluator {
         return result;
     }
 
-    public void clearExpResultCache(boolean clearValidResult) {
+    public final void clearExpResultCache(boolean clearValidResult) {
         root.clearResultCache(clearValidResult);
     }
 
-    public boolean isNonEmpty() {
+    public final boolean isNonEmpty() {
         return nonEmpty;
     }
 
-    public void setNonEmpty(boolean nonEmpty) {
+    public final void setNonEmpty(boolean nonEmpty) {
         this.nonEmpty = nonEmpty;
     }
 
-    public RuntimeException newEvalException(Object context, String s) {
+    public final RuntimeException newEvalException(Object context, String s) {
         return FunUtil.newEvalException((FunDef) context, s);
     }
 
-    public Object evaluateNamedSet(String name, Exp exp) {
+    public final Object evaluateNamedSet(String name, Exp exp) {
         return root.evaluateNamedSet(name, exp);
     }
 
-    public int getMissCount() {
+    public final int getMissCount() {
         return cellReader.getMissCount();
     }
 
-    public Object getParameterValue(ParameterSlot slot) {
+    public final Object getParameterValue(ParameterSlot slot) {
         return root.getParameterValue(slot);
     }
 
-    void addCalcMember(Member member) {
+    final void addCalcMember(Member member) {
         assert member != null;
         assert member.isCalculated();
         calcMembers[calcMemberCount++] = member;
@@ -815,7 +823,7 @@ public class RolapEvaluator implements Evaluator {
 
     private void removeCalcMember(Member previous) {
         for (int i = 0; i < calcMemberCount; i++) {
-            Member calcMember = calcMembers[i];
+            final Member calcMember = calcMembers[i];
             if (calcMember == previous) {
                 // overwrite this member with the end member
                 --calcMemberCount;
@@ -825,19 +833,19 @@ public class RolapEvaluator implements Evaluator {
         }
     }
 
-    public int getIterationLength() {
+    public final int getIterationLength() {
         return iterationLength;
     }
 
-    public void setIterationLength(int length) {
+    public final void setIterationLength(int length) {
         iterationLength = length;
     }
 
-    public boolean isEvalAxes() {
+    public final boolean isEvalAxes() {
         return evalAxes;
     }
 
-    public void setEvalAxes(boolean evalAxes) {
+    public final void setEvalAxes(boolean evalAxes) {
         this.evalAxes = evalAxes;
     }
 }

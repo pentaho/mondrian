@@ -81,18 +81,20 @@ public class AggregationManager extends RolapAggregationManager {
     }
 
     public Object getCellFromCache(CellRequest request) {
-        RolapStar.Measure measure = request.getMeasure();
-        Aggregation aggregation = measure.getStar().lookupAggregation(
-            request.getConstrainedColumnsBitKey());
+        final RolapStar.Measure measure = request.getMeasure();
+        final Aggregation aggregation =
+            measure.getStar().lookupAggregation(
+                request.getConstrainedColumnsBitKey());
 
         if (aggregation == null) {
             // cell is not in any aggregation
             return null;
         }
-            Object o = aggregation.getCellValue(
-                    measure, request.getSingleValues(), null);
-            if (o != null) {
-                return o;
+        final Object o =
+            aggregation.getCellValue(
+                measure, request.getSingleValues(), null);
+        if (o != null) {
+            return o;
         }
         throw Util.newInternal("not found");
     }
@@ -100,16 +102,17 @@ public class AggregationManager extends RolapAggregationManager {
     public Object getCellFromCache(CellRequest request, PinSet pinSet) {
         Util.assertPrecondition(pinSet != null);
 
-        RolapStar.Measure measure = request.getMeasure();
-        Aggregation aggregation = measure.getStar().lookupAggregation(
-            request.getConstrainedColumnsBitKey());
+        final RolapStar.Measure measure = request.getMeasure();
+        final Aggregation aggregation =
+            measure.getStar().lookupAggregation(
+                request.getConstrainedColumnsBitKey());
 
         if (aggregation == null) {
             // cell is not in any aggregation
             return null;
         } else {
-                return aggregation.getCellValue(measure,
-                            request.getSingleValues(), pinSet);
+            return aggregation.getCellValue(
+                measure, request.getSingleValues(), pinSet);
         }
     }
 

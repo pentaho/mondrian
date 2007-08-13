@@ -505,7 +505,7 @@ public class RolapMember extends MemberBase {
             case Property.CHILDREN_CARDINALITY_ORDINAL:
                 Integer cardinality;
 
-                if (isAllMember() && childLevelHasApproxRowCount()) {
+                if (isAll() && childLevelHasApproxRowCount()) {
                     cardinality = getLevel().getChildLevel().getApproxRowCount();
                 } else {
                     list = new ArrayList<RolapMember>();
@@ -560,15 +560,9 @@ public class RolapMember extends MemberBase {
         return getLevel().getChildLevel().getApproxRowCount() > Integer.MIN_VALUE;
     }
 
-    private boolean isAllMember() {
-        return getLevel().getHierarchy().hasAll()
-                && getLevel().getDepth() == 0;
-    }
-
-    public Property[] getProperties() {
+    public final Property[] getProperties() {
         return level.getInheritedProperties();
     }
-
 
     public int getOrdinal() {
         return ordinal;

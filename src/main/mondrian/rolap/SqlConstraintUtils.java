@@ -62,8 +62,8 @@ public class SqlConstraintUtils {
             members = removeDefaultMembers(members);
         }
 
-        CellRequest request =
-                RolapAggregationManager.makeRequest(members, false, false);
+        final CellRequest request =
+            RolapAggregationManager.makeRequest(members);
         if (request == null) {
             if (restrictMemberTypes) {
                 throw Util.newInternal("CellRequest is null - why?");

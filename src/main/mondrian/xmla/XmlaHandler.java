@@ -1262,8 +1262,8 @@ public class XmlaHandler implements XmlaConstants {
                 final Position position = result.getAxes()[0].getPositions().get(0);
                 Member[] members = position.toArray(new Member[position.size()]);
 
-                CellRequest cellRequest =
-                    RolapAggregationManager.makeRequest(members, false, false);
+                final CellRequest cellRequest =
+                    RolapAggregationManager.makeRequest(members);
                 List<MondrianDef.Relation> relationList =
                     new ArrayList<MondrianDef.Relation>();
                 final RolapStar.Table factTable =

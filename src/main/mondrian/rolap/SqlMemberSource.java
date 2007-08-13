@@ -565,8 +565,8 @@ RME is this right
         RolapStar.Column column = levelToColumnMap.get(childLevel);
 
         // set a bit for each level which is constrained in the context
-        CellRequest request =
-                RolapAggregationManager.makeRequest(members, false, false);
+        final CellRequest request =
+            RolapAggregationManager.makeRequest(members);
         if (request == null) {
             // One or more calculated members. Cannot use agg table.
             return null;
@@ -1022,8 +1022,8 @@ RME is this right
                 RolapLevel childLevel, Object value, RolapMember dataMember) {
             super(parentMember, childLevel, value, dataMember);
         }
-        
-        public boolean isCalculated() {
+
+        protected boolean computeCalculated() {
             return true;
         }
         

@@ -33,12 +33,37 @@ public abstract class MemberBase
     protected String uniqueName;
 
     /**
-     * Combines member type and whether is hidden.
+     * Combines member type and other properties, such as whether the member
+     * is the 'all' or 'null' member of its hierarchy and whether it is a
+     * measure or is calculated, into an integer field.
      *
-     * <p>The lowest 3 bits are member type;
-     * bit 4 is set if the member is hidden.
+     * <p>The fields are:<ul>
+     * <li>bits 0, 1, 2 ({@link #FLAG_TYPE_MASK}) are member type;
+     * <li>bit 3 ({@link #FLAG_HIDDEN}) is set if the member is hidden;
+     * <li>bit 4 ({@link #FLAG_ALL}) is set if this is the all member of its
+     *     hierarchy;
+     * <li>bit 5 ({@link #FLAG_NULL}) is set if this is the null member of its
+     *     hierarchy;
+     * <li>bit 6 ({@link #FLAG_CALCULATED}) is set if this is a calculated
+     *     member.
+     * <li>bit 7 ({@link #FLAG_MEASURE}) is set if this is a measure.
+     * </ul>
+     *
+     * NOTE: jhyde, 2007/8/10. It is necessary to cache whether the member is
+     * 'all', 'calculated' or 'null' in the member's state, because these
+     * properties are used so often. If we used a virtual method call - say we
+     * made each subclass implement 'boolean isNull()' - it would be slower.
+     * We use one flags field rather than 4 boolean fields to save space.
      */
     protected final int flags;
+
+    private static final int FLAG_TYPE_MASK = 0x07;
+    private static final int FLAG_HIDDEN = 0x08;
+    private static final int FLAG_ALL = 0x10;
+    private static final int FLAG_NULL = 0x20;
+    private static final int FLAG_CALCULATED = 0x40;
+    private static final int FLAG_MEASURE = 0x80;
+
     protected final String parentUniqueName;
 
     /**
@@ -57,7 +82,11 @@ public abstract class MemberBase
         this.parentUniqueName = (parentMember == null)
             ? null
             : parentMember.getUniqueName();
-        this.flags = memberType.ordinal();
+        this.flags = memberType.ordinal()
+            | (level.isAll() ? FLAG_ALL : 0)
+            | (memberType == MemberType.NULL ? FLAG_NULL : 0)
+            | (computeCalculated() ? FLAG_CALCULATED : 0)
+            | (level.getHierarchy().getDimension().isMeasures() ? FLAG_MEASURE : 0);
     }
 
     public String getQualifiedName() {
@@ -100,7 +129,7 @@ public abstract class MemberBase
     }
 
     public final MemberType getMemberType() {
-        return MEMBER_TYPE_VALUES[flags & 7];
+        return MEMBER_TYPE_VALUES[flags & FLAG_TYPE_MASK];
     }
 
     public String getDescription() {
@@ -108,25 +137,35 @@ public abstract class MemberBase
     }
 
     public final boolean isMeasure() {
-        return level.getHierarchy().getDimension().isMeasures();
+        return (flags & FLAG_MEASURE) != 0;
     }
 
     public final boolean isAll() {
-        return level.isAll();
+        return (flags & FLAG_ALL) != 0;
     }
 
-    public boolean isNull() {
-        return false;
+    public final boolean isNull() {
+        return (flags & FLAG_NULL) != 0;
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, String s) {
-        return lookupChild(schemaReader, s, MatchType.EXACT);
+    public final boolean isCalculated() {
+       return (flags & FLAG_CALCULATED) != 0;
     }
 
     public OlapElement lookupChild(
-        SchemaReader schemaReader, String s, MatchType matchType)
+        SchemaReader schemaReader,
+        String childName)
     {
-        return schemaReader.lookupMemberChildByName(this, s, matchType);
+        return lookupChild(schemaReader, childName, MatchType.EXACT);
+    }
+
+    public OlapElement lookupChild(
+        SchemaReader schemaReader,
+        String childName,
+        MatchType matchType)
+    {
+        return schemaReader.lookupMemberChildByName(
+            this, childName, matchType);
     }
 
     // implement Member
@@ -178,8 +217,16 @@ public abstract class MemberBase
             : ((MemberBase) getParentMember()).isChildOrEqualTo(uniqueName);
     }
 
-    // implement Member
-    public boolean isCalculated() {
+    /**
+     * Computes the value to be returned by {@link #isCalculated()}, so it can
+     * be cached in a variable.
+     *
+     * @return Whether this member is calculated
+     */
+    protected boolean computeCalculated() {
+        // If the member is not created from the "with member ..." MDX, the
+        // calculated will be null. But it may be still a calculated measure
+        // stored in the cube.
         return isCalculatedInQuery() || getMemberType() == MemberType.FORMULA;
     }
 

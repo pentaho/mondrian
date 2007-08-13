@@ -32,30 +32,34 @@ public class RolapLevel extends LevelBase {
 
     private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
 
-    public static RolapLevel lookupLevel(RolapLevel[] levels, String levelName) {
-        for (RolapLevel level : levels) {
-            if (level.getName().equals(levelName)) {
-                return level;
-            }
-        }
-        return null;
-    }
-
-    static final int ALL = 2;
-    static final int UNIQUE = 4;
-
-    /** The column or expression which yields the level's key. */
+    /**
+     * The column or expression which yields the level's key.
+     */
     private final MondrianDef.Expression keyExp;
-    /** The column or expression which yields the level's ordinal. */
+
+    /**
+     * The column or expression which yields the level's ordinal.
+     */
     private final MondrianDef.Expression ordinalExp;
-    /** The column or expression which yields the level members' caption. */
+
+    /**
+     * The column or expression which yields the level members' caption.
+     */
     private final MondrianDef.Expression captionExp;
-    /** For SQL generator. Whether values of "column" are unique globally
-     * unique (as opposed to unique only within the context of the parent
-     * member). */
-    private final boolean unique;
+
     private final SqlQuery.Datatype datatype;
+
     private final int flags;
+
+    static final int FLAG_ALL = 0x02;
+
+    /**
+     * For SQL generator. Whether values of "column" are unique globally
+     * unique (as opposed to unique only within the context of the parent
+     * member).
+     */
+    static final int FLAG_UNIQUE = 0x04;
+
     private final RolapProperty[] properties;
     private final RolapProperty[] inheritedProperties;
 
@@ -103,7 +107,6 @@ public class RolapLevel extends LevelBase {
         LevelType levelType, String approxRowCount)
     {
         super(hierarchy, name, depth, levelType);
-
         Util.assertPrecondition(properties != null, "properties != null");
         Util.assertPrecondition(hideMemberCondition != null,
             "hideMemberCondition != null");
@@ -114,8 +117,6 @@ public class RolapLevel extends LevelBase {
         }
         this.approxRowCount = loadApproxRowCount(approxRowCount);
         this.flags = flags;
-        final boolean isAll = (flags & ALL) == ALL;
-        this.unique = (flags & UNIQUE) == UNIQUE;
         this.datatype = datatype;
         this.keyExp = keyExp;
         if (nameExp != null) {
@@ -140,11 +141,17 @@ public class RolapLevel extends LevelBase {
         }
         this.parentExp = parentExp;
         if (parentExp != null) {
-            Util.assertTrue(!isAll, "'All' level '" + this + "' must not be parent-child");
-            Util.assertTrue(unique, "Parent-child level '" + this + "' must have uniqueMembers=\"true\"");
+            Util.assertTrue(
+                !isAll(),
+                "'All' level '" + this + "' must not be parent-child");
+            Util.assertTrue(
+                isUnique(),
+                "Parent-child level '" + this
+                    + "' must have uniqueMembers=\"true\"");
         }
         this.nullParentValue = nullParentValue;
-        Util.assertPrecondition(parentExp != null || nullParentValue == null,
+        Util.assertPrecondition(
+            parentExp != null || nullParentValue == null,
             "parentExp != null || nullParentValue == null");
         this.xmlClosure = xmlClosure;
         for (RolapProperty property : properties) {
@@ -175,7 +182,7 @@ public class RolapLevel extends LevelBase {
 
         Dimension dim = hierarchy.getDimension();
         if (dim.getDimensionType() == DimensionType.TimeDimension) {
-            if (!levelType.isTime() && !isAll) {
+            if (!levelType.isTime() && !isAll()) {
                 throw MondrianResource.instance()
                     .NonTimeLevelInTimeHierarchy.ex(getUniqueName());
             }
@@ -191,16 +198,16 @@ public class RolapLevel extends LevelBase {
         this.hideMemberCondition = hideMemberCondition;
     }
 
-
     public RolapHierarchy getHierarchy() {
         return (RolapHierarchy) hierarchy;
     }
 
     private int loadApproxRowCount(String approxRowCount) {
-        boolean notNullAndNumeric = approxRowCount != null && approxRowCount.matches("^\\d+$");
-        if(notNullAndNumeric){
-
-              return Integer.parseInt(approxRowCount);
+        boolean notNullAndNumeric =
+            approxRowCount != null
+                && approxRowCount.matches("^\\d+$");
+        if (notNullAndNumeric) {
+            return Integer.parseInt(approxRowCount);
         } else {
             // if approxRowCount is not set, return MIN_VALUE to indicate
             return Integer.MIN_VALUE;
@@ -222,7 +229,7 @@ public class RolapLevel extends LevelBase {
         return tableName;
     }
 
-    LevelReader getLevelReader() {
+    final LevelReader getLevelReader() {
         return levelReader;
     }
 
@@ -277,7 +284,7 @@ public class RolapLevel extends LevelBase {
         return captionExp != null;
     }
 
-    int getFlags() {
+    final int getFlags() {
         return flags;
     }
 
@@ -285,15 +292,15 @@ public class RolapLevel extends LevelBase {
         return hideMemberCondition;
     }
 
-    public boolean isUnique() {
-        return unique;
+    public final boolean isUnique() {
+        return (flags & FLAG_UNIQUE) != 0;
     }
 
-    SqlQuery.Datatype getDatatype() {
+    final SqlQuery.Datatype getDatatype() {
         return datatype;
     }
 
-    String getNullParentValue() {
+    final String getNullParentValue() {
         return nullParentValue;
     }
 
@@ -329,7 +336,7 @@ public class RolapLevel extends LevelBase {
             xmlLevel.getNameExp(), xmlLevel.getCaptionExp(), xmlLevel.getOrdinalExp(),
             xmlLevel.getParentExp(), xmlLevel.nullParentValue,
             xmlLevel.closure, createProperties(xmlLevel),
-            (xmlLevel.uniqueMembers ? UNIQUE : 0),
+            (xmlLevel.uniqueMembers ? FLAG_UNIQUE : 0),
             xmlLevel.getDatatype(),
             HideMemberCondition.valueOf(xmlLevel.hideMemberIf),
             LevelType.valueOf(xmlLevel.levelType), xmlLevel.approxRowCount);
@@ -423,8 +430,8 @@ public class RolapLevel extends LevelBase {
         }
     }
 
-    public boolean isAll() {
-        return (flags & ALL) != 0;
+    public final boolean isAll() {
+        return (flags & FLAG_ALL) != 0;
     }
 
     public boolean areMembersUnique() {
@@ -490,6 +497,18 @@ public class RolapLevel extends LevelBase {
      */
     boolean hasClosedPeer() {
         return levelReader instanceof ParentChildLevelReaderImpl;
+    }
+
+    public static RolapLevel lookupLevel(
+        RolapLevel[] levels,
+        String levelName)
+    {
+        for (RolapLevel level : levels) {
+            if (level.getName().equals(levelName)) {
+                return level;
+            }
+        }
+        return null;
     }
 
     /**
@@ -578,9 +597,9 @@ public class RolapLevel extends LevelBase {
             if (request.extendedContext &&
                 getNameExp() != null)
             {
-                RolapStar.Column nameColumn = column.getNameColumn();
+                final RolapStar.Column nameColumn = column.getNameColumn();
 
-                Util.assertTrue(nameColumn != null);
+                assert nameColumn != null;
                 request.addConstrainedColumn(nameColumn, null);
             }
 
@@ -590,7 +609,7 @@ public class RolapLevel extends LevelBase {
 
             // If member is unique without reference to its parent,
             // no further constraint is required.
-            if (unique) {
+            if (isUnique()) {
                 return false;
             }
 
@@ -623,7 +642,8 @@ public class RolapLevel extends LevelBase {
             Map<RolapLevel, RolapStar.Column> levelToColumnMap,
             RolapCacheRegion cacheRegion)
         {
-            RolapStar.Column column = levelToColumnMap.get(RolapLevel.this);
+            final RolapStar.Column column =
+                levelToColumnMap.get(RolapLevel.this);
             if (column == null) {
                 // This hierarchy is not one which qualifies the starMeasure
                 // (this happens in virtual cubes). The starMeasure only has

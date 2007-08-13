@@ -302,9 +302,10 @@ class RolapResult extends ResultBase {
                 for (int i = 0; i < axes.length; i++) {
                     final QueryAxis axis = query.axes[i];
                     final Calc calc = query.axisCalcs[i];
-                    loadMembers(nonAllMembers,
-                                (RolapEvaluator) evaluator.push(),
-                                axis, calc, axisMembers);
+                    loadMembers(
+                        nonAllMembers,
+                        evaluator.push(),
+                        axis, calc, axisMembers);
                 }
             }
 
@@ -318,11 +319,14 @@ class RolapResult extends ResultBase {
             //
             // Execute Slicer
             //
-            this.slicerAxis = evalExecute(nonAllMembers,
-                                    nonAllMembers.size()-1,
-                                    (RolapEvaluator) evaluator.push(),
-                                    query.slicerAxis,
-                                    query.slicerCalc);
+            this.slicerAxis =
+                evalExecute(
+                    nonAllMembers,
+                    nonAllMembers.size() - 1,
+                    evaluator.push(),
+                    query.slicerAxis,
+                    query.slicerCalc);
+
             // Use the context created by the slicer for the other
             // axes.  For example, "select filter([Customers], [Store
             // Sales] > 100) on columns from Sales where
@@ -352,7 +356,7 @@ class RolapResult extends ResultBase {
             //
             boolean redo = true;
             while (redo) {
-                RolapEvaluator e = (RolapEvaluator) evaluator.push();
+                RolapEvaluator e = evaluator.push();
                 redo = false;
 
                 for (int i = 0; i < axes.length; i++) {
@@ -626,7 +630,8 @@ class RolapResult extends ResultBase {
     protected Logger getLogger() {
         return LOGGER;
     }
-    public Cube getCube() {
+
+    public final RolapCube getCube() {
         return evaluator.getCube();
     }
 
@@ -745,7 +750,8 @@ class RolapResult extends ResultBase {
                         // The dependency testing evaluator can trigger new
                         // requests every cycle. So let is run as normal for
                         // the first N times, then run it disabled.
-                        ((RolapDependencyTestingEvaluator.DteRoot) evaluator.root).disabled = true;
+                        ((RolapDependencyTestingEvaluator.DteRoot)
+                            evaluator.root).disabled = true;
                         if (count > maxEvalDepth * 2) {
                             throw Util.newInternal("Query required more than "
                                 + count + " iterations");
@@ -767,11 +773,11 @@ class RolapResult extends ResultBase {
         return batchingReader.isDirty();
     }
 
-    private Object evaluateExp(Calc calc, Evaluator evaluator) {
+    private Object evaluateExp(Calc calc, RolapEvaluator evaluator) {
         int attempt = 0;
         boolean dirty = batchingReader.isDirty();
         while (true) {
-            RolapEvaluator ev = (RolapEvaluator) evaluator.push();
+            RolapEvaluator ev = evaluator.push();
 
             ev.setCellReader(batchingReader);
             Object preliminaryValue = calc.evaluate(ev);
@@ -799,10 +805,9 @@ class RolapResult extends ResultBase {
             batchingReader.setDirty(true);
         }
         
-        RolapEvaluator ev = (RolapEvaluator) evaluator.push();
+        RolapEvaluator ev = evaluator.push();
         ev.setCellReader(aggregatingReader);
-        Object value = calc.evaluate(ev);
-        return value;
+        return calc.evaluate(ev);
     }
 
     private void executeStripe(int axisOrdinal, RolapEvaluator revaluator) {
@@ -841,11 +846,11 @@ class RolapResult extends ResultBase {
                     // then find or create a CellFormatterValueFormatter
                     // for it. If not, then find or create a Locale based
                     // FormatValueFormatter.
-                    RolapCube cube = (RolapCube) getCube();
+                    final RolapCube cube = getCube();
                     Dimension measuresDim =
-                            cube.getMeasuresHierarchy().getDimension();
+                        cube.getMeasuresHierarchy().getDimension();
                     RolapMeasure m =
-                            (RolapMeasure) revaluator.getContext(measuresDim);
+                        (RolapMeasure) revaluator.getContext(measuresDim);
                     CellFormatter cf = m.getFormatter();
                     if (cf != null) {
                         valueFormatter = cellFormatters.get(cf);
@@ -947,7 +952,7 @@ class RolapResult extends ResultBase {
      * @return Evaluator whose context is the given cell
      */
     RolapEvaluator getCellEvaluator(int[] pos) {
-        final RolapEvaluator cellEvaluator = (RolapEvaluator) evaluator.push();
+        final RolapEvaluator cellEvaluator = evaluator.push();
         for (int i = 0; i < pos.length; i++) {
             Position position = axes[i].getPositions().get(pos[i]);
             cellEvaluator.setContext(position);
@@ -1191,7 +1196,7 @@ class RolapResult extends ResultBase {
                     // an IterCalc.
                     Iterable iter = (Iterable) o;
                     list = new ArrayList();
-                    for (Object e: iter) {
+                    for (Object e : iter) {
                         list.add(e);
                     }
                 }

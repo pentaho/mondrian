@@ -61,6 +61,13 @@ public class FastBatchingCellReader implements CellReader {
 
     private final RolapCube cube;
     private final Map<BatchKey, Batch> batches;
+
+    /**
+     * Records the number of requests. The field is used for correctness: if
+     * the request count stays the same during an operation, you know that the
+     * FastBatchingCellReader has not told any lies during that operation, and
+     * therefore the result is true. The field is also useful for debugging. 
+     */
     private int requestCount;
 
     final AggregationManager aggMgr = AggregationManager.instance();
@@ -69,7 +76,7 @@ public class FastBatchingCellReader implements CellReader {
         aggMgr.createPinSet();
 
     /**
-     * Indicates that the reader given incorrect results.
+     * Indicates that the reader has given incorrect results.
      */
     private boolean dirty;
 
@@ -88,15 +95,15 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     public Object get(RolapEvaluator evaluator) {
-        Member[] currentMembers = evaluator.getMembers();
-        CellRequest request =
-            RolapAggregationManager.makeRequest(currentMembers, false, false);
+        final Member[] currentMembers = evaluator.getMembers();
+        final CellRequest request =
+            RolapAggregationManager.makeRequest(currentMembers);
         if (request == null || request.isUnsatisfiable()) {
             return Util.nullValue; // request out of bounds
         }
         // Try to retrieve a cell and simultaneously pin the segment which
         // contains it.
-        Object o = aggMgr.getCellFromCache(request, pinnedSegments);
+        final Object o = aggMgr.getCellFromCache(request, pinnedSegments);
 
         if (o == Boolean.TRUE) {
             // Aggregation is being loaded. (todo: Use better value, or
@@ -153,14 +160,15 @@ public class FastBatchingCellReader implements CellReader {
         }
     }
 
-    void recordCellRequest(CellRequest request) {
+    public final void recordCellRequest(CellRequest request) {
         if (request.isUnsatisfiable()) {
             return;
         }
         ++requestCount;
 
-        BitKey bitkey = request.getConstrainedColumnsBitKey();
-        BatchKey key = new BatchKey(bitkey, request.getMeasure().getStar());
+        final BitKey bitkey = request.getConstrainedColumnsBitKey();
+        final BatchKey key =
+            new BatchKey(bitkey, request.getMeasure().getStar());
         Batch batch = batches.get(key);
         if (batch == null) {
             batch = new Batch(request);
@@ -172,7 +180,8 @@ public class FastBatchingCellReader implements CellReader {
                 buf.append(request.getConstrainedColumnsBitKey());
                 buf.append(Util.nl);
 
-                RolapStar.Column[] columns = request.getConstrainedColumns();
+                final RolapStar.Column[] columns = 
+                    request.getConstrainedColumns();
                 for (RolapStar.Column column : columns) {
                     buf.append("  ");
                     buf.append(column);
@@ -206,8 +215,7 @@ public class FastBatchingCellReader implements CellReader {
      * @return Whether any aggregations were loaded.
      */
     boolean loadAggregations(Query query) {
-        long t1 = System.currentTimeMillis();
-
+        final long t1 = System.currentTimeMillis();
         requestCount = 0;
         if (!isDirty()) {
             return false;
@@ -233,7 +241,7 @@ public class FastBatchingCellReader implements CellReader {
         dirty = false;
 
         if (LOGGER.isDebugEnabled()) {
-            long t2 = System.currentTimeMillis();
+            final long t2 = System.currentTimeMillis();
             LOGGER.debug("loadAggregation (millis): " + (t2 - t1));
         }
 
@@ -244,7 +252,7 @@ public class FastBatchingCellReader implements CellReader {
         if (query != null) {
             query.checkCancelOrTimeout();
         }
-        (batch).loadAggregation();
+        batch.loadAggregation();
     }
 
     List<CompositeBatch> groupBatches(List<Batch> batchList) {
@@ -409,12 +417,12 @@ public class FastBatchingCellReader implements CellReader {
                     constrainedColumnsBitKey, request.getMeasure().getStar());
         }
 
-        public void add(CellRequest request) {
-            List<StarColumnPredicate> values = request.getValueList();
+        public final void add(CellRequest request) {
+            final List<StarColumnPredicate> values = request.getValueList();
             for (int j = 0; j < columns.length; j++) {
                 valueSets[j].add(values.get(j));
             }
-            RolapStar.Measure measure = request.getMeasure();
+            final RolapStar.Measure measure = request.getMeasure();
             if (!measuresList.contains(measure)) {
                 assert (measuresList.size() == 0) ||
                         (measure.getStar() ==
@@ -437,27 +445,30 @@ public class FastBatchingCellReader implements CellReader {
             return measure.getStar();
         }
 
-        public void loadAggregation() {
+        public final void loadAggregation() {
             GroupingSetsCollector collectorWithGroupingSetsTurnedOff =
                 new GroupingSetsCollector(false);
             loadAggregation(collectorWithGroupingSetsTurnedOff);
         }
 
-        void loadAggregation(GroupingSetsCollector groupingSetsCollector) {
+        final void loadAggregation(
+            GroupingSetsCollector groupingSetsCollector)
+        {
             if (generateAggregateSql) {
                 generateAggregateSql();
             }
-            StarColumnPredicate[] predicates = initPredicates();
-            long t1 = System.currentTimeMillis();
+            final StarColumnPredicate[] predicates = initPredicates();
+            final long t1 = System.currentTimeMillis();
 
-            AggregationManager aggmgr = AggregationManager.instance();
+            final AggregationManager aggmgr = AggregationManager.instance();
+
             // TODO: optimize key sets; drop a constraint if more than x% of
             // the members are requested; whether we should get just the cells
             // requested or expand to a n-cube
 
             // If the database cannot execute "count(distinct ...)", split the
             // distinct aggregations out.
-            SqlQuery.Dialect dialect = getStar().getSqlQueryDialect();
+            final SqlQuery.Dialect dialect = getStar().getSqlQueryDialect();
 
             int distinctMeasureCount = getDistinctMeasureCount(measuresList);
             boolean tooManyDistinctMeasures =
@@ -467,19 +478,19 @@ public class FastBatchingCellReader implements CellReader {
                 !dialect.allowsMultipleCountDistinct();
 
             if (tooManyDistinctMeasures) {
-                doSpecialHandlingOfDistinctCountMeasures(aggmgr, predicates,
-                    groupingSetsCollector);
+                doSpecialHandlingOfDistinctCountMeasures(
+                    aggmgr, predicates, groupingSetsCollector);
             }
 
             // Load agg(distinct <SQL expression>) measures individually
             // for DBs that does allow multiple distinct SQL measures.
             if (!dialect.allowsMultipleDistinctSqlMeasures()) {
 
-                // Note that the intention was orignially to capture the subquery
-                // SQL measures and separate them out; However, without parsing
-                // the SQL string, Mondrian cannot distinguish between
-                // "col1" + "col2" and subquery. Here the measure list contains
-                // both types.
+                // Note that the intention was orignially to capture the
+                // subquery SQL measures and separate them out; However,
+                // without parsing the SQL string, Mondrian cannot distinguish
+                // between "col1" + "col2" and subquery. Here the measure list
+                // contains both types.
 
                 // See the test case testLoadDistinctSqlMeasure() in
                 //  mondrian.rolap.FastBatchingCellReaderTest
@@ -498,7 +509,7 @@ public class FastBatchingCellReader implements CellReader {
 
             final int measureCount = measuresList.size();
             if (measureCount > 0) {
-                RolapStar.Measure[] measures =
+                final RolapStar.Measure[] measures =
                     measuresList.toArray(new RolapStar.Measure[measureCount]);
                 aggmgr.loadAggregation(
                     measures, columns,
@@ -507,19 +518,20 @@ public class FastBatchingCellReader implements CellReader {
             }
 
             if (BATCH_LOGGER.isDebugEnabled()) {
-                long t2 = System.currentTimeMillis();
-                BATCH_LOGGER
-                    .debug("Batch.loadAggregation (millis) " + (t2 - t1));
+                final long t2 = System.currentTimeMillis();
+                BATCH_LOGGER.debug(
+                    "Batch.loadAggregation (millis) " + (t2 - t1));
             }
         }
 
         private void doSpecialHandlingOfDistinctCountMeasures(
-            AggregationManager aggmgr, StarColumnPredicate[] predicates,
+            AggregationManager aggmgr,
+            StarColumnPredicate[] predicates,
             GroupingSetsCollector groupingSetsCollector)
         {
             while (true) {
                 // Scan for a measure based upon a distinct aggregation.
-                RolapStar.Measure distinctMeasure =
+                final RolapStar.Measure distinctMeasure =
                     getFirstDistinctMeasure(measuresList);
                 if (distinctMeasure == null) {
                     break;
@@ -529,7 +541,7 @@ public class FastBatchingCellReader implements CellReader {
                 final List<RolapStar.Measure> distinctMeasuresList =
                     new ArrayList<RolapStar.Measure>();
                 for (int i = 0; i < measuresList.size();) {
-                    RolapStar.Measure measure = measuresList.get(i);
+                    final RolapStar.Measure measure = measuresList.get(i);
                     if (measure.getAggregator().isDistinct() &&
                         measure.getExpression().getGenericExpression().
                             equals(expr)) {
@@ -542,7 +554,7 @@ public class FastBatchingCellReader implements CellReader {
 
                 // Load all the distinct measures based on the same expression
                 // together
-                RolapStar.Measure[] measures =
+                final RolapStar.Measure[] measures =
                     distinctMeasuresList.toArray(
                         new RolapStar.Measure[distinctMeasuresList.size()]);
                 aggmgr.loadAggregation(
@@ -583,17 +595,16 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         private void generateAggregateSql() {
-            RolapCube cube = FastBatchingCellReader.this.cube;
+            final RolapCube cube = FastBatchingCellReader.this.cube;
             if (cube == null || cube.isVirtual()) {
-                StringBuilder buf = new StringBuilder(64);
+                final StringBuilder buf = new StringBuilder(64);
                 buf.append("AggGen: Sorry, can not create SQL for virtual Cube \"");
-                buf.append(FastBatchingCellReader.this.cube.getName());
+                buf.append(cube.getName());
                 buf.append("\", operation not currently supported");
                 BATCH_LOGGER.error(buf.toString());
 
             } else {
-                AggGen aggGen = new AggGen(
-                        FastBatchingCellReader.this.cube.getStar(), columns);
+                final AggGen aggGen = new AggGen(cube.getStar(), columns);
                 if (aggGen.isReady()) {
                     // PRINT TO STDOUT - DO NOT USE BATCH_LOGGER
                     System.out.println("createLost:" +
@@ -614,7 +625,7 @@ public class FastBatchingCellReader implements CellReader {
          * Returns the first measure based upon a distinct aggregation, or null
          * if there is none.
          */
-        RolapStar.Measure getFirstDistinctMeasure(
+        final RolapStar.Measure getFirstDistinctMeasure(
             List<RolapStar.Measure> measuresList)
         {
             for (RolapStar.Measure measure : measuresList) {
@@ -626,9 +637,12 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         /**
-         * Returns the number of the measures based upon a distinct aggregation.
+         * Returns the number of the measures based upon a distinct
+         * aggregation.
          */
-        int getDistinctMeasureCount(List<RolapStar.Measure> measuresList) {
+        private int getDistinctMeasureCount(
+            List<RolapStar.Measure> measuresList)
+        {
             int count = 0;
             for (RolapStar.Measure measure : measuresList) {
                 if (measure.getAggregator().isDistinct()) {
@@ -647,8 +661,9 @@ public class FastBatchingCellReader implements CellReader {
          * Mondrian does not parse the SQL string, the method will count both
          * queries as well as some non query SQL expressions.
          */
-        List<RolapStar.Measure> getDistinctSqlMeasures(
-            List<RolapStar.Measure> measuresList) {
+        private List<RolapStar.Measure> getDistinctSqlMeasures(
+            List<RolapStar.Measure> measuresList)
+        {
             List<RolapStar.Measure> distinctSqlMeasureList =
                 new ArrayList<RolapStar.Measure>();
             for (RolapStar.Measure measure : measuresList) {
@@ -782,16 +797,19 @@ public class FastBatchingCellReader implements CellReader {
      * SegmentArrayQuerySpec addMeasure Util.assertTrue being
      * triggered (which is what happened).
      */
-    static class BatchKey {
-        BitKey key;
-        RolapStar star;
+    static final class BatchKey {
+        final BitKey key;
+        final RolapStar star;
+
         BatchKey(BitKey key, RolapStar star) {
             this.key = key;
             this.star = star;
         }
+
         public int hashCode() {
             return key.hashCode() ^ star.hashCode();
         }
+
         public boolean equals(Object other) {
             if (other instanceof BatchKey) {
                 BatchKey bkey = (BatchKey) other;
@@ -800,6 +818,7 @@ public class FastBatchingCellReader implements CellReader {
                 return false;
             }
         }
+
         public String toString() {
             return star.getFactTable().getTableName() + " " + key.toString();
         }

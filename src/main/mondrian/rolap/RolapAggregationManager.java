@@ -39,22 +39,69 @@ public abstract class RolapAggregationManager {
 
     /**
      * Creates a request to evaluate the cell identified by
-     * <code>members</code>. If any of the members is the null member, returns
+     * <code>members</code>.
+     *
+     * <p>If any of the members is the null member, returns
      * null, since there is no cell. If the measure is calculated, returns
      * null.
      *
      * @param members Set of members which constrain the cell
-     * @param extendedContext If true, add non-constraining columns to the
-     * query for levels below each current member. This additional context
-     * makes the drill-through queries easier for humans to understand.
-     * @param drillThrough If true, request returns the list of fact table
-     *   rows contributing to the cell
      * @return Cell request, or null if the requst is unsatisfiable
+     *
+     * @see #makeDrillThroughRequest(mondrian.olap.Member[], boolean)
      */
-    public static CellRequest makeRequest(
-            final Member[] members,
-            final boolean extendedContext,
-            final boolean drillThrough) {
+    public static CellRequest makeRequest(final Member[] members)
+    {
+        if (!(members[0] instanceof RolapStoredMeasure)) {
+            return null;
+        }
+
+        final RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
+        final RolapStar.Measure starMeasure =
+            (RolapStar.Measure) measure.getStarMeasure();
+        assert starMeasure != null;
+        final RolapStar star = starMeasure.getStar();
+        final CellRequest request =
+            new CellRequest(starMeasure, false, false);
+        final Map<RolapLevel, RolapStar.Column> levelToColumnMap =
+            star.getLevelToColumnMap(measure.getCube());
+
+        for (int i = 1; i < members.length; i++) {
+            RolapMember member = (RolapMember) members[i];
+            final RolapLevel level = member.getLevel();
+            final boolean needToReturnNull =
+                level.getLevelReader().constrainRequest(
+                    member, levelToColumnMap, request, null);
+            if (needToReturnNull) {
+                return null;
+            }
+        }
+        return request;
+    }
+
+    /**
+     * Creates a request for the fact-table rows underlying the cell identified
+     * by <code>members</code>.
+     *
+     * <p>If any of the members is the null member, returns null, since there
+     * is no cell. If the measure is calculated, returns null.
+     *
+     * @param members           Set of members which constrain the cell
+     *
+     * @param extendedContext   If true, add non-constraining columns to the
+     *                          query for levels below each current member.
+     *                          This additional context makes the drill-through
+     *                          queries easier for humans to understand.
+     *
+     * @return Cell request, or null if the requst is unsatisfiable
+     *
+     * @see #makeRequest(mondrian.olap.Member[])
+     */
+    public static CellRequest makeDrillThroughRequest(
+        final Member[] members,
+        final boolean extendedContext)
+    {
+        boolean drillThrough = true;
         if (!(members[0] instanceof RolapStoredMeasure)) {
             return null;
         }
@@ -71,7 +118,7 @@ public abstract class RolapAggregationManager {
 
         // Since 'request.extendedContext == false' is a well-worn code path,
         // we have moved the test outside the loop.
-        if (request.extendedContext) {
+        if (extendedContext) {
             for (int i = 1; i < members.length; i++) {
                 final RolapMember member = (RolapMember) members[i];
                 addNonConstrainingColumns(member, levelToColumnMap, request);
@@ -126,10 +173,10 @@ public abstract class RolapAggregationManager {
      * @param request Cell request
      */
     private static void addNonConstrainingColumns(
-            final RolapMember member,
-            final Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            final CellRequest request) {
-
+        final RolapMember member,
+        final Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        final CellRequest request)
+    {
         final Hierarchy hierarchy = member.getHierarchy();
         final Level[] levels = hierarchy.getLevels();
         for (int j = levels.length - 1, depth = member.getLevel().getDepth();
@@ -156,7 +203,7 @@ public abstract class RolapAggregationManager {
      * Returns the value of a cell from an existing aggregation.
      */
     public Object getCellFromCache(final Member[] members) {
-        final CellRequest request = makeRequest(members, false, false);
+        final CellRequest request = makeRequest(members);
         return (request == null || request.isUnsatisfiable())
             // request out of bounds
             ? Util.nullValue
@@ -177,11 +224,11 @@ public abstract class RolapAggregationManager {
         CellRequest request,
         PinSet pinSet);
 
-    private Object getCellFromStar(
+    private static Object getCellFromStar(
         Member[] members,
         List<List<Member>> aggregationLists)
     {
-        final CellRequest request = makeRequest(members, false, false);
+        final CellRequest request = makeRequest(members);
         final RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
         final RolapStar.Measure starMeasure =
             (RolapStar.Measure) measure.getStarMeasure();
@@ -399,8 +446,7 @@ public abstract class RolapAggregationManager {
         // (column, value) pairs; or more accurately, (column, predicate)
         // pairs.
         CellRequest request =
-            makeRequest(
-                evaluator.getMembers(), false, false);
+            makeRequest(evaluator.getMembers());
 
         // Add in the extra constraints in the aggregation list.
         int[] groupOrdinals = {0, 0, 0};

@@ -657,11 +657,17 @@ public class Aggregation {
         Object[] keys,
         RolapAggregationManager.PinSet pinSet)
     {
-        for (SoftReference<Segment> segmentref : segmentRefs) {
-            Segment segment = segmentref.get();
+        // Use old-style for loop for efficiency.
+        int segmentRefCount = segmentRefs.size();
+        for (int i = 0; i < segmentRefCount; i++) {
+            SoftReference<Segment> segmentRef = segmentRefs.get(i);
+            Segment segment = segmentRef.get();
             if (segment == null) {
-                segmentRefs.remove(segmentref);
-                continue; // it's being garbage-collected
+                 // it's been garbage-collected
+                segmentRefs.remove(segmentRef);
+                --segmentRefCount;
+                --i;
+                continue;
             }
             if (segment.measure != measure) {
                 continue;

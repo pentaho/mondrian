@@ -625,8 +625,9 @@ public class UdfTest extends FoodMartTestCase {
 
     /**
      * Tests that the inferred return type is correct for a UDF whose return
-     * type is not the same as would be guessed by
-     * {@link mondrian.olap.fun.FunDefBase#guessResultType}.
+     * type is not the same as would be guessed by the default implementation
+     * of {@link mondrian.olap.fun.FunDefBase#getResultType}, which simply
+     * guesses based on the type of the first argument.
      */
     public void testNonGuessableReturnType() {
         TestContext tc = TestContext.create(
@@ -635,8 +636,8 @@ public class UdfTest extends FoodMartTestCase {
             null, null,
             "<UserDefinedFunction name=\"StringMult\" className=\"" +
                 StringMultUdf.class.getName() + "\"/>" + nl);
-        // guessResultType would assume that StringMult(int, string) returns
-        // an int, whereas it returns a string.
+        // The default implementation of getResultType would assume that 
+        // StringMult(int, string) returns an int, whereas it returns a string.
         tc.assertExprReturns(
             "StringMult(5, 'foo') || 'bar'", "foofoofoofoofoobar");
     }

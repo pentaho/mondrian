@@ -882,7 +882,7 @@ public abstract class RolapNativeSet extends RolapNative {
      * was translated into an sql condition (filter/topcount). The measure
      * is not used to constrain the result but only to access the star.
      *
-     * @see RolapAggregationManager#makeRequest(Member[], boolean, boolean)
+     * @see RolapAggregationManager#makeRequest(Member[])
      */
     protected RolapEvaluator overrideContext(
         RolapEvaluator evaluator,
