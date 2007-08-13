@@ -11,9 +11,8 @@
 package mondrian.util;
 
 import mondrian.olap.Util;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.*;
 
 import junit.framework.TestCase;
 
@@ -90,6 +89,7 @@ public class ObjectPoolTest extends TestCase {
         }
         assertTrue("list not empty", l.isEmpty());
     }
+
     public void testKeyValue() throws Exception {
         ObjectPool<KeyValue> op = new ObjectPool<KeyValue>();
         int nos = 100000;
@@ -124,6 +124,126 @@ public class ObjectPoolTest extends TestCase {
             l.remove(kv);
         }
         assertTrue("list not empty", l.isEmpty());
+    }
+
+    /**
+     * Tests ObjectPools containing large numbers of integer and string keys,
+     * and makes sure they return the same results as HashSet. Optionally
+     * measures performance.
+     */
+    public void testLarge() {
+        // Some typical results (2.4 GHz Intel dual-core).
+        
+        // Key type:        Integer               String
+        // Implementation:  ObjectPool    HashSet ObjectPool    HashSet
+        //                  ========== ========== ========== ==========
+        // With density=0.01, 298,477 distinct entries, 7,068 hits
+        // 300,000 adds        221 ms      252 ms     293 ms    1013 ms 
+        // 700,000 gets        164 ms      148 ms     224 ms     746 ms
+        //
+        // With density=0.5, 236,022 distinct entries, 275,117 hits
+        // 300,000 adds        175 ms      250 ms     116 ms     596 ms
+        // 700,000 gets        147 ms      176 ms     190 ms     757 ms
+        //
+        // With density=0.999, 189,850 distinct entries, 442,618 hits
+        // 300,000 adds        128 ms      185 ms      99 ms     614 ms
+        // 700,000 gets        133 ms      184 ms     130 ms     830 ms
+
+        checkLargeMulti(300000, 0.01,  700000, 298477, 7068);
+        checkLargeMulti(300000, 0.5,   700000, 236022, 275117);
+        checkLargeMulti(300000, 0.999, 700000, 189850, 442618);
+    }
+
+    private void checkLargeMulti(
+        int entryCount,
+        double density,
+        int retrieveCount,
+        int expectedDistinct,
+        int expectedHits)
+    {
+        checkLarge(
+            true, true, entryCount, density, retrieveCount,
+            expectedDistinct, expectedHits);
+        checkLarge(
+            false, true, entryCount, density, retrieveCount,
+            expectedDistinct, expectedHits);
+        checkLarge(
+            false, true, entryCount, density, retrieveCount,
+            expectedDistinct, expectedHits);
+        checkLarge(
+            false, false, entryCount, density, retrieveCount,
+            expectedDistinct, expectedHits);
+    }
+
+    private void checkLarge(
+        boolean usePool,
+        boolean intKey,
+        int entryCount,
+        double density,
+        int retrieveCount,
+        int expectedDistinct,
+        int expectedHits)
+    {
+        final boolean print = true;
+        final long t1 = System.currentTimeMillis();
+        assert density > 0 && density <= 1;
+        int space = (int) (entryCount / density);
+        ObjectPool<Object> objectPool = new ObjectPool<Object>();
+        HashSet<Object> set = new HashSet<Object>();
+        Random random = new Random(1234);
+        int distinctCount = 0;
+        final String longString =
+            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyy";
+        for (int i = 0; i < entryCount; i++) {
+            final Object key = intKey
+                ? random.nextInt(space)
+                : longString + random.nextInt(space);
+            if (usePool) {
+                if (objectPool.add(key) != null) {
+                    ++distinctCount;
+                }
+            } else {
+                if (set.add(key)) {
+                    ++distinctCount;
+                }
+            }
+        }
+        final long t2 = System.currentTimeMillis();
+        int hitCount = 0;
+        for (int i = 0; i < retrieveCount; i++) {
+            final Object key = intKey
+                ? random.nextInt(space)
+                : longString + random.nextInt(space);
+            if (usePool) {
+                if (objectPool.contains(key)) {
+                    ++hitCount;
+                }
+            } else {
+                if (set.contains(key)) {
+                    ++hitCount;
+                }
+            }
+        }
+        final long t3 = System.currentTimeMillis();
+        if (usePool) {
+// todo:           assertEquals(expectedDistinct, objectPool.size());
+            distinctCount = objectPool.size();
+        } else {
+            assertEquals(expectedDistinct, set.size());
+        }
+        if (print) {
+            System.out.println(
+                "Using " + (usePool ? "ObjectPool" : "HashSet")
+                    + ", density=" + density
+                    + ", " + distinctCount + " distinct entries, "
+                    + hitCount + " hits");
+            System.out.println(
+                entryCount + " adds took " + (t2 - t1) + " milliseconds");
+            System.out.println(
+                retrieveCount + " gets took " + (t3 - t2) + " milliseconds");
+        }
+        assertEquals(expectedDistinct, distinctCount);
+        assertEquals(expectedHits, hitCount);
     }
 
     /////////////////////////////////////////////////////////////////////////
