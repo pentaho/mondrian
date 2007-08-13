@@ -21,6 +21,11 @@ import mondrian.rolap.agg.AggregationManager;
 import mondrian.util.Format;
 import mondrian.util.ObjectPool;
 
+import mondrian.olap.fun.FunUtil;
+import mondrian.olap.type.ScalarType;
+import mondrian.calc.DummyExp;
+import mondrian.calc.impl.ValueCalc;
+
 import org.apache.log4j.Logger;
 
 import java.util.Collections;
@@ -572,7 +577,11 @@ class RolapResult extends ResultBase {
             for (Member m : nonAllMembers.get(cnt)) {
                 evaluator.setContext(m);
                 Axis a = evalExecute(nonAllMembers, cnt-1, evaluator, axis, calc);
-                axisResult = mergeAxes(axisResult, a);
+                boolean ordered = false;
+                if (axis != null) {
+                    ordered = axis.isOrdered();
+                }
+                axisResult = mergeAxes(axisResult, a, evaluator, ordered);                
             }
         }
         return axisResult;
@@ -679,6 +688,9 @@ class RolapResult extends ResultBase {
             evaluator.setNonEmpty(axis.isNonEmpty());
             evaluator.setEvalAxes(true);
             Object value = axisCalc.evaluate(evaluator);
+            if (axisCalc.getClass().getName().indexOf("OrderFunDef") != -1) {
+                axis.setOrdered(true);
+            }            
             evaluator.setNonEmpty(false);
             if (value != null) {
                 // List or Iterable of Member or Member[]
@@ -1680,7 +1692,8 @@ class RolapResult extends ResultBase {
         }
     }
 
-    static Axis mergeAxes(Axis axis1, Axis axis2) {
+    static Axis mergeAxes(Axis axis1, Axis axis2, RolapEvaluator evaluator,
+                            boolean ordered) {        
         if (axis1 == null) {
             return axis2;
         }
@@ -1772,41 +1785,14 @@ class RolapResult extends ResultBase {
             }
             list.addAll(extras);
 
-            // if there are unique members on both axes, verify the member
-            // order and create a replacement sorted list if needed        
-            if (list.size() > 0 && extras.size() > 0) {
-                String[] names = new String[list.size()];            
-                int i = 0;
-                for (final Member memArray[]: list) {
-                    StringBuilder name = new StringBuilder(100);
-                    for (final Member mem: memArray) {
-                        final String uniqueName = mem.getUniqueName();
-                        name.append(uniqueName);
-                    }
-                    names[i] = name.toString();
-                    i++;
-                }
-                String[] namesCopy = names.clone();
-                java.util.Arrays.sort(names);
-                if (!java.util.Arrays.equals(names, namesCopy)) {                
-                    // create a sorted list from the original list
-                    List<Member[]> sortedList = new ArrayList<Member[]>();
-                    for (int j = 0; j < names.length; j++) {
-                        final String name = names[j];
-                        for (final Member memArray[]: list) {
-                            StringBuilder name2 = new StringBuilder(100);
-                            for (final Member mem: memArray) {
-                                final String uniqueName = mem.getUniqueName();
-                                name2.append(uniqueName);
-                            }
-                            if (name.equals(name2.toString())) {
-                                sortedList.add(memArray);
-                                break;
-                            }
-                        }
-                    }   
-                    return new RolapAxis.MemberArrayList(sortedList);
-                }                
+            // if there are unique members on both axes and no order function,
+            //  sort the list to ensure default order   
+            if (list.size() > 0 && extras.size() > 0 && ordered == false) {
+                Member[] membs = list.get(0);
+                int membsSize = membs.length;
+                ValueCalc valCalc = new ValueCalc(new DummyExp(new ScalarType()));
+                FunUtil.sortTuples(evaluator, list, valCalc,
+                        false, false, membsSize);
             }
 
             return new RolapAxis.MemberArrayList(list);

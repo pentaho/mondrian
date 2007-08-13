@@ -471,7 +471,7 @@ public class FunUtil extends Util {
      *
      * <p>NOTE: This function does not preserve the contents of the validator.
      */
-    static void sortTuples(
+    public static void sortTuples(
         Evaluator evaluator,
         List<Member[]> tuples,
         Calc exp,

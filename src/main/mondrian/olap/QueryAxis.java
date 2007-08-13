@@ -33,6 +33,7 @@ import java.util.List;
 public class QueryAxis extends QueryPart {
 
     private boolean nonEmpty;
+    private boolean ordered;
     private Exp exp;
     private final AxisOrdinal axisOrdinal;
 
@@ -66,6 +67,7 @@ public class QueryAxis extends QueryPart {
         this.axisOrdinal = axisDef;
         this.subtotalVisibility = subtotalVisibility;
         this.dimensionProperties = dimensionProperties;
+        this.ordered = false;
     }
 
     /**
@@ -166,6 +168,20 @@ public class QueryAxis extends QueryPart {
         this.nonEmpty = nonEmpty;
     }
 
+     /**
+     * Returns whether the axis has the <code>ORDER</code> property set.
+     */
+    public boolean isOrdered() {
+        return ordered;
+    }
+
+    /**
+     * Sets whether the axis has the <code>ORDER</code> property set.
+     */
+    public void setOrdered(boolean ordered) {
+        this.ordered = ordered;
+    }
+    
     /**
      * Returns the expression which is used to compute the value of this axis.
      */
