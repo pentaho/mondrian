@@ -79,6 +79,32 @@ public class CellKeyTest extends FoodMartTestCase {
         assertTrue("CellKey equals" , (key.equals(copy)));
     }
 
+    public void testZero() {
+        CellKey key = CellKey.Generator.newCellKey(new int[0]);
+        CellKey key2 = CellKey.Generator.newCellKey(new int[0]);
+        assertTrue(key == key2); // all 0-dimensional keys have same singleton
+        assertEquals(0, key.size());
+
+        CellKey keyMany = CellKey.Generator.newManyCellKey(0);
+        assertEquals(keyMany, key);
+
+        CellKey copy = key.copy();
+        assertEquals(copy, key);
+
+        boolean gotException = false;
+        try {
+            key.setAxis(0, 0);
+        } catch (Exception ex) {
+            gotException = true;
+        }
+        assertTrue("CellKey axis too big" , gotException);
+
+        int[] ordinals = key.getOrdinals();
+        assertEquals(ordinals.length, 0);
+        copy = CellKey.Generator.newCellKey(ordinals);
+        assertTrue("CellKey equals" , key.equals(copy));
+    }
+
     public void testOne() {
         CellKey keyMany = CellKey.Generator.newManyCellKey(1);
         CellKey key = CellKey.Generator.newCellKey(1);
@@ -131,6 +157,7 @@ public class CellKeyTest extends FoodMartTestCase {
         copy = CellKey.Generator.newCellKey(ordinals);
         assertTrue("CellKey equals" , (key.equals(copy)));
     }
+
     public void testTwo() {
         CellKey keyMany = CellKey.Generator.newManyCellKey(2);
         CellKey key = CellKey.Generator.newCellKey(2);
@@ -185,6 +212,7 @@ public class CellKeyTest extends FoodMartTestCase {
         copy = CellKey.Generator.newCellKey(ordinals);
         assertTrue("CellKey equals" , (key.equals(copy)));
     }
+
     public void testThree() {
         CellKey keyMany = CellKey.Generator.newManyCellKey(3);
         CellKey key = CellKey.Generator.newCellKey(3);
@@ -309,3 +337,5 @@ public class CellKeyTest extends FoodMartTestCase {
         MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
     }
 }
+
+// End CellKeyTest.java

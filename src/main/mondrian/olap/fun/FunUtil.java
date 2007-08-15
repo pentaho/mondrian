@@ -910,36 +910,42 @@ public class FunUtil extends Util {
     public static Object min(Evaluator evaluator, List members, Calc calc) {
         SetWrapper sw = evaluateSet(evaluator, members, calc);
         if (sw.errorCount > 0) {
-            return new Double(Double.NaN);
-        } else if (sw.v.size() == 0) {
-            return Util.nullValue;
+            return Double.NaN;
         } else {
-            double min = Double.MAX_VALUE;
-            for (int i = 0; i < sw.v.size(); i++) {
-                double iValue = ((Double) sw.v.get(i)).doubleValue();
-                if (iValue < min) {
-                    min = iValue;
+            final int size = sw.v.size();
+            if (size == 0) {
+                return Util.nullValue;
+            } else {
+                Double min = (Double) sw.v.get(0);
+                for (int i = 1; i < size; i++) {
+                    Double iValue = (Double) sw.v.get(i);
+                    if (iValue < min) {
+                        min = iValue;
+                    }
                 }
+                return min;
             }
-            return new Double(min);
         }
     }
 
     public static Object max(Evaluator evaluator, List members, Calc exp) {
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         if (sw.errorCount > 0) {
-            return new Double(Double.NaN);
-        } else if (sw.v.size() == 0) {
-            return Util.nullValue;
+            return Double.NaN;
         } else {
-            double max = Double.MIN_VALUE;
-            for (int i = 0; i < sw.v.size(); i++) {
-                double iValue = ((Double) sw.v.get(i)).doubleValue();
-                if (iValue > max) {
-                    max = iValue;
+            final int size = sw.v.size();
+            if (size == 0) {
+                return Util.nullValue;
+            } else {
+                Double max = (Double) sw.v.get(0);
+                for (int i = 1; i < size; i++) {
+                    Double iValue = (Double) sw.v.get(i);
+                    if (iValue > max) {
+                        max = iValue;
+                    }
                 }
+                return max;
             }
-            return new Double(max);
         }
     }
 

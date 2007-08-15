@@ -98,7 +98,7 @@ public interface CellKey {
         public static CellKey newCellKey(int size) {
             switch (size) {
             case 0:
-                return new Zero();
+                return Zero.INSTANCE;
             case 1:
                 return new One(0);
             case 2:
@@ -119,7 +119,7 @@ public interface CellKey {
         public static CellKey newCellKey(int[] pos) {
             switch (pos.length) {
             case 0:
-                return new Zero();
+                return Zero.INSTANCE;
             case 1:
                 return new One(pos[0]);
             case 2:
@@ -172,9 +172,19 @@ public interface CellKey {
         }
 
         public boolean equals(Object o) {
-            return o instanceof Zero;
+            if (o instanceof Zero) {
+                return true;
+            } else if (o instanceof Many) {
+                Many many = (Many) o;
+                return many.ordinals.length == 0;
+            } else {
+                return false;
+            }
         }
 
+        public int hashCode() {
+            return 11;
+        }
 
         public int size() {
             return 0;

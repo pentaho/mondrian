@@ -2205,6 +2205,26 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("MAX({[Store].[All Stores].[USA].children},[Measures].[Store Sales])", "263,793.22");
     }
 
+    public void testMaxNegative() {
+        // Bug 1771928, "Max() works incorrectly with negative values"
+        assertQueryReturns(
+            "with \n"
+                + "  member [Customers].[Neg] as '-1'\n"
+                + "  member [Customers].[Min] as 'Min({[Customers].[Neg]})'\n"
+                + "  member [Customers].[Max] as 'Max({[Customers].[Neg]})'\n"
+                + "select {[Customers].[Neg],[Customers].[Min],[Customers].[Max]} on 0\n"
+                + "from Sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[Neg]}\n" +
+                "{[Customers].[Min]}\n" +
+                "{[Customers].[Max]}\n" +
+                "Row #0: -1\n" +
+                "Row #0: -1\n" +
+                "Row #0: -1\n"));
+    }
+
     public void testMedian() {
         assertExprReturns("MEDIAN({[Store].[All Stores].[USA].children},[Measures].[Store Sales])", "159,167.84");
     }
