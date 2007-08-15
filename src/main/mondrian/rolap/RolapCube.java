@@ -995,7 +995,7 @@ return dim;
     }
 
 
-    public Schema getSchema() {
+    public RolapSchema getSchema() {
         return schema;
     }
 

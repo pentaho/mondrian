@@ -31,7 +31,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnSupportedDB() {
         boolean oldValue = MondrianProperties.instance().EnableGroupingSets.get();
         MondrianProperties.instance().EnableGroupingSets.set(true);
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null) {
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube) {
             boolean doesDBSupportGroupingSets() {
                 return true;
             }
@@ -43,7 +43,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnNonSupportedDB() {
         boolean oldValue = MondrianProperties.instance().EnableGroupingSets.get();
         MondrianProperties.instance().EnableGroupingSets.set(true);
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null) {
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube) {
             boolean doesDBSupportGroupingSets() {
                 return false;
             }
@@ -55,7 +55,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testShouldUseGroupingFunctionOnPropertyFalseOnSupportedDB() {
         boolean oldValue = MondrianProperties.instance().EnableGroupingSets.get();
         MondrianProperties.instance().EnableGroupingSets.set(false);
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null) {
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube) {
             boolean doesDBSupportGroupingSets() {
                 return true;
             }
@@ -67,7 +67,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testShouldUseGroupingFunctionOnPropertyFalseOnNonSupportedDB() {
         boolean oldValue = MondrianProperties.instance().EnableGroupingSets.get();
         MondrianProperties.instance().EnableGroupingSets.set(false);
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null) {
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube) {
             boolean doesDBSupportGroupingSets() {
                 return false;
             }
@@ -78,7 +78,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
     public void testDoesDBSupportGroupingSets() {
         final SqlQuery.Dialect dialect = getTestContext().getDialect();
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null) {
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube) {
             SqlQuery.Dialect getDialect() {
                 return dialect;
             }
@@ -90,8 +90,11 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         }
     }
 
+    private RolapCube salesCube =
+        (RolapCube) getTestContext().getConnection().getSchemaReader().getCubes()[0];
+
     public void testGroupBatchesForNonGroupableBatchesWithSorting() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch genderBatch = fbcr.new Batch(
             createRequest(cubeNameSales, measureUnitSales,
                 "customer", "gender", "F"));
@@ -110,7 +113,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testGroupBatchesForGroupableBatches() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch genderBatch = fbcr.new Batch(
             createRequest(cubeNameSales, measureUnitSales,
                 "customer", "gender", "F")) {
@@ -138,7 +141,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testGroupBatchesForGroupableBatchesAndNonGroupableBatches() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         final FastBatchingCellReader.Batch group1Agg2 = fbcr.new Batch(
             createRequest(cubeNameSales, measureUnitSales,
                 "customer", "gender", "F")) {
@@ -201,7 +204,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         String fieldWarehouseCountry = "warehouse_country";
         String tableWarehouse = "warehouse";
 
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch batch1RollupOnGender =
                 createBatch(fbcr,
                         new String[]{tableTime, tableStore, tableProductClass},
@@ -291,7 +294,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testAddToCompositeBatchForBothBatchesNotPartOfCompositeBatch() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch batch1 = fbcr.new Batch(
             createRequest(cubeNameSales, measureUnitSales,
                 "customer", "country", "F"));
@@ -310,7 +313,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testAddToCompositeBatchForDetailedBatchAlreadyPartOfACompositeBatch() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch detailedBatch = fbcr.new Batch(
             createRequest(cubeNameSales, measureUnitSales,
                 "customer", "country", "F"));
@@ -340,7 +343,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testAddToCompositeBatchForAggregationBatchAlreadyPartOfACompositeBatch() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch detailedBatch = fbcr.new Batch(
             createRequest(cubeNameSales, measureUnitSales,
                 "customer", "country", "F"));
@@ -373,7 +376,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testAddToCompositeBatchForBothBatchAlreadyPartOfACompositeBatch() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch detailedBatch = fbcr.new Batch(
             createRequest(cubeNameSales, measureUnitSales,
                 "customer", "country", "F"));
@@ -418,7 +421,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCanBatchForBatchWithSuperSetOfContraintColumnBitKeyAndAllValuesForAdditionalCondition() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 
         FastBatchingCellReader.Batch aggregationBatch =
             createBatch(fbcr,
@@ -447,7 +450,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCanBatchForBatchWithDistinctCountInDetailedBatch() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 
         FastBatchingCellReader.Batch aggregationBatch =
             createBatch(fbcr,
@@ -477,7 +480,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCanBatchForBatchWithDistinctCountInAggregateBatch() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 
         FastBatchingCellReader.Batch aggregationBatch =
             createBatch(fbcr,
@@ -505,7 +508,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCanBatchForBatchWithNonSuperSetOfContraintColumnBitKeyAndAllValuesForAdditionalCondition() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 
         FastBatchingCellReader.Batch aggregationBatch =
             createBatch(fbcr,
@@ -533,7 +536,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCanBatchForBatchWithSuperSetOfContraintColumnBitKeyAndNOTAllValuesForAdditionalCondition() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 
         FastBatchingCellReader.Batch aggregationBatch =
             createBatch(fbcr,
@@ -562,7 +565,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCanBatchForBatchesFromSameAggregationButDifferentRollupOption() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 
         FastBatchingCellReader.Batch batch1 =
                 createBatch(fbcr,
@@ -596,7 +599,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCanBatchForBatchWithSuperSetOfContraintColumnBitKeyAndDifferentValuesForOverlappingColumns() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 
         FastBatchingCellReader.Batch aggregationBatch =
             createBatch(fbcr,
@@ -658,7 +661,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
 
     public void testCompositeBatchLoadAggregation() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(null);
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 
         FastBatchingCellReader.Batch summaryBatch =
             createBatch(fbcr,

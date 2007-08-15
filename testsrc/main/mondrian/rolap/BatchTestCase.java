@@ -16,7 +16,6 @@ import mondrian.rolap.agg.GroupingSet;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.agg.ValueColumnPredicate;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.rolap.cache.CachePool;
 import mondrian.olap.*;
 
 import java.util.List;
@@ -116,42 +115,78 @@ public class BatchTestCase extends FoodMartTestCase {
         return collector.getGroupingSets().get(0);
     }
 
+    /**
+     * Checks that a given sequence of cell requests results in a
+     * particular SQL statement being generated.
+     *
+     * <p>Always clears the cache before running the requests.
+     *
+     * <p>Runs the requests once for each SQL pattern in the current
+     * dialect. If there are multiple patterns, runs the MDX query multiple
+     * times, and expects to see each SQL statement appear. If there are no
+     * patterns in this dialect, the test trivially succeeds.
+     *
+     * @param requests Sequence of cell requests
+     * @param patterns Set of patterns
+     */
     void assertRequestSql(
-        CellRequest[] requests, SqlPattern[] patterns, String cubeName)
+        CellRequest[] requests, SqlPattern[] patterns)
     {
-        RolapStar star = requests[0].getMeasure().getStar();
-        SqlQuery.Dialect sqlDialect = star.getSqlQueryDialect();
+        final RolapStar star = requests[0].getMeasure().getStar();
+        final String cubeName = requests[0].getMeasure().getCubeName();
+        final RolapCube cube = lookupCube(cubeName);
+        final SqlQuery.Dialect sqlDialect = star.getSqlQueryDialect();
         SqlPattern.Dialect d = SqlPattern.Dialect.get(sqlDialect);
         SqlPattern sqlPattern = SqlPattern.getPattern(d, patterns);
-        if (sqlPattern == null) {
+        if (d == SqlPattern.Dialect.UNKNOWN) {
             // If the dialect is not one in the pattern set, do not run the
             // test. We do not print any warning message.
             return;
         }
 
-        String sql = sqlPattern.getSql();
-        String trigger = sqlPattern.getTriggerSql();
-
-        // Create a dummy DataSource which will throw a 'bomb' if it is asked
-        // to execute a particular SQL statement, but will otherwise behave
-        // exactly the same as the current DataSource.
-        RolapUtil.threadHooks.set(new TriggerHook(trigger));
-        Bomb bomb;
-        try {
-            FastBatchingCellReader fbcr =
-                new FastBatchingCellReader(getCube(cubeName));
-            for (CellRequest request : requests) {
-                fbcr.recordCellRequest(request);
+        for (SqlPattern pattern : patterns) {
+            if (!pattern.hasDialect(d)) {
+                continue;
             }
-            fbcr.loadAggregations();
-            bomb = null;
-        } catch (Bomb e) {
-            bomb = e;
-        } finally {
-            RolapUtil.threadHooks.set(null);
+
+            clearCache(cube);
+
+            String sql = sqlPattern.getSql();
+            String trigger = sqlPattern.getTriggerSql();
+
+            // Create a dummy DataSource which will throw a 'bomb' if it is
+            // asked to execute a particular SQL statement, but will otherwise
+            // behave exactly the same as the current DataSource.
+            RolapUtil.threadHooks.set(new TriggerHook(trigger));
+            Bomb bomb;
+            try {
+                FastBatchingCellReader fbcr =
+                    new FastBatchingCellReader(getCube(cubeName));
+                for (CellRequest request : requests) {
+                    fbcr.recordCellRequest(request);
+                }
+                fbcr.loadAggregations();
+                bomb = null;
+            } catch (Bomb e) {
+                bomb = e;
+            } finally {
+                RolapUtil.threadHooks.set(null);
+            }
+            assertTrue(bomb != null);
+            TestContext.assertEqualsVerbose(
+                replaceQuotes(sql),
+                replaceQuotes(bomb.sql));
         }
-        assertTrue(bomb != null);
-        assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
+    }
+
+    private RolapCube lookupCube(String cubeName) {
+        Connection connection = TestContext.instance().getConnection();
+        for (Cube cube : connection.getSchema().getCubes()) {
+            if (cube.getName().equals(cubeName)) {
+                 return (RolapCube) cube;
+            }
+        }
+        return null;
     }
 
     /**
@@ -214,8 +249,8 @@ public class BatchTestCase extends FoodMartTestCase {
     {
         final Connection connection = testContext.getConnection();
         final Query query = connection.parseQuery(mdxQuery);
-        final Cube cube = query.getCube();
-        RolapSchema schema = (RolapSchema) cube.getSchema();
+        final RolapCube cube = (RolapCube) query.getCube();
+        RolapSchema schema = cube.getSchema();
 
         // Run the test once for each pattern in this dialect.
         // (We could optimize and run it once, collecting multiple queries, and
@@ -233,15 +268,7 @@ public class BatchTestCase extends FoodMartTestCase {
             String trigger = sqlPattern.getTriggerSql();
 
             if (clearCache) {
-                // Clear the cache for the Sales cube, so the query runs as if
-                // for the first time. (TODO: Cleaner way to do this.)
-                RolapHierarchy hierarchy =
-                    (RolapHierarchy) getConnection().getSchema().
-                    lookupCube("Sales", true).lookupHierarchy("Store", false);
-                SmartMemberReader memberReader =
-                    (SmartMemberReader) hierarchy.getMemberReader();
-                memberReader.mapLevelToMembers.cache.clear();
-                memberReader.mapMemberToChildren.cache.clear();
+                clearCache(cube);
             }
 
             // Create a dummy DataSource which will throw a 'bomb' if it is
@@ -251,12 +278,6 @@ public class BatchTestCase extends FoodMartTestCase {
 
             Bomb bomb;
             try {
-                if (clearCache) {
-                    // Flush the cache, to ensure that the query gets executed.
-                    ((RolapCube)cube).clearCachedAggregations(true);
-                    CachePool.instance().flush();
-                }
-
                 final Result result = connection.execute(query);
                 Util.discard(result);
                 bomb = null;
@@ -276,6 +297,26 @@ public class BatchTestCase extends FoodMartTestCase {
                 assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
             }
         }
+    }
+
+    private void clearCache(RolapCube cube) {
+        // Clear the cache for the Sales cube, so the query runs as if
+        // for the first time. (TODO: Cleaner way to do this.)
+        RolapHierarchy hierarchy =
+            (RolapHierarchy) getConnection().getSchema().
+            lookupCube("Sales", true).lookupHierarchy("Store", false);
+        SmartMemberReader memberReader =
+            (SmartMemberReader) hierarchy.getMemberReader();
+        memberReader.mapLevelToMembers.cache.clear();
+        memberReader.mapMemberToChildren.cache.clear();
+
+        // Flush the cache, to ensure that the query gets executed.
+        cube.clearCachedAggregations(true);
+
+        CacheControl cacheControl = getConnection().getCacheControl(null);
+        final CacheControl.CellRegion measuresRegion =
+            cacheControl.createMeasuresRegion(cube);
+        cacheControl.flush(measuresRegion);
     }
 
     private static String replaceQuotes(String s) {

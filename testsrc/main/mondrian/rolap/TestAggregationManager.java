@@ -72,7 +72,7 @@ public class TestAggregationManager extends BatchTestCase {
             )
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns, cubeNameSales);
+        assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
     /**
@@ -99,7 +99,7 @@ public class TestAggregationManager extends BatchTestCase {
             )
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns, cubeNameSales);
+        assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
     /**
@@ -147,7 +147,7 @@ public class TestAggregationManager extends BatchTestCase {
             )
         };
 
-        assertRequestSql(requests, patterns, cubeNameSales);
+        assertRequestSql(requests, patterns);
     }
 
     /**
@@ -189,7 +189,7 @@ public class TestAggregationManager extends BatchTestCase {
             )
         };
 
-        assertRequestSql(requests, patterns, cubeNameSales);
+        assertRequestSql(requests, patterns);
     }
 
     /**
@@ -330,7 +330,7 @@ public class TestAggregationManager extends BatchTestCase {
             )
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns, cubeNameSales);
+        assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
     public void testCountDistinctAggMiss() {
@@ -379,7 +379,7 @@ public class TestAggregationManager extends BatchTestCase {
             )
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns, cubeNameSales);
+        assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
     public void testCountDistinctAggMatch() {
@@ -410,7 +410,7 @@ public class TestAggregationManager extends BatchTestCase {
                 26),
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns, cubeNameSales);
+        assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
     public void testCountDistinctCannotRollup() {
@@ -471,7 +471,7 @@ public class TestAggregationManager extends BatchTestCase {
                 23)
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns, cubeNameSales);
+        assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
     /**
@@ -530,7 +530,7 @@ public class TestAggregationManager extends BatchTestCase {
                 58)
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns, cubeNameSales);
+        assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
     /**
@@ -576,7 +576,7 @@ public class TestAggregationManager extends BatchTestCase {
                 58)
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns, cubeNameSales);
+        assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
     /**

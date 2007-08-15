@@ -66,7 +66,7 @@ public class FastBatchingCellReader implements CellReader {
      * Records the number of requests. The field is used for correctness: if
      * the request count stays the same during an operation, you know that the
      * FastBatchingCellReader has not told any lies during that operation, and
-     * therefore the result is true. The field is also useful for debugging. 
+     * therefore the result is true. The field is also useful for debugging.
      */
     private int requestCount;
 
@@ -80,18 +80,10 @@ public class FastBatchingCellReader implements CellReader {
      */
     private boolean dirty;
 
-    /**
-     * Cached copy of dialect. Could be derived from cube each usage, but we
-     * call {@link #getDialect()} a lot.
-     */
-    private final SqlQuery.Dialect dialect;
-
     public FastBatchingCellReader(RolapCube cube) {
+        assert cube != null;
         this.cube = cube;
         this.batches = new HashMap<BatchKey, Batch>();
-        this.dialect =
-            cube == null ? null :
-            ((RolapSchema) cube.getSchema()).getDialect();
     }
 
     public Object get(RolapEvaluator evaluator) {
@@ -180,7 +172,7 @@ public class FastBatchingCellReader implements CellReader {
                 buf.append(request.getConstrainedColumnsBitKey());
                 buf.append(Util.nl);
 
-                final RolapStar.Column[] columns = 
+                final RolapStar.Column[] columns =
                     request.getConstrainedColumns();
                 for (RolapStar.Column column : columns) {
                     buf.append("  ");
@@ -331,8 +323,18 @@ public class FastBatchingCellReader implements CellReader {
         return getDialect().supportsGroupingSets();
     }
 
+    /**
+     * Returns the SQL dialect. Overridden in some unit tests.
+     *
+     * @return Dialect
+     */
     SqlQuery.Dialect getDialect() {
-        return dialect;
+        final RolapStar star = cube.getStar();
+        if (star != null) {
+            return star.getSqlQueryDialect();
+        } else {
+            return cube.getSchema().getDialect();
+        }
     }
 
     /**
@@ -468,7 +470,7 @@ public class FastBatchingCellReader implements CellReader {
 
             // If the database cannot execute "count(distinct ...)", split the
             // distinct aggregations out.
-            final SqlQuery.Dialect dialect = getStar().getSqlQueryDialect();
+            final SqlQuery.Dialect dialect = getDialect();
 
             int distinctMeasureCount = getDistinctMeasureCount(measuresList);
             boolean tooManyDistinctMeasures =
@@ -717,13 +719,13 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         boolean haveSameStarAndAggregation(Batch other) {
-            boolean rollup[] = new boolean[1];
-            boolean otherRollup[] = new boolean [1];
+            boolean rollup[] = {false};
+            boolean otherRollup[] = {false};
             boolean hasSameAggregation = getAgg(rollup) == other.getAgg(otherRollup);
             boolean hasSameRollupOption = rollup[0] == otherRollup[0];
 
             boolean hasSameStar = getStar().equals(other.getStar());
-            return (hasSameStar && hasSameAggregation && hasSameRollupOption);
+            return hasSameStar && hasSameAggregation && hasSameRollupOption;
         }
 
         /**

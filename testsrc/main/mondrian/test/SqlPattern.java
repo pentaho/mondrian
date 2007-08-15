@@ -68,7 +68,8 @@ public class SqlPattern {
      *
      * @param dialect Dialect
      * @param sql SQL statement
-     * @param triggerSql Prefix of SQL statement which triggers a match
+     * @param triggerSql Prefix of SQL statement which triggers a match; null
+     *                   means whole statement
      */
     public SqlPattern(
         Dialect dialect,
@@ -83,7 +84,8 @@ public class SqlPattern {
      *
      * @param dialects Set of dialects
      * @param sql SQL statement
-     * @param triggerSql Prefix of SQL statement which triggers a match
+     * @param triggerSql Prefix of SQL statement which triggers a match; null
+     *                   means whole statement
      */
     public SqlPattern(
         Set<Dialect> dialects,
@@ -92,7 +94,7 @@ public class SqlPattern {
     {
         this.dialects = dialects;
         this.sql = sql;
-        this.triggerSql = triggerSql;
+        this.triggerSql = triggerSql != null ? triggerSql : sql;
     }
 
     public static SqlPattern getPattern(Dialect d, SqlPattern[] patterns) {
