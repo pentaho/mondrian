@@ -1446,8 +1446,15 @@ class RolapResult extends ResultBase {
         }
 
         public int hashCode() {
-            return (int)(key ^ (key >>> 32));
+            // Combine the upper 32 bits of the key with the lower 32 bits.
+            // We used to use 'key ^ (key >>> 32)' but that was bad, because
+            // CellKey.Two encodes (i, j) as
+            // (i * Integer.MAX_VALUE + j), which is practically the same as
+            // (i << 32, j). If i and j were
+            // both k bits long, all of the hashcodes were k bits long too!
+            return (int) (key ^ (key >>> 11) ^ (key >>> 24));
         }
+
         public boolean equals(Object o) {
             if (o instanceof CellInfo) {
                 CellInfo that = (CellInfo) o;
@@ -1652,27 +1659,32 @@ class RolapResult extends ResultBase {
 
         CellInfoPool(int axisLength) {
             this.cellInfoPool = new ObjectPool<CellInfo>();
+            this.cellKeyMaker = createCellKeyMaker(axisLength);
+        }
+
+        CellInfoPool(int axisLength, int initialSize) {
+            this.cellInfoPool = new ObjectPool<CellInfo>(initialSize);
+            this.cellKeyMaker = createCellKeyMaker(axisLength);
+        }
+
+        private static CellKeyMaker createCellKeyMaker(int axisLength) {
             switch (axisLength) {
             case 0:
-                this.cellKeyMaker = new Zero();
-                break;
+                return new Zero();
             case 1:
-                this.cellKeyMaker = new One();
-                break;
+                return new One();
             case 2:
-                this.cellKeyMaker = new Two();
-                break;
+                return new Two();
             case 3:
-                this.cellKeyMaker = new Three();
-                break;
+                return new Three();
             case 4:
-                this.cellKeyMaker = new Four();
-                break;
+                return new Four();
             default:
                 throw new RuntimeException(
                     "Creating CellInfoPool with axisLength=" +axisLength);
             }
         }
+
         public int size() {
             return this.cellInfoPool.size();
         }
