@@ -69,7 +69,6 @@ public class ObjectPool<T> {
      */
     protected int distinct;
 
-    protected int lowWaterMark;
     protected int highWaterMark;
 
     /**
@@ -83,17 +82,11 @@ public class ObjectPool<T> {
     protected double maxLoadFactor;
 
     protected T[] values;
-    /**
-     * Whether a position in the values array is FREE or FULL.
-     */
-    protected byte[] state;
 
     /**
      * The number of table entries in state==FREE.
      */
     protected int freeEntries;
-
-
 
     public ObjectPool() {
         this(DEFAULT_CAPACITY);
@@ -171,12 +164,12 @@ public class ObjectPool<T> {
             return add(key);
         }
 
+        T v = this.values[i];
         this.values[i] = key;
 
-        if (this.state[i] == FREE) {
+        if (v == null) {
             this.freeEntries--;
         }
-        this.state[i] = FULL;
         this.distinct++;
 
         if (this.freeEntries < 1) {
@@ -196,7 +189,6 @@ public class ObjectPool<T> {
      */
     public void clear() {
         values = (T[]) new Object[values.length];
-        state = new byte[state.length];
 
         this.distinct = 0;
         this.freeEntries = values.length; // delta
@@ -221,19 +213,21 @@ public class ObjectPool<T> {
         return nextPrime(Math.max(size+1,
             (int) ((4*size / (3*minLoad+maxLoad)))));
     }
-    protected int chooseHighWaterMark(int capacity, double maxLoad) {
+    protected final int chooseHighWaterMark(int capacity, double maxLoad) {
         //makes sure there is always at least one FREE slot
         return Math.min(capacity-2, (int) (capacity * maxLoad));
     }
-    protected int chooseLowWaterMark(int capacity, double minLoad) {
+    protected final int chooseLowWaterMark(int capacity, double minLoad) {
         return (int) (capacity * minLoad);
     }
+/*
     protected int chooseMeanCapacity(int size, double minLoad, double maxLoad) {
         return nextPrime(Math.max(size+1, (int) ((2*size/(minLoad+maxLoad)))));
     }
     protected int chooseShrinkCapacity(int size, double minLoad, double maxLoad) {
         return nextPrime(Math.max(size+1, (int) ((4*size/(minLoad+3*maxLoad)))));
     }
+*/
 
     protected int nextPrime(int desiredCapacity) {
         return PrimeFinder.nextPrime(desiredCapacity);
@@ -271,7 +265,7 @@ public class ObjectPool<T> {
 
         //this.table = new long[capacity];
         this.values = (T[]) new Object[capacity];
-        this.state = new byte[capacity];
+        //this.state = new byte[capacity];
 
         // memory will be exhausted long before this
         // pathological case happens, anyway.
@@ -284,13 +278,6 @@ public class ObjectPool<T> {
 
         this.distinct = 0;
         this.freeEntries = capacity; // delta
-        // lowWaterMark will be established upon first expansion.
-        // establishing it now (upon instance construction) would
-        // immediately make the table shrink upon first put(...).
-        // After all the idea of an "initialCapacity" implies
-        // violating lowWaterMarks when an object is young.
-        // See ensureCapacity(...)
-        this.lowWaterMark = 0;
         this.highWaterMark = chooseHighWaterMark(capacity, this.maxLoadFactor);
 
     }
@@ -305,10 +292,9 @@ public class ObjectPool<T> {
 
     protected int indexOfInsertion(T key) {
         final T[] tab = values;
-        final byte[] stat = state;
         final int length = tab.length;
 
-        final int hash = hash(key) & 0x7FFFFFFF;
+        final int hash = key.hashCode() & 0x7FFFFFFF;
         int i = hash % length;
 
         // double hashing,
@@ -321,42 +307,39 @@ public class ObjectPool<T> {
         }
 
         // stop if we find a free slot, or if we find the key itself
-        while ((stat[i] == FULL) && !equals(tab[i], key)) {
-            i -= decrement;
+        T v = tab[i];
+        while (v != null && !v.equals(key)) {
             //hashCollisions++;
+            i -= decrement;
             if (i < 0) {
                 i += length;
             }
+            v = tab[i];
         }
 
         // key already contained at slot i.
         // return a negative number identifying the slot.
         // not already contained, should be inserted at slot i.
         // return a number >= 0 identifying the slot.
-        return (stat[i] == FULL) ? -i-1 : i;
+        return (v != null) ? -i-1 : i;
     }
 
     protected void rehash(int newCapacity) {
         int oldCapacity = values.length;
 
         T[] oldValues = values;
-        byte[] oldState = state;
 
         T[] newValues = (T[]) new Object[newCapacity];
-        byte[] newState = new byte[newCapacity];
 
-        this.lowWaterMark  = chooseLowWaterMark(newCapacity,this.minLoadFactor);
         this.highWaterMark = chooseHighWaterMark(newCapacity,this.maxLoadFactor);
 
         this.values = newValues;
-        this.state = newState;
         this.freeEntries = newCapacity-this.distinct; // delta
         for (int i = oldCapacity ; i-- > 0 ;) {
-            if (oldState[i]==FULL) {
-                T element = oldValues[i];
-                int index = indexOfInsertion(element);
-                newValues[index]=element;
-                newState[index]=FULL;
+            T v = oldValues[i];
+            if (v != null) {
+                int index = indexOfInsertion(v);
+                newValues[index]=v;
             }
         }
     }
@@ -367,16 +350,16 @@ public class ObjectPool<T> {
         }
 
         public boolean hasNext() {
-            if (index == ObjectPool.this.state.length) {
+            if (index == ObjectPool.this.values.length) {
                 return false;
             }
-            while (ObjectPool.this.state[index] != FULL) {
+            while (ObjectPool.this.values[index] == null) {
                 index++;
-                if (index == ObjectPool.this.state.length) {
+                if (index == ObjectPool.this.values.length) {
                     return false;
                 }
             }
-            return (ObjectPool.this.state[index] == FULL);
+            return (ObjectPool.this.values[index] != null);
         }
 
         public T next() {
