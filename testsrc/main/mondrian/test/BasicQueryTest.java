@@ -5896,7 +5896,40 @@ public class BasicQueryTest extends FoodMartTestCase {
                     "Row #2: 4,294\n"));
     }
 
+    /**
+     * This tests for bug #1630754. In Mondrian 2.2.2 the SqlTupleReader.readTuples 
+     * method would create a SQL having an in-clause with more that 1000 entities 
+     * under some circumstances. This exceeded the limit for Oracle resulting in an 
+     * ORA-01795 error.
+     */
+    public void testBug1630754() {
 
+    	// In order to reproduce this bug a dimension with 2 levels with more 
+    	// than 1000 member each was necessary. The customer_id column has more than 
+    	// 1000 distinct members so it was used for this test.
+    	final TestContext testContext = TestContext.createSubstitutingCube(
+                "Sales",
+                "  <Dimension name=\"Customer_2\" foreignKey=\"customer_id\">\n" +
+                    "    <Hierarchy hasAll=\"true\" " + 
+                    "allMemberName=\"All Customers\" "  +
+                    "primaryKey=\"customer_id\" " + " >\n" +
+                    "      <Table name=\"customer\"/>\n" +
+                    "	   <Level name=\"Name1\" column=\"customer_id\" uniqueMembers=\"true\"/>" + 
+                    "      <Level name=\"Name2\" column=\"customer_id\" uniqueMembers=\"true\"/>\n" +
+                    "    </Hierarchy>\n" +
+                    "  </Dimension>");
+    	
+    	Result result = testContext.executeQuery(
+        		"WITH SET [#DataSet#] AS " +
+        		"	'Crossjoin({Descendants([Customer_2].[All Customers], 2)}, " +
+        		"	{[Product].[All Products]})' " + 
+            	"SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns, " +
+            	"Hierarchize({[#DataSet#]}) on rows FROM [Sales]");
+    	
+    	final int rowCount = result.getAxes()[1].getPositions().size();
+        assertEquals(5581, rowCount);
+    }
+    
     /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.
