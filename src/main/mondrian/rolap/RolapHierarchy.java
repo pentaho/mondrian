@@ -607,7 +607,7 @@ public class RolapHierarchy extends HierarchyBase {
                 return join;
             }
         }
-        throw Util.newInternal("bad relation type " + relation);
+        return null;
     }
 
     /**
