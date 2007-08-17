@@ -12,6 +12,8 @@
 */
 
 package mondrian.rolap;
+
+import mondrian.olap.Id;
 import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 
@@ -58,7 +60,7 @@ abstract class ArrayMemberSource implements MemberSource {
     public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children) {
         // there are no children
     }
-    public RolapMember lookupMember(String[] uniqueNameParts,
+    public RolapMember lookupMember(List<Id.Segment> uniqueNameParts,
                                     boolean failIfNotFound) {
         String uniqueName = Util.implode(uniqueNameParts);
         for (RolapMember member : members) {

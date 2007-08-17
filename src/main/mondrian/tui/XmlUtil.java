@@ -811,11 +811,6 @@ public class XmlUtil {
         public InputSource resolveEntity(String publicId,
                                          String systemId)
                 throws SAXException, IOException {
-/*
-System.err.println("XmlUtil.Resolver.resolveEntity:");
-System.err.println("    publicId="+publicId);
-System.err.println("    systemId="+systemId);
-*/
             return source;
         }
     }

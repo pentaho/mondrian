@@ -4841,15 +4841,15 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "</Cube>",
             null, null, null);
         SchemaReader scr = testContext.getConnection().getSchema().lookupCube(cubeName, true).getSchemaReader(null);
-        Member member = scr.getMemberByUniqueName(new String[] {"Measures", "Unit Sales"}, true);
+        Member member = scr.getMemberByUniqueName(Id.Segment.toList("Measures", "Unit Sales"), true);
         Object visible = member.getPropertyValue(Property.VISIBLE.name);
         assertEquals(Boolean.FALSE, visible);
 
-        member = scr.getMemberByUniqueName(new String[] {"Measures", "Store Cost"}, true);
+        member = scr.getMemberByUniqueName(Id.Segment.toList("Measures", "Store Cost"), true);
         visible = member.getPropertyValue(Property.VISIBLE.name);
         assertEquals(Boolean.TRUE, visible);
 
-        member = scr.getMemberByUniqueName(new String[] {"Measures", "Profit"}, true);
+        member = scr.getMemberByUniqueName(Id.Segment.toList("Measures", "Profit"), true);
         visible = member.getPropertyValue(Property.VISIBLE.name);
         assertEquals(Boolean.FALSE, visible);
     }

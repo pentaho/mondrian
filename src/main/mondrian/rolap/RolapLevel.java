@@ -469,12 +469,12 @@ public class RolapLevel extends LevelBase {
         IfParentsName
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, String name) {
+    public OlapElement lookupChild(SchemaReader schemaReader, Id.Segment name) {
         return lookupChild(schemaReader, name, MatchType.EXACT);
     }
 
     public OlapElement lookupChild(
-        SchemaReader schemaReader, String name, MatchType matchType)
+        SchemaReader schemaReader, Id.Segment name, MatchType matchType)
     {
         Member[] levelMembers = schemaReader.getLevelMembers(this, true);
         if (levelMembers.length > 0) {

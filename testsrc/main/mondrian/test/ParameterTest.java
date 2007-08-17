@@ -16,7 +16,6 @@ import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
 import org.eigenbase.util.property.Property;
 
-import java.util.EnumSet;
 import java.util.Set;
 
 /**
@@ -54,7 +53,7 @@ public class ParameterTest extends FoodMartTestCase {
         String mdx = "select {Parameter(\"Foo\",[Time],[Time].[1997],\"Foo\")} ON COLUMNS from [Sales]";
         Query query = getConnection().parseQuery(mdx);
         SchemaReader sr = query.getSchemaReader(false);
-        Member m = sr.getMemberByUniqueName(new String[]{"Time", "1997", "Q2", "5"}, true);
+        Member m = sr.getMemberByUniqueName(Id.Segment.toList("Time", "1997", "Q2", "5"), true);
         Parameter p = sr.getParameter("Foo");
         p.setValue(m);
         assertEquals(m, p.getValue());
@@ -264,8 +263,8 @@ public class ParameterTest extends FoodMartTestCase {
         Assert.assertEquals("P", parameters[2].getName());
         Assert.assertEquals("Q", parameters[3].getName());
         final Member member =
-                query.getSchemaReader(true).getMemberByUniqueName(
-                        new String[] {"Gender", "M"}, true);
+            query.getSchemaReader(true).getMemberByUniqueName(
+                Id.Segment.toList("Gender", "M"), true);
         parameters[2].setValue(member);
         Assert.assertEquals("with member [Measures].[A string] as 'Parameter(\"S\", STRING, (\"x\" || \"y\"), \"A string parameter\")'" + nl +
                 "  member [Measures].[A number] as 'Parameter(\"N\", NUMERIC, (2.0 + 3.0), \"A numeric parameter\")'" + nl +

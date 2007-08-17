@@ -624,9 +624,9 @@ RME TODO
                     checkAttributeString(msgRecorder, name, "name");
                     checkAttributeString(msgRecorder, columnName, "column");
 
-                    String[] names = Util.explode(name);
+                    List<Id.Segment> names = Util.parseIdentifier(name);
                     // must be [hierarchy usage name].[level name]
-                    if (names.length != 2) {
+                    if (names.size() != 2) {
                         msgRecorder.reportError(
                             mres.BadLevelNameFormat.str(
                                 msgRecorder.getContext(),
@@ -637,28 +637,28 @@ RME TODO
                         SchemaReader schemaReader = cube.getSchemaReader();
                         RolapLevel level =
                             (RolapLevel) schemaReader.lookupCompound(
-                                    cube,
-                                    names,
-                                    false,
-                                    Category.Level);
+                                cube,
+                                names,
+                                false,
+                                Category.Level);
                         if (level == null) {
                             Hierarchy hierarchy = (Hierarchy)
                                 schemaReader.lookupCompound(
                                     cube,
-                                    new String[] { names[0] },
+                                    names.subList(0, 1),
                                     false,
                                     Category.Hierarchy);
                             if (hierarchy == null) {
                                 msgRecorder.reportError(
                                     mres.UnknownHierarchyName.str(
                                         msgRecorder.getContext(),
-                                        names[0]));
+                                        names.get(0).name));
                             } else {
                                 msgRecorder.reportError(
                                     mres.UnknownLevelName.str(
-                                            msgRecorder.getContext(),
-                                            names[0],
-                                            names[1]));
+                                        msgRecorder.getContext(),
+                                        names.get(0).name,
+                                        names.get(1).name));
                             }
                         }
                         rlevel = level;
@@ -742,8 +742,8 @@ RME TODO
              * <p>The measure name must be of the form
              * <blockquote><code>[Measures].[measure name]</code></blockquote>
              *
-             * <p>This method checks that is of length 2, starts with "Measures" and
-             * the "measure name" exists.
+             * <p>This method checks that is of length 2, starts 
+             * with "Measures" and the "measure name" exists.
              */
             public void validate(final MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName("Measure");
@@ -753,8 +753,8 @@ RME TODO
                     checkAttributeString(msgRecorder, name, "name");
                     checkAttributeString(msgRecorder, column, "column");
 
-                    String[] names = Util.explode(name);
-                    if (names.length != 2) {
+                    List<Id.Segment> names = Util.parseIdentifier(name);
+                    if (names.size() != 2) {
                         msgRecorder.reportError(
                             mres.BadMeasureNameFormat.str(
                                    msgRecorder.getContext(),
@@ -768,30 +768,30 @@ RME TODO
                                     false,
                                     Category.Member);
                         if (member == null) {
-                            if (! names[0].equals("Measures")) {
+                            if (! names.get(0).name.equals("Measures")) {
                                 msgRecorder.reportError(
                                     mres.BadMeasures.str(
                                         msgRecorder.getContext(),
-                                        names[0]));
+                                        names.get(0).name));
                             } else {
                                 msgRecorder.reportError(
                                     mres.UnknownMeasureName.str(
                                             msgRecorder.getContext(),
-                                            names[1]));
+                                            names.get(1).name));
                             }
                         }
                         RolapStar star = cube.getStar();
                         rolapMeasure =
                             star.getFactTable().lookupMeasureByName(
-                                cube.getName(), names[1]);
+                                cube.getName(), names.get(1).name);
                         if (rolapMeasure == null) {
                             msgRecorder.reportError(
                                 mres.BadMeasureName.str(
                                     msgRecorder.getContext(),
-                                    names[1],
+                                    names.get(1).name,
                                     cube.getName()));
                         }
-                        symbolicName = names[1];
+                        symbolicName = names.get(1).name;
                     }
                 } finally {
                     msgRecorder.popContextName();

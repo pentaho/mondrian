@@ -77,7 +77,8 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return memberReader;
     }
 
-    public void getMemberRange(Level level, Member startMember, Member endMember, List<Member> list) {
+    public void getMemberRange(
+        Level level, Member startMember, Member endMember, List<Member> list) {
         getMemberReader(level.getHierarchy()).getMemberRange(
                 (RolapLevel) level, (RolapMember) startMember,
                 (RolapMember) endMember, (List) list);
@@ -243,25 +244,29 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     public abstract Cube getCube();
 
-    public OlapElement getElementChild(OlapElement parent, String name) {
+    public OlapElement getElementChild(OlapElement parent, Id.Segment name) {
         return getElementChild(parent, name, MatchType.EXACT);
     }
 
     public OlapElement getElementChild(
-        OlapElement parent, String name, MatchType matchType)
+        OlapElement parent, Id.Segment name, MatchType matchType)
     {
         return parent.lookupChild(this, name, matchType);
     }
 
-    public Member getMemberByUniqueName(
-        String[] uniqueNameParts, boolean failIfNotFound) {
+    public final Member getMemberByUniqueName(
+        List<Id.Segment> uniqueNameParts,
+        boolean failIfNotFound)
+    {
         return getMemberByUniqueName(
             uniqueNameParts, failIfNotFound, MatchType.EXACT);
     }
 
     public Member getMemberByUniqueName(
-            String[] uniqueNameParts, boolean failIfNotFound,
-            MatchType matchType) {
+        List<Id.Segment> uniqueNameParts,
+        boolean failIfNotFound,
+        MatchType matchType)
+    {
         // In general, this schema reader doesn't have a cube, so we cannot
         // start looking up members.
         return null;
@@ -269,7 +274,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     public OlapElement lookupCompound(
         OlapElement parent,
-        String[] names,
+        List<Id.Segment> names,
         boolean failIfNotFound,
         int category)
     {
@@ -277,24 +282,35 @@ public abstract class RolapSchemaReader implements SchemaReader {
             parent, names, failIfNotFound, category, MatchType.EXACT);
     }
 
-    public OlapElement lookupCompound(
-            OlapElement parent,
-            String[] names,
-            boolean failIfNotFound,
-            int category,
-            MatchType matchType)
+    public final OlapElement lookupCompound(
+        OlapElement parent,
+        String[] names,
+        boolean failIfNotFound,
+        int category)
     {
-        return Util.lookupCompound(
-                this, parent, names, failIfNotFound, category, matchType);
+        return lookupCompound(
+            parent, Id.Segment.toList(names), failIfNotFound, category,
+            MatchType.EXACT);
     }
 
-    public Member lookupMemberChildByName(Member parent, String childName)
+    public OlapElement lookupCompound(
+        OlapElement parent,
+        List<Id.Segment> names,
+        boolean failIfNotFound,
+        int category,
+        MatchType matchType)
+    {
+        return Util.lookupCompound(
+            this, parent, names, failIfNotFound, category, matchType);
+    }
+
+    public Member lookupMemberChildByName(Member parent, Id.Segment childName)
     {
         return lookupMemberChildByName(parent, childName, MatchType.EXACT);
     }
 
     public Member lookupMemberChildByName(
-        Member parent, String childName, MatchType matchType)
+        Member parent, Id.Segment childName, MatchType matchType)
     {
         LOGGER.debug("looking for child \"" + childName + "\" of " + parent);
         try {
@@ -328,16 +344,16 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return null;
     }
 
-    public Member getCalculatedMember(String[] nameParts) {
+    public Member getCalculatedMember(List<Id.Segment> nameParts) {
         // There are no calculated members defined against a schema.
         return null;
     }
 
-    public NamedSet getNamedSet(String[] nameParts) {
-        if (nameParts.length != 1) {
+    public NamedSet getNamedSet(List<Id.Segment> nameParts) {
+        if (nameParts.size() != 1) {
             return null;
         }
-        final String name = nameParts[0];
+        final String name = nameParts.get(0).name;
         return schema.getNamedSet(name);
     }
 

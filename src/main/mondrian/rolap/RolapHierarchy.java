@@ -271,22 +271,21 @@ public class RolapHierarchy extends HierarchyBase {
             this.memberReader = getRolapSchema().createMemberReader(
                 sharedHierarchyName, this, memberReaderClass);
         }
-        for (int i = 0; i < levels.length; i++) {
-            ((RolapLevel) levels[i]).init(cube, xmlDimension);
+        for (Level level : levels) {
+            ((RolapLevel) level).init(cube, xmlDimension);
         }
         if (defaultMemberName != null) {
-            String[] uniqueNameParts = Util.explode(defaultMemberName);
+            List<Id.Segment> uniqueNameParts =
+                Util.parseIdentifier(defaultMemberName);
 
             // We strip off the parent dimension name if the defaultMemberName
             // is the full unique name, [Time].[2004] rather than simply
             // [2004].
             //Dimension dim = getDimension();
             // What we should strip off is hierarchy name
-            if (this.name.equals(uniqueNameParts[0])) {
-                String[] tmp = new String[uniqueNameParts.length-1];
-                System.arraycopy(uniqueNameParts, 1, tmp, 0,
-                                uniqueNameParts.length-1);
-                uniqueNameParts = tmp;
+            if (this.name.equals(uniqueNameParts.get(0).name)) {
+                uniqueNameParts =
+                    uniqueNameParts.subList(1, uniqueNameParts.size());
             }
 
             // Now lookup the name from the hierarchy's members.
@@ -675,10 +674,9 @@ public class RolapHierarchy extends HierarchyBase {
      * members.
      */
     public boolean isRagged() {
-        for (int i = 0; i < levels.length; i++) {
-            RolapLevel level = (RolapLevel) levels[i];
-            if (level.getHideMemberCondition() !=
-                    RolapLevel.HideMemberCondition.Never) {
+        for (Level level : levels) {
+            if (((RolapLevel) level).getHideMemberCondition() !=
+                RolapLevel.HideMemberCondition.Never) {
                 return true;
             }
         }
@@ -853,7 +851,8 @@ RME HACK
 
     /**
      * Sets default Measure
-     * @param defaultMeasure
+     *
+     * @param defaultMeasure Default measure
      */
     public void setDefaultMember(Member defaultMeasure) {
         if (defaultMeasure != null){

@@ -461,7 +461,10 @@ public class RolapCube extends CubeBase {
     {
         for (MondrianDef.CalculatedMember xmlCalcMember : calcMemberList) {
             Dimension dimension =
-                (Dimension) lookupDimension(xmlCalcMember.dimension);
+                (Dimension) lookupDimension(
+                        new Id.Segment(
+                            xmlCalcMember.dimension,
+                            Id.Quoting.UNQUOTED));
             if (formula.getName().equals(xmlCalcMember.name) &&
                 formula.getMdxMember().getDimension().getName().equals(
                     dimension.getName())) {
@@ -590,26 +593,13 @@ public class RolapCube extends CubeBase {
             final RolapHierarchy sharedHierarchy =
                 schema.getSharedHierarchy(usage.source);
             if (sharedHierarchy != null) {
-/*
-System.out.println("RolapCube.getOrCreateDimension: " +
-" cube="+getName()+
-" sharedHierarchy.dimension=" + sharedHierarchy.getDimension().getName());
-*/
                 return (RolapDimension) sharedHierarchy.getDimension();
             }
         }
         MondrianDef.Dimension xmlDimension =
             xmlCubeDimension.getDimension(xmlSchema);
-/*
-        RolapDimension dim = new RolapDimension(schema, this, xmlDimension,
-            xmlCubeDimension);
-System.out.println("RolapCube.getOrCreateDimension: " +
-" cube="+getName()+
-" new dimension=" + dim.getName());
-return dim;
-*/
-        return new RolapDimension(schema, this, xmlDimension,
-            xmlCubeDimension);
+        return new RolapDimension(
+            schema, this, xmlDimension, xmlCubeDimension);
     }
 
     /**
@@ -841,7 +831,10 @@ return dim;
 
         // Lookup dimension
         final Dimension dimension =
-                (Dimension) lookupDimension(xmlCalcMember.dimension);
+                (Dimension) lookupDimension(
+                    new Id.Segment(
+                        xmlCalcMember.dimension,
+                        Id.Quoting.UNQUOTED));
         if (dimension == null) {
             throw MondrianResource.instance().CalcMemberHasBadDimension.ex(
                     xmlCalcMember.dimension, xmlCalcMember.name,
@@ -1050,11 +1043,6 @@ return dim;
         int max = -1;
         for (Dimension dimension1 : dimensions) {
             final RolapDimension dimension = (RolapDimension) dimension1;
-/*
-System.out.println("RolapCube.init: "+
-"cube=" +getName() +
-", dimension=" +dimension.getName());
-*/
             dimension.init(this, lookup(xmlDimensions, dimension.getName()));
             max = Math.max(max, dimension.getGlobalOrdinal());
         }
@@ -2192,18 +2180,18 @@ assert is not true.
         return dimension;
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, String s) {
+    public OlapElement lookupChild(SchemaReader schemaReader, Id.Segment s) {
         return lookupChild(schemaReader, s, MatchType.EXACT);
     }
 
     public OlapElement lookupChild(
-        SchemaReader schemaReader, String s, MatchType matchType)
+        SchemaReader schemaReader, Id.Segment s, MatchType matchType)
     {
         // Note that non-exact matches aren't supported at this level,
         // so the matchType is ignored
         OlapElement oe;
         String status = null;
-        if (s.equals("Measures")) {
+        if (s.matches("Measures")) {
             // A Measure is never aliased, so just get it
             // Note if one calls getUsageByName with "Measures" as the value
             // it will return null so one must either do this or check for
@@ -2227,8 +2215,8 @@ assert is not true.
             // Lastly if the HierarchyUsage is not shared, then there is
             // no aliasing so just use the value.
 
-            HierarchyUsage hierUsage = getUsageByName(s);
-
+            HierarchyUsage hierUsage = getUsageByName(s.name);
+                    
             if (hierUsage == null) {
                 oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
                 status = "hierUsage == null";
@@ -2236,7 +2224,7 @@ assert is not true.
                 // Let us see if one is using the source name of a
                 // usage rather than the alias name.
                 if (oe instanceof RolapDimension) {
-                    HierarchyUsage[] usages = getUsagesBySource(s);
+                    HierarchyUsage[] usages = getUsagesBySource(s.name);
 
                     if (usages.length > 0) {
                         StringBuilder buf = new StringBuilder(64);
@@ -2270,7 +2258,10 @@ assert is not true.
             } else if (hierUsage.isShared()) {
                 status = "hierUsage == shared";
                 // Shared, use source
-                String source = hierUsage.getSource();
+                Id.Segment source =
+                    new Id.Segment(
+                        hierUsage.getSource(),
+                        Id.Quoting.UNQUOTED);
                 oe = super.lookupChild(schemaReader, source, MatchType.EXACT);
 
             } else {
@@ -2364,7 +2355,7 @@ assert is not true.
         }
 
 
-        public Member getCalculatedMember(String[] nameParts) {
+        public Member getCalculatedMember(List<Id.Segment> nameParts) {
             final String uniqueName = Util.implode(nameParts);
             for (Formula formula : calculatedMembers) {
                 final String formulaUniqueName =
@@ -2378,16 +2369,16 @@ assert is not true.
             return null;
         }
 
-        public NamedSet getNamedSet(String[] nameParts) {
-            if (nameParts.length == 1) {
-                String name = nameParts[0];
+        public NamedSet getNamedSet(List<Id.Segment> segments) {
+            if (segments.size() == 1) {
+                Id.Segment segment = segments.get(0);
                 for (Formula namedSet : namedSets) {
-                    if (namedSet.getName().equals(name)) {
+                    if (segment.matches(namedSet.getName())) {
                         return namedSet.getNamedSet();
                     }
                 }
             }
-            return super.getNamedSet(nameParts);
+            return super.getNamedSet(segments);
         }
 
         public List<Member> getCalculatedMembers(Hierarchy hierarchy) {
@@ -2435,20 +2426,15 @@ assert is not true.
         }
 
         public Member getMemberByUniqueName(
-            String[] uniqueNameParts, boolean failIfNotFound)
+            List<Id.Segment> uniqueNameParts,
+            boolean failIfNotFound,
+            MatchType matchType)
         {
-            return getMemberByUniqueName(
-                uniqueNameParts, failIfNotFound, MatchType.EXACT);
-        }
-
-        public Member getMemberByUniqueName(
-                String[] uniqueNameParts, boolean failIfNotFound,
-                MatchType matchType)
-        {
-            Member member = (Member) lookupCompound(
-                                        RolapCube.this, uniqueNameParts,
-                                        failIfNotFound, Category.Member,
-                                        matchType);
+            Member member =
+                (Member) lookupCompound(
+                    RolapCube.this, uniqueNameParts,
+                    failIfNotFound, Category.Member,
+                    matchType);
             if (!failIfNotFound && member == null) {
                 return null;
             }

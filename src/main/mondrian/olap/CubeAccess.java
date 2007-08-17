@@ -97,12 +97,13 @@ public class CubeAccess {
     /**
      * Adds  restricted hierarchy or limited member based on bMember
      */
-    public void addGrantCubeSlicer(String sHierarchy,
-                                   String sMember,
-                                   boolean bMember) {
+    public void addGrantCubeSlicer(
+        String sHierarchy,
+        String sMember,
+        boolean bMember) {
         if (bMember) {
             boolean fail = false;
-            String[] sMembers = Util.explode(sMember);
+            List<Id.Segment> sMembers = Util.parseIdentifier(sMember);
             SchemaReader schemaReader = mdxCube.getSchemaReader(null);
             Member member = schemaReader.getMemberByUniqueName(sMembers, fail);
             if (member == null) {
@@ -115,10 +116,11 @@ public class CubeAccess {
             }
         } else {
             boolean fail = false;
-            Hierarchy hierarchy = mdxCube.lookupHierarchy(sHierarchy, fail);
+            Hierarchy hierarchy = mdxCube.lookupHierarchy(new Id.Segment(
+                    sHierarchy, Id.Quoting.UNQUOTED), fail);
             if (hierarchy == null) {
-                throw MondrianResource.instance().MdxCubeSlicerHierarchyError.ex(
-                    sHierarchy, mdxCube.getUniqueName());
+                throw MondrianResource.instance().MdxCubeSlicerHierarchyError
+                    .ex(sHierarchy, mdxCube.getUniqueName());
             }
             hierarchyList.add(hierarchy);
         }

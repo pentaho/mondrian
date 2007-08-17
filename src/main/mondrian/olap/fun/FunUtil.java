@@ -2344,12 +2344,12 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             throw new UnsupportedOperationException();
         }
 
-        public OlapElement lookupChild(SchemaReader schemaReader, String s) {
+        public OlapElement lookupChild(SchemaReader schemaReader,Id.Segment s) {
             throw new UnsupportedOperationException();
         }
 
         public OlapElement lookupChild(
-            SchemaReader schemaReader, String s, MatchType matchType) {
+            SchemaReader schemaReader, Id.Segment s, MatchType matchType) {
             throw new UnsupportedOperationException();
         }
 

@@ -31,7 +31,7 @@ import java.util.ArrayList;
 public class Formula extends QueryPart {
 
     /** name of set or member */
-    private final String[] names;
+    private final Id id;
     /** defining expression */
     private Exp exp;
     // properties/solve order of member
@@ -47,28 +47,53 @@ public class Formula extends QueryPart {
 
     /**
      * Constructs formula specifying a set.
+     *
+     * @deprecated Use {@link #Formula(Id, Exp)}.
+     * This method will be removed in mondrian-2.5.
      */
     public Formula(String[] names, Exp exp) {
-        this(false, names, exp, new MemberProperty[0], null, null);
+        this(new Id(Id.Segment.toList(names)), exp);
+    }
+
+    /**
+     * Constructs formula specifying a set.
+     */
+    public Formula(Id id, Exp exp) {
+        this(false, id, exp, new MemberProperty[0], null, null);
         createElement(null);
     }
 
     /**
      * Constructs a formula specifying a member.
+     *
+     * @deprecated Use {@link #Formula(Id, Exp, MemberProperty[])}.
+     * This method will be removed in mondrian-2.5.
      */
     public Formula(String[] names, Exp exp, MemberProperty[] memberProperties) {
-        this(true, names, exp, memberProperties, null, null);
+        this(new Id(Id.Segment.toList(names)), exp, memberProperties);
+    }
+
+    /**
+     * Constructs a formula specifying a member.
+     */
+    public Formula(
+        Id id,
+        Exp exp,
+        MemberProperty[] memberProperties)
+    {
+        this(true, id, exp, memberProperties, null, null);
     }
 
     private Formula(
-            boolean isMember,
-            String[] names,
-            Exp exp,
-            MemberProperty[] memberProperties,
-            Member mdxMember,
-            NamedSet mdxSet) {
+        boolean isMember,
+        Id id,
+        Exp exp,
+        MemberProperty[] memberProperties,
+        Member mdxMember,
+        NamedSet mdxSet)
+    {
         this.isMember = isMember;
-        this.names = names;
+        this.id = id;
         this.exp = exp;
         this.memberProperties = memberProperties;
         this.mdxMember = mdxMember;
@@ -79,12 +104,12 @@ public class Formula extends QueryPart {
 
     public Object clone() {
         return new Formula(
-                isMember,
-                names,
-                (Exp) exp.clone(),
-                MemberProperty.cloneArray(memberProperties),
-                mdxMember,
-                mdxSet);
+            isMember,
+            id,
+            exp.clone(),
+            MemberProperty.cloneArray(memberProperties),
+            mdxMember,
+            mdxSet);
     }
 
     static Formula[] cloneArray(Formula[] x) {
@@ -104,7 +129,7 @@ public class Formula extends QueryPart {
     void accept(Validator validator) {
         final boolean scalar = isMember;
         exp = validator.validate(exp, scalar);
-        String id = Util.quoteMdxIdentifier(names);
+        String id = this.id.toString();
         final Type type = exp.getType();
         if (isMember) {
             if (!TypeUtil.canEvaluate(type)) {
@@ -115,8 +140,8 @@ public class Formula extends QueryPart {
                 throw MondrianResource.instance().MdxSetExpNotSet.ex(id);
             }
         }
-        for (int i = 0; i < memberProperties.length; i++) {
-            validator.validate(memberProperties[i]);
+        for (MemberProperty memberProperty : memberProperties) {
+            validator.validate(memberProperty);
         }
         // Get the format expression from the property list, or derive it from
         // the formula.
@@ -155,14 +180,15 @@ public class Formula extends QueryPart {
             }
             OlapElement mdxElement = q.getCube();
             final SchemaReader schemaReader = q.getSchemaReader(true);
-            for (int i = 0; i < names.length; i++) {
+            for (int i = 0; i < id.getSegments().size(); i++) {
+                Id.Segment segment = id.getSegments().get(i);
                 OlapElement parent = mdxElement;
-                mdxElement = schemaReader.getElementChild(parent, names[i]);
+                mdxElement = schemaReader.getElementChild(parent, segment);
                 // Don't try to look up the member which the formula is
                 // defining. We would only find one if the member is overriding
                 // a member at the cube or schema level, and we don't want to
                 // change that member's properties.
-                if (mdxElement == null || i == names.length - 1) {
+                if (mdxElement == null || i == id.getSegments().size() - 1) {
                     // this part of the name was not found... define it
                     Level level;
                     Member parentMember = null;
@@ -172,13 +198,15 @@ public class Formula extends QueryPart {
                     } else {
                         Hierarchy hierarchy = parent.getHierarchy();
                         if (hierarchy == null) {
-                            throw MondrianResource.instance().MdxCalculatedHierarchyError.ex(
-                                Util.quoteMdxIdentifier(names));
+                            throw MondrianResource.instance().
+                                MdxCalculatedHierarchyError.ex(id.toString());
                         }
                         level = hierarchy.getLevels()[0];
                     }
-                    Member mdxMember = level.getHierarchy().createMember(
-                        parentMember, level, names[i], this);
+                    Member mdxMember =
+                        level.getHierarchy().createMember(
+                            parentMember, level, id.getSegments().get(i).name,
+                            this);
                     mdxElement = mdxMember;
                 }
             }
@@ -186,8 +214,9 @@ public class Formula extends QueryPart {
         } else {
             // don't need to tell query... it's already in query.formula
             Util.assertTrue(
-                names.length == 1, "set names must not be compound");
-            mdxSet = new SetBase(names[0], exp);
+                id.getSegments().size() == 1,
+                "set names must not be compound");
+            mdxSet = new SetBase(id.getSegments().get(0).name, exp);
         }
     }
 
@@ -207,11 +236,11 @@ public class Formula extends QueryPart {
             if (mdxMember != null) {
                 pw.print(mdxMember.getUniqueName());
             } else {
-                pw.print(Util.quoteMdxIdentifier(names));
+                id.unparse(pw);
             }
         } else {
             pw.print("set ");
-            pw.print(Util.quoteMdxIdentifier(names));
+            id.unparse(pw);
         }
         pw.print(" as '");
         exp.unparse(pw);
@@ -232,10 +261,16 @@ public class Formula extends QueryPart {
         return mdxSet;
     }
 
-    String[] getNames() {
-        return names;
+    /**
+     * Returns the Identifier of the set or member which is declared by this
+     * Formula.
+     *
+     * @return Identifier
+     */
+    public Id getIdentifier() {
+        return id;
     }
-
+    
     /** Returns this formula's name. */
     public String getName() {
         return (isMember)
@@ -259,9 +294,12 @@ public class Formula extends QueryPart {
     void rename(String newName)
     {
         String oldName = getElement().getName();
+        final List<Id.Segment> segments = this.id.getSegments();
         Util.assertTrue(
-            this.names[this.names.length - 1].equalsIgnoreCase(oldName));
-        this.names[this.names.length - 1] = newName;
+            segments.get(segments.size() - 1).name.equalsIgnoreCase(oldName));
+        segments.set(
+            segments.size() - 1,
+            new Id.Segment(newName, Id.Quoting.QUOTED));
         if (isMember) {
             mdxMember.setName(newName);
         } else {

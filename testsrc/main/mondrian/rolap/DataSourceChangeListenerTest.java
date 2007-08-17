@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
 
+import mondrian.olap.Id;
 import mondrian.olap.Connection;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
@@ -479,7 +480,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
     SmartMemberReader getSmartMemberReader(Connection con, String hierName) {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
         RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
-        RolapHierarchy hierarchy = (RolapHierarchy) cube.lookupHierarchy(hierName, false);
+        RolapHierarchy hierarchy = (RolapHierarchy) cube.lookupHierarchy(
+                new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
         return (SmartMemberReader) hierarchy.getMemberReader(schemaReader.getRole());
     }

@@ -39,7 +39,7 @@ public class AccessControlTest extends FoodMartTestCase {
         // todo: add Schema.lookupDimension
         final SchemaReader schemaReader = salesCube.getSchemaReader(role);
         Dimension genderDimension = (Dimension) schemaReader.lookupCompound(
-                salesCube, new String[] {"Gender"}, true, Category.Dimension);
+                salesCube, Id.Segment.toList("Gender"), true, Category.Dimension);
         role.grant(genderDimension, Access.NONE);
         role.makeImmutable();
         connection.setRole(role);
@@ -72,7 +72,9 @@ public class AccessControlTest extends FoodMartTestCase {
         final boolean fail = true;
         Cube salesCube = schema.lookupCube("Sales", fail);
         final SchemaReader schemaReader = salesCube.getSchemaReader(null); // unrestricted
-        final Member member = schemaReader.getMemberByUniqueName(Util.explode(memberName),true);
+        final Member member =
+            schemaReader.getMemberByUniqueName(
+                Util.parseIdentifier(memberName),true);
         final Access actualAccess = role.getAccess(member);
         Assert.assertEquals(memberName, expectedAccess, actualAccess);
     }
@@ -270,8 +272,10 @@ public class AccessControlTest extends FoodMartTestCase {
                 Schema schema = connection.getSchema();
                 Cube salesCube = schema.lookupCube("Sales", mustGet);
                 Cube warehouseCube = schema.lookupCube("Warehouse", mustGet);
-                Hierarchy measuresInSales = salesCube.lookupHierarchy("Measures", false);
-                Hierarchy storeInWarehouse = warehouseCube.lookupHierarchy("Store", false);
+                Hierarchy measuresInSales = salesCube.lookupHierarchy(
+                        new Id.Segment("Measures", Id.Quoting.UNQUOTED), false);
+                Hierarchy storeInWarehouse = warehouseCube.lookupHierarchy(
+                        new Id.Segment("Store", Id.Quoting.UNQUOTED), false);
 
                 RoleImpl role = new RoleImpl();
                 role.grant(schema, Access.NONE);
@@ -310,24 +314,28 @@ public class AccessControlTest extends FoodMartTestCase {
         final boolean fail = true;
         Cube salesCube = schema.lookupCube("Sales", fail);
         final SchemaReader schemaReader = salesCube.getSchemaReader(null);
-        Hierarchy storeHierarchy = salesCube.lookupHierarchy("Store", false);
+        Hierarchy storeHierarchy = salesCube.lookupHierarchy(
+                new Id.Segment("Store", Id.Quoting.UNQUOTED), false);
         role.grant(schema, Access.ALL_DIMENSIONS);
         role.grant(salesCube, Access.ALL);
         Level nationLevel = Util.lookupHierarchyLevel(storeHierarchy, "Store Country");
         role.grant(storeHierarchy, Access.CUSTOM, nationLevel, null);
-        role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[USA].[OR]"), fail), Access.ALL);
-        role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[USA]"), fail), Access.NONE);
-        role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[USA].[CA].[San Francisco]"), fail), Access.ALL);
-        role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[USA].[CA].[Los Angeles]"), fail), Access.ALL);
-        role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[Mexico]"), fail), Access.ALL);
-        role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[Mexico].[DF]"), fail), Access.NONE);
-        role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[Canada]"), fail), Access.NONE);
+        role.grant(schemaReader.getMemberByUniqueName(Util.parseIdentifier("[Store].[All Stores].[USA].[OR]"), fail), Access.ALL);
+        role.grant(schemaReader.getMemberByUniqueName(Util.parseIdentifier("[Store].[All Stores].[USA]"), fail), Access.NONE);
+        role.grant(schemaReader.getMemberByUniqueName(Util.parseIdentifier("[Store].[All Stores].[USA].[CA].[San Francisco]"), fail), Access.ALL);
+        role.grant(schemaReader.getMemberByUniqueName(Util.parseIdentifier("[Store].[All Stores].[USA].[CA].[Los Angeles]"), fail), Access.ALL);
+        role.grant(schemaReader.getMemberByUniqueName(Util.parseIdentifier("[Store].[All Stores].[Mexico]"), fail), Access.ALL);
+        role.grant(schemaReader.getMemberByUniqueName(Util.parseIdentifier("[Store].[All Stores].[Mexico].[DF]"), fail), Access.NONE);
+        role.grant(schemaReader.getMemberByUniqueName(Util.parseIdentifier("[Store].[All Stores].[Canada]"), fail), Access.NONE);
         if (restrictCustomers) {
-            Hierarchy customersHierarchy = salesCube.lookupHierarchy("Customers", false);
+            Hierarchy customersHierarchy = salesCube.lookupHierarchy(
+                    new Id.Segment("Customers", Id.Quoting.UNQUOTED), false);
             Level stateProvinceLevel = Util.lookupHierarchyLevel(customersHierarchy, "State Province");
             Level customersCityLevel = Util.lookupHierarchyLevel(customersHierarchy, "City");
             role.grant(customersHierarchy, Access.CUSTOM, stateProvinceLevel, customersCityLevel);
-            role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Customers].[All Customers]"), fail), Access.ALL);
+            role.grant(schemaReader.getMemberByUniqueName(
+                    Util.parseIdentifier("[Customers].[All Customers]"), fail),
+                    Access.ALL);
         }
 
         // No access to HR cube.

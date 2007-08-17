@@ -14,6 +14,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.Util;
+import mondrian.olap.Id;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
@@ -246,7 +247,7 @@ public class SmartMemberReader implements MemberReader, MemberCache {
     }
 
     public RolapMember lookupMember(
-            String[] uniqueNameParts,
+            List<Id.Segment> uniqueNameParts,
             boolean failIfNotFound) {
         return RolapUtil.lookupMember(this, uniqueNameParts, failIfNotFound);
     }

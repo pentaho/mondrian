@@ -193,7 +193,7 @@ class StrToSetFunDef extends FunDefBase {
         int j)
     {
         int k = string.length();
-        List<String> nameList = new ArrayList<String>();
+        List<Id.Segment> nameList = new ArrayList<Id.Segment>();
         int state = BEFORE_SEG;
         int start = 0;
         char c;
@@ -235,7 +235,10 @@ class StrToSetFunDef extends FunDefBase {
                 c = string.charAt(i);
                 switch (c) {
                 case '.':
-                    nameList.add(string.substring(start, i));
+                    nameList.add(
+                        new Id.Segment(
+                            string.substring(start, i),
+                            Id.Quoting.UNQUOTED));
                     state = BEFORE_SEG;
                     ++i;
                 default:
@@ -247,7 +250,10 @@ class StrToSetFunDef extends FunDefBase {
                 c = string.charAt(i);
                 switch (c) {
                 case ']':
-                    nameList.add(string.substring(start, i));
+                    nameList.add(
+                        new Id.Segment(
+                            string.substring(start, i),
+                            Id.Quoting.QUOTED));
                     ++i;
                     state = AFTER_SEG;
                     break;
@@ -284,13 +290,12 @@ class StrToSetFunDef extends FunDefBase {
         }
 
         // End of member.
-        final String[] names = nameList.toArray(new String[nameList.size()]);
         Member member =
             (Member)
                 Util.lookupCompound(
                     evaluator.getSchemaReader(),
                     evaluator.getCube(),
-                    names, true, Category.Member);
+                    nameList, true, Category.Member);
         members[j] = member;
         if (member.getHierarchy() != hierarchies[j]) {
             // TODO: better error

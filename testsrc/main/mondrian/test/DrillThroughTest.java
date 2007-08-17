@@ -15,6 +15,7 @@ package mondrian.test;
 import mondrian.olap.Cube;
 import mondrian.olap.Result;
 import mondrian.olap.Cell;
+import mondrian.olap.Id;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -77,7 +78,8 @@ public class DrillThroughTest extends FoodMartTestCase {
         RolapStar star = ((RolapCube) cube).getStar();
         String nameExpStr = null;       
 
-        mondrian.olap.Hierarchy h = cube.lookupHierarchy("Customers", false);
+        mondrian.olap.Hierarchy h = cube.lookupHierarchy(
+                new Id.Segment("Customers", Id.Quoting.UNQUOTED), false);
         if (h != null) {
             mondrian.rolap.RolapLevel rl = null;
             mondrian.olap.Level[] levels = h.getLevels();

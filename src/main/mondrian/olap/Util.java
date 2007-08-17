@@ -179,18 +179,21 @@ public class Util extends XOMUtil {
      * Return identifiers quoted in [...].[...].  For example, {"Store", "USA",
      * "California"} becomes "[Store].[USA].[California]".
      */
-    public static String quoteMdxIdentifier(String[] ids) {
+    public static String quoteMdxIdentifier(List<Id.Segment> ids) {
         StringBuilder sb = new StringBuilder(64);
         quoteMdxIdentifier(ids, sb);
         return sb.toString();
     }
 
-    public static void quoteMdxIdentifier(String[] ids, StringBuilder sb) {
-        for (int i = 0; i < ids.length; i++) {
+    public static void quoteMdxIdentifier(
+        List<Id.Segment> ids,
+        StringBuilder sb)
+    {
+        for (int i = 0; i < ids.size(); i++) {
             if (i > 0) {
                 sb.append('.');
             }
-            quoteMdxIdentifier(ids[i], sb);
+            sb.append(ids.get(i).toString());
         }
     }
 
@@ -349,7 +352,12 @@ public class Util extends XOMUtil {
         return buf;
     }
 
-    public static String[] explode(String s)  {
+
+    /**
+     * @deprecated Use {@link #parseIdentifier(String)}.
+     * This method will be removed in mondrian-2.5.
+     */
+    public static String[] explode(String s) {
         if (!s.startsWith("[")) {
             return new String[]{s};
         }
@@ -371,6 +379,47 @@ public class Util extends XOMUtil {
             i = j + 2;
         }
         return list.toArray(new String[list.size()]);
+
+    }
+
+    public static List<Id.Segment> parseIdentifier(String s)  {
+        if (!s.startsWith("[")) {
+            return Collections.singletonList(
+                new Id.Segment(s, Id.Quoting.UNQUOTED));
+        }
+
+        List<Id.Segment> list = new ArrayList<Id.Segment>();
+        int i = 0;
+        Id.Quoting type;
+        while (i < s.length()) {
+            if (s.charAt(i) != '&' && s.charAt(i) != '[') {
+                throw MondrianResource.instance().MdxInvalidMember.ex(s);
+            }
+
+            if (s.charAt(i) ==  '&') {
+                i++;
+                type = Id.Quoting.KEY;
+            } else {
+                type = Id.Quoting.QUOTED;
+            }
+
+            if (s.charAt(i) != '[') {
+                throw MondrianResource.instance().MdxInvalidMember.ex(s);
+            }
+
+            int j = getEndIndex(s, i + 1);
+            if (j == -1) {
+                throw MondrianResource.instance().MdxInvalidMember.ex(s);
+            }
+
+            list.add(
+                new Id.Segment(
+                    replace(s.substring(i + 1, j), "]]", "]"),
+                    type));
+                    
+            i = j + 2;
+        }
+        return list;
     }
 
     private static int getEndIndex(String s, int i) {
@@ -393,13 +442,16 @@ public class Util extends XOMUtil {
      * Converts an array of name parts {"part1", "part2"} into a single string
      * "[part1].[part2]". If the names contain "]" they are escaped as "]]".
      */
-    public static String implode(String[] names) {
+    public static String implode(List<Id.Segment> names) {
         StringBuilder sb = new StringBuilder(64);
-        for (int i = 0; i < names.length; i++) {
+        for (int i = 0; i < names.size(); i++) {
             if (i > 0) {
                 sb.append(".");
             }
-            quoteMdxIdentifier(names[i], sb);
+            // FIXME: should be:
+            //   names.get(i).toString(sb);
+            // but that causes some tests to fail
+            quoteMdxIdentifier(names.get(i).name, sb);
         }
         return sb.toString();
     }
@@ -435,13 +487,27 @@ public class Util extends XOMUtil {
     public static OlapElement lookupCompound(
         SchemaReader schemaReader,
         OlapElement parent,
-        String[] names,
+        List<Id.Segment> names,
         boolean failIfNotFound,
         int category)
     {
         return lookupCompound(
             schemaReader, parent, names, failIfNotFound, category,
             MatchType.EXACT);
+    }
+
+
+    /**
+     * @deprecated Use {@link #lookupCompound(SchemaReader, OlapElement, java.util.List, boolean, int)}.
+     * This method will be removed in mondrian-2.5
+     */
+    public static OlapElement lookupCompound(
+        SchemaReader schemaReader, OlapElement parent, String[] names,
+        boolean failIfNotFound, int category)
+    {
+        return lookupCompound(
+            schemaReader, parent, Id.Segment.toList(names), failIfNotFound,
+            category, MatchType.EXACT);
     }
 
     /**
@@ -455,8 +521,8 @@ public class Util extends XOMUtil {
      *   "Product Department", "Produce"}
      * @param failIfNotFound If the element is not found, determines whether
      *   to return null or throw an error
-     * @param category Type of returned element, a {@link mondrian.olap.Category} value;
-     *   {@link mondrian.olap.Category#Unknown} if it doesn't matter.
+     * @param category Type of returned element, a {@link Category} value;
+     *   {@link Category#Unknown} if it doesn't matter.
      * @pre parent != null
      * @post !(failIfNotFound && return == null)
      * @see #explode
@@ -464,12 +530,11 @@ public class Util extends XOMUtil {
     public static OlapElement lookupCompound(
         SchemaReader schemaReader,
         OlapElement parent,
-        String[] names,
+        List<Id.Segment> names,
         boolean failIfNotFound,
         int category,
         MatchType matchType)
     {
-
         Util.assertPrecondition(parent != null, "parent != null");
 
         if (LOGGER.isDebugEnabled()) {
@@ -505,8 +570,8 @@ public class Util extends XOMUtil {
         }
 
         // Now resolve the name one part at a time.
-        for (int i = 0; i < names.length; i++) {
-            String name = names[i];
+        for (int i = 0; i < names.size(); i++) {
+            Id.Segment name = names.get(i);
             OlapElement child =
                 schemaReader.getElementChild(parent, name, matchType);
             // if we're doing a non-exact match, and we find a non-exact
@@ -514,11 +579,11 @@ public class Util extends XOMUtil {
             // of each subsequent level; for a before match, return the
             // last child
             if (child != null && matchType != MatchType.EXACT &&
-                !Util.equalName(child.getName(), name))
+                !Util.equalName(child.getName(), name.name))
             {
                 Util.assertPrecondition(child instanceof Member);
                 Member bestChild = (Member) child;
-                for (int j = i + 1; j < names.length; j++) {
+                for (int j = i + 1; j < names.size(); j++) {
                     Member[] children =
                         schemaReader.getMemberChildren(bestChild);
                     List<Member> childrenList = Arrays.asList(children);
@@ -550,7 +615,7 @@ public class Util extends XOMUtil {
 
                 if (failIfNotFound) {
                     throw MondrianResource.instance().MdxChildObjectNotFound.ex(
-                        name, parent.getQualifiedName());
+                        name.name, parent.getQualifiedName());
                 } else {
                     return null;
                 }
@@ -612,7 +677,15 @@ public class Util extends XOMUtil {
         }
     }
 
+    /**
+     * @deprecated Use {@link #lookup(Query,java.util.List)}.
+     * This method will be removed in mondrian-2.5.
+     */
     public static OlapElement lookup(Query q, String[] nameParts) {
+        return lookup(q, Id.Segment.toList(nameParts));
+    }
+
+    public static OlapElement lookup(Query q, List<Id.Segment> nameParts) {
         final Exp exp = lookup(q, nameParts, false);
         if (exp instanceof MemberExpr) {
             MemberExpr memberExpr = (MemberExpr) exp;
@@ -647,8 +720,10 @@ public class Util extends XOMUtil {
      * @return OLAP object or property reference
      */
     public static Exp lookup(
-            Query q, String[] nameParts, boolean allowProp) {
-
+        Query q,
+        List<Id.Segment> nameParts,
+        boolean allowProp)
+    {
         // First, look for a calculated member defined in the query.
         final String fullName = quoteMdxIdentifier(nameParts);
         // Look for any kind of object (member, level, hierarchy,
@@ -664,13 +739,13 @@ public class Util extends XOMUtil {
         }
         if (olapElement == null) {
             if (allowProp &&
-                    nameParts.length > 1) {
-                String[] namePartsButOne = new String[nameParts.length - 1];
-                System.arraycopy(nameParts, 0,
-                        namePartsButOne, 0,
-                        nameParts.length - 1);
-                final String propertyName = nameParts[nameParts.length - 1];
-                olapElement = schemaReader.lookupCompound(
+                    nameParts.size() > 1) {
+                List<Id.Segment> namePartsButOne =
+                    nameParts.subList(0, nameParts.size() - 1);
+                final String propertyName =
+                    nameParts.get(nameParts.size() - 1).name;
+                olapElement =
+                    schemaReader.lookupCompound(
                         q.getCube(), namePartsButOne, false, Category.Member);
                 if (olapElement != null &&
                         isValidProperty((Member) olapElement, propertyName)) {
@@ -685,16 +760,10 @@ public class Util extends XOMUtil {
             // hierarchy of the element we're looking for; locate the
             // hierarchy by incrementally truncating the name of the element
             if (q.ignoreInvalidMembers()) {
-                int nameLen = nameParts.length - 1;
+                int nameLen = nameParts.size() - 1;
                 olapElement = null;
                 while (nameLen > 0 && olapElement == null) {
-                    String[] partialName = new String[nameLen];
-                    System.arraycopy(
-                        nameParts,
-                        0,
-                        partialName,
-                        0,
-                        nameLen);
+                    List<Id.Segment> partialName = nameParts.subList(0, nameLen);
                     olapElement = schemaReader.lookupCompound(
                         q.getCube(), partialName, false, Category.Unknown);
                     nameLen--;
@@ -763,7 +832,7 @@ public class Util extends XOMUtil {
     }
 
     public static Member lookupHierarchyRootMember(
-        SchemaReader reader, Hierarchy hierarchy, String memberName)
+        SchemaReader reader, Hierarchy hierarchy, Id.Segment memberName)
     {
         return lookupHierarchyRootMember(
             reader, hierarchy, memberName, MatchType.EXACT);
@@ -779,7 +848,7 @@ public class Util extends XOMUtil {
     public static Member lookupHierarchyRootMember(
         SchemaReader reader,
         Hierarchy hierarchy,
-        String memberName,
+        Id.Segment memberName,
         MatchType matchType)
     {
         // Lookup member at first level.
@@ -796,7 +865,7 @@ public class Util extends XOMUtil {
                 hierarchy.createMember(
                     null,
                     rootMembers[0].getLevel(),
-                    memberName,
+                    memberName.name,
                     null);
         }
 
@@ -805,7 +874,8 @@ public class Util extends XOMUtil {
             int rc;
             // when searching on the ALL hierarchy, match must be exact
             if (matchType == MatchType.EXACT || hierarchy.hasAll()) {
-                rc = rootMembers[i].getName().compareToIgnoreCase(memberName);
+                rc = rootMembers[i].getName()
+                        .compareToIgnoreCase(memberName.name);
             } else {
                 rc = FunUtil.compareSiblingMembers(
                     rootMembers[i],

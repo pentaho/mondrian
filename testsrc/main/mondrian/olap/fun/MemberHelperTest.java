@@ -203,12 +203,12 @@ public class MemberHelperTest extends TestCase {
             return null;
         }
 
-        public OlapElement lookupChild(SchemaReader schemaReader, String s) {
+        public OlapElement lookupChild(SchemaReader schemaReader,Id.Segment s) {
             return null;
         }
 
         public OlapElement lookupChild(
-            SchemaReader schemaReader, String s, MatchType matchType) {
+            SchemaReader schemaReader, Id.Segment s, MatchType matchType) {
             return null;
         }
 

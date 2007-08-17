@@ -22,6 +22,8 @@ import java.util.Collections;
 
 /**
  * Multi-part identifier.
+ *
+ * @version $Id$
  */
 public class Id
     extends ExpBase
@@ -38,7 +40,7 @@ public class Id
         segments = Collections.singletonList(segment);
     }
 
-    private Id(List<Segment> segments) {
+    public Id(List<Segment> segments) {
         this.segments = segments;
     }
 
@@ -57,7 +59,15 @@ public class Id
     }
 
     public String toString() {
-        return Util.quoteMdxIdentifier(toStringArray());
+        final StringBuffer sb = new StringBuffer();
+        boolean theFirst = true;
+        for(Segment segment : segments) {
+            if(!theFirst) sb.append(".");
+            theFirst = false;
+            if(segment.quoting==Quoting.KEY) sb.append("&");
+            sb.append("[").append(segment.name).append("]");
+        }
+        return sb.toString();
     }
 
     public String[] toStringArray() {
@@ -69,8 +79,12 @@ public class Id
         return names;
     }
 
-    public String getElement(int i) {
-        return segments.get(i).name;
+    public List<Segment> getSegments() {
+        return Collections.unmodifiableList(this.segments);
+    }
+
+    public Id.Segment getElement(int i) {
+        return segments.get(i);
     }
 
     /**
@@ -94,8 +108,10 @@ public class Id
                 return Literal.createSymbol(s.name.toUpperCase());
             }
         }
-        final String[] names = toStringArray();
-        final Exp element = Util.lookup(validator.getQuery(), names, true);
+        final Exp element =
+            Util.lookup(
+                validator.getQuery(), segments, true);
+
         if (element == null) {
             return null;
         }
@@ -146,6 +162,84 @@ public class Id
             this.name = name;
             this.quoting = quoting;
         }
+
+        public String toString() {
+            switch (quoting) {
+            case UNQUOTED: //return name; Disabled to pass old tests...
+            case QUOTED: return "[" + name + "]";
+            case KEY: return "&[" + name + "]";
+            default: return "UNKNOWN:" + name;
+            }
+        }
+
+        /**
+         * Appends this segment to a StringBuffer
+         *
+         * @param buf StringBuffer
+         */
+        public void toString(StringBuilder buf) {
+            switch (quoting) {
+            case UNQUOTED:
+                buf.append(name);
+                return;
+            case QUOTED:
+                Util.quoteMdxIdentifier(name, buf);
+                return;
+            case KEY:
+                buf.append('&');
+                Util.quoteMdxIdentifier(name, buf);
+                return;
+            default:
+                throw Util.unexpected(quoting);
+            }
+        }
+
+        public boolean equals(final Object o) {
+            if (o instanceof Segment) {
+                Segment that = (Segment) o;
+                return that.name.equals(this.name) &&
+                    that.quoting == this.quoting;
+            } else {
+                return false;
+            }
+        }
+
+        public int hashCode() {
+            return name.hashCode();
+        }
+
+        /**
+         * Converts an array of names to a list of segments.
+         *
+         * @param nameParts Array of names
+         * @return List of segments
+         */
+        public static List<Segment> toList(String... nameParts) {
+            final List<Segment> segments =
+                new ArrayList<Segment>(nameParts.length);
+            for (String namePart : nameParts) {
+                segments.add(new Segment(namePart, Id.Quoting.QUOTED));
+            }
+            return segments;
+        }
+
+        /**
+         * Returns whether this segment matches a given name according to
+         * the rules of case-sensitivity and quoting.
+         *
+         * @param name Name to match
+         * @return Whether matches
+         */
+        public boolean matches(String name) {
+            switch (quoting) {
+            case UNQUOTED:
+                return Util.equalName(this.name, name);
+            case QUOTED:
+                return this.name.equals(name);
+            default:
+                return false;
+            }
+        }
     }
 
     public enum Quoting {
@@ -161,8 +255,8 @@ public class Id
         QUOTED,
 
         /**
-         * Identifier quoted with an ampersand to indicate a key value, for example
-         * the second segment in "[Employees].&[89]".
+         * Identifier quoted with an ampersand to indicate a key value, for
+         * example the second segment in "[Employees].&[89]".
          */
         KEY
     }

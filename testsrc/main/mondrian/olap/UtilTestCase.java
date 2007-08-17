@@ -11,8 +11,7 @@ package mondrian.olap;
 
 import junit.framework.TestCase;
 
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Tests for methods in {@link mondrian.olap.Util}.
@@ -199,7 +198,12 @@ public class UtilTestCase extends TestCase {
     public void testQuoteMdxIdentifier() {
         assertEquals("[San Francisco]", Util.quoteMdxIdentifier("San Francisco"));
         assertEquals("[a [bracketed]] string]", Util.quoteMdxIdentifier("a [bracketed] string"));
-        assertEquals("[Store].[USA].[California]", Util.quoteMdxIdentifier(new String[]{"Store", "USA", "California"}));
+        assertEquals("[Store].[USA].[California]", 
+            Util.quoteMdxIdentifier(
+                Arrays.asList(
+                    new Id.Segment("Store", Id.Quoting.QUOTED),
+                    new Id.Segment("USA", Id.Quoting.QUOTED),
+                    new Id.Segment("California", Id.Quoting.QUOTED))));
     }
 
     public void testBufReplace() {
@@ -248,15 +252,20 @@ public class UtilTestCase extends TestCase {
     }
 
     public void testImplode() {
-        String[] fooBar = {"foo", "bar"};
+        List<Id.Segment> fooBar = Arrays.asList(
+            new Id.Segment("foo", Id.Quoting.UNQUOTED),
+            new Id.Segment("bar", Id.Quoting.UNQUOTED));
         assertEquals("[foo].[bar]", Util.implode(fooBar));
 
-        String[] empty = {};
+        List<Id.Segment> empty = Collections.emptyList();
         assertEquals("", Util.implode(empty));
 
-        String[] nasty = {"string", "with", "a [bracket] in it"};
+        List<Id.Segment> nasty = Arrays.asList(
+            new Id.Segment("string", Id.Quoting.UNQUOTED),
+            new Id.Segment("with", Id.Quoting.UNQUOTED),
+            new Id.Segment("a [bracket] in it", Id.Quoting.UNQUOTED));
         assertEquals("[string].[with].[a [bracket]] in it]",
-                Util.implode(nasty));
+            Util.implode(nasty));
     }
 
     public void testExplode() {
@@ -281,6 +290,37 @@ public class UtilTestCase extends TestCase {
 
         try {
             strings = Util.explode("[foo].[bar");
+            Util.discard(strings);
+            fail("expected exception");
+        } catch (MondrianException e) {
+            assertEquals(
+                "Mondrian Error:Invalid member identifier '[foo].[bar'",
+                e.getMessage());
+        }
+    }
+
+    public void testParseIdentifier() {
+        List<Id.Segment> strings =
+                Util.parseIdentifier("[string].[with].[a [bracket]] in it]");
+        assertEquals(3, strings.size());
+        assertEquals("a [bracket] in it", strings.get(2).name);
+
+        strings = Util.parseIdentifier("[Worklog].[All].[calendar-[LANGUAGE]].js]");
+        assertEquals(3, strings.size());
+        assertEquals("calendar-[LANGUAGE].js", strings.get(2).name);
+
+        try {
+            strings = Util.parseIdentifier("[foo].bar");
+            Util.discard(strings);
+            fail("expected exception");
+        } catch (MondrianException e) {
+            assertEquals(
+                "Mondrian Error:Invalid member identifier '[foo].bar'",
+                e.getMessage());
+        }
+
+        try {
+            strings = Util.parseIdentifier("[foo].[bar");
             Util.discard(strings);
             fail("expected exception");
         } catch (MondrianException e) {

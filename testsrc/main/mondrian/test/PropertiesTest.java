@@ -31,7 +31,7 @@ public class PropertiesTest extends FoodMartTestCase {
     public void testMandatoryMemberProperties() {
         Cube salesCube = getConnection().getSchema().lookupCube("Sales",true);
         SchemaReader scr = salesCube.getSchemaReader(null);
-        Member member = scr.getMemberByUniqueName(new String[] {"Customers", "All Customers", "USA", "CA"}, true);
+        Member member = scr.getMemberByUniqueName(Id.Segment.toList("Customers", "All Customers", "USA", "CA"), true);
         final boolean caseSensitive =
             MondrianProperties.instance().CaseSensitive.get();
 
@@ -147,7 +147,7 @@ public class PropertiesTest extends FoodMartTestCase {
         SchemaReader scr = salesCube.getSchemaReader(null);
         Member memberForCardinalityTest =
             scr.getMemberByUniqueName(
-                new String[] {"Marital Status", "All Marital Status"},
+                Id.Segment.toList("Marital Status", "All Marital Status"),
                 true);
         Integer intPropValue =
             (Integer) memberForCardinalityTest.getPropertyValue(
@@ -210,18 +210,17 @@ public class PropertiesTest extends FoodMartTestCase {
 
         assertNull(cell.getPropertyValue("BACK_COLOR"));
         assertNull(cell.getPropertyValue("CELL_EVALUATION_LIST"));
-        assertEquals(Integer.valueOf(y * 2 + x),
-                cell.getPropertyValue("CELL_ORDINAL"));
+        assertEquals(y * 2 + x, cell.getPropertyValue("CELL_ORDINAL"));
         assertNull(cell.getPropertyValue("FORE_COLOR"));
         assertNull(cell.getPropertyValue("FONT_NAME"));
         assertNull(cell.getPropertyValue("FONT_SIZE"));
-        assertEquals(Integer.valueOf(0), cell.getPropertyValue("FONT_FLAGS"));
+        assertEquals(0, cell.getPropertyValue("FONT_FLAGS"));
         assertEquals("Standard", cell.getPropertyValue("FORMAT_STRING"));
         // FORMAT is a synonym for FORMAT_STRING
         assertEquals("Standard", cell.getPropertyValue("FORMAT"));
         assertEquals("135,215", cell.getPropertyValue("FORMATTED_VALUE"));
         assertNull(cell.getPropertyValue("NON_EMPTY_BEHAVIOR"));
-        assertEquals(Integer.valueOf(0), cell.getPropertyValue("SOLVE_ORDER"));
+        assertEquals(0, cell.getPropertyValue("SOLVE_ORDER"));
         assertEquals(135215.0, ((Number) cell.getPropertyValue("VALUE")).doubleValue(), 0.1);
 
         // Case sensitivity.
@@ -234,13 +233,12 @@ public class PropertiesTest extends FoodMartTestCase {
             assertNull(cell.getPropertyValue("solve_order"));
             assertNull(cell.getPropertyValue("value"));
         } else {
-            assertEquals(Integer.valueOf(y * 2 + x),
-                    cell.getPropertyValue("cell_ordinal"));
-            assertEquals(Integer.valueOf(0), cell.getPropertyValue("font_flags"));
+            assertEquals(y * 2 + x, cell.getPropertyValue("cell_ordinal"));
+            assertEquals(0, cell.getPropertyValue("font_flags"));
             assertEquals("Standard", cell.getPropertyValue("format_string"));
             assertEquals("Standard", cell.getPropertyValue("format"));
             assertEquals("135,215", cell.getPropertyValue("formatted_value"));
-            assertEquals(Integer.valueOf(0), cell.getPropertyValue("solve_order"));
+            assertEquals(0, cell.getPropertyValue("solve_order"));
             assertEquals(135215.0, ((Number) cell.getPropertyValue("value")).doubleValue(), 0.1);
         }
     }

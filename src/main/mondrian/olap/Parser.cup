@@ -1247,7 +1247,7 @@ select_statement ::=
             Parser parser = (Parser) CUP$Parser$parser;
             // We want 'Sales', not '[Sales]', and can't handle 'Schema.Sales'
             // yet.
-            String cubeName = c.getElement(0);
+            String cubeName = c.getElement(0).name;
             RESULT = parser.makeQuery(
                 Parser.toFormulaArray(f),
                 Parser.toQueryAxisArray(a),
@@ -1319,14 +1319,14 @@ member_specification ::=
         comma_member_property_def_list_opt:l {:
             Exp e = parser.recursivelyParseExp(s);
             RESULT = new Formula(
-                m.toStringArray(),
+                m,
                 e,
                 Parser.toMemberPropertyArray(l));
         :}
     |   MEMBER member_name:m AS value_expression:e
         comma_member_property_def_list_opt:l {:
             RESULT = new Formula(
-                m.toStringArray(),
+                m,
                 e,
                 Parser.toMemberPropertyArray(l));
         :}
@@ -1384,10 +1384,10 @@ member_property_definition ::=
 set_specification ::=
         SET set_name:n AS FORMULA_STRING:s {:
             Exp e = parser.recursivelyParseExp(s);
-            RESULT = new Formula(n.toStringArray(), e);
+            RESULT = new Formula(n, e);
         :}
     |   SET set_name:n AS expression:e {:
-            RESULT = new Formula(n.toStringArray(), e);
+            RESULT = new Formula(n, e);
         :}
     ;
 //

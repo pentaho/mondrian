@@ -243,28 +243,38 @@ public class Query extends QueryPart {
      * Adds a new formula specifying a set
      * to an existing query.
      */
-    public void addFormula(String[] names, Exp exp) {
-        Formula newFormula = new Formula(names, exp);
-        int formulaCount = 0;
-        if (formulas.length > 0) {
-            formulaCount = formulas.length;
-        }
-        Formula[] newFormulas = new Formula[formulaCount + 1];
-        System.arraycopy(formulas, 0, newFormulas, 0, formulaCount);
-        newFormulas[formulaCount] = newFormula;
-        formulas = newFormulas;
-        resolve();
+    public void addFormula(Id id, Exp exp) {
+        addFormula(id, exp, new MemberProperty[0]);
     }
 
     /**
      * Adds a new formula specifying a member
      * to an existing query.
+     *
+     * @deprecated Use {@link #addFormula(Id, Exp, MemberProperty[])}.
+     * This method will be removed in mondrian-2.5.
      */
     public void addFormula(
             String[] names,
             Exp exp,
             MemberProperty[] memberProperties) {
-        Formula newFormula = new Formula(names, exp, memberProperties);
+        addFormula(new Id(Id.Segment.toList(names)), exp, memberProperties);
+    }
+
+    /**
+     * Adds a new formula specifying a member
+     * to an existing query.
+     *
+     * @param id Name of member
+     * @param exp Expression for member
+     * @param memberProperties Properties of member
+     */
+    public void addFormula(
+        Id id,
+        Exp exp,
+        MemberProperty[] memberProperties)
+    {
+        Formula newFormula = new Formula(id, exp, memberProperties);
         int formulaCount = 0;
         if (formulas.length > 0) {
             formulaCount = formulas.length;
@@ -307,7 +317,8 @@ public class Query extends QueryPart {
      * manipulated (for instance, the rows and columns axes have been
      * interchanged) the returned string represents the current parse tree.
      *
-     * @deprecated Use {@link Util#unparse(Query)}; deprecated since 2.1.2
+     * @deprecated Use {@link Util#unparse(Query)}.
+     * This method will be removed in mondrian-2.5.
      */
     public String getQueryString() {
         return toMdx();
@@ -747,7 +758,8 @@ public class Query extends QueryPart {
         case Category.String:
             return Literal.createString(value);
         case Category.Member:
-            Member member = (Member) Util.lookup(query, Util.explode(value));
+            Member member =
+                (Member) Util.lookup(query, Util.parseIdentifier(value));
             return new MemberExpr(member);
         default:
             throw Category.instance.badValue(category);
@@ -1016,7 +1028,7 @@ public class Query extends QueryPart {
     public ExpCompiler createCompiler() {
         return createCompiler(RolapEvaluator.create(this), createValidator());
     }
-    
+
     private ExpCompiler createCompiler(
             final Evaluator evaluator, final Validator validator) {
 
@@ -1381,7 +1393,7 @@ public class Query extends QueryPart {
     /**
      * Source of metadata within the scope of a query.
      *
-     * <p>Note especially that {@link #getCalculatedMember(String[])}
+     * <p>Note especially that {@link #getCalculatedMember(java.util.List)}
      * returns the calculated members defined in this query.
      */
     private class QuerySchemaReader extends DelegatingSchemaReader {
@@ -1391,15 +1403,7 @@ public class Query extends QueryPart {
         }
 
         public Member getMemberByUniqueName(
-            String[] uniqueNameParts,
-            boolean failIfNotFound)
-        {
-            return getMemberByUniqueName(
-                uniqueNameParts, failIfNotFound, MatchType.EXACT);
-        }
-
-        public Member getMemberByUniqueName(
-                String[] uniqueNameParts,
+                List<Id.Segment> uniqueNameParts,
                 boolean failIfNotFound,
                 MatchType matchType)
         {
@@ -1429,7 +1433,7 @@ public class Query extends QueryPart {
             return members;
         }
 
-        public Member getCalculatedMember(String[] nameParts) {
+        public Member getCalculatedMember(List<Id.Segment> nameParts) {
             final String uniqueName = Util.implode(nameParts);
             return lookupMemberFromCache(uniqueName);
         }
@@ -1465,13 +1469,13 @@ public class Query extends QueryPart {
             return getDefinedMembers();
         }
 
-        public OlapElement getElementChild(OlapElement parent, String s)
+        public OlapElement getElementChild(OlapElement parent, Id.Segment s)
         {
             return getElementChild(parent, s, MatchType.EXACT);
         }
 
         public OlapElement getElementChild(
-            OlapElement parent, String s, MatchType matchType)
+            OlapElement parent, Id.Segment s, MatchType matchType)
         {
             // first look in cube
             OlapElement mdxElement =
@@ -1486,7 +1490,9 @@ public class Query extends QueryPart {
                 if (formula.isMember()) {
                     continue;       // have already done these
                 }
-                if (Util.equalName(formula.getNames()[0], s)) {
+                Id id = formula.getIdentifier();
+                if (id.getSegments().size() == 1 &&
+                    id.getSegments().get(0).matches(s.name)) {
                     return formula.getNamedSet();
                 }
             }
@@ -1496,7 +1502,7 @@ public class Query extends QueryPart {
 
         public OlapElement lookupCompound(
             OlapElement parent,
-            String[] names,
+            List<Id.Segment> names,
             boolean failIfNotFound,
             int category)
         {
@@ -1506,7 +1512,7 @@ public class Query extends QueryPart {
 
         public OlapElement lookupCompound(
                 OlapElement parent,
-                String[] names,
+                List<Id.Segment> names,
                 boolean failIfNotFound,
                 int category,
                 MatchType matchType)
@@ -1552,11 +1558,11 @@ public class Query extends QueryPart {
             return olapElement;
         }
 
-        public NamedSet getNamedSet(String[] nameParts) {
-            if (nameParts.length != 1) {
+        public NamedSet getNamedSet(List<Id.Segment> nameParts) {
+            if (nameParts.size() != 1) {
                 return null;
             }
-            return lookupNamedSet(nameParts[0]);
+            return lookupNamedSet(nameParts.get(0).name);
         }
 
         public Parameter getParameter(String name) {

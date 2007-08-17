@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mondrian.olap.Id;
 import mondrian.olap.Util;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.TupleConstraint;
@@ -112,7 +113,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return null;
     }
 
-    public RolapMember lookupMember(String[] uniqueNameParts,
+    public RolapMember lookupMember(List<Id.Segment> uniqueNameParts,
                                     boolean failIfNotFound) {
         return RolapUtil.lookupMember(this, uniqueNameParts, failIfNotFound);
     }

@@ -44,6 +44,7 @@ import mondrian.olap.Schema;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Syntax;
 import mondrian.olap.Util;
+import mondrian.olap.Id;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.NumericType;
@@ -292,17 +293,17 @@ public class RolapSchema implements Schema {
                         while ((n = in.read()) != -1) {
                             buf.append((char) n);
                         }
-                        getLogger().debug("RolapSchema.load: content: \n" 
+                        getLogger().debug("RolapSchema.load: content: \n"
                             +buf.toString());
                     } catch (java.io.IOException ex) {
-                        getLogger().debug("RolapSchema.load: ex=" +ex); 
+                        getLogger().debug("RolapSchema.load: ex=" +ex);
                     }
                 }
 
                 def = xmlParser.parse(fileContent.getInputStream());
             } else {
                 if (getLogger().isDebugEnabled()) {
-                    getLogger().debug("RolapSchema.load: catalogStr: \n" 
+                    getLogger().debug("RolapSchema.load: catalogStr: \n"
                             +catalogStr);
                 }
 
@@ -467,8 +468,12 @@ public class RolapSchema implements Schema {
             throw MondrianResource.instance().NamedSetHasBadFormula.ex(
                     xmlNamedSet.name, e);
         }
-        final Formula formula = new Formula(
-                new String[] {xmlNamedSet.name},
+        final Formula formula =
+            new Formula(
+                new Id(
+                    new Id.Segment(
+                        xmlNamedSet.name,
+                        Id.Quoting.UNQUOTED)),
                 exp);
         return formula.getNamedSet();
     }
@@ -487,7 +492,7 @@ public class RolapSchema implements Schema {
                 for (MondrianDef.DimensionGrant dimensionGrant : cubeGrant.dimensionGrants) {
                     Dimension dimension = (Dimension)
                         schemaReader.lookupCompound(
-                            cube, Util.explode(dimensionGrant.dimension), true,
+                            cube, Util.parseIdentifier(dimensionGrant.dimension), true,
                             Category.Dimension);
                     role.grant(
                         dimension,
@@ -496,7 +501,7 @@ public class RolapSchema implements Schema {
                 for (MondrianDef.HierarchyGrant hierarchyGrant : cubeGrant.hierarchyGrants) {
                     Hierarchy hierarchy = (Hierarchy)
                         schemaReader.lookupCompound(
-                            cube, Util.explode(hierarchyGrant.hierarchy), true,
+                            cube, Util.parseIdentifier(hierarchyGrant.hierarchy), true,
                             Category.Hierarchy);
                     final Access hierarchyAccess =
                         getAccess(hierarchyGrant.access, hierarchyAllowed);
@@ -507,7 +512,7 @@ public class RolapSchema implements Schema {
                                 "You may only specify 'topLevel' if access='custom'");
                         }
                         topLevel = (Level) schemaReader.lookupCompound(
-                            cube, Util.explode(hierarchyGrant.topLevel), true,
+                            cube, Util.parseIdentifier(hierarchyGrant.topLevel), true,
                             Category.Level);
                     }
                     Level bottomLevel = null;
@@ -517,7 +522,7 @@ public class RolapSchema implements Schema {
                                 "You may only specify 'bottomLevel' if access='custom'");
                         }
                         bottomLevel = (Level) schemaReader.lookupCompound(
-                            cube, Util.explode(hierarchyGrant.bottomLevel),
+                            cube, Util.parseIdentifier(hierarchyGrant.bottomLevel),
                             true, Category.Level);
                     }
                     role.grant(
@@ -528,18 +533,20 @@ public class RolapSchema implements Schema {
                                 "You may only specify <MemberGrant> if <Hierarchy> has access='custom'");
                         }
                         Member member = schemaReader.getMemberByUniqueName(
-                            Util.explode(memberGrant.member), true);
-                        if (member.getHierarchy() != hierarchy) {
-                            throw Util.newError(
-                                "Member '" +
-                                    member +
-                                    "' is not in hierarchy '" +
-                                    hierarchy +
-                                    "'");
+                            Util.parseIdentifier(memberGrant.member), false);
+                        if (member!=null) {
+                            if (member.getHierarchy() != hierarchy) {
+                                throw Util.newError(
+                                    "Member '" +
+                                        member +
+                                        "' is not in hierarchy '" +
+                                        hierarchy +
+                                        "'");
+                            }
+                            role.grant(
+                                member,
+                                getAccess(memberGrant.access, memberAllowed));
                         }
-                        role.grant(
-                            member,
-                            getAccess(memberGrant.access, memberAllowed));
                     }
                 }
             }
@@ -1065,6 +1072,7 @@ public class RolapSchema implements Schema {
 
     /**
      * @deprecated Use {@link mondrian.olap.CacheControl#flushSchema(String, String, String, String)}.
+     * This method will be removed in mondrian-2.5.
      */
     public static void flushSchema(
         final String catalogUrl,
@@ -1081,6 +1089,7 @@ public class RolapSchema implements Schema {
 
     /**
      * @deprecated Use {@link mondrian.olap.CacheControl#flushSchema(String, javax.sql.DataSource)}.
+     * This method will be removed in mondrian-2.5.
      */
     public static void flushSchema(
         final String catalogUrl,
@@ -1091,6 +1100,7 @@ public class RolapSchema implements Schema {
 
     /**
      * @deprecated Use {@link mondrian.olap.CacheControl#flushSchemaCache()}.
+     * This method will be removed in mondrian-2.5.
      */
     public static void clearCache() {
         Pool.instance().clear();
@@ -1128,15 +1138,16 @@ public class RolapSchema implements Schema {
     protected MondrianDef.CalculatedMember lookupXmlCalculatedMember(
             final String calcMemberName,
             final String cubeName) {
-        String nameParts[] = Util.explode(calcMemberName);
+        List<Id.Segment> nameParts = Util.parseIdentifier(calcMemberName);
         for (final MondrianDef.Cube cube : xmlSchema.cubes) {
             if (Util.equalName(cube.name, cubeName)) {
-                for (final MondrianDef.CalculatedMember calculatedMember : cube.calculatedMembers) {
+                for (final MondrianDef.CalculatedMember calculatedMember
+                        : cube.calculatedMembers) {
                     if (Util.equalName(
-                        calculatedMember.dimension, nameParts[0]) &&
+                        calculatedMember.dimension, nameParts.get(0).name) &&
                         Util.equalName(
                             calculatedMember.name,
-                            nameParts[nameParts.length - 1])) {
+                            nameParts.get(nameParts.size() - 1).name)) {
                         return calculatedMember;
                     }
                 }
@@ -1610,7 +1621,8 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     }
 
     /**
-     * @deprecated Use {@link mondrian.olap.CacheControl#flush(mondrian.olap.CacheControl.CellRegion)}
+     * @deprecated Use {@link mondrian.olap.CacheControl#flush(mondrian.olap.CacheControl.CellRegion)}.
+     * This method will be removed in mondrian-2.5.
      */
     public void flushRolapStarCaches(boolean forced) {
         for (RolapStar star : getStars()) {
@@ -1639,7 +1651,8 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     }
 
     /**
-     * @deprecated Use {@link mondrian.olap.CacheControl#flush(mondrian.olap.CacheControl.CellRegion)}
+     * @deprecated Use {@link mondrian.olap.CacheControl#flush(mondrian.olap.CacheControl.CellRegion)}.
+     * This method will be removed in mondrian-2.5.
      */
     public static void flushAllRolapStarCachedAggregations() {
         for (Iterator<RolapSchema> itSchemas = RolapSchema.getRolapSchemas();

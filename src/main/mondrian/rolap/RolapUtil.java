@@ -91,9 +91,10 @@ public class RolapUtil {
     }
 
     static RolapMember lookupMember(
-            MemberReader reader,
-            String[] uniqueNameParts,
-            boolean failIfNotFound) {
+        MemberReader reader,
+        List<Id.Segment> uniqueNameParts,
+        boolean failIfNotFound)
+    {
         RolapMember member =
             lookupMemberInternal(
                 uniqueNameParts, null, reader, failIfNotFound);
@@ -117,12 +118,12 @@ public class RolapUtil {
     }
 
     private static RolapMember lookupMemberInternal(
-        String[] uniqueNameParts,
+        List<Id.Segment> segments,
         RolapMember member,
         MemberReader reader,
         boolean failIfNotFound)
     {
-        for (String name : uniqueNameParts) {
+        for (Id.Segment segment : segments) {
             List<RolapMember> children;
             if (member == null) {
                 children = reader.getRootMembers();
@@ -132,7 +133,7 @@ public class RolapUtil {
                 member = null;
             }
             for (RolapMember child : children) {
-                if (child.getName().equals(name)) {
+                if (child.getName().equals(segment.name)) {
                     member = child;
                     break;
                 }
@@ -143,7 +144,7 @@ public class RolapUtil {
         }
         if (member == null && failIfNotFound) {
             throw MondrianResource.instance().MdxCantFindMember.ex(
-                Util.implode(uniqueNameParts));
+                Util.implode(segments));
         }
         return member;
     }
@@ -380,7 +381,7 @@ public class RolapUtil {
         List<? extends Member> members,
         RolapMember parent,
         RolapLevel level,
-        String searchName,
+        Id.Segment searchName,
         MatchType matchType,
         boolean caseInsensitive)
     {
@@ -391,11 +392,18 @@ public class RolapUtil {
         Member bestMatch = null;
         for (Member member : members) {
             int rc;
+            if (searchName.quoting==Id.Quoting.KEY
+                    && member instanceof RolapMember) {
+                if (((RolapMember) member).getKey().toString()
+                        .equals(searchName.name)) {
+                    return member;
+                }
+            }
             if (matchType == MatchType.EXACT) {
                 if (caseInsensitive) {
-                    rc = Util.compareName(member.getName(), searchName);
+                    rc = Util.compareName(member.getName(), searchName.name);
                 } else {
-                    rc = member.getName().compareTo(searchName);
+                    rc = member.getName().compareTo(searchName.name);
                 }
             } else {
                 rc =

@@ -181,7 +181,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 }
                 OlapElement o = evaluator.getSchemaReader().lookupCompound(
                         evaluator.getCube(),
-                        explode(s),
+                        parseIdentifier(s),
                         false,
                         Category.Dimension);
                 if (o instanceof Dimension) {
@@ -265,7 +265,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 OlapElement o = (s.startsWith("[")) ?
                         evaluator.getSchemaReader().lookupCompound(
                                 cube,
-                                explode(s),
+                                parseIdentifier(s),
                                 false,
                                 Category.Level) :
                         // lookupCompound barfs if "s" doesn't have matching
@@ -577,10 +577,10 @@ public class BuiltinFunTable extends FunTableImpl {
                 "StrToMember",
                 "Returns a member from a unique name String in MDX format.",
                 "fmS") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+            public Calc compileCall(ResolvedFunCall call,ExpCompiler compiler) {
                 final StringCalc memberNameCalc =
                         compiler.compileString(call.getArg(0));
-                return new AbstractMemberCalc(call, new Calc[] {memberNameCalc}) {
+                return new AbstractMemberCalc(call,new Calc[]{memberNameCalc}) {
                     public Member evaluateMember(Evaluator evaluator) {
                         String memberName =
                                 memberNameCalc.evaluateString(evaluator);
@@ -592,10 +592,11 @@ public class BuiltinFunTable extends FunTableImpl {
             Member strToMember(Evaluator evaluator, String memberName) {
                 Cube cube = evaluator.getCube();
                 SchemaReader schemaReader = evaluator.getSchemaReader();
-                String[] uniqueNameParts = Util.explode(memberName);
-                Member member = (Member) schemaReader.lookupCompound(cube,
-                        uniqueNameParts, true, Category.Member);
-                // Member member = schemaReader.getMemberByUniqueName(uniqueNameParts, false);
+                List<Id.Segment> uniqueNameParts =
+                    Util.parseIdentifier(memberName);
+                Member member =
+                    (Member) schemaReader.lookupCompound(
+                        cube, uniqueNameParts, true, Category.Member);
                 return member;
             }
         });

@@ -83,13 +83,13 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return dimensions;
     }
 
-    public Hierarchy lookupHierarchy(String s, boolean unique) {
+    public Hierarchy lookupHierarchy(Id.Segment s, boolean unique) {
         for (Dimension dimension : dimensions) {
             Hierarchy[] hierarchies = dimension.getHierarchies();
             for (Hierarchy hierarchy : hierarchies) {
                 String name = unique
                     ? hierarchy.getUniqueName() : hierarchy.getName();
-                if (name.equals(s)) {
+                if (name.equals(s.name)) {
                     return hierarchy;
                 }
             }
@@ -97,13 +97,13 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return null;
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, String s)
+    public OlapElement lookupChild(SchemaReader schemaReader, Id.Segment s)
     {
         return lookupChild(schemaReader, s, MatchType.EXACT);
     }
 
     public OlapElement lookupChild(
-        SchemaReader schemaReader, String s, MatchType matchType)
+        SchemaReader schemaReader, Id.Segment s, MatchType matchType)
     {
         Dimension mdxDimension = (Dimension)lookupDimension(s);
         if (mdxDimension != null) {
@@ -132,9 +132,9 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return null;
     }
 
-    public OlapElement lookupDimension(String s) {
+    public OlapElement lookupDimension(Id.Segment s) {
         for (Dimension dimension : dimensions) {
-            if (dimension.getName().equalsIgnoreCase(s)) {
+            if (dimension.getName().equalsIgnoreCase(s.name)) {
                 return dimension;
             }
         }

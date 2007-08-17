@@ -302,9 +302,12 @@ public class BatchTestCase extends FoodMartTestCase {
     private void clearCache(RolapCube cube) {
         // Clear the cache for the Sales cube, so the query runs as if
         // for the first time. (TODO: Cleaner way to do this.)
+        final Cube salesCube =
+            getConnection().getSchema().lookupCube("Sales", true);
         RolapHierarchy hierarchy =
-            (RolapHierarchy) getConnection().getSchema().
-            lookupCube("Sales", true).lookupHierarchy("Store", false);
+            (RolapHierarchy) salesCube.lookupHierarchy(
+                new Id.Segment("Store", Id.Quoting.UNQUOTED),
+                false);
         SmartMemberReader memberReader =
             (SmartMemberReader) hierarchy.getMemberReader();
         memberReader.mapLevelToMembers.cache.clear();
@@ -367,7 +370,7 @@ public class BatchTestCase extends FoodMartTestCase {
         final boolean fail = true;
         Cube salesCube = connection.getSchema().lookupCube(cube, fail);
         Member measure = salesCube.getSchemaReader(null).getMemberByUniqueName(
-            Util.explode(measureName), fail);
+            Util.parseIdentifier(measureName), fail);
         RolapStar.Measure starMeasure = RolapStar.getStarMeasure(measure);
         return starMeasure;
     }

@@ -304,7 +304,6 @@ public class RolapMember extends MemberBase {
             String name,
             MemberType flags) {
         super(parentMember, level, flags);
-
         this.key = key;
         this.ordinal = -1;
         this.mapPropertyNameToValue = Collections.emptyMap();

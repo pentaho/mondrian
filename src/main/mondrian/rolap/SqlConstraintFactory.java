@@ -10,6 +10,7 @@ package mondrian.rolap;
 
 import java.util.List;
 
+import mondrian.olap.Id;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Level;
 import mondrian.olap.MondrianProperties;
@@ -59,7 +60,7 @@ public class SqlConstraintFactory {
 
     public MemberChildrenConstraint getChildByNameConstraint(
         RolapMember parent,
-        String childName)
+        Id.Segment childName)
     {
         // ragged hierarchies span multiple levels, so SQL WHERE does not work there
         if (!enabled || parent.getHierarchy().isRagged()) {

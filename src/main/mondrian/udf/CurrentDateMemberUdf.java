@@ -57,7 +57,7 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
             matchType = MatchType.EXACT;
         }
 
-        String[] uniqueNames = Util.explode(currDateStr);
+        List<Id.Segment> uniqueNames = Util.parseIdentifier(currDateStr);
         Object retDate =
             evaluator.getSchemaReader().getMemberByUniqueName(
                 uniqueNames, false, matchType);

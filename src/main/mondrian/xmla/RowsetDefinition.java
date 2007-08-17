@@ -5360,8 +5360,9 @@ TODO: see above
                     return;
                 }
 
-                final String[] nameParts = Util.explode(levelUniqueName);
-                Hierarchy hier = cube.lookupHierarchy(nameParts[0], false);
+                final List<Id.Segment> nameParts =
+                    Util.parseIdentifier(levelUniqueName);
+                Hierarchy hier = cube.lookupHierarchy(nameParts.get(0), false);
                 if (hier == null) {
                     return;
                 }
@@ -5572,7 +5573,8 @@ TODO: see above
                 // which means that nothing will match.
                 return;
             }
-            final String[] nameParts = Util.explode(memberUniqueName);
+            final List<Id.Segment> nameParts =
+                Util.parseIdentifier(memberUniqueName);
 
             Member member = schemaReader.getMemberByUniqueName(
                 nameParts, false);
@@ -6120,8 +6122,9 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                     // which means that nothing will match.
                     return;
                 }
-                final String[] nameParts = Util.explode(levelUniqueName);
-                Hierarchy hier = cube.lookupHierarchy(nameParts[0], false);
+                final List<Id.Segment> nameParts = 
+                    Util.parseIdentifier(levelUniqueName);
+                Hierarchy hier = cube.lookupHierarchy(nameParts.get(0), false);
                 if (hier == null) {
                     return;
                 }

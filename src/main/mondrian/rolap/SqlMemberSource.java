@@ -69,7 +69,7 @@ class SqlMemberSource implements MemberReader, SqlTupleReader.MemberBuilder {
         return count;
     }
 
-    public RolapMember lookupMember(String[] uniqueNameParts,
+    public RolapMember lookupMember(List<Id.Segment> uniqueNameParts,
                                     boolean failIfNotFound) {
         throw new UnsupportedOperationException();
     }

@@ -109,14 +109,14 @@ public abstract class HierarchyBase
         return (this == mdxElement);
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, String s) {
+    public OlapElement lookupChild(SchemaReader schemaReader, Id.Segment s) {
         return lookupChild(schemaReader, s, MatchType.EXACT);
     }
 
     public OlapElement lookupChild(
-        SchemaReader schemaReader, String s, MatchType matchType)
+        SchemaReader schemaReader, Id.Segment s, MatchType matchType)
     {
-        OlapElement oe = Util.lookupHierarchyLevel(this, s);
+        OlapElement oe = Util.lookupHierarchyLevel(this, s.name);
         if (oe == null) {
             oe = Util.lookupHierarchyRootMember(
                 schemaReader, this, s, matchType);

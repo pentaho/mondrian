@@ -35,7 +35,7 @@ public interface Cube extends OlapElement {
      * Finds a hierarchy whose name (or unique name, if <code>unique</code> is
      * true) equals <code>s</code>.
      */
-    Hierarchy lookupHierarchy(String s, boolean unique);
+    Hierarchy lookupHierarchy(Id.Segment s, boolean unique);
 
     /**
      * Returns Member[]. It builds Member[] by analyzing cellset, which

@@ -12,7 +12,9 @@
 */
 
 package mondrian.rolap;
+
 import mondrian.olap.DriverManager;
+import mondrian.olap.Id;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -105,11 +107,13 @@ public class Test {
         testMemberReader(measuresHierarchy.getMemberReader());
 
         RolapHierarchy genderHierarchy = (RolapHierarchy)
-            salesCube.lookupHierarchy("Gender", false);
+            salesCube.lookupHierarchy(
+                    new Id.Segment("Gender", Id.Quoting.QUOTED), false);
         testMemberReader(genderHierarchy.getMemberReader());
 
         RolapHierarchy customerHierarchy = (RolapHierarchy)
-            salesCube.lookupHierarchy("Customers", false);
+            salesCube.lookupHierarchy(
+                    new Id.Segment("Customers", Id.Quoting.QUOTED), false);
         testMemberReader(customerHierarchy.getMemberReader());
     }
     void testMemberReader(MemberReader reader)

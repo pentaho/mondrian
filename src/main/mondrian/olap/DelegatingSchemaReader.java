@@ -31,6 +31,11 @@ import java.util.List;
 public abstract class DelegatingSchemaReader implements SchemaReader {
     protected final SchemaReader schemaReader;
 
+    /**
+     * Creates a DelegatingSchemaReader.
+     *
+     * @param schemaReader Parent reader to delegate unhandled calls to
+     */
     DelegatingSchemaReader(SchemaReader schemaReader) {
         this.schemaReader = schemaReader;
     }
@@ -59,8 +64,8 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getMemberDepth(member);
     }
 
-    public Member getMemberByUniqueName(
-        String[] uniqueNameParts,
+    public final Member getMemberByUniqueName(
+        List<Id.Segment> uniqueNameParts,
         boolean failIfNotFound)
     {
         return getMemberByUniqueName(
@@ -68,7 +73,7 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     }
 
     public Member getMemberByUniqueName(
-            String[] uniqueNameParts,
+            List<Id.Segment> uniqueNameParts,
             boolean failIfNotFound,
             MatchType matchType)
     {
@@ -76,8 +81,17 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
                 uniqueNameParts, failIfNotFound, matchType);
     }
 
-    public OlapElement lookupCompound(
+    public final OlapElement lookupCompound(
         OlapElement parent, String[] names,
+        boolean failIfNotFound, int category)
+    {
+        return lookupCompound(
+            parent, Id.Segment.toList(names), failIfNotFound, category,
+            MatchType.EXACT);
+    }
+
+    public OlapElement lookupCompound(
+        OlapElement parent, List<Id.Segment> names,
         boolean failIfNotFound, int category)
     {
         return lookupCompound(
@@ -85,17 +99,18 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     }
 
     public OlapElement lookupCompound(
-            OlapElement parent, String[] names,
-            boolean failIfNotFound, int category, MatchType matchType) {
+        OlapElement parent, List<Id.Segment> names,
+        boolean failIfNotFound, int category, MatchType matchType)
+    {
         return schemaReader.lookupCompound(
                 parent, names, failIfNotFound, category, matchType);
     }
 
-    public Member getCalculatedMember(String[] nameParts) {
+    public Member getCalculatedMember(List<Id.Segment> nameParts) {
         return schemaReader.getCalculatedMember(nameParts);
     }
 
-    public NamedSet getNamedSet(String[] nameParts) {
+    public NamedSet getNamedSet(List<Id.Segment> nameParts) {
         return schemaReader.getNamedSet(nameParts);
     }
 
@@ -115,12 +130,12 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.compareMembersHierarchically(m1, m2);
     }
 
-    public OlapElement getElementChild(OlapElement parent, String name) {
+    public OlapElement getElementChild(OlapElement parent, Id.Segment name) {
         return getElementChild(parent, name, MatchType.EXACT);
     }
 
     public OlapElement getElementChild(
-        OlapElement parent, String name, MatchType matchType)
+        OlapElement parent, Id.Segment name, MatchType matchType)
     {
         return schemaReader.getElementChild(parent, name, matchType);
     }
@@ -184,12 +199,12 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
       return schemaReader.getMemberChildren(members, context);
     }
 
-    public Member lookupMemberChildByName(Member member, String memberName) {
+    public Member lookupMemberChildByName(Member member,Id.Segment memberName) {
         return lookupMemberChildByName(member, memberName, MatchType.EXACT);
     }
 
     public Member lookupMemberChildByName(
-        Member member, String memberName, MatchType matchType)
+        Member member, Id.Segment memberName, MatchType matchType)
     {
         return schemaReader.lookupMemberChildByName(
             member, memberName, matchType);

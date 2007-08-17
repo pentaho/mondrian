@@ -165,15 +165,15 @@ public class ParserTest extends TestCase {
         assertNotNull("Column tuples", colsSetExpr);
 
         UnresolvedFunCall fun = (UnresolvedFunCall)colsSetExpr;
-        String id = ((Id)(fun.getArgs()[0])).getElement(0);
-        assertEquals("Correct member on axis", "axis0mbr", id);
+        Id.Segment id = ((Id)(fun.getArgs()[0])).getElement(0);
+        assertEquals("Correct member on axis", "axis0mbr", id.name);
 
         Exp rowsSetExpr = axes[1].getSet();
         assertNotNull("Row tuples", rowsSetExpr);
 
         fun = (UnresolvedFunCall ) rowsSetExpr;
         id = ((Id) (fun.getArgs()[0])).getElement(0);
-        assertEquals("Correct member on axis", "axis1mbr", id);
+        assertEquals("Correct member on axis", "axis1mbr", id.name);
     }
 
     public void testCaseTest() {

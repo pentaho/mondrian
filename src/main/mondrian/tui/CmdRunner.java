@@ -387,7 +387,7 @@ public class CmdRunner {
         //this.connection.execute(query);
 
         // assume member, dimension, hierarchy, level
-        OlapElement element = Util.lookup(query, Util.explode(trimmed));
+        OlapElement element = Util.lookup(query, Util.parseIdentifier(trimmed));
 
         debug("parseParameter. exp="
             +((element == null) ? "null" : element.getClass().getName()));

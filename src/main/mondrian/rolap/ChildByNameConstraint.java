@@ -12,6 +12,7 @@ package mondrian.rolap;
 import java.util.Arrays;
 import java.util.Map;
 
+import mondrian.olap.Id;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.aggmatcher.AggStar;
 
@@ -33,8 +34,8 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
      *
      * @param childName Name of child
      */
-    public ChildByNameConstraint(String childName) {
-        this.childName = childName;
+    public ChildByNameConstraint(Id.Segment childName) {
+        this.childName = childName.name;
         this.cacheKey = Arrays.asList(
                 new Object[] {
                     super.getCacheKey(),

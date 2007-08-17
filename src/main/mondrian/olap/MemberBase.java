@@ -154,14 +154,14 @@ public abstract class MemberBase
 
     public OlapElement lookupChild(
         SchemaReader schemaReader,
-        String childName)
+        Id.Segment childName)
     {
         return lookupChild(schemaReader, childName, MatchType.EXACT);
     }
 
     public OlapElement lookupChild(
         SchemaReader schemaReader,
-        String childName,
+        Id.Segment childName,
         MatchType matchType)
     {
         return schemaReader.lookupMemberChildByName(
@@ -180,8 +180,10 @@ public abstract class MemberBase
             final Hierarchy hierarchy = getHierarchy();
             final SchemaReader schemaReader =
                 hierarchy.getDimension().getSchema().getSchemaReader();
-            String[] parentUniqueNameParts = Util.explode(parentUniqueName);
-            parentMember = schemaReader.getMemberByUniqueName(
+            List<Id.Segment> parentUniqueNameParts =
+                Util.parseIdentifier(parentUniqueName);
+            parentMember =
+                schemaReader.getMemberByUniqueName(
                     parentUniqueNameParts, failIfNotFound);
             return parentMember;
         }

@@ -18,6 +18,7 @@ import mondrian.olap.Axis;
 import mondrian.olap.Cell;
 import mondrian.olap.Connection;
 import mondrian.olap.Evaluator;
+import mondrian.olap.Id;
 import mondrian.olap.Level;
 import mondrian.olap.Member;
 import mondrian.olap.MondrianProperties;
@@ -1599,7 +1600,8 @@ public class NonEmptyTest extends BatchTestCase {
 
         List list = smr.mapMemberToChildren.get(ca, scf.getMemberChildrenConstraint(null));
         assertNull("children of [CA] are not in cache", list);
-        list = smr.mapMemberToChildren.get(ca, scf.getChildByNameConstraint(ca, "San Francisco"));
+        list = smr.mapMemberToChildren.get(ca, scf.getChildByNameConstraint(ca,
+                new Id.Segment("San Francisco", Id.Quoting.QUOTED)));
         assertNotNull("child [San Francisco] of [CA] is in cache", list);
         assertEquals("[San Francisco] expected", sf, list.get(0));
     }
@@ -3161,7 +3163,8 @@ public class NonEmptyTest extends BatchTestCase {
     SmartMemberReader getSmartMemberReader(Connection con, String hierName) {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
         RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
-        RolapHierarchy hierarchy = (RolapHierarchy) cube.lookupHierarchy(hierName, false);
+        RolapHierarchy hierarchy = (RolapHierarchy) cube.lookupHierarchy(
+                new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
         return (SmartMemberReader) hierarchy.getMemberReader(schemaReader.getRole());
     }

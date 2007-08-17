@@ -12,10 +12,12 @@ package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Util;
+import mondrian.olap.Id;
 import mondrian.recorder.MessageRecorder;
 import mondrian.rolap.*;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * This is the Recognizer for the aggregate table descriptions that appear in
@@ -100,11 +102,10 @@ class ExplicitRecognizer extends Recognizer {
                     getTableDef().getMeasures())
                 {
                     // Column name match is case insensitive
-                    if (measure.getColumnName().equalsIgnoreCase(aggColumnName)) {
-
+                    if(measure.getColumnName().equalsIgnoreCase(aggColumnName)){
                         String name = measure.getName();
-                        String[] parts = Util.explode(name);
-                        String nameLast = parts[parts.length - 1];
+                        List<Id.Segment> parts = Util.parseIdentifier(name);
+                        String nameLast = parts.get(parts.size() - 1).name;
 
                         RolapStar.Measure m =
                             star.getFactTable().lookupMeasureByName(

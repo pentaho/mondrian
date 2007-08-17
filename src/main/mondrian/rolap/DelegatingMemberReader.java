@@ -13,6 +13,7 @@ package mondrian.rolap;
 
 import java.util.List;
 
+import mondrian.olap.Id;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -89,7 +90,7 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.getMemberCount();
     }
 
-    public RolapMember lookupMember(String[] uniqueNameParts,
+    public RolapMember lookupMember(List<Id.Segment> uniqueNameParts,
                                     boolean failIfNotFound) {
         return memberReader.lookupMember(uniqueNameParts, failIfNotFound);
     }

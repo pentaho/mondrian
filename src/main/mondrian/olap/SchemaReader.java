@@ -94,7 +94,8 @@ public interface SchemaReader {
 
     /**
      * Returns the parent of <code>member</code>.
-     * @param member
+     *
+     * @param member Member
      * @pre member != null
      * @return null if member is a root member
      */
@@ -133,10 +134,25 @@ public interface SchemaReader {
      * @return The member, or null if not found
      */
     Member getMemberByUniqueName(
-        String[] uniqueNameParts, boolean failIfNotFound, MatchType matchType);
+        List<Id.Segment> uniqueNameParts,
+        boolean failIfNotFound,
+        MatchType matchType);
 
+    /**
+     * Finds a member based upon its unique name, requiring an exact match.
+     *
+     * <p>This method is equivalent to calling
+     * {@link #getMemberByUniqueName(java.util.List, boolean, MatchType)}
+     * with {@link MatchType#EXACT}.
+     *
+     * @param uniqueNameParts Unique name of member
+     * @param failIfNotFound Whether to throw an error, as opposed to returning
+     *   <code>null</code>, if there is no such member.
+     * @return The member, or null if not found
+     */
     Member getMemberByUniqueName(
-        String[] uniqueNameParts, boolean failIfNotFound);
+        List<Id.Segment> uniqueNameParts,
+        boolean failIfNotFound);
 
     /**
      * Looks up an MDX object by name.
@@ -150,8 +166,8 @@ public interface SchemaReader {
      *     "Product Department", "Produce"}
      * @param failIfNotFound If the element is not found, determines whether
      *      to return null or throw an error
-     * @param category Type of returned element, a {@link mondrian.olap.Category} value;
-     *      {@link mondrian.olap.Category#Unknown} if it doesn't matter.
+     * @param category Type of returned element, a {@link Category} value;
+     *      {@link Category#Unknown} if it doesn't matter.
      * @param matchType indicates the match mode; if not specified, EXACT
      *
      * @pre parent != null
@@ -159,28 +175,39 @@ public interface SchemaReader {
      */
     OlapElement lookupCompound(
         OlapElement parent,
-        String[] names,
+        List<Id.Segment> names,
         boolean failIfNotFound,
         int category,
         MatchType matchType);
 
+    /**
+     * @deprecated Use {@link #lookupCompound(OlapElement, java.util.List, boolean, int)}.
+     * This method will be removed in mondrian-2.5.
+     */
     OlapElement lookupCompound(
         OlapElement parent,
         String[] names,
         boolean failIfNotFound,
         int category);
 
+    OlapElement lookupCompound(
+        OlapElement parent,
+        List<Id.Segment> names,
+        boolean failIfNotFound,
+        int category);
+
+
     /**
      * Looks up a calculated member by name. If the name is not found in the
      * current scope, returns null.
      */
-    Member getCalculatedMember(String[] nameParts);
+    Member getCalculatedMember(List<Id.Segment> nameParts);
 
     /**
      * Looks up a set by name. If the name is not found in the current scope,
      * returns null.
      */
-    NamedSet getNamedSet(String[] nameParts);
+    NamedSet getNamedSet(List<Id.Segment> nameParts);
 
     /**
      * Appends to <code>list</code> all members between <code>startMember</code>
@@ -217,9 +244,9 @@ public interface SchemaReader {
      * null if no element is found.
      */
     OlapElement getElementChild(
-        OlapElement parent, String name, MatchType matchType);
+        OlapElement parent, Id.Segment name, MatchType matchType);
 
-    OlapElement getElementChild(OlapElement parent, String name);
+    OlapElement getElementChild(OlapElement parent, Id.Segment name);
 
     /**
      * Returns the members of a level, optionally including calculated members.
@@ -284,9 +311,9 @@ public interface SchemaReader {
      * Finds a child of a member with a given name.
      */
     Member lookupMemberChildByName(
-        Member parent, String childName, MatchType matchType);
+        Member parent, Id.Segment childName, MatchType matchType);
 
-    Member lookupMemberChildByName(Member parent, String childName);
+    Member lookupMemberChildByName(Member parent, Id.Segment childName);
 
     /**
      * Returns an object which can evaluate an expression in native SQL, or

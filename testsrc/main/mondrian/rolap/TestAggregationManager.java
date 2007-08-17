@@ -204,8 +204,9 @@ public class TestAggregationManager extends BatchTestCase {
                 TestContext.instance().getFoodMartConnection();
         final boolean fail = true;
         Cube salesCube = connection.getSchema().lookupCube(cube, fail);
-        Member storeSqftMeasure = salesCube.getSchemaReader(null)
-                .getMemberByUniqueName(Util.explode(measure), fail);
+        Member storeSqftMeasure =
+            salesCube.getSchemaReader(null).getMemberByUniqueName(
+                Util.parseIdentifier(measure), fail);
         RolapStar.Measure starMeasure =
                 RolapStar.getStarMeasure(storeSqftMeasure);
         CellRequest request = new CellRequest(starMeasure, false, false);
