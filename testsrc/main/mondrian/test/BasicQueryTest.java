@@ -5921,7 +5921,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     	
     	Result result = testContext.executeQuery(
         		"WITH SET [#DataSet#] AS " +
-        		"	'Crossjoin({Descendants([Customer_2].[All Customers], 2)}, " +
+        		"	'NonEmptyCrossjoin({Descendants([Customer_2].[All Customers], 2)}, " +
         		"	{[Product].[All Products]})' " + 
             	"SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns, " +
             	"Hierarchize({[#DataSet#]}) on rows FROM [Sales]");
