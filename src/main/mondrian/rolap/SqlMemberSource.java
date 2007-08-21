@@ -731,20 +731,23 @@ RME is this right
                     value = RolapUtil.sqlNullValue;
                 }
                 Object captionValue;
+                int columnOffset;
                 if (childLevel.hasCaptionColumn()){
-                    captionValue=resultSet.getObject(2);
+                    // The columnOffset needs to take into account
+                	// the caption column if one exists
+                    columnOffset = 2;
+                    captionValue=resultSet.getObject(columnOffset);
                 } else {
+                	columnOffset = 1;
                     captionValue = null;
                 }
                 Object key = cache.makeKey(parentMember, value);
                 RolapMember member = cache.getMember(key, checkCacheStatus);
                 checkCacheStatus = false; /* Only check the first time */
                 if (member == null) {
-                    // REVIEW jvs 20-Feb-2007:  Shouldn't "1" be "2"
-                    // if there was a caption?
                     member = makeMember(
                             parentMember, childLevel, value, captionValue,
-                            parentChild, resultSet, key, 1);
+                            parentChild, resultSet, key, columnOffset);
                 }
                 if (value == RolapUtil.sqlNullValue) {
                     addAsOldestSibling(children, member);
