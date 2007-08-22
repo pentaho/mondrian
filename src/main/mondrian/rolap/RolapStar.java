@@ -1538,7 +1538,9 @@ public class RolapStar {
             Column c = lookupColumnByExpression(xmlExpr);
 
             RolapStar.Column column = null;
-            if (c != null) {
+            // Verify Column is not null and not the same as the 
+            // nameColumn created previously (bug 1438285)
+            if (c != null && !c.equals(nameColumn)) {
                 // Yes, well just reuse it
                 // You might wonder why the column need be returned if it
                 // already exists. Well, it might have been created for one

@@ -734,11 +734,11 @@ RME is this right
                 int columnOffset;
                 if (childLevel.hasCaptionColumn()){
                     // The columnOffset needs to take into account
-                	// the caption column if one exists
+                    // the caption column if one exists
                     columnOffset = 2;
                     captionValue=resultSet.getObject(columnOffset);
                 } else {
-                	columnOffset = 1;
+                    columnOffset = 1;
                     captionValue = null;
                 }
                 Object key = cache.makeKey(parentMember, value);
