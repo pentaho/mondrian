@@ -1,0 +1,606 @@
+#!/bin/bash
+# $Id$
+# Copyright (C) 2006-2007 Julian Hyde
+#
+# Script to run the Mondrian test suite under various JDKs, with parameter
+# settings, against various RDBMSes. Customize it with your environment -
+# whatever JDKs, DBMSes and drivers you have. The script makes lots of
+# assumptions about your environment, but you can figure these out by reading
+# the code.
+#
+# This is for mondrian developers & QA. It is not intended to run in a
+# release environment.
+
+ANT_FLAGS=
+
+# The script's path is $OPEN_DIR/mondrian/bin/megatest; deduce OPEN_DIR.
+OPEN_DIR=$(cd $(dirname $0)/../..; pwd)
+
+case $(uname -n) in
+branston)
+  databaseList="access derby oracle mysql"
+  jdkList="jdk1.5 jdk1.6"
+  ;;
+mackerel)
+  databaseList="access derby oracle mysql"
+  jdkList="jdk1.6"
+  ;;
+*)
+  databaseList="derby oracle mysql"
+  jdkList="jdk1.4 jdk1.5 jdk1.6"
+  ;;
+esac
+
+doTest() {
+  if [ -f build.properties ]; then
+    mv build.properties build.properties.bak
+  fi
+  if [ -f mondrian.properties ]; then
+    mv mondrian.properties mondrian.properties.bak
+  fi
+
+  doTest2 "$@"
+
+  mv build.properties.bak build.properties
+  mv mondrian.properties.bak mondrian.properties
+}
+
+doTest2() {
+  olap4j=
+  if [ "$1" = --olap4j ]; then
+    olap4j=true
+    shift
+  fi
+
+  jdk=$1
+
+  # Set JAVA_HOME
+  case $(uname -n) in
+  branston|mackerel)
+    case $jdk in
+    jdk1.5) export JAVA_HOME=/e/jdk1.5.0_08 ;;
+    jdk1.6) export JAVA_HOME=/c/jdk1.6.0_01 ;;
+    *) echo "Unknown java version $jdk"; exit 1 ;;
+    esac;;
+  *)
+    case $jdk in
+    jdk1.4) export JAVA_HOME=/usr/local/j2sdk1.4.2_13 ;;
+    jdk1.5) export JAVA_HOME=/usr/local/jdk1.5.0_12 ;;
+    jdk1.6) export JAVA_HOME=/usr/local/jdk1.6.0_01 ;;
+    *) echo "Unknown java version $jdk"; exit 1 ;;
+    esac;;
+  esac
+
+  # Use a version of ant (and in particular junit) compatible with JDK1.4.
+  export ANT_HOME=$(chooseAntHome $jdk)
+
+  database=$2
+  rm -f megatest.properties
+  case $database in
+  access)
+    (
+      echo mondrian.foodmart.jdbcURL=jdbc:odbc:MondrianFoodMart;
+      echo mondrian.jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;
+    ) >> megatest.properties
+    ;;
+  oracle)
+    (
+      #export ORACLE_HOME=G:/oracle/product/10.1.0/Db_1
+      if [ -n "$ORACLE_HOME" ]; then
+        echo driver.classpath=${ORACLE_HOME}/jdbc/lib/ojdbc14.jar;
+      else
+        # If Oracle is not installed, you must copy Oracle's JDBC driver into
+        # testlib.
+        if [ ! -f testlib/ojdbc14.jar ]; then
+          echo "Oracle JDBC not found"; exit 1;
+        fi
+        echo driver.classpath=testlib/ojdbc14.jar;
+      fi
+      jdbcURL=jdbc:oracle:thin:foodmart/foodmart@//marmalade.hydromatic.net:1521/XE;
+      echo mondrian.foodmart.jdbcURL=${jdbcURL};
+      echo mondrian.jdbcDrivers=oracle.jdbc.OracleDriver;
+      echo mondrian.foodmart.jdbcUser=foodmart
+      echo mondrian.foodmart.jdbcPassword=foodmart
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=demo/FoodMart.xml;JdbcDrivers=oracle.jdbc.OracleDriver;RoleXX='California manager';"
+    ) >> megatest.properties
+    ;;
+  derby)
+    (
+#     echo mondrian.foodmart.jdbcURL=jdbc:derby:jar:\(demo/derby/derby-foodmart.zip\)/foodmart
+      echo mondrian.foodmart.jdbcURL=jdbc:derby:demo/derby/foodmart
+      echo mondrian.jdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver
+      echo driver.classpath=testlib/derby.jar
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=jdbc:derby:demo/derby/foodmart;JdbcUser=sa;JdbcPassword=sa;PoolNeeded=false;Catalog=demo/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;RoleXX='California manager';"
+    ) >> megatest.properties
+    ;;
+  mysql)
+    (
+      echo mondrian.foodmart.jdbcURL=jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart
+      echo mondrian.jdbcDrivers=com.mysql.jdbc.Driver
+      echo driver.classpath=/usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart;JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=demo/FoodMart.xml;JdbcDrivers=com.mysql.jdbc.Driver;RoleXX='California manager';"
+    ) >> megatest.properties
+    ;;
+  *) echo "Unknown database $database"; exit 1 ;;
+  esac
+
+  shift
+  shift
+
+
+  if [ "$1" = -server ]; then
+    shift
+  fi
+
+  props=
+  for i in $*; do
+    echo "$i" >> megatest.properties
+    props="$props $i"
+    case "$i" in
+    mondrian.test.ExpDependencies=*)
+      # Expression dependencies requires greater eval depth than the default 3.
+      echo "mondrian.rolap.evaluate.MaxEvalDepth=6" >> megatest.properties
+      props="$props mondrian.rolap.evaluate.MaxEvalDepth=6"
+      ;;
+    esac
+  done
+
+  cat megatest.properties >> build.properties
+  cat megatest.properties >> mondrian.properties
+
+  echo
+  echo "========================================"
+  date
+  echo "Running test with JDK=$jdk database=$database props={$props}"
+  if [ "$build" ]; then
+    echo build=${build}
+    case $jdk in
+    jdk1.4)
+      (
+        export JAVA_HOME=/usr/local/jdk1.5.0_12
+        export PATH="$JAVA_HOME/bin:$PATH"
+        export ANT_HOME=$(chooseAntHome jdk1.5)
+        $ANT_HOME/bin/ant $ANT_FLAGS clean all retroweave
+      )
+      $ANT_HOME/bin/ant $ANT_FLAGS test-nobuild
+      ;;
+    jdk1.5|jdk1.6)
+      case $database in
+      derby) $ANT_HOME/bin/ant $ANT_FLAGS clean all test ;;
+      *) $ANT_HOME/bin/ant $ANT_FLAGS clean compile test ;;
+      esac
+      ;;
+    esac
+  fi
+
+  if [ "$olap4j" ]; then
+    echo
+    echo "========================================"
+    date
+    echo "Running olap4j test with JDK=$jdk"
+    (
+    cd ../olap4j
+    ant clean
+    ant
+    # Javadoc only runs clean under jdk16, because it depends on JDBC 4.0
+    case "$jdk" in
+    jdk1.6) ant javadoc ;;
+    esac
+    )
+  fi
+}
+
+# Echoes a value for ANT_HOME consistent with the JDK.
+# JDK 1.4 can't run modern versions of ant (because junit requires annotations)
+# but retroweaver cannot run on old versions of ant.
+chooseAntHome()
+{
+  jdk=$1
+  case $jdk in
+  jdk1.4)
+    case $(uname -n) in
+    branston|mackerel)
+      echo /open/thirdparty/ant;;
+    *)
+      echo $(cd /usr/local/apache-ant-1.6.0; pwd)
+    esac
+    ;;
+  jdk1.5|jdk1.6)
+    echo $(cd ../thirdparty/ant; pwd)
+    ;;
+  esac
+}
+
+doLotsOfTests()
+{
+  for agg in true false; do
+    for vusers in 1 5; do
+      for jdk in $jdkList; do
+        for database in $databaseList; do
+          for groupingSets in true false; do
+            if [ "$nightly" -a $vusers -gt 1 ]; then
+              continue
+            fi
+            # It's a waste of effort to run with grouping sets both true and
+            # false if db does not support it.
+            if [ "$groupingSets" = false ] ; then
+               case "$database" in
+               access|mysql|derby) continue;;
+               esac
+            fi
+            doTest $jdk $database \
+                mondrian.test.VUsers=$vusers \
+                mondrian.rolap.groupingsets.enable=$agg \
+                mondrian.rolap.aggregates.Use=$agg \
+                mondrian.rolap.aggregates.Read=$agg
+          done
+        done
+      done
+    done
+  done
+}
+
+doExoticTests()
+{
+  # Test exp dependencies
+  doTest jdk1.5 oracle \
+    mondrian.test.ExpDependencies=10 \
+    mondrian.test.random.seed=-1 \
+    mondrian.expCache.enable=false
+
+  rand=$(echo x|awk '{print int(rand() * 65536)}')
+  doTest jdk1.5 oracle \
+    mondrian.test.ExpDependencies=100 \
+    mondrian.test.random.seed=${rand} \
+    mondrian.expCache.enable=false
+
+  # Test with exp cache disabled
+  doTest jdk1.5 oracle mondrian.expCache.enable=false
+
+  # Test with aggs enabled
+  doTest jdk1.5 oracle \
+    mondrian.rolap.aggregates.Use=true \
+    mondrian.rolap.aggregates.Read=true
+
+  # Test with aggregate cache disabled
+  doTest jdk1.5 oracle mondrian.rolap.star.disableCaching=true
+
+  # Test case-insensitive
+  doTest jdk1.5 oracle mondrian.olap.case.sensitive=false
+
+  # Configurations which have surfaced bugs
+  echo "This test caused a bug"
+  doTest jdk1.6 mysql \
+    mondrian.native.crossjoin.enable=false \
+    mondrian.native.topcount.enable=false \
+    mondrian.xmla.drillthroughTotalCount.enable=false \
+    mondrian.rolap.LargeDimensionThreshold=1
+
+  echo "This test caused a bug with testDescendantsXxx"
+  doTest jdk1.6 oracle \
+    mondrian.rolap.aggregates.Use=true \
+    mondrian.rolap.aggregates.Read=true \
+    mondrian.rolap.aggregates.ChooseByVolume=true \
+    mondrian.rolap.star.disableCaching=true \
+    mondrian.native.filter.enable=false \
+    mondrian.native.nonempty.enable=false \
+    mondrian.xmla.drillthroughTotalCount.enable=false \
+    mondrian.olap.fun.crossjoin.optimizer.size=0 \
+    mondrian.rolap.groupingsets.enable=true
+
+  echo "This test caused a bug in testNativeSetCaching"
+  doTest jdk1.6 oracle \
+    mondrian.test.ExpDependencies=10 \
+    mondrian.native.crossjoin.enable=false
+
+  echo "This test caused a bug"
+  doTest jdk1.6 oracle \
+    mondrian.rolap.aggregates.Use=true \
+    mondrian.rolap.aggregates.Read=true \
+    mondrian.olap.case.sensitive=false \
+    mondrian.test.ExpDependencies=10 \
+    mondrian.xmla.drillthroughTotalCount.enable=false \
+    mondrian.expCache.enable=false \
+    mondrian.rolap.SparseSegmentValueThreshold=25000
+
+  # Caused bug in testFlush
+  echo "This test caused a bug in testFlush"
+  doTest jdk1.4 mysql \
+    mondrian.test.ExpDependencies=10 \
+    mondrian.native.crossjoin.enable=false \
+    mondrian.xmla.drillthroughTotalCount.enable=false \
+    mondrian.rolap.LargeDimensionThreshold=1000 \
+    mondrian.rolap.SparseSegmentValueThreshold=10
+
+  echo "This test took more than 3 cycles to load aggs in FunctionTest.testComplexOrExpr"
+  doTest jdk1.5 oracle \
+    mondrian.rolap.aggregates.Use=true \
+    mondrian.rolap.aggregates.Read=true \
+    mondrian.rolap.aggregates.ChooseByVolume=true \
+    mondrian.rolap.star.disableCaching=true \
+    mondrian.olap.case.sensitive=false \
+    mondrian.test.ExpDependencies=10 \
+    mondrian.rolap.SparseSegmentValueThreshold=25000
+
+  # Caused bug in testFlush
+  echo "This test caused a bug in testFlush"
+  doTest jdk1.6 derby \
+    mondrian.native.crossjoin.enable=false \
+    mondrian.native.topcount.enable=false \
+    mondrian.native.nonempty.enable=false \
+    mondrian.xmla.drillthroughTotalCount.enable=false
+}
+
+# Returns one of its arguments with equal probability
+chooseOne()
+{
+  echo "$@" | awk '
+{
+  srand();
+  r = int(rand() * NF) + 1;
+  print $r;
+}'
+  sleep 1s
+}
+
+# Prints "true" with a given probability, else "".
+# For example, "maybe 0.2" prints "true" 20% of the time.
+maybe()
+{
+  echo | awk '{srand(); r = rand(); if (0) print "r=" r ", p=" p; if (r < p) print "true"; else print "";}' p=$1
+  sleep 1s
+}
+
+doRandom()
+{
+  args=
+  args="$args $(chooseOne jdk1.4 jdk1.5 jdk1.6)"
+  args="$args $(chooseOne oracle mysql derby)"
+
+  # Run JVM in server mode
+  if [ "$(maybe 0.3)" ]; then
+    args="$args -server"
+  fi
+
+  # Test with aggs enabled, and further, choose agg tables by their number of data volume.
+  if [ "$(maybe 0.5)" ]; then
+    args="$args mondrian.rolap.aggregates.Use=true mondrian.rolap.aggregates.Read=true"
+    if [ "$(maybe 0.5)" ]; then
+      args="$args mondrian.rolap.aggregates.ChooseByVolume=true"
+    fi
+  fi
+
+  # Disable aggregate cache
+  if [ "$(maybe 0.5)" ]; then
+    args="$args mondrian.rolap.star.disableCaching=true"
+  fi
+
+  # Test case-insensitive
+  if [ "$(maybe 0.3)" ]; then
+    args="$args mondrian.olap.case.sensitive=false"
+  fi
+
+  # Test expression dependencies.
+  if [ "$(maybe 0.5)" ]; then
+    args="$args mondrian.test.ExpDependencies=10"
+  fi
+
+  # Test with aggregate cache disabled
+  if [ "$(maybe 0.5)" ]; then
+    args="$args mondrian.rolap.star.disableCaching=true"
+  fi
+
+  if [ $(maybe 0.5) ]; then
+    # Test with pushdown of NON-EMPTY to SQL disabled
+    if [ "$(maybe 0.7)" ]; then
+      args="$args mondrian.native.crossjoin.enable=false"
+    fi
+
+    # Test with pushdown of TOPCOUNT to SQL disabled
+    if [ "$(maybe 0.7)" ]; then
+      args="$args mondrian.native.topcount.enable=false"
+    fi
+
+    # Test with pushdown of FILTER to SQL disabled
+    if [ "$(maybe 0.7)" ]; then
+      args="$args mondrian.native.filter.enable=false"
+    fi
+
+    # Test with pushdown of Member.Children etc. to SQL disabled
+    if [ "$(maybe 0.7)" ]; then
+      args="$args mondrian.native.nonempty.enable=false"
+    fi
+  fi
+
+  if [ "$(maybe 0.4)" ]; then
+    args="$args mondrian.xmla.drillthroughTotalCount.enable=false"
+  fi
+
+  # Test with expression result cache disabled
+  if [ "$(maybe 0.5)" ]; then
+    args="$args mondrian.expCache.enable=false"
+  fi
+
+  # Change the threshold for large dimensions from its default value 100.
+  if [ "$(maybe 0.4)" ]; then
+    args="$args mondrian.rolap.LargeDimensionThreshold=$(chooseOne 1 777 25000)"
+  fi
+
+  # Change the threshold for large dimensions from its default value 1000.
+  if [ "$(maybe 0.5)" ]; then
+    args="$args mondrian.rolap.SparseSegmentValueThreshold=$(chooseOne 10 25000)"
+  fi
+
+  # Change the size at which crossjoins are optimized.
+  if [ "$(maybe 0.5)" ]; then
+    args="$args mondrian.olap.fun.crossjoin.optimizer.size=$(chooseOne 0 10 10000)"
+  fi
+
+  # Enable GROUPING SETS clause.
+  if [ "$(maybe 0.5)" ]; then
+    args="$args mondrian.rolap.groupingsets.enable=true"
+  fi
+
+  doTest $args
+}
+
+doQuick()
+{
+#  doTest jdk1.6 oracle mondrian.rolap.aggregates.Use=true mondrian.rolap.aggregates.Read=true
+  doTest jdk1.6 oracle mondrian.rolap.aggregates.Use=false mondrian.rolap.aggregates.Read=false
+#  doTest jdk1.4 oracle mondrian.rolap.aggregates.Use=true mondrian.rolap.aggregates.Read=true
+#  doTest jdk1.4 oracle mondrian.rolap.aggregates.Use=false mondrian.rolap.aggregates.Read=false
+}
+
+doAllTests()
+{
+  # With olap4j
+  doTest --olap4j jdk1.6 oracle
+  doTest --olap4j jdk1.5 oracle
+
+  # Basic
+  doTest jdk1.5 derby mondrian.test.VUsers=1
+
+  doTest jdk1.4 mysql mondrian.test.VUsers=1 mondrian.rolap.aggregates.Use=true mondrian.rolap.aggregates.Read=true
+  doTest jdk1.5 mysql mondrian.test.VUsers=1 mondrian.rolap.aggregates.Use=true mondrian.rolap.aggregates.Read=true
+
+  doTest jdk1.4 oracle mondrian.test.VUsers=1
+  doTest jdk1.5 oracle mondrian.test.VUsers=1
+  doTest jdk1.6 oracle mondrian.test.VUsers=1
+
+  doTest jdk1.5 oracle mondrian.test.ExpDependencies=10 mondrian.test.random.seed=-1 mondrian.expCache.enable=false #mondrian.test.Name=mondrian.test.ParentChildHierarchyTest
+
+#    mondrian.test.Class=mondrian.test.BasicQueryTest
+#    mondrian.test.Name=testQueryTimeout
+
+
+  # Same again, with aggs
+  doTest jdk1.5 oracle mondrian.rolap.aggregates.Use=true mondrian.rolap.aggregates.Read=true
+
+  # Same again, non case-sensititive
+  doTest jdk1.5 oracle mondrian.olap.case.sensitive=false
+
+  # Do some tests with random configurations
+  echo ::: do 10 random tests :::
+  for ((i=0; i < 10; i++)) do
+    doRandom
+  done
+
+  doExoticTests
+
+  # On a Wednesday, do exhaustive tests.
+  if [ $(date +%w) = 3 ]; then
+    doLotsOfTests
+  fi
+}
+
+doTests()
+{
+  if [ "$quick" ]; then
+    doQuick
+  elif [ "$random" ]; then
+    doRandom
+  else
+    doAllTests
+  fi
+}
+
+checkJavadoc()
+{
+  ant -emacs javadoc-strict 2>&1 > ant-javadoc.log
+  cat ant-javadoc.log |
+    grep -e ':[0-9]*: warning' - |
+    grep -v -F -f ant-javadoc-expected.log -
+}
+
+usage()
+{
+  echo "megatest [--help] [--nightly] [--quick] [--random] [--nobuild]"
+  echo "Options:"
+  echo "  --help     Print this help"
+  echo "  --nightly  Run as a nightly batch job, with an error summary"
+  echo "  --quick    Only run one test"
+  echo "  --random   Run a test with a random set of parameters"
+  echo "  --nobuild  Do not compile code before running the test"
+}
+
+nightly=
+quick=
+random=
+build=true
+while [ $# -gt 0 ]; do
+  case "$1" in
+  --help)
+    usage
+    exit 0
+    ;;
+  --nightly)
+    nightly=true
+    shift
+    ;;
+  --quick)
+    quick=true
+    shift
+    ;;
+  --random)
+    random=true
+    shift
+    ;;
+  --nobuild)
+    build=
+    shift
+    ;;
+  *)
+    break
+    ;;
+  esac
+done
+
+if [ "$nightly" ]; then
+  # We're probably called from a cron job. Set up environment.
+  cd ${OPEN_DIR}
+  . ./env
+  cd mondrian
+
+  # Sync latest.
+  p4 get ...
+  p4 resolve -am
+
+  # If olap4j exists, sync it
+  if [ -d ../olap4j ]; then
+    (
+    cd ../olap4j
+    svn up
+    )
+  fi
+fi
+
+cd "${OPEN_DIR}/mondrian"
+if [ "$nightly" ]; then
+  # If a cron job, run the whole suite before emitting any output.
+  doTests >megatest.log 2>&1
+  echo
+  echo ::: Summary :::::::::::::::::::::::::::::::::::::
+  echo Tests completed at $(date).
+  egrep 'Running test|OK|Tests run| [0-9]*\) ' ./megatest.log
+  if egrep 'FAILURE|BUILD FAILED|Failures: [^0]|Errors: [^0]' megatest.log; then
+    echo There were failures.
+  else
+    echo Test succeeded.
+  fi
+
+  echo
+  echo ::: check javadoc :::::::::::::::::::::::::::::::
+  checkJavadoc
+
+  echo
+  echo ::: megatest.log :::::::::::::::::::::::::::::::::
+  # Limit to 10MB, because that is gmail's limit.
+  head --bytes=10000000 megatest.log
+
+else
+  doTests | tee megatest.log
+fi
+
+# End megatest
+
