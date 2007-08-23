@@ -25,6 +25,10 @@ mackerel)
   databaseList="access derby oracle mysql"
   jdkList="jdk1.6"
   ;;
+mackerel-winxp)
+  databaseList="access derby"
+  jdkList="jdk1.4 jdk1.5 jdk1.6"
+  ;;
 *)
   databaseList="derby oracle mysql"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
@@ -53,28 +57,22 @@ doTest2() {
   fi
 
   jdk=$1
+  database=$2
 
-  # Set JAVA_HOME
-  case $(uname -n) in
-  branston|mackerel)
-    case $jdk in
-    jdk1.5) export JAVA_HOME=/e/jdk1.5.0_08 ;;
-    jdk1.6) export JAVA_HOME=/c/jdk1.6.0_01 ;;
-    *) echo "Unknown java version $jdk"; exit 1 ;;
-    esac;;
-  *)
-    case $jdk in
-    jdk1.4) export JAVA_HOME=/usr/local/j2sdk1.4.2_13 ;;
-    jdk1.5) export JAVA_HOME=/usr/local/jdk1.5.0_12 ;;
-    jdk1.6) export JAVA_HOME=/usr/local/jdk1.6.0_01 ;;
-    *) echo "Unknown java version $jdk"; exit 1 ;;
-    esac;;
-  esac
+  # If the database does not exist, silently skip this test.
+  database=$2
+  if echo "$databaseList" | grep -s "$database"; then
+    echo "database $database ok"
+  else
+    echo "database $database not ok"
+    return
+  fi
+
+  JAVA_HOME=$(chooseJavaHome $jdk)
 
   # Use a version of ant (and in particular junit) compatible with JDK1.4.
   export ANT_HOME=$(chooseAntHome $jdk)
 
-  database=$2
   rm -f megatest.properties
   case $database in
   access)
@@ -157,7 +155,7 @@ doTest2() {
     case $jdk in
     jdk1.4)
       (
-        export JAVA_HOME=/usr/local/jdk1.5.0_12
+        export JAVA_HOME=$(chooseJavaHome jdk1.5)
         export PATH="$JAVA_HOME/bin:$PATH"
         export ANT_HOME=$(chooseAntHome jdk1.5)
         $ANT_HOME/bin/ant $ANT_FLAGS clean all retroweave
@@ -165,8 +163,12 @@ doTest2() {
       $ANT_HOME/bin/ant $ANT_FLAGS test-nobuild
       ;;
     jdk1.5|jdk1.6)
+      export ANT_HOME=$(chooseAntHome $jdk)
       case $database in
-      derby) $ANT_HOME/bin/ant $ANT_FLAGS clean all test ;;
+      derby|access)
+        $ANT_HOME/bin/ant $ANT_FLAGS ;
+        $ANT_HOME/bin/ant $ANT_FLAGS clean all test
+        ;;
       *) $ANT_HOME/bin/ant $ANT_FLAGS clean compile test ;;
       esac
       ;;
@@ -198,17 +200,46 @@ chooseAntHome()
   jdk=$1
   case $jdk in
   jdk1.4)
-    case $(uname -n) in
-    branston|mackerel)
-      echo /open/thirdparty/ant;;
+    case $(uname -o) in
+    Cygwin)
+      echo $(cd ${OPEN_DIR}/thirdparty/ant; pwd)
+      ;;
     *)
       echo $(cd /usr/local/apache-ant-1.6.0; pwd)
     esac
     ;;
   jdk1.5|jdk1.6)
-    echo $(cd ../thirdparty/ant; pwd)
+    echo $(cd ${OPEN_DIR}/thirdparty/ant; pwd)
     ;;
   esac
+}
+
+# Returns the path of a JAVA_HOME for a given JDK version.
+chooseJavaHome() {
+  jdk=$1
+  case $(uname -n) in
+  branston|mackerel)
+    case $jdk in
+    jdk1.5) export JAVA_HOME=/e/jdk1.5.0_08 ;;
+    jdk1.6) export JAVA_HOME=/c/jdk1.6.0_01 ;;
+    *) echo "Unknown java version $jdk"; exit 1 ;;
+    esac;;
+  mackerel-winxp)
+    case $jdk in
+    jdk1.4) export JAVA_HOME=/c/jdk1.4.2_15 ;;
+    jdk1.5) export JAVA_HOME=/c/jdk1.5.0_12 ;;
+    jdk1.6) export JAVA_HOME=/c/jdk1.6.0_02 ;;
+    *) echo "Unknown java version $jdk"; exit 1 ;;
+    esac;;
+  *)
+    case $jdk in
+    jdk1.4) export JAVA_HOME=/usr/local/j2sdk1.4.2_13 ;;
+    jdk1.5) export JAVA_HOME=/usr/local/jdk1.5.0_12 ;;
+    jdk1.6) export JAVA_HOME=/usr/local/jdk1.6.0_01 ;;
+    *) echo "Unknown java version $jdk"; exit 1 ;;
+    esac;;
+  esac
+
 }
 
 doLotsOfTests()
@@ -355,7 +386,7 @@ doRandom()
 {
   args=
   args="$args $(chooseOne jdk1.4 jdk1.5 jdk1.6)"
-  args="$args $(chooseOne oracle mysql derby)"
+  args="$args $(chooseOne ${databaseList})"
 
   # Run JVM in server mode
   if [ "$(maybe 0.3)" ]; then
@@ -446,10 +477,7 @@ doRandom()
 
 doQuick()
 {
-#  doTest jdk1.6 oracle mondrian.rolap.aggregates.Use=true mondrian.rolap.aggregates.Read=true
-  doTest jdk1.6 oracle mondrian.rolap.aggregates.Use=false mondrian.rolap.aggregates.Read=false
-#  doTest jdk1.4 oracle mondrian.rolap.aggregates.Use=true mondrian.rolap.aggregates.Read=true
-#  doTest jdk1.4 oracle mondrian.rolap.aggregates.Use=false mondrian.rolap.aggregates.Read=false
+  doTest jdk1.6 access
 }
 
 doAllTests()
