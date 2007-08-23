@@ -862,54 +862,76 @@ public class TestContext {
      * Performs some normalization on the actual SQL to compensate for
      * differences between dialects.
      */
-    public void assertSqlEquals(String expectedSql, String actualSql, int expectedRows) throws Exception {
+    public void assertSqlEquals(
+        String expectedSql,
+        String actualSql,
+        int expectedRows) throws Exception
+    {
+        // if the actual SQL isn't in the current dialect we have some
+        // problems... probably with the dialectize method
+        assertEqualsVerbose(actualSql, dialectize(actualSql));
 
+        String transformedExpectedSql = removeQuotes(dialectize(expectedSql));
+        String transformedActualSql = removeQuotes(actualSql);
+
+        Assert.assertEquals(transformedExpectedSql, transformedActualSql);
+
+        checkSqlAgainstDatasource(actualSql, expectedRows);
+    }
+
+    private static String removeQuotes(String actualSql) {
+        String transformedActualSql = actualSql.replaceAll("`", "");
+        transformedActualSql = transformedActualSql.replaceAll("\"", "");
+        return transformedActualSql;
+    }
+
+    /**
+     * Converts a SQL string into the current dialect.
+     *
+     * <p>This is not intended to be a general purpose method: it looks for
+     * specific patterns known to occur in tests, in particular "=as=" and
+     * "fname + ' ' + lname".
+     *
+     * @param sql SQL string in generic dialect
+     * @return SQL string converted into current dialect
+     */
+    private String dialectize(String sql) {
         final String search = "fname \\+ ' ' \\+ lname";
         final SqlQuery.Dialect dialect = getDialect();
         if (dialect.isMySQL()) {
             // Mysql would generate "CONCAT( ... )"
-            expectedSql = expectedSql.replaceAll(
+            sql = sql.replaceAll(
                     search,
                     "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)");
         } else if (dialect.isPostgres()
             || dialect.isOracle() || dialect.isLucidDB()) {
-            expectedSql = expectedSql.replaceAll(
+            sql = sql.replaceAll(
                     search,
                     "`fname` || ' ' || `lname`");
         } else if (dialect.isDerby() || dialect.isCloudscape()) {
-            expectedSql = expectedSql.replaceAll(
+            sql = sql.replaceAll(
                     search,
                     "`customer`.`fullname`");
         } else if (dialect.isIngres()) {
-            expectedSql = expectedSql.replaceAll(
+            sql = sql.replaceAll(
                     search,
                     "fullname");
         } else if (dialect.isDB2()) {
-            expectedSql = expectedSql.replaceAll(
+            sql = sql.replaceAll(
                     search,
                     "CONCAT(CONCAT(`customer`.`fname`, ' '), `customer`.`lname`)");
         }
 
-        // the following replacement is for quoting identifiers
-        expectedSql = expectedSql.replaceAll("`", "");
-        expectedSql = expectedSql.replaceAll("\"", "");
-
-        String transformedActualSql = actualSql.replaceAll("`", "");
-        transformedActualSql = transformedActualSql.replaceAll("\"", "");
-
         if (dialect.isOracle()) {
             // " + tableQualifier + "
-            expectedSql = expectedSql.replaceAll(" =as= ", " ");
+            sql = sql.replaceAll(" =as= ", " ");
         } else {
-            expectedSql = expectedSql.replaceAll(" =as= ", " as ");
+            sql = sql.replaceAll(" =as= ", " as ");
         }
-
-        Assert.assertEquals(expectedSql, transformedActualSql);
-
-        testSqlAgainstDatasource(actualSql, expectedRows);
+        return sql;
     }
 
-    private void testSqlAgainstDatasource(
+    private void checkSqlAgainstDatasource(
         String actualSql,
         int expectedRows)
         throws Exception
