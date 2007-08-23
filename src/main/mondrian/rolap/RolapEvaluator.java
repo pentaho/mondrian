@@ -168,6 +168,15 @@ public class RolapEvaluator implements Evaluator {
         return new RolapEvaluator(root);
     }
 
+    /**
+     * Returns the (non-virtual) cube that the current measure belongs to.
+     *
+     * @return cube
+     */
+    public RolapCube getMeasureCube() {
+        return ((RolapStoredMeasure) currentMembers[0]).getCube();
+    }
+
     protected static class RolapEvaluatorRoot {
         final Map<Object, Object> expResultCache =
             new HashMap<Object, Object>();

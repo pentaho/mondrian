@@ -820,7 +820,7 @@ public class VirtualCubeTest extends BatchTestCase {
             // is enabled.
             return;
         }
-        
+
         String query1 =
             "With " +
             "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([Product].[Product Family].Members, [Store].[Store Country].Members)' " +
@@ -920,6 +920,32 @@ public class VirtualCubeTest extends BatchTestCase {
         // Make sure NECJ 2 does not reuse the cache result from NECJ 1, and
         // NECJ 2 is evaluated natively.
         assertQuerySql(query2, patterns2, false);
+    }
+
+    /**
+     * Test for bug 1778358, "cube.getStar() throws NullPointerException".
+     * Happens when you aggregate distinct-count measures in a virtual cube.
+     */
+    public void testBug1778358() {
+        final TestContext testContext =
+            TestContext.create(null, null,
+                "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n"
+                    + "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\"/>\n"
+                    + "  <VirtualCubeDimension name=\"Time\"/>\n"
+                    + "  <VirtualCubeDimension cubeName=\"Warehouse\" name=\"Warehouse\"/>\n"
+                    + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Customer Count]\"/>\n"
+                    + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
+                    + "</VirtualCube>",
+                null, null);
+        testContext.assertQueryReturns(
+            "with member [Warehouse].[x] as 'Aggregate([Warehouse].members)'\n"
+                + "member [Measures].[foo] AS '([Warehouse].[x],[Measures].[Customer Count])'\n"
+                + "select {[Measures].[foo]} on 0 from [Warehouse And Sales2]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[foo]}\n" +
+                "Row #0: 5,581\n"));
     }
 }
 

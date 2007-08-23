@@ -420,7 +420,7 @@ public abstract class RolapAggregationManager {
         RolapEvaluator evaluator,
         List<List<RolapMember>> aggregationLists)
     {
-        final RolapCube cube = (RolapCube) evaluator.getCube();
+        final RolapCube cube = evaluator.getMeasureCube();
         final Map<RolapLevel, RolapStar.Column> levelToColumnMap =
             cube.getStar().getLevelToColumnMap(cube);
 
@@ -475,15 +475,20 @@ public abstract class RolapAggregationManager {
             // generates the SQL predicate
             //  (  (year = 1997 and quarter = 'Q1')
             //  or (year = 1997 and quarter = 'Q3' and month = 7) )
+            int unsatisfiableCount = 0;
             for (RolapMember member : aggregationList) {
                 final boolean unsatisfiable =
                     member.getLevel().getLevelReader().constrainRequest(
                         member, levelToColumnMap, request, groupOrdinals);
                 if (unsatisfiable) {
-                    return null;
+                    ++unsatisfiableCount;
                 }
                 ++groupOrdinals[1];
                 Arrays.fill(groupOrdinals, 2, groupOrdinals.length, 0);
+            }
+            // If no member is satisfiable, the cell is unsatisfiable.
+            if (unsatisfiableCount == aggregationList.size()) {
+                return null;
             }
             ++groupOrdinals[0];
             Arrays.fill(groupOrdinals, 1, groupOrdinals.length, 0);

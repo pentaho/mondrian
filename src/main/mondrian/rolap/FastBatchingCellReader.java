@@ -127,6 +127,10 @@ public class FastBatchingCellReader implements CellReader {
 
         String sql = RolapAggregationManager.generateMultiSql(
             evaluator, (List) aggregationLists);
+        if (sql == null) {
+            return Util.nullValue; // request is not satisfiable
+        }
+        final RolapCube cube = evaluator.getMeasureCube();
         final SqlStatement stmt =
             RolapUtil.executeQuery(
                 cube.getStar().getDataSource(), sql,
