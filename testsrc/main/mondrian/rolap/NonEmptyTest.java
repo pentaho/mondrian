@@ -1281,9 +1281,9 @@ public class NonEmptyTest extends BatchTestCase {
                 "where " +
                 "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
                 "and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" " +
-                "and ((\"store\".\"store_state\" = 'WA' and \"store\".\"store_city\" = 'Tacoma') " +
-                "or (\"store\".\"store_state\" = 'CA' and \"store\".\"store_city\" = 'San Francisco') " +
-                "or (\"store\".\"store_state\" = 'OR' and \"store\".\"store_city\" in ('Portland', 'Salem'))) " +
+                "and ((\"store\".\"store_state\" = 'OR' and \"store\".\"store_city\" in ('Portland', 'Salem'))" +
+                " or (\"store\".\"store_state\" = 'CA' and \"store\".\"store_city\" = 'San Francisco')" +
+                " or (\"store\".\"store_state\" = 'WA' and \"store\".\"store_city\" = 'Tacoma')) " +
                 "and (\"product_class\".\"product_family\" = 'Food') " +
                 "group by \"store\".\"store_country\", \"store\".\"store_state\", \"store\".\"store_city\", \"product_class\".\"product_family\" " +
                 "order by \"store\".\"store_country\" ASC, \"store\".\"store_state\" ASC, \"store\".\"store_city\" ASC, \"product_class\".\"product_family\" ASC";

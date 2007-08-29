@@ -1520,6 +1520,7 @@ public class FunctionTest extends FoodMartTestCase {
                 queryString + " where [Time.Weekly].[1997]");
         Assert.assertEquals("12,885", result.getCell(coords).getFormattedValue());
     }
+
     public void testCurrentMemberMultiHierarchy2() {
         final String queryString1 =
             "with member [Measures].[Foo] as\n" +
@@ -3001,6 +3002,17 @@ public class FunctionTest extends FoodMartTestCase {
     public void testDescendantsMNY() {
         assertAxisReturns("Descendants([Time].[1997], 1, BEFORE_AND_AFTER)",
                 year1997 + nl + months);
+    }
+
+    public void testDescendants2ndHier() {
+        assertAxisReturns("Descendants([Time.Weekly].[1997].[10], [Time.Weekly].[Day])",
+            fold("[Time.Weekly].[All Time.Weeklys].[1997].[10].[1]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[10].[23]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[10].[24]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[10].[25]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[10].[26]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[10].[27]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[10].[28]"));
     }
 
     public void testDescendantsParentChild() {

@@ -374,9 +374,10 @@ public class SqlConstraintUtils {
         RolapLevel fromLevel,
         boolean restrictMemberTypes)
     {
+        // Use LinkedHashMap so that keySet() is deterministic.
+        Map<RolapMember, List<RolapMember>> parentChildrenMap =
+            new LinkedHashMap<RolapMember, List<RolapMember>>();
         String condition = "";
-        Map<RolapMember, List<RolapMember>> parentChildrenMap = 
-            new HashMap<RolapMember, List<RolapMember>>();
 
         // First try to generate IN list for all members
         if (sqlQuery.getDialect().supportsMultiValueInExpr()) {
