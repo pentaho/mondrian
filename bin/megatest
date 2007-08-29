@@ -485,6 +485,7 @@ doAllTests()
   # With olap4j
   doTest --olap4j jdk1.6 oracle
   doTest --olap4j jdk1.5 oracle
+  doTest --olap4j jdk1.5 access
 
   # Basic
   doTest jdk1.5 derby mondrian.test.VUsers=1
@@ -535,7 +536,10 @@ doTests()
 
 checkJavadoc()
 {
-  ant -emacs javadoc-strict 2>&1 > ant-javadoc.log
+  export JAVA_HOME=$(chooseJavaHome jdk1.6)
+  export ANT_HOME=$(chooseAntHome jdk1.6)
+
+  $ANT_HOME/bin/ant -emacs javadoc-strict 2>&1 > ant-javadoc.log
   cat ant-javadoc.log |
     grep -e ':[0-9]*: warning' - |
     grep -v -F -f ant-javadoc-expected.log -
@@ -624,6 +628,7 @@ if [ "$nightly" ]; then
   echo
   echo ::: megatest.log :::::::::::::::::::::::::::::::::
   # Limit to 10MB, because that is gmail's limit.
+  dos2unix megatest.log
   head --bytes=10000000 megatest.log
 
 else
