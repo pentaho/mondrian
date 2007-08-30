@@ -991,11 +991,11 @@ public class MondrianProperties extends TriggerableProperties {
      * it evaluates to "Infinity", which conforms to MSAS behavior. However,
      * the old semantics of evaluating this to NULL (non MSAS-conforming), is
      * useful in some applications. This property controls whether the
-     * result should be NULL if the denominator is Null or value zero.
+     * result should be NULL if the denominator is Null.
      */
-    public transient final BooleanProperty NullOrZeroDenominatorProducesNull =
+    public transient final BooleanProperty NullDenominatorProducesNull =
     	new BooleanProperty(
-            this, "mondrian.olap.NullOrZeroDenominatorProducesNull", false);
+            this, "mondrian.olap.NullDenominatorProducesNull", false);
 
     /**
      * Property which defines

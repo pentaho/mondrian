@@ -4400,26 +4400,26 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns(NullNumericExpr + " / - 2", "");
         assertExprReturns(NullNumericExpr + " / " + NullNumericExpr, "");
 
-        boolean origNullOrZeroDenominatorProducesNull =
-            MondrianProperties.instance().NullOrZeroDenominatorProducesNull.get();
+        boolean origNullDenominatorProducesNull =
+            MondrianProperties.instance().NullDenominatorProducesNull.get();
         try {
             // default behavior
-            MondrianProperties.instance().NullOrZeroDenominatorProducesNull.set(false);
+            MondrianProperties.instance().NullDenominatorProducesNull.set(false);
 
             assertExprReturns("-2 / " + NullNumericExpr, "Infinity");
             assertExprReturns("0 / 0", "NaN");
             assertExprReturns("-3 / (2 - 2)", "-Infinity");
 
             // when NullOrZeroDenominatorProducesNull is set to true
-            MondrianProperties.instance().NullOrZeroDenominatorProducesNull.set(true);
+            MondrianProperties.instance().NullDenominatorProducesNull.set(true);
 
             assertExprReturns("-2 / " + NullNumericExpr, "");
             assertExprReturns("0 / 0", "");
             assertExprReturns("-3 / (2 - 2)", "");
 
         } finally {
-            MondrianProperties.instance().NullOrZeroDenominatorProducesNull.
-            set(origNullOrZeroDenominatorProducesNull);
+            MondrianProperties.instance().NullDenominatorProducesNull.
+            set(origNullDenominatorProducesNull);
         }
     }
 

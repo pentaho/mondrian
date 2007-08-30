@@ -1540,9 +1540,9 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                final boolean isNullOrZeroDenominatorProducesNull =
+                final boolean isNullDenominatorProducesNull =
                     MondrianProperties.instance().
-                    NullOrZeroDenominatorProducesNull.get();
+                    NullDenominatorProducesNull.get();
 
                 // If the mondrian property
                 //   mondrian.olap.NullOrZeroDenominatorProducesNull 
@@ -1552,7 +1552,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 // If this property is true, Null or zero in denominator returns
                 // Null. This is only used by certain applications and does not
                 // conform to MSAS behavior.
-                if (isNullOrZeroDenominatorProducesNull != true) {
+                if (isNullDenominatorProducesNull != true) {
                     return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
                         public double evaluateDouble(Evaluator evaluator) {
                             final double v0 = calc0.evaluateDouble(evaluator);
