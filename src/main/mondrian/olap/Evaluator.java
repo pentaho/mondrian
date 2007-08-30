@@ -16,6 +16,7 @@ package mondrian.olap;
 import mondrian.calc.ParameterSlot;
 import java.util.List;
 import java.util.Locale;
+import java.util.Date;
 
 /**
  * An <code>Evaluator</code> holds the context necessary to evaluate an
@@ -36,6 +37,11 @@ public interface Evaluator {
      * Returns the current query.
      */
     Query getQuery();
+
+    /**
+     * Returns the start time of the current query.
+     */
+    Date getQueryStartTime();
 
     /**
      * Creates a new Evaluator with each given member overriding the context of

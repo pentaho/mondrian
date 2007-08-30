@@ -34,7 +34,7 @@ public class CurrentDateStringUdf implements UserDefinedFunction {
 
         final Locale locale = Locale.getDefault();
         final Format format = new Format((String) arg, locale);
-        Date currDate = new Date();
+        Date currDate = evaluator.getQueryStartTime();
         return format.format(currDate);
     }
 

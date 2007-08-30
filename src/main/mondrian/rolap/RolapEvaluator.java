@@ -187,12 +187,14 @@ public class RolapEvaluator implements Evaluator {
         final SchemaReader schemaReader;
         final Map<Exp, Calc> compiledExps = new HashMap<Exp, Calc>();
         final private Query query;
-
+        final private Date queryStartTime;
+        
         public RolapEvaluatorRoot(Query query) {
             this.query = query;
             this.cube = (RolapCube) query.getCube();
             this.connection = (RolapConnection) query.getConnection();
             this.schemaReader = query.getSchemaReader(true);
+            this.queryStartTime = new Date();
         }
 
         /**
@@ -281,6 +283,15 @@ public class RolapEvaluator implements Evaluator {
             }
             tmpExpResultCache.clear();
         }
+        
+        /**
+         * Get query start time.
+         * 
+         * @return the query start time
+         */ 
+        public Date getQueryStartTime() {
+            return queryStartTime;
+        }
     }
 
     protected final Logger getLogger() {
@@ -315,6 +326,10 @@ public class RolapEvaluator implements Evaluator {
         return root.schemaReader;
     }
 
+    public Date getQueryStartTime() {
+        return root.getQueryStartTime();
+    }
+    
     public final RolapEvaluator push(Member[] members) {
         final RolapEvaluator evaluator = _push();
         evaluator.setContext(members);

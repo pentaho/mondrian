@@ -37,15 +37,20 @@ import java.util.*;
  * @version $Id$
  */
 public class CurrentDateMemberUdf implements UserDefinedFunction {
-
+    private Object resultDateMember = null;
+    
     public Object execute(Evaluator evaluator, Argument[] arguments) {
 
+        if (resultDateMember != null) {
+            return resultDateMember;
+        }
+        
         // determine the current date
         Object formatArg = arguments[1].evaluateScalar(evaluator);
 
         final Locale locale = Locale.getDefault();
         final Format format = new Format((String) formatArg, locale);
-        Date currDate = new Date();
+        Date currDate = evaluator.getQueryStartTime();
         String currDateStr = format.format(currDate);
 
         // determine the match type
@@ -58,21 +63,22 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
         }
 
         List<Id.Segment> uniqueNames = Util.parseIdentifier(currDateStr);
-        Object retDate =
+        resultDateMember =
             evaluator.getSchemaReader().getMemberByUniqueName(
                 uniqueNames, false, matchType);
-        if (retDate != null) {
-            return retDate;
+        if (resultDateMember != null) {
+            return resultDateMember;
         }
 
         // if there is no matching member, return the null member for
         // the specified dimension/hierarchy
         Object arg0 = arguments[0].evaluate(evaluator);
         if (arg0 instanceof Hierarchy) {
-            return ((Hierarchy) arg0).getNullMember();
+            resultDateMember = ((Hierarchy) arg0).getNullMember();
         } else {
-            return ((Dimension) arg0).getHierarchy().getNullMember();
+            resultDateMember = ((Dimension) arg0).getHierarchy().getNullMember();
         }
+        return resultDateMember;
     }
 
     public String getDescription() {

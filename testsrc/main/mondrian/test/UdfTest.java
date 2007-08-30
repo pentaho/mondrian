@@ -675,8 +675,22 @@ public class UdfTest extends FoodMartTestCase {
                 "Row #0: 409,035.59" + nl);
     }
 
+    
+    public void testCachingCurrentDate() {
+        assertQueryReturns(
+            "SELECT {filter([Time].[Month].Members, " +
+            "[Time].CurrentMember in {CurrentDateMember([Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', BEFORE)})} ON ROWS " +
+            "from [Sales]",
+            "Axis #0:" + nl +
+            "{}" + nl +
+            "Axis #1:" + nl +
+            "{[Time].[1998].[Q4].[12]}" + nl +
+            "Row #0: " + nl);        
+    }
+    
     // ~ Inner classes --------------------------------------------------------
 
+    
     /**
      * A simple user-defined function which adds one to its argument.
      */

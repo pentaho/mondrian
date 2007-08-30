@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
+import mondrian.spi.UserDefinedFunction;
 import mondrian.mdx.*;
 import mondrian.util.UtilCompatible;
 import mondrian.util.Pair;
@@ -1967,6 +1968,33 @@ public class Util extends XOMUtil {
     public static BigDecimal makeBigDecimalFromDouble(double d) {
         return compatible.makeBigDecimalFromDouble(d);
     }
+    
+    /**
+     * Creates a new udf instance from the given udf class.
+     * 
+     * @param udfClass the class to create new instance for
+     * @return an instance of UserDefinedFunction
+     */
+    public static UserDefinedFunction createUdf(Class<?> udfClass) {
+        // Instantiate class with default constructor.
+        UserDefinedFunction udf;
+        String className = udfClass.getName();
+ 
+        try {
+            udf = (UserDefinedFunction) udfClass.newInstance();
+        } catch (InstantiationException e) {
+            throw MondrianResource.instance().UdfClassWrongIface.ex("",
+                    className, UserDefinedFunction.class.getName());
+        } catch (IllegalAccessException e) {
+            throw MondrianResource.instance().UdfClassWrongIface.ex("",
+                    className, UserDefinedFunction.class.getName());
+        } catch (ClassCastException e) {
+            throw MondrianResource.instance().UdfClassWrongIface.ex("",
+                    className, UserDefinedFunction.class.getName());
+        }
+
+        return udf;
+    }    
 }
 
 // End Util.java

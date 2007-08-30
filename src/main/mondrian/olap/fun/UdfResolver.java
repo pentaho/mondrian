@@ -136,6 +136,7 @@ public class UdfResolver implements Resolver {
                 final Calc scalarCalc = compiler.compileScalar(arg, true);
                 expCalcs[i] = new CalcExp(calc, scalarCalc);
             }
+            
             return new CalcImpl(call, calcs, udf, expCalcs);
         }
     }
@@ -155,7 +156,7 @@ public class UdfResolver implements Resolver {
                 UserDefinedFunction.Argument[] args) {
             super(call);
             this.calcs = calcs;
-            this.udf = udf;
+            this.udf = Util.createUdf(udf.getClass());
             this.args = args;
         }
 

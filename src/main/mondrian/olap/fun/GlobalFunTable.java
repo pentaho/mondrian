@@ -112,7 +112,7 @@ public class GlobalFunTable extends FunTableImpl {
         }
         return classNames;
     }
-
+    
     /**
      * Defines a user-defined function in this table.
      *
@@ -132,19 +132,7 @@ public class GlobalFunTable extends FunTableImpl {
         }
 
         // Instantiate class with default constructor.
-        final UserDefinedFunction udf;
-        try {
-            udf = (UserDefinedFunction) udfClass.newInstance();
-        } catch (InstantiationException e) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex("",
-                    className, UserDefinedFunction.class.getName());
-        } catch (IllegalAccessException e) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex("",
-                    className, UserDefinedFunction.class.getName());
-        } catch (ClassCastException e) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex("",
-                    className, UserDefinedFunction.class.getName());
-        }
+        final UserDefinedFunction udf = Util.createUdf(udfClass);
 
         // Validate function.
         validateFunction(udf);
