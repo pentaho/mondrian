@@ -1,24 +1,157 @@
-Mondrian x.x release notes (incomplete)
-=======================================
+Mondrian 2.4.2.9831 release notes
+=================================
 
-Main functionality in this release:
-  ...
+Introduction
+------------
 
-API changes in this release:
+mondrian-2.4.2.9831 is first production release of
+mondrian-2.4 release.
 
-* DynamicSchemaProcessor. Moved the mondrian.rolap.DynamicSchemaProcessor
-  interface to mondrian.spi. The processSchema(URL, PropertyList) method now
-  has signature processSchema(String, PropertyList), and the URL is intended
-  to be interpreted as an Apache VFS URL. The new
-  mondrian.spi.impl.FilterDynamicSchemaProcessor class is a partial
-  implementation.
+Contents
+--------
 
-Bugs and feature requests fixed since mondrian-2.3:
+As usual, there are two distributions for this release:
+ * mondrian-<version>.zip contains the FoodMart dataset in
+   SQL and Access format
+ * mondrian-<version>.derby.zip contains the FoodMart
+   dataset as an Apache Derby database
+
+This release runs on Java version 1.5 and higher. For
+backwards compatibility on Java 1.4, substitute
+mondrian-jdk14.jar for mondrian.jar, and add
+retroweaver-rt-1.2.4.jar to your classpath.
+
+For further installation instructions, see
+http://mondrian.pentaho.org/documentation/installation.php
+or the included file doc/installation.html.
+
+Main functionality in this release
+----------------------------------
+
+* Aggregate distinct-count measures. This allows aggregations
+  of distinct count measures to compute properly over a range
+  of selections (for example, show me a count of all new
+  customers from January through July).
+
+* Generate SQL with the GROUPING SETS SQL construct, for
+  databases which support it. By leveraging Grouping Sets,
+  Mondrian can reduce the number of SQL queries necessary to
+  full an MDX request, and databases can often execute the
+  combined queries more efficiently than the individual
+  queries. Grouping Sets are currently supported in Oracle,
+  DB2, Teradata and Microsoft SQL Server.
+
+* New MDX functions Extract, Generate, Iif(bool,bool,bool),
+  Len, Left, Mid, UCase. 
+
+* Support for Apache Virtual File System (VFS) URLs.
+
+API changes in this release
+---------------------------
+
+* DynamicSchemaProcessor. Moved the
+  mondrian.rolap.DynamicSchemaProcessor interface to package
+  mondrian.spi. The processSchema(URL, PropertyList) method
+  now has signature processSchema(String, PropertyList), and
+  the URL is intended to be interpreted as an Apache VFS
+  URL. Class mondrian.spi.impl.FilterDynamicSchemaProcessor
+  is a partial implementation.
+
+* Various methods which used String or String[] to lookup
+  multi-part identifiers such as '[Store].[USA].[CA]'
+  now take Id.Segment or List<Id.Segment>. The previous
+  methods are deprecated and will be removed in mondrian-2.5.
+
+  Methods:
+   * Formula.Formula(String[], exp)
+   * Formula.Formula(String[], Exp, MemberProperty[])
+   * QueryPart.addFormula(String[], Exp, MemberProperty[])
+   * SchemaReader.lookupCompound(OlapElement, String[],
+     boolean, int)
+   * SchemaReader.getMemberByUniqueName(String[], boolean)
+   * SchemaReader.getMemberByUniqueName(String[], boolean,
+     MatchType)
+   * Util.explode(String)
+   * Util.lookupCompound(SchemaReader, OlapElement, String[],
+     boolean, int)
+   * Util.lookup(Query, String[])
+
+* Also scheduled for removal in mondrian-2.5:
+   * Query.getQueryString()
+   * QueryPart.toMdx()
+   * RolapSchema.flushSchema(String, String, String, String)
+   * RolapSchema.flushSchema(String, DataSource)
+   * RolapSchema.clearCache()
+   * RolapSchema.flushRolapStarCaches(boolean)
+   * RolapSchema.flushAllRolapStarCachedAggregations()
+   * CachePool.flush()
+
+Bugs and feature requests fixed since mondrian-2.3
+--------------------------------------------------
 
 Bugs:
-  ...
+ * Bug 1630754  max constraints sql exception    
+ * Bug 1771928  Max() works incorrectly in with negative
+                values 
+ * Bug 1773996  mondrian.rolap.CellKey.Zero does not equal
+                itself 
+ * Bug 1466221  Aggregate - Performance improvement 
+ * Bug 1689525  mondrian.olap.Query.canRemoveFormula() always
+                returns true 
+ * Bug 1578545  ClassCastException in AggQuerySpec 
+ * Bug 1719828  Dimension Property Member_Key not supported 
+ * Bug 1755569  Incorrect return type resolution if UDF
+                returns a member 
+ * Bug 1733107  NAME property should be Internal when created
+                in RolapLevel 
+ * Bug 1767798  Hang waiting for segment to load 
+ * Bug 1768410  UnsupportedOperationException 
+ * Bug 1760319  Exception in loading segment data 
+ * Bug 1751352  Parser should not require braces around range
+                op in WITH SET 
+ * Bug 1735821  Null pointer exception in TupleFunDef and
+                TupleType 
+ * Bug 1735839  Shared Tables with Two Separate Aliases Fail 
+ * Bug 1721468  "unknown usage" messages 
+ * Bug 1721514  "unknown usage" messages 
+ * Bug 1651936  stack overflow for slicer on
+                NonEmptyCrossJoin named set 
+ * Bug 1714525  Return <fmtValue> only if FORMATTED_VALUE
+                requested 
+ * Bug 1711865  NullPointerException for certain mdx using
+                [Sales 2] 
+ * Bug 1710913  Query with Filter(..., Count ...) corrupts
+                cache 
+ * Bug 1708327  Parent child hierarchies without closures are
+                broken 
+ * Bug 1706434  Implicit MDX Conversion from Numeric to
+                boolean 
+ * Bug 1696772  MetricFilterTest.testMetricFiltersWithNoSubtotals
+                fails 
+ * Bug 1694994  Members.properties("CAPTION") is not working 
+ * Bug 1522440  Parent/Child-Hierarchy: wrong sql-queries /
+                wrong calculatio 
+ * Bug 1675125  Closure tables do not work in a Snowflake
+                Dimension 
+ * Bug 1603653  Avg - cast problem in Mondrian 2.1.1 
+ * Bug 1688968  Query.java clone() method wrong type in req.
+                constructor 
+ * Bug 1691231  xmlaTest.jsp compilation error 
+ * Bug 1690406  XmlaBasicTest.testDrillThrough fails - Sql
+                Error 
+ * Bug 1690245  Role "No HR Cube" can select against HR cube 
+ * Bug 1614438  CalculatedMember.formatString attribute
+                ignored 
+ * Bug 1238582  Overflowing of numeric literal in MDX 
+ * Bug 1661288  NullPointerException in
+                CellRequest.getSingleValues 
+ * Bug 1688645  High precision number in MDX causes overflow 
+ * Bug 1688139  BasicQueryTest.testNonEmptyCrossJoin hangs 
+ * Bug 1778358  NPE aggregating distinct-count measure in
+                virtual cube
+ * Bug 1438285  nameColumn cannot be column in level definition
 
 Features:
-  ...
+ * RFE 1611239  Support SOLVE_ORDER in Schema file
 
-(Ends)
+------------------------------------------------------------

@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="2.3.2.9247"/>
+  <property name="version" value="2.4.2.9831"/>
   <property name="vendor" value="Pentaho"/>
 
   <!--
@@ -81,6 +81,7 @@ ${lib.dir}/mondrian-embedded.war,
 ${lib.dir}/web.xml,
 ${lib.dir}/index.jsp,
 ${lib.dir}/*.dtd,
+VERSION.txt,
 demo/FoodMartCreateData.sql,
 demo/access/MondrianFoodMart.mdb"/>
 
@@ -225,6 +226,14 @@ demo/access/MondrianFoodMart.mdb"/>
       <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
       <fileset dir="${testsrc.dir}" includes="**/*JUnit.java"/>
     </delete>
+  </target>
+
+  <target name="clean-deep">
+    <delete includeEmptyDirs="true" quiet="true">
+      <fileset dir="${classes.dir}"/>
+      <fileset dir="${testclasses.dir}"/>
+    </delete>
+    <antcall target="clean"/>
   </target>
 
   <target name="prepare">
@@ -608,6 +617,7 @@ ${java.dir}/**/*.properties,
 ${java.dir}/META-INF/**,
 ${java.dir}/mondrian/resource/MondrianResource.xml,
 ${java.dir}/mondrian/olap/Mondrian.xml,
+${java.dir}/mondrian/olap/Mondrian_SW.xml,
 ${java.dir}/mondrian/rolap/aggmatcher/DefaultRules.xml,
 ${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml,
 ${java.dir}/mondrian/xmla/DataSourcesConfig.xml,
@@ -737,10 +747,23 @@ doc/deployDoc.sh" />
     <touch file="demo/derby/foodmart/service.properties"/>
   </target>
 
-  <target name="release" depends="binzip, binDerbyzip"/>
+  <target name="release" depends="clean-deep, binzip, binDerbyzip"/>
+
+  <target name="upload">
+    <ftp server="upload.sourceforge.net"
+        userid="anonymous"
+        password="${user.name}@users.sourceforge.net"
+        remotedir="incoming"
+        verbose="yes">
+      <fileset dir=".">
+        <include name="${dist.bin.file}"/>
+        <include name="${dist.bin.derby.file}"/>
+      </fileset>
+    </ftp>
+  </target>
 
   <target name="binzip"
-      depends="version,war,srczip,javadoc,xml_schema,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
+      depends="version,war,srczip,javadoc,xml_schema,retroweave,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -1015,7 +1038,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <fileset dir="${build.dir}/mondrian" includes="index.jsp,xmla.jsp"/>
       <fileset dir="${build.dir}/mondrian/WEB-INF" includes="web.xml,datasources.xml,mondrian.properties"/>
       <fileset dir="${build.dir}/mondrian/WEB-INF/queries" includes="xmla.jsp,*.xml"/>
-      <fileset dir="${build.dir}/mondrian/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml"/>
+      <fileset dir="${build.dir}/mondrian/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml,mondrian.dtd"/>
     </delete>
 
     <mkdir dir="${lib.dir}" />
@@ -1042,15 +1065,12 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <webinf dir="${build.dir}/mondrian/WEB-INF" excludes="web.xml"/>
       <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
       <fileset dir="${webapp.dir}" includes="*.*"/>
-      <lib dir="${build.dir}/mondrian/WEB-INF/lib" excludes="${name}.jar,eigenbase-*.jar,*.dtd"/>
       <lib dir="${lib.dir}" includes="${name}.jar,eigenbase-*.jar,xalan.jar,*.dtd"/>
-      <!-- <lib dir="${lib.dir}" includes="commons-math-1.0.jar"/>  -->
       <lib dir="${testlib.dir}" includes="xmlunit*.jar"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/DiffRepository.*"/>
-      <!-- <classes dir="${basedir}" includes="mondrian.properties"/>  -->
     </war>
   </target>
 
