@@ -32,6 +32,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        getTestContext().clearConnection();
         useGroupingSets = MondrianProperties.instance().EnableGroupingSets.get();
         formattedSql = MondrianProperties.instance().GenerateFormattedSql.get();
         MondrianProperties.instance().GenerateFormattedSql.set(false);

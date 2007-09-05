@@ -28,6 +28,11 @@ import java.util.*;
  */
 public class FastBatchingCellReaderTest extends BatchTestCase {
 
+    protected void setUp() throws Exception {
+        super.setUp();
+        getTestContext().clearConnection();
+    }
+
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnSupportedDB() {
         boolean oldValue = MondrianProperties.instance().EnableGroupingSets.get();
         MondrianProperties.instance().EnableGroupingSets.set(true);
