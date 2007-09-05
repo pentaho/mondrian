@@ -52,6 +52,7 @@ public class DialectTest extends TestCase {
     }
 
     protected DataSource getDataSource() {
+        TestContext.instance().clearConnection();
         return TestContext.instance().getConnection().getDataSource();
     }
 
