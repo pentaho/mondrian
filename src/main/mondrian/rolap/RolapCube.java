@@ -212,18 +212,15 @@ public class RolapCube extends CubeBase {
                 defaultMeasure = measure;
             }
 
-            if (!Util.isEmpty(xmlMeasure.formatter)) {
-                // there is a special cell formatter class
-                try {
-                    Class<CellFormatter> clazz =
-                        (Class<CellFormatter>)
-                            Class.forName(xmlMeasure.formatter);
-                    Constructor<CellFormatter> ctor = clazz.getConstructor();
-                    CellFormatter cellFormatter = ctor.newInstance();
+            try {
+                CellFormatter cellFormatter =
+                    getCellFormatter(xmlMeasure.formatter);
+                if (cellFormatter != null) {
                     measure.setFormatter(cellFormatter);
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+            } catch (Exception e) {
+                throw MondrianResource.instance().CellFormatterLoadFailed.ex(
+                    xmlMeasure.formatter, measure.getUniqueName(), e);
             }
 
             // Set member's caption, if present.
@@ -260,6 +257,28 @@ public class RolapCube extends CubeBase {
 
         checkOrdinals(xmlCube.name, measures, xmlCube.calculatedMembers);
         loadAggGroup(xmlCube);
+    }
+
+    /**
+     * Given the name of a cell formatter class, returns a cell formatter.
+     * If class name is null, returns null.
+     *
+     * @param cellFormatterClassName Name of cell formatter class
+     * @return Cell formatter or null
+     * @throws Exception if class cannot be instantiated
+     */
+    static CellFormatter getCellFormatter(
+        String cellFormatterClassName)
+        throws Exception
+    {
+        if (Util.isEmpty(cellFormatterClassName)) {
+            return null;
+        }
+        Class<CellFormatter> clazz =
+            (Class<CellFormatter>)
+                Class.forName(cellFormatterClassName);
+        Constructor<CellFormatter> ctor = clazz.getConstructor();
+        return ctor.newInstance();
     }
 
     /**

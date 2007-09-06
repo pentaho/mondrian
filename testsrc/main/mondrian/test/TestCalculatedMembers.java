@@ -16,8 +16,6 @@ import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 import mondrian.olap.*;
 
-import java.sql.Time;
-
 /**
  * Tests the expressions used for calculated members. Please keep in sync
  * with the actual code used by the wizard.
@@ -177,8 +175,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
 
     private Cube getSalesCube(String cubeName) {
         Cube[] cubes = getConnection().getSchema().getSchemaReader().getCubes();
-        for (int i = 0; i < cubes.length; i++) {
-            Cube cube = cubes[i];
+        for (Cube cube : cubes) {
             if (cube.getName().equals(cubeName)) {
                 return cube;
             }
@@ -830,6 +827,136 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "Row #1: 2\n" +
                 "Row #2: 12,395\n" +
                 "Row #3: 2\n"));
+    }
+
+    public void testCalcMemberCustomFormatterInQuery() {
+        // calc measure defined in query
+        assertQueryReturns(
+            "with member [Measures].[Foo] as ' [Measures].[Unit Sales] * 2 ',\n"
+                + " CELL_FORMATTER='mondrian.test.FooBarCellFormatter' \n"
+                + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
+                + " {[Store].Children} on rows\n"
+                + "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "{[Measures].[Foo]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[Canada]}\n" +
+                "{[Store].[All Stores].[Mexico]}\n" +
+                "{[Store].[All Stores].[USA]}\n" +
+                "Row #0: \n" +
+                "Row #0: foo1.2345E-8bar\n" +
+                "Row #1: \n" +
+                "Row #1: foo1.2345E-8bar\n" +
+                "Row #2: 266,773\n" +
+                "Row #2: foo533546.0bar\n"));
+    }
+
+    public void testCalcMemberCustomFormatterInQueryNegative() {
+        assertThrows(
+            "with member [Measures].[Foo] as ' [Measures].[Unit Sales] * 2 ',\n"
+                + " CELL_FORMATTER='mondrian.test.NonExistentCellFormatter' \n"
+                + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
+                + " {[Store].Children} on rows\n"
+                + "from [Sales]",
+            "Failed to load formatter class 'mondrian.test.NonExistentCellFormatter' for member '[Measures].[Foo]'.");
+    }
+
+    public void testCalcMemberCustomFormatterInQueryNegative2() {
+        String query = "with member [Measures].[Foo] as ' [Measures].[Unit Sales] * 2 ',\n"
+            + " CELL_FORMATTER='java.lang.String' \n"
+            + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
+            + " {[Store].Children} on rows\n"
+            + "from [Sales]";
+        assertThrows(
+            query,
+            "Failed to load formatter class 'java.lang.String' for member '[Measures].[Foo]'.");
+        assertThrows(
+            query,
+            "java.lang.ClassCastException: java.lang.String cannot be cast to mondrian.olap.CellFormatter");
+    }
+
+    public void testCalcMemberCustomFormatterInNonMeasureInQuery() {
+
+        // CELL_FORMATTER is ignored for calc members which are not measures.
+        //
+        // We could change this behavior if it makes sense. In fact, we would
+        // allow ALL properties to be inherited from the member with the
+        // highest solve order. Need to check whether this is consistent with
+        // the MDX spec. -- jhyde, 2007/9/5.
+        assertQueryReturns(
+            "with member [Store].[CA or OR] as ' Aggregate({[Store].[USA].[CA], [Store].[USA].[OR]}) ',\n"
+                + " CELL_FORMATTER='mondrian.test.FooBarCellFormatter'\n"
+                + "select {[Store].[USA], [Store].[CA or OR]} on columns\n"
+                + "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[USA]}\n" +
+                "{[Store].[CA or OR]}\n" +
+                "Row #0: 266,773\n" +
+                "Row #0: 142,407\n"));
+    }
+
+    public void testCalcMemberCustomFormatterInSchema() {
+
+        // calc member defined in schema
+        String cubeName = "Sales";
+        TestContext testContext =
+            TestContext.createSubstitutingCube(
+            cubeName,
+            null,
+            "<CalculatedMember\n" +
+                "    name=\"Profit Formatted\"\n" +
+                "    dimension=\"Measures\"\n" +
+                "    visible=\"false\"\n" +
+                "    formula=\"[Measures].[Store Sales]-[Measures].[Store Cost]\">\n" +
+                "  <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n" +
+                "  <CalculatedMemberProperty name=\"CELL_FORMATTER\" value=\"mondrian.test.FooBarCellFormatter\"/>\n" +
+                "</CalculatedMember>\n");
+        testContext.assertQueryReturns(
+            "select {[Measures].[Unit Sales], [Measures].[Profit Formatted]} on 0,\n"
+                + " {[Store].Children} on rows\n"
+                + "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "{[Measures].[Profit Formatted]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[Canada]}\n" +
+                "{[Store].[All Stores].[Mexico]}\n" +
+                "{[Store].[All Stores].[USA]}\n" +
+                "Row #0: \n" +
+                "Row #0: foo1.2345E-8bar\n" +
+                "Row #1: \n" +
+                "Row #1: foo1.2345E-8bar\n" +
+                "Row #2: 266,773\n" +
+                "Row #2: foo339610.89639999997bar\n"));
+    }
+
+    public void testCalcMemberCustomFormatterInSchemaNegative() {
+        // calc member defined in schema
+        String cubeName = "Sales";
+        TestContext testContext =
+            TestContext.createSubstitutingCube(
+            cubeName,
+            null,
+            "  <CalculatedMember\n" +
+                "    name=\"Profit Formatted\"\n" +
+                "    dimension=\"Measures\"\n" +
+                "    visible=\"false\"\n" +
+                "    formula=\"[Measures].[Store Sales]-[Measures].[Store Cost]\">\n" +
+                "  <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n" +
+                "  <CalculatedMemberProperty name=\"CELL_FORMATTER\" value=\"mondrian.test.NonExistentCellFormatter\"/>\n" +
+                "</CalculatedMember>\n");
+        testContext.assertThrows(
+            "select {[Measures].[Unit Sales], [Measures].[Profit Formatted]} on 0,\n"
+                + " {[Store].Children} on rows\n"
+                + "from [Sales]",
+            "Failed to load formatter class 'mondrian.test.NonExistentCellFormatter' for member '[Measures].[Profit Formatted]'.");
     }
 }
 

@@ -1943,6 +1943,27 @@ mondrian.olap.CellFormatter</a></code> interface, and is specified like this:</p
 <blockquote>
   <code>&lt;<a href="#XML_Measure">Measure</a> name="name" formatter="com.acme.MyCellFormatter"/&gt;</code>
 </blockquote>
+
+<p>You can define a formatter for a calculated member defined as part of a cube:</p>
+
+<blockquote>
+  <code>&lt;<a href="#XML_Measure">CalculatedMember</a> name="name" formatter="com.acme.MyCellFormatter"/&gt;</code>
+</blockquote>
+
+<p>For a calculated measure defined in the <code>WITH MEMBER</code> clause of an MDX query, 
+set the <code>CELL_FORMATTER</code> property of the member to the name of the 
+formatter class:</p>
+<blockquote>
+  <code>WITH MEMBER [Measures].[Foo]<br>
+&nbsp; AS '[Measures].[Unit Sales] * 2',<br>
+&nbsp;&nbsp; CELL_FORMATTER='com.acme.MyCellFormatter'<br>
+	SELECT {[Measures].[Unit Sales], [Measures].[Foo]} ON COLUMNS,<br>
+&nbsp;&nbsp;&nbsp; {[Store].Children} ON ROWS<br>
+	FROM [Sales]</code></blockquote>
+
+<p>The cell formatter property is ignored if a member does not belong to the
+<code>[Measures]</code> dimension.</p>
+
 <!--
 ##############################
 ##  6.5 Member formatter #####
@@ -2039,7 +2060,8 @@ the first timestamp mondrian tries to read the datasource.</p>
 it has changed.  If so, cache will be flushed and aggregates will be
 reloaded from the data source.</p>
 
-<p>Here is an example of a data source change listener plugin class :
+<p>Here is an example of a data source change listener plugin class:
+
 <blockquote>
   <code>&nbsp;package com.acme;<br>
   <br>
@@ -2092,8 +2114,8 @@ reloaded from the data source.</p>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Check database...<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-
 &nbsp;}<br>
+</code>
 </blockquote>
 <!--
 #############################################
@@ -2101,10 +2123,11 @@ reloaded from the data source.</p>
 ############################################# -->
 <h1>6.9 Dynamic datasource xmla servlet<a name="Dynamic_datasource_xmla_servlet">&nbsp;</a></h1>
 
-<p>The DynamicDatasourceXmlaServlet Extends DefaultXmlaServlet to add dynamic
-datasource loading capability. For every client request that it receives, it checks
-for updates to datasources.xml content. It selectively clears cache for catalogs
-that have changed or no longer exist in the datasources.xml. It considers a
+<p>The <code>DynamicDatasourceXmlaServlet</code> extends <code>DefaultXmlaServlet</code>, adding the ability to dynamically load 
+the <code>datasources.xml</code> file. For every client request that it receives, it checks
+for updates to the content of <code>datasources.xml</code>. It selectively 
+clears cache for catalogs that have changed or no longer exist in <code>datasources.xml</code>. 
+The servlet considers a
 catalog as changed when either of its properties (DataSourceInfo, definition
 properties on <a href="api/mondrian/xmla/DataSourcesConfig.Catalog.html">
 DataSourcesConfig.Catalog</a>) are different. It identifies catalog by name.</p>
@@ -2113,22 +2136,20 @@ DataSourcesConfig.Catalog</a>) are different. It identifies catalog by name.</p>
 <a href="configuration.html#Connect_string_properties">UseContentChecksum</a>.
 It does not check the catalog content for updates. There is no overlap in the
 functionality. Both together will give full dynamic datasource and
-catalog configuration capability</p>
+catalog configuration capability.</p>
 
-<p>Following change needs to be done in web.xml in the MondrianXmlaServlet configuration entry:
+<p>To use DynamicDatasourceXmlaServlet, change definition of the <code>MondrianXmlaServlet</code> 
+servlet in <code>web.xml</code>:
 <blockquote>
   <code>
     &lt;servlet&gt;<br>
-    &lt;servlet-name&gt;MondrianXmlaServlet&lt;/servlet-name&gt;<br>
-    &lt;servlet-class&gt;mondrian.xmla.impl.<b>DynamicDatasourceXmlaServlet</b>&lt;/servlet-class&gt;<br>
-	.<br>
-	.<br>
-  &lt;/servlet&gt;<br>
-  </code>
- </blockquote></p>
+    &nbsp;&nbsp;&nbsp;&lt;servlet-name&gt;MondrianXmlaServlet&lt;/servlet-name&gt;<br>
+    &nbsp;&nbsp;&nbsp;&lt;servlet-class&gt;mondrian.xmla.impl.<b>DynamicDatasourceXmlaServlet</b>&lt;/servlet-class&gt;<br>
+    &nbsp;&nbsp;&nbsp; ...<br>
+    &lt;/servlet&gt;</code></blockquote></p>
 
 <p>This implementation has a limitation. It requires catalog name to be unique
-across the datasources and may not work correctly otherwise</p>
+across all datasources and may not work correctly otherwise.</p>
 
 <!--
 #################################
@@ -2762,9 +2783,9 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
 <br />
 <br />
 
-<p>Author: Julian Hyde; last modified May 2007.<br/>
+<p>Author: Julian Hyde; last modified September 2007.<br/>
     Version: $Id$
-    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">log</a>)<br/>
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">logg</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc.<br/>
     Copyright (C) 2002-2007 Julian Hyde and others
 </p>

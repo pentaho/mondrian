@@ -879,13 +879,30 @@ RME HACK
         extends RolapCalculatedMember
         implements RolapMeasure
     {
+        private CellFormatter cellFormatter;
+
         public RolapCalculatedMeasure(
-            RolapMember parent, RolapLevel level, String name, Formula formula) {
+            RolapMember parent, RolapLevel level, String name, Formula formula)
+        {
             super(parent, level, name, formula);
         }
 
+        public synchronized void setProperty(String name, Object value) {
+            if (name.equals(Property.CELL_FORMATTER.getName())) {
+                String cellFormatterClass = (String) value;
+                try {
+                    this.cellFormatter =
+                        RolapCube.getCellFormatter(cellFormatterClass);
+                } catch (Exception e) {
+                    throw MondrianResource.instance().CellFormatterLoadFailed.ex(
+                        cellFormatterClass, getUniqueName(), e);
+                }
+            }
+            super.setProperty(name, value);
+        }
+
         public CellFormatter getFormatter() {
-            return null;
+            return cellFormatter;
         }
     }
 }

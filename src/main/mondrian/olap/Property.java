@@ -298,6 +298,18 @@ public class Property extends EnumeratedValues.BasicValue {
     public static final Property VISIBLE =
             new Property("$visible", Datatype.TYPE_BOOLEAN, VISIBLE_ORDINAL, true, false, false, null);
 
+    public static final int CELL_FORMATTER_ORDINAL = 29;
+    /**
+     * Definition of the property which holds the
+     * name of the class which formats cell values of this member.
+     *
+     * <p>The class must implement the {@link CellFormatter} interface.
+     *
+     * <p>Despite its name, this is a member property.
+     */
+    public static final Property CELL_FORMATTER =
+            new Property("CELL_FORMATTER", Datatype.TYPE_STRING, CELL_FORMATTER_ORDINAL, false, true, false, "Name of the class which formats cell values of this member.");
+
     // Cell properties
 
 
@@ -535,6 +547,7 @@ public class Property extends EnumeratedValues.BasicValue {
                 PARENT_COUNT,
                 DESCRIPTION,
                 VISIBLE,
+                CELL_FORMATTER,
                 BACK_COLOR,
                 CELL_EVALUATION_LIST,
                 CELL_ORDINAL,

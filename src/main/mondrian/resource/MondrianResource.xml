@@ -313,6 +313,10 @@
     <text>Failed to load formatter class ''{0}'' for level ''{1}''.</text>
 </exception>
 
+<exception id="40165" name="CellFormatterLoadFailed">
+    <text>Failed to load formatter class ''{0}'' for member ''{1}''.</text>
+</exception>
+
 <exception id="40170" name="HierarchyMustHaveForeignKey">
     <text>Hierarchy ''{0}'' in cube ''{1}'' must have a foreign key, since it is not based on the cube's fact table.</text>
 </exception>
