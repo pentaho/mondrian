@@ -875,7 +875,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
             "Failed to load formatter class 'java.lang.String' for member '[Measures].[Foo]'.");
         assertThrows(
             query,
-            "java.lang.ClassCastException: java.lang.String cannot be cast to mondrian.olap.CellFormatter");
+            "java.lang.ClassCastException: java.lang.String");
     }
 
     public void testCalcMemberCustomFormatterInNonMeasureInQuery() {
