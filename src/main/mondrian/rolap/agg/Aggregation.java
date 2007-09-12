@@ -324,8 +324,9 @@ public class Aggregation {
         // sort indexes by bloat descending
         Arrays.sort(indexes, comparator);
 
-        // Eliminate constraints one by one, until the estimated cell count
-        // doubles. We can not have an absolute value here, because its
+        // Eliminate constraints one by one, until the constrained cell count
+        // became half of the unconstrained cell count. We can not have an 
+        // absolute value here, because its
         // very different if we fetch data for 2 years or 10 years (5 times
         // more means 5 times slower). So a relative comparison is ok here
         // but not an absolute one.

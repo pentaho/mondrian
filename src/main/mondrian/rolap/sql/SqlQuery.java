@@ -1475,13 +1475,36 @@ public class SqlQuery {
         }
 
         /**
+         * If Double values need to include additional exponent in its string
+         * represenation. This is to make sure that Double literals will be
+         * interpreted as doubles by LucidDB.
+         * 
+         * @param value Double value to generate string for
+         * @param valueString java string representation for this value.
+         * @return whether an additional exponent "E0" needs to be appended
+         * 
+         */
+        private boolean needsExponent(Object value, String valueString) {
+            if (isLucidDB() && 
+                value instanceof Double &&
+                !valueString.contains("E")) {
+                return true;
+            }
+            return false;
+        }
+        
+        /**
          * Appends to a buffer a value quoted for its type.
          */
         public void quote(StringBuilder buf, Object value, Datatype datatype) {
             if (value == null) {
                 buf.append("null");
             } else {
-                datatype.quoteValue(buf, this, value.toString());
+                String valueString = value.toString();
+                if (needsExponent(value, valueString)) {
+                    valueString += "E0";
+                }
+                datatype.quoteValue(buf, this, valueString);
             }
         }
 
