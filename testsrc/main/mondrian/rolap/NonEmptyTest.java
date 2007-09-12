@@ -3,6 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2005-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -2979,6 +2980,105 @@ public class NonEmptyTest extends BatchTestCase {
         context.assertQueryReturns(query, fold(resultNative));
 
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
+    }
+
+    /**
+     * Tests bug 1791609, "CrossJoin non empty optimizer eliminates calculated
+     * member".
+     */
+    public void testBug1791609NonEmptyCrossJoinEliminatesCalcMember() {
+        if (!Bug.Bug1791609Fixed) {
+            return;
+        }
+        // From the bug:
+        //   With NON EMPTY (mondrian.rolap.nonempty) behavior set to true
+        //   the following mdx return no result. The same mdx returns valid
+        // result when NON EMPTY is turned off.
+        assertQueryReturns("WITH \n" +
+            "MEMBER Measures.Calc AS '[Measures].[Profit] * 2', SOLVE_ORDER=1000\n" +
+            "MEMBER Product.Conditional as 'Iif(Measures.CurrentMember IS Measures.[Calc], " +
+            "Measures.CurrentMember, null)', SOLVE_ORDER=2000\n" +
+            "SET [S2] AS '{[Store].MEMBERS}' \n" +
+            "SET [S1] AS 'CROSSJOIN({[Customers].[All Customers]},{Product.Conditional})' \n" +
+            "SELECT \n" +
+            "NON EMPTY GENERATE( {Measures.[Calc]}, \n" +
+            "          CROSSJOIN( HEAD( {([Measures].CURRENTMEMBER)}, \n" +
+            "                           1\n" +
+            "                         ), \n" +
+            "                     {[S1]}\n" +
+            "                   ), \n" +
+            "                   ALL\n" +
+            "                  ) \n" +
+            "                                   ON AXIS(0), \n" +
+            "NON EMPTY [S2] ON AXIS(1) \n" +
+            "FROM [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Calc], [Customers].[All Customers], [Product].[Conditional]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores]}\n" +
+                "{[Store].[All Stores].[USA]}\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}\n" +
+                "{[Store].[All Stores].[USA].[OR]}\n" +
+                "{[Store].[All Stores].[USA].[OR].[Portland]}\n" +
+                "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n" +
+                "{[Store].[All Stores].[USA].[OR].[Salem]}\n" +
+                "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n" +
+                "{[Store].[All Stores].[USA].[WA]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Bremerton]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Seattle]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Spokane]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Walla Walla]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Yakima]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n" +
+                "Row #0: $679,221.79\n" +
+                "Row #1: $679,221.79\n" +
+                "Row #2: $191,274.83\n" +
+                "Row #3: $54,967.60\n" +
+                "Row #4: $54,967.60\n" +
+                "Row #5: $65,547.49\n" +
+                "Row #6: $65,547.49\n" +
+                "Row #7: $65,435.21\n" +
+                "Row #8: $65,435.21\n" +
+                "Row #9: $5,324.53\n" +
+                "Row #10: $5,324.53\n" +
+                "Row #11: $171,009.14\n" +
+                "Row #12: $66,219.69\n" +
+                "Row #13: $66,219.69\n" +
+                "Row #14: $104,789.45\n" +
+                "Row #15: $104,789.45\n" +
+                "Row #16: $316,937.82\n" +
+                "Row #17: $5,685.23\n" +
+                "Row #18: $5,685.23\n" +
+                "Row #19: $63,548.67\n" +
+                "Row #20: $63,548.67\n" +
+                "Row #21: $63,374.53\n" +
+                "Row #22: $63,374.53\n" +
+                "Row #23: $59,677.94\n" +
+                "Row #24: $59,677.94\n" +
+                "Row #25: $89,769.36\n" +
+                "Row #26: $89,769.36\n" +
+                "Row #27: $5,651.26\n" +
+                "Row #28: $5,651.26\n" +
+                "Row #29: $29,230.83\n" +
+                "Row #30: $29,230.83\n"));
     }
 
     /**
