@@ -1182,7 +1182,117 @@ public class SchemaTest extends FoodMartTestCase {
                         "Row #12: 54,431.14\n" +
                         "Row #12: Supermarket\n"));              
     }
-       
+
+    public void testCubeWithOneDimensionOneMeasure() {
+        final TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"OneDim\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Dimension name=\"Promotion Media\" foreignKey=\"promotion_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Media\" primaryKey=\"promotion_id\" defaultMember=\"All Media\">\n"
+            + "      <Table name=\"promotion\"/>\n"
+            + "      <Level name=\"Media Type\" column=\"media_type\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube>",
+            null, null, null);
+        testContext.assertQueryReturns(
+            "select {[Promotion Media]} on columns from [OneDim]",
+            fold(
+                "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Promotion Media].[All Media]}\n" +
+                    "Row #0: 266,773\n"));
+    }
+
+    public void testCubeWithOneDimensionUsageOneMeasure() {
+        final TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"OneDimUsage\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube>",
+            null, null, null);
+        testContext.assertQueryReturns(
+            "select {[Product].Children} on columns from [OneDimUsage]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Product].[All Products].[Drink]}\n" +
+                "{[Product].[All Products].[Food]}\n" +
+                "{[Product].[All Products].[Non-Consumable]}\n" +
+                "Row #0: 24,597\n" +
+                "Row #0: 191,940\n" +
+                "Row #0: 50,236\n"));
+    }
+
+    public void testCubeWithNoDimensions() {
+        final TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"NoDim\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube>",
+            null, null, null);
+        testContext.assertQueryReturns(
+            "select {[Measures].[Unit Sales]} on columns from [NoDim]",
+            fold(
+                "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Row #0: 266,773\n"));
+    }
+
+    public void testCubeWithNoMeasuresFails() {
+        final TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"NoMeasures\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Dimension name=\"Promotion Media\" foreignKey=\"promotion_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Media\" primaryKey=\"promotion_id\" defaultMember=\"All Media\">\n"
+            + "      <Table name=\"promotion\"/>\n"
+            + "      <Level name=\"Media Type\" column=\"media_type\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "</Cube>",
+            null, null, null);
+        testContext.assertThrows(
+            "select {[Promotion Media]} on columns from [NoMeasures]",
+            "Hierarchy '[Measures]' is invalid (has no members)");
+    }
+
+    public void testCubeWithOneCalcMeasure() {
+        final TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"OneCalcMeasure\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Dimension name=\"Promotion Media\" foreignKey=\"promotion_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Media\" primaryKey=\"promotion_id\" defaultMember=\"All Media\">\n"
+            + "      <Table name=\"promotion\"/>\n"
+            + "      <Level name=\"Media Type\" column=\"media_type\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <CalculatedMember\n"
+            + "      name=\"One\"\n"
+            + "      dimension=\"Measures\"\n"
+            + "      formula=\"1\"/>\n"
+            + "</Cube>",
+            null, null, null);
+
+        // We would prefer if this query worked. I think we're hitting the bug
+        // which occurs where the default member is calculated. For now, just
+        // make sure that we get a reasonable error.
+        testContext.assertThrows(
+            "select {[Measures]} on columns from [OneCalcMeasure] where [Promotion Media].[TV]",
+            "Hierarchy '[Measures]' is invalid (has no members)");
+    }
 }
 
 // End SchemaTest.java
