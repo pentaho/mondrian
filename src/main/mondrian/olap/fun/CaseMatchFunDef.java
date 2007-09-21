@@ -13,7 +13,7 @@ import mondrian.olap.*;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.impl.ConstantCalc;
-import mondrian.calc.impl.AbstractCalc;
+import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
@@ -51,21 +51,19 @@ class CaseMatchFunDef extends FunDefBase {
         final Calc[] matchCalcs = new Calc[matchCount];
         final Calc[] exprCalcs = new Calc[matchCount];
         for (int i = 0, j = 1; i < exprCalcs.length; i++) {
-            matchCalcs[i] =
-                    compiler.compileScalar(args[j++], true);
+            matchCalcs[i] = compiler.compileScalar(args[j++], true);
             calcList.add(matchCalcs[i]);
-            exprCalcs[i] =
-                    compiler.compileScalar(args[j++], true);
+            exprCalcs[i] = compiler.compile(args[j++]);
             calcList.add(exprCalcs[i]);
         }
         final Calc defaultCalc =
                 args.length % 2 == 0 ?
-                compiler.compileScalar(args[args.length - 1], true) :
+                compiler.compile(args[args.length - 1]) :
                 ConstantCalc.constantNull(call.getType());
         calcList.add(defaultCalc);
         final Calc[] calcs = calcList.toArray(new Calc[calcList.size()]);
 
-        return new AbstractCalc(call) {
+        return new GenericCalc(call) {
             public Object evaluate(Evaluator evaluator) {
 
                 Object value = valueCalc.evaluate(evaluator);

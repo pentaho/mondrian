@@ -3893,6 +3893,38 @@ public class FunctionTest extends FoodMartTestCase {
             "");
     }
 
+    /**
+     * Testcase for bug 1799391, "Case Test function throws class cast
+     * exception"
+     */
+    public void testCaseTestReturnsMemberBug1799391() {
+        assertQueryReturns(
+            "WITH\n"
+                + " MEMBER [Product].[CaseTest] AS\n"
+                + " 'CASE\n"
+                + " WHEN [Gender].CurrentMember IS [Gender].[M] THEN [Gender].[F]\n"
+                + " ELSE [Gender].[F]\n"
+                + " END'\n"
+                + "                \n"
+                + "SELECT {[Product].[CaseTest]} ON 0, {[Gender].[M]} ON 1 FROM Sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Product].[CaseTest]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender].[M]}\n" +
+                "Row #0: 131,558\n"));
+
+        assertAxisReturns(
+            "CASE WHEN 1+1 = 2 THEN [Gender].[F] ELSE [Gender].[F].Parent END",
+            "[Gender].[All Gender].[F]");
+
+        // try case match for good measure
+        assertAxisReturns(
+            "CASE 1 WHEN 2 THEN [Gender].[F] ELSE [Gender].[F].Parent END",
+            "[Gender].[All Gender]");
+    }
+
     public void testCaseMatch() {
         assertExprReturns("CASE 2 WHEN 1 THEN \"first\" WHEN 2 THEN \"second\" WHEN 3 THEN \"third\" ELSE \"fourth\" END",
             "second");

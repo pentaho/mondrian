@@ -14,7 +14,7 @@ import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.BooleanCalc;
 import mondrian.calc.impl.ConstantCalc;
-import mondrian.calc.impl.AbstractCalc;
+import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
@@ -54,8 +54,7 @@ class CaseTestFunDef extends FunDefBase {
             conditionCalcs[i] =
                     compiler.compileBoolean(args[j++]);
             calcList.add(conditionCalcs[i]);
-            exprCalcs[i] =
-                    compiler.compileScalar(args[j++], true);
+            exprCalcs[i] = compiler.compile(args[j++]);
             calcList.add(exprCalcs[i]);
         }
         final Calc defaultCalc =
@@ -65,7 +64,7 @@ class CaseTestFunDef extends FunDefBase {
         calcList.add(defaultCalc);
         final Calc[] calcs = calcList.toArray(new Calc[calcList.size()]);
 
-        return new AbstractCalc(call) {
+        return new GenericCalc(call) {
             public Object evaluate(Evaluator evaluator) {
                 for (int i = 0; i < conditionCalcs.length; i++) {
                     if (conditionCalcs[i].evaluateBoolean(evaluator)) {
