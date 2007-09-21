@@ -958,6 +958,40 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 + "from [Sales]",
             "Failed to load formatter class 'mondrian.test.NonExistentCellFormatter' for member '[Measures].[Profit Formatted]'.");
     }
+
+    /**
+     * Testcase for bug 1784617, "Using StrToTuple() in schema errors out".
+     */
+    public void testStrToSetInCubeCalcMember() {
+
+        // calc member defined in schema
+        String cubeName = "Sales";
+        TestContext testContext =
+            TestContext.createSubstitutingCube(
+            cubeName,
+            null,
+            "<CalculatedMember\n" +
+                "    name=\"My Tuple\"\n" +
+                "    dimension=\"Measures\"\n" +
+                "    visible=\"false\"\n" +
+                "    formula=\"StrToTuple('([Gender].[M], [Marital Status].[S])', [Gender], [Marital Status])\"/>\n");
+        String desiredResult =
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[My Tuple]}\n" +
+                "Row #0: 68,755\n");
+        testContext.assertQueryReturns(
+            "select {[Measures].[My Tuple]} on 0 from [Sales]",
+            desiredResult);
+
+        // same result if calc member is defined in query
+        TestContext.instance().assertQueryReturns(
+            "with member [Measures].[My Tuple] as\n"
+                + " 'StrToTuple(\"([Gender].[M], [Marital Status].[S])\", [Gender], [Marital Status])'\n"
+                + "select {[Measures].[My Tuple]} on 0 from [Sales]",
+            desiredResult);
+    }
 }
 
-// End CalculatedMembersTestCase.java
+// End TestCalculatedMembers.java

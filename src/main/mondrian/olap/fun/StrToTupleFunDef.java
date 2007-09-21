@@ -112,7 +112,7 @@ class StrToTupleFunDef extends FunDefBase {
                 DimensionExpr dimensionExpr = (DimensionExpr) arg;
                 Dimension dimension = dimensionExpr.getDimension();
                 args[i] = new HierarchyExpr(dimension.getHierarchy());
-            } else if (arg instanceof Hierarchy) {
+            } else if (arg instanceof HierarchyExpr) {
                 // nothing
             } else {
                 throw MondrianResource.instance().MdxFuncNotHier.ex(
@@ -175,7 +175,8 @@ class StrToTupleFunDef extends FunDefBase {
             }
             for (int i = 1; i < args.length; i++) {
                 Exp exp = args[i];
-                if (!(exp instanceof DimensionExpr)) {
+                if (!(exp instanceof DimensionExpr
+                    || exp instanceof HierarchyExpr)) {
                     return null;
                 }
             }
