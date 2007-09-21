@@ -57,7 +57,13 @@
   	<li><a href="#Advanced_logical_constructs">Advanced logical constructs</a>
 		<ol>
 			<li><a href="#Virtual_cubes">Virtual cubes</a></li>
-			<li><a href="#Parent_child_hierarchies">Parent-child hierarchies</a></li>
+			<li><a href="#Parent_child_hierarchies">Parent-child hierarchies</a><ol>
+			<li><a href="#Tuning_parent-child_hierarchies">Tuning parent-child 
+			hierarchies</a></li>
+			<li><a href="#Closure_tables">Closure tables</a></li>
+			<li><a href="#Populating_closure_tables">Populating closure tables</a></li>
+		</ol>
+			</li>
 			<li><a href="#Member_properties">Member properties</a></li>
 			<li><a href="#Calculated_members">Calculated members</a></li>
 			<li><a href="#Named_sets">Named sets</a></li>
@@ -1071,7 +1077,7 @@ sometimes use values as the empty string, 0, and -1 instead.</li>
 ###############################################
 ##  5.2.1 Tuning parent-child hierarchies #####
 ############################################### -->
-<h1>5.2.1 Tuning parent-child hierarchies</h1>
+<h1>5.2.1 Tuning parent-child hierarchies<a name="Tuning_parent-child_hierarchies">&nbsp;</a></h1>
 
 <p>There's one serious problem with the parent-child hierarchy defined above, and that is the
 amount of work Mondrian has to do in order to compute cell-totals. Let's suppose that the
@@ -1138,7 +1144,7 @@ called a <dfn>closure table</dfn> for this purpose.</p>
 ##############################
 ##  5.2.2 Closure tables #####
 ############################## -->
-<h1>5.2.2 Closure tables</h1>
+<h1>5.2.2 Closure tables<a name="Closure_tables">&nbsp;</a></h1>
 
 <p>A closure table is a SQL table which contains a record for every employee/supervisor
 relationship, regardless of depth. (In mathematical terms, this is called the 'reflexive
@@ -1288,14 +1294,32 @@ CREATE INDEX employee_closure_emp ON employee_closure (<br>
 );</code>
 </blockquote>
 
-<p>The table needs to be re-populated whenever the hierarchy changes, and it is the application's
-responsibility to do so -- Mondrian does not do this! Here is an example of a stored procedure
-that computes a closure table.</p>
+<h1>5.2.3 Populating closure tables<a name="Populating_closure_tables">&nbsp;</a></h1>
+
+<p>The table needs to be re-populated whenever the hierarchy changes, and it is 
+the application's responsibility to do so &mdash; Mondrian does not do this!</p>
+
+<p>If you are using <a href="http://kettle.pentaho.org/">Pentaho Data Integration (Kettle)</a>, there is a special step 
+to populate closure tables as part of the ETL process. Further details in the
+<a href="http://wiki.pentaho.org/display/EAI/Closure+Generator">Pentaho Data 
+Integration wiki</a>.</p>
+
+<p>
+<table cellspacing="4" border="1" style="border-collapse: collapse">
+	<tr>
+		<td>
+		<img border="0" src="http://wiki.pentaho.org/download/attachments/1050777/closure-generator-step.png" width="474" height="218"><p align="center">
+		<i>Closure Generator step in Pentaho Data Integration</i></td>
+	</tr>
+</table>
+</p>
+
+<p>If you are not using Pentaho Data Integration, you can populate the table 
+yourself using SQL. Here is an example of a stored procedure that populates a closure table.</p>
 
 <blockquote>
   <code>CREATE PROCEDURE close_employee()<br>
 BEGIN<br>
-
 &nbsp; DECLARE distance int;<br>
 &nbsp; TRUNCATE TABLE employee_closure;<br>
 &nbsp; SET distance = 0;<br>
@@ -1303,7 +1327,6 @@ BEGIN<br>
 &nbsp; INSERT INTO employee_closure (supervisor_id, employee_id,
 distance)<br>
 &nbsp;&nbsp;&nbsp; SELECT employee_id, employee_id, distance<br>
-
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FROM employee;<br>
   <br>
 &nbsp; <i>-- for each pair (root, leaf) in the closure,<br>
