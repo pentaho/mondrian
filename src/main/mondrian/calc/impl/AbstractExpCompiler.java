@@ -93,11 +93,11 @@ public class AbstractExpCompiler implements ExpCompiler {
         List<ResultStyle> preferredResultTypes)
     {
         assert preferredResultTypes != null;
-        if (Util.PreJdk15) {
+        if (Util.Retrowoven) {
             // Copy and replace ITERABLE
             // A number of functions declare that they can accept
-            // ITERABLEs so here is where that those are
-            // converted to innocent, for jdk1.4,  LISTs
+            // ITERABLEs so here is where that those are converted to innocent
+            // LISTs for jdk1.4 and other retrowoven code.
             List<ResultStyle> tmp =
                 new ArrayList<ResultStyle>(preferredResultTypes.size());
             for (ResultStyle preferredResultType : preferredResultTypes) {

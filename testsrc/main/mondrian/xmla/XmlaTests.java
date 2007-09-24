@@ -121,7 +121,7 @@ public class XmlaTests extends FoodMartTestCase {
         dataType = "Integer";
         inputValue = new BigInteger("9223372036854775807");
         valueType = XmlaHandler.XSD_LONG;
-        value = new Long(XmlaHandler.XSD_LONG_MAX_INCLUSIVE);;
+        value = new Long(XmlaHandler.XSD_LONG_MAX_INCLUSIVE);
         isDecimal = false;
         doXmlaHandlerValueInfo(dataType, inputValue, 
                                 valueType, value, isDecimal);
@@ -131,7 +131,7 @@ public class XmlaTests extends FoodMartTestCase {
         dataType = "Integer";
         inputValue = new BigInteger("-9223372036854775808");
         valueType = XmlaHandler.XSD_LONG;
-        value = new Long(XmlaHandler.XSD_LONG_MIN_INCLUSIVE);;
+        value = new Long(XmlaHandler.XSD_LONG_MIN_INCLUSIVE);
         isDecimal = false;
         doXmlaHandlerValueInfo(dataType, inputValue, 
                                 valueType, value, isDecimal);
@@ -176,13 +176,13 @@ public class XmlaTests extends FoodMartTestCase {
         dataType = "Integer";
         inputValue = new BigDecimal("-9223372036854775808.0");
         valueType = XmlaHandler.XSD_LONG;
-        value = new Long(XmlaHandler.XSD_LONG_MIN_INCLUSIVE);;
+        value = new Long(XmlaHandler.XSD_LONG_MIN_INCLUSIVE);
         isDecimal = false;
         doXmlaHandlerValueInfo(dataType, inputValue, 
                                 valueType, value, isDecimal);
-        valueType = (Util.PreJdk15)
+        valueType = (Util.Retrowoven)
             ? XmlaHandler.XSD_DOUBLE : XmlaHandler.XSD_DECIMAL;
-        value = (Util.PreJdk15)
+        value = (Util.Retrowoven)
             ? Double.valueOf("-9.223372036854776E18")
             : inputValue;
         isDecimal = true;
@@ -218,7 +218,7 @@ public class XmlaTests extends FoodMartTestCase {
 
         // MAX_VALUE = 1.7976931348623157e+308
         // one less decimal point than max value
-        if (! Util.PreJdk15) {
+        if (! Util.Retrowoven) {
             dataType = "Numeric";
             inputValue = new BigDecimal("1.797693134862315e+308");
             valueType = XmlaHandler.XSD_DOUBLE;

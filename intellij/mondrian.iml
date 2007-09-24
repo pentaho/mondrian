@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module version="4" relativePaths="true" type="JAVA_MODULE">
   <component name="ModuleRootManager" />
-  <component name="NewModuleRootManager">
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/../classes" />
     <exclude-output />
     <output-test url="file://$MODULE_DIR$/../classes" />
     <content url="file://$MODULE_DIR$/../src">
       <sourceFolder url="file://$MODULE_DIR$/../src/main" isTestSource="false" />
     </content>
-    <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="all" level="project" />
     <orderEntry type="library" name="eigenbase-properties" level="project" />
     <orderEntry type="library" name="commons-math" level="project" />
     <orderEntry type="library" name="jdbcDrivers" level="project" />
+    <orderEntry type="library" name="retroweaver" level="project" />
     <orderEntryProperties />
   </component>
 </module>

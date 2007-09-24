@@ -75,17 +75,25 @@ public class Util extends XOMUtil {
 
     /**
      * Whether we are running a version of Java before 1.5.
-     *
+     * <p/>
      * <p>If this variable is true, we will be running retroweaver. Retroweaver
      * has some problems involving {@link java.util.EnumSet}.
      */
     public static final boolean PreJdk15 =
         System.getProperty("java.version").startsWith("1.4");
 
+    /**
+     * Whether the code base has re-engineered using retroweaver.
+     * If this is the case, some functionality is not available.
+     */
+    public static final boolean Retrowoven =
+        Access.class.getSuperclass().getName().equals(
+            "com.rc.retroweaver.runtime.Enum_");
+
     private static final UtilCompatible compatible;
     static {
         String className;
-        if (PreJdk15) {
+        if (PreJdk15 || Retrowoven) {
             className = "mondrian.util.UtilCompatibleJdk14";
         } else {
             className = "mondrian.util.UtilCompatibleJdk15";

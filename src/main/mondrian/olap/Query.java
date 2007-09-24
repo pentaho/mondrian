@@ -160,7 +160,7 @@ public class Query extends QueryPart {
      *    ResultStyle.MUTABLE_LIST
      * For java4, use LIST
      */
-    private ResultStyle resultStyle = (Util.PreJdk15)
+    private ResultStyle resultStyle = (Util.Retrowoven)
                 ? ResultStyle.LIST : ResultStyle.ITERABLE;
 
 
@@ -456,7 +456,7 @@ public class Query extends QueryPart {
         switch (resultStyle) {
         case ITERABLE:
             // For java4, use LIST
-            this.resultStyle = (Util.PreJdk15)
+            this.resultStyle = (Util.Retrowoven)
                 ? ResultStyle.LIST : ResultStyle.ITERABLE;
             break;
         case LIST:

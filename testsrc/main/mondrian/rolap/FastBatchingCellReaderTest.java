@@ -290,7 +290,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         List<FastBatchingCellReader.CompositeBatch> groupedBatches =
                 fbcr.groupBatches(batchList);
         if ((MondrianProperties.instance().UseAggregates.get()
-                && MondrianProperties.instance().ReadAggregates.get()) || Util.PreJdk15) {
+                && MondrianProperties.instance().ReadAggregates.get())
+            || Util.Retrowoven)
+        {
             assertEquals(4, groupedBatches.size());
         } else {
             assertEquals(2, groupedBatches.size());
@@ -595,9 +597,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             assertFalse(batch2.canBatch(batch1));
             assertFalse(batch1.canBatch(batch2));
         } else {
-            if (!Util.PreJdk15) {
-                // In JDK1.4, Trigger which controls UseAggregates is not working
-                // properly, which causes this test to fail
+            if (!Util.Retrowoven) {
+                // Under retroweaver, trigger which controls UseAggregates is
+                // not working properly, which causes this test to fail.
                 assertTrue(batch2.canBatch(batch1));
             }
         }

@@ -93,7 +93,7 @@ public class CrossJoinTest extends FoodMartTestCase {
     // Member Member
     ////////////////////////////////////////////////////////////////////////
     public void testIterMemberIterMemberIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.IterMemberIterMemberIterCalc calc =
             crossJoinFunDef.new IterMemberIterMemberIterCalc(
                 getResolvedFunCall(), null);
@@ -103,7 +103,7 @@ if (! Util.PreJdk15) {
 }
     }
     public void testIterMemberListMemberIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.IterMemberListMemberIterCalc calc =
             crossJoinFunDef.new IterMemberListMemberIterCalc(
                 getResolvedFunCall(), null);
@@ -113,7 +113,7 @@ if (! Util.PreJdk15) {
 }
     }
     public void testListMemberIterMemberIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.ListMemberIterMemberIterCalc calc =
             crossJoinFunDef.new ListMemberIterMemberIterCalc(
                 getResolvedFunCall(), null);
@@ -123,7 +123,7 @@ if (! Util.PreJdk15) {
 }
     }
     public void testListMemberListMemberIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.ListMemberListMemberIterCalc calc =
             crossJoinFunDef.new ListMemberListMemberIterCalc(
                 getResolvedFunCall(), null);
@@ -159,7 +159,7 @@ if (! Util.PreJdk15) {
     ////////////////////////////////////////////////////////////////////////
 
     public void testIterMemberIterMemberArrayIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.IterMemberIterMemberArrayIterCalc calc =
             crossJoinFunDef.new IterMemberIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
@@ -170,7 +170,7 @@ if (! Util.PreJdk15) {
     }
 
     public void testIterMemberListMemberArrayIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.IterMemberListMemberArrayIterCalc calc =
             crossJoinFunDef.new IterMemberListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
@@ -180,7 +180,7 @@ if (! Util.PreJdk15) {
 }
     }
     public void testListMemberIterMemberArrayIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.ListMemberIterMemberArrayIterCalc calc =
             crossJoinFunDef.new ListMemberIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
@@ -190,7 +190,7 @@ if (! Util.PreJdk15) {
 }
     }
     public void testListMemberListMemberArrayIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.ListMemberListMemberArrayIterCalc calc =
             crossJoinFunDef.new ListMemberListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
@@ -225,7 +225,7 @@ if (! Util.PreJdk15) {
     // Member[] Member
     ////////////////////////////////////////////////////////////////////////
     public void testIterMemberArrayIterMemberIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.IterMemberArrayIterMemberIterCalc calc =
             crossJoinFunDef.new IterMemberArrayIterMemberIterCalc(
                 getResolvedFunCall(), null);
@@ -235,7 +235,7 @@ if (! Util.PreJdk15) {
 }
     }
     public void testIterMemberArrayListMemberIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.IterMemberArrayListMemberIterCalc calc =
             crossJoinFunDef.new IterMemberArrayListMemberIterCalc(
                 getResolvedFunCall(), null);
@@ -245,7 +245,7 @@ if (! Util.PreJdk15) {
 }
     }
     public void testListMemberArrayIterMemberIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.ListMemberArrayIterMemberIterCalc calc =
             crossJoinFunDef.new ListMemberArrayIterMemberIterCalc(
                 getResolvedFunCall(), null);
@@ -255,7 +255,7 @@ if (! Util.PreJdk15) {
 }
     }
     public void testListMemberArrayListMemberIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.ListMemberArrayListMemberIterCalc calc =
             crossJoinFunDef.new ListMemberArrayListMemberIterCalc(
                 getResolvedFunCall(), null);
@@ -290,7 +290,7 @@ if (! Util.PreJdk15) {
     // Member[] Member[]
     ////////////////////////////////////////////////////////////////////////
     public void testIterMemberArrayIterMemberArrayIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.IterMemberArrayIterMemberArrayIterCalc calc =
             crossJoinFunDef.new IterMemberArrayIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
@@ -300,7 +300,7 @@ if (! Util.PreJdk15) {
 }
     }
     public void testIterMemberArrayListMemberArrayIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.IterMemberArrayListMemberArrayIterCalc calc =
             crossJoinFunDef.new IterMemberArrayListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
@@ -310,7 +310,7 @@ if (! Util.PreJdk15) {
 }
     }
     public void testListMemberArrayIterMemberArrayIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.ListMemberArrayIterMemberArrayIterCalc calc =
             crossJoinFunDef.new ListMemberArrayIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
@@ -320,7 +320,7 @@ if (! Util.PreJdk15) {
 }
     }
     public void testListMemberArrayListMemberArrayIterCalc() {
-if (! Util.PreJdk15) {
+if (! Util.Retrowoven) {
         CrossJoinFunDef.ListMemberArrayListMemberArrayIterCalc calc =
             crossJoinFunDef.new ListMemberArrayListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
