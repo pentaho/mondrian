@@ -2629,6 +2629,7 @@ The default value for this property is an empty string.</PropertyDescription>
             <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Customers].[All Customers].[Canada]</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
             <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>1997</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>
             <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Time].[1997]</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
+            <_x005b_Measures_x005d_._x005b_Unit_x0020_Sales_x005d_ xsi:type="xsd:double">266773</_x005b_Measures_x005d_._x005b_Unit_x0020_Sales_x005d_>
           </row>
           <row>
             <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>Canada</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
@@ -2641,6 +2642,7 @@ The default value for this property is an empty string.</PropertyDescription>
             <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Customers].[All Customers].[Mexico]</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
             <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>1997</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>
             <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Time].[1997]</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
+            <_x005b_Measures_x005d_._x005b_Unit_x0020_Sales_x005d_ xsi:type="xsd:double">266773</_x005b_Measures_x005d_._x005b_Unit_x0020_Sales_x005d_>
           </row>
           <row>
             <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>Mexico</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>

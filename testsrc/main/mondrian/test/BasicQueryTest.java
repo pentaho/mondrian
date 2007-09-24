@@ -4963,6 +4963,31 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * If an axis expression is a member, implicitly convert it to a set.
+     */
+    public void testMemberOnAxis() {
+        assertQueryReturns(
+            "select [Measures].[Sales Count] on 0, non empty [Store].[Store State].members on 1 from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Sales Count]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "{[Store].[All Stores].[USA].[OR]}\n" +
+                "{[Store].[All Stores].[USA].[WA]}\n" +
+                "Row #0: 24,442\n" +
+                "Row #1: 21,611\n" +
+                "Row #2: 40,784\n"));
+    }
+
+    public void testScalarOnAxisFails() {
+        assertThrows(
+            "select [Measures].[Sales Count] + 1 on 0, non empty [Store].[Store State].members on 1 from [Sales]",
+            "Axis 'COLUMNS' expression is not a set");
+    }
+
+    /**
      * It is illegal for a query to have the same dimension on more than
      * one axis.
      */

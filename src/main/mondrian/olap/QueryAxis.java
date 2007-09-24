@@ -13,12 +13,9 @@
 
 package mondrian.olap;
 
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ResultStyle;
+import mondrian.calc.*;
 import mondrian.mdx.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.TypeUtil;
+import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 
 import java.io.PrintWriter;
@@ -201,7 +198,20 @@ public class QueryAxis extends QueryPart {
         exp = validator.validate(exp, false);
         final Type type = exp.getType();
         if (!TypeUtil.isSet(type)) {
-            throw MondrianResource.instance().MdxAxisIsNotSet.ex(axisOrdinal.name());
+            // If expression is a member or a tuple, implicitly convert it
+            // into a set.
+            if (type instanceof MemberType ||
+                type instanceof TupleType) {
+                exp =
+                    new UnresolvedFunCall(
+                        "{}",
+                        Syntax.Braces,
+                        new Exp[] {exp});
+                exp = validator.validate(exp, false);
+            } else {
+                throw MondrianResource.instance().MdxAxisIsNotSet.ex(
+                    axisOrdinal.name());
+            }
         }
     }
 

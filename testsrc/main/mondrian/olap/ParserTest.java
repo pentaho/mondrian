@@ -176,6 +176,18 @@ public class ParserTest extends TestCase {
         assertEquals("Correct member on axis", "axis1mbr", id.name);
     }
 
+    /**
+     * If an axis expression is a member, implicitly convert it to a set.
+     */
+    public void testMemberOnAxis() {
+        assertParseQuery(
+            "select [Measures].[Sales Count] on 0, non empty [Store].[Store State].members on 1 from [Sales]",
+            TestContext.fold(
+                "select [Measures].[Sales Count] ON COLUMNS,\n" +
+                    "  NON EMPTY [Store].[Store State].members ON ROWS\n" +
+                    "from [Sales]\n"));
+    }
+
     public void testCaseTest() {
         assertParseQuery(
                 "with member [Measures].[Foo] as " +

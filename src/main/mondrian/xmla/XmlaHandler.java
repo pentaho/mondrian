@@ -81,13 +81,13 @@ public class XmlaHandler implements XmlaConstants {
     public static final long XSD_LONG_MAX_INCLUSIVE = 9223372036854775807L;
     public static final long XSD_LONG_MIN_INCLUSIVE = -9223372036854775808L;
 
-    // xsd:double — IEEE 64-bit floating-point
+    // xsd:double: IEEE 64-bit floating-point
     public static final String XSD_DOUBLE = "xsd:double";
 
-    // xsd:decimal — Decimal numbers (BigDecimal)
+    // xsd:decimal: Decimal numbers (BigDecimal)
     public static final String XSD_DECIMAL = "xsd:decimal";
 
-    // xsd:integer — Signed integers of arbitrary length (BigInteger)
+    // xsd:integer: Signed integers of arbitrary length (BigInteger)
     public static final String XSD_INTEGER = "xsd:integer";
 
     public static boolean isValidXsdInt(long l) {
@@ -181,9 +181,8 @@ public class XmlaHandler implements XmlaConstants {
                         this.isDecimal = false;
 
                     } else if (inputValue instanceof Long) {
-                        Long l = (Long) inputValue;
                         // See if it can be an integer or long
-                        long lval = l.longValue();
+                        long lval = (Long) inputValue;
                         setValueAndType(lval);
 
                     } else if (inputValue instanceof BigInteger) {
@@ -267,8 +266,7 @@ public class XmlaHandler implements XmlaConstants {
                     } else if (inputValue instanceof Number) {
                         // Don't know what Number type we have here.
                         // Note: this could result in precision loss.
-                        long lval = ((Number) inputValue).longValue();
-                        this.value = new Long(lval);
+                        this.value = ((Number) inputValue).longValue();
                         this.valueType = valueTypeHint;
                         this.isDecimal = false;
 
@@ -296,8 +294,7 @@ public class XmlaHandler implements XmlaConstants {
                             inputValue instanceof Integer ||
                             inputValue instanceof Long) {
                         // Convert from byte/short/integer/long to double
-                        double dval = ((Number) inputValue).doubleValue();
-                        this.value = new Double(dval);
+                        this.value = ((Number) inputValue).doubleValue();
                         this.valueType = valueTypeHint;
                         this.isDecimal = true;
 
@@ -317,7 +314,7 @@ public class XmlaHandler implements XmlaConstants {
                             // Must use compareTo - see BigDecimal.equals
                             if (bd.compareTo(bd2) == 0) {
                                 this.valueType = XSD_DOUBLE;
-                                this.value = new Double(dval);
+                                this.value = dval;
                             } else {
                                 this.valueType = XSD_DECIMAL;
                                 this.value = inputValue;
@@ -351,8 +348,7 @@ public class XmlaHandler implements XmlaConstants {
                     } else if (inputValue instanceof Number) {
                         // Don't know what Number type we have here.
                         // Note: this could result in precision loss.
-                        double dval = ((Number) inputValue).doubleValue();
-                        this.value = new Double(dval);
+                        this.value = ((Number) inputValue).doubleValue();
                         this.valueType = valueTypeHint;
                         this.isDecimal = true;
 
@@ -379,20 +375,18 @@ public class XmlaHandler implements XmlaConstants {
                 } else if (inputValue instanceof Byte) {
                     Byte b = (Byte) inputValue;
                     this.valueType = XSD_INT;
-                    this.value = new Integer(b.intValue());
+                    this.value = b.intValue();
                     this.isDecimal = false;
 
                 } else if (inputValue instanceof Short) {
                     Short s = (Short) inputValue;
                     this.valueType = XSD_INT;
-                    this.value = new Integer(s.intValue());
+                    this.value = s.intValue();
                     this.isDecimal = false;
 
                 } else if (inputValue instanceof Long) {
-                    Long l = (Long) inputValue;
                     // See if it can be an integer or long
-                    long lval = l.longValue();
-                    setValueAndType(lval);
+                    setValueAndType((Long) inputValue);
 
                 } else if (inputValue instanceof BigInteger) {
                     BigInteger bi = (BigInteger) inputValue;
@@ -431,7 +425,7 @@ public class XmlaHandler implements XmlaConstants {
                         // Must use compareTo - see BigDecimal.equals
                         if (bd.compareTo(bd2) == 0) {
                             this.valueType = XSD_DOUBLE;
-                            this.value = new Double(dval);
+                            this.value = dval;
                         } else {
                             this.valueType = XSD_DECIMAL;
                             this.value = inputValue;
@@ -445,8 +439,7 @@ public class XmlaHandler implements XmlaConstants {
                 } else if (inputValue instanceof Number) {
                     // Don't know what Number type we have here.
                     // Note: this could result in precision loss.
-                    long lval = ((Number) inputValue).longValue();
-                    this.value = new Long(lval);
+                    this.value = ((Number) inputValue).longValue();
                     this.valueType = XSD_LONG;
                     this.isDecimal = false;
 
@@ -463,11 +456,11 @@ public class XmlaHandler implements XmlaConstants {
             if (! isValidXsdInt(lval)) {
                 // No, it can not be a integer, must be a long
                 this.valueType = XSD_LONG;
-                this.value = new Long(lval);
+                this.value = lval;
             } else {
                 // Its an integer.
                 this.valueType = XSD_INT;
-                this.value = new Integer((int) lval);
+                this.value = (int) lval;
             }
             this.isDecimal = false;
         }
@@ -540,6 +533,7 @@ public class XmlaHandler implements XmlaConstants {
      *
      * @param request  XML request, for example, "<SOAP-ENV:Envelope ...>".
      * @param response Destination for response
+     * @throws XmlaException on error
      */
     public void process(XmlaRequest request, XmlaResponse response)
             throws XmlaException {
@@ -708,6 +702,7 @@ public class XmlaHandler implements XmlaConstants {
      * Computes the XML Schema for a dataset.
      *
      * @param writer SAX writer
+     * @param settype rowset or dataset?
      * @see RowsetDefinition#writeRowsetXmlSchema(SaxWriter)
      */
     static void writeDatasetXmlSchema(SaxWriter writer, int settype) {
@@ -2308,17 +2303,16 @@ public class XmlaHandler implements XmlaConstants {
                     final int z0 = memberOrdinal; // save ordinal so can rewind
                     final List<Position> positions = axis.getPositions();
                     int jj = 0;
-                    for (Position position: positions) {
+                    for (Position position : positions) {
                         memberOrdinal = z0; // rewind to start
-                        //final Member[] members = position.members;
                         for (Member member : position) {
                             if (jj == 0 ||
                                 member.getLevel().getDepth() >
                                     levels[memberOrdinal].getDepth()) {
                                 levels[memberOrdinal] = member.getLevel();
                             }
+                            memberOrdinal++;
                         }
-                        ++memberOrdinal;
                         jj++;
                     }
 
@@ -2347,23 +2341,25 @@ public class XmlaHandler implements XmlaConstants {
                     }
                 }
             }
-            this.members = new Member[memberOrdinal];
+            this.members = new Member[memberOrdinal + 1];
 
             // Deduce the list of column headings.
-            Axis columnsAxis = axes[0];
-            for (Position position : columnsAxis.getPositions()) {
-                String name = null;
-                int j = 0;
-                for (Member member : position) {
-                    if (j == 0) {
-                        name = member.getUniqueName();
-                    } else {
-                        name = name + "." + member.getUniqueName();
+            if (axes.length > 0) {
+                Axis columnsAxis = axes[0];
+                for (Position position : columnsAxis.getPositions()) {
+                    String name = null;
+                    int j = 0;
+                    for (Member member : position) {
+                        if (j == 0) {
+                            name = member.getUniqueName();
+                        } else {
+                            name = name + "." + member.getUniqueName();
+                        }
+                        j++;
                     }
-                    j++;
+                    columnHandlerList.add(
+                        new CellColumnHandler(name));
                 }
-                columnHandlerList.add(
-                    new CellColumnHandler(name));
             }
 
             this.columnHandlers =
@@ -2372,9 +2368,11 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         public void metadata(SaxWriter writer) {
-            if (empty) {
-                return;
-            }
+            // ADOMD wants a XSD even a void one.
+//            if (empty) {
+//                return;
+//            }
+
             writer.startElement("xsd:schema", new String[] {
                 "xmlns:xsd", XmlaConstants.NS_XSD,
                 "targetNamespace", NS_XMLA_ROWSET,
@@ -2438,34 +2436,63 @@ public class XmlaHandler implements XmlaConstants {
 
         private void cellData(SaxWriter writer) throws SAXException {
             cellOrdinal = 0;
-            if (axisCount == 0) { // For MDX like: SELECT FROM Sales
+            iterate(writer);
+        }
+
+        /**
+         * Iterates over the resust writing tabular rows.
+         *
+         * @param writer Writer
+         * @throws org.xml.sax.SAXException on error
+         */
+        private void iterate(SaxWriter writer) throws SAXException {
+            switch (axisCount) {
+            case 0:
+                // For MDX like: SELECT FROM Sales
                 emitCell(writer, result.getCell(pos));
-            } else {
-                recurse(writer, axisCount - 1, 0);
+                return;
+            default:
+//                throw new SAXException("Too many axes: " + axisCount);
+                iterate(writer, axisCount - 1, 0);
+                break;
             }
         }
 
-        private void recurse(
-                SaxWriter writer,
-                int axis,
-                final int headerOrdinal) throws SAXException {
-            final List<Position> positions = result.getAxes()[axis].getPositions();
-            int i = 0;
-            for (Position position: positions) {
-                pos[axis] = i;
-                if (axis == 0) {
-                    final Cell cell = result.getCell(pos);
-                    emitCell(writer, cell);
-                } else {
-                    // Populate headers and values with levels.
-                    int ho = headerOrdinal;
-                    for (Member member : position) {
-                        members[ho++] = member;
-                    }
+        private void iterate(SaxWriter writer, int axis, final int xxx) {
+            final List<Position> positions =
+                result.getAxes()[axis].getPositions();
+            int axisLength = axis == 0 ? 1 : positions.size();
 
-                    recurse(writer, axis - 1, ho);
+            for (int i = 0; i < axisLength; i++) {
+                final Position position = positions.get(i);
+                int ho = xxx;
+                for (int j = 0;
+                     j < position.size() && ho < members.length;
+                     j++, ho++)
+                {
+                    members[ho] = position.get(j);
                 }
-                i++;
+
+                ++cellOrdinal;
+                Util.discard(cellOrdinal);
+
+                if (axis >= 2) {
+                    iterate(writer, axis - 1, ho);
+                } else {
+
+                    writer.startElement("row");//abrimos la fila
+                    pos[axis] = i; //coordenadas: fila i
+                    pos[0] = 0; //coordenadas (0,i): columna 0
+                    for (ColumnHandler columnHandler : columnHandlers) {
+                        if (columnHandler instanceof MemberColumnHandler) {
+                            columnHandler.write(writer, null, members);
+                        } else if (columnHandler instanceof CellColumnHandler) {
+                            columnHandler.write(writer, result.getCell(pos), null);
+                            pos[0]++;// next col.
+                        }
+                    }
+                    writer.endElement();//cerramos la fila
+                }
             }
         }
 
@@ -2824,7 +2851,7 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
         buf.append(whereClause);
         dtSql = buf.toString();
 
-        DataSource dataSource = ((RolapConnection) connection).getDataSource();
+        DataSource dataSource = connection.getDataSource();
         try {
             int count = -1;
             if (MondrianProperties.instance().EnableTotalCount.booleanValue()) {
