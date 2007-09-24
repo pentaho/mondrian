@@ -14,7 +14,7 @@ import mondrian.test.TestContext;
 /**
  * Test XMLA output in tabular (flattened) format.
  *
- * @author Julio Caubín
+ * @author Julio Caub&iacute;n, jhyde
  * @version $Id$
  */
 public class XmlaTabularTest extends XmlaBaseTestCase {
