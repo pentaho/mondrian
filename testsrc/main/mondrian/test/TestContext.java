@@ -1175,19 +1175,21 @@ public class TestContext {
     /**
      * Generates a string containing all dimensions except those given.
      * Useful as an argument to {@link #assertExprDependsOn(String, String)}.
+     *
+     * @return string containing all dimensions except those given
      */
-    public static String allDimsExcept(String[] dims) {
-        for (int i = 0; i < dims.length; i++) {
-            assert contains(AllDims, dims[i]) : "unknown dimension " + dims[i];
+    public static String allDimsExcept(String ... dims) {
+        for (String dim : dims) {
+            assert contains(AllDims, dim) : "unknown dimension " + dim;
         }
         StringBuilder buf = new StringBuilder("{");
         int j = 0;
-        for (int i = 0; i < AllDims.length; i++) {
-            if (!contains(dims, AllDims[i])) {
+        for (String dim : AllDims) {
+            if (!contains(dims, dim)) {
                 if (j++ > 0) {
                     buf.append(", ");
                 }
-                buf.append(AllDims[i]);
+                buf.append(dim);
             }
         }
         buf.append("}");
@@ -1204,7 +1206,7 @@ public class TestContext {
     }
 
     public static String allDims() {
-        return allDimsExcept(new String[0]);
+        return allDimsExcept();
     }
 
     public static class SnoopingSchemaProcessor

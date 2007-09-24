@@ -5929,7 +5929,42 @@ public class BasicQueryTest extends FoodMartTestCase {
     	final int rowCount = result.getAxes()[1].getPositions().size();
         assertEquals(5581, rowCount);
     }
- 
+
+    /**
+     * Tests a query which uses filter and crossjoin. This query caused
+     * problems when the retrowoven version of mondrian was used in jdk1.5,
+     * specifically a {@link ClassCastException} trying to cast a {@link List}
+     * to a {@link Iterable}.
+     */
+    public void testNonEmptyCrossjoinFilter() {
+        String desiredResult =
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products], [Time].[1997].[Q2].[5]}\n" +
+                "Row #0: 21,081\n");
+
+        assertQueryReturns("select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            + "NON EMPTY Crossjoin("
+            + "  {Product.[All Products]},\n"
+            + "  Filter("
+            + "    Descendants(Time, [Time].[Month]), "
+            + "    Time.CurrentMember.Name = '5')) ON ROWS\n"
+            + "from [Sales] ",
+            desiredResult);
+
+        assertQueryReturns("select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            + "NON EMPTY Filter("
+            + "  Crossjoin("
+            + "    {Product.[All Products]},\n"
+            + "    Descendants(Time, [Time].[Month])),"
+            + "  Time.CurrentMember.Name = '5') ON ROWS\n"
+            + "from [Sales] ",
+            desiredResult);
+    }
+
     /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.

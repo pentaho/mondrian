@@ -12,7 +12,7 @@ package mondrian.calc.impl;
 import mondrian.olap.*;
 import mondrian.olap.fun.TupleFunDef;
 import mondrian.olap.type.TupleType;
-import mondrian.calc.impl.MemberValueCalc;
+import mondrian.olap.type.Type;
 import mondrian.calc.*;
 
 /**
@@ -58,6 +58,29 @@ public class TupleValueCalc extends GenericCalc {
         return new Calc[] {tupleCalc};
     }
 
+    public boolean dependsOn(Dimension dimension) {
+        if (super.dependsOn(dimension)) {
+            return true;
+        }
+        for (Type type : ((TupleType) tupleCalc.getType()).elementTypes) {
+            // If the expression definitely includes the dimension (in this
+            // case, that means it is a member of that dimension) then we
+            // do not depend on the dimension. For example, the scalar value of
+            //   ([Store].[USA], [Gender].[F])
+            // does not depend on [Store].
+            //
+            // If the dimensionality of the expression is unknown, then the
+            // expression MIGHT include the dimension, so to be safe we have to
+            // say that it depends on the given dimension. For example,
+            //   (Dimensions(3).CurrentMember.Parent, [Gender].[F])
+            // may depend on [Store].
+            if (type.usesDimension(dimension, true)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Optimizes the scalar evaluation of a tuple. It evaluates the members
      * of the tuple, sets the context to these members, and evaluates the
@@ -69,6 +92,8 @@ public class TupleValueCalc extends GenericCalc {
      *   AS ' ([Measures].[Unit Sales], [Time].PreviousMember '</pre>
      *
      * </code></blockquote>
+     *
+     * @return optimized expression
      */
     public Calc optimize() {
         if (tupleCalc instanceof TupleFunDef.CalcImpl) {

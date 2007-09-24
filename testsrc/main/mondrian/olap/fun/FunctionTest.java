@@ -558,15 +558,15 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testValidMeasureDepends() {
-        String s12 = TestContext.allDimsExcept(new String[] {"[Measures]"});
+        String s12 = TestContext.allDimsExcept("[Measures]");
         getTestContext().assertExprDependsOn(
             "ValidMeasure([Measures].[Unit Sales])", s12);
 
-        String s11 = TestContext.allDimsExcept(new String[] {"[Measures]", "[Time]"});
+        String s11 = TestContext.allDimsExcept("[Measures]", "[Time]");
         getTestContext().assertExprDependsOn(
             "ValidMeasure(([Measures].[Unit Sales], [Time].[1997].[Q1]))", s11);
 
-        String s1 = TestContext.allDimsExcept(new String[] {"[Measures]"});
+        String s1 = TestContext.allDimsExcept("[Measures]");
         getTestContext().assertExprDependsOn(
             "ValidMeasure(([Measures].[Unit Sales], [Time].CurrentMember.Parent))",
             s1);
@@ -817,7 +817,7 @@ public class FunctionTest extends FoodMartTestCase {
         getTestContext().assertMemberExprDependsOn(
             "ClosingPeriod([Time].[Month], [Time].CurrentMember)", "{[Time]}");
 
-        String s1 = TestContext.allDimsExcept(new String[] {"[Measures]"});
+        String s1 = TestContext.allDimsExcept("[Measures]");
         getTestContext().assertExprDependsOn(
             "(([Measures].[Store Sales], ClosingPeriod([Time].[Month], [Time].CurrentMember)) - ([Measures].[Store Cost], ClosingPeriod([Time].[Month], [Time].CurrentMember)))",
             s1);
@@ -1868,21 +1868,21 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testAggregateDepends() {
         // Depends on everything except Measures, Gender
-        String s12 = TestContext.allDimsExcept(new String[] {"[Measures]", "[Gender]"});
+        String s12 = TestContext.allDimsExcept("[Measures]", "[Gender]");
         getTestContext().assertExprDependsOn(
             "([Measures].[Unit Sales], [Gender].[F])", s12);
         // Depends on everything except Customers, Measures, Gender
-        String s13 = TestContext.allDimsExcept(new String[] {"[Customers]", "[Gender]"});
+        String s13 = TestContext.allDimsExcept("[Customers]", "[Gender]");
         getTestContext().assertExprDependsOn(
             "Aggregate([Customers].Members, ([Measures].[Unit Sales], [Gender].[F]))",
             s13);
         // Depends on everything except Customers
-        String s11 = TestContext.allDimsExcept(new String[] {"[Customers]"});
+        String s11 = TestContext.allDimsExcept("[Customers]");
         getTestContext().assertExprDependsOn("Aggregate([Customers].Members)",
             s11);
         // Depends on the current member of the Product dimension, even though
         // [Product].[All Products] is referenced from the expression.
-        String s1 = TestContext.allDimsExcept(new String[] {"[Customers]"});
+        String s1 = TestContext.allDimsExcept("[Customers]");
         getTestContext().assertExprDependsOn(
             "Aggregate(Filter([Customers].[City].Members, (([Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])) > 0.1)))",
             s1);
@@ -2130,7 +2130,7 @@ public class FunctionTest extends FoodMartTestCase {
             "count(Crossjoin([Store].[All Stores].[USA].Children, {[Gender].children}), INCLUDEEMPTY)",
             "{[Gender]}");
 
-        String s1 = TestContext.allDimsExcept(new String[] {"[Store]"});
+        String s1 = TestContext.allDimsExcept("[Store]");
         getTestContext().assertExprDependsOn(
             "count(Crossjoin([Store].[All Stores].[USA].Children, {[Gender].children}), EXCLUDEEMPTY)",
             s1);
@@ -2142,7 +2142,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testCountExcludeEmpty() {
-        String s1 = TestContext.allDimsExcept(new String[] {"[Store]"});
+        String s1 = TestContext.allDimsExcept("[Store]");
         getTestContext().assertExprDependsOn(
             "count(Crossjoin([Store].[USA].Children, {[Gender].children}), EXCLUDEEMPTY)",
             s1);
@@ -2330,7 +2330,7 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("[Measures].[Store Sales].VALUE", "565,238.13");
 
         // Depends upon almost everything.
-        String s1 = TestContext.allDimsExcept(new String[] {"[Measures]"});
+        String s1 = TestContext.allDimsExcept("[Measures]");
         getTestContext().assertExprDependsOn("[Measures].[Store Sales].VALUE",
             s1);
 
@@ -3492,7 +3492,7 @@ public class FunctionTest extends FoodMartTestCase {
     public void testCoalesceEmptyDepends() {
         getTestContext().assertExprDependsOn(
             "coalesceempty([Time].[1997], [Gender].[M])", TestContext.allDims());
-        String s1 = TestContext.allDimsExcept(new String[] {"[Measures]", "[Time]"});
+        String s1 = TestContext.allDimsExcept("[Measures]", "[Time]");
         getTestContext().assertExprDependsOn(
             "coalesceempty(([Measures].[Unit Sales], [Time].[1997]), ([Measures].[Store Sales], [Time].[1997].[Q2]))",
             s1);
@@ -3558,12 +3558,13 @@ public class FunctionTest extends FoodMartTestCase {
                     "where\n" +
                     "    ([Time].[1997].[Q2])");
 
-        checkDataResults(new Double[][] {
-            { null, null },
-            { new Double(8.963), new Double(8.963) }
-        },
-                result,
-                0.001);
+        checkDataResults(
+            new Double[][] {
+                { null, null },
+                { new Double(8.963), new Double(8.963) }
+            },
+            result,
+            0.001);
     }
 
     public void testBrokenContextBug() {
@@ -3766,6 +3767,28 @@ public class FunctionTest extends FoodMartTestCase {
                 "{[Measures].[Store Sales]}\n" +
                 "Row #0: 191,940.00\n" +
                 "Row #0: 409,035.59\n"));
+    }
+
+    public void testTupleDepends()
+    {
+        getTestContext().assertMemberExprDependsOn(
+            "([Store].[USA], [Gender].[F])", "{}");
+
+        getTestContext().assertMemberExprDependsOn(
+            "([Store].[USA], [Gender])", "{[Gender]}");
+
+        // in a scalar context, the expression depends on everything except
+        // the explicitly stated dimensions
+        getTestContext().assertExprDependsOn(
+            "([Store].[USA], [Gender])",
+            TestContext.allDimsExcept("[Store]"));
+
+        // The result should be all dims except [Gender], but there's a small
+        // bug in MemberValueCalc.dependsOn where we escalate 'might depend' to
+        // 'depends' and we return that it depends on all dimensions.
+        getTestContext().assertExprDependsOn(
+            "(Dimensions('Store').CurrentMember, [Gender].[F])",
+            TestContext.allDims());
     }
 
     public void testItemNull()
@@ -4269,12 +4292,12 @@ public class FunctionTest extends FoodMartTestCase {
         // [Gender].[M] is used here as a numeric expression!
         // The numeric expression DOES depend upon [Product].
         // The expression as a whole depends upon everything except [Gender].
-        String s1 = TestContext.allDimsExcept(new String[] {"[Gender]"});
+        String s1 = TestContext.allDimsExcept("[Gender]");
         getTestContext().assertMemberExprDependsOn(
             "ParallelPeriod([Product].[Product Family], [Gender].[M], [Product].[Food])",
             s1);
         // As above
-        String s11 = TestContext.allDimsExcept(new String[] {"[Gender]"});
+        String s11 = TestContext.allDimsExcept("[Gender]");
         getTestContext().assertMemberExprDependsOn(
             "ParallelPeriod([Product].[Product Family], [Gender].[M])", s11);
     }
@@ -4328,7 +4351,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testPlus() {
         getTestContext().assertExprDependsOn("1 + 2", "{}");
-        String s1 = TestContext.allDimsExcept(new String[] {"[Measures]", "[Gender]"});
+        String s1 = TestContext.allDimsExcept("[Measures]", "[Gender]");
         getTestContext().assertExprDependsOn(
             "([Measures].[Unit Sales], [Gender].[F]) + 2", s1);
 
@@ -4523,7 +4546,7 @@ public class FunctionTest extends FoodMartTestCase {
     public void testNonEmptyCrossJoin() {
         // NonEmptyCrossJoin needs to evaluate measures to find out whether
         // cells are empty, so it implicitly depends upon all dimensions.
-        String s1 = TestContext.allDimsExcept(new String[] {"[Store]"});
+        String s1 = TestContext.allDimsExcept("[Store]");
         getTestContext().assertSetExprDependsOn(
             "NonEmptyCrossJoin([Store].[USA].Children, [Gender].Children)", s1);
 
@@ -5093,7 +5116,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         // Depends upon everything EXCEPT [Product], [Measures],
         // [Marital Status], [Gender].
-        String s11 = TestContext.allDimsExcept(new String[] {"[Product]", "[Measures]", "[Marital Status]", "[Gender]"});
+        String s11 = TestContext.allDimsExcept("[Product]", "[Measures]", "[Marital Status]", "[Gender]");
         getTestContext().assertSetExprDependsOn(
             "Order(" +
                 " Crossjoin([Gender].MEMBERS, [Product].MEMBERS)," +
@@ -5102,7 +5125,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         // Depends upon everything EXCEPT [Product], [Measures],
         // [Marital Status]. Does depend upon [Gender].
-        String s12 = TestContext.allDimsExcept(new String[] {"[Product]", "[Measures]", "[Marital Status]"});
+        String s12 = TestContext.allDimsExcept("[Product]", "[Measures]", "[Marital Status]");
         getTestContext().assertSetExprDependsOn(
             "Order(" +
                 " Crossjoin({[Gender].CurrentMember}, [Product].MEMBERS)," +
@@ -5110,7 +5133,7 @@ public class FunctionTest extends FoodMartTestCase {
                 " ASC)", s12);
 
         // Depends upon everything except [Measures].
-        String s13 = TestContext.allDimsExcept(new String[] {"[Measures]"});
+        String s13 = TestContext.allDimsExcept("[Measures]");
         getTestContext().assertSetExprDependsOn(
             "Order(" +
                 "  Crossjoin(" +
@@ -5119,7 +5142,7 @@ public class FunctionTest extends FoodMartTestCase {
                 "  [Measures].[Unit Sales], " +
                 "  BDESC)", s13);
 
-        String s1 = TestContext.allDimsExcept(new String[] {"[Measures]", "[Store]", "[Product]", "[Time]"});
+        String s1 = TestContext.allDimsExcept("[Measures]", "[Store]", "[Product]", "[Time]");
         getTestContext().assertSetExprDependsOn(
             fold(
                     "  Order(\n" +
@@ -5719,7 +5742,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     private void checkTopBottomCountPercentDepends(String fun) {
-        String s1 = TestContext.allDimsExcept(new String[] {"[Measures]", "[Promotion Media]"});
+        String s1 = TestContext.allDimsExcept("[Measures]", "[Promotion Media]");
         getTestContext().assertSetExprDependsOn(fun + "({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])",
             s1);
 
@@ -5901,6 +5924,25 @@ public class FunctionTest extends FoodMartTestCase {
                 "{[Gender].[All Gender].[F], [Time].[1997].[Q2]}");
 
         // todo: test for garbage at end of string
+    }
+
+    public void testStrToTupleDepends() {
+        getTestContext().assertMemberExprDependsOn(
+            "StrToTuple(\"[Time].[1997].[Q2]\", [Time])",
+            "{}");
+
+        // converted to scalar, depends set is larger
+        getTestContext().assertExprDependsOn(
+            "StrToTuple(\"[Time].[1997].[Q2]\", [Time])",
+            TestContext.allDimsExcept("[Time]"));
+
+        getTestContext().assertMemberExprDependsOn(
+            "StrToTuple(\"[Time].[1997].[Q2], [Gender].[F]\", [Time], [Gender])",
+            "{}");
+
+        getTestContext().assertExprDependsOn(
+            "StrToTuple(\"[Time].[1997].[Q2], [Gender].[F]\", [Time], [Gender])",
+            TestContext.allDimsExcept("[Time]", "[Gender]"));
     }
 
     public void testStrToSet() {
