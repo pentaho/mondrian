@@ -1038,9 +1038,30 @@ public class RolapStar {
             return getExpression().getExpression(query);
         }
 
+        /**
+         * Get column cardinality from the schema cache if possible;
+         * otherwise issue a select count(distinct) query to retrieve
+         * the cardinality and stores it in the cache.
+         * 
+         * @return the column cardinality.
+         */
         public int getCardinality() {
             if (cardinality == -1) {
-                cardinality = getCardinality(getStar().getDataSource());
+                RolapStar star = getStar();
+                RolapSchema schema = star.getSchema();
+                int columnHash = expression.hashCode();
+                Map<Integer, Integer> columnCardinalityCache = 
+                    schema.getColumnHashToCardinalityMap();
+                Integer card = columnCardinalityCache.get(columnHash);
+                
+                if (card != null) {
+                    cardinality = card.intValue();
+                } else {
+                    // If not cached, issue SQL to get the cardinality for
+                    // this column.
+                    cardinality = getCardinality(star.getDataSource());
+                    columnCardinalityCache.put(columnHash, cardinality);
+                }
             }
             return cardinality;
         }

@@ -156,6 +156,12 @@ public class RolapSchema implements Schema {
     private DataSourceChangeListener dataSourceChangeListener;
 
     /**
+     * HashMao containing column cardinality. Use a columnHash value that uniquely 
+     * identifies a relational column as specified in the xml schema.
+     */
+    private final Map<Integer, Integer> columnHashToCardinalityMap;
+
+    /**
      * This is ONLY called by other constructors (and MUST be called
      * by them) and NEVER by the Pool.
      *
@@ -182,6 +188,7 @@ public class RolapSchema implements Schema {
         this.mapNameToRole = new HashMap<String, Role>();
         this.aggTableManager = new AggTableManager(this);
         this.dataSourceChangeListener = createDataSourceChangeListener(connectInfo);
+        this.columnHashToCardinalityMap = new HashMap<Integer, Integer>();
     }
 
     /**
@@ -1533,6 +1540,16 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         return internalConnection;
     }
 
+    /**
+     * Returns the cardinality map associated with this schema.
+     * This needs to be stored with the schema so that queries on different
+     * cubes can share them.
+     * @return the cardinality map
+     */
+    Map<Integer, Integer> getColumnHashToCardinalityMap() {
+        return columnHashToCardinalityMap;
+    }
+    
     private RoleImpl createDefaultRole() {
         RoleImpl role = new RoleImpl();
         role.grant(this, Access.ALL);

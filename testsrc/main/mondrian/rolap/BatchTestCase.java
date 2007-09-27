@@ -225,6 +225,21 @@ public class BatchTestCase extends FoodMartTestCase {
     }
 
     /**
+     * Checks that a given MDX query results in a particular SQL statement
+     * being generated.
+     *
+     * @param mdxQuery MDX query
+     * @param patterns Set of patterns, one for each dialect.
+     * @param clearCache whether to clear cache before running the query
+     */
+    protected void assertQuerySql(
+        String mdxQuery,
+        SqlPattern[] patterns,
+        boolean clearCache) {
+        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, clearCache);
+    }
+    
+    /**
      * Checks that a given MDX query results (or does not result) in a
      * particular SQL statement being generated.
      *

@@ -12,7 +12,6 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.Connection;
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
@@ -680,7 +679,54 @@ public class TestAggregationManager extends BatchTestCase {
                 "{[Measures].[Unit Sales]}\n" +
                 "Axis #2:\n"));
     }
+    
+    /**
+     *  Test that once fetched, column cardinality can be shared between different
+     *  queries using the same connection; even if the queries are referencing 
+     *  different cubes.
+     */
+    public void testColumnCadinalityCache() {
+        String query1 =
+            "select " +
+            "NonEmptyCrossJoin(" +
+            "[Product].[Product Family].Members, " +
+            "[Gender].[Gender].Members) on rows " +
+            "from [Sales]";         
 
+        String query2 =
+            "select " +
+            "NonEmptyCrossJoin(" +
+            "[Store].[Store Country].Members, " +
+            "[Product].[Product Family].Members) on rows " +
+            "from [Warehouse]";
+
+        String cardinalitySqlDerby =
+            "select " +
+            "count(distinct \"product_class\".\"product_family\") " +
+            "from \"product_class\" as \"product_class\"";
+
+        String cardinalitySqlMySql =
+            "select " +
+            "count(distinct `product_class`.`product_family`) as `c0` " +
+            "from `product_class` as `product_class`";
+        
+        SqlPattern[] patterns =
+            new SqlPattern[] {
+                new SqlPattern(SqlPattern.Dialect.DERBY, cardinalitySqlDerby, cardinalitySqlDerby),
+                new SqlPattern(SqlPattern.Dialect.MYSQL, cardinalitySqlMySql, cardinalitySqlMySql)
+            };
+        
+        Connection conn = getTestContext().getFoodMartConnection(false);
+        TestContext context = getTestContext(conn);
+
+        // This MDX gets the [Product].[Product Family] cardinality from the DB.
+        context.executeQuery(query1);
+        
+        // This MDX should be able to reuse the cardinality for
+        // [Product].[Product Family]; and should not issue a SQL to fetch
+        // that from DB again.
+        assertQuerySqlOrNot(context, query2, patterns, true, false);
+    }
 }
 
 // End TestAggregationManager.java
