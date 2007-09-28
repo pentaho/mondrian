@@ -1541,15 +1541,31 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     }
 
     /**
-     * Returns the cardinality map associated with this schema.
-     * This needs to be stored with the schema so that queries on different
+     * Returns the cached cardinality for the column.
+     * The cache is stored in the schema so that queries on different
      * cubes can share them.
      * @return the cardinality map
      */
-    Map<Integer, Integer> getColumnHashToCardinalityMap() {
-        return columnHashToCardinalityMap;
+    Integer getCachedColumnCardinality(Integer columnHash) {
+        Integer card = null;
+        synchronized (columnHashToCardinalityMap) {
+            card = columnHashToCardinalityMap.get(columnHash);
+        }
+        return card;
     }
     
+    /**
+     * Sets the cardinality for a given column in cache.
+     * 
+     * @param columnHash
+     * @param cardinality
+     */
+    void putCachedColumnCardinality(Integer columnHash, Integer cardinality) {
+        synchronized (columnHashToCardinalityMap) {
+            columnHashToCardinalityMap.put(columnHash, cardinality);
+        }
+    }
+
     private RoleImpl createDefaultRole() {
         RoleImpl role = new RoleImpl();
         role.grant(this, Access.ALL);

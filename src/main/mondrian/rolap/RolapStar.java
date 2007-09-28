@@ -1050,9 +1050,7 @@ public class RolapStar {
                 RolapStar star = getStar();
                 RolapSchema schema = star.getSchema();
                 int columnHash = expression.hashCode();
-                Map<Integer, Integer> columnCardinalityCache = 
-                    schema.getColumnHashToCardinalityMap();
-                Integer card = columnCardinalityCache.get(columnHash);
+                Integer card = schema.getCachedColumnCardinality(columnHash);
                 
                 if (card != null) {
                     cardinality = card.intValue();
@@ -1060,7 +1058,7 @@ public class RolapStar {
                     // If not cached, issue SQL to get the cardinality for
                     // this column.
                     cardinality = getCardinality(star.getDataSource());
-                    columnCardinalityCache.put(columnHash, cardinality);
+                    schema.putCachedColumnCardinality(columnHash, cardinality);
                 }
             }
             return cardinality;
