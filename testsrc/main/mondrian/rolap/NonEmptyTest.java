@@ -566,6 +566,45 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
+     * Verify that the presence of calculated member in all the inputs disables native
+     * evaluation, even when ExpandNonNative is true.
+     */
+    public void testExpandCalcMembersInAllInputs() {
+
+        // This query will not be evaluated natively, even if the Hierarchize
+        // expression is expanded to a member list. The reason is that the
+        // expanded list contains ALL members.
+
+        String query =
+            "With " +
+            "Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Product Family].Members})' " +
+            "Member [Gender].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Gender].[All Gender]})' " +
+            "Select " +
+            "NonEmptyCrossJoin({[Gender].[*CTX_MEMBER_SEL~SUM]},{[Product].[*CTX_MEMBER_SEL~SUM]}) " +
+            "on rows " +
+            "From [Sales]";
+
+        String result =
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Gender].[*CTX_MEMBER_SEL~SUM], [Product].[*CTX_MEMBER_SEL~SUM]}\n" +
+            "Row #0: 266,773\n";
+
+        boolean origExpandNonNative =
+            MondrianProperties.instance().ExpandNonNative.get();
+        boolean origNativeCrossJoin =
+            MondrianProperties.instance().EnableNativeCrossJoin.get();
+        MondrianProperties.instance().ExpandNonNative.set(true);
+        MondrianProperties.instance().EnableNativeCrossJoin.set(true);
+
+        checkNotNative(1, query, result);
+
+        MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
+        MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCrossJoin);
+    }
+
+    /**
      * Verify that evaluation is native for expressions with nested non native
      * inputs that preduce MemberList results.
      */

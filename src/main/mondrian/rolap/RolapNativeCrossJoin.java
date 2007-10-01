@@ -101,7 +101,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             alertCrossJoinNonNative(
                 evaluator,
                 fun,
-                "All arguments contain the ALL member");
+                "all arguments contain either the ALL member or a calculated member");
             return null;
         }
         
