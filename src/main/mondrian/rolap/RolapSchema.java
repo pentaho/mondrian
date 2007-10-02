@@ -159,7 +159,7 @@ public class RolapSchema implements Schema {
      * HashMao containing column cardinality. Use a columnHash value that uniquely 
      * identifies a relational column as specified in the xml schema.
      */
-    private final Map<Integer, Integer> columnHashToCardinalityMap;
+    private final Map<MondrianDef.Expression, Integer> columnExprToCardinalityMap;
 
     /**
      * This is ONLY called by other constructors (and MUST be called
@@ -188,7 +188,7 @@ public class RolapSchema implements Schema {
         this.mapNameToRole = new HashMap<String, Role>();
         this.aggTableManager = new AggTableManager(this);
         this.dataSourceChangeListener = createDataSourceChangeListener(connectInfo);
-        this.columnHashToCardinalityMap = new HashMap<Integer, Integer>();
+        this.columnExprToCardinalityMap = new HashMap<MondrianDef.Expression, Integer>();
     }
 
     /**
@@ -1546,10 +1546,10 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * cubes can share them.
      * @return the cardinality map
      */
-    Integer getCachedColumnCardinality(Integer columnHash) {
+    Integer getCachedColumnCardinality(MondrianDef.Expression columnExpr) {
         Integer card = null;
-        synchronized (columnHashToCardinalityMap) {
-            card = columnHashToCardinalityMap.get(columnHash);
+        synchronized (columnExprToCardinalityMap) {
+            card = columnExprToCardinalityMap.get(columnExpr);
         }
         return card;
     }
@@ -1560,9 +1560,9 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * @param columnHash
      * @param cardinality
      */
-    void putCachedColumnCardinality(Integer columnHash, Integer cardinality) {
-        synchronized (columnHashToCardinalityMap) {
-            columnHashToCardinalityMap.put(columnHash, cardinality);
+    void putCachedColumnCardinality(MondrianDef.Expression columnExpr, Integer cardinality) {
+        synchronized (columnExprToCardinalityMap) {
+            columnExprToCardinalityMap.put(columnExpr, cardinality);
         }
     }
 

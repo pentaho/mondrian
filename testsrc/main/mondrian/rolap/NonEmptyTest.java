@@ -598,7 +598,7 @@ public class NonEmptyTest extends BatchTestCase {
         MondrianProperties.instance().ExpandNonNative.set(true);
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
 
-        checkNotNative(1, query, result);
+        checkNotNative(1, query, fold(result));
 
         MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCrossJoin);
