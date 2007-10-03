@@ -682,8 +682,9 @@ public class TestAggregationManager extends BatchTestCase {
     
     /**
      *  Test that once fetched, column cardinality can be shared between different
-     *  queries using the same connection; even if the queries are referencing 
-     *  different cubes.
+     *  queries using the same connection.
+     *  Test also that expressions with only table alias difference do not
+     *  share cardinality result.
      */
     public void testColumnCadinalityCache() {
         String query1 =
@@ -726,6 +727,106 @@ public class TestAggregationManager extends BatchTestCase {
         // [Product].[Product Family]; and should not issue a SQL to fetch
         // that from DB again.
         assertQuerySqlOrNot(context, query2, patterns, true, false);
+    }
+    
+    public void testKeyExpressionCardinalityCache() {
+        String storeDim1 = 
+            "<Dimension name=\"Store1\">\n" +
+            "  <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n" +
+            "  <Table name=\"store\"/>\n" +
+            "    <Level name=\"Store Country\" uniqueMembers=\"true\">\n" +
+            "      <KeyExpression>\n" +
+            "        <SQL dialect=\"derby\">\n" +
+            "\"store_country\"\n" +
+            "        </SQL>\n" +
+            "        <SQL dialect=\"mysql\">\n" +
+            "`store_country`\n" +
+            "        </SQL>\n" +
+            "      </KeyExpression>\n" +
+            "    </Level>\n" +
+            "  </Hierarchy>\n" +
+            "</Dimension>\n";
+        
+        String storeDim2 = 
+            "<Dimension name=\"Store2\">\n" +
+            "  <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n" +
+            "  <Table name=\"store_ragged\"/>\n" +
+            "    <Level name=\"Store Country\" uniqueMembers=\"true\">\n" +
+            "      <KeyExpression>\n" +
+            "        <SQL dialect=\"derby\">\n" +
+            "\"store_country\"\n" +
+            "        </SQL>\n" +
+            "        <SQL dialect=\"mysql\">\n" +
+            "`store_country`\n" +
+            "        </SQL>\n" +
+            "      </KeyExpression>\n" +
+            "    </Level>\n" +
+            "  </Hierarchy>\n" +
+            "</Dimension>\n";
+
+        String salesCube1 =
+            "<Cube name=\"Sales1\" defaultMeasure=\"Unit Sales\">\n" +
+            "  <Table name=\"sales_fact_1997\" />\n" +
+            "  <DimensionUsage name=\"Store1\" source=\"Store1\" foreignKey=\"store_id\"/>\n" +
+            "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
+            "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
+            "</Cube>\n";
+        
+        String salesCube2 =
+            "<Cube name=\"Sales2\" defaultMeasure=\"Unit Sales\">\n" +
+            "  <Table name=\"sales_fact_1997\" />\n" +
+            "  <DimensionUsage name=\"Store2\" source=\"Store2\" foreignKey=\"store_id\"/>\n" +
+            "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
+            "</Cube>\n";
+        
+        String query =
+            "select {[Measures].[Unit Sales]} ON COLUMNS, {[Store1].members} ON ROWS FROM [Sales1]";
+         
+        String query1 =
+            "select {[Measures].[Store Sales]} ON COLUMNS, {[Store1].members} ON ROWS FROM [Sales1]";
+
+        String query2 =
+            "select {[Measures].[Unit Sales]} ON COLUMNS, {[Store2].members} ON ROWS FROM [Sales2]";
+        
+        String cardinalitySqlDerby1 =
+            "select count(distinct \"store_country\") from \"store\" as \"store\"";
+
+        String cardinalitySqlMySql1 =
+            "select count(distinct `store_country`) as `c0` from `store` as `store`";
+        
+        String cardinalitySqlDerby2 =
+            "select count(distinct \"store_country\") from \"store_ragged\" as \"store_ragged\"";
+
+        String cardinalitySqlMySql2 =
+            "select count(distinct `store_country`) as `c0` from `store_ragged` as `store_ragged`";
+        
+        SqlPattern[] patterns1 =
+            new SqlPattern[] {
+                new SqlPattern(SqlPattern.Dialect.DERBY, cardinalitySqlDerby1, cardinalitySqlDerby1),
+                new SqlPattern(SqlPattern.Dialect.MYSQL, cardinalitySqlMySql1, cardinalitySqlMySql1)
+            };
+
+        SqlPattern[] patterns2 =
+            new SqlPattern[] {
+                new SqlPattern(SqlPattern.Dialect.DERBY, cardinalitySqlDerby2, cardinalitySqlDerby2),
+                new SqlPattern(SqlPattern.Dialect.MYSQL, cardinalitySqlMySql2, cardinalitySqlMySql2)
+            };
+
+        TestContext testContext =
+            TestContext.create(
+             storeDim1 + storeDim2,
+             salesCube1 + salesCube2,
+             null,
+             null,
+             null);
+
+        testContext.executeQuery(query);
+        
+        // Query1a will find the "store"."store_country" cardinality in cache.
+        assertQuerySqlOrNot(testContext, query1, patterns1, true, false);
+
+        // Query2 again will not find the "store_ragged"."store_country" cardinality in cache.
+        assertQuerySqlOrNot(testContext, query2, patterns2, false, false);
     }
 }
 

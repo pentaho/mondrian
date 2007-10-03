@@ -156,10 +156,13 @@ public class RolapSchema implements Schema {
     private DataSourceChangeListener dataSourceChangeListener;
 
     /**
-     * HashMao containing column cardinality. Use a columnHash value that uniquely 
-     * identifies a relational column as specified in the xml schema.
+     * HashMap containing column cardinality. The combination of
+     * Mondrianef.Relation and MondrianDef.Expression uniquely 
+     * identifies a relational expression(e.g. a column) specified
+     * in the xml schema.
      */
-    private final Map<MondrianDef.Expression, Integer> columnExprToCardinalityMap;
+    private final Map<MondrianDef.Relation, Map<MondrianDef.Expression, Integer>> 
+        relationExprCardinalityMap;
 
     /**
      * This is ONLY called by other constructors (and MUST be called
@@ -188,7 +191,8 @@ public class RolapSchema implements Schema {
         this.mapNameToRole = new HashMap<String, Role>();
         this.aggTableManager = new AggTableManager(this);
         this.dataSourceChangeListener = createDataSourceChangeListener(connectInfo);
-        this.columnExprToCardinalityMap = new HashMap<MondrianDef.Expression, Integer>();
+        this.relationExprCardinalityMap = 
+            new HashMap<MondrianDef.Relation, Map<MondrianDef.Expression, Integer>>();
     }
 
     /**
@@ -1546,10 +1550,16 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * cubes can share them.
      * @return the cardinality map
      */
-    Integer getCachedColumnCardinality(MondrianDef.Expression columnExpr) {
+    Integer getCachedRelationExprCardinality(
+        MondrianDef.Relation relation, 
+        MondrianDef.Expression columnExpr) {
         Integer card = null;
-        synchronized (columnExprToCardinalityMap) {
-            card = columnExprToCardinalityMap.get(columnExpr);
+        synchronized (relationExprCardinalityMap) {
+            Map<MondrianDef.Expression, Integer> exprCardinalityMap = 
+                relationExprCardinalityMap.get(relation);
+            if (exprCardinalityMap != null) {
+                card = exprCardinalityMap.get(columnExpr);
+            }
         }
         return card;
     }
@@ -1560,9 +1570,19 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * @param columnHash
      * @param cardinality
      */
-    void putCachedColumnCardinality(MondrianDef.Expression columnExpr, Integer cardinality) {
-        synchronized (columnExprToCardinalityMap) {
-            columnExprToCardinalityMap.put(columnExpr, cardinality);
+    void putCachedRelationExprCardinality(
+        MondrianDef.Relation relation, 
+        MondrianDef.Expression columnExpr, 
+        Integer cardinality) {
+        synchronized (relationExprCardinalityMap) {
+            Map<MondrianDef.Expression, Integer> exprCardinalityMap = 
+                relationExprCardinalityMap.get(relation);
+            if (exprCardinalityMap == null) {
+                exprCardinalityMap =
+                    new HashMap<MondrianDef.Expression, Integer>();
+                relationExprCardinalityMap.put(relation, exprCardinalityMap);
+            };
+            exprCardinalityMap.put(columnExpr, cardinality);
         }
     }
 
