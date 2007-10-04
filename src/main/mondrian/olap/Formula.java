@@ -181,9 +181,15 @@ public class Formula extends QueryPart {
             OlapElement mdxElement = q.getCube();
             final SchemaReader schemaReader = q.getSchemaReader(true);
             for (int i = 0; i < id.getSegments().size(); i++) {
-                Id.Segment segment = id.getSegments().get(i);
+            	Id.Segment segment = id.getSegments().get(i);
                 OlapElement parent = mdxElement;
-                mdxElement = schemaReader.getElementChild(parent, segment);
+                mdxElement = null;
+                // BCHOW: The last segment of the id is the name of the calculated member
+                // so no need to look for a pre-existing child.  This avoids
+                // unnecessarily executing SQL and loading children into cache.
+                if (i != id.getSegments().size() - 1)
+                    mdxElement = schemaReader.getElementChild(parent, segment);
+                
                 // Don't try to look up the member which the formula is
                 // defining. We would only find one if the member is overriding
                 // a member at the cube or schema level, and we don't want to

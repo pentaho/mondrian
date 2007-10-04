@@ -197,7 +197,7 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param patterns Set of patterns for expected SQL statements
      */
     protected void assertQuerySql(String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, true);
+        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, false, true);
     }
 
     /**
@@ -210,7 +210,7 @@ public class BatchTestCase extends FoodMartTestCase {
      */
     protected void assertQuerySql(
         TestContext testContext, String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(testContext, mdxQuery, patterns, false, true);
+        assertQuerySqlOrNot(testContext, mdxQuery, patterns, false, false, true);
     }
 
     /**
@@ -221,7 +221,7 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param patterns Set of patterns for expected SQL statements
      */
     protected void assertNoQuerySql(String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, true, true);
+        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, true, false, true);
     }
 
     /**
@@ -236,36 +236,37 @@ public class BatchTestCase extends FoodMartTestCase {
         String mdxQuery,
         SqlPattern[] patterns,
         boolean clearCache) {
-        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, clearCache);
+        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, false, clearCache);
     }
     
     /**
-     * Checks that a given MDX query results (or does not result) in a
-     * particular SQL statement being generated.
+     * During MDX query parse and execution, checks that the query results 
+     * (or does not result) in a particular SQL statement being generated.
      *
-     * <p>Runs the MDX query once for each SQL pattern in the current
-     * dialect. If there are multiple patterns, runs the MDX query multiple
-     * times, and expects to see each SQL statement appear. If there are no
-     * patterns in this dialect, the test trivially succeeds.
+     * <p>Parses and executes the MDX query once for each SQL 
+     * pattern in the current dialect. If there are multiple patterns, runs the 
+     * MDX query multiple times, and expects to see each SQL statement appear. 
+     * If there are no patterns in this dialect, the test trivially succeeds.
      *
      * @param testContext non-default test context if required
      * @param mdxQuery MDX query
      * @param patterns Set of patterns
      * @param negative false to assert if SQL is generated;
      *                 true to assert if SQL is NOT generated
+     * @param bypassSchemaCache whether to grab a new connection and bypass the 
+     *        schema cache before parsing the MDX query
      * @param clearCache whether to clear cache before executing the MDX query
      */
     protected void assertQuerySqlOrNot(
-        TestContext testContext,
-        String mdxQuery,
-        SqlPattern[] patterns,
-        boolean negative,
-        boolean clearCache)
+            TestContext testContext,
+            String mdxQuery,
+            SqlPattern[] patterns,
+            boolean negative,
+            boolean bypassSchemaCache,
+            boolean clearCache)
     {
-        final Connection connection = testContext.getConnection();
-        final Query query = connection.parseQuery(mdxQuery);
-        final RolapCube cube = (RolapCube) query.getCube();
-        RolapSchema schema = cube.getSchema();
+        Connection connection = testContext.getConnection();
+        RolapSchema schema = (RolapSchema)connection.getSchema();
 
         // Run the test once for each pattern in this dialect.
         // (We could optimize and run it once, collecting multiple queries, and
@@ -282,10 +283,6 @@ public class BatchTestCase extends FoodMartTestCase {
             String sql = sqlPattern.getSql();
             String trigger = sqlPattern.getTriggerSql();
 
-            if (clearCache) {
-                clearCache(cube);
-            }
-
             // Create a dummy DataSource which will throw a 'bomb' if it is
             // asked to execute a particular SQL statement, but will otherwise
             // behave exactly the same as the current DataSource.
@@ -293,6 +290,13 @@ public class BatchTestCase extends FoodMartTestCase {
 
             Bomb bomb;
             try {
+                if (bypassSchemaCache) {
+                    connection = testContext.getFoodMartConnection(false);
+                }
+                final Query query = connection.parseQuery(mdxQuery);
+                if (clearCache) {
+                    clearCache((RolapCube)query.getCube());
+                }
                 final Result result = connection.execute(query);
                 Util.discard(result);
                 bomb = null;
@@ -313,7 +317,8 @@ public class BatchTestCase extends FoodMartTestCase {
             }
         }
     }
-
+    
+    
     private void clearCache(RolapCube cube) {
         // Clear the cache for the Sales cube, so the query runs as if
         // for the first time. (TODO: Cleaner way to do this.)

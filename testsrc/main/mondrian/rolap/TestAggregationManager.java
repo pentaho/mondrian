@@ -254,7 +254,7 @@ public class TestAggregationManager extends BatchTestCase {
                     " and `agg_c_14_sales_fact_1997`.`the_year` = 1997 " +
                     "group by `store`.`store_state`," +
                     " `agg_c_14_sales_fact_1997`.`the_year`",
-                        26
+                        50
                 )
             };
         } else {
@@ -272,7 +272,7 @@ public class TestAggregationManager extends BatchTestCase {
                     " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
                     " and `time_by_day`.`the_year` = 1997 " +
                     "group by `store`.`store_state`, `time_by_day`.`the_year`",
-                        26
+                        50
                 )
             };
         }
@@ -726,7 +726,7 @@ public class TestAggregationManager extends BatchTestCase {
         // This MDX should be able to reuse the cardinality for
         // [Product].[Product Family]; and should not issue a SQL to fetch
         // that from DB again.
-        assertQuerySqlOrNot(context, query2, patterns, true, false);
+        assertQuerySqlOrNot(context, query2, patterns, true, false, false);
     }
     
     public void testKeyExpressionCardinalityCache() {
@@ -829,10 +829,10 @@ public class TestAggregationManager extends BatchTestCase {
         testContext.executeQuery(query);
         
         // Query1a will find the "store"."store_country" cardinality in cache.
-        assertQuerySqlOrNot(testContext, query1, patterns1, true, false);
+        assertQuerySqlOrNot(testContext, query1, patterns1, true, false, false);
 
         // Query2 again will not find the "store_ragged"."store_country" cardinality in cache.
-        assertQuerySqlOrNot(testContext, query2, patterns2, false, false);
+        assertQuerySqlOrNot(testContext, query2, patterns2, false, false, false);
     }
 }
 

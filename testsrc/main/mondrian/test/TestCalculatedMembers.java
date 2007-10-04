@@ -15,6 +15,7 @@ package mondrian.test;
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 import mondrian.olap.*;
+import mondrian.rolap.BatchTestCase;
 
 /**
  * Tests the expressions used for calculated members. Please keep in sync
@@ -24,7 +25,7 @@ import mondrian.olap.*;
  * @since 5 October, 2002
  * @version $Id$
  */
-public class TestCalculatedMembers extends FoodMartTestCase {
+public class TestCalculatedMembers extends BatchTestCase {
     public TestCalculatedMembers() {
         super();
     }
@@ -991,6 +992,27 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 + " 'StrToTuple(\"([Gender].[M], [Marital Status].[S])\", [Gender], [Marital Status])'\n"
                 + "select {[Measures].[My Tuple]} on 0 from [Sales]",
             desiredResult);
+    }
+    
+    public void testCreateCalculatedMember() {
+    	
+    	String query = "WITH MEMBER [Product].[Calculated Member] as 'AGGREGATE({})'\n"
+            + "SELECT {[Measures].[Unit Sales]} on 0\n"
+            + "FROM [Sales]\n" 
+            + "WHERE ([Product].[Calculated Member])";
+    	
+		String derbySQL = 
+			"select \"product_class\".\"product_family\" from \"product\" as \"product\", \"product_class\" as \"product_class\" where \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and UPPER(\"product_class\".\"product_family\") = UPPER('Calculated Member') group by \"product_class\".\"product_family\" order by \"product_class\".\"product_family\" ASC";
+    	
+		String mysqlSQL = 
+			"select `product_class`.`product_family` as `c0` from `product` as `product`, `product_class` as `product_class` where `product`.`product_class_id` = `product_class`.`product_class_id` and UPPER(`product_class`.`product_family`) = UPPER('Calculated Member') group by `product_class`.`product_family` order by ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+
+		SqlPattern[] patterns = {
+            new SqlPattern(SqlPattern.Dialect.DERBY, derbySQL, derbySQL),
+            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSQL, mysqlSQL)
+        };
+    	
+    	assertQuerySqlOrNot(this.getTestContext(), query, patterns, true, true, true);
     }
 }
 
