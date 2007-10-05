@@ -258,13 +258,6 @@ public class FunctionTest extends FoodMartTestCase {
                 "Row #22: \n"));
     }
 
-
-    public void testNullInDivision() {
-        assertExprReturns("NULL/1", "");
-        assertExprReturns("NULL/NULL", "");
-        assertExprReturns("1/NULL", "Infinity");
-    }
-
     public void testNullInMultiplication() {
         assertExprReturns("NULL*1", "");
         assertExprReturns("1*NULL", "");
@@ -4465,13 +4458,21 @@ public class FunctionTest extends FoodMartTestCase {
             assertExprReturns("0 / 0", "NaN");
             assertExprReturns("-3 / (2 - 2)", "-Infinity");
 
+            assertExprReturns("NULL/1", "");
+            assertExprReturns("NULL/NULL", "");
+            assertExprReturns("1/NULL", "Infinity");
+            
             // when NullOrZeroDenominatorProducesNull is set to true
             MondrianProperties.instance().NullDenominatorProducesNull.set(true);
 
             assertExprReturns("-2 / " + NullNumericExpr, "");
-            assertExprReturns("0 / 0", "");
-            assertExprReturns("-3 / (2 - 2)", "");
+            assertExprReturns("0 / 0", "NaN");
+            assertExprReturns("-3 / (2 - 2)", "-Infinity");
 
+            assertExprReturns("NULL/1", "");
+            assertExprReturns("NULL/NULL", "");
+            assertExprReturns("1/NULL", "");
+            
         } finally {
             MondrianProperties.instance().NullDenominatorProducesNull.
             set(origNullDenominatorProducesNull);
