@@ -736,6 +736,9 @@ public class TestAggregationManager extends BatchTestCase {
             "  <Table name=\"store\"/>\n" +
             "    <Level name=\"Store Country\" uniqueMembers=\"true\">\n" +
             "      <KeyExpression>\n" +
+            "        <SQL dialect=\"oracle\">\n" +
+            "\"store_country\"\n" +
+            "        </SQL>\n" +
             "        <SQL dialect=\"derby\">\n" +
             "\"store_country\"\n" +
             "        </SQL>\n" +
@@ -756,6 +759,9 @@ public class TestAggregationManager extends BatchTestCase {
             "  <Table name=\"store_ragged\"/>\n" +
             "    <Level name=\"Store Country\" uniqueMembers=\"true\">\n" +
             "      <KeyExpression>\n" +
+            "        <SQL dialect=\"oracle\">\n" +
+            "\"store_country\"\n" +
+            "        </SQL>\n" +
             "        <SQL dialect=\"derby\">\n" +
             "\"store_country\"\n" +
             "        </SQL>\n" +

@@ -1567,8 +1567,9 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     /**
      * Sets the cardinality for a given column in cache.
      * 
-     * @param columnHash
-     * @param cardinality
+     * @param relation the relation associated with the column expression 
+     * @param columnExpr the column expression to cache the cardinality for
+     * @param cardinality the cardinality for the column expression
      */
     void putCachedRelationExprCardinality(
         MondrianDef.Relation relation, 
