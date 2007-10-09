@@ -227,7 +227,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <delete includeEmptyDirs="true" quiet="true">
       <fileset dir="${classes.dir}" includes="**/*.class,**/*.properties"/>
       <fileset dir="${testclasses.dir}" includes="**/*.class,**/*.properties"/>
-      <fileset dir="." includes="${generated.java.files},${generated.lib.files}"/>
+      <fileset dir="." includes="${generated.java.files},${generated.lib.files},VERSION.txt"/>
       <fileset dir="demo/derby/foodmart"/>
       <fileset dir="${build.dir}" />
       <fileset dir="${testclasses-jdk14.dir}" />
@@ -306,11 +306,15 @@ demo/access/MondrianFoodMart.mdb"/>
 
     <target name="all" depends="
 compile,
+unzip-databases"/>
+
+    <target name="unzip-databases" depends="
 unzip-FoodMartCreateData,
 unzip-FoodMartAccessDB,
 unzip-FoodMartDerbyDB"/>
 
   <target name="compile" depends="
+version,
 prepare,
 parser,
 generate.resources,
@@ -475,8 +479,9 @@ META-INF/**"/>
 
   <target name="test"
       description="Runs all JUnit tests."
-      depends="compile,compile.tests,set.connectString">
+      depends="compile,compile.tests,unzip-databases,set.connectString">
     <antcall target="test-nobuild"/>
+    <antcall target="checkJavadoc"/>
   </target>
 
   <target name="test-nobuild"
@@ -932,6 +937,12 @@ to make sure that all javadoc references are valid.">
   <target name="javadoc-internal">
     <mkdir dir="${javadoc.dir}" />
     <delete quiet="true" file="${javadoc.dir}/index.html"/>
+    <!-- remove stray package.html files under classes to avoid 'multiple
+         sources of package comments' errors -->
+    <delete includeEmptyDirs="false" quiet="true">
+      <fileset dir="${classes.dir}" includes="**/package.html"/>
+      <fileset dir="${testclasses.dir}" includes="**/package.html"/>
+    </delete>
     <javadoc sourcepath="${java.dir}:${javatest.dir}"
         classpathref="project.test.classpath"
         destdir="${javadoc.dir}"
@@ -951,7 +962,7 @@ to make sure that all javadoc references are valid.">
       <tag name="testcase" description="Test-case:"
            scope="constructors,methods,types"/>
       <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
-      <link href="http://www.junit.org/junit/javadoc/3.8/"/>
+      <link href="http://junit.sourceforge.net/javadoc"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
       <link href="http://eigenbase.sourceforge.net/resgen/api/"/>
       <link href="http://farrago.sourceforge.net/api/"/>
@@ -967,6 +978,12 @@ to make sure that all javadoc references are valid.">
   <target name="javadoc-with-ydoc">
     <mkdir dir="${javadoc.dir}" />
     <delete quiet="true" file="${javadoc.dir}/index.html"/>
+    <!-- remove stray package.html files under classes to avoid 'multiple
+         sources of package comments' errors -->
+    <delete includeEmptyDirs="false" quiet="true">
+      <fileset dir="${classes.dir}" includes="**/package.html"/>
+      <fileset dir="${testclasses.dir}" includes="**/package.html"/>
+    </delete>
     <property name="ps" value="${path.separator}"/>
     <javadoc sourcepath="${java.dir}"
         classpathref="project.test.classpath"
@@ -987,7 +1004,7 @@ to make sure that all javadoc references are valid.">
       <tag name="testcase" description="Test-case:"
            scope="constructors,methods,types"/>
       <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
-      <link href="http://www.junit.org/junit/javadoc/3.8/"/>
+      <link href="http://junit.sourceforge.net/javadoc"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
       <link href="http://eigenbase.sourceforge.net/resgen/api/"/>
       <link href="http://farrago.sourceforge.net/api/"/>
@@ -1008,6 +1025,34 @@ to make sure that all javadoc references are valid.">
     </javadoc>
     <copy file="${java.dir}/mondrian/olap/Mondrian.xml"
         todir="${javadoc.dir}/mondrian/olap"/>
+  </target>
+
+  <!-- Ensure that javadoc has no warnings/errors. -->
+  <target name="checkJavadoc">
+    <record name="javadoc-complaints.log" action="start"
+      emacsmode="true" loglevel="warn"/>
+    <antcall target="javadoc-strict"/>
+    <record name="javadoc-complaints.log" action="stop"/>
+    <loadfile srcFile="javadoc-complaints.log" property="javadoc.complaints">
+      <filterchain>
+        <filterreader classname="org.apache.tools.ant.filters.LineContains">
+          <param type="negate" value="true"/>
+          <param type="contains" value="Error fetching URL"/>
+        </filterreader>
+        <striplinebreaks />
+      </filterchain>
+    </loadfile>
+    <fail if="javadoc.complaints"
+        message="Javadoc reported warnings or errors; see javadoc-complaints.log for details"/>
+    <delete file="javadoc-complaints.log"/>
+    <!-- Save disk space since we're just checking. -->
+    <antcall target="cleanJavadoc"/>
+  </target>
+
+  <target name="cleanJavadoc">
+    <delete includeEmptyDirs="true" quiet="true">
+      <fileset dir="${javadoc.dir}" includes="**/*"/>
+    </delete>
   </target>
 
   <target name="copy-jars">
