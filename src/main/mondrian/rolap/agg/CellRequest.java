@@ -318,11 +318,20 @@ public class CellRequest {
             // new predicate
             StarPredicate lastPredicate0 =
                 predicateList.get(size0 - 1);
-            int size1 = lastPredicate0 instanceof OrPredicate ?
-                ((OrPredicate) lastPredicate0).getChildren().size() :
-                1;
+            boolean isOr = lastPredicate0 instanceof OrPredicate;
+            boolean isList = lastPredicate0 instanceof ListColumnPredicate;
+
+            // number of input predicates
+            int size1 = 1;
+            
+            if (isOr) {
+                size1 = ((OrPredicate) lastPredicate0).getChildren().size();
+            } else if (isList) {
+                size1 = ((ListColumnPredicate) lastPredicate0).getPredicates().size();
+            }
+            
             if (groupOrdinals[1] == size1) {
-                // new predicate
+                // new predicate to be OR'ed together
                 StarPredicate newPredicate = lastPredicate0.or(predicate);
                 predicateList.set(size0 - 1, newPredicate);
             } else if (groupOrdinals[1] == size1 - 1) {

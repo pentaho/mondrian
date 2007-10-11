@@ -1086,6 +1086,52 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql)
         });
     }
+    
+    public void testAggregateDistinctCount5() {
+        String query =
+            "With " +
+            "Set [Products] as '{[Product].[All Products].[Drink], [Product].[All Products].[Food], [Product].[All Products].[Non-Consumable]}' " +
+            "Member [Product].[Selected Products] as 'Aggregate([Products])', SOLVE_ORDER=2 " +
+            "Select {[Store].[Store State].Members} on rows, {[Measures].[Customer Count]} on columns " +
+            "From [Sales] " +
+            "Where ([Product].[Selected Products])";
+        
+        String derbySql =
+            "select " +
+            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"c\" " +
+            "from " +
+            "\"sales_fact_1997\" as \"sales_fact_1997\", \"store\" as \"store\", " +
+            "\"time_by_day\" as \"time_by_day\", \"product_class\" as \"product_class\", " +
+            "\"product\" as \"product\" " +
+            "where " +
+            "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and " +
+            "\"store\".\"store_state\" = 'CA' and " +
+            "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and " +
+            "\"time_by_day\".\"the_year\" = 1997 and " +
+            "\"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and " +
+            "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and " +
+            "\"product_class\".\"product_family\" in ('Drink', 'Food', 'Non-Consumable')";
+        
+        String mysqlSql =
+            "select count(distinct `sales_fact_1997`.`customer_id`) as `c` " +
+            "from `sales_fact_1997` as `sales_fact_1997`, `store` as `store`, " +
+            "`time_by_day` as `time_by_day`, `product_class` as `product_class`, " +
+            "`product` as `product` " +
+            "where " +
+            "`sales_fact_1997`.`store_id` = `store`.`store_id` and " +
+            "`store`.`store_state` = 'CA' and " +
+            "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and " +
+            "`time_by_day`.`the_year` = 1997 and " +
+            "`sales_fact_1997`.`product_id` = `product`.`product_id` and " +
+            "`product`.`product_class_id` = `product_class`.`product_class_id` and " +
+            "`product_class`.`product_family` in ('Drink', 'Food', 'Non-Consumable')";
+        
+        SqlPattern[] patterns = {
+            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
+            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
+
+        assertQuerySql(query, patterns);
+    }
 }
 
 // End FastBatchingCellReaderTest.java
