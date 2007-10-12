@@ -1701,6 +1701,12 @@ Revision is $Id$
             the <code>HierarchyGrant.access</code> is "custom". If not
             specified, role can see members down to the leaf level.</Doc>
         </Attribute>
+        <Attribute name="rollupPolicy" required="false">
+            <Doc>Policy which determines how cell values are calculated if
+                not all of the children of the current cell are visible to
+                the current role. Allowable values are 'full' (the default),
+                'partial', and 'hidden'.</Doc>
+        </Attribute>
         <Array name="memberGrants" type="MemberGrant"/>
     </Element>
 

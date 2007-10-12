@@ -56,6 +56,12 @@ doTest2() {
     shift
   fi
 
+  retroweave=
+  if [ "$1" = --retroweave ]; then
+    retroweave=true
+    shift
+  fi
+
   jdk=$1
   database=$2
 
@@ -70,7 +76,8 @@ doTest2() {
 
   JAVA_HOME=$(chooseJavaHome $jdk)
 
-  # Use a version of ant (and in particular junit) compatible with JDK1.4.
+  # Use a version of ant (and in particular junit) compatible with the JDK.
+  # Some versions of ant don't work on JDK1.4.
   export ANT_HOME=$(chooseAntHome $jdk)
 
   rm -f megatest.properties
@@ -146,33 +153,44 @@ doTest2() {
   cat megatest.properties >> build.properties
   cat megatest.properties >> mondrian.properties
 
+  case $jdk in
+  jdk1.4) retroweave=true ;;
+  esac
+
   echo
   echo "========================================"
   date
-  echo "Running test with JDK=$jdk database=$database props={$props}"
+  echo "Running test with JDK=$jdk retroweave=$retroweave database=$database props={$props}"
   if [ "$build" ]; then
     echo build=${build}
+    if [ "$retroweave" ]; then
     case $jdk in
     jdk1.4)
+      # Cannot build or retroweave under 1.4, so switch JDK briefly
       (
         export JAVA_HOME=$(chooseJavaHome jdk1.5)
         export PATH="$JAVA_HOME/bin:$PATH"
         export ANT_HOME=$(chooseAntHome jdk1.5)
         $ANT_HOME/bin/ant $ANT_FLAGS clean all retroweave
       )
-      $ANT_HOME/bin/ant $ANT_FLAGS test-nobuild
+      export JAVA_HOME=$(chooseJavaHome jdk1.4)
+      export PATH=$JAVA_HOME/bin:$PATH
       ;;
-    jdk1.5|jdk1.6)
+    *)
+      $ANT_HOME/bin/ant $ANT_FLAGS clean all retroweave
+      ;;
+    esac
+    $ANT_HOME/bin/ant $ANT_FLAGS -Dmondrian.retroweave=true test-nobuild
+  else
       export ANT_HOME=$(chooseAntHome $jdk)
       case $database in
       derby|access)
         $ANT_HOME/bin/ant $ANT_FLAGS ;
-        $ANT_HOME/bin/ant $ANT_FLAGS clean all test
+        $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests unzip-databases test-nobuild
         ;;
-      *) $ANT_HOME/bin/ant $ANT_FLAGS clean compile test ;;
+      *) $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests test-nobuild ;;
       esac
-      ;;
-    esac
+    fi
   fi
 
   if [ "$olap4j" ]; then
@@ -220,22 +238,22 @@ chooseJavaHome() {
   case $(uname -n) in
   branston|mackerel)
     case $jdk in
-    jdk1.5) export JAVA_HOME=/e/jdk1.5.0_08 ;;
-    jdk1.6) export JAVA_HOME=/c/jdk1.6.0_01 ;;
+    jdk1.5) echo /e/jdk1.5.0_08 ;;
+    jdk1.6) echo /c/jdk1.6.0_01 ;;
     *) echo "Unknown java version $jdk"; exit 1 ;;
     esac;;
   mackerel-winxp)
     case $jdk in
-    jdk1.4) export JAVA_HOME=/c/jdk1.4.2_15 ;;
-    jdk1.5) export JAVA_HOME=/c/jdk1.5.0_12 ;;
-    jdk1.6) export JAVA_HOME=/c/jdk1.6.0_02 ;;
+    jdk1.4) echo /c/jdk1.4.2_15 ;;
+    jdk1.5) echo /c/jdk1.5.0_12 ;;
+    jdk1.6) echo /c/jdk1.6.0_02 ;;
     *) echo "Unknown java version $jdk"; exit 1 ;;
     esac;;
   *)
     case $jdk in
-    jdk1.4) export JAVA_HOME=/usr/local/j2sdk1.4.2_13 ;;
-    jdk1.5) export JAVA_HOME=/usr/local/jdk1.5.0_12 ;;
-    jdk1.6) export JAVA_HOME=/usr/local/jdk1.6.0_01 ;;
+    jdk1.4) echo /usr/local/j2sdk1.4.2_13 ;;
+    jdk1.5) echo /usr/local/jdk1.5.0_12 ;;
+    jdk1.6) echo /usr/local/jdk1.6.0_01 ;;
     *) echo "Unknown java version $jdk"; exit 1 ;;
     esac;;
   esac
@@ -298,6 +316,10 @@ doExoticTests()
 
   # Test case-insensitive
   doTest jdk1.5 oracle mondrian.olap.case.sensitive=false
+
+  # Retroweave against jdk1.5 and jdk1.6
+  doTest --retroweave jdk1.5 oracle
+  doTest --retroweave jdk1.6 oracle
 
   # Configurations which have surfaced bugs
   echo "This test caused a bug"
@@ -385,7 +407,19 @@ maybe()
 doRandom()
 {
   args=
-  args="$args $(chooseOne jdk1.4 jdk1.5 jdk1.6)"
+  jdk="$(chooseOne jdk1.4 jdk1.5 jdk1.6)"
+  args="$args $jdk"
+
+  # 20% of the time, run jdk1.5 and jdk1.6 against retrowoven code. jdk1.4
+  # is always retrowoven.
+  case $jdk in
+  jdk1.5|jdk1.6)
+    if [ "$(maybe 0.8 --retroweave)" ]; then
+      args="--retroweave $args"
+    fi
+    ;;
+  esac
+
   args="$args $(chooseOne ${databaseList})"
 
   # Run JVM in server mode
