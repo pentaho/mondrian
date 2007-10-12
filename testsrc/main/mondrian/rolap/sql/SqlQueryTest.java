@@ -14,6 +14,7 @@ import mondrian.test.TestContext;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.BatchTestCase;
+import mondrian.rolap.RolapEvaluator;
 
 import java.util.ArrayList;
 
@@ -160,12 +161,13 @@ public class SqlQueryTest extends BatchTestCase {
     }
     
     /**
-     * This test verifies that the correct SQL string is generated for literals of
+     * Verifies that the correct SQL string is generated for literals of
      * SQL type "double".
      *
+     * <p>Mondrian only generates SQL DOUBLE values in a special format for
+     * LucidDB; therefore, this test is a no-op on other databases.
      */
     public void testDoubleInList() {
-        
         final SqlQuery.Dialect dialect = getTestContext().getDialect();
         if (SqlPattern.Dialect.get(dialect) != SqlPattern.Dialect.LUCIDDB) {
             return;
@@ -233,11 +235,12 @@ public class SqlQueryTest extends BatchTestCase {
 
         TestContext testContext =
             TestContext.create(
-             null,
-             cube,
-             null,
-             null,
-             null);
+                null,
+                cube,
+                null,
+                null,
+                null,
+                null);
 
         SqlPattern[] patterns =
             new SqlPattern[] {
@@ -307,12 +310,13 @@ public class SqlQueryTest extends BatchTestCase {
                 new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadSqlLucidDB, loadSqlLucidDB)};
         testContext =
             TestContext.create(
-             null,
-             cube,
-             null,
-             null,
-             null);
-        
+                null,
+                cube,
+                null,
+                null,
+                null,
+                null);
+
         assertQuerySql(testContext, query, patterns);
         
         MondrianProperties.instance().IgnoreInvalidMembers.set(origIgnoreInvalidMembers);

@@ -738,8 +738,9 @@ public class Util extends XOMUtil {
         // Look for any kind of object (member, level, hierarchy,
         // dimension) in the cube. Use a schema reader without restrictions.
         final SchemaReader schemaReader = q.getSchemaReader(false);
-        OlapElement olapElement = schemaReader.lookupCompound(
-            q.getCube(), nameParts, false, Category.Unknown);
+        OlapElement olapElement = 
+            schemaReader.lookupCompound(
+                q.getCube(), nameParts, false, Category.Unknown);
         if (olapElement != null) {
             Role role = q.getConnection().getRole();
             if (!role.canAccess(olapElement)) {
@@ -861,6 +862,9 @@ public class Util extends XOMUtil {
         MatchType matchType)
     {
         // Lookup member at first level.
+        //
+        // Don't use access control. Suppose we cannot see the 'nation' level,
+        // we still want to be able to resolve '[Customer].[USA].[CA]'.
         Member[] rootMembers = reader.getHierarchyRootMembers(hierarchy);
 
         // if doing an inexact search on a non-all hieararchy, create

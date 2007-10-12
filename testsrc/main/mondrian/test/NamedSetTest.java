@@ -13,6 +13,7 @@ package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
+import mondrian.rolap.RolapConnectionProperties;
 
 import java.io.InputStream;
 
@@ -594,8 +595,16 @@ public class NamedSetTest extends FoodMartTestCase {
 
     public void testNamedSetAgainstCube() {
         final TestContext tc = new TestContext() {
-            public synchronized Connection getFoodMartConnection() {
-                return getFoodMartConnection(NamedSetsInCubeProcessor.class);
+            public Util.PropertyList getFoodMartConnectionProperties() {
+                Util.PropertyList properties =
+                    super.getFoodMartConnectionProperties();
+                properties.put(
+                    RolapConnectionProperties.DynamicSchemaProcessor.name(),
+                    NamedSetsInCubeProcessor.class.getName());
+                properties.put(
+                    RolapConnectionProperties.UseSchemaPool.name(),
+                    "false");
+                return properties;
             }
         };
         // Set defined against cube, using 'formula' attribute.
@@ -670,8 +679,16 @@ public class NamedSetTest extends FoodMartTestCase {
 
     public void testNamedSetAgainstSchema() {
         final TestContext tc = new TestContext() {
-            public synchronized Connection getFoodMartConnection() {
-                return getFoodMartConnection(NamedSetsInCubeAndSchemaProcessor.class);
+            public Util.PropertyList getFoodMartConnectionProperties() {
+                Util.PropertyList properties =
+                    super.getFoodMartConnectionProperties();
+                properties.put(
+                    RolapConnectionProperties.DynamicSchemaProcessor.name(),
+                    NamedSetsInCubeAndSchemaProcessor.class.getName());
+                properties.put(
+                    RolapConnectionProperties.UseSchemaPool.name(),
+                    "false");
+                return properties;
             }
         };
         tc.assertQueryReturns(
@@ -699,6 +716,7 @@ public class NamedSetTest extends FoodMartTestCase {
             null,
             null,
             "<NamedSet name=\"Bad\" formula=\"{[Store].[USA].[WA].Children}}\"/>",
+            null, 
             null);
         tc.assertThrows(
                 "SELECT {[Measures].[Store Sales]} on columns,\n" +
@@ -772,8 +790,16 @@ public class NamedSetTest extends FoodMartTestCase {
     public void testNamedSetsMixedWithCalcMembers()
     {
         final TestContext tc = new TestContext() {
-            public synchronized Connection getFoodMartConnection() {
-                return getFoodMartConnection(MixedNamedSetSchemaProcessor.class);
+            public Util.PropertyList getFoodMartConnectionProperties() {
+                Util.PropertyList properties =
+                    super.getFoodMartConnectionProperties();
+                properties.put(
+                    RolapConnectionProperties.DynamicSchemaProcessor.name(),
+                    MixedNamedSetSchemaProcessor.class.getName());
+                properties.put(
+                    RolapConnectionProperties.UseSchemaPool.name(),
+                    "false");
+                return properties;
             }
         };
         tc.assertQueryReturns(
@@ -871,8 +897,16 @@ public class NamedSetTest extends FoodMartTestCase {
      */
     public void testNamedSetDependencies() {
         final TestContext tc = new TestContext() {
-            public synchronized Connection getFoodMartConnection() {
-                return getFoodMartConnection(NamedSetsInCubeProcessor.class);
+            public Util.PropertyList getFoodMartConnectionProperties() {
+                Util.PropertyList properties =
+                    super.getFoodMartConnectionProperties();
+                properties.put(
+                    RolapConnectionProperties.DynamicSchemaProcessor.name(),
+                    NamedSetsInCubeProcessor.class.getName());
+                properties.put(
+                    RolapConnectionProperties.UseSchemaPool.name(),
+                    "false");
+                return properties;
             }
         };
         tc.assertSetExprDependsOn("[Top CA Cities]", "{}");

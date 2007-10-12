@@ -15,7 +15,6 @@ import junit.framework.Assert;
 import mondrian.olap.Result;
 import mondrian.olap.Member;
 import mondrian.olap.Cell;
-import mondrian.util.Bug;
 
 /**
  * <code>ParentChildHierarchyTest</code> tests parent-child hierarchies.
@@ -525,7 +524,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "    </Dimension>\n" +
                 "    <Measure name='Org Salary' column='salary_paid' aggregator='sum' formatString='Currency' />\n" +
                 "    <Measure name='Count' column='employee_id' aggregator='count' formatString='#,#'/>\n" +
-                "</Cube>", null, null, null);
+                "</Cube>", null, null, null, null);
 
         // On a cube with fewer dimensions, this gave a false failure.
         testContext.assertQueryReturns(
@@ -801,7 +800,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "      formatString=\"Currency\"/>\n" +
                 "  <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\"\n" +
                 "      formatString=\"#,#\"/>\n" +
-                "</Cube>", null, null, null);
+                "</Cube>", null, null, null, null);
 
         // Make sure <Hierarchy>.MEMBERS is sorted.
         // Note that last_name is not unique, and databases may return members

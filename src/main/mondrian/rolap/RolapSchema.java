@@ -536,8 +536,23 @@ public class RolapSchema implements Schema {
                             cube, Util.parseIdentifier(hierarchyGrant.bottomLevel),
                             true, Category.Level);
                     }
+                    Role.RollupPolicy rollupPolicy;
+                    if (hierarchyGrant.rollupPolicy != null) {
+                        try {
+                            rollupPolicy =
+                                Role.RollupPolicy.valueOf(
+                                    hierarchyGrant.rollupPolicy.toUpperCase());
+                        } catch (IllegalArgumentException e) {
+                            throw Util.newError("Illegal rollupPolicy value '"
+                                + hierarchyGrant.rollupPolicy
+                                + "'");
+                        }
+                    } else {
+                        rollupPolicy = Role.RollupPolicy.FULL;
+                    }
                     role.grant(
-                        hierarchy, hierarchyAccess, topLevel, bottomLevel);
+                        hierarchy, hierarchyAccess, topLevel, bottomLevel,
+                        rollupPolicy);
                     for (MondrianDef.MemberGrant memberGrant : hierarchyGrant.memberGrants) {
                         if (hierarchyAccess != Access.CUSTOM) {
                             throw Util.newError(
@@ -545,7 +560,7 @@ public class RolapSchema implements Schema {
                         }
                         Member member = schemaReader.getMemberByUniqueName(
                             Util.parseIdentifier(memberGrant.member), false);
-                        if (member!=null) {
+                        if (member != null) {
                             if (member.getHierarchy() != hierarchy) {
                                 throw Util.newError(
                                     "Member '" +
@@ -1582,7 +1597,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
                 exprCardinalityMap =
                     new HashMap<MondrianDef.Expression, Integer>();
                 relationExprCardinalityMap.put(relation, exprCardinalityMap);
-            };
+            }
             exprCardinalityMap.put(columnExpr, cardinality);
         }
     }
@@ -1603,7 +1618,8 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * <code>RolapStarRegistry</code> is a registry for {@link RolapStar}s.
      */
     class RolapStarRegistry {
-        private final Map<String, RolapStar> stars = new HashMap<String, RolapStar>();
+        private final Map<String, RolapStar> stars =
+            new HashMap<String, RolapStar>();
 
         RolapStarRegistry() {
         }
@@ -1667,11 +1683,11 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     }
 
     public RolapStar getStar(final String factTableName) {
-      return getRolapStarRegistry().getStar(factTableName);
+        return getRolapStarRegistry().getStar(factTableName);
     }
 
     public Collection<RolapStar> getStars() {
-      return getRolapStarRegistry().getStars();
+        return getRolapStarRegistry().getStars();
     }
 
     /**
@@ -1686,16 +1702,18 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             star.clearCachedAggregations(forced);
         }
     }
+
     /**
-     * Check if there are modifications in the aggregations cache
+     * Checks whether there are modifications in the aggregations cache.
      */
     public void checkAggregateModifications() {
         for (RolapStar star : getStars()) {
             star.checkAggregateModifications();
         }
     }
+
     /**
-     * Push all modifications of the aggregations to global cache,
+     * Pushes all modifications of the aggregations to global cache,
      * so other queries can start using the new cache
      */
     public void pushAggregateModificationsToGlobalCache() {
@@ -1741,10 +1759,10 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * @param dataSourceChangeListener The dataSourceChangeListener to set.
      */
     public void setDataSourceChangeListener(
-            DataSourceChangeListener dataSourceChangeListener) {
+        DataSourceChangeListener dataSourceChangeListener)
+    {
         this.dataSourceChangeListener = dataSourceChangeListener;
     }
-
 }
 
 // End RolapSchema.java

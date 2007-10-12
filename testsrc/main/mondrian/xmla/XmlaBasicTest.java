@@ -9,36 +9,14 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.Util;
-import mondrian.olap.Role;
-import mondrian.olap.RoleImpl;
-import mondrian.olap.Access;
-//import javax.servlet.ServletConfig;
-//import javax.servlet.ServletException;
-//import javax.servlet.http.HttpServletRequest;
-//import javax.servlet.http.HttpServletResponse;
-//import org.w3c.dom.Element;
-import mondrian.olap.Cube;
-import mondrian.olap.MondrianProperties;
-import mondrian.test.TestContext;
+import mondrian.olap.*;
 import mondrian.test.DiffRepository;
+import mondrian.test.TestContext;
 import mondrian.tui.XmlUtil;
-import mondrian.tui.XmlaSupport;
 
-import org.custommonkey.xmlunit.XMLAssert;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.io.ByteArrayInputStream;
 import java.util.Properties;
-import java.util.Map;
-
-import junit.framework.AssertionFailedError;
-
-
 
 /**
  * Test XML/A functionality.
@@ -326,7 +304,8 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
         // TestContext which operates in a different Role.
-        TestContext testContext = TestContext.createInRole("California manager");
+        TestContext testContext =
+            TestContext.instance().withRole("California manager");
         doTest(requestType, props, testContext);
     }
 
@@ -539,19 +518,31 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
            "</soapenv:Body>\n" +
            "</soapenv:Envelope>";
 
-        class RR extends mondrian.olap.RoleImpl {
+        class RR implements Role {
             public RR() {
             }
-            public Access getAccess(mondrian.olap.Cube cube) {
+
+            public Access getAccess(Cube cube) {
                 return Access.ALL;
             }
-            public Access getAccess(mondrian.olap.Schema schema) {
+
+            public Access getAccess(NamedSet set) {
                 return Access.ALL;
             }
-            public Access getAccess(mondrian.olap.Dimension dimension) {
+
+            public boolean canAccess(OlapElement olapElement) {
+                return true;
+            }
+
+            public Access getAccess(Schema schema) {
                 return Access.ALL;
             }
-            public Access getAccess(mondrian.olap.Hierarchy hierarchy) {
+
+            public Access getAccess(Dimension dimension) {
+                return Access.ALL;
+            }
+
+            public Access getAccess(Hierarchy hierarchy) {
                 String mname = "[Customers]";
                 if (hierarchy.getUniqueName().equals(mname)) {
                     return Access.CUSTOM;
@@ -559,11 +550,12 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                     return Access.ALL;
                 }
             }
-            public HierarchyAccess getAccessDetails(mondrian.olap.Hierarchy hierarchy) {
+
+            public HierarchyAccess getAccessDetails(Hierarchy hierarchy) {
                 String hname = "[Customers]";
                 if (hierarchy.getUniqueName().equals(hname)) {
                     return new HierarchyAccess() {
-                        public Access getAccess(mondrian.olap.Member member) {
+                        public Access getAccess(Member member) {
                             String mname = "[Customers].[All Customers].[Mexico]";
                             if (member.getUniqueName().equals(mname)) {
                                 return Access.NONE;
@@ -571,24 +563,34 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                                 return Access.ALL;
                             }
                         }
+
                         public int getTopLevelDepth() {
                             return 0;
                         }
+
                         public int getBottomLevelDepth() {
                             return 4;
+                        }
+
+                        public RollupPolicy getRollupPolicy() {
+                            return RollupPolicy.FULL;
+                        }
+
+                        public boolean hasInaccessibleDescendants(Member member) {
+                            return false;
                         }
                     };
 
                 } else {
-                    return super.getAccessDetails(hierarchy);
+                    return RoleImpl.createAllAccess(hierarchy);
                 }
             }
 
-            public Access getAccess(mondrian.olap.Level level) {
+            public Access getAccess(Level level) {
                 return Access.ALL;
             }
 
-            public Access getAccess(mondrian.olap.Member member) {
+            public Access getAccess(Member member) {
                 String mname = "[Customers].[All Customers]";
                 if (member.getUniqueName().equals(mname)) {
                     return Access.ALL;

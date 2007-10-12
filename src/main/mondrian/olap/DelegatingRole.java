@@ -28,6 +28,7 @@ public class DelegatingRole implements Role {
     protected final Role role;
 
     public DelegatingRole(Role role) {
+        assert role != null;
         this.role = role;
     }
 
@@ -47,26 +48,39 @@ public class DelegatingRole implements Role {
         return role.getAccess(hierarchy);
     }
 
-    public static class HierarchyAccess implements Role.HierarchyAccess {
-        protected final Role.HierarchyAccess hierarchyAccess;
+    public static class DelegatingHierarchyAccess
+        implements HierarchyAccess 
+    {
+        protected final HierarchyAccess hierarchyAccess;
 
-        public HierarchyAccess(Role.HierarchyAccess hierarchyAccess) {
+        public DelegatingHierarchyAccess(HierarchyAccess hierarchyAccess) {
+            assert hierarchyAccess != null;
             this.hierarchyAccess = hierarchyAccess;
         }
 
         public Access getAccess(Member member) {
             return hierarchyAccess.getAccess(member);
         }
+
         public int getTopLevelDepth() {
             return hierarchyAccess.getTopLevelDepth();
         }
+
         public int getBottomLevelDepth() {
             return hierarchyAccess.getBottomLevelDepth();
+        }
+
+        public RollupPolicy getRollupPolicy() {
+            return hierarchyAccess.getRollupPolicy();
+        }
+
+        public boolean hasInaccessibleDescendants(Member member) {
+            return hierarchyAccess.hasInaccessibleDescendants(member);
         }
     }
 
     public HierarchyAccess getAccessDetails(Hierarchy hierarchy) {
-        return new HierarchyAccess(role.getAccessDetails(hierarchy));
+        return new DelegatingHierarchyAccess(role.getAccessDetails(hierarchy));
     }
 
     public Access getAccess(Level level) {

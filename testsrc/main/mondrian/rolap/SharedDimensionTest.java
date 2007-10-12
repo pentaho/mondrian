@@ -314,11 +314,12 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         // Query from the first cube.
         TestContext testContext =
             TestContext.create(
-             sharedDimension,
-             cubeA + "\n" + cubeB,
-             null,
-             null,
-             null);
+                sharedDimension,
+                cubeA + "\n" + cubeB,
+                null,
+                null,
+                null,
+                null);
 
         testContext.assertQueryReturns(queryCubeA, fold(resultCubeA));
     }
@@ -328,11 +329,12 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         // Query from the second cube.
         TestContext testContext =
             TestContext.create(
-             sharedDimension,
-             cubeA + "\n" + cubeB,
-             null,
-             null,
-             null);
+                sharedDimension,
+                cubeA + "\n" + cubeB,
+                null,
+                null,
+                null,
+                null);
 
         testContext.assertQueryReturns(queryCubeB, fold(resultCubeB));
     }
@@ -343,11 +345,12 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         // Query from the virtual cube.
         TestContext testContext =
             TestContext.create(
-             sharedDimension,
-             cubeA + "\n" + cubeB,
-             virtualCube,
-             null,
-             null);
+                sharedDimension,
+                cubeA + "\n" + cubeB,
+                virtualCube,
+                null,
+                null,
+                null);
 
         testContext.assertQueryReturns(queryVirtualCube, fold(resultVirtualCube));
     }
@@ -357,11 +360,12 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         // Query from the second cube.
         TestContext testContext =
             TestContext.create(
-             sharedDimension,
-             cubeA + "\n" + cubeB,
-             null,
-             null,
-             null);
+                sharedDimension,
+                cubeA + "\n" + cubeB,
+                null,
+                null,
+                null,
+                null);
 
         testContext.assertQueryReturns(queryNECJMemberList,
             fold(resultNECJMemberList));
@@ -374,11 +378,12 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         // but also produces incorrect result.
         TestContext testContext =
             TestContext.create(
-             sharedDimension,
-             cubeA + "\n" + cubeB,
-             null,
-             null,
-             null);
+                sharedDimension,
+                cubeA + "\n" + cubeB,
+                null,
+                null,
+                null,
+                null);
 
         testContext.assertQueryReturns(queryNECJMultiLevelMemberList,
             fold(resultNECJMultiLevelMemberList));
@@ -390,11 +395,12 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         // Use the default FoodMart schema
         TestContext testContext =
             TestContext.create(
-             null,
-             null,
-             null,
-             null,
-             null);
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         testContext.assertQueryReturns(querySF1711865, fold(resultSF1711865));
     }
@@ -403,11 +409,12 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         // Use the default FoodMart schema
         TestContext testContext =
             TestContext.create(
-             null,
-             null,
-             null,
-             null,
-             null);
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         testContext.assertQueryReturns(queryStoreCube, fold(resultStoreCube));
     }

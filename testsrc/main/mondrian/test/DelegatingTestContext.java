@@ -30,12 +30,8 @@ public class DelegatingTestContext extends TestContext {
         this.context = context;
     }
 
-    public synchronized Connection getFoodMartConnection() {
-        return context.getFoodMartConnection();
-    }
-
-    public synchronized Connection getFoodMartConnection(Class dynProcClass) {
-        return context.getFoodMartConnection(dynProcClass);
+    public Util.PropertyList getFoodMartConnectionProperties() {
+        return context.getFoodMartConnectionProperties();
     }
 
     public String getDefaultCubeName() {

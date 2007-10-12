@@ -125,17 +125,24 @@ public abstract class RolapNativeSet extends RolapNative {
     }
 
     protected class SetEvaluator implements NativeEvaluator {
-        private CrossJoinArg[] args;
-        private SchemaReader schemaReader;
-        private TupleConstraint constraint;
+        private final CrossJoinArg[] args;
+        private final SchemaReaderWithMemberReaderAvailable schemaReader;
+        private final TupleConstraint constraint;
         private int maxRows = 0;
 
         public SetEvaluator(
-                CrossJoinArg[] args,
-                SchemaReader schemaReader,
-                TupleConstraint constraint) {
+            CrossJoinArg[] args,
+            SchemaReader schemaReader,
+            TupleConstraint constraint)
+        {
             this.args = args;
-            this.schemaReader = schemaReader;
+            if (schemaReader instanceof SchemaReaderWithMemberReaderAvailable) {
+                this.schemaReader =
+                    (SchemaReaderWithMemberReaderAvailable) schemaReader;
+            } else {
+                this.schemaReader =
+                    new SchemaReaderWithMemberReaderCache(schemaReader);
+            }
             this.constraint = constraint;
         }
 
@@ -254,7 +261,7 @@ public abstract class RolapNativeSet extends RolapNative {
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
             RolapLevel level = arg.getLevel();
             RolapHierarchy hierarchy = level.getHierarchy();
-            MemberReader mr = hierarchy.getMemberReader(schemaReader.getRole());
+            MemberReader mr = schemaReader.getMemberReader(hierarchy);
             MemberBuilder mb = mr.getMemberBuilder();
             Util.assertTrue(mb != null, "MemberBuilder not found");
 
@@ -900,6 +907,33 @@ public abstract class RolapNativeSet extends RolapNative {
         if (storedMeasure != null)
             newEvaluator.setContext(storedMeasure);
         return newEvaluator;
+    }
+
+
+    public interface SchemaReaderWithMemberReaderAvailable extends SchemaReader {
+        MemberReader getMemberReader(Hierarchy hierarchy);
+    }
+
+    private static class SchemaReaderWithMemberReaderCache
+        extends DelegatingSchemaReader
+        implements SchemaReaderWithMemberReaderAvailable {
+        private final Map<Hierarchy,MemberReader> hierarchyReaders =
+            new HashMap<Hierarchy, MemberReader>();
+
+        SchemaReaderWithMemberReaderCache(SchemaReader schemaReader) {
+            super(schemaReader);
+        }
+
+        public synchronized MemberReader getMemberReader(Hierarchy hierarchy) {
+            MemberReader memberReader = hierarchyReaders.get(hierarchy);
+            if (memberReader == null) {
+                memberReader =
+                    ((RolapHierarchy) hierarchy).createMemberReader(
+                        schemaReader.getRole());
+                hierarchyReaders.put(hierarchy, memberReader);
+            }
+            return memberReader;
+        }
     }
 }
 

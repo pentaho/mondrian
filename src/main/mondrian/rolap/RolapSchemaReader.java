@@ -41,13 +41,16 @@ import org.eigenbase.util.property.Property;
  * @since Feb 24, 2003
  * @version $Id$
  */
-public abstract class RolapSchemaReader implements SchemaReader {
+public abstract class RolapSchemaReader
+    implements SchemaReader, RolapNativeSet.SchemaReaderWithMemberReaderAvailable {
     private final Role role;
-    private final Map<Hierarchy, MemberReader> hierarchyReaders = new HashMap<Hierarchy, MemberReader>();
+    private final Map<Hierarchy, MemberReader> hierarchyReaders =
+        new HashMap<Hierarchy, MemberReader>();
     private final RolapSchema schema;
     private final SqlConstraintFactory sqlConstraintFactory =
-            SqlConstraintFactory.instance();
-    private static final Logger LOGGER = Logger.getLogger(RolapSchemaReader.class);
+        SqlConstraintFactory.instance();
+    private static final Logger LOGGER =
+        Logger.getLogger(RolapSchemaReader.class);
 
     RolapSchemaReader(Role role, RolapSchema schema) {
         assert role != null : "precondition: role != null";
@@ -59,26 +62,32 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return role;
     }
 
-    public Member[] getHierarchyRootMembers(Hierarchy hierarchy) {
-        final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
+    public Member[] getHierarchyRootMembers(Hierarchy hierarchy)
+    {
+        final Role.HierarchyAccess hierarchyAccess =
+            role.getAccessDetails(hierarchy);
         final Level[] levels = hierarchy.getLevels();
-        final Level firstLevel = (hierarchyAccess == null)
-            ? levels[0]
-            : levels[hierarchyAccess.getTopLevelDepth()];
+        final Level firstLevel;
+        if (hierarchyAccess == null) {
+            firstLevel = levels[0];
+        } else {
+            firstLevel = levels[hierarchyAccess.getTopLevelDepth()];
+        }
         return getLevelMembers(firstLevel, true);
     }
 
-    synchronized MemberReader getMemberReader(Hierarchy hierarchy) {
+    public synchronized MemberReader getMemberReader(Hierarchy hierarchy) {
         MemberReader memberReader = hierarchyReaders.get(hierarchy);
         if (memberReader == null) {
-            memberReader = ((RolapHierarchy) hierarchy).getMemberReader(role);
+            memberReader = ((RolapHierarchy) hierarchy).createMemberReader(role);
             hierarchyReaders.put(hierarchy, memberReader);
         }
         return memberReader;
     }
 
     public void getMemberRange(
-        Level level, Member startMember, Member endMember, List<Member> list) {
+        Level level, Member startMember, Member endMember, List<Member> list)
+    {
         getMemberReader(level.getHierarchy()).getMemberRange(
                 (RolapLevel) level, (RolapMember) startMember,
                 (RolapMember) endMember, (List) list);
@@ -93,35 +102,24 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     public Member getMemberParent(Member member) {
-        Member parentMember = member.getParentMember();
-        // Skip over hidden parents.
-        while (parentMember != null && parentMember.isHidden()) {
-            parentMember = parentMember.getParentMember();
-        }
-        // Skip over non-accessible parents.
-        if (parentMember != null) {
-            final Role.HierarchyAccess hierarchyAccess =
-                    role.getAccessDetails(member.getHierarchy());
-            if (hierarchyAccess != null &&
-                    hierarchyAccess.getAccess(parentMember) == Access.NONE) {
-                return null;
-            }
-        }
-        return parentMember;
+        return getMemberReader(member.getHierarchy()).getMemberParent(
+            (RolapMember) member);
     }
 
     public int getMemberDepth(Member member) {
         final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(member.getHierarchy());
         if (hierarchyAccess != null) {
-            int memberDepth = member.getLevel().getDepth();
+            final int memberDepth = member.getLevel().getDepth();
             final int topLevelDepth = hierarchyAccess.getTopLevelDepth();
-            memberDepth -= topLevelDepth;
-            return memberDepth;
+            return memberDepth - topLevelDepth;
         } else if (((RolapLevel) member.getLevel()).isParentChild()) {
-            // For members of parent-child hierarchy, members in the same level may have
-            // different depths.
+            // For members of parent-child hierarchy, members in the same level
+            // may have different depths.
             int depth = 0;
-            for (Member m = member.getParentMember(); m != null; m = m.getParentMember()) {
+            for (Member m = member.getParentMember();
+                 m != null;
+                 m = m.getParentMember())
+            {
                 depth++;
             }
             return depth;
@@ -182,7 +180,8 @@ public abstract class RolapSchemaReader implements SchemaReader {
         if( !(memberReader instanceof MemberCache)) {
             return Integer.MIN_VALUE;
         }
-        List list = ((MemberCache)memberReader).getLevelMembersFromCache((RolapLevel)level, null);
+        List list = ((MemberCache)memberReader).getLevelMembersFromCache(
+            (RolapLevel) level, null);
         if (list == null) {
           return Integer.MIN_VALUE;
         }
@@ -235,7 +234,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
             final MemberReader memberReader = getMemberReader(hierarchy);
             List<RolapMember> children = new ArrayList<RolapMember>();
             memberReader.getMemberChildren(
-                (List<RolapMember>) (List) Arrays.asList(members),
+                (List) Arrays.asList(members),
                 children,
                 constraint);
             return RolapUtil.toArray(children);
@@ -314,12 +313,16 @@ public abstract class RolapSchemaReader implements SchemaReader {
     {
         LOGGER.debug("looking for child \"" + childName + "\" of " + parent);
         try {
-            MemberChildrenConstraint constraint =
-                (matchType == MatchType.EXACT) ?
-                    sqlConstraintFactory.getChildByNameConstraint(
-                        (RolapMember)parent, childName) :
+            MemberChildrenConstraint constraint;
+            if (matchType == MatchType.EXACT) {
+                constraint = sqlConstraintFactory.getChildByNameConstraint(
+                    (RolapMember) parent, childName);
+            } else {
+                constraint =
                     sqlConstraintFactory.getMemberChildrenConstraint(null);
-            List<RolapMember> children = internalGetMemberChildren(parent, constraint);
+            }
+            List<RolapMember> children =
+                internalGetMemberChildren(parent, constraint);
             if (children.size() > 0) {
                 return
                     RolapUtil.findBestMemberMatch(
@@ -396,18 +399,12 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     public Member getHierarchyDefaultMember(Hierarchy hierarchy) {
         assert hierarchy != null;
-        Member defaultMember = hierarchy.getDefaultMember();
-        // If the whole hierarchy is inaccessible, return the intrinsic default member.
-        // This is important to construct a evaluator.
-        if (role.getAccess(hierarchy) != Access.NONE) {
-            // If there's not an accessible intrinsic default member,
-            // lookup the top accessible level's first accessible member.
-            if (defaultMember == null || (!role.canAccess(defaultMember))) {
-                Member[] rootMembers = this.getHierarchyRootMembers(hierarchy);
-                defaultMember = (rootMembers.length > 0) ? rootMembers[0] : null;
-            }
+        // If the whole hierarchy is inaccessible, return the intrinsic default
+        // member. This is important to construct a evaluator.
+        if (role.getAccess(hierarchy) == Access.NONE) {
+            return hierarchy.getDefaultMember();
         }
-        return defaultMember;
+        return getMemberReader(hierarchy).getDefaultMember();
     }
 
     public boolean isDrillable(Member member) {

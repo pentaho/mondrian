@@ -75,7 +75,7 @@ public class NonEmptyTest extends BatchTestCase {
             "  </Dimension> \n" +
             "  <Measure name=\"Media\" column=\"media_type\" aggregator=\"max\" datatype=\"String\"/> \n" +
             "</Cube> \n",
-            null,null,null);
+            null, null, null, null);
 
         ctx.assertQueryReturns(
             "select {[Measures].[Media]} on columns " +
@@ -111,7 +111,7 @@ public class NonEmptyTest extends BatchTestCase {
                 "  </Dimension> \n" +
                 "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/> \n" +
                 "</Cube> \n",
-                null,null,null);
+                null, null, null, null);
 
         ctx.assertQueryReturns(
                 "select {[Measures].[Unit Sales]} on columns, " +
@@ -1413,11 +1413,12 @@ public class NonEmptyTest extends BatchTestCase {
         
         TestContext testContext =
             TestContext.create(
-             dimension,
-             cube,
-             null,
-             null,
-             null);
+                dimension,
+                cube,
+                null,
+                null,
+                null,
+                null);
 
         SqlPattern[] patterns =
             new SqlPattern[] {
@@ -1496,11 +1497,12 @@ public class NonEmptyTest extends BatchTestCase {
         
         TestContext testContext =
             TestContext.create(
-             dimension,
-             cube,
-             null,
-             null,
-             null);
+                dimension,
+                cube,
+                null,
+                null,
+                null,
+                null);
 
         SqlPattern[] patterns =
             new SqlPattern[] {
@@ -1577,11 +1579,12 @@ public class NonEmptyTest extends BatchTestCase {
         
         TestContext testContext =
             TestContext.create(
-             dimension,
-             cube,
-             null,
-             null,
-             null);
+                dimension,
+                cube,
+                null,
+                null,
+                null,
+                null);
 
         SqlPattern[] patterns =
             new SqlPattern[] {
@@ -3305,7 +3308,7 @@ public class NonEmptyTest extends BatchTestCase {
         RolapHierarchy hierarchy = (RolapHierarchy) cube.lookupHierarchy(
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
-        return (SmartMemberReader) hierarchy.getMemberReader(schemaReader.getRole());
+        return (SmartMemberReader) hierarchy.createMemberReader(schemaReader.getRole());
     }
 
     RolapEvaluator getEvaluator(Result res, int[] pos) {

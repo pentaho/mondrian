@@ -198,7 +198,7 @@ public class RolapLevel extends LevelBase {
         this.hideMemberCondition = hideMemberCondition;
     }
 
-    public RolapHierarchy getHierarchy() {
+    public final RolapHierarchy getHierarchy() {
         return (RolapHierarchy) hierarchy;
     }
 

@@ -40,7 +40,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n" +
                 "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n" +
                 "</VirtualCube>",
-            null, null);
+            null, null, null);
         checkXxx(testContext);
     }
 
@@ -56,7 +56,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "<VirtualCubeMeasure cubeName=\"Sales\" " +
                     "name=\"[Measures].[Profit]\"/>\n" +
                 "</VirtualCube>",
-            null, null);
+            null, null, null);
         String query1 = "select from [Sales vs Warehouse]";
         String query2 = "select from [Sales vs Warehouse] where measures.profit";
         assertQueriesReturnSimilarResults(query1,query2, testContext);
@@ -74,7 +74,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "<VirtualCubeMeasure cubeName=\"Sales\" " +
                     "name=\"[Measures].[Profit]\"/>\n" +
                 "</VirtualCube>",
-            null, null);
+            null, null, null);
         String query1 = "select from [Sales vs Warehouse]";
         String query2 = "select from [Sales vs Warehouse] " +
                 "where measures.[Warehouse Sales]";
@@ -93,7 +93,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "<VirtualCubeMeasure cubeName=\"Sales\" " +
                     "name=\"[Measures].[Profit]\"/>\n" +
                 "</VirtualCube>",
-            null, null);
+            null, null, null);
         String queryWithoutFilter = "select from [Sales vs Warehouse]";
         String queryWithFirstMeasure = "select from [Sales vs Warehouse] " +
                 "where measures.[Warehouse Sales]";
@@ -119,7 +119,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n" +
                 "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n" +
                 "</VirtualCube>",
-            null, null);
+            null, null, null);
         checkXxx(testContext);
     }
 
@@ -245,7 +245,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Cost]\"/>\n" +
                 "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n" +
                 "</VirtualCube>",
-            null, null);
+            null, null, null);
     }
 
     public void testMemberVisibility() {
@@ -262,7 +262,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "    <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>\n" +
                 "  </CalculatedMember>\n" +
                 "</VirtualCube>",
-            null, null);
+            null, null, null);
         Result result = testContext.executeQuery(
             "select {[Measures].[Sales Count],\n" +
                 " [Measures].[Store Cost],\n" +
@@ -325,7 +325,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "    <CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"IIf(([Measures].[Profit Per Unit Shipped] > 2.0), '|0.#|style=green', '|0.#|style=red')\"/>\n" +
                 "  </CalculatedMember>\n" +
                 "</VirtualCube>",
-            null, null);
+            null, null, null);
 
         testContext.assertQueryReturns(
             "select {[Measures].[Profit Per Unit Shipped]} ON COLUMNS, " +
@@ -739,7 +739,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "<VirtualCubeDimension cubeName=\"HR\" name=\"Position\"/>\n" +
                 "<VirtualCubeMeasure cubeName=\"HR\" name=\"[Measures].[Org Salary]\"/>\n" +
                 "</VirtualCube>",
-            null, null);
+            null, null, null);
         testContext.assertQueryReturns(
             "select {[Measures].[Org Salary]} on columns, " +
             "non empty " +
@@ -783,7 +783,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "<VirtualCubeMeasure cubeName=\"Sales\" " +
                     "name=\"[Measures].[Profit]\"/>\n" +
                 "</VirtualCube>",
-            null, null);
+            null, null, null);
 
         String queryWithoutFilter = "select"+
                 " from [Sales vs Warehouse]";
@@ -921,7 +921,7 @@ public class VirtualCubeTest extends BatchTestCase {
                     + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Customer Count]\"/>\n"
                     + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
                     + "</VirtualCube>",
-                null, null);
+                null, null, null);
         testContext.assertQueryReturns(
             "with member [Warehouse].[x] as 'Aggregate([Warehouse].members)'\n"
                 + "member [Measures].[foo] AS '([Warehouse].[x],[Measures].[Customer Count])'\n"

@@ -13,8 +13,6 @@
 
 package mondrian.olap;
 
-import java.util.*;
-
 /**
  * A <code>Role</code> is a collection of access rights to cubes, permissions,
  * and so forth.
@@ -53,9 +51,58 @@ public interface Role {
      * Represents the access that a role has to a particular hierarchy.
      */
     public interface HierarchyAccess {
+        /**
+         * Returns the access the current role has to a given member.
+         *
+         * <p>Visibility is:<ul>
+         * <li>{@link Access#NONE} if member is not visible,
+         * <li>{@link Access#ALL} if member and all children are visible,
+         * <li>{@link Access#CUSTOM} if some of the children are not visible.
+         * </ul></p>
+         *
+         * <p>For these purposes, children which are below the bottom level are
+         * regarded as visible.</p>
+         *
+         * @param member Member
+         * @return current role's access to member
+         */
         Access getAccess(Member member);
+
+        /**
+         * Returns the depth of the highest level to which the current Role has
+         * access. The 'all' level, if present, has a depth of zero.
+         *
+         * @return depth of the highest accessible level
+         */
         int getTopLevelDepth();
+
+        /**
+         * Returns the depth of the lowest level to which the current Role has
+         * access. The 'all' level, if present, has a depth of zero.
+         *
+         * @return depth of the lowest accessible level
+         */
         int getBottomLevelDepth();
+
+        /**
+         * Returns the policy by which cell values are calculated if not all
+         * of a member's children are visible.
+         *
+         * @return rollup policy
+         */
+        RollupPolicy getRollupPolicy();
+
+        /**
+         * Returns <code>true</code> if at least one of the descendants of the
+         * given Member is inaccessible to this Role.
+         *
+         * <p>Descendants which are inaccessible because they are below the
+         * bottom level are ignored.
+         *
+         * @param member Member
+         * @return whether a descendant is inaccessible
+         */
+        boolean hasInaccessibleDescendants(Member member);
     }
 
     /**
@@ -113,6 +160,30 @@ public interface Role {
      * @pre olapElement != null
      */
     boolean canAccess(OlapElement olapElement);
+
+    /**
+     * Enumeration of the policies by which a cell is calculated if children
+     * of a member are not accessible.
+     */
+    enum RollupPolicy {
+        /**
+         * The value of the cell is obtained by rolling up the values of all
+         * children.
+         */
+        FULL,
+
+        /**
+         * The value of the cell is obtained by rolling up the values of
+         * accessible children.
+         */
+        PARTIAL,
+
+        /**
+         * The value of the cell is null if any of the children are
+         * inaccessible.
+         */
+        HIDDEN
+    }
 }
 
 // End Role.java

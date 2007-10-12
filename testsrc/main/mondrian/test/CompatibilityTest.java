@@ -241,7 +241,7 @@ public class CompatibilityTest extends FoodMartTestCase {
                 "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
                 "      formatString=\"#,###.00\"/>\n" +
                 "</Cube>",
-            null, null, null);
+            null, null, null, null);
 
         // This test should work irrespective of the case-sensitivity setting.
         Util.discard(MondrianProperties.instance().CaseSensitive.get());
@@ -300,7 +300,7 @@ public class CompatibilityTest extends FoodMartTestCase {
                 "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
                 "      formatString=\"#,###.00\"/>\n" +
                 "</Cube>",
-            null, null, null);
+            null, null, null, null);
 
         testContext.assertQueryReturns(
             "select {" +
@@ -360,7 +360,7 @@ public class CompatibilityTest extends FoodMartTestCase {
                 "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n" +
                 "      formatString=\"#,###\"/>\n" +
                 "</Cube>",
-            null, null, null);
+            null, null, null, null);
 
         testContext.assertQueryReturns(
             "select { [Measures].[Store Sqft] } on columns,\n" +

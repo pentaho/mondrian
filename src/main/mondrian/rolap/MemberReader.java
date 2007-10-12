@@ -14,8 +14,7 @@
 package mondrian.rolap;
 import java.util.List;
 
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Evaluator;
+import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -93,6 +92,10 @@ interface MemberReader extends MemberSource {
             TupleConstraint constraint);
 
     MemberBuilder getMemberBuilder();
+
+    RolapMember getDefaultMember();
+
+    RolapMember getMemberParent(RolapMember member);
 }
 
 // End MemberReader.java

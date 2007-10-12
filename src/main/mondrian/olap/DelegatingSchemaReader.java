@@ -36,7 +36,7 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
      *
      * @param schemaReader Parent reader to delegate unhandled calls to
      */
-    DelegatingSchemaReader(SchemaReader schemaReader) {
+    protected DelegatingSchemaReader(SchemaReader schemaReader) {
         this.schemaReader = schemaReader;
     }
 

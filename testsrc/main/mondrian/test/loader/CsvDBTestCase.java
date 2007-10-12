@@ -79,12 +79,14 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
         String virtualCubeDefs = getVirtualCubeDescription();
         String namedSetDefs = getNamedSetDescription();
         String udfDefs = getUdfDescription();
+        String roleDefs = getRoleDescription();
         this.testContext = TestContext.create(
             parameterDefs,
             cubeDefs,
             virtualCubeDefs,
             namedSetDefs,
-            udfDefs);
+            udfDefs,
+            roleDefs);
     }
 
     protected void tearDown() throws Exception {
@@ -105,7 +107,7 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
     }
 
     protected Connection getSqlConnection() throws SQLException {
-        return ((RolapConnection) getConnection()).getDataSource().getConnection();
+        return getConnection().getDataSource().getConnection();
     }
 
     protected Schema getSchema() {
@@ -122,14 +124,22 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
     protected String getParameterDescription() {
         return null;
     }
+
     protected abstract String getCubeDescription();
+
     protected String getVirtualCubeDescription() {
         return null;
     }
+
     protected String getNamedSetDescription() {
         return null;
     }
+
     protected String getUdfDescription() {
+        return null;
+    }
+
+    protected String getRoleDescription() {
         return null;
     }
 }

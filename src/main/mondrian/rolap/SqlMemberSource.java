@@ -12,6 +12,7 @@
 */
 
 package mondrian.rolap;
+
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.sql.*;
@@ -946,18 +947,38 @@ RME is this right
         throw new UnsupportedOperationException();
     }
 
-    public void getMemberRange(RolapLevel level,
-                               RolapMember startMember,
-                               RolapMember endMember,
-                               List<RolapMember> memberList) {
+    public void getMemberRange(
+        RolapLevel level,
+        RolapMember startMember,
+        RolapMember endMember,
+        List<RolapMember> memberList)
+    {
         throw new UnsupportedOperationException();
     }
 
-    public int compare(RolapMember m1,
-                       RolapMember m2,
-                       boolean siblingsAreEqual) {
+    public int compare(
+        RolapMember m1,
+        RolapMember m2,
+        boolean siblingsAreEqual)
+    {
         throw new UnsupportedOperationException();
     }
+
+
+    public TupleReader.MemberBuilder getMemberBuilder() {
+        return this;
+    }
+
+    public RolapMember getDefaultMember() {
+        // we expected the CacheMemberReader to implement this
+        throw new UnsupportedOperationException();
+    }
+
+    public RolapMember getMemberParent(RolapMember member) {
+        throw new UnsupportedOperationException();
+    }
+
+    // ~ -- Inner classes ------------------------------------------------------
 
     /**
      * Member of a parent-child dimension which has a closure table.
@@ -969,10 +990,13 @@ RME is this right
     private static class RolapParentChildMember extends RolapMember {
         private final RolapMember dataMember;
         private int depth = 0;
-        public RolapParentChildMember(RolapMember parentMember,
-                                      RolapLevel childLevel,
-                                      Object value,
-                                      RolapMember dataMember) {
+
+        public RolapParentChildMember(
+            RolapMember parentMember,
+            RolapLevel childLevel,
+            Object value,
+            RolapMember dataMember)
+        {
             super(parentMember, childLevel, value);
             this.dataMember = dataMember;
             this.depth = (parentMember != null)
@@ -985,7 +1009,9 @@ RME is this right
         }
 
         public Object getPropertyValue(String propertyName, boolean matchCase) {
-            if (Util.equal(propertyName, Property.CONTRIBUTING_CHILDREN.name, matchCase)) {
+            if (Util.equal(
+                propertyName, Property.CONTRIBUTING_CHILDREN.name, matchCase))
+            {
                 List<RolapMember> list = new ArrayList<RolapMember>();
                 list.add(dataMember);
                 RolapHierarchy hierarchy = getHierarchy();
@@ -1021,8 +1047,10 @@ RME is this right
     private static class RolapParentChildMemberNoClosure
         extends RolapParentChildMember {
 
-        public RolapParentChildMemberNoClosure(RolapMember parentMember,
-                RolapLevel childLevel, Object value, RolapMember dataMember) {
+        public RolapParentChildMemberNoClosure(
+            RolapMember parentMember,
+            RolapLevel childLevel, Object value, RolapMember dataMember)
+        {
             super(parentMember, childLevel, value, dataMember);
         }
 
@@ -1033,10 +1061,6 @@ RME is this right
         public Exp getExpression() {
             return getHierarchy().getAggregateChildrenExpression();
         }
-    }
-
-    public TupleReader.MemberBuilder getMemberBuilder() {
-        return this;
     }
 }
 

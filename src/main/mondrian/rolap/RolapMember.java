@@ -265,6 +265,8 @@ public class RolapMember extends MemberBase {
         String name;
         if (key == null) {
             name = RolapUtil.mdxNullLiteral;
+        } else if (key instanceof Id.Segment) {
+            name = ((Id.Segment)key).name;      //MARIN CHANGE: To get the correct key when segments are parsed.
         } else {
             name = key.toString();
         }
@@ -295,15 +297,16 @@ public class RolapMember extends MemberBase {
      * @param level Level this member belongs to
      * @param key Key to this member in the underlying RDBMS
      * @param name Name of this member
-     * @param flags Flags describing this member (see {@link #flags}
+     * @param memberType Type of member
      */
     protected RolapMember(
-            RolapMember parentMember,
-            RolapLevel level,
-            Object key,
-            String name,
-            MemberType flags) {
-        super(parentMember, level, flags);
+        RolapMember parentMember,
+        RolapLevel level,
+        Object key,
+        String name,
+        MemberType memberType)
+    {
+        super(parentMember, level, memberType);
         this.key = key;
         this.ordinal = -1;
         this.mapPropertyNameToValue = Collections.emptyMap();
@@ -322,16 +325,15 @@ public class RolapMember extends MemberBase {
         this(parentMember, level, value, null, MemberType.REGULAR);
     }
 
-
     protected Logger getLogger() {
         return LOGGER;
     }
 
-    public RolapLevel getLevel() {
+    public final RolapLevel getLevel() {
         return (RolapLevel) level;
     }
 
-    public RolapHierarchy getHierarchy() {
+    public final RolapHierarchy getHierarchy() {
         return getLevel().getHierarchy();
     }
 

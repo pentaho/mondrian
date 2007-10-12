@@ -35,9 +35,9 @@ public interface SchemaReader {
     Role getRole();
 
     /**
-     * Returns an array of the root members of <code>hierarchy</code>. If the
-     * hierarchy is access-controlled, returns the most senior visible members.
+     * Returns an array of the root members of <code>hierarchy</code>.
      *
+     * @param hierarchy Hierarchy
      * @see #getCalculatedMembers(Hierarchy)
      */
     Member[] getHierarchyRootMembers(Hierarchy hierarchy);
@@ -86,10 +86,26 @@ public interface SchemaReader {
 
     /**
      * Returns direct children of each element of <code>members</code>.
+     *
+     * @param members Array of members
+     * @return array of child members
+     *
      * @pre members != null
      * @post return != null
      */
     Member[] getMemberChildren(Member[] members);
+
+    /**
+     * Returns direct children of each element of <code>members</code>
+     * which is not empty in <code>context</code>.
+     *
+     * @param members Array of members
+     * @param context Evaluation context
+     * @return array of child members
+     *
+     * @pre members != null
+     * @post return != null
+     */
     Member[] getMemberChildren(Member[] members, Evaluator context);
 
     /**

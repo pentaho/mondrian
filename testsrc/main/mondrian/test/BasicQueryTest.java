@@ -15,6 +15,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
 import mondrian.rolap.cache.CachePool;
+import mondrian.rolap.RolapConnectionProperties;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.util.Bug;
 import mondrian.calc.ResultStyle;
@@ -4839,7 +4840,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n" +
                 "  </CalculatedMember>\n" +
                 "</Cube>",
-            null, null, null);
+            null, null, null, null);
         SchemaReader scr = testContext.getConnection().getSchema().lookupCube(cubeName, true).getSchemaReader(null);
         Member member = scr.getMemberByUniqueName(Id.Segment.toList("Measures", "Unit Sales"), true);
         Object visible = member.getPropertyValue(Property.VISIBLE.name);
@@ -4900,7 +4901,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         // Create a test context with a new ""Sales_DimWithoutAll" cube, and
         // which evaluates expressions against that cube.
         TestContext testContext = new TestContext() {
-            public synchronized Connection getFoodMartConnection() {
+            public Util.PropertyList getFoodMartConnectionProperties() {
                 final String schema = getFoodMartSchema(
                     null,
                     "<Cube name=\"Sales_DimWithoutAll\">\n" +
@@ -4935,8 +4936,13 @@ public class BasicQueryTest extends FoodMartTestCase {
                     "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n" +
                     "      formatString=\"#,###.00\"/>\n" +
                     "</Cube>",
-                    null, null, null);
-                return getFoodMartConnection(schema);
+                    null, null, null, null);
+                Util.PropertyList properties = 
+                    super.getFoodMartConnectionProperties();
+                properties.put(
+                    RolapConnectionProperties.CatalogContent.name(),
+                    schema);
+                return properties;
             }
             public String getDefaultCubeName() {
                 return "Sales_DimWithoutAll";
@@ -5145,7 +5151,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
             "      formatString=\"#,###.00\"/>\n" +
             "</Cube>",
-            null, null, null);
+            null, null, null, null);
 
         testContext.assertQueryReturns(
             "select {\n" +
@@ -5209,7 +5215,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "  <Measure name=\"Bad Measure\" aggregator=\"sum\"\n" +
                 "      formatString=\"Standard\"/>\n" +
                 "</Cube>",
-            null, null, null);
+            null, null, null, null);
         Throwable throwable = null;
         try {
             testContext.assertSimpleQuery();
@@ -5237,7 +5243,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "    </MeasureExpression>\n" +
                 "  </Measure>\n" +
                 "</Cube>",
-            null, null, null);
+            null, null, null, null);
         Throwable throwable = null;
         try {
             testContext.assertSimpleQuery();
@@ -5415,8 +5421,10 @@ public class BasicQueryTest extends FoodMartTestCase {
         final TestContext tc = TestContext.create(
             null,
             null,
-            null, null, "<UserDefinedFunction name=\"SleepUdf\" className=\"" +
-            SleepUdf.class.getName() + "\"/>");
+            null, null,
+            "<UserDefinedFunction name=\"SleepUdf\" className=\"" +
+            SleepUdf.class.getName() + "\"/>",
+            null);
         Connection connection = tc.getConnection();
 
         final Query query = connection.parseQuery(queryString);
@@ -5461,8 +5469,11 @@ public class BasicQueryTest extends FoodMartTestCase {
         final TestContext tc = TestContext.create(
             null,
             null,
-            null, null, "<UserDefinedFunction name=\"SleepUdf\" className=\"" +
-            SleepUdf.class.getName() + "\"/>");
+            null,
+            null,
+            "<UserDefinedFunction name=\"SleepUdf\" className=\"" +
+            SleepUdf.class.getName() + "\"/>",
+            null);
 
         String query =
             "WITH\n" +
@@ -5678,7 +5689,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testDefaultMeasureInCube() {
-               TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.create(
             null,
             "<Cube name=\"DefaultMeasureTesting\" defaultMeasure=\"Supply Time\">\n" +
                     "  <Table name=\"inventory_fact_1997\"/>\n" +
@@ -5693,17 +5704,17 @@ public class BasicQueryTest extends FoodMartTestCase {
                     "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" " +
                     "aggregator=\"sum\"/>\n" +
                     "</Cube>",
-            null, null, null);
+            null, null, null, null);
         String queryWithoutFilter = "select store.members on 0 from " +
                 "DefaultMeasureTesting";
         String queryWithDeflaultMeasureFilter = "select store.members on 0 " +
                 "from DefaultMeasureTesting where [measures].[Supply Time]";
-        assertQueriesReturnSimilarResults(queryWithoutFilter,
-                queryWithDeflaultMeasureFilter, testContext);
+        assertQueriesReturnSimilarResults(
+            queryWithoutFilter, queryWithDeflaultMeasureFilter, testContext);
     }
 
     public void testDefaultMeasureInCubeForIncorrectMeasureName() {
-               TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.create(
             null,
             "<Cube name=\"DefaultMeasureTesting\" defaultMeasure=\"Supply Time Error\">\n" +
                     "  <Table name=\"inventory_fact_1997\"/>\n" +
@@ -5718,17 +5729,17 @@ public class BasicQueryTest extends FoodMartTestCase {
                     "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" " +
                     "aggregator=\"sum\"/>\n" +
                     "</Cube>",
-            null, null, null);
+            null, null, null, null);
         String queryWithoutFilter = "select store.members on 0 from " +
                 "DefaultMeasureTesting";
         String queryWithFirstMeasure = "select store.members on 0 " +
                 "from DefaultMeasureTesting where [measures].[Store Invoice]";
-        assertQueriesReturnSimilarResults(queryWithoutFilter,
-                queryWithFirstMeasure, testContext);
+        assertQueriesReturnSimilarResults(
+            queryWithoutFilter, queryWithFirstMeasure, testContext);
     }
 
     public void testDefaultMeasureInCubeForCaseSensitivity() {
-               TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.create(
             null,
             "<Cube name=\"DefaultMeasureTesting\" defaultMeasure=\"SUPPLY TIME\">\n" +
                     "  <Table name=\"inventory_fact_1997\"/>\n" +
@@ -5743,7 +5754,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                     "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" " +
                     "aggregator=\"sum\"/>\n" +
                     "</Cube>",
-            null, null, null);
+            null, null, null, null);
         String queryWithoutFilter = "select store.members on 0 from " +
                 "DefaultMeasureTesting";
         String queryWithFirstMeasure = "select store.members on 0 " +

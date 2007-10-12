@@ -31,7 +31,8 @@ class RestrictedMemberReader extends DelegatingMemberReader {
 
     private final Role.HierarchyAccess hierarchyAccess;
     private final boolean ragged;
-    private final SqlConstraintFactory sqlConstraintFactory = SqlConstraintFactory.instance();
+    private final SqlConstraintFactory sqlConstraintFactory =
+        SqlConstraintFactory.instance();
 
     /**
      * Creates a <code>RestrictedMemberReader</code>.
@@ -49,11 +50,13 @@ class RestrictedMemberReader extends DelegatingMemberReader {
     RestrictedMemberReader(MemberReader memberReader, Role role) {
         super(memberReader);
         RolapHierarchy hierarchy = memberReader.getHierarchy();
-        hierarchyAccess = role.getAccessDetails(hierarchy);
         ragged = hierarchy.isRagged();
-        Util.assertPrecondition(hierarchyAccess != null || ragged,
-                "role.getAccessDetails(memberReader.getHierarchy()) != " +
-                "null || hierarchy.isRagged()");
+        if (role.getAccessDetails(hierarchy) == null) {
+            assert ragged;
+            hierarchyAccess = RoleImpl.createAllAccess(hierarchy);
+        } else {
+            hierarchyAccess = role.getAccessDetails(hierarchy);
+        }
     }
 
     public boolean setCache(MemberCache cache) {
@@ -132,13 +135,19 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             }
             // Filter out children which are invisible because of
             // access-control.
+            final Access access;
             if (hierarchyAccess != null) {
-                final Access access = hierarchyAccess.getAccess(member);
-                if (access == Access.NONE) {
-                    continue;
-                }
+                access = hierarchyAccess.getAccess(member);
+            } else {
+                access = Access.ALL;
             }
-            children.add(member);
+            switch (access) {
+            case NONE:
+                break;
+            default:
+                children.add(member);
+                break;
+            }
         }
     }
 
@@ -169,12 +178,20 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         return true;
     }
 
-    public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children) {
-        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+    public void getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children)
+    {
+        MemberChildrenConstraint constraint =
+            sqlConstraintFactory.getMemberChildrenConstraint(null);
         getMemberChildren(parentMembers, children, constraint);
     }
 
-    public synchronized void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children, MemberChildrenConstraint constraint) {
+    public synchronized void getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint)
+    {
 //        for (Iterator i = parentMembers.iterator(); i.hasNext();) {
 //            RolapMember parentMember = (RolapMember) i.next();
 //            getMemberChildren(parentMember, children, constraint);
@@ -184,17 +201,32 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         processMemberChildren(fullChildren, children, constraint);
     }
 
-    public List<RolapMember> getMembersInLevel(RolapLevel level,
-                                  int startOrdinal,
-                                  int endOrdinal) {
-        TupleConstraint constraint = sqlConstraintFactory.getLevelMembersConstraint(null);
+    public List<RolapMember> getRootMembers() {
+        int topLevelDepth = hierarchyAccess.getTopLevelDepth();
+        if (topLevelDepth > 0) {
+            RolapLevel topLevel =
+                (RolapLevel) getHierarchy().getLevels()[topLevelDepth];
+            return getMembersInLevel(topLevel, 0, Integer.MAX_VALUE);
+        }
+        return super.getRootMembers();
+    }
+
+    public List<RolapMember> getMembersInLevel(
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal)
+    {
+        TupleConstraint constraint =
+            sqlConstraintFactory.getLevelMembersConstraint(null);
         return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
     }
 
-    public List<RolapMember> getMembersInLevel(RolapLevel level,
-                                int startOrdinal,
-                                int endOrdinal,
-                                TupleConstraint constraint) {
+    public List<RolapMember> getMembersInLevel(
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal,
+        TupleConstraint constraint)
+    {
         if (hierarchyAccess != null) {
             final int depth = level.getDepth();
             if (depth < hierarchyAccess.getTopLevelDepth()) {
@@ -204,13 +236,40 @@ class RestrictedMemberReader extends DelegatingMemberReader {
                 return Collections.emptyList();
             }
         }
-        final List<RolapMember> membersInLevel = super.getMembersInLevel(level,
-                startOrdinal, endOrdinal, constraint);
+        final List<RolapMember> membersInLevel =
+            memberReader.getMembersInLevel(
+                level, startOrdinal, endOrdinal, constraint);
         List<RolapMember> filteredMembers = new ArrayList<RolapMember>();
         filterMembers(membersInLevel, filteredMembers);
         return filteredMembers;
     }
 
+    public RolapMember getDefaultMember() {
+        RolapMember defaultMember =
+            (RolapMember) getHierarchy().getDefaultMember();
+        if (defaultMember != null) {
+            Access i = hierarchyAccess.getAccess(defaultMember);
+            if (i != Access.NONE) {
+                return defaultMember;
+            }
+        }
+        return getRootMembers().get(0);
+    }
+
+    public RolapMember getMemberParent(RolapMember member) {
+        RolapMember parentMember = member.getParentMember();
+        // Skip over hidden parents.
+        while (parentMember != null && parentMember.isHidden()) {
+            parentMember = parentMember.getParentMember();
+        }
+        // Skip over non-accessible parents.
+        if (parentMember != null) {
+            if (hierarchyAccess.getAccess(parentMember) == Access.NONE) {
+                return null;
+            }
+        }
+        return parentMember;
+    }
 }
 
 // End RestrictedMemberReader.java

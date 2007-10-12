@@ -128,7 +128,7 @@ public class RolapEvaluator implements Evaluator {
 
         // we expect client to set CellReader
 
-        final SchemaReader scr = this.root.connection.getSchemaReader();
+        final SchemaReader scr = this.root.schemaReader;
         final Dimension[] dimensions = this.root.cube.getDimensions();
         for (final Dimension dimension : dimensions) {
             final int ordinal = dimension.getOrdinal(this.root.cube);
@@ -186,15 +186,29 @@ public class RolapEvaluator implements Evaluator {
         final RolapConnection connection;
         final SchemaReader schemaReader;
         final Map<Exp, Calc> compiledExps = new HashMap<Exp, Calc>();
-        final private Query query;
-        final private Date queryStartTime;
-        
+        private final Query query;
+        private final Date queryStartTime;
+
+        /**
+         * Default members of each hierarchy, from the schema reader's
+         * perspective. Finding the default member is moderately expensive, but
+         * happens very often.
+         */
+        private final RolapMember[] defaultMembers;
+
         public RolapEvaluatorRoot(Query query) {
             this.query = query;
             this.cube = (RolapCube) query.getCube();
             this.connection = (RolapConnection) query.getConnection();
             this.schemaReader = query.getSchemaReader(true);
             this.queryStartTime = new Date();
+            List<RolapMember> list = new ArrayList<RolapMember>();
+            for (Dimension dimension : cube.getDimensions()) {
+                list.add(
+                    (RolapMember) schemaReader.getHierarchyDefaultMember(
+                        dimension.getHierarchy()));
+            }
+            this.defaultMembers = list.toArray(new RolapMember[list.size()]);
         }
 
         /**
@@ -322,7 +336,7 @@ public class RolapEvaluator implements Evaluator {
         return parent;
     }
 
-    public SchemaReader getSchemaReader() {
+    public final SchemaReader getSchemaReader() {
         return root.schemaReader;
     }
 
@@ -387,51 +401,7 @@ public class RolapEvaluator implements Evaluator {
     }
 
     /**
-     * Replace the current member of a given hierarchy with member parameter
-     * if the current member is the null, all, or default member.
-     * The parameter member will never attempt to replace a current member
-     * when the current member is part of the slicer axis (this is
-     * addressed in the RolapResult purge method).
-     * <p>
-     * Currently, replacement only takes place when the current member is
-     * the default member of its hierarchy (so the checks for null, measure and
-     * all may not be needed).
-     *
-     * @param member New member
-     * @return Previous member
-     *
-     * @deprecated Not used??
-     */
-    private Member setContextConditional(Member member) {
-        RolapMember m = (RolapMember) member;
-        int ordinal = m.getDimension().getOrdinal(root.cube);
-        // should never happend
-        if (ordinal >= currentMembers.length) {
-            return null;
-        }
-        Member previous = currentMembers[ordinal];
-        if (previous.isNull()) {
-            // Is the ever possible?
-            return setContext(member);
-        } else if (previous.isMeasure()) {
-            // Is the ever possible?
-            return setContext(member);
-        } else if (previous.isAll()) {
-            // Is the ever possible?
-            return setContext(member);
-        } else {
-            Hierarchy hierarchy = m.getHierarchy();
-            Member defaultMember = hierarchy.getDefaultMember();
-            if (previous.equals(defaultMember) && ! previous.equals(member)) {
-                return setContext(member);
-            } else {
-                return null;
-            }
-        }
-    }
-
-    /**
-     * Add a slicer member to the evaulator context, and remember it as part
+     * Adds a slicer member to the evaluator context, and remember it as part
      * of the slicer. The slicer members are passed onto derived evaluators
      * so that functions using those evaluators can choose to ignore the
      * slicer members. One such function is CrossJoin emptiness check.
@@ -465,7 +435,7 @@ public class RolapEvaluator implements Evaluator {
         return previous;
     }
 
-    public void setContext(List<Member> memberList) {
+    public final void setContext(List<Member> memberList) {
         int i = 0;
         for (Member member : memberList) {
             // more than one usage
@@ -521,8 +491,12 @@ public class RolapEvaluator implements Evaluator {
             }
             return o;
         }
+        // REVIEW this operation is executed frequently, and computing the
+        // default member of a hierarchy for a given role is not cheap
         final RolapMember defaultMember =
-            (RolapMember) maxSolveMember.getHierarchy().getDefaultMember();
+            root.defaultMembers[
+                maxSolveMember.getDimension().getOrdinal(root.cube)];
+
         final RolapEvaluator evaluator = push(defaultMember);
         evaluator.setExpanding(maxSolveMember);
         final Exp exp = maxSolveMember.getExpression();
@@ -542,6 +516,20 @@ public class RolapEvaluator implements Evaluator {
                 checkRecursion((RolapEvaluator) parent);
             }
         }
+    }
+
+    /**
+     * Returns the calculated member being currently expanded.
+     *
+     * <p>This can be useful if many calculated members are generated with
+     * essentially the same expression. The compiled expression can call this
+     * method to find which instance of the member is current, and therefore the
+     * calculated members can share the same {@link Calc} object.
+     *
+     * @return Calculated member currently being expanded
+     */
+    Member getExpanding() {
+        return expandingMember;
     }
 
     /**
@@ -591,7 +579,8 @@ public class RolapEvaluator implements Evaluator {
                     continue outer;
                 }
             }
-            throw FunUtil.newEvalException(null,
+            throw FunUtil.newEvalException(
+                null,
                 "Infinite loop while evaluating calculated member '" +
                 eval.expandingMember + "'; context stack is " +
                 eval.getContextString());
@@ -832,10 +821,10 @@ public class RolapEvaluator implements Evaluator {
                 if (solve >= maxSolve) {
                     // If solve orders tie, the dimension with the lower
                     // ordinal wins.
-                    if (solve > maxSolve ||
-                            member.getDimension().getOrdinal(root.cube) <
-                            maxSolveMember.getDimension().getOrdinal(
-                                    root.cube)) {
+                    if (solve > maxSolve
+                        || member.getDimension().getOrdinal(root.cube)
+                        < maxSolveMember.getDimension().getOrdinal(root.cube))
+                    {
                         maxSolve = solve;
                         maxSolveMember = member;
                     }

@@ -422,13 +422,15 @@ public class BuiltinFunTable extends FunTableImpl {
             Member firstSibling(Member member, Evaluator evaluator) {
                 Member parent = member.getParentMember();
                 Member[] children;
+                final SchemaReader schemaReader = evaluator.getSchemaReader();
                 if (parent == null) {
                     if (member.isNull()) {
                         return member;
                     }
-                    children = evaluator.getSchemaReader().getHierarchyRootMembers(member.getHierarchy());
+                    children = schemaReader.getHierarchyRootMembers(
+                        member.getHierarchy());
                 } else {
-                    children = evaluator.getSchemaReader().getMemberChildren(parent);
+                    children = schemaReader.getMemberChildren(parent);
                 }
                 return children[0];
             }
@@ -486,7 +488,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         return member;
                     }
                     children = schemaReader.getHierarchyRootMembers(
-                            member.getHierarchy());
+                        member.getHierarchy());
                 } else {
                     children = schemaReader.getMemberChildren(parent);
                 }
@@ -1171,10 +1173,14 @@ public class BuiltinFunTable extends FunTableImpl {
                 }
                 Member parent = member.getParentMember();
                 final SchemaReader schemaReader = evaluator.getSchemaReader();
-                Member[] siblings = (parent == null)
-                    ? schemaReader.getHierarchyRootMembers(member.getHierarchy())
-                    : schemaReader.getMemberChildren(parent);
-
+                Member[] siblings;
+                if (parent == null) {
+                    siblings =
+                        schemaReader.getHierarchyRootMembers(
+                            member.getHierarchy());
+                } else {
+                    siblings = schemaReader.getMemberChildren(parent);
+                }
                 return Arrays.asList(siblings);
             }
         });
@@ -2089,89 +2095,6 @@ public class BuiltinFunTable extends FunTableImpl {
             instance.init();
         }
         return instance;
-    }
-
-    protected Member[] getNonEmptyMemberChildren(Evaluator evaluator, Member member) {
-        SchemaReader sr = evaluator.getSchemaReader();
-        if (evaluator.isNonEmpty()) {
-            return sr.getMemberChildren(member, evaluator);
-        } else {
-            return sr.getMemberChildren(member);
-        }
-    }
-
-    /**
-     * Returns members of a level which are not empty (according to the
-     * criteria expressed by the evaluator).
-     *
-     * @param evaluator Evaluator, determines non-empty criteria
-     * @param level Level
-     * @param includeCalcMembers Whether to include calculated members
-     */
-    protected static Member[] getNonEmptyLevelMembers(
-        Evaluator evaluator,
-        Level level,
-        boolean includeCalcMembers)
-    {
-        SchemaReader sr = evaluator.getSchemaReader();
-        if (evaluator.isNonEmpty()) {
-            final Member[] members = sr.getLevelMembers(level, evaluator);
-            if (includeCalcMembers) {
-                return Util.addLevelCalculatedMembers(sr, level, members);
-            }
-            return members;
-        }
-        return sr.getLevelMembers(level, includeCalcMembers);
-    }
-
-    static List<Member> levelMembers(
-            Level level,
-            Evaluator evaluator,
-            final boolean includeCalcMembers) {
-        Member[] members =
-            getNonEmptyLevelMembers(evaluator, level, includeCalcMembers);
-        List<Member> memberList =
-            new ArrayList<Member>(Arrays.asList(members));
-        if (!includeCalcMembers) {
-            FunUtil.removeCalculatedMembers(memberList);
-        }
-        FunUtil.hierarchize(memberList, false);
-        return memberList;
-    }
-
-    static List<Member> hierarchyMembers(
-            Hierarchy hierarchy,
-            Evaluator evaluator,
-            final boolean includeCalcMembers) {
-        final List<Member> memberList;
-        if (evaluator.isNonEmpty()) {
-            // Allow the SQL generator to generate optimized SQL since we know
-            // we're only interested in non-empty members of this level.
-            memberList = new ArrayList<Member>();
-            for (Level level : hierarchy.getLevels()) {
-                Member[] members =
-                    getNonEmptyLevelMembers(
-                        evaluator, level, includeCalcMembers);
-                memberList.addAll(Arrays.asList(members));
-            }
-        } else {
-            memberList = FunUtil.addMembers(
-                evaluator.getSchemaReader(),
-                new ArrayList<Member>(), hierarchy);
-            if (!includeCalcMembers && memberList != null) {
-                FunUtil.removeCalculatedMembers(memberList);
-            }
-        }
-        FunUtil.hierarchize(memberList, false);
-        return memberList;
-    }
-
-    static List<Member> dimensionMembers(
-            Dimension dimension,
-            Evaluator evaluator,
-            final boolean includeCalcMembers) {
-        Hierarchy hierarchy = dimension.getHierarchy();
-        return hierarchyMembers(hierarchy, evaluator, includeCalcMembers);
     }
 
 }

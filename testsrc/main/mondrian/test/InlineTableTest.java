@@ -25,7 +25,8 @@ public class InlineTableTest extends FoodMartTestCase {
 
     public void testInlineTable() {
         final String cubeName = "Sales_inline";
-        TestContext testContext = TestContext.create(null,
+        TestContext testContext = TestContext.create(
+            null,
             "<Cube name=\"" + cubeName + "\">\n" +
                 "  <Table name=\"sales_fact_1997\"/>\n" +
                 "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
@@ -55,7 +56,7 @@ public class InlineTableTest extends FoodMartTestCase {
                 "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
                 "      formatString=\"#,###.00\"/>\n" +
                 "</Cube>",
-            null, null, null);
+            null, null, null, null);
         testContext.assertQueryReturns(
             "select {[Alternative Promotion].[All Alternative Promotions].children} ON COLUMNS\n" +
                 "from [" + cubeName + "] ",
@@ -71,7 +72,8 @@ public class InlineTableTest extends FoodMartTestCase {
 
     public void testInlineTableInSharedDim() {
         final String cubeName = "Sales_inline_shared";
-        TestContext testContext = TestContext.create(null,
+        TestContext testContext = TestContext.create(
+            null,
             "  <Dimension name=\"Shared Alternative Promotion\">\n" +
                 "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">\n" +
                 "      <InlineTable alias=\"alt_promotion\">\n" +
@@ -102,7 +104,7 @@ public class InlineTableTest extends FoodMartTestCase {
                 "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
                 "      formatString=\"#,###.00\"/>\n" +
                 "</Cube>",
-            null, null, null);
+            null, null, null, null);
         testContext.assertQueryReturns(
             "select {[Shared Alternative Promotion].[All Shared Alternative Promotions].children} ON COLUMNS\n" +
                 "from [" + cubeName + "] ",

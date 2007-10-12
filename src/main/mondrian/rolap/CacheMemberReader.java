@@ -17,8 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mondrian.olap.Id;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -255,6 +254,18 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return null;
     }
 
+    public RolapMember getDefaultMember() {
+        RolapMember defaultMember =
+            (RolapMember) getHierarchy().getDefaultMember();
+        if (defaultMember != null) {
+            return defaultMember;
+        }
+        return getRootMembers().get(0);
+    }
+
+    public RolapMember getMemberParent(RolapMember member) {
+        return member.getParentMember();
+    }
 }
 
 // End CacheMemberReader.java

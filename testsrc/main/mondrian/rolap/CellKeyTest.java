@@ -9,7 +9,6 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.Connection;
 import mondrian.olap.MondrianProperties;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
@@ -327,11 +326,12 @@ public class CellKeyTest extends FoodMartTestCase {
         
         TestContext testContext =
             TestContext.create(
-             null,
-             cubeDef,
-             null,
-             null,
-             null);
+                null,
+                cubeDef,
+                null,
+                null,
+                null,
+                null);
 
         testContext.assertQueryReturns(query, fold(result));
         MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);

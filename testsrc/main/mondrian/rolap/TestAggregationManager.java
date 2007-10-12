@@ -826,11 +826,12 @@ public class TestAggregationManager extends BatchTestCase {
 
         TestContext testContext =
             TestContext.create(
-             storeDim1 + storeDim2,
-             salesCube1 + salesCube2,
-             null,
-             null,
-             null);
+                storeDim1 + storeDim2,
+                salesCube1 + salesCube2,
+                null,
+                null,
+                null,
+                null);
 
         testContext.executeQuery(query);
         

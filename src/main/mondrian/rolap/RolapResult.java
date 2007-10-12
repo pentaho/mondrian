@@ -372,7 +372,9 @@ class RolapResult extends ResultBase {
 
                     if (! nonAllMembers.isEmpty()) {
                         List<Position> pl = axisResult.getPositions();
-                        for (Position p : pl) {
+                        if (pl.size() > 0) {
+                            // Only need to process the first Position
+                            Position p = pl.get(0);
                             for (Member m : p) {
                                 if (m.isCalculated()) {
                                     CalculatedMeasureVisitor visitor =
@@ -382,8 +384,6 @@ class RolapResult extends ResultBase {
                                     redo = removeDimension(dimension, nonAllMembers);
                                 }
                             }
-                            // Only need to process the first Position
-                            break;
                         }
                     }
                     this.axes[i] = axisResult;
@@ -719,10 +719,10 @@ class RolapResult extends ResultBase {
                             axisResult = new RolapAxis.NoPosition();
                         } else if (it.next() instanceof Member[]) {
                             axisResult = new RolapAxis.MemberArrayIterable(
-                                            (Iterable<Member[]>)value);
+                                (Iterable<Member[]>)value);
                         } else {
                             axisResult = new RolapAxis.MemberIterable(
-                                            (Iterable<Member>)value);
+                                (Iterable<Member>)value);
                         }
                     } else if (axisMembers != null) {
                         axisMembers.merge(it);
@@ -735,49 +735,44 @@ class RolapResult extends ResultBase {
     }
 
     private void executeBody(Query query) {
-        try {
-            // Compute the cells several times. The first time, use a dummy
-            // evaluator which collects requests.
-            int count = 0;
-            while (true) {
+        // Compute the cells several times. The first time, use a dummy
+        // evaluator which collects requests.
+        int count = 0;
+        while (true) {
 
-                evaluator.setCellReader(batchingReader);
-                executeStripe(query.axes.length - 1,
-                                (RolapEvaluator) evaluator.push());
+            evaluator.setCellReader(batchingReader);
+            executeStripe(query.axes.length - 1, evaluator.push());
 
-                // Retrieve the aggregations collected.
-                //
-                if (!batchingReader.loadAggregations(query)) {
-                    // We got all of the cells we needed, so the result must be
-                    // correct.
-                    return;
-                } else {
-                    // Clear invalid expression result so that the next evaluation
-                    // will pick up the newly loaded aggregates.
-                    evaluator.clearExpResultCache(false);
-                }
-                
-                if (count++ > maxEvalDepth) {
-                    if (evaluator instanceof RolapDependencyTestingEvaluator) {
-                        // The dependency testing evaluator can trigger new
-                        // requests every cycle. So let is run as normal for
-                        // the first N times, then run it disabled.
-                        ((RolapDependencyTestingEvaluator.DteRoot)
-                            evaluator.root).disabled = true;
-                        if (count > maxEvalDepth * 2) {
-                            throw Util.newInternal("Query required more than "
-                                + count + " iterations");
-                        }
-                    } else {
+            // Retrieve the aggregations collected.
+            //
+            if (!batchingReader.loadAggregations(query)) {
+                // We got all of the cells we needed, so the result must be
+                // correct.
+                return;
+            } else {
+                // Clear invalid expression result so that the next evaluation
+                // will pick up the newly loaded aggregates.
+                evaluator.clearExpResultCache(false);
+            }
+
+            if (count++ > maxEvalDepth) {
+                if (evaluator instanceof RolapDependencyTestingEvaluator) {
+                    // The dependency testing evaluator can trigger new
+                    // requests every cycle. So let is run as normal for
+                    // the first N times, then run it disabled.
+                    ((RolapDependencyTestingEvaluator.DteRoot)
+                        evaluator.root).disabled = true;
+                    if (count > maxEvalDepth * 2) {
                         throw Util.newInternal("Query required more than "
                             + count + " iterations");
                     }
+                } else {
+                    throw Util.newInternal("Query required more than "
+                        + count + " iterations");
                 }
-
-                cellInfos.clear();
             }
-        } finally {
 
+            cellInfos.clear();
         }
     }
 

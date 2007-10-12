@@ -220,7 +220,9 @@ public class TestContext {
      * Returns a connection to the FoodMart database
      * with a dynamic schema processor and disables use of RolapSchema Pool.
      */
-    public synchronized Connection getFoodMartConnection(Class dynProcClass) {
+    public synchronized final Connection getFoodMartConnection(
+        Class dynProcClass)
+    {
         Util.PropertyList properties = getFoodMartConnectionProperties();
         properties.put(
             RolapConnectionProperties.DynamicSchemaProcessor.name(),
@@ -248,6 +250,23 @@ public class TestContext {
     }
 
     /**
+     * Returns a connection to the FoodMart database with an inline schema and
+     * a given role.
+     */
+    public synchronized Connection getFoodMartConnection(
+        String catalogContent, String role)
+    {
+        Util.PropertyList properties = getFoodMartConnectionProperties();
+        properties.put(
+            RolapConnectionProperties.CatalogContent.name(),
+            catalogContent);
+        properties.put(
+            RolapConnectionProperties.Role.name(),
+            role);
+        return DriverManager.getConnection(properties, null, null);
+    }
+
+    /**
      * Returns a connection to the FoodMart database, optionally not from the
      * schema pool.
      *
@@ -266,22 +285,16 @@ public class TestContext {
      * Returns a the XML of the foodmart schema with added parameters and cube
      * definitions.
      */
-    public String getFoodMartSchema(
+    public static String getFoodMartSchema(
         String parameterDefs,
         String cubeDefs,
         String virtualCubeDefs,
         String namedSetDefs,
-        String udfDefs)
+        String udfDefs,
+        String roleDefs)
     {
         // First, get the unadulterated schema.
-        synchronized (SnoopingSchemaProcessor.class) {
-            if (unadulteratedFoodMartSchema == null) {
-                getFoodMartConnection(SnoopingSchemaProcessor.class);
-                unadulteratedFoodMartSchema = SnoopingSchemaProcessor.catalogContent;
-            }
-        }
-
-        String s = unadulteratedFoodMartSchema;
+        String s = getRawFoodMartSchema();
 
         // Add parameter definitions, if specified.
         if (parameterDefs != null) {
@@ -320,6 +333,17 @@ public class TestContext {
                 s.substring(i);
         }
 
+        // Add definitions of roles, if specified.
+        if (roleDefs != null) {
+            int i = s.indexOf("<UserDefinedFunction");
+            if (i < 0) {
+                i = s.indexOf("</Schema>");
+            }
+            s = s.substring(0, i) +
+                roleDefs +
+                s.substring(i);
+        }
+
         // Add definitions of user-defined functions, if specified.
         if (udfDefs != null) {
             int i = s.indexOf("</Schema>");
@@ -327,6 +351,19 @@ public class TestContext {
                 udfDefs +
                 s.substring(i);
         }
+        return s;
+    }
+
+    private static String getRawFoodMartSchema() {
+        synchronized (SnoopingSchemaProcessor.class) {
+            if (unadulteratedFoodMartSchema == null) {
+                instance().getFoodMartConnection(
+                    SnoopingSchemaProcessor.class);
+                unadulteratedFoodMartSchema = SnoopingSchemaProcessor.catalogContent;
+            }
+        }
+
+        String s = unadulteratedFoodMartSchema;
         return s;
     }
 
@@ -340,11 +377,7 @@ public class TestContext {
         String memberDefs)
     {
         // First, get the unadulterated schema.
-        String s;
-        synchronized (SnoopingSchemaProcessor.class) {
-            getFoodMartConnection(SnoopingSchemaProcessor.class);
-            s = SnoopingSchemaProcessor.catalogContent;
-        }
+        String s = getRawFoodMartSchema();
 
         // Search for the <Cube> or <VirtualCube> element.
         int h = s.indexOf("<Cube name=\"" + cubeName + "\"");
@@ -450,13 +483,24 @@ public class TestContext {
 
     /**
      * Executes the expression in the context of the cube indicated by
-     * <code>cubeName</code>, and returns the result.
+     * <code>cubeName</code>, and returns the result as a Cell.
      *
      * @param expression The expression to evaluate
-     * @return Returns a {@link Cell} which is the result of the expression.
+     * @return Cell which is the result of the expression
      */
     public Cell executeExprRaw(String expression) {
-        String cubeName = getDefaultCubeName();
+        return executeExprRaw(expression, getDefaultCubeName());
+    }
+
+    /**
+     * Executes the expression in the default cube, and returns the result as
+     * a Cell.
+     *
+     * @param expression The expression to evaluate
+     * @param cubeName Cube name
+     * @return Cell which is the result of the expression
+     */
+    public Cell executeExprRaw(String expression, String cubeName) {
         if (cubeName.indexOf(' ') >= 0) {
             cubeName = Util.quoteMdxIdentifier(cubeName);
         }
@@ -1086,6 +1130,7 @@ public class TestContext {
      * @param udfDefs Definitions of user-defined functions. If not null, the
      *   string is inserted into the schema XML in the appropriate place for
      *   UDF definitions.
+     * @param roleDefs Definitions of roles
      * @return TestContext which reads from a slightly different hymnbook
      */
     public static TestContext create(
@@ -1093,13 +1138,20 @@ public class TestContext {
         final String cubeDefs,
         final String virtualCubeDefs,
         final String namedSetDefs,
-        final String udfDefs) {
+        final String udfDefs,
+        final String roleDefs)
+    {
         return new TestContext() {
-            public synchronized Connection getFoodMartConnection() {
+            public Util.PropertyList getFoodMartConnectionProperties() {
                 final String schema = getFoodMartSchema(
-                    parameterDefs, cubeDefs,
-                    virtualCubeDefs, namedSetDefs, udfDefs);
-                return getFoodMartConnection(schema);
+                    parameterDefs, cubeDefs, virtualCubeDefs, namedSetDefs,
+                    udfDefs, roleDefs);
+                Util.PropertyList properties = 
+                    super.getFoodMartConnectionProperties();
+                properties.put(
+                    RolapConnectionProperties.CatalogContent.name(),
+                    schema);
+                return properties;
             }
         };
     }
@@ -1111,8 +1163,13 @@ public class TestContext {
      */
     public static TestContext create(final String schema) {
         return new TestContext() {
-            public synchronized Connection getFoodMartConnection() {
-                return getFoodMartConnection(schema);
+            public Util.PropertyList getFoodMartConnectionProperties() {
+                Util.PropertyList properties =
+                    super.getFoodMartConnectionProperties();
+                properties.put(
+                    RolapConnectionProperties.CatalogContent.name(),
+                    schema);
+                return properties;
             }
         };
     }
@@ -1143,28 +1200,34 @@ public class TestContext {
     public static TestContext createSubstitutingCube(
         final String cubeName,
         final String dimensionDefs,
-        final String memberDefs) {
+        final String memberDefs)
+    {
         return new TestContext() {
-            public synchronized Connection getFoodMartConnection() {
+            public Util.PropertyList getFoodMartConnectionProperties() {
                 final String schema =
                     getFoodMartSchemaSubstitutingCube(
                         cubeName, dimensionDefs, memberDefs);
-                return getFoodMartConnection(schema);
+                Util.PropertyList properties =
+                    super.getFoodMartConnectionProperties();
+                properties.put(
+                    RolapConnectionProperties.CatalogContent.name(),
+                    schema);
+                return properties;
             }
         };
     }
 
     /**
-     * Creates a TestContext which operates in a given role.
+     * Returns a TestContext similar to this one, but using the given role.
      *
-     * @param roleName Name of role
-     * @return a TestContext which operates in the given role
+     * @param roleName Role name
+     * @return Test context with the given role
      */
-    public static TestContext createInRole(final String roleName) {
-        return new TestContext() {
+    public TestContext withRole(final String roleName) {
+        return new DelegatingTestContext(this) {
             public Util.PropertyList getFoodMartConnectionProperties() {
                 Util.PropertyList properties =
-                    super.getFoodMartConnectionProperties();
+                    context.getFoodMartConnectionProperties();
                 properties.put(
                     RolapConnectionProperties.Role.name(),
                     roleName);
@@ -1172,6 +1235,7 @@ public class TestContext {
             }
         };
     }
+
     /**
      * Generates a string containing all dimensions except those given.
      * Useful as an argument to {@link #assertExprDependsOn(String, String)}.

@@ -13,8 +13,7 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Util;
-import mondrian.olap.Id;
+import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
@@ -124,8 +123,10 @@ public class SmartMemberReader implements MemberReader, MemberCache {
 
     // implement MemberCache
     // synchronization: Must synchronize, because uses mapKeyToMember
-    public synchronized RolapMember getMember(Object key, boolean mustCheckCacheStatus) {
-
+    public synchronized RolapMember getMember(
+        Object key,
+        boolean mustCheckCacheStatus)
+    {
         if (mustCheckCacheStatus) {
             checkCacheStatus();
         }
@@ -207,8 +208,8 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
-        List<RolapMember> parentMembers = new ArrayList<RolapMember>();
-        parentMembers.add(parentMember);
+        List<RolapMember> parentMembers =
+            Collections.singletonList(parentMember);
         getMemberChildren(parentMembers, children, constraint);
     }
 
@@ -591,6 +592,27 @@ public class SmartMemberReader implements MemberReader, MemberCache {
 
     public MemberBuilder getMemberBuilder() {
         return source.getMemberBuilder();
+    }
+
+    public RolapMember getDefaultMember() {
+        RolapMember defaultMember =
+            (RolapMember) getHierarchy().getDefaultMember();
+        if (defaultMember != null) {
+            return defaultMember;
+        }
+        return getRootMembers().get(0);
+    }
+
+    public RolapMember getMemberParent(RolapMember member) {
+        // This method deals with ragged hierarchies but not access-controlled
+        // hierarchies - assume these have RestrictedMemberReader possibly
+        // wrapped in a SubstitutingMemberReader.
+        RolapMember parentMember = member.getParentMember();
+        // Skip over hidden parents.
+        while (parentMember != null && parentMember.isHidden()) {
+            parentMember = parentMember.getParentMember();
+        }
+        return parentMember;
     }
 }
 

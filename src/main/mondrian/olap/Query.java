@@ -795,22 +795,62 @@ public class Query extends QueryPart {
         return cube;
     }
 
+    /**
+     * Returns a schema reader.
+     *
+     * @param accessControlled If true, schema reader returns only elements
+     * which are accessible to the connection's current role
+     *
+     * @return schema reader
+     */
     public SchemaReader getSchemaReader(boolean accessControlled) {
-        final Role role = accessControlled
-            ? getConnection().getRole()
-            : null;
+        final Role role;
+        if (accessControlled) {
+            // full access control
+            role = getConnection().getRole();
+        } else {
+            // partial access control - role can access same as connection's
+            // role, but has no restriction on reading members above a 'top'
+            // level on any hierarchy. This allows the reader to resolve
+            // say '[Store].[USA].[CA].[San Francisco]' even if '[Store].[USA]'
+            // is not visible because the top level is [Store State].
+            role = new DelegatingRole(getConnection().getRole()) {
+                public HierarchyAccess getAccessDetails(Hierarchy hierarchy) {
+                    final HierarchyAccess prevDetails =
+                        role.getAccessDetails(hierarchy);
+                    if (prevDetails == null) {
+                        return null;
+                    }
+                    return new DelegatingHierarchyAccess(prevDetails) {
+                        public Access getAccess(Member member) {
+                            if (member.getLevel().getDepth()
+                                < prevDetails.getTopLevelDepth())
+                            {
+                                return Access.ALL;
+                            } else {
+                                return hierarchyAccess.getAccess(member);
+                            }
+                        }
+
+                        public int getTopLevelDepth() {
+                            return 0;
+                        }
+                    };
+                }
+            };
+        }
         final SchemaReader cubeSchemaReader = cube.getSchemaReader(role);
         return new QuerySchemaReader(cubeSchemaReader);
     }
 
     /**
-     * Looks up a member whose unique name is <code>s</code> from cache.
-     * If the member is not in cache, returns null.
+     * Looks up a member whose unique name is <code>memberUniqueName</code> from
+     * cache. If the member is not in cache, returns null.
      */
-    public Member lookupMemberFromCache(String s) {
+    public Member lookupMemberFromCache(String memberUniqueName) {
         // first look in defined members
         for (Member member : getDefinedMembers()) {
-            if (Util.equalName(member.getUniqueName(), s)) {
+            if (Util.equalName(member.getUniqueName(), memberUniqueName)) {
                 return member;
             }
         }

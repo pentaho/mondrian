@@ -1884,8 +1884,96 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
                 value.substring(beginIndex, endIndex);
     }
 
-    // Inner classes
+    public static Member[] getNonEmptyMemberChildren(
+        Evaluator evaluator,
+        Member member)
+    {
+        SchemaReader sr = evaluator.getSchemaReader();
+        if (evaluator.isNonEmpty()) {
+            return sr.getMemberChildren(member, evaluator);
+        } else {
+            return sr.getMemberChildren(member);
+        }
+    }
 
+    /**
+     * Returns members of a level which are not empty (according to the
+     * criteria expressed by the evaluator).
+     *
+     * @param evaluator Evaluator, determines non-empty criteria
+     * @param level Level
+     * @param includeCalcMembers Whether to include calculated members
+     */
+    static Member[] getNonEmptyLevelMembers(
+        Evaluator evaluator,
+        Level level,
+        boolean includeCalcMembers)
+    {
+        SchemaReader sr = evaluator.getSchemaReader();
+        if (evaluator.isNonEmpty()) {
+            final Member[] members = sr.getLevelMembers(level, evaluator);
+            if (includeCalcMembers) {
+                return addLevelCalculatedMembers(sr, level, members);
+            }
+            return members;
+        }
+        return sr.getLevelMembers(level, includeCalcMembers);
+    }
+
+    static List<Member> levelMembers(
+        Level level,
+        Evaluator evaluator,
+        final boolean includeCalcMembers)
+    {
+        Member[] members =
+            getNonEmptyLevelMembers(evaluator, level, includeCalcMembers);
+        List<Member> memberList =
+            new ArrayList<Member>(Arrays.asList(members));
+        if (!includeCalcMembers) {
+            removeCalculatedMembers(memberList);
+        }
+        hierarchize(memberList, false);
+        return memberList;
+    }
+
+    static List<Member> hierarchyMembers(
+        Hierarchy hierarchy,
+        Evaluator evaluator,
+        final boolean includeCalcMembers)
+    {
+        final List<Member> memberList;
+        if (evaluator.isNonEmpty()) {
+            // Allow the SQL generator to generate optimized SQL since we know
+            // we're only interested in non-empty members of this level.
+            memberList = new ArrayList<Member>();
+            for (Level level : hierarchy.getLevels()) {
+                Member[] members =
+                    getNonEmptyLevelMembers(
+                        evaluator, level, includeCalcMembers);
+                memberList.addAll(Arrays.asList(members));
+            }
+        } else {
+            memberList = addMembers(
+                evaluator.getSchemaReader(),
+                new ArrayList<Member>(), hierarchy);
+            if (!includeCalcMembers && memberList != null) {
+                removeCalculatedMembers(memberList);
+            }
+        }
+        hierarchize(memberList, false);
+        return memberList;
+    }
+
+    static List<Member> dimensionMembers(
+        Dimension dimension,
+        Evaluator evaluator,
+        final boolean includeCalcMembers)
+    {
+        Hierarchy hierarchy = dimension.getHierarchy();
+        return hierarchyMembers(hierarchy, evaluator, includeCalcMembers);
+    }
+
+    // ~ Inner classes ---------------------------------------------------------
 
     private static abstract class MemberComparator implements Comparator {
         private static final Logger LOGGER =
@@ -2376,10 +2464,6 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         public int hashCode() {
             throw new UnsupportedOperationException();
         }
-    }
-
-    public static void main(String[] args) {
-        System.out.println("done");
     }
 }
 

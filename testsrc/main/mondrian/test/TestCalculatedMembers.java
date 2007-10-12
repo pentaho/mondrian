@@ -82,13 +82,15 @@ public class TestCalculatedMembers extends BatchTestCase {
      * cube with spaces in its name.
      */
     public void testCalculatedMemberInCubeWithSpace() {
-        Cube salesCube = getSalesCube("Warehouse and Sales");
-        salesCube.createCalculatedMember(
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Warehouse and Sales",
+            null,
             "<CalculatedMember name='Profit With Spaces'" +
-            "  dimension='Measures'" +
-            "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'/>");
+                "  dimension='Measures'" +
+                "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'/>");
 
-        Cell s = getTestContext("Warehouse and Sales").executeExprRaw("[Measures].[Profit With Spaces]");
+        Cell s = testContext.executeExprRaw(
+            "[Measures].[Profit With Spaces]", "Warehouse and Sales");
         Assert.assertEquals("339,610.90", s.getFormattedValue());
     }
 
@@ -460,9 +462,8 @@ public class TestCalculatedMembers extends BatchTestCase {
      * their names. (Bug 1251683.)
      */
     public void testBracketInCubeCalcMemberName() {
-        Schema schema = getConnection().getSchema();
         final String cubeName = "Sales_BracketInCubeCalcMemberName";
-        schema.createCube(
+        String s =
                 "<Cube name=\"" + cubeName + "\">\n" +
                 "  <Table name=\"sales_fact_1997\"/>\n" +
                 "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n" +
@@ -480,16 +481,18 @@ public class TestCalculatedMembers extends BatchTestCase {
                 "      formula=\"[Measures].[Unit Sales] * 10\">\n" +
                 "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n" +
                 "  </CalculatedMember>\n" +
-                "</Cube>");
+                "</Cube>";
 
-        getTestContext(cubeName).assertThrows(
+        TestContext testContext = TestContext.create(
+            null, s, null, null, null, null);
+        testContext.assertThrows(
                 fold(
                     "select {[Measures].[With a [bracket] inside it]} on columns,\n" +
                     " {[Gender].Members} on rows\n" +
                     "from [" + cubeName + "]"),
                 "Syntax error at line 1, column 38, token 'inside'");
 
-        getTestContext(cubeName).assertQueryReturns(
+        testContext.assertQueryReturns(
                 fold(
                     "select {[Measures].[With a [bracket]] inside it]} on columns,\n" +
                     " {[Gender].Members} on rows\n" +
@@ -642,9 +645,8 @@ public class TestCalculatedMembers extends BatchTestCase {
      * bug 1410383, "error if calc member in schema file contains single quotes"</a>.
      */
     public void testQuoteInCalcMember() {
-        Schema schema = getConnection().getSchema();
         final String cubeName = "Sales_Bug1410383";
-        schema.createCube(
+        String s =
                 "<Cube name=\"" + cubeName + "\">\n" +
                 "  <Table name=\"sales_fact_1997\"/>\n" +
                 "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n" +
@@ -684,9 +686,10 @@ public class TestCalculatedMembers extends BatchTestCase {
                 "      formula=\" [Measures].[Store Sales] - [Measures].[Store Cost] \">\n" +
                 "    <CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"Iif([Measures].[Colored Profit] &lt; 0, '|($#,##0.00)|style=red', '|$#,##0.00|style=green')\"/>\n" +
                 "  </CalculatedMember>\n" +
-                "</Cube>");
+                "</Cube>";
 
-        getTestContext(cubeName).assertQueryReturns(
+        TestContext.create(
+            null, s, null, null, null, null).assertQueryReturns(
             "select {[Measures].[Apos in dq], [Measures].[Dq in dq], [Measures].[Apos in apos], [Measures].[Dq in apos], [Measures].[Colored Profit]} on columns,\n" +
             " {[Gender].Members} on rows\n" +
             "from [" + cubeName + "]",
@@ -1013,6 +1016,33 @@ public class TestCalculatedMembers extends BatchTestCase {
         };
     	
     	assertQuerySqlOrNot(this.getTestContext(), query, patterns, true, true, true);
+    }
+
+    /**
+     * Tests a calculated member which aggregates over a set which would seem
+     * to include the calculated member (but does not).
+     */
+    public void testSetIncludesSelf() {
+        assertQueryReturns("with set [Top Products] as ' [Product].Children '\n"
+            + "member [Product].[Top Product Total] as ' Aggregate([Top Products]) '\n"
+            + "select {[Product].[Food], [Product].[Top Product Total]} on 0,"
+            + " [Gender].Members on 1\n"
+            + "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Product].[All Products].[Food]}\n" +
+                "{[Product].[Top Product Total]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender]}\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[All Gender].[M]}\n" +
+                "Row #0: 191,940\n" +
+                "Row #0: 266,773\n" +
+                "Row #1: 94,814\n" +
+                "Row #1: 131,558\n" +
+                "Row #2: 97,126\n" +
+                "Row #2: 135,215\n"));
     }
 }
 

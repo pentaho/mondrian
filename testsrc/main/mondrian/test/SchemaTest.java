@@ -461,7 +461,7 @@ public class SchemaTest extends FoodMartTestCase {
                             "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
                             "<Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"#,###.00\"/>\n" +
                             "</Cube>",
-                    null, null, null);
+                    null, null, null, null);
             // expecting a mondrian exception from this call
             testContext.assertQueryReturns(
                     "select  {[Store].[USA].[South West]} on rows," +
@@ -519,7 +519,7 @@ public class SchemaTest extends FoodMartTestCase {
                         "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
                         "<Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"#,###.00\"/>\n" +
                         "</Cube>",
-                null, null, null);
+                null, null, null, null);
 
         testContext.assertQueryReturns(
                 "select  {[Store].[USA].[South West]} on rows," +
@@ -570,7 +570,7 @@ public class SchemaTest extends FoodMartTestCase {
                         "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
                         "<Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"#,###.00\"/>\n" +
                         "</Cube>",
-                null, null, null);
+                null, null, null, null);
 
         testContext.assertQueryReturns(
                 "select  {[Store].[USA].[South West]} on rows," +
@@ -617,7 +617,7 @@ public class SchemaTest extends FoodMartTestCase {
                         "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" " +
                         "aggregator=\"sum\"/>\n" +
                         "</Cube>",
-                null, null, null);
+                null, null, null, null);
 
         testContext.assertQueryReturns(
                 "select {[StoreA].[USA]} on rows," +
@@ -665,7 +665,7 @@ public class SchemaTest extends FoodMartTestCase {
                         "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" " +
                         "aggregator=\"sum\"/>\n" +
                         "</Cube>",
-                null, null, null);
+                null, null, null, null);
 
         testContext.assertQueryReturns(
                 "select {[StoreA].[USA]} on rows," +
@@ -702,7 +702,7 @@ public class SchemaTest extends FoodMartTestCase {
                     "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"" +
                     "   formatString=\"#,###.00\"/>\n" +
                     "</Cube>",
-                null, null, null);
+                null, null, null, null);
 
             testContext.assertQueryReturns(
                 "select\n" +
@@ -758,7 +758,7 @@ public class SchemaTest extends FoodMartTestCase {
                 "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n" +
                 "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n" +
                 "</Cube>",
-            null, null, null);
+            null, null, null, null);
 
         testContext.assertQueryReturns(
             "select\n" +
@@ -788,7 +788,8 @@ public class SchemaTest extends FoodMartTestCase {
      * has dimensions based on the fact table.
      */
     public void testViewFactTable2() {
-        TestContext testContext = TestContext.create(null,
+        TestContext testContext = TestContext.create(
+            null,
             // Similar to "Store" cube in FoodMart.xml.
             "<Cube name=\"Store2\">\n" +
                 "  <View alias=\"FACT\">\n" +
@@ -816,7 +817,7 @@ public class SchemaTest extends FoodMartTestCase {
                 "      formatString=\"#,###\"/>\n" +
                 "\n" +
                 "</Cube>",
-            null, null, null);
+            null, null, null, null);
         testContext.assertQueryReturns(
             "select {[Store Type].Children} on columns from [Store2]",
             fold("Axis #0:\n" +
@@ -1089,7 +1090,7 @@ public class SchemaTest extends FoodMartTestCase {
                     + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
                     + "      formatString=\"#,###.00\"/>\n"
                     + "</Cube>",
-                null, null, null);
+                null, null, null, null);
         
         // With bug, and with aggregates enabled, query against Sales returns
         // 565,238, which is actually the total for [Store Sales]. I think the
@@ -1197,7 +1198,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
             + "      formatString=\"Standard\"/>\n"
             + "</Cube>",
-            null, null, null);
+            null, null, null, null);
         testContext.assertQueryReturns(
             "select {[Promotion Media]} on columns from [OneDim]",
             fold(
@@ -1217,7 +1218,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
             + "      formatString=\"Standard\"/>\n"
             + "</Cube>",
-            null, null, null);
+            null, null, null, null);
         testContext.assertQueryReturns(
             "select {[Product].Children} on columns from [OneDimUsage]",
             fold("Axis #0:\n" +
@@ -1239,7 +1240,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
             + "      formatString=\"Standard\"/>\n"
             + "</Cube>",
-            null, null, null);
+            null, null, null, null);
         testContext.assertQueryReturns(
             "select {[Measures].[Unit Sales]} on columns from [NoDim]",
             fold(
@@ -1262,7 +1263,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "    </Hierarchy>\n"
             + "  </Dimension>\n"
             + "</Cube>",
-            null, null, null);
+            null, null, null, null);
         testContext.assertThrows(
             "select {[Promotion Media]} on columns from [NoMeasures]",
             "Hierarchy '[Measures]' is invalid (has no members)");
@@ -1284,7 +1285,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "      dimension=\"Measures\"\n"
             + "      formula=\"1\"/>\n"
             + "</Cube>",
-            null, null, null);
+            null, null, null, null);
 
         // We would prefer if this query worked. I think we're hitting the bug
         // which occurs where the default member is calculated. For now, just

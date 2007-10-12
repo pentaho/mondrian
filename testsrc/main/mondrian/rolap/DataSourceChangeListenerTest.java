@@ -363,7 +363,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                     "    <CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"IIf(([Measures].[Profit Per Unit Shipped] > 2.0), '|0.#|style=green', '|0.#|style=red')\"/>\n" +
                     "  </CalculatedMember>\n" +
                     "</VirtualCube>",
-                null, null);
+                null, null, null);
 
         SmartMemberReader smrStore = getSmartMemberReader(testContext.getConnection(), "Store");
         SmartMemberReader smrProduct = getSmartMemberReader(testContext.getConnection(), "Product");
@@ -483,7 +483,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         RolapHierarchy hierarchy = (RolapHierarchy) cube.lookupHierarchy(
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
-        return (SmartMemberReader) hierarchy.getMemberReader(schemaReader.getRole());
+        return (SmartMemberReader) hierarchy.createMemberReader(schemaReader.getRole());
     }
 
     RolapStar getStar(String starName) {

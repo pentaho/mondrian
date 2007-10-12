@@ -783,11 +783,12 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
         TestContext testContext =
             TestContext.create(
-             null,
-             cube,
-             null,
-             null,
-             null);
+                null,
+                cube,
+                null,
+                null,
+                null,
+                null);
 
         testContext.assertQueryReturns(
             query,

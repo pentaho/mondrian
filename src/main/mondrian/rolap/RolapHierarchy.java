@@ -14,17 +14,20 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.fun.BuiltinFunTable;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.MemberType;
+import mondrian.olap.DimensionType;
+import mondrian.olap.LevelType;
+import mondrian.olap.fun.*;
+import mondrian.olap.type.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
-import mondrian.mdx.HierarchyExpr;
-import mondrian.mdx.UnresolvedFunCall;
+import mondrian.mdx.*;
+import mondrian.calc.*;
+import mondrian.calc.impl.*;
 
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.io.PrintWriter;
 
 /**
  * <code>RolapHierarchy</code> implements {@link Hierarchy} for a ROLAP database.
@@ -40,7 +43,7 @@ public class RolapHierarchy extends HierarchyBase {
     /**
      * The raw member reader. For a member reader which incorporates access
      * control and deals with hidden members (if the hierarchy is ragged), use
-     * {@link #getMemberReader(Role)}.
+     * {@link #createMemberReader(Role)}.
      */
     private MemberReader memberReader;
     private MondrianDef.Hierarchy xmlHierarchy;
@@ -115,9 +118,12 @@ public class RolapHierarchy extends HierarchyBase {
      * @param cube Cube this hierarchy belongs to, or null if this is a shared
      *     hierarchy
      */
-    RolapHierarchy(RolapCube cube, RolapDimension dimension,
-            MondrianDef.Hierarchy xmlHierarchy,
-            MondrianDef.CubeDimension xmlCubeDimension) {
+    RolapHierarchy(
+        RolapCube cube,
+        RolapDimension dimension,
+        MondrianDef.Hierarchy xmlHierarchy,
+        MondrianDef.CubeDimension xmlCubeDimension)
+    {
         this(dimension, xmlHierarchy.name, xmlHierarchy.hasAll);
 
         if (xmlHierarchy.relation == null &&
@@ -645,13 +651,16 @@ public class RolapHierarchy extends HierarchyBase {
     }
 
     /**
-     * Returns a member reader which enforces the access-control profile of
+     * Creates a member reader which enforces the access-control profile of
      * <code>role</code>.
+     *
+     * <p>This method may not be efficient, so the caller should take care
+     * not to call it too often. A cache is a good idea.
      *
      * @pre role != null
      * @post return != null
      */
-    MemberReader getMemberReader(Role role) {
+    MemberReader createMemberReader(Role role) {
         final Access access = role.getAccess(this);
         switch (access) {
         case NONE:
@@ -663,7 +672,79 @@ public class RolapHierarchy extends HierarchyBase {
                 : memberReader;
 
         case CUSTOM:
-            return new RestrictedMemberReader(memberReader, role);
+            final Role.HierarchyAccess hierarchyAccess =
+                role.getAccessDetails(this);
+            final Role.RollupPolicy rollupPolicy =
+                hierarchyAccess.getRollupPolicy();
+            final NumericType returnType = new NumericType();
+            switch (rollupPolicy) {
+            case FULL:
+                return new RestrictedMemberReader(memberReader, role);
+            case PARTIAL:
+                Type memberType1 =
+                    new mondrian.olap.type.MemberType(
+                        getDimension(),
+                        getHierarchy(),
+                        null,
+                        null);
+                SetType setType = new SetType(memberType1);
+                ListCalc listCalc =
+                    new AbstractListCalc(
+                        new DummyExp(setType), new Calc[0])
+                    {
+                        public List evaluateList(Evaluator evaluator) {
+                            return Arrays.asList(
+                                FunUtil.getNonEmptyMemberChildren(
+                                    evaluator,
+                                    ((RolapEvaluator) evaluator).getExpanding()));
+                        }
+                    };
+                final Calc partialCalc =
+                    new AggregateFunDef.AggregateCalc(
+                        new DummyExp(returnType),
+                        listCalc,
+                        new ValueCalc(new DummyExp(returnType)));
+
+                final Exp partialExp =
+                    new ResolvedFunCall(
+                        new FunDefBase("$x", "x", "In") {
+                            public Calc compileCall(
+                                ResolvedFunCall call,
+                                ExpCompiler compiler)
+                            {
+                                return partialCalc;
+                            }
+
+                            public void unparse(Exp[] args, PrintWriter pw) {
+                                pw.print("$RollupAccessibleChildren()");
+                            }
+                        },
+                        new Exp[0],
+                        returnType);
+                return new MySubstitutingMemberReader(
+                    role, hierarchyAccess, partialExp);
+
+            case HIDDEN:
+                Exp hiddenExp =
+                    new ResolvedFunCall(
+                        new FunDefBase("$x", "x", "In") {
+                            public Calc compileCall(
+                                ResolvedFunCall call, ExpCompiler compiler)
+                            {
+                                return new ConstantCalc(returnType, null);
+                            }
+
+                            public void unparse(Exp[] args, PrintWriter pw) {
+                                pw.print("$RollupAccessibleChildren()");
+                            }
+                        },
+                        new Exp[0],
+                        returnType);
+                return new MySubstitutingMemberReader(
+                    role, hierarchyAccess, hiddenExp);
+            default:
+                throw Util.unexpected(rollupPolicy);
+            }
         default:
             throw Util.badValue(access);
         }
@@ -838,7 +919,8 @@ public class RolapHierarchy extends HierarchyBase {
             flags,
             src.getDatatype(),
             src.getHideMemberCondition(),
-            src.getLevelType(), "");
+            src.getLevelType(),
+            "");
         peerHier.levels = RolapUtil.addElement(peerHier.levels, sublevel);
 
 /*
@@ -850,13 +932,13 @@ RME HACK
     }
 
     /**
-     * Sets default Measure
+     * Sets default member of this Hierarchy.
      *
-     * @param defaultMeasure Default measure
+     * @param defaultMember Default member
      */
-    public void setDefaultMember(Member defaultMeasure) {
-        if (defaultMeasure != null){
-            defaultMember = defaultMeasure;
+    public void setDefaultMember(Member defaultMember) {
+        if (defaultMember != null){
+            this.defaultMember = defaultMember;
         }
     }
 
@@ -875,6 +957,10 @@ RME HACK
         }
     }
 
+    /**
+     * Calculated member which is also a measure (that is, a member of the
+     * [Measures] dimension).
+     */
     private static class RolapCalculatedMeasure
         extends RolapCalculatedMember
         implements RolapMeasure
@@ -905,5 +991,76 @@ RME HACK
             return cellFormatter;
         }
     }
+
+    /**
+     * Substitute for a member in a hierarchy whose rollup policy is 'partial'
+     * or 'hidden'. The member is calculated using an expression which
+     * aggregates only visible descendants.
+     *
+     * @see mondrian.olap.Role.RollupPolicy
+     */
+    private static class LimitedRollupMember extends RolapMember {
+        private final RolapMember member;
+        private final Exp exp;
+
+        LimitedRollupMember(
+            RolapMember member,
+            Exp exp)
+        {
+            super(
+                member.getParentMember(), member.getLevel(), member.getKey(),
+                member.getName(), member.getMemberType());
+            this.member = member;
+            this.exp = exp;
+        }
+
+        public Exp getExpression() {
+            return exp;
+        }
+
+        protected boolean computeCalculated() {
+            return true;
+        }
+    }
+
+    private class MySubstitutingMemberReader extends SubstitutingMemberReader {
+        private final Role.HierarchyAccess hierarchyAccess;
+        private final Exp exp;
+
+        public MySubstitutingMemberReader(
+            Role role,
+            Role.HierarchyAccess hierarchyAccess,
+            Exp exp)
+        {
+            super(
+                new RestrictedMemberReader(
+                    RolapHierarchy.this.memberReader, role));
+            this.hierarchyAccess = hierarchyAccess;
+            this.exp = exp;
+        }
+
+        protected RolapMember substitute(final RolapMember member) {
+            if (hierarchyAccess.hasInaccessibleDescendants(member)) {
+                // Member is visible, but at least one of its
+                // descendants is not.
+                return new LimitedRollupMember(member, exp);
+            } else {
+                // No need to substitute. Member and all of its
+                // descendants are accessible. Total for member
+                // is same as for FULL policy.
+                return member;
+            }
+        }
+
+
+        protected RolapMember desubstitute(RolapMember member) {
+            if (member instanceof LimitedRollupMember) {
+                return ((LimitedRollupMember) member).member;
+            } else {
+                return member;
+            }
+        }
+    }
 }
+
 // End RolapHierarchy.java

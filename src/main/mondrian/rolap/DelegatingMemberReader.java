@@ -78,11 +78,17 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.getRootMembers();
     }
 
-    public void getMemberChildren(RolapMember parentMember, List<RolapMember> children) {
+    public void getMemberChildren(
+        RolapMember parentMember,
+        List<RolapMember> children)
+    {
         memberReader.getMemberChildren(parentMember, children);
     }
 
-    public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children) {
+    public void getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children)
+    {
         memberReader.getMemberChildren(parentMembers, children);
     }
 
@@ -90,25 +96,49 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.getMemberCount();
     }
 
-    public RolapMember lookupMember(List<Id.Segment> uniqueNameParts,
-                                    boolean failIfNotFound) {
+    public RolapMember lookupMember(
+        List<Id.Segment> uniqueNameParts,
+        boolean failIfNotFound)
+    {
         return memberReader.lookupMember(uniqueNameParts, failIfNotFound);
     }
 
-    public void getMemberChildren(RolapMember member, List<RolapMember> children, MemberChildrenConstraint constraint) {
+    public void getMemberChildren(
+        RolapMember member,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint)
+    {
         memberReader.getMemberChildren(member, children, constraint);
     }
 
-    public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children, MemberChildrenConstraint constraint) {
+    public void getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint)
+    {
         memberReader.getMemberChildren(parentMembers, children, constraint);
     }
 
-    public List<RolapMember> getMembersInLevel(RolapLevel level, int startOrdinal, int endOrdinal, TupleConstraint constraint) {
-        return memberReader.getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
+    public List<RolapMember> getMembersInLevel(
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal,
+        TupleConstraint constraint)
+    {
+        return memberReader.getMembersInLevel(
+            level, startOrdinal, endOrdinal, constraint);
     }
 
     public MemberBuilder getMemberBuilder() {
         return memberReader.getMemberBuilder();
+    }
+
+    public RolapMember getDefaultMember() {
+        return memberReader.getDefaultMember();
+    }
+
+    public RolapMember getMemberParent(RolapMember member) {
+        return memberReader.getMemberParent(member);
     }
 }
 

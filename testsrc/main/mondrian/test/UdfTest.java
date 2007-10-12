@@ -45,7 +45,8 @@ public class UdfTest extends FoodMartTestCase {
         null,
         null, null,
         "<UserDefinedFunction name=\"PlusOne\" className=\"" +
-            PlusOneUdf.class.getName() + "\"/>" + nl);
+            PlusOneUdf.class.getName() + "\"/>" + nl,
+        null);
 
     public TestContext getTestContext() {
         return tc;
@@ -188,10 +189,10 @@ public class UdfTest extends FoodMartTestCase {
 
     public void testBadFun() {
         final TestContext tc = TestContext.create(
-            null,
-            null,
-            null, null, "<UserDefinedFunction name=\"BadPlusOne\" className=\"" +
-        BadPlusOneUdf.class.getName() + "\"/>" + nl);
+            null, null, null, null,
+            "<UserDefinedFunction name=\"BadPlusOne\" className=\"" +
+                BadPlusOneUdf.class.getName() + "\"/>" + nl,
+            null);
         try {
             tc.executeQuery("SELECT {} ON COLUMNS FROM [Sales]");
             fail("Expected exception");
@@ -631,11 +632,10 @@ public class UdfTest extends FoodMartTestCase {
      */
     public void testNonGuessableReturnType() {
         TestContext tc = TestContext.create(
-            null,
-            null,
-            null, null,
+            null, null, null, null,
             "<UserDefinedFunction name=\"StringMult\" className=\"" +
-                StringMultUdf.class.getName() + "\"/>" + nl);
+                StringMultUdf.class.getName() + "\"/>" + nl,
+            null);
         // The default implementation of getResultType would assume that 
         // StringMult(int, string) returns an int, whereas it returns a string.
         tc.assertExprReturns(
@@ -652,12 +652,12 @@ public class UdfTest extends FoodMartTestCase {
      */
     public void testAnotherMemberFun() {
         final TestContext tc = TestContext.create(
-            null,
-            null,
-            null, null, "<UserDefinedFunction name=\"PlusOne\" className=\"" +
-            PlusOneUdf.class.getName() + "\"/>" + nl +
-            "<UserDefinedFunction name=\"AnotherMemberError\" className=\"" +
-            AnotherMemberErrorUdf.class.getName() + "\"/>");
+            null, null, null, null,
+            "<UserDefinedFunction name=\"PlusOne\" className=\"" +
+                PlusOneUdf.class.getName() + "\"/>" + nl +
+                "<UserDefinedFunction name=\"AnotherMemberError\" className=\"" +
+                AnotherMemberErrorUdf.class.getName() + "\"/>",
+            null);
 
         tc.assertQueryReturns(
                 "WITH MEMBER [Measures].[Test] AS "+

@@ -59,7 +59,10 @@ public class AbstractAggregateFunDef extends FunDefBase {
      *
      * @return list of evaluated members
      */
-    protected List evaluateCurrentList(ListCalc listCalc, Evaluator evaluator) {
+    protected static List evaluateCurrentList(
+        ListCalc listCalc,
+        Evaluator evaluator)
+    {
         List memberList = listCalc.evaluateList(evaluator);
 
         int currLen = memberList.size();
@@ -67,8 +70,11 @@ public class AbstractAggregateFunDef extends FunDefBase {
 
         return memberList;
     }
-    protected Iterable evaluateCurrentIterable(IterCalc iterCalc,
-                Evaluator evaluator) {
+
+    protected Iterable evaluateCurrentIterable(
+        IterCalc iterCalc,
+        Evaluator evaluator)
+    {
         Iterable iter = iterCalc.evaluateIterable(evaluator);
 
         int currLen = 0;
@@ -76,11 +82,12 @@ public class AbstractAggregateFunDef extends FunDefBase {
 
         return iter;
     }
-    private void crossProd(Evaluator evaluator, int currLen) {
+
+    private static void crossProd(Evaluator evaluator, int currLen) {
         long iterationLimit =
             MondrianProperties.instance().IterationLimit.get();
-        int productLen = currLen;
         if (iterationLimit > 0) {
+            int productLen = currLen;
             Evaluator parent = evaluator.getParent();
             while (parent != null) {
                 productLen *= parent.getIterationLength();
@@ -88,12 +95,11 @@ public class AbstractAggregateFunDef extends FunDefBase {
             }
             if (productLen > iterationLimit) {
                 throw MondrianResource.instance().
-                            IterationLimitExceeded.ex(iterationLimit);
+                    IterationLimitExceeded.ex(iterationLimit);
             }
         }
         evaluator.setIterationLength(currLen);
     }
-
 }
 
 // End AbstractAggregateFunDef.java
