@@ -40,7 +40,14 @@ import java.lang.reflect.Modifier;
  *
  * If you add a property, you must:<ul>
  *
- * <li>Add a property definition to this class</li>
+ * <li>Choose a name consistent with the naming convention for properties (for
+ * example, "<code>mondrian.util.memoryMonitor.enable</code>" is a typical name
+ * for a boolean property) and a description that a database administrator
+ * (who is not necessarily familiar with mondrian internals) would
+ * understand.</li>
+ *
+ * <li>Add a property definition to this class, including a javadoc
+ * comment which includes the description of the property.</li>
  *
  * <li>Modify the default <code>mondrian.properties</code> file checked into
  * source control, with a description of the property and its default
@@ -51,7 +58,7 @@ import java.lang.reflect.Modifier;
  * Configuration Specification</a>.</li>
  * </ul>
  *
- * <p>Similarly if you update or delete a property.
+ * <p>Similarly if you update or delete a property.</p>
  *
  * @author jhyde
  * @since 22 December, 2002

@@ -56,7 +56,7 @@ doImg() {
 ROOT=$(cd $(dirname $0); pwd -P)
 cd $ROOT
 
-javadoc=false
+javadoc=true
 deploy=true
 scp=true
 headJavadoc=false
@@ -159,6 +159,7 @@ s!cache_control.html!../documentation/cache_control.php!;
 s!mdx.html!../documentation/mdx.php!;
 s!xml_schema.html!../documentation/xml_schema.php!;
 s!schema.html!../documentation/schema.php!;
+s!configuration.html!../documentation/configuration.php!;
                         '
 
     # Change references to javadoc from documents.
