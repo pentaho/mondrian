@@ -2066,8 +2066,8 @@ public class XmlaHandler implements XmlaConstants {
         private void emitCell(SaxWriter writer, int[] pos,
                             Evaluator evaluator, int ordinal) {
             Cell cell = result.getCell(pos);
-            if (cell.isNull()) {
-                // Ignore null cell like MS AS
+            if (cell.isNull() && ordinal != 0) {
+                // Ignore null cell like MS AS, except for Oth ordinal
                 return;
             }
 
@@ -2106,6 +2106,10 @@ public class XmlaHandler implements XmlaConstants {
                 boolean isDecimal = false;
 
                 if (cellPropLong.equals(Property.VALUE.name)) {
+                    if (cell.isNull()) {
+                        // Return cell without value as in case of AS2005
+                        continue;
+                    }
                     final String dataType = (String)
                         evaluator.getProperty(Property.DATATYPE.getName(), null);
                     final ValueInfo vi = new ValueInfo(dataType, value);

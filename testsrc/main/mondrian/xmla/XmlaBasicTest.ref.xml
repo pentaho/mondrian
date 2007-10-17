@@ -11470,6 +11470,10 @@ FROM Sales
                         </Axis>
                     </Axes>
                     <CellData>
+                        <Cell CellOrdinal="0">
+                            <FmtValue/>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
                         <Cell CellOrdinal="2">
                             <Value xsi:type="xsd:double">65857.14</Value>
                             <FmtValue>65,857.14</FmtValue>
@@ -13588,6 +13592,10 @@ FROM Sales
                         </Axis>
                     </Axes>
                     <CellData>
+                        <Cell CellOrdinal="0">
+                            <FmtValue/>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
                         <Cell CellOrdinal="2">
                             <Value xsi:type="xsd:double">65857.14</Value>
                             <FmtValue>65,857.14</FmtValue>
@@ -14144,6 +14152,10 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         </Axis>
                     </Axes>
                     <CellData>
+                        <Cell CellOrdinal="0">
+                            <FmtValue/>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
                         <Cell CellOrdinal="2">
                             <Value xsi:type="xsd:double">65857.14</Value>
                             <FmtValue>65,857.14</FmtValue>
@@ -14699,6 +14711,10 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         </Axis>
                     </Axes>
                     <CellData>
+                        <Cell CellOrdinal="0">
+                            <FmtValue/>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
                         <Cell CellOrdinal="2">
                             <FmtValue>65,857.14</FmtValue>
                             <FormatString>#,###.00</FormatString>
@@ -15254,6 +15270,10 @@ Cell Properties Format_String, Formatted_Value
                         </Axis>
                     </Axes>
                     <CellData>
+                        <Cell CellOrdinal="0">
+                            <FmtValue/>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
                         <Cell CellOrdinal="2">
                             <Value xsi:type="xsd:double">65857.14</Value>
                             <FmtValue>65,857.14</FmtValue>
@@ -15855,6 +15875,10 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         </Axis>
                     </Axes>
                     <CellData>
+                        <Cell CellOrdinal="0">
+                            <FmtValue/>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
                         <Cell CellOrdinal="1">
                             <Value xsi:type="xsd:double">24597</Value>
                             <FmtValue>24,597</FmtValue>
@@ -16480,6 +16504,10 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         </Axis>
                     </Axes>
                     <CellData>
+                        <Cell CellOrdinal="0">
+                            <FmtValue/>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
                         <Cell CellOrdinal="2">
                             <Value xsi:type="xsd:double">24597</Value>
                             <FmtValue>24,597</FmtValue>
