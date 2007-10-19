@@ -600,6 +600,36 @@ suite of regression tests.</p>
       database using the <code>mondrian.rolap. aggregates.Read</code> property
       but will not be used unless this property is set to true.</p></td>
     </tr>
+<tr>
+    <td><code><a
+            href="api/mondrian/olap/MondrianProperties.html#OptimizePredicates">
+        mondrian.rolap.aggregates.optimizePredicates</a></code></td>
+    <td>boolean</td>
+    <td>true</td>
+    <td>Determines whether Mondrian optimizes predicates or not
+        <p>If set to true, Mondrian intelligently optimizes certain predicates.</p>
+        <p>If set to false, then predicates are optimized only when all the
+            members of a dimension are included.</p>
+
+        <p>Example:</p>
+
+        <p>For the in MDX query which selects all but one member of 1997 quarter:</p>
+        <p>
+            <code>select {[Time].[1997].[Q1],[Time].[1997].[Q2],[Time].[1997].[Q3]} on 0 from sales</code>
+            predicate optimization would result in sql that retrives all 4 quarters, instead of just 3.
+            The fourth quarter is cached along with others for future use:</p>
+
+        <p><code>...where`time_by_day`.`the_year` = 1997 group by
+            `time_by_day`.`the_year`, `time_by_day`.`quarter`...</code></p>
+        <p>(note the <code>where in</code> clause involving quarters is missing)</p>
+        <p>when predicate optimization is disabled, Mondrian would retrive no more data than specified by the query,
+            In the above case it would retrive only data for first 3 quarters:</p>
+
+        <p><code>...`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3') group by `time_by_day`.`the_year`, `time_by_day`.`quarter`...</code></p>
+
+
+    </td>
+</tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#ReadAggregates">
       mondrian.rolap.aggregates.Read</a></code></td>

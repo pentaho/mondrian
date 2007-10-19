@@ -13,22 +13,20 @@
 
 package mondrian.rolap.sql;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.util.*;
-
 import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
-
 import org.eigenbase.util.property.Property;
 import org.eigenbase.util.property.Trigger;
 
 import javax.sql.DataSource;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>
@@ -1667,6 +1665,11 @@ public class SqlQuery {
             int concurrency) {
             return supportedResultSetTypes.contains(
                 Arrays.asList(type, concurrency));
+        }
+
+
+        public String toString() {
+            return productName;
         }
     }
 
