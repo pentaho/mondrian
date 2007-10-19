@@ -48,16 +48,24 @@ public class UnresolvedFunCall extends ExpBase implements FunCall {
         this.name = name;
         this.syntax = syntax;
         this.args = args;
-        if (syntax == Syntax.Braces) {
+        switch (syntax) {
+        case Braces:
             Util.assertTrue(name.equals("{}"));
-        } else if (syntax == Syntax.Parentheses) {
+            break;
+        case Parentheses:
             Util.assertTrue(name.equals("()"));
-        } else if (syntax == Syntax.Internal) {
+            break;
+        case Internal:
             Util.assertTrue(name.startsWith("$"));
-        } else {
+            break;
+        case Empty:
+            Util.assertTrue(name.equals(""));
+            break;
+        default:
             Util.assertTrue(!name.startsWith("$") &&
-                        !name.equals("{}") &&
-                        !name.equals("()"));
+                !name.equals("{}") &&
+                !name.equals("()"));
+            break;
         }
     }
 

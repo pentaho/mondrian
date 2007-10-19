@@ -3945,6 +3945,12 @@ TODO: see above
                 StringBuilder buf = new StringBuilder(50);
                 List<FunInfo> functions = funTable.getFunInfoList();
                 for (FunInfo fi : functions) {
+                    switch (fi.getSyntax()) {
+                    case Empty:
+                    case Internal:
+                    case Parentheses:
+                        continue;
+                    }
                     if (!functionNameRT.passes(fi.getName())) {
                         continue;
                     }

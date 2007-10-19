@@ -1596,11 +1596,144 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Store].[All Stores].[USA].[OR]\n" +
                     "[Store].[All Stores].[USA].[WA]"));
 
-        assertThrows("select DrilldownLevel({[Store].[USA].[CA],[Store].[USA]},, 0) on columns from [Sales]",
-                "Syntax error");
+        assertAxisReturns("DrilldownLevel({[Store].[USA].[CA],[Store].[USA]},, 0)",
+            fold("[Store].[All Stores].[USA].[CA]\n" +
+                "[Store].[All Stores].[USA].[CA].[Alameda]\n" +
+                "[Store].[All Stores].[USA].[CA].[Beverly Hills]\n" +
+                "[Store].[All Stores].[USA].[CA].[Los Angeles]\n" +
+                "[Store].[All Stores].[USA].[CA].[San Diego]\n" +
+                "[Store].[All Stores].[USA].[CA].[San Francisco]\n" +
+                "[Store].[All Stores].[USA]\n" +
+                "[Store].[All Stores].[USA].[CA]\n" +
+                "[Store].[All Stores].[USA].[OR]\n" +
+                "[Store].[All Stores].[USA].[WA]"));
+
+        assertAxisReturns("DrilldownLevel({[Store].[USA].[CA],[Store].[USA]} * {[Gender].Members},, 0)",
+            fold("{[Store].[All Stores].[USA].[CA], [Gender].[All Gender]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Alameda], [Gender].[All Gender]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills], [Gender].[All Gender]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles], [Gender].[All Gender]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego], [Gender].[All Gender]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco], [Gender].[All Gender]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Alameda], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Gender].[All Gender].[M]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Alameda], [Gender].[All Gender].[M]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills], [Gender].[All Gender].[M]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles], [Gender].[All Gender].[M]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego], [Gender].[All Gender].[M]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco], [Gender].[All Gender].[M]}\n" +
+                "{[Store].[All Stores].[USA], [Gender].[All Gender]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Gender].[All Gender]}\n" +
+                "{[Store].[All Stores].[USA].[OR], [Gender].[All Gender]}\n" +
+                "{[Store].[All Stores].[USA].[WA], [Gender].[All Gender]}\n" +
+                "{[Store].[All Stores].[USA], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA].[OR], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA].[WA], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA], [Gender].[All Gender].[M]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Gender].[All Gender].[M]}\n" +
+                "{[Store].[All Stores].[USA].[OR], [Gender].[All Gender].[M]}\n" +
+                "{[Store].[All Stores].[USA].[WA], [Gender].[All Gender].[M]}"));
+
+        assertAxisReturns("DrilldownLevel({[Store].[USA].[CA],[Store].[USA]} * {[Gender].Members},, 1)",
+            fold("{[Store].[All Stores].[USA].[CA], [Gender].[All Gender]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Gender].[All Gender].[M]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Gender].[All Gender].[M]}\n" +
+                "{[Store].[All Stores].[USA], [Gender].[All Gender]}\n" +
+                "{[Store].[All Stores].[USA], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA], [Gender].[All Gender].[M]}\n" +
+                "{[Store].[All Stores].[USA], [Gender].[All Gender].[F]}\n" +
+                "{[Store].[All Stores].[USA], [Gender].[All Gender].[M]}"));
     }
 
+    public void testDrilldownLevelTop() {
+        // <set>, <n>, <level>
+        assertAxisReturns("DrilldownLevelTop({[Store].[USA]}, 2, [Store].[Store Country])",
+            fold("[Store].[All Stores].[USA]\n" +
+                    "[Store].[All Stores].[USA].[WA]\n" +
+                    "[Store].[All Stores].[USA].[CA]"));
 
+        // similarly DrilldownLevelBottom
+        assertAxisReturns("DrilldownLevelBottom({[Store].[USA]}, 2, [Store].[Store Country])",
+            fold("[Store].[All Stores].[USA]\n" +
+                    "[Store].[All Stores].[USA].[OR]\n" +
+                    "[Store].[All Stores].[USA].[CA]"));
+
+        // <set>, <n>
+        assertAxisReturns("DrilldownLevelTop({[Store].[USA]}, 2)",
+            fold("[Store].[All Stores].[USA]\n" +
+                    "[Store].[All Stores].[USA].[WA]\n" +
+                    "[Store].[All Stores].[USA].[CA]"));
+
+        // <n> greater than number of children
+        assertAxisReturns("DrilldownLevelTop({[Store].[USA], [Store].[Canada]}, 4)",
+            fold("[Store].[All Stores].[USA]\n" +
+                "[Store].[All Stores].[USA].[WA]\n" +
+                "[Store].[All Stores].[USA].[CA]\n" +
+                "[Store].[All Stores].[USA].[OR]\n" +
+                "[Store].[All Stores].[Canada]\n" +
+                "[Store].[All Stores].[Canada].[BC]"));
+
+        // <n> negative
+        assertAxisReturns("DrilldownLevelTop({[Store].[USA]}, 2 - 3)",
+            fold("[Store].[All Stores].[USA]"));
+
+        // <n> zero
+        assertAxisReturns("DrilldownLevelTop({[Store].[USA]}, 2 - 2)",
+            fold("[Store].[All Stores].[USA]"));
+
+        // <n> null
+        assertAxisReturns("DrilldownLevelTop({[Store].[USA]}, null)",
+            fold("[Store].[All Stores].[USA]"));
+
+        // mixed bag, no level, all expanded
+        assertAxisReturns("DrilldownLevelTop({[Store].[USA], [Store].[USA].[CA].[San Francisco], [Store].[All Stores], [Store].[Canada].[BC]}, 2)",
+            fold("[Store].[All Stores].[USA]\n" +
+                "[Store].[All Stores].[USA].[WA]\n" +
+                "[Store].[All Stores].[USA].[CA]\n" +
+                "[Store].[All Stores].[USA].[CA].[San Francisco]\n" +
+                "[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]\n" +
+                "[Store].[All Stores]\n" +
+                "[Store].[All Stores].[USA]\n" +
+                "[Store].[All Stores].[Canada]\n" +
+                "[Store].[All Stores].[Canada].[BC]\n" +
+                "[Store].[All Stores].[Canada].[BC].[Vancouver]\n" +
+                "[Store].[All Stores].[Canada].[BC].[Victoria]"));
+
+        // mixed bag, only specified level expanded
+        assertAxisReturns("DrilldownLevelTop({[Store].[USA], [Store].[USA].[CA].[San Francisco], [Store].[All Stores], [Store].[Canada].[BC]}, 2, [Store].[Store City])",
+            fold("[Store].[All Stores].[USA]\n" +
+                "[Store].[All Stores].[USA].[CA].[San Francisco]\n" +
+                "[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]\n" +
+                "[Store].[All Stores]\n" +
+                "[Store].[All Stores].[Canada].[BC]"));
+
+        // bad level
+        assertAxisThrows("DrilldownLevelTop({[Store].[USA]}, 2, [Customers].[Country])",
+            "Level '[Customers].[Country]' not compatible with member '[Store].[All Stores].[USA]'");
+    }
+
+    public void testDrilldownMemberEmptyExpr() {
+        // no level, with expression
+        assertAxisReturns("DrilldownLevelTop({[Store].[USA]}, 2, , [Measures].[Unit Sales])",
+            fold("[Store].[All Stores].[USA]\n" +
+                    "[Store].[All Stores].[USA].[WA]\n" +
+                    "[Store].[All Stores].[USA].[CA]"));
+
+        // reverse expression
+        assertAxisReturns("DrilldownLevelTop({[Store].[USA]}, 2, , - [Measures].[Unit Sales])",
+            fold("[Store].[All Stores].[USA]\n" +
+                    "[Store].[All Stores].[USA].[OR]\n" +
+                    "[Store].[All Stores].[USA].[CA]"));
+    }
+    
     public void testDrilldownMember() {
 
         // Expect all children of USA

@@ -3086,35 +3086,6 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <FUNCTION_NAME>$AggregateChildren</FUNCTION_NAME>
-                        <DESCRIPTION>Equivalent to
-                            'Aggregate(&lt;Hierarchy>.CurrentMember.Children);
-                            for internal use.</DESCRIPTION>
-                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
-                        <RETURN_TYPE>5</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>$AggregateChildren</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>$Cache</FUNCTION_NAME>
-                        <DESCRIPTION>Evaluates and returns its sole
-                            argument, applying statement-level caching</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>$Cache</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>()</FUNCTION_NAME>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>()</CAPTION>
-                    </row>
-                    <row>
                         <FUNCTION_NAME>*</FUNCTION_NAME>
                         <DESCRIPTION>Multiplies two numbers.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
@@ -3961,6 +3932,102 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>DrilldownLevel</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DrilldownLevel</FUNCTION_NAME>
+                        <DESCRIPTION>Drills down the members of a set,
+                            at a specified level, to one level below.
+                            Alternatively, drills down on a specified
+                            dimension in the set.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Empty, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DrilldownLevel</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DrilldownLevelBottom</FUNCTION_NAME>
+                        <DESCRIPTION>Drills down the bottommost members
+                            of a set, at a specified level, to one level below.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DrilldownLevelBottom</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DrilldownLevelBottom</FUNCTION_NAME>
+                        <DESCRIPTION>Drills down the bottommost members
+                            of a set, at a specified level, to one level below.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Level</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DrilldownLevelBottom</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DrilldownLevelBottom</FUNCTION_NAME>
+                        <DESCRIPTION>Drills down the bottommost members
+                            of a set, at a specified level, to one level below.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Level,
+                            Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DrilldownLevelBottom</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DrilldownLevelBottom</FUNCTION_NAME>
+                        <DESCRIPTION>Drills down the bottommost members
+                            of a set, at a specified level, to one level below.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Empty,
+                            Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DrilldownLevelBottom</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DrilldownLevelTop</FUNCTION_NAME>
+                        <DESCRIPTION>Drills down the topmost members of
+                            a set, at a specified level, to one level below.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DrilldownLevelTop</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DrilldownLevelTop</FUNCTION_NAME>
+                        <DESCRIPTION>Drills down the topmost members of
+                            a set, at a specified level, to one level below.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Level</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DrilldownLevelTop</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DrilldownLevelTop</FUNCTION_NAME>
+                        <DESCRIPTION>Drills down the topmost members of
+                            a set, at a specified level, to one level below.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Level,
+                            Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DrilldownLevelTop</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DrilldownLevelTop</FUNCTION_NAME>
+                        <DESCRIPTION>Drills down the topmost members of
+                            a set, at a specified level, to one level below.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Empty,
+                            Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DrilldownLevelTop</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownMember</FUNCTION_NAME>

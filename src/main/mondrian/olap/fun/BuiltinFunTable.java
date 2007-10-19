@@ -54,6 +54,16 @@ public class BuiltinFunTable extends FunTableImpl {
     protected void defineFunctions() {
         defineReserved("NULL");
 
+        // Empty expression
+        define(
+            new FunDefBase(
+                "",
+                "",
+                "Dummy function representing the empty expression",
+                Syntax.Empty,
+                Category.Empty,
+                new int[0]) {});
+
         // first char: p=Property, m=Method, i=Infix, P=Prefix
         // 2nd:
 
@@ -941,26 +951,8 @@ public class BuiltinFunTable extends FunTableImpl {
         define(DistinctFunDef.instance);
         define(DrilldownLevelFunDef.Resolver);
 
-        if (false) define(new FunDefBase(
-                "DrilldownLevelBottom",
-                "DrilldownLevelBottom(<Set>, <Count>[, [<Level>][, <Numeric Expression>]])",
-                "Drills down the bottom N members of a set, at a specified level, to one level below.",
-                "fx*") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                throw new UnsupportedOperationException();
-            }
-        });
-
-        if (false) define(new FunDefBase(
-                "DrilldownLevelTop",
-                "DrilldownLevelTop(<Set>, <Count>[, [<Level>][, <Numeric Expression>]])",
-                "Drills down the top N members of a set, at a specified level, to one level below.",
-                "fx*") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                throw new UnsupportedOperationException();
-            }
-        });
-
+        define(DrilldownLevelTopBottomFunDef.DrilldownLevelTopResolver);
+        define(DrilldownLevelTopBottomFunDef.DrilldownLevelBottomResolver);
         define(DrilldownMemberFunDef.Resolver);
 
         if (false) define(new FunDefBase(

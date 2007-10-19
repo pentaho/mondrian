@@ -321,12 +321,13 @@ public class FunUtil extends Util {
      * @pre exp.getType() instanceof ScalarType
      */
     static Map<Member, Object> evaluateMembers(
-            Evaluator evaluator,
-            Calc exp,
-            List<Member> members,
-            boolean parentsToo) {
-        // RME
-        evaluator= evaluator.push();
+        Evaluator evaluator,
+        Calc exp,
+        List<Member> members,
+        boolean parentsToo)
+    {
+        // REVIEW: is this necessary?
+        evaluator = evaluator.push();
 
         assert exp.getType() instanceof ScalarType;
         Map<Member, Object> mapMemberToValue = new HashMap<Member, Object>();
@@ -418,38 +419,47 @@ public class FunUtil extends Util {
      * <p>NOTE: This function does not preserve the contents of the validator.
      */
     static void sortMembers(
-            Evaluator evaluator,
-            List<Member> members,
-            Calc exp,
-            boolean desc,
-            boolean brk) {
+        Evaluator evaluator,
+        List<Member> members,
+        Calc exp,
+        boolean desc,
+        boolean brk)
+    {
         if (members.isEmpty()) {
             return;
         }
         Object first = members.get(0);
-        Comparator comparator;
         Map<Member, Object> mapMemberToValue;
         if (first instanceof Member) {
             final boolean parentsToo = !brk;
             mapMemberToValue = evaluateMembers(evaluator, exp, members, parentsToo);
+            Comparator<Member> comparator;
             if (brk) {
-                comparator = new BreakMemberComparator(mapMemberToValue, desc);
+                comparator =
+                    new BreakMemberComparator(mapMemberToValue, desc).wrap();
             } else {
-                comparator = new HierarchicalMemberComparator(mapMemberToValue, desc);
+                comparator =
+                    new HierarchicalMemberComparator(mapMemberToValue, desc)
+                        .wrap();
             }
+            Collections.sort(members, comparator);
         } else {
             Util.assertTrue(first instanceof Member[]);
             final int arity = ((Member[]) first).length;
+            Comparator<Member[]> comparator;
             if (brk) {
-                comparator = new BreakArrayComparator(evaluator, exp, arity);
+                comparator = new BreakArrayComparator(evaluator, exp, arity)
+                    .wrap();
                 if (desc) {
-                    comparator = new ReverseComparator(comparator);
+                    comparator = new ReverseComparator<Member[]>(comparator);
                 }
             } else {
-                comparator = new HierarchicalArrayComparator(evaluator, exp, arity, desc);
+                comparator =
+                    new HierarchicalArrayComparator(
+                        evaluator, exp, arity, desc).wrap();
             }
+            Collections.sort((List) members, comparator);
         }
-        Collections.sort(members, comparator);
         if (debug) {
             final PrintWriter pw = new PrintWriter(System.out);
             for (int i = 0; i < members.size(); i++) {
@@ -482,14 +492,17 @@ public class FunUtil extends Util {
         if (tuples.isEmpty()) {
             return;
         }
-        Comparator comparator;
+        Comparator<Member[]> comparator;
         if (brk) {
-            comparator = new BreakArrayComparator(evaluator, exp, arity);
+            comparator =
+                new BreakArrayComparator(evaluator, exp, arity).wrap();
             if (desc) {
-                comparator = new ReverseComparator(comparator);
+                comparator = new ReverseComparator<Member[]>(comparator);
             }
         } else {
-            comparator = new HierarchicalArrayComparator(evaluator, exp, arity, desc);
+            comparator =
+                new HierarchicalArrayComparator(
+                    evaluator, exp, arity, desc).wrap();
         }
         Collections.sort(tuples, comparator);
         if (debug) {
@@ -509,15 +522,18 @@ public class FunUtil extends Util {
             return;
         }
         Object first = members.get(0);
-        Comparator comparator;
         if (first instanceof Member) {
-            comparator = new HierarchizeComparator(post);
+            List<Member> memberList = members;
+            Comparator<Member> comparator = new HierarchizeComparator(post);
+            Collections.sort(memberList, comparator);
         } else {
-            Util.assertTrue(first instanceof Member[]);
+            assert first instanceof Member[];
             final int arity = ((Member[]) first).length;
-            comparator = new HierarchizeArrayComparator(arity, post);
+            List<Member[]> tupleList = members;
+            Comparator<Member[]> comparator =
+                new HierarchizeArrayComparator(arity, post).wrap();
+            Collections.sort(tupleList, comparator);
         }
-        Collections.sort(members, comparator);
     }
 
     static int sign(double d) {
@@ -794,6 +810,8 @@ public class FunUtil extends Util {
             return Category.Symbol;
         case 'U':
             return Category.Null;
+        case 'e':
+            return Category.Empty;
         default:
             throw newInternal(
                     "unknown type code '" + c + "' in string '" + flags + "'");
@@ -1690,6 +1708,8 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         case Category.Null:
         	// now null supports members as well as numerics
             return  to == Category.Numeric || to == Category.Member;
+        case Category.Empty:
+            return false;
         default:
             throw newInternal("unknown category " + from);
         }
@@ -1699,8 +1719,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
      * Returns whether one of the members in a tuple is null.
      */
     static boolean tupleContainsNullMember(Member[] tuple) {
-        for (int i = 0; i < tuple.length; i++) {
-            Member member = tuple[i];
+        for (Member member : tuple) {
             if (member.isNull()) {
                 return true;
             }
@@ -1975,7 +1994,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
 
     // ~ Inner classes ---------------------------------------------------------
 
-    private static abstract class MemberComparator implements Comparator {
+    private static abstract class MemberComparator implements Comparator<Member> {
         private static final Logger LOGGER =
                 Logger.getLogger(MemberComparator.class);
         Map<Member, Object> mapMemberToValue;
@@ -1986,33 +2005,37 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             this.desc = desc;
         }
 
-        // implement Comparator
-        public int compare(Object o1, Object o2) {
-            Member m1 = (Member) o1,
-                    m2 = (Member) o2;
-            int c = compareInternal(m1, m2);
+        Comparator<Member> wrap() {
+            final MemberComparator comparator = this;
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                        "compare " +
-                        m1.getUniqueName() +
-                        "(" + mapMemberToValue.get(m1) + "), " +
-                        m2.getUniqueName() +
-                        "(" + mapMemberToValue.get(m2) + ")" +
-                        " yields " + c);
+                return new Comparator<Member>() {
+                    public int compare(Member m1, Member m2) {
+                        final int c = comparator.compare(m1, m2);
+                        LOGGER.debug(
+                                "compare " +
+                                m1.getUniqueName() +
+                                "(" + mapMemberToValue.get(m1) + "), " +
+                                m2.getUniqueName() +
+                                "(" + mapMemberToValue.get(m2) + ")" +
+                                " yields " + c);
+                        return c;
+                    }
+                };
+            } else {
+                return this;
             }
-            return c;
         }
 
-        protected abstract int compareInternal(Member m1, Member m2);
-
-        protected int compareByValue(Member m1, Member m2) {
+        protected final int compareByValue(Member m1, Member m2) {
             Object value1 = mapMemberToValue.get(m1),
                     value2 = mapMemberToValue.get(m2);
             final int c = FunUtil.compareValues(value1, value2);
             return desc ? -c : c;
         }
 
-        protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
+        protected final int compareHierarchicallyButSiblingsByValue(
+            Member m1, Member m2)
+        {
             if (FunUtil.equals(m1, m2)) {
                 return 0;
             }
@@ -2052,12 +2075,15 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
     }
 
     private static class HierarchicalMemberComparator
-            extends MemberComparator {
-        HierarchicalMemberComparator(Map<Member, Object> mapMemberToValue, boolean desc) {
+            extends MemberComparator
+    {
+        HierarchicalMemberComparator(
+            Map<Member, Object> mapMemberToValue, boolean desc)
+        {
             super(mapMemberToValue, desc);
         }
 
-        protected int compareInternal(Member m1, Member m2) {
+        public int compare(Member m1, Member m2) {
             return compareHierarchicallyButSiblingsByValue(m1, m2);
         }
     }
@@ -2067,7 +2093,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             super(mapMemberToValue, desc);
         }
 
-        protected int compareInternal(Member m1, Member m2) {
+        public final int compare(Member m1, Member m2) {
             return compareByValue(m1, m2);
         }
     }
@@ -2075,13 +2101,36 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
     /**
      * Compares tuples, which are represented as arrays of {@link Member}s.
      */
-    private static abstract class ArrayComparator implements Comparator {
+    private static abstract class ArrayComparator
+        implements Comparator<Member[]>
+    {
         private static final Logger LOGGER =
-                Logger.getLogger(ArrayComparator.class);
-        int arity;
+            Logger.getLogger(ArrayComparator.class);
+
+        final int arity;
 
         ArrayComparator(int arity) {
             this.arity = arity;
+        }
+
+        Comparator<Member[]> wrap() {
+            if (LOGGER.isDebugEnabled()) {
+                return new LoggingTupleComparator(this, LOGGER);
+            } else {
+                return this;
+            }
+        }
+    }
+
+    private static class LoggingTupleComparator
+        implements Comparator<Member[]>
+    {
+        private final Comparator<Member[]> comparator;
+        private final Logger logger;
+
+        LoggingTupleComparator(Comparator<Member[]> comparator, Logger logger) {
+            this.comparator = comparator;
+            this.logger = logger;
         }
 
         private static String toString(Member[] a) {
@@ -2096,19 +2145,13 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             return sb.toString();
         }
 
-        public int compare(Object o1, Object o2) {
-            final Member[] a1 = (Member[]) o1;
-            final Member[] a2 = (Member[]) o2;
-            final int c = compare(a1, a2);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                        "compare {" + toString(a1)+ "}, {" + toString(a2) +
-                        "} yields " + c);
-            }
+        public int compare(Member[] a1, Member[] a2) {
+            int c = comparator.compare(a1, a2);
+            logger.debug(
+                "compare {" + toString(a1)+ "}, {" + toString(a2) +
+                    "} yields " + c);
             return c;
         }
-
-        protected abstract int compare(Member[] a1, Member[] a2);
     }
 
     /**
@@ -2125,7 +2168,6 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             this.evaluator = evaluator;
             this.calc = calc;
         }
-
     }
 
     private static class HierarchicalArrayComparator
@@ -2138,7 +2180,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             this.desc = desc;
         }
 
-        protected int compare(Member[] a1, Member[] a2) {
+        public int compare(Member[] a1, Member[] a2) {
             int c = 0;
             evaluator = evaluator.push();
             for (int i = 0; i < arity; i++) {
@@ -2209,7 +2251,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             super(evaluator, calc, arity);
         }
 
-        protected int compare(Member[] a1, Member[] a2) {
+        public int compare(Member[] a1, Member[] a2) {
             evaluator.setContext(a1);
             Object v1 = calc.evaluate(evaluator);
             evaluator.setContext(a2);
@@ -2230,7 +2272,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             this.post = post;
         }
 
-        protected int compare(Member[] a1, Member[] a2) {
+        public int compare(Member[] a1, Member[] a2) {
             for (int i = 0; i < arity; i++) {
                 Member m1 = a1[i],
                         m2 = a2[i];
@@ -2250,27 +2292,27 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
      * Compares {@link Member}s so as to arrage them in prefix or postfix
      * hierarchical order.
      */
-    private static class HierarchizeComparator implements Comparator {
+    private static class HierarchizeComparator implements Comparator<Member> {
         private final boolean post;
 
         HierarchizeComparator(boolean post) {
             this.post = post;
         }
-        public int compare(Object o1, Object o2) {
-            return FunUtil.compareHierarchically((Member) o1, (Member) o2, post);
+        public int compare(Member o1, Member o2) {
+            return FunUtil.compareHierarchically(o1, o2, post);
         }
     }
 
     /**
      * Reverses the order of a {@link Comparator}.
      */
-    private static class ReverseComparator implements Comparator {
-        Comparator comparator;
-        ReverseComparator(Comparator comparator) {
+    private static class ReverseComparator<T> implements Comparator<T> {
+        Comparator<T> comparator;
+        ReverseComparator(Comparator<T> comparator) {
             this.comparator = comparator;
         }
 
-        public int compare(Object o1, Object o2) {
+        public int compare(T o1, T o2) {
             int c = comparator.compare(o1, o2);
             return -c;
         }

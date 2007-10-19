@@ -376,6 +376,15 @@ public class ParserTest extends TestCase {
                 "where ([Time].[1997].[Q2].[4])\n"));
     }
 
+    public void testEmptyExpr() {
+        assertParseQuery(
+            "SELECT NON EMPTY HIERARCHIZE({DrillDownLevelTop({[Product].[All Products]},\n"
+                + "3, , [Measures].[Unit Sales])}) on columns from [Sales]",
+            TestContext.fold(
+                "select NON EMPTY HIERARCHIZE({DrillDownLevelTop({[Product].[All Products]}, 3.0, , [Measures].[Unit Sales])}) ON COLUMNS\n" +
+                    "from [Sales]\n"));
+    }
+
     /**
      * Parses an MDX query and asserts that the result is as expected when
      * unparsed.
@@ -541,7 +550,6 @@ public class ParserTest extends TestCase {
             unparse(pw);
             return sw.toString();
         }
-
     }
 }
 
