@@ -334,7 +334,7 @@ public class Aggregation {
 
         for (Integer j : indexes) {
             abloat = abloat * bloats[j];
-            if (bloats[j] <= aBloatLimit) {
+            if (abloat <= aBloatLimit) {
                 break;
             }
             // eliminate this constraint
