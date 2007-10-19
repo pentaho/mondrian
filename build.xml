@@ -527,6 +527,8 @@ in {mondrian.foodmart.jdbcURL}.">
             <path refid="project.test.classpath"/>
         </classpath>
 
+        <jvmarg line="${junit.jvmargs}"/>
+
         <sysproperty key="log4j.configuration"
             value="log4j.properties"/>
         <sysproperty key="mondrian.jdbcDrivers"
