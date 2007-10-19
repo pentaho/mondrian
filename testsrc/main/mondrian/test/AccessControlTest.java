@@ -303,11 +303,16 @@ public class AccessControlTest extends FoodMartTestCase {
     private Connection getRestrictedConnection() {
         return getRestrictedConnection(true);
     }
+
     /**
+     * Returns a connection with limited access to the schema.
+     *
      * @param restrictCustomers true to restrict access to the customers
      * dimension. This will change the defaultMember of the dimension,
      * all cell values will be null because there are no sales data
      * for Canada
+     *
+     * @return restricted connection
      */
     private Connection getRestrictedConnection(boolean restrictCustomers) {
         Connection connection = getTestContext().getFoodMartConnection(false);
@@ -358,6 +363,10 @@ public class AccessControlTest extends FoodMartTestCase {
         }
     }
 
+    /**
+     * Test context where the [Store] hierarchy has restricted access
+     * and cell values are rolled up with 'partial' policy.
+     */
     private final TestContext rollupTestContext =
         TestContext.create(
             null, null, null, null, null,
@@ -420,14 +429,21 @@ public class AccessControlTest extends FoodMartTestCase {
             "([Store].[USA].Parent)", "192,025");
     }
 
-    /**test that members below bottom level are regarded as visible */
+    /**
+     * Tests that members below bottom level are regarded as visible.
+     */
     public void testRollupBottomLevel() {
-        rollupPolicyBottom(Role.RollupPolicy.FULL);
-        rollupPolicyBottom(Role.RollupPolicy.PARTIAL);
-        rollupPolicyBottom(Role.RollupPolicy.HIDDEN);
+        rollupPolicyBottom(Role.RollupPolicy.FULL, "74,748", "36,759", "266,773");
+        rollupPolicyBottom(Role.RollupPolicy.PARTIAL, "72,739", "35,775", "264,764");
+        rollupPolicyBottom(Role.RollupPolicy.HIDDEN, "", "", "");
     }
 
-    private void rollupPolicyBottom(Role.RollupPolicy rollupPolicy) {
+    private void rollupPolicyBottom(
+        Role.RollupPolicy rollupPolicy,
+        String v1,
+        String v2,
+        String v3)
+    {
         TestContext testContext  =
             TestContext.create(
                 null, null, null, null, null,
@@ -451,31 +467,121 @@ public class AccessControlTest extends FoodMartTestCase {
             "([Customers].[USA].[CA].[Los Angeles])",
             "MDX object '[Customers].[USA].[CA].[Los Angeles]' not found in cube 'Sales'");
 
-        switch (rollupPolicy) {
-        case FULL:
-            testContext.assertExprReturns("([Customers].[USA].[CA])", "74,748");
-            testContext.assertExprReturns("([Customers].[USA].[CA], [Gender].[F])", "36,759");
-            testContext.assertExprReturns("([Customers].[USA])", "266,773");
-            break;
-        case PARTIAL:
-            testContext.assertExprReturns("([Customers].[USA].[CA])", "72,739");
-            testContext.assertExprReturns("([Customers].[USA].[CA], [Gender].[F])", "35,775");
-            testContext.assertExprReturns("([Customers].[USA])", "264,764");
-            break;
-        case HIDDEN:
-            testContext.assertExprReturns("([Customers].[USA].[CA])", "");
-            testContext.assertExprReturns("([Customers].[USA].[CA], [Gender].[F])", "");
-            testContext.assertExprReturns("([Customers].[USA])", "");
-            break;
-        }
+        testContext.assertExprReturns("([Customers].[USA].[CA])", v1);
+        testContext.assertExprReturns("([Customers].[USA].[CA], [Gender].[F])", v2);
+        testContext.assertExprReturns("([Customers].[USA])", v3);
     }
 
-    // todo: bad value in schema file for rollupPolicy attribute
-        // todo: test where one child is not visible and policy=full
-        // todo: test where one child is not visible and policy=partial
-        // todo: test where one child is not visible and policy=hidden
-        // todo: test where all children are visible but a grandchild is not
-        // todo: performance test where 1 of 1000 children is not visible
+    /**
+     * Tests that a bad value for the rollupPolicy attribute gives the
+     * appropriate error.
+     */
+    public void testRollupPolicyNegative() {
+        TestContext testContext  =
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name=\"Role1\">\n"
+                    + "  <SchemaGrant access=\"none\">\n"
+                    + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                    + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" rollupPolicy=\"bad\" bottomLevel=\"[Customers].[City]\">\n"
+                    + "        <MemberGrant member=\"[Customers].[USA]\" access=\"all\"/>\n"
+                    + "        <MemberGrant member=\"[Customers].[USA].[CA].[Los Angeles]\" access=\"none\"/>\n"
+                    + "      </HierarchyGrant>\n"
+                    + "    </CubeGrant>\n"
+                    + "  </SchemaGrant>\n"
+                    + "</Role>")
+                .withRole("Role1");
+        testContext.assertThrows(
+            "select from [Sales]",
+            "Illegal rollupPolicy value 'bad'");
+    }
+
+    /**
+     * Tests where all children are visible but a grandchild is not.
+     */
+    public void testRollupPolicyGreatGrandchildInvisible() {
+        rollupPolicyGreatGrandchildInvisible(
+            Role.RollupPolicy.FULL, "266,773", "74,748");
+        rollupPolicyGreatGrandchildInvisible(
+            Role.RollupPolicy.PARTIAL, "266,767", "74,742");
+        rollupPolicyGreatGrandchildInvisible(
+            Role.RollupPolicy.HIDDEN, "", "");
+    }
+
+    private void rollupPolicyGreatGrandchildInvisible(
+        Role.RollupPolicy policy,
+        String v1,
+        String v2)
+    {
+        TestContext testContext  =
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name=\"Role1\">\n"
+                    + "  <SchemaGrant access=\"none\">\n"
+                    + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                    + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" rollupPolicy=\""
+                    + policy
+                    + "\">\n"
+                    + "        <MemberGrant member=\"[Customers].[USA]\" access=\"all\"/>\n"
+                    + "        <MemberGrant member=\"[Customers].[USA].[CA].[San Francisco].[Gladys Evans]\" access=\"none\"/>\n"
+                    + "      </HierarchyGrant>\n"
+                    + "    </CubeGrant>\n"
+                    + "  </SchemaGrant>\n"
+                    + "</Role>")
+                .withRole("Role1");
+        testContext.assertExprReturns("[Measures].[Unit Sales]", v1);
+        testContext.assertExprReturns("([Measures].[Unit Sales], [Customers].[USA])", v1);
+        testContext.assertExprReturns("([Measures].[Unit Sales], [Customers].[USA].[CA])", v2);
+    }
+
+    /**
+     * Tests where two hierarchies are simultaneously access-controlled.
+     */
+    public void testRollupPolicySimultaneous() {
+        // note that v2 is different for full vs partial, v3 is the same
+        rollupPolicySimultaneous(
+            Role.RollupPolicy.FULL, "266,773", "74,748", "25,635");
+        rollupPolicySimultaneous(
+            Role.RollupPolicy.PARTIAL, "72,631", "72,631", "25,635");
+        rollupPolicySimultaneous(
+            Role.RollupPolicy.HIDDEN, "", "", "");
+    }
+
+    private void rollupPolicySimultaneous(
+        Role.RollupPolicy policy,
+        String v1,
+        String v2, String v3)
+    {
+        TestContext testContext  =
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name=\"Role1\">\n"
+                    + "  <SchemaGrant access=\"none\">\n"
+                    + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                    + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" rollupPolicy=\""
+                    + policy
+                    + "\">\n"
+                    + "        <MemberGrant member=\"[Customers].[USA]\" access=\"all\"/>\n"
+                    + "        <MemberGrant member=\"[Customers].[USA].[CA].[San Francisco].[Gladys Evans]\" access=\"none\"/>\n"
+                    + "      </HierarchyGrant>\n"
+                    + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\""
+                    + policy
+                    + "\">\n"
+                    + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>\n"
+                    + "        <MemberGrant member=\"[Store].[USA].[CA].[San Francisco].[Store 14]\" access=\"none\"/>\n"
+                    + "      </HierarchyGrant>\n"
+                    + "    </CubeGrant>\n"
+                    + "  </SchemaGrant>\n"
+                    + "</Role>")
+                .withRole("Role1");
+        testContext.assertExprReturns("[Measures].[Unit Sales]", v1);
+        testContext.assertExprReturns("([Measures].[Unit Sales], [Customers].[USA])", v1);
+        testContext.assertExprReturns("([Measures].[Unit Sales], [Customers].[USA].[CA])", v2);
+        testContext.assertExprReturns("([Measures].[Unit Sales], [Customers].[USA].[CA], [Store].[USA].[CA])", v2);
+        testContext.assertExprReturns("([Measures].[Unit Sales], [Customers].[USA].[CA], [Store].[USA].[CA].[San Diego])", v3);
+    }
+
+    // todo: performance test where 1 of 1000 children is not visible
 }
 
 // End AccessControlTest.java
