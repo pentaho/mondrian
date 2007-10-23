@@ -25,13 +25,11 @@ public class DefaultXmlaResponse implements XmlaResponse  {
     // TODO: add a msg to MondrianResource for this.
     private static final String MSG_ENCODING_ERROR = "Encoding unsupported: ";
 
-    private SaxWriter writer;
-    private final String encoding;
+    private final SaxWriter writer;
 
     public DefaultXmlaResponse(OutputStream outputStream, String encoding) {
-        this.encoding = encoding;
         try {
-            writer = new DefaultSaxWriter(outputStream, this.encoding);
+            writer = new DefaultSaxWriter(outputStream, encoding);
         } catch (UnsupportedEncodingException uee) {
             throw Util.newError(uee, MSG_ENCODING_ERROR + encoding);
         }

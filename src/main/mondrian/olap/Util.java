@@ -1146,6 +1146,78 @@ public class Util extends XOMUtil {
         return replace(str, versionString, "${mondrianVersion}");
     }
 
+    /**
+     * Converts a list of SQL-style patterns into a Java regular expression.
+     *
+     * <p>For example, {"Foo_", "Bar%BAZ"} becomes "Foo.|Bar.*BAZ".
+     * 
+     * @param wildcards List of SQL-style wildcard expressions
+     * @return Regular expression
+     */
+    public static String wildcardToRegexp(List<String> wildcards) {
+        StringBuilder buf = new StringBuilder();
+        for (String value : wildcards) {
+            if (buf.length() > 0) {
+                buf.append('|');
+            }
+            int i = 0;
+            while (true) {
+                int percent = value.indexOf('%', i);
+                int underscore = value.indexOf('_', i);
+                if (percent == -1 && underscore == -1) {
+                    if (i < value.length()) {
+                        buf.append(Pattern.quote(value.substring(i)));
+                    }
+                    break;
+                }
+                if (underscore >= 0 && (underscore < percent || percent < 0)) {
+                    if (i < underscore) {
+                        buf.append(
+                            Pattern.quote(value.substring(i, underscore)));
+                    }
+                    buf.append('.');
+                    i = underscore + 1;
+                } else if (percent >= 0 && (percent < underscore || underscore < 0)) {
+                    if (i < percent) {
+                    buf.append(
+                        Pattern.quote(value.substring(i, percent)));
+                    }
+                    buf.append(".*");
+                    i = percent + 1;
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            }
+        }
+        return buf.toString();
+    }
+
+    /**
+     * Converts a camel-case name to an upper-case name with underscores.
+     *
+     * <p>For example, <code>camelToUpper("FooBar")</code> returns "FOO_BAR".
+     *
+     * @param s Camel-case string
+     * @return  Upper-case string
+     */
+    public static String camelToUpper(String s) {
+        StringBuffer buf = new StringBuffer(s.length() + 10);
+        int prevUpper = -1;
+        for (int i = 0; i < s.length(); ++i) {
+            char c = s.charAt(i);
+            if (Character.isUpperCase(c)) {
+                if (i > prevUpper + 1) {
+                    buf.append('_');
+                }
+                prevUpper = i;
+            } else {
+                c = Character.toUpperCase(c);
+            }
+            buf.append(c);
+        }
+        return buf.toString();
+    }
+
     public static class ErrorCellValue {
         public String toString() {
             return "#ERR";

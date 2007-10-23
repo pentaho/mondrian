@@ -361,6 +361,31 @@ public class UtilTestCase extends TestCase {
         // nested properties are expanded, but not recursively
         assertEquals("${foobarbaz}", Util.replaceProperties("${foo${foo}baz}", map));
     }
+
+    public void testWildcard() {
+        assertEquals(
+            ".\\QFoo\\E.|\\QBar\\E.*\\QBAZ\\E",
+            Util.wildcardToRegexp(
+                Arrays.asList("_Foo_", "Bar%BAZ")));
+    }
+
+    public void testCamel() {
+        assertEquals(
+            "FOO_BAR",
+            Util.camelToUpper("FooBar"));
+        assertEquals(
+            "FOO_BAR",
+            Util.camelToUpper("fooBar"));
+        assertEquals(
+            "URL",
+            Util.camelToUpper("URL"));
+        assertEquals(
+            "URLTO_CLICK_ON",
+            Util.camelToUpper("URLtoClickOn"));
+        assertEquals(
+            "",
+            Util.camelToUpper(""));
+    }
 }
 
 // End UtilTestCase.java

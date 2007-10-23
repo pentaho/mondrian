@@ -200,6 +200,18 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
     // MDSCHEMA
     /////////////////////////////////////////////////////////////////////////
 
+    public void testMDActions() throws Exception {
+        String requestType = "MDSCHEMA_ACTIONS";
+
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+
+        doTest(requestType, props, TestContext.instance());
+    }
+
     public void testMDCubes() throws Exception {
         String requestType = "MDSCHEMA_CUBES";
 

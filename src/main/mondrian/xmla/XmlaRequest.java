@@ -33,8 +33,11 @@ public interface XmlaRequest {
 
     /**
      * Restrictions of DISCOVER method.
+     *
+     * <p>If the value is a list of strings, the restriction passes if the
+     * column has one of the values.
      */
-    Map<String, List<String>> getRestrictions();
+    Map<String, Object> getRestrictions();
 
     /**
      * Statement of EXECUTE method.

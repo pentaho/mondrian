@@ -53,7 +53,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
 
     /* DISCOVER contnet */
     private String requestType;
-    private Map<String, List<String>> restrictions;
+    private Map<String, Object> restrictions;
 
 
     public DefaultXmlaRequest(final Element xmlaRoot) {
@@ -88,7 +88,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
         return properties;
     }
 
-    public Map<String, List<String>> getRestrictions() {
+    public Map<String, Object> getRestrictions() {
         if (method != METHOD_DISCOVER) {
             throw new IllegalStateException("Only METHOD_DISCOVER has restrictions");
         }
@@ -318,7 +318,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 Util.newError(buf.toString()));
         } else {
         }
-        this.restrictions = Collections.unmodifiableMap(restrictions);
+        this.restrictions = (Map) Collections.unmodifiableMap(restrictions);
     }
 
     private void initProperties(Element propertiesRoot) throws XmlaException {

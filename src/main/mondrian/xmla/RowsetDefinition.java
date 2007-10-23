@@ -451,13 +451,17 @@ enum RowsetDefinition {
      */
     MDSCHEMA_ACTIONS(
         11, null, new Column[] {
+        MdschemaActionsRowset.SchemaName,
         MdschemaActionsRowset.CubeName,
+        MdschemaActionsRowset.ActionName,
         MdschemaActionsRowset.Coordinate,
         MdschemaActionsRowset.CoordinateType,
     }, new Column[] {
         // Spec says sort on CATALOG_NAME, SCHEMA_NAME, CUBE_NAME,
         // ACTION_NAME.
+        MdschemaActionsRowset.SchemaName,
         MdschemaActionsRowset.CubeName,
+        MdschemaActionsRowset.ActionName,
     }) {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new MdschemaActionsRowset(request, handler);
@@ -1966,7 +1970,7 @@ enum RowsetDefinition {
             Type.String,
             null,
             Column.NOT_RESTRICTION,
-            Column.REQUIRED,
+            Column.OPTIONAL,
             "Contains the actual literal value.\n" + "Example, if LiteralName is DBLITERAL_LIKE_PERCENT and the percent character (%) is used to match zero or more characters in a LIKE clause, this column's value would be \"%\".");
 
         private static final Column LiteralInvalidChars = new Column(
@@ -1974,7 +1978,7 @@ enum RowsetDefinition {
             Type.String,
             null,
             Column.NOT_RESTRICTION,
-            Column.REQUIRED,
+            Column.OPTIONAL,
             "The characters, in the literal, that are not valid.\n" + "For example, if table names can contain anything other than a numeric character, this string would be \"0123456789\".");
 
         private static final Column LiteralInvalidStartingChars = new Column(
@@ -1982,7 +1986,7 @@ enum RowsetDefinition {
             Type.String,
             null,
             Column.NOT_RESTRICTION,
-            Column.REQUIRED,
+            Column.OPTIONAL,
             "The characters that are not valid as the first character of the literal. If the literal can start with any valid character, this is null.");
 
         private static final Column LiteralMaxLength = new Column(
@@ -1990,7 +1994,7 @@ enum RowsetDefinition {
             Type.Integer,
             null,
             Column.NOT_RESTRICTION,
-            Column.REQUIRED,
+            Column.OPTIONAL,
             "The maximum number of characters in the literal. If there is no maximum or the maximum is unknown, the value is ?1.");
 
         public void populate(
@@ -1998,7 +2002,7 @@ enum RowsetDefinition {
             List<Row> rows)
             throws XmlaException
         {
-            emit(Enumeration.Literal.class, response);
+            populate(Enumeration.Literal.class, rows);
         }
 
         protected void setProperty(
@@ -3203,6 +3207,14 @@ TODO: see above
             super(MDSCHEMA_ACTIONS, request, handler);
         }
 
+        private static final Column SchemaName =
+            new Column(
+                "SCHEMA_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
+                "The name of the schema to which this action belongs.");
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
@@ -3210,7 +3222,15 @@ TODO: see above
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
-                null);
+                "The name of the cube to which this action belongs.");
+        private static final Column ActionName =
+            new Column(
+                "ACTION_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
+                "The name of the action.");
         private static final Column Coordinate =
             new Column(
                 "COORDINATE",
@@ -3229,8 +3249,6 @@ TODO: see above
                 null);
         /*
             TODO: optional columns
-        SCHEMA_NAME
-        ACTION_NAME
         ACTION_TYPE
         INVOCATION
         CUBE_SOURCE
@@ -3241,21 +3259,21 @@ TODO: see above
             List<Row> rows)
             throws XmlaException
         {
-            throw new XmlaException(
-                CLIENT_FAULT_FC,
-                HSB_UNSUPPORTED_OPERATION_CODE,
-                HSB_UNSUPPORTED_OPERATION_FAULT_FS,
-                new UnsupportedOperationException("MDSCHEMA_ACTIONS"));
+            // mondrian doesn't support actions. It's not an error to ask for
+            // them, there just aren't any
         }
     }
 
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olapcubes_rowset.asp
     static class MdschemaCubesRowset extends Rowset {
         private final RestrictionTest catalogNameRT;
+        private final RestrictionTest schemaNameRT;
         private final RestrictionTest cubeNameRT;
+
         MdschemaCubesRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_CUBES, request, handler);
             catalogNameRT = getRestrictionTest(CatalogName);
+            schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
         }
 
@@ -3409,6 +3427,9 @@ TODO: see above
                 }
 
                 final Schema schema = connection.getSchema();
+                if (!schemaNameRT.passes(schema.getName())) {
+                    continue;
+                }
                 for (Cube cube : sortedCubes(schema)) {
                     // Access control
                     if (!canAccess(schema.getSchemaReader(), cube)) {
@@ -3428,7 +3449,7 @@ TODO: see above
 
                     Row row = new Row();
                     row.set(CatalogName.name, catalogName);
-                    //row.set(SchemaName.name, catalogName);
+                    row.set(SchemaName.name, schema.getName());
                     row.set(CubeName.name, cube.getName());
                     row.set(CubeType.name,
                         ((RolapCube) cube).isVirtual()
@@ -3466,12 +3487,14 @@ TODO: see above
 
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olapdimensions_rowset.asp
     static class MdschemaDimensionsRowset extends Rowset {
+        private final RestrictionTest catalogRT;
         private final RestrictionTest schemaNameRT;
         private final RestrictionTest cubeNameRT;
         private final RestrictionTest dimensionUniqueNameRT;
         private final RestrictionTest dimensionNameRT;
         MdschemaDimensionsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_DIMENSIONS, request, handler);
+            catalogRT = getRestrictionTest(CatalogName);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
@@ -3644,7 +3667,7 @@ TODO: see above
                     continue;
                 }
                 String catalogName = dsCatalog.name;
-                if (!schemaNameRT.passes(catalogName)) {
+                if (!catalogRT.passes(catalogName)) {
                     continue;
                 }
 
@@ -3663,7 +3686,11 @@ TODO: see above
             List<Row> rows)
             throws XmlaException
         {
-            for (Cube cube : sortedCubes(connection.getSchema())) {
+            Schema schema = connection.getSchema();
+            if (!schemaNameRT.passes(schema.getName())) {
+                return;
+            }
+            for (Cube cube : sortedCubes(schema)) {
                 if (!cubeNameRT.passes(cube.getName())) {
                     continue;
                 }
@@ -3715,8 +3742,7 @@ TODO: see above
 
             Row row = new Row();
             row.set(CatalogName.name, catalogName);
-            // NOTE: SQL Server does not return this
-            //row.set(SchemaName.name, cube.getSchema().getName());
+            row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(DimensionName.name, dimension.getName());
             row.set(DimensionUniqueName.name, dimension.getUniqueName());
@@ -4034,6 +4060,7 @@ TODO: see above
 
 
     static class MdschemaHierarchiesRowset extends Rowset {
+        private final RestrictionTest catalogRT;
         private final RestrictionTest schemaNameRT;
         private final RestrictionTest cubeNameRT;
         private final RestrictionTest dimensionUniqueNameRT;
@@ -4041,6 +4068,7 @@ TODO: see above
         private final RestrictionTest hierarchyNameRT;
         MdschemaHierarchiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_HIERARCHIES, request, handler);
+            catalogRT = getRestrictionTest(CatalogName);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
@@ -4241,7 +4269,7 @@ TODO: see above
                     continue;
                 }
                 String catalogName = dsCatalog.name;
-                if (!schemaNameRT.passes(catalogName)) {
+                if (!catalogRT.passes(catalogName)) {
                     continue;
                 }
 
@@ -4260,7 +4288,11 @@ TODO: see above
             List<Row> rows)
             throws XmlaException
         {
-            for (Cube cube : sortedCubes(connection.getSchema())) {
+            Schema schema = connection.getSchema();
+            if (!schemaNameRT.passes(schema.getName())) {
+                return;
+            }
+            for (Cube cube : sortedCubes(schema)) {
                 if (!cubeNameRT.passes(cube.getName())) {
                     continue;
                 }
@@ -4346,10 +4378,7 @@ TODO: see above
 
             Row row = new Row();
             row.set(CatalogName.name, catalogName);
-
-            // SQL Server does not return Schema name
-            //row.set(SchemaName.name, cube.getSchema().getName());
-
+            row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(DimensionUniqueName.name, dimension.getUniqueName());
             row.set(HierarchyName.name, hierarchy.getName());
@@ -4415,6 +4444,7 @@ TODO: see above
     }
 
     static class MdschemaLevelsRowset extends Rowset {
+        private final RestrictionTest catalogRT;
         private final RestrictionTest schemaNameRT;
         private final RestrictionTest cubeNameRT;
         private final RestrictionTest dimensionUniqueNameRT;
@@ -4423,6 +4453,7 @@ TODO: see above
         private final RestrictionTest levelNameRT;
         MdschemaLevelsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_LEVELS, request, handler);
+            catalogRT = getRestrictionTest(CatalogName);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
@@ -4593,7 +4624,7 @@ TODO: see above
                     continue;
                 }
                 String catalogName = dsCatalog.name;
-                if (!schemaNameRT.passes(catalogName)) {
+                if (!catalogRT.passes(catalogName)) {
                     continue;
                 }
 
@@ -4612,7 +4643,11 @@ TODO: see above
             List<Row> rows)
             throws XmlaException
         {
-            for (Cube cube : sortedCubes(connection.getSchema())) {
+            Schema schema = connection.getSchema();
+            if (!schemaNameRT.passes(schema.getName())) {
+                return;
+            }
+            for (Cube cube : sortedCubes(schema)) {
                 if (!cubeNameRT.passes(cube.getName())) {
                     continue;
                 }
@@ -4721,7 +4756,7 @@ TODO: see above
 
             Row row = new Row();
             row.set(CatalogName.name, catalogName);
-            row.set(SchemaName.name, catalogName);
+            row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(DimensionUniqueName.name,
                 hierarchy.getDimension().getUniqueName());
@@ -4819,12 +4854,14 @@ TODO: see above
         public static final int MDMEASURE_AGGR_STD = 7;
         public static final int MDMEASURE_AGGR_CALCULATED = 127;
 
+        private final RestrictionTest catalogRT;
         private final RestrictionTest schemaNameRT;
         private final RestrictionTest cubeNameRT;
         private final RestrictionTest measureUniqueNameRT;
         private final RestrictionTest measureNameRT;
         MdschemaMeasuresRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_MEASURES, request, handler);
+            catalogRT = getRestrictionTest(CatalogName);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             measureNameRT = getRestrictionTest(MeasureName);
@@ -4950,7 +4987,7 @@ TODO: see above
                 }
 
                 String catalogName = dsCatalog.name;
-                if (schemaNameRT.passes(catalogName)) {
+                if (catalogRT.passes(catalogName)) {
                     populateCatalog(connection, catalogName, rows);
                 }
             }
@@ -4965,7 +5002,11 @@ TODO: see above
             // SQL Server actually includes the LEVELS_LIST row
             StringBuilder buf = new StringBuilder(100);
 
-            for (Cube cube : sortedCubes(connection.getSchema())) {
+            Schema schema = connection.getSchema();
+            if (!schemaNameRT.passes(schema.getName())) {
+                return;
+            }
+            for (Cube cube : sortedCubes(schema)) {
                 if (cubeNameRT.passes(cube.getName())) {
                     SchemaReader schemaReader =
                         cube.getSchemaReader(
@@ -5053,10 +5094,7 @@ TODO: see above
 
             Row row = new Row();
             row.set(CatalogName.name, catalogName);
-
-            // SQL Server does not return this
-            //row.set(SchemaName.name, cube.getSchema().getName());
-
+            row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(MeasureName.name, member.getName());
             row.set(MeasureUniqueName.name, member.getUniqueName());
@@ -5119,6 +5157,7 @@ TODO: see above
     }
 
     static class MdschemaMembersRowset extends Rowset {
+        private final RestrictionTest catalogRT;
         private final RestrictionTest schemaNameRT;
         private final RestrictionTest cubeNameRT;
         private final RestrictionTest dimensionUniqueNameRT;
@@ -5129,6 +5168,7 @@ TODO: see above
 
         MdschemaMembersRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_MEMBERS, request, handler);
+            catalogRT = getRestrictionTest(CatalogName);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
@@ -5315,7 +5355,7 @@ TODO: see above
                 }
 
                 String catalogName = dsCatalog.name;
-                if (schemaNameRT.passes(catalogName)) {
+                if (catalogRT.passes(catalogName)) {
                     populateCatalog(connection, catalogName, rows);
                 }
             }
@@ -5327,7 +5367,11 @@ TODO: see above
             List<Row> rows)
             throws XmlaException
         {
-            for (Cube cube : sortedCubes(connection.getSchema())) {
+            Schema schema = connection.getSchema();
+            if (!schemaNameRT.passes(schema.getName())) {
+                return;
+            }
+            for (Cube cube : sortedCubes(schema)) {
                 if (cubeNameRT.passes(cube.getName())) {
                     if (isRestricted(MemberUniqueName)) {
                         // NOTE: it is believed that if MEMBER_UNIQUE_NAME is
@@ -5388,7 +5432,8 @@ TODO: see above
                 for (Dimension dimension : cube.getDimensions()) {
                     String uniqueName = dimension.getUniqueName();
                     if (dimensionUniqueNameRT.passes(uniqueName)) {
-                        populateDimension(schemaReader, catalogName,
+                        populateDimension(
+                            schemaReader, catalogName,
                             cube, dimension, rows);
                     }
                 }
@@ -5407,11 +5452,13 @@ TODO: see above
             for (Hierarchy hierarchy : hierarchies) {
                 String uniqueName = hierarchy.getUniqueName();
                 if (hierarchyUniqueNameRT.passes(uniqueName)) {
-                    populateHierarchy(schemaReader, catalogName,
+                    populateHierarchy(
+                        schemaReader, catalogName,
                         cube, hierarchy, rows);
                 }
             }
         }
+
         protected void populateHierarchy(
             SchemaReader schemaReader,
             String catalogName,
@@ -5454,7 +5501,8 @@ TODO: see above
                 Member[][] membersArray =
                     RolapMember.getAllMembers(schemaReader, hierarchy);
                 for (Member[] members : membersArray) {
-                    outputMembers(schemaReader, members,
+                    outputMembers(
+                        schemaReader, members,
                         catalogName, cube, rows);
                 }
             }
@@ -5567,11 +5615,12 @@ TODO: see above
                 outputMember(schemaReader, member, catalogName, cube, rows);
             }
         }
+
         private void outputUniqueMemberName(
             final SchemaReader schemaReader,
             final String catalogName,
-            Cube cube, List<Row> rows) {
-
+            Cube cube, List<Row> rows)
+        {
             String memberUniqueName =
                 getRestrictionValueAsString(MemberUniqueName);
             if (memberUniqueName == null) {
@@ -5644,7 +5693,7 @@ TODO: see above
 
             Row row = new Row();
             row.set(CatalogName.name, catalogName);
-            row.set(SchemaName.name, catalogName);
+            row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(DimensionUniqueName.name, dimension.getUniqueName());
             row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
@@ -5809,6 +5858,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
     }
 
     static class MdschemaSetsRowset extends Rowset {
+        private final RestrictionTest catalogRT;
         private final RestrictionTest schemaNameRT;
         private final RestrictionTest cubeNameRT;
         private final RestrictionTest setNameRT;
@@ -5816,6 +5866,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
 
         MdschemaSetsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_SETS, request, handler);
+            catalogRT = getRestrictionTest(CatalogName);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             setNameRT = getRestrictionTest(SetName);
@@ -5900,7 +5951,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                 }
 
                 String catalogName = dsCatalog.name;
-                if (!schemaNameRT.passes(catalogName)) {
+                if (!catalogRT.passes(catalogName)) {
                     continue;
                 }
                 processCatalog(connection, catalogName, rows);
@@ -5912,6 +5963,10 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
             String catalogName,
             List<Row> rows)
         {
+            Schema schema = connection.getSchema();
+            if (!schemaNameRT.passes(schema.getName())) {
+                return;
+            }
             Cube[] cubes = connection.getSchemaReader().getCubes();
             for (Cube cube : cubes) {
                 if (!cubeNameRT.passes(cube.getName())) {
@@ -5927,8 +5982,12 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
             List<Row> rows)
         {
             for (NamedSet namedSet : cube.getNamedSets()) {
+                if (!setNameRT.passes(namedSet.getUniqueName())) {
+                    continue;
+                }
                 Row row = new Row();
                 row.set(CatalogName.name, catalogName);
+                row.set(SchemaName.name, cube.getSchema().getName());
                 row.set(CubeName.name, cube.getName());
                 row.set(SetName.name, namedSet.getUniqueName());
                 row.set(Scope.name, GLOBAL_SCOPE);
@@ -5939,6 +5998,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
     }
 
     static class MdschemaPropertiesRowset extends Rowset {
+        private final RestrictionTest catalogRT;
         private final RestrictionTest schemaNameRT;
         private final RestrictionTest cubeNameRT;
         private final RestrictionTest dimensionUniqueNameRT;
@@ -5946,6 +6006,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private final RestrictionTest propertyNameRT;
         MdschemaPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_PROPERTIES, request, handler);
+            catalogRT = getRestrictionTest(CatalogName);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
@@ -6089,7 +6150,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                 }
 
                 String catalogName = dsCatalog.name;
-                if (schemaNameRT.passes(catalogName)) {
+                if (catalogRT.passes(catalogName)) {
                     populateCatalog(connection, catalogName, rows);
                 }
             }
@@ -6101,7 +6162,11 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
             List<Row> rows)
             throws XmlaException
         {
-            for (Cube cube : sortedCubes(connection.getSchema())) {
+            Schema schema = connection.getSchema();
+            if (!schemaNameRT.passes(schema.getName())) {
+                return;
+            }
+            for (Cube cube : sortedCubes(schema)) {
                 if (cubeNameRT.passes(cube.getName())) {
                     SchemaReader schemaReader =
                         cube.getSchemaReader(
@@ -6216,7 +6281,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
 
             Row row = new Row();
             row.set(CatalogName.name, catalogName);
-            row.set(SchemaName.name, catalogName);
+            row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(DimensionUniqueName.name, dimension.getUniqueName());
             row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
@@ -6295,7 +6360,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
 
     static List<Cube> sortedCubes(Schema schema) {
         final Cube[] cubes = schema.getCubes();
-        List<Cube> cubeList = sortArray(
+        return sortArray(
             cubes,
             new Comparator<Cube>() {
                 public int compare(Cube o1, Cube o2) {
@@ -6303,7 +6368,6 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                 }
             }
         );
-        return cubeList;
     }
 }
 

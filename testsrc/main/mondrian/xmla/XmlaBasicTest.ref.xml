@@ -1,5 +1,86 @@
 <?xml version="1.0" ?>
 <Root>
+    <TestCase name="testMDActions">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0"
+                                    name="SCHEMA_NAME"
+                                    sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME"
+                                    sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element name="ACTION_NAME"
+                                    sql:field="ACTION_NAME" type="xsd:string"/>
+                                <xsd:element name="COORDINATE"
+                                    sql:field="COORDINATE" type="xsd:string"/>
+                                <xsd:element name="COORDINATE_TYPE"
+                                    sql:field="COORDINATE_TYPE" type="xsd:int"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+        <RequestType>${request.type}</RequestType>
+        <Restrictions>
+          <RestrictionList>
+          </RestrictionList>
+        </Restrictions>
+        <Properties>
+          <PropertyList>
+            <DataSourceInfo>${data.source.info}</DataSourceInfo>
+            <Catalog>${catalog}</Catalog>
+            <Format>${format}</Format>
+            <Content>${content}</Content>
+          </PropertyList>
+        </Properties>
+    </Discover>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
     <TestCase name="testMDCubes">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
@@ -7,8 +88,8 @@
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -78,6 +159,7 @@
                     </xsd:schema>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
@@ -88,6 +170,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
@@ -98,6 +181,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales 2</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
@@ -108,6 +192,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
@@ -118,6 +203,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Store</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
@@ -128,6 +214,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
@@ -138,6 +225,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
@@ -148,8 +236,8 @@
                             Sales Cube</DESCRIPTION>
                     </row>
                 </root>
-            </xmla:return>
-        </xmla:DiscoverResponse>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -188,8 +276,8 @@
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -231,13 +319,14 @@
                     </xsd:schema>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <SET_NAME>[Top Sellers]</SET_NAME>
                         <SCOPE>1</SCOPE>
                     </row>
                 </root>
-            </xmla:return>
-        </xmla:DiscoverResponse>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -1798,8 +1887,8 @@
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -1874,6 +1963,7 @@
                     </xsd:schema>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_NAME>Department</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Department]</DIMENSION_UNIQUE_NAME>
@@ -1890,6 +1980,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_NAME>Employees</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Employees]</DIMENSION_UNIQUE_NAME>
@@ -1906,6 +1997,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_NAME>Measures</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
@@ -1922,6 +2014,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_NAME>Pay Type</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Pay Type]</DIMENSION_UNIQUE_NAME>
@@ -1938,6 +2031,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_NAME>Position</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Position]</DIMENSION_UNIQUE_NAME>
@@ -1954,6 +2048,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_NAME>Store</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
@@ -1970,6 +2065,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_NAME>Store Type</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
@@ -1986,6 +2082,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_NAME>Time</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
@@ -2002,6 +2099,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Customers</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
@@ -2018,6 +2116,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Education Level</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
@@ -2034,6 +2133,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Gender</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
@@ -2050,6 +2150,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Marital Status</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
@@ -2066,6 +2167,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Measures</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
@@ -2082,6 +2184,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Product</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
@@ -2098,6 +2201,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Promotion Media</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Promotion Media]</DIMENSION_UNIQUE_NAME>
@@ -2114,6 +2218,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Promotions</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
@@ -2130,6 +2235,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Store</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
@@ -2146,6 +2252,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
@@ -2162,6 +2269,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Store Type</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
@@ -2178,6 +2286,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Time</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
@@ -2194,6 +2303,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Yearly Income</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
@@ -2210,6 +2320,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales 2</CUBE_NAME>
                         <DIMENSION_NAME>Gender</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
@@ -2226,6 +2337,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales 2</CUBE_NAME>
                         <DIMENSION_NAME>Measures</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
@@ -2242,6 +2354,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales 2</CUBE_NAME>
                         <DIMENSION_NAME>Product</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
@@ -2258,6 +2371,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales 2</CUBE_NAME>
                         <DIMENSION_NAME>Time</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
@@ -2274,6 +2388,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Customers</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
@@ -2290,6 +2405,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Education Level</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
@@ -2306,6 +2422,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Gender</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
@@ -2322,6 +2439,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Geography</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Geography]</DIMENSION_UNIQUE_NAME>
@@ -2338,6 +2456,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Marital Status</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
@@ -2354,6 +2473,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Measures</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
@@ -2370,6 +2490,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Product</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
@@ -2386,6 +2507,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Promotion Media</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Promotion Media]</DIMENSION_UNIQUE_NAME>
@@ -2402,6 +2524,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Promotions</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
@@ -2418,6 +2541,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Store</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
@@ -2434,6 +2558,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
@@ -2451,6 +2576,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Store Type</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
@@ -2467,6 +2593,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Time</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
@@ -2483,6 +2610,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <DIMENSION_NAME>Yearly Income</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
@@ -2499,6 +2627,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Store</CUBE_NAME>
                         <DIMENSION_NAME>Has coffee bar</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Has coffee bar]</DIMENSION_UNIQUE_NAME>
@@ -2515,6 +2644,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Store</CUBE_NAME>
                         <DIMENSION_NAME>Measures</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
@@ -2531,6 +2661,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Store</CUBE_NAME>
                         <DIMENSION_NAME>Store</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
@@ -2547,6 +2678,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Store</CUBE_NAME>
                         <DIMENSION_NAME>Store Type</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
@@ -2563,6 +2695,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <DIMENSION_NAME>Measures</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
@@ -2579,6 +2712,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <DIMENSION_NAME>Product</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
@@ -2595,6 +2729,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <DIMENSION_NAME>Store</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
@@ -2611,6 +2746,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
@@ -2627,6 +2763,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <DIMENSION_NAME>Store Type</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
@@ -2643,6 +2780,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <DIMENSION_NAME>Time</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
@@ -2659,6 +2797,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <DIMENSION_NAME>Warehouse</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Warehouse]</DIMENSION_UNIQUE_NAME>
@@ -2675,6 +2814,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Customers</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
@@ -2692,6 +2832,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Education Level</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
@@ -2709,6 +2850,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Gender</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
@@ -2725,6 +2867,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Marital Status</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
@@ -2742,6 +2885,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Measures</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
@@ -2758,6 +2902,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Product</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
@@ -2774,6 +2919,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Promotion Media</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Promotion Media]</DIMENSION_UNIQUE_NAME>
@@ -2791,6 +2937,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Promotions</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
@@ -2808,6 +2955,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Store</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
@@ -2824,6 +2972,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Time</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
@@ -2840,6 +2989,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Warehouse</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Warehouse]</DIMENSION_UNIQUE_NAME>
@@ -2857,6 +3007,7 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Yearly Income</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
@@ -2873,8 +3024,8 @@
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
                     </row>
                 </root>
-            </xmla:return>
-        </xmla:DiscoverResponse>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -5816,8 +5967,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -5900,6 +6051,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </xsd:schema>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Customers</HIERARCHY_NAME>
@@ -5921,6 +6073,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Education Level</HIERARCHY_NAME>
@@ -5942,6 +6095,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Gender</HIERARCHY_NAME>
@@ -5963,6 +6117,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Marital Status</HIERARCHY_NAME>
@@ -5984,6 +6139,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Measures</HIERARCHY_NAME>
@@ -6004,6 +6160,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Product</HIERARCHY_NAME>
@@ -6025,6 +6182,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Promotion Media]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Promotion Media</HIERARCHY_NAME>
@@ -6046,6 +6204,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Promotions</HIERARCHY_NAME>
@@ -6067,6 +6226,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Store Size in SQFT</HIERARCHY_NAME>
@@ -6090,6 +6250,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Store Type</HIERARCHY_NAME>
@@ -6111,6 +6272,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Store</HIERARCHY_NAME>
@@ -6132,6 +6294,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Time</HIERARCHY_NAME>
@@ -6152,6 +6315,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>
@@ -6173,6 +6337,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Yearly Income</HIERARCHY_NAME>
@@ -6193,8 +6358,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                 </root>
-            </xmla:return>
-        </xmla:DiscoverResponse>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -6580,8 +6745,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -6640,6 +6805,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </xsd:schema>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <MEASURE_NAME>Customer Count</MEASURE_NAME>
                         <MEASURE_UNIQUE_NAME>[Measures].[Customer Count]</MEASURE_UNIQUE_NAME>
@@ -6652,6 +6818,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <MEASURE_NAME>Profit</MEASURE_NAME>
                         <MEASURE_UNIQUE_NAME>[Measures].[Profit]</MEASURE_UNIQUE_NAME>
@@ -6663,6 +6830,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <MEASURE_NAME>Profit Growth</MEASURE_NAME>
                         <MEASURE_UNIQUE_NAME>[Measures].[Profit Growth]</MEASURE_UNIQUE_NAME>
@@ -6674,6 +6842,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <MEASURE_NAME>Promotion Sales</MEASURE_NAME>
                         <MEASURE_UNIQUE_NAME>[Measures].[Promotion Sales]</MEASURE_UNIQUE_NAME>
@@ -6686,6 +6855,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <MEASURE_NAME>Sales Count</MEASURE_NAME>
                         <MEASURE_UNIQUE_NAME>[Measures].[Sales Count]</MEASURE_UNIQUE_NAME>
@@ -6698,6 +6868,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <MEASURE_NAME>Store Cost</MEASURE_NAME>
                         <MEASURE_UNIQUE_NAME>[Measures].[Store Cost]</MEASURE_UNIQUE_NAME>
@@ -6710,6 +6881,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <MEASURE_NAME>Store Sales</MEASURE_NAME>
                         <MEASURE_UNIQUE_NAME>[Measures].[Store Sales]</MEASURE_UNIQUE_NAME>
@@ -6722,6 +6894,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <MEASURE_NAME>Unit Sales</MEASURE_NAME>
                         <MEASURE_UNIQUE_NAME>[Measures].[Unit Sales]</MEASURE_UNIQUE_NAME>
@@ -6733,8 +6906,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <DESCRIPTION>Sales Cube - Unit Sales Member</DESCRIPTION>
                     </row>
                 </root>
-            </xmla:return>
-        </xmla:DiscoverResponse>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -9257,8 +9430,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -9285,21 +9458,23 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                             <xsd:sequence>
                                 <xsd:element name="LiteralName"
                                     sql:field="LiteralName" type="xsd:string"/>
-                                <xsd:element name="LiteralValue"
+                                <xsd:element minOccurs="0"
+                                    name="LiteralValue"
                                     sql:field="LiteralValue" type="xsd:string"/>
-                                <xsd:element name="LiteralInvalidChars"
+                                <xsd:element minOccurs="0"
+                                    name="LiteralInvalidChars"
                                     sql:field="LiteralInvalidChars" type="xsd:string"/>
-                                <xsd:element
+                                <xsd:element minOccurs="0"
                                     name="LiteralInvalidStartingChars"
                                     sql:field="LiteralInvalidStartingChars" type="xsd:string"/>
-                                <xsd:element name="LiteralMaxLength"
+                                <xsd:element minOccurs="0"
+                                    name="LiteralMaxLength"
                                     sql:field="LiteralMaxLength" type="xsd:int"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
                         <LiteralName>DBLITERAL_CATALOG_NAME</LiteralName>
-                        <LiteralValue/>
                         <LiteralInvalidChars>.</LiteralInvalidChars>
                         <LiteralInvalidStartingChars>0123456789</LiteralInvalidStartingChars>
                         <LiteralMaxLength>24</LiteralMaxLength>
@@ -9307,76 +9482,64 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <LiteralName>DBLITERAL_CATALOG_SEPARATOR</LiteralName>
                         <LiteralValue>.</LiteralValue>
-                        <LiteralInvalidChars/>
-                        <LiteralInvalidStartingChars/>
                         <LiteralMaxLength>0</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_COLUMN_ALIAS</LiteralName>
-                        <LiteralValue/>
                         <LiteralInvalidChars>'&quot;[]</LiteralInvalidChars>
                         <LiteralInvalidStartingChars>0123456789</LiteralInvalidStartingChars>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_COLUMN_NAME</LiteralName>
-                        <LiteralValue/>
                         <LiteralInvalidChars>.</LiteralInvalidChars>
                         <LiteralInvalidStartingChars>0123456789</LiteralInvalidStartingChars>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_CORRELATION_NAME</LiteralName>
-                        <LiteralValue/>
                         <LiteralInvalidChars>'&quot;[]</LiteralInvalidChars>
                         <LiteralInvalidStartingChars>0123456789</LiteralInvalidStartingChars>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_CUBE_NAME</LiteralName>
-                        <LiteralValue/>
                         <LiteralInvalidChars>.</LiteralInvalidChars>
                         <LiteralInvalidStartingChars>0123456789</LiteralInvalidStartingChars>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_DIMENSION_NAME</LiteralName>
-                        <LiteralValue/>
                         <LiteralInvalidChars>.</LiteralInvalidChars>
                         <LiteralInvalidStartingChars>0123456789</LiteralInvalidStartingChars>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_HIERARCHY_NAME</LiteralName>
-                        <LiteralValue/>
                         <LiteralInvalidChars>.</LiteralInvalidChars>
                         <LiteralInvalidStartingChars>0123456789</LiteralInvalidStartingChars>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_LEVEL_NAME</LiteralName>
-                        <LiteralValue/>
                         <LiteralInvalidChars>.</LiteralInvalidChars>
                         <LiteralInvalidStartingChars>0123456789</LiteralInvalidStartingChars>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_MEMBER_NAME</LiteralName>
-                        <LiteralValue/>
                         <LiteralInvalidChars>.</LiteralInvalidChars>
                         <LiteralInvalidStartingChars>0123456789</LiteralInvalidStartingChars>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_PROCEDURE_NAME</LiteralName>
-                        <LiteralValue/>
                         <LiteralInvalidChars>.</LiteralInvalidChars>
                         <LiteralInvalidStartingChars>0123456789</LiteralInvalidStartingChars>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_PROPERTY_NAME</LiteralName>
-                        <LiteralValue/>
                         <LiteralInvalidChars>.</LiteralInvalidChars>
                         <LiteralInvalidStartingChars>0123456789</LiteralInvalidStartingChars>
                         <LiteralMaxLength>-1</LiteralMaxLength>
@@ -9384,41 +9547,30 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <LiteralName>DBLITERAL_QUOTE</LiteralName>
                         <LiteralValue>[</LiteralValue>
-                        <LiteralInvalidChars/>
-                        <LiteralInvalidStartingChars/>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_QUOTE_SUFFIX</LiteralName>
                         <LiteralValue>]</LiteralValue>
-                        <LiteralInvalidChars/>
-                        <LiteralInvalidStartingChars/>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_TABLE_NAME</LiteralName>
-                        <LiteralValue/>
                         <LiteralInvalidChars>.</LiteralInvalidChars>
                         <LiteralInvalidStartingChars>0123456789</LiteralInvalidStartingChars>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_TEXT_COMMAND</LiteralName>
-                        <LiteralValue/>
-                        <LiteralInvalidChars/>
-                        <LiteralInvalidStartingChars/>
                         <LiteralMaxLength>-1</LiteralMaxLength>
                     </row>
                     <row>
                         <LiteralName>DBLITERAL_USER_NAME</LiteralName>
-                        <LiteralValue/>
-                        <LiteralInvalidChars/>
-                        <LiteralInvalidStartingChars/>
                         <LiteralMaxLength>0</LiteralMaxLength>
                     </row>
                 </root>
-            </xmla:return>
-        </xmla:DiscoverResponse>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -9780,8 +9932,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -9985,7 +10137,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <SchemaName>MDSCHEMA_ACTIONS</SchemaName>
                         <Restrictions>
+                            <Name>SCHEMA_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
                             <Name>CUBE_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>ACTION_NAME</Name>
                             <Type>xsd:string</Type>
                         </Restrictions>
                         <Restrictions>
@@ -10267,8 +10427,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Description/>
                     </row>
                 </root>
-            </xmla:return>
-        </xmla:DiscoverResponse>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -10532,77 +10692,118 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     <TestCase name="testApproxRowCountInHierarchyOverridesCountCallsToDatabase">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
-<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" >
-<SOAP-ENV:Header>
-</SOAP-ENV:Header>
-<SOAP-ENV:Body>
-<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-  <xmla:return>
-    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
-      <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sql="urn:schemas-microsoft-com:xml-sql" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" elementFormDefault="qualified">
-        <xsd:element name="root">
-          <xsd:complexType>
-            <xsd:sequence>
-              <xsd:element name="row" type="row" minOccurs="0" maxOccurs="unbounded"/>
-            </xsd:sequence>
-          </xsd:complexType>
-        </xsd:element>
-        <xsd:simpleType name="uuid">
-          <xsd:restriction base="xsd:string">
-            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
-          </xsd:restriction>
-        </xsd:simpleType>
-        <xsd:complexType name="row">
-          <xsd:sequence>
-            <xsd:element sql:field="CATALOG_NAME" name="CATALOG_NAME" type="xsd:string" minOccurs="0"/>
-            <xsd:element sql:field="SCHEMA_NAME" name="SCHEMA_NAME" type="xsd:string" minOccurs="0"/>
-            <xsd:element sql:field="CUBE_NAME" name="CUBE_NAME" type="xsd:string"/>
-            <xsd:element sql:field="DIMENSION_UNIQUE_NAME" name="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
-            <xsd:element sql:field="HIERARCHY_NAME" name="HIERARCHY_NAME" type="xsd:string"/>
-            <xsd:element sql:field="HIERARCHY_UNIQUE_NAME" name="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
-            <xsd:element sql:field="HIERARCHY_GUID" name="HIERARCHY_GUID" type="uuid" minOccurs="0"/>
-            <xsd:element sql:field="HIERARCHY_CAPTION" name="HIERARCHY_CAPTION" type="xsd:string"/>
-            <xsd:element sql:field="DIMENSION_TYPE" name="DIMENSION_TYPE" type="xsd:short"/>
-            <xsd:element sql:field="HIERARCHY_CARDINALITY" name="HIERARCHY_CARDINALITY" type="xsd:unsignedInt"/>
-            <xsd:element sql:field="DEFAULT_MEMBER" name="DEFAULT_MEMBER" type="xsd:string" minOccurs="0"/>
-            <xsd:element sql:field="ALL_MEMBER" name="ALL_MEMBER" type="xsd:string" minOccurs="0"/>
-            <xsd:element sql:field="DESCRIPTION" name="DESCRIPTION" type="xsd:string" minOccurs="0"/>
-            <xsd:element sql:field="STRUCTURE" name="STRUCTURE" type="xsd:short"/>
-            <xsd:element sql:field="IS_VIRTUAL" name="IS_VIRTUAL" type="xsd:boolean"/>
-            <xsd:element sql:field="IS_READWRITE" name="IS_READWRITE" type="xsd:boolean"/>
-            <xsd:element sql:field="DIMENSION_UNIQUE_SETTINGS" name="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
-            <xsd:element sql:field="DIMENSION_IS_VISIBLE" name="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
-            <xsd:element sql:field="HIERARCHY_ORDINAL" name="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
-            <xsd:element sql:field="DIMENSION_IS_SHARED" name="DIMENSION_IS_SHARED" type="xsd:boolean"/>
-            <xsd:element sql:field="PARENT_CHILD" name="PARENT_CHILD" type="xsd:boolean" minOccurs="0"/>
-          </xsd:sequence>
-        </xsd:complexType>
-      </xsd:schema>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <CUBE_NAME>Sales</CUBE_NAME>
-        <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
-        <HIERARCHY_NAME>Marital Status</HIERARCHY_NAME>
-        <HIERARCHY_UNIQUE_NAME>[Marital Status]</HIERARCHY_UNIQUE_NAME>
-        <HIERARCHY_CAPTION>Marital Status</HIERARCHY_CAPTION>
-        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-        <HIERARCHY_CARDINALITY>112</HIERARCHY_CARDINALITY>
-        <DEFAULT_MEMBER>[Marital Status].[All Marital Status]</DEFAULT_MEMBER>
-        <ALL_MEMBER>[Marital Status].[All Marital Status]</ALL_MEMBER>
-        <DESCRIPTION>Sales Cube - Marital Status Hierarchy</DESCRIPTION>
-        <STRUCTURE>0</STRUCTURE>
-        <IS_VIRTUAL>false</IS_VIRTUAL>
-        <IS_READWRITE>false</IS_READWRITE>
-        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-        <HIERARCHY_ORDINAL>12</HIERARCHY_ORDINAL>
-        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
-        <PARENT_CHILD>false</PARENT_CHILD>
-      </row>
-    </root>
-  </xmla:return>
-</xmla:DiscoverResponse>
-</SOAP-ENV:Body>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0"
+                                    name="CATALOG_NAME"
+                                    sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="SCHEMA_NAME"
+                                    sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME"
+                                    sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element
+                                    name="DIMENSION_UNIQUE_NAME"
+                                    sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="HIERARCHY_NAME"
+                                    sql:field="HIERARCHY_NAME" type="xsd:string"/>
+                                <xsd:element
+                                    name="HIERARCHY_UNIQUE_NAME"
+                                    sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="HIERARCHY_GUID"
+                                    sql:field="HIERARCHY_GUID" type="uuid"/>
+                                <xsd:element name="HIERARCHY_CAPTION"
+                                    sql:field="HIERARCHY_CAPTION" type="xsd:string"/>
+                                <xsd:element name="DIMENSION_TYPE"
+                                    sql:field="DIMENSION_TYPE" type="xsd:short"/>
+                                <xsd:element
+                                    name="HIERARCHY_CARDINALITY"
+                                    sql:field="HIERARCHY_CARDINALITY" type="xsd:unsignedInt"/>
+                                <xsd:element minOccurs="0"
+                                    name="DEFAULT_MEMBER"
+                                    sql:field="DEFAULT_MEMBER" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="ALL_MEMBER"
+                                    sql:field="ALL_MEMBER" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DESCRIPTION"
+                                    sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element name="STRUCTURE"
+                                    sql:field="STRUCTURE" type="xsd:short"/>
+                                <xsd:element name="IS_VIRTUAL"
+                                    sql:field="IS_VIRTUAL" type="xsd:boolean"/>
+                                <xsd:element name="IS_READWRITE"
+                                    sql:field="IS_READWRITE" type="xsd:boolean"/>
+                                <xsd:element
+                                    name="DIMENSION_UNIQUE_SETTINGS"
+                                    sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
+                                <xsd:element name="DIMENSION_IS_VISIBLE"
+                                    sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+                                <xsd:element name="HIERARCHY_ORDINAL"
+                                    sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
+                                <xsd:element name="DIMENSION_IS_SHARED"
+                                    sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0"
+                                    name="PARENT_CHILD"
+                                    sql:field="PARENT_CHILD" type="xsd:boolean"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_NAME>Marital Status</HIERARCHY_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Marital Status]</HIERARCHY_UNIQUE_NAME>
+                        <HIERARCHY_CAPTION>Marital Status</HIERARCHY_CAPTION>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <HIERARCHY_CARDINALITY>112</HIERARCHY_CARDINALITY>
+                        <DEFAULT_MEMBER>[Marital Status].[All Marital Status]</DEFAULT_MEMBER>
+                        <ALL_MEMBER>[Marital Status].[All Marital Status]</ALL_MEMBER>
+                        <DESCRIPTION>Sales Cube - Marital Status Hierarchy</DESCRIPTION>
+                        <STRUCTURE>0</STRUCTURE>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_ORDINAL>12</HIERARCHY_ORDINAL>
+                        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <PARENT_CHILD>false</PARENT_CHILD>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
+    </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>

@@ -605,9 +605,10 @@
       </xsd:schema>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -680,9 +681,10 @@
       </xsd:schema>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>HR</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -691,9 +693,10 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -702,9 +705,10 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales 2</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -713,9 +717,10 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales Ragged</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -724,9 +729,10 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Store</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -735,9 +741,10 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Warehouse</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -746,9 +753,10 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
         <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
-
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -825,6 +833,7 @@
       </xsd:schema>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Time</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
@@ -908,6 +917,7 @@
       </xsd:schema>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Customers</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
@@ -924,6 +934,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Education Level</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
@@ -940,6 +951,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Gender</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
@@ -956,6 +968,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Marital Status</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
@@ -972,6 +985,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Measures</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
@@ -988,6 +1002,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Product</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
@@ -1004,6 +1019,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Promotion Media</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Promotion Media]</DIMENSION_UNIQUE_NAME>
@@ -1020,6 +1036,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Promotions</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
@@ -1036,6 +1053,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Store</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
@@ -1052,6 +1070,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
@@ -1068,6 +1087,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Store Type</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
@@ -1084,6 +1104,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Time</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
@@ -1100,6 +1121,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_NAME>Yearly Income</DIMENSION_NAME>
         <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
@@ -1188,6 +1210,7 @@
       </xsd:schema>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Time</HIERARCHY_NAME>
@@ -1208,6 +1231,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>
@@ -1300,6 +1324,7 @@
       </xsd:schema>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Customers</HIERARCHY_NAME>
@@ -1321,6 +1346,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Education Level</HIERARCHY_NAME>
@@ -1342,6 +1368,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Gender</HIERARCHY_NAME>
@@ -1363,6 +1390,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Marital Status</HIERARCHY_NAME>
@@ -1384,6 +1412,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Measures</HIERARCHY_NAME>
@@ -1404,6 +1433,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Product</HIERARCHY_NAME>
@@ -1425,6 +1455,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Promotion Media]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Promotion Media</HIERARCHY_NAME>
@@ -1446,6 +1477,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Promotions</HIERARCHY_NAME>
@@ -1467,6 +1499,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Store Size in SQFT</HIERARCHY_NAME>
@@ -1488,6 +1521,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Store Type</HIERARCHY_NAME>
@@ -1509,6 +1543,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Store</HIERARCHY_NAME>
@@ -1530,6 +1565,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Time</HIERARCHY_NAME>
@@ -1550,6 +1586,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>
@@ -1571,6 +1608,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Yearly Income</HIERARCHY_NAME>
@@ -1839,6 +1877,7 @@
       </xsd:schema>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <MEASURE_NAME>Customer Count</MEASURE_NAME>
         <MEASURE_UNIQUE_NAME>[Measures].[Customer Count]</MEASURE_UNIQUE_NAME>
@@ -1851,6 +1890,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <MEASURE_NAME>Profit</MEASURE_NAME>
         <MEASURE_UNIQUE_NAME>[Measures].[Profit]</MEASURE_UNIQUE_NAME>
@@ -1862,6 +1902,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <MEASURE_NAME>Profit Growth</MEASURE_NAME>
         <MEASURE_UNIQUE_NAME>[Measures].[Profit Growth]</MEASURE_UNIQUE_NAME>
@@ -1873,6 +1914,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <MEASURE_NAME>Promotion Sales</MEASURE_NAME>
         <MEASURE_UNIQUE_NAME>[Measures].[Promotion Sales]</MEASURE_UNIQUE_NAME>
@@ -1885,6 +1927,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <MEASURE_NAME>Sales Count</MEASURE_NAME>
         <MEASURE_UNIQUE_NAME>[Measures].[Sales Count]</MEASURE_UNIQUE_NAME>
@@ -1897,6 +1940,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <MEASURE_NAME>Store Cost</MEASURE_NAME>
         <MEASURE_UNIQUE_NAME>[Measures].[Store Cost]</MEASURE_UNIQUE_NAME>
@@ -1909,6 +1953,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <MEASURE_NAME>Store Sales</MEASURE_NAME>
         <MEASURE_UNIQUE_NAME>[Measures].[Store Sales]</MEASURE_UNIQUE_NAME>
@@ -1921,6 +1966,7 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <MEASURE_NAME>Unit Sales</MEASURE_NAME>
         <MEASURE_UNIQUE_NAME>[Measures].[Unit Sales]</MEASURE_UNIQUE_NAME>

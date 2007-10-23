@@ -12,6 +12,8 @@
 package mondrian.xmla;
 
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import mondrian.olap.Util;
 
@@ -30,7 +32,7 @@ abstract class Rowset implements XmlaConstants {
     protected static final Logger LOGGER = Logger.getLogger(Rowset.class);
 
     protected final RowsetDefinition rowsetDefinition;
-    protected final Map<String, List<String>> restrictions;
+    protected final Map<String, Object> restrictions;
     protected final Map<String, String> properties;
     protected final XmlaRequest request;
     protected final XmlaHandler handler;
@@ -51,7 +53,7 @@ abstract class Rowset implements XmlaConstants {
         this.handler = handler;
         ArrayList<RowsetDefinition.Column> list =
             new ArrayList<RowsetDefinition.Column>();
-        for (Map.Entry<String, List<String>> restrictionEntry :
+        for (Map.Entry<String, Object> restrictionEntry :
             restrictions.entrySet())
         {
             String restrictedColumn = restrictionEntry.getKey();
@@ -69,8 +71,10 @@ abstract class Rowset implements XmlaConstants {
                     "' does not allow restrictions");
             }
             // Check that the value is of the right type.
-            final List<String> requiredValue = restrictionEntry.getValue();
-            if (requiredValue.size() > 1) {
+            final Object restriction = restrictionEntry.getValue();
+            if (restriction instanceof List
+                && ((List) restriction).size() > 1)
+            {
                 final RowsetDefinition.Type type = column.type;
                 switch (type) {
                 case StringArray:
@@ -248,66 +252,30 @@ abstract class Rowset implements XmlaConstants {
     }
 
     /**
-     * Emits a row for this rowset, reading field values from an object using
-     * reflection.
-     *
+     * Populates all of the values in an enumeration into a list of rows.
      */
-    protected void emit(Object row, XmlaResponse response)
-            throws XmlaException {
-        SaxWriter writer = response.getWriter();
-
-        writer.startElement("row");
-        for (RowsetDefinition.Column column : rowsetDefinition.columnDefinitions) {
-            Object value = column.get(row);
-            if (value != null) {
-                writer.startElement(column.name);
-                writer.characters(value.toString());
-                writer.endElement();
-            } else {
-                writer.startElement(column.name);
-                writer.endElement();
-            }
-        }
-        writer.endElement();
-    }
-
-    /**
-     * Emits all of the values in an enumeration.
-     */
-    protected <E extends Enum<E>> void emit(
+    protected <E extends Enum<E>> void populate(
         Class<E> clazz,
-        XmlaResponse response)
+        List<Row> rows)
         throws XmlaException
     {
-        final E[] valuesSortedByName = clazz.getEnumConstants().clone();
+        final E[] enumsSortedByName = clazz.getEnumConstants().clone();
         Arrays.sort(
-            valuesSortedByName,
+            enumsSortedByName,
             new Comparator<E>() {
                 public int compare(E o1, E o2) {
                     return o1.name().compareTo(o2.name());
                 }
             });
-        for (E value : valuesSortedByName) {
-            emit(value, response);
+        for (E anEnum : enumsSortedByName) {
+            Row row = new Row();
+            for (RowsetDefinition.Column column : rowsetDefinition.columnDefinitions) {
+                row.names.add(column.name);
+                row.values.add(column.get(anEnum));
+            }
+            rows.add(row);
         }
     }
-
-    /**
-     * Returns whether a column value matches any restrictions placed on it.
-     * If there are no restrictions, always returns true.
-    protected boolean passesRestriction(RowsetDefinition.Column column,
-            Object value) {
-        final Object requiredValue = restrictions.get(column.name);
-
-        if (requiredValue == null) {
-            return true;
-        } else if (requiredValue instanceof String[]) {
-            return contains((String[]) requiredValue, value.toString());
-        } else {
-            return requiredValue.equals(value);
-        }
-    }
-     */
 
     /**
      * Extensions to this abstract class implement a restriction test
@@ -324,66 +292,77 @@ abstract class Rowset implements XmlaConstants {
     }
 
     RestrictionTest getRestrictionTest(RowsetDefinition.Column column) {
-        final List<String> requiredValue = restrictions.get(column.name);
+        final Object restriction = restrictions.get(column.name);
 
-        if (requiredValue == null) {
+        if (restriction == null) {
             return new RestrictionTest() {
                 public boolean passes(Object value) {
                     return true;
                 }
             };
-        } else {
+        } else if (restriction instanceof XmlaUtil.Wildcard) {
+            XmlaUtil.Wildcard wildcard = (XmlaUtil.Wildcard) restriction;
+            String regexp =
+                Util.wildcardToRegexp(
+                    Collections.singletonList(wildcard.pattern));
+            final Matcher matcher = Pattern.compile(regexp).matcher("");
             return new RestrictionTest() {
                 public boolean passes(Object value) {
-                    return requiredValue.contains(value);
+                    return matcher.reset(String.valueOf(value)).matches();
                 }
             };
+        } else if (restriction instanceof List) {
+            final List<String> requiredValues = (List<String>) restriction;
+            return new RestrictionTest() {
+                public boolean passes(Object value) {
+                    return requiredValues.contains(value);
+                }
+            };
+        } else {
+            throw Util.newInternal(
+                "unexpected restriction type: " + restriction.getClass());
         }
     }
 
     /**
-     * Returns the list of restriction values in the XMLA request.
-     *
-     */
-    private List<String> getRestrictionValue(RowsetDefinition.Column column) {
-        return restrictions.get(column.name);
-    }
-
-    /**
-     * This returns the restriction if its a String or null. This does not
+     * Returns the restriction if it is a String, or null otherwise. Does not
      * attempt two determine if the restriction is an array of Strings
      * if all members of the array have the same value (in which case
      * one could return, again, simply a single String).
-     *
      */
     String getRestrictionValueAsString(RowsetDefinition.Column column) {
-        List<String> rval = getRestrictionValue(column);
-        return rval != null && rval.size() == 1 ? rval.get(0) : null;
+        final Object restriction = restrictions.get(column.name);
+        if (restriction instanceof List) {
+            List<String> rval = (List<String>) restriction;
+            if (rval.size() == 1) {
+                return rval.get(0);
+            }
+        }
+        return null;
     }
 
     /**
-     * This returns the restriction as an integer (not an Integer) if it
-     * exists and returns -1 otherwise.
-     *
+     * Returns a column's restriction as an <code>int</code> if it
+     * exists, -1 otherwise.
      */
     int getRestrictionValueAsInt(RowsetDefinition.Column column) {
-        List<String> rval = getRestrictionValue(column);
-        if (rval != null && rval.size() == 1) {
-            try {
-                return Integer.parseInt(rval.get(0));
-            } catch (NumberFormatException ex) {
-                LOGGER.info("Rowset.getRestrictionValue: "+
-                    "bad integer restriction \""+
-                    rval+
-                    "\"");
-                return -1;
+        final Object restriction = restrictions.get(column.name);
+        if (restriction instanceof List) {
+            List<String> rval = (List<String>) restriction;
+            if (rval.size() == 1) {
+                try {
+                    return Integer.parseInt(rval.get(0));
+                } catch (NumberFormatException ex) {
+                    LOGGER.info("Rowset.getRestrictionValue: "+
+                        "bad integer restriction \""+
+                        rval+
+                        "\"");
+                    return -1;
+                }
             }
-        } else {
-            return -1;
         }
+        return -1;
     }
-
-
 
     /**
      * Returns true if there is a restriction for the given column
