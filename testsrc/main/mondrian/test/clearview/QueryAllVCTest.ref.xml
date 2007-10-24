@@ -1,0 +1,112 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testWithSimpleMetricFilter">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+  Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Unit Sales_SEL~SUM] < 50000.0)'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+  Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+  Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],[Product].CurrentMember)', SOLVE_ORDER=200
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*METRIC_CJ_SET], {([Product].CurrentMember)}) on rows 
+From [Warehouse and Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Product].[All Products].[Drink]}
+Row #0: 24,597
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilledWithTop2">
+        <Resource name="description">
+            <![CDATA[
+top 2 product family by unit sales
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+  Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 2)'
+  Set [*TOP_BOTTOM_SET] as 'Order([*NATIVE_MEMBERS_Product],([Measures].[Unit Sales]),BDESC)'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+  Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+  Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank([Product].CurrentMember,[*TOP_BOTTOM_SET])', SOLVE_ORDER=200
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*METRIC_CJ_SET], {([Product].CurrentMember)}) on rows 
+From [Warehouse and Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Product].[All Products].[Food]}
+{[Product].[All Products].[Non-Consumable]}
+Row #0: 191,940
+Row #1: 50,236
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testQueryAll">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+  Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}) on rows 
+From [Warehouse and Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Product].[All Products].[Drink]}
+{[Product].[All Products].[Food]}
+{[Product].[All Products].[Non-Consumable]}
+Row #0: 24,597
+Row #1: 191,940
+Row #2: 50,236
+]]>
+        </Resource>
+    </TestCase>
+</Root>

@@ -12,7 +12,8 @@
 package mondrian.test.clearview;
 
 import mondrian.olap.*;
-
+import mondrian.rolap.BatchTestCase;
+import mondrian.rolap.sql.*;
 import java.util.*;
 
 import junit.framework.*;
@@ -37,7 +38,7 @@ import java.lang.reflect.*;
  * @since Jan 25, 2007
  * @version $Id$
  */
-public abstract class ClearViewBase extends FoodMartTestCase {
+public abstract class ClearViewBase extends BatchTestCase {
 
     public ClearViewBase() {
         super();
@@ -47,7 +48,7 @@ public abstract class ClearViewBase extends FoodMartTestCase {
         super(name);
     }
 
-    protected abstract DiffRepository getDiffRepos();
+    public abstract DiffRepository getDiffRepos();
 
     // implement TestCase
     protected void setUp() throws Exception {
@@ -108,6 +109,58 @@ public abstract class ClearViewBase extends FoodMartTestCase {
         diffRepos.assertEquals("result", "${result}", result);
     }
     
+    protected void assertQuerySql(boolean flushCache) 
+        throws Exception
+    {
+        DiffRepository diffRepos = getDiffRepos();
+        
+        if (buildSqlPatternArray() == null) {
+            return;
+        }
+        
+        super.assertQuerySqlOrNot(
+            getTestContext(),
+            diffRepos.expand(null, "${mdx}"), 
+            buildSqlPatternArray(),
+            false,
+            false,
+            flushCache);
+    }
+    
+    protected void assertNoQuerySql(boolean flushCache) 
+        throws Exception
+    {
+        DiffRepository diffRepos = getDiffRepos();
+        
+        if (buildSqlPatternArray() == null) {
+            return;
+        }
+        
+        super.assertQuerySqlOrNot(
+            getTestContext(),
+            diffRepos.expand(null, "${mdx}"), 
+            buildSqlPatternArray(),
+            true,
+            false,
+            flushCache);
+    }
+    
+    private SqlPattern[] buildSqlPatternArray() {
+        DiffRepository diffRepos = getDiffRepos();
+        SqlQuery.Dialect d = getTestContext().getDialect();
+        SqlPattern.Dialect dialect = SqlPattern.Dialect.get(d); 
+        String testCaseName = getName();
+        String sql = diffRepos.get(
+            testCaseName, "expectedSql", dialect.name());
+        if (sql != null) {
+            sql = sql.replaceAll("[ \t\n\f\r]+", " ").trim();
+            SqlPattern[] patterns = {
+                new SqlPattern(dialect, sql, null)
+            };
+            return patterns;
+        }
+        return null;
+    }
 }
 
 // End ClearViewBase.java

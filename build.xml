@@ -566,6 +566,70 @@ in {mondrian.foodmart.jdbcURL}.">
 
   </target>
 
+  <target name="junit-cachehit" depends="compile,compile.tests,set.connectString">
+    <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no" errorproperty="juniterror" failureproperty="junitfailure" showoutput="yes">
+        <classpath>
+            <path refid="project.test.classpath"/>
+        </classpath>
+        <sysproperty key="log4j.configuration"
+          value="${log4j.configuration}"/>
+        <sysproperty key="mondrian.jdbcDrivers"
+            value="${mondrian.jdbcDrivers}"/>
+        <sysproperty key="mondrian.test.connectString"
+            value="${mondrian.test.connectString}"/>
+        <sysproperty key="mondrian.test.foodmart.catalogURL"
+            value="${mondrian.foodmart.catalogURL}"/>
+        <formatter type="xml" />
+        <batchtest fork="yes">
+            <fileset dir="${testclasses.dir}">
+              <include name="mondrian/test/CacheHitTest.class" />
+            </fileset>
+        </batchtest>
+    </junit>
+    <fail>
+        <condition>
+            <isset property="juniterror"/>
+        </condition>
+    </fail>
+    <fail>
+        <condition>
+            <isset property="junitfailure"/>
+        </condition>
+    </fail>
+  </target>
+
+  <target name="junit-cvconcurrent" depends="compile,compile.tests,set.connectString">
+    <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no" errorproperty="juniterror" failureproperty="junitfailure" showoutput="yes">
+        <classpath>
+            <path refid="project.test.classpath"/>
+        </classpath>
+        <sysproperty key="log4j.configuration"
+          value="${log4j.configuration}"/>
+        <sysproperty key="mondrian.jdbcDrivers"
+            value="${mondrian.jdbcDrivers}"/>
+        <sysproperty key="mondrian.test.connectString"
+            value="${mondrian.test.connectString}"/>
+        <sysproperty key="mondrian.test.foodmart.catalogURL"
+            value="${mondrian.foodmart.catalogURL}"/>
+        <formatter type="xml" />
+        <batchtest fork="yes">
+            <fileset dir="${testclasses.dir}">
+              <include name="mondrian/test/CVConcurrentMdxTest.class" />
+            </fileset>
+        </batchtest>
+    </junit>
+    <fail>
+        <condition>
+            <isset property="juniterror"/>
+        </condition>
+    </fail>
+    <fail>
+        <condition>
+            <isset property="junitfailure"/>
+        </condition>
+    </fail>
+  </target>
+
   <macrodef name="genJUnit">
     <attribute name="path"/>
     <attribute name="packagename"/>
@@ -598,6 +662,7 @@ in {mondrian.foodmart.jdbcURL}.">
     <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="TopBottomTest"/>
     <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="GrandTotalTest"/>
     <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="SubTotalTest"/>
+    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="BatchedFillTest"/>
   </target>
 
   <target name="etags">

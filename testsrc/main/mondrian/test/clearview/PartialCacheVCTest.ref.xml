@@ -1,0 +1,101 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testFill1ProdFamily1">
+        <Resource name="description">
+            <![CDATA[
+partially fill cache with data for 1 product family - Drink
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+  Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink]}'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}) on rows 
+From [Warehouse and Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Product].[All Products].[Drink]}
+Row #0: 24,597
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFill1ProdFamily2">
+        <Resource name="description">
+            <![CDATA[
+partially fill cache with data for 1 product family: Food
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+  Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Food]}'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}) on rows 
+From [Warehouse and Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Product].[All Products].[Food]}
+Row #0: 191,940
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFill2ProdFamilies">
+        <Resource name="description">
+            <![CDATA[
+partially fill cache with data for Drink and Food
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+  Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink],[Product].[All Products].[Food]}'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}) on rows 
+From [Warehouse and Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Product].[All Products].[Drink]}
+{[Product].[All Products].[Food]}
+Row #0: 24,597
+Row #1: 191,940
+]]>
+        </Resource>
+    </TestCase>
+</Root>

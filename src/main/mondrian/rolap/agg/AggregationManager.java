@@ -31,6 +31,9 @@ import java.util.*;
  * @version $Id$
  */
 public class AggregationManager extends RolapAggregationManager {
+    
+    private static final MondrianProperties properties = MondrianProperties.instance();
+    
     private static final Logger LOGGER =
             Logger.getLogger(AggregationManager.class);
 
@@ -39,7 +42,11 @@ public class AggregationManager extends RolapAggregationManager {
     /** Returns or creates the singleton. */
     public static synchronized AggregationManager instance() {
         if (instance == null) {
-            instance = new AggregationManager();
+            if (properties.EnableCacheHitCounters.get()) {
+                instance = new CountingAggregationManager();
+            } else {
+                instance = new AggregationManager();
+            }
         }
         return instance;
     }
@@ -81,11 +88,11 @@ public class AggregationManager extends RolapAggregationManager {
     }
 
     public Object getCellFromCache(CellRequest request) {
+        
         final RolapStar.Measure measure = request.getMeasure();
         final Aggregation aggregation =
             measure.getStar().lookupAggregation(
                 request.getConstrainedColumnsBitKey());
-
         if (aggregation == null) {
             // cell is not in any aggregation
             return null;
@@ -99,20 +106,19 @@ public class AggregationManager extends RolapAggregationManager {
         throw Util.newInternal("not found");
     }
 
-    public Object getCellFromCache(CellRequest request, PinSet pinSet) {
+    public Object getCellFromCache(CellRequest request, PinSet pinSet) {       
         Util.assertPrecondition(pinSet != null);
-
         final RolapStar.Measure measure = request.getMeasure();
         final Aggregation aggregation =
             measure.getStar().lookupAggregation(
                 request.getConstrainedColumnsBitKey());
-
         if (aggregation == null) {
             // cell is not in any aggregation
             return null;
         } else {
-            return aggregation.getCellValue(
+            final Object o = aggregation.getCellValue(
                 measure, request.getSingleValues(), pinSet);
+            return o;
         }
     }
 

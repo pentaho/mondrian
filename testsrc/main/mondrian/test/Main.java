@@ -249,6 +249,7 @@ public class Main extends TestSuite {
 
             suite.addTestSuite(FastBatchingCellReaderTest.class);
             suite.addTestSuite(SqlQueryTest.class);
+            suite.addTest(BatchedFillTest.suite());
         }
         if (testName != null && !testName.equals("")) {
             // Filter the suite, so that only tests whose names match

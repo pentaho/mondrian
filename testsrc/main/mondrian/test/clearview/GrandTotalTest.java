@@ -35,7 +35,7 @@ public class GrandTotalTest extends ClearViewBase {
         super(name);
     }
 
-    protected DiffRepository getDiffRepos() {
+    public DiffRepository getDiffRepos() {
         return getDiffReposStatic();
     }
 

@@ -588,6 +588,15 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final StringProperty CatalogURL = new StringProperty(
             this, "mondrian.catalogURL", null);
 
+    /**
+     * Property which controls
+     * whether aggregation cache hit / miss counters will be enabled 
+     */
+    public transient final BooleanProperty EnableCacheHitCounters =
+        new BooleanProperty(
+            this, "mondrian.rolap.agg.enableCacheHitCounters", false);
+
+
     //////////////////////////////////////////////////////////////////////////
     //
     // properties relating to aggregates

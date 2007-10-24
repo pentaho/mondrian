@@ -126,6 +126,7 @@ public class DiffRepository
     private static final String TestCaseNameAttr = "name";
     private static final String ResourceTag = "Resource";
     private static final String ResourceNameAttr = "name";
+    private static final String ResourceSqlDialectAttr = "dialect";
 
     private static final ThreadLocal<String> CurrentTestCaseName =
         new ThreadLocal<String>();
@@ -338,35 +339,43 @@ public class DiffRepository
             // do nothing
         }
     }
-
+    
+    public synchronized String get(
+        final String testCaseName,
+        String resourceName)
+    {
+        return get(testCaseName, resourceName, null);
+    }
+    
     /**
      * Returns a given resource from a given testcase.
      *
      * @param testCaseName Name of test case, e.g. "testFoo"
      * @param resourceName Name of resource, e.g. "sql", "plan"
+     * @param dialectName Name of sql dialect, e.g. "MYSQL", "LUCIDDB"
      * @return The value of the resource, or null if not found
      */
     public synchronized String get(
         final String testCaseName,
-        String resourceName)
+        String resourceName,
+        String dialectName)
     {
         Element testCaseElement =
             getTestCaseElement(root, testCaseName);
         if (testCaseElement == null) {
             if (baseRepos != null) {
-                return baseRepos.get(testCaseName, resourceName);
+                return baseRepos.get(testCaseName, resourceName, dialectName);
             } else {
                 return null;
             }
         }
         final Element resourceElement =
-            getResourceElement(testCaseElement, resourceName);
+            getResourceElement(testCaseElement, resourceName, dialectName);
         if (resourceElement != null) {
             return getText(resourceElement);
         }
         return null;
     }
-
 
     /**
      * Returns the text under an element.
@@ -587,18 +596,29 @@ public class DiffRepository
         Element testCaseElement,
         String resourceName)
     {
+        return getResourceElement(testCaseElement, resourceName, null);
+    }
+
+    private static Element getResourceElement(
+        Element testCaseElement,
+        String resourceName,
+        String resourceAttribute1)
+    {
         final NodeList childNodes = testCaseElement.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node child = childNodes.item(i);
             if (child.getNodeName().equals(ResourceTag) &&
                 resourceName.equals(
-                    ((Element) child).getAttribute(ResourceNameAttr))) {
+                    ((Element) child).getAttribute(ResourceNameAttr)) &&
+                ((resourceAttribute1 == null) ||
+                resourceAttribute1.equals(
+                    ((Element) child).getAttribute(ResourceSqlDialectAttr)))) {
                 return (Element) child;
             }
         }
         return null;
     }
-
+    
     private static void removeAllChildren(Element element)
     {
         final NodeList childNodes = element.getChildNodes();

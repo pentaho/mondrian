@@ -29,13 +29,14 @@ package <xsl:value-of select="$packagename"/>;
 
 import mondrian.test.*;
 import mondrian.olap.*;
+import mondrian.rolap.BatchTestCase;
 
 /**
  * Wraps DiffRepository-based tests with JUnit test methods so
  * that you can see the query and result directly from within your 
  * favorite JUnit-aware IDE.
  */
-public class <xsl:value-of select="$classname"/> extends FoodMartTestCase
+public class <xsl:value-of select="$classname"/> extends BatchTestCase
 {
   
     public <xsl:value-of select="$classname"/>(String testName)

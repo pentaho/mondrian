@@ -1,0 +1,119 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testMultiDim1">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+SELECT
+crossjoin( 
+  [Customers].[All Customers].[USA].children,
+  [Product].[All Products].[Food].children) ON ROWS,
+{[Measures].[Unit Sales]} ON COLUMNS
+FROM [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Baked Goods]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Baking Goods]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Breakfast Foods]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Canned Foods]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Canned Products]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Dairy]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Deli]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Eggs]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Frozen Foods]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Meat]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Produce]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Seafood]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Snack Foods]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Snacks]}
+{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Starchy Foods]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Baked Goods]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Baking Goods]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Breakfast Foods]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Canned Foods]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Canned Products]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Dairy]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Deli]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Eggs]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Frozen Foods]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Meat]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Produce]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Seafood]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Snack Foods]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Snacks]}
+{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Starchy Foods]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Baked Goods]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Baking Goods]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Breakfast Foods]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Canned Foods]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Canned Products]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Dairy]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Deli]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Eggs]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Frozen Foods]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Meat]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Produce]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Seafood]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Snack Foods]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Snacks]}
+{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Starchy Foods]}
+Row #0: 2,150
+Row #1: 5,799
+Row #2: 938
+Row #3: 5,268
+Row #4: 448
+Row #5: 3,534
+Row #6: 3,393
+Row #7: 1,116
+Row #8: 7,505
+Row #9: 527
+Row #10: 10,588
+Row #11: 441
+Row #12: 8,543
+Row #13: 1,958
+Row #14: 1,448
+Row #15: 2,013
+Row #16: 4,810
+Row #17: 862
+Row #18: 4,889
+Row #19: 464
+Row #20: 3,131
+Row #21: 3,038
+Row #22: 1,119
+Row #23: 6,575
+Row #24: 469
+Row #25: 9,744
+Row #26: 451
+Row #27: 7,789
+Row #28: 1,831
+Row #29: 1,352
+Row #30: 3,707
+Row #31: 9,636
+Row #32: 1,517
+Row #33: 8,869
+Row #34: 900
+Row #35: 6,220
+Row #36: 5,606
+Row #37: 1,897
+Row #38: 12,575
+Row #39: 718
+Row #40: 17,460
+Row #41: 872
+Row #42: 14,213
+Row #43: 3,095
+Row #44: 2,462
+]]>
+        </Resource>
+    </TestCase>
+</Root>

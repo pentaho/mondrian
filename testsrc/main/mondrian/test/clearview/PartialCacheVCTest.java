@@ -15,23 +15,23 @@ import junit.framework.*;
 import mondrian.test.*;
 
 /**
- * <code>SubTotalTest</code> is a test suite which tests scenarios of 
- * using sub totals against the FoodMart database. MDX queries and their
- * expected results are maintained separately in SubTotalTest.ref.xml file.
+ * <code>PartialCacheVCTest</code> is a test suite which tests
+ * complex queries against the FoodMart database. MDX queries and their
+ * expected results are maintained separately in PartialCacheVCTest.ref.xml file.
  * If you would prefer to see them as inlined Java string literals, run
  * ant target "generateDiffRepositoryJUnit" and then use
- * file SubTotalTestJUnit.java which will be generated in this directory.
+ * file PartialCacheVCTestJUnit.java which will be generated in this directory.
  *
  * @author Khanh Vu
  * @version $Id$
  */
-public class SubTotalTest extends ClearViewBase {
+public class PartialCacheVCTest extends ClearViewBase {
 
-    public SubTotalTest() {
+    public PartialCacheVCTest() {
         super();
     }
 
-    public SubTotalTest(String name) {
+    public PartialCacheVCTest(String name) {
         super(name);
     }
 
@@ -40,13 +40,13 @@ public class SubTotalTest extends ClearViewBase {
     }
 
     private static DiffRepository getDiffReposStatic() {
-        return DiffRepository.lookup(SubTotalTest.class);
+        return DiffRepository.lookup(PartialCacheVCTest.class);
     }
 
     public static TestSuite suite() {
-        return constructSuite(getDiffReposStatic(), SubTotalTest.class);
+        return constructSuite(getDiffReposStatic(), PartialCacheVCTest.class);
     }
 
 }
 
-// End SubTotalTest.java
+// End PartialCacheVCTest.java
