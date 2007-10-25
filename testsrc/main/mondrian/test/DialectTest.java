@@ -299,6 +299,8 @@ public class DialectTest extends TestCase {
                 "(?s)You have an error in your SQL syntax; check .*",
                 // access
                 "(?s)\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression 'GROUPING SETS.*",
+                // postgres
+                "ERROR: syntax error at or near \"SETS\"",
             };
             assertQueryFails(sql, errs);
         }
