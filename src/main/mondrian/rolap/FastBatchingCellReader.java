@@ -610,7 +610,8 @@ public class FastBatchingCellReader implements CellReader {
                 BATCH_LOGGER.error(buf.toString());
 
             } else {
-                final AggGen aggGen = new AggGen(cube.getStar(), columns);
+                final AggGen aggGen =
+                    new AggGen(cube.getName(), cube.getStar(), columns);
                 if (aggGen.isReady()) {
                     // PRINT TO STDOUT - DO NOT USE BATCH_LOGGER
                     System.out.println("createLost:" +

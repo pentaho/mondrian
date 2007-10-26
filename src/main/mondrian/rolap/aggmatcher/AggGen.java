@@ -39,27 +39,36 @@ import java.sql.Types;
 public class AggGen {
     private static final Logger LOGGER = Logger.getLogger(AggGen.class);
 
+    private final String cubeName;
     private final RolapStar star;
     private final RolapStar.Column[] columns;
 
     /** map RolapStar.Table to list of JdbcSchema Column Usages */
-    private final Map<RolapStar.Table, List<JdbcSchema.Table.Column.Usage>> collapsedColumnUsages;
+    private final Map<RolapStar.Table, List<JdbcSchema.Table.Column.Usage>>
+        collapsedColumnUsages =
+        new HashMap<RolapStar.Table, List<JdbcSchema.Table.Column.Usage>>();
 
     /** set of JdbcSchema Column Usages */
-    private final Set<JdbcSchema.Table.Column.Usage> notLostColumnUsages;
+    private final Set<JdbcSchema.Table.Column.Usage> notLostColumnUsages =
+        new HashSet<JdbcSchema.Table.Column.Usage>();
 
     /** list of JdbcSchema Column Usages */
-    private final List<JdbcSchema.Table.Column.Usage> measures;
+    private final List<JdbcSchema.Table.Column.Usage> measures =
+        new ArrayList<JdbcSchema.Table.Column.Usage>();
+
     private boolean isReady;
 
-    public AggGen(RolapStar star, RolapStar.Column[] columns) {
+    public AggGen(
+        String cubeName,
+        RolapStar star,
+        RolapStar.Column[] columns)
+    {
+        this.cubeName = cubeName;
         this.star = star;
         this.columns = columns;
-        this.notLostColumnUsages = new HashSet<JdbcSchema.Table.Column.Usage>();
-        this.collapsedColumnUsages = new HashMap<RolapStar.Table, List<JdbcSchema.Table.Column.Usage>>();
-        this.measures = new ArrayList<JdbcSchema.Table.Column.Usage>();
         init();
     }
+
     private Logger getLogger() {
         return LOGGER;
     }
@@ -285,16 +294,17 @@ public class AggGen {
                 getLogger().warn(buf.toString());
                 return;
             }
-            RolapAggregator aggregator;
             if (!(rColumn instanceof RolapStar.Measure)) {
                 // TODO: whats the solution to this?
                 // its a funky dimension column in the fact table!!!
                 getLogger().warn("not a measure: " + name);
                 continue;
-            } else {
-                RolapStar.Measure rMeasure = (RolapStar.Measure) rColumn;
-                aggregator = rMeasure.getAggregator();
             }
+            RolapStar.Measure rMeasure = (RolapStar.Measure) rColumn;
+            if (!rMeasure.getCubeName().equals(cubeName)) {
+                continue;
+            }
+            final RolapAggregator aggregator = rMeasure.getAggregator();
             JdbcSchema.Table.Column c = getColumn(factTable, name);
             if (c == null) {
                 StringBuilder buf = new StringBuilder(64);
@@ -640,7 +650,7 @@ public class AggGen {
             pw.print(prefix);
             pw.print(
                 agg.getExpression(sqlQuery.getDialect().quoteIdentifier(
-                    factTableName, c.getName())).toUpperCase());
+                    factTableName, c.getName())));
             pw.print(" AS ");
             pw.print(sqlQuery.getDialect().quoteIdentifier(c.getName()));
             pw.println(',');
@@ -775,7 +785,7 @@ public class AggGen {
             pw.print(prefix);
             pw.print(
                 agg.getExpression(sqlQuery.getDialect().quoteIdentifier(
-                    t.getName(), c.getName())).toUpperCase());
+                    t.getName(), c.getName())));
             pw.print(" AS ");
             pw.print(sqlQuery.getDialect().quoteIdentifier(c.getName()));
             pw.println(',');
