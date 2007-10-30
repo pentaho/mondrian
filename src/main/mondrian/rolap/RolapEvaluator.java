@@ -425,6 +425,9 @@ public class RolapEvaluator implements Evaluator {
         final RolapMember m = (RolapMember) member;
         final int ordinal = m.getDimension().getOrdinal(root.cube);
         final Member previous = currentMembers[ordinal];
+        if (m.equals(previous)) {
+            return m;
+        }
         if (previous.isCalculated()) {
             removeCalcMember(previous);
         }

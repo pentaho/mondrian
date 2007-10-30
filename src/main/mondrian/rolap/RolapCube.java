@@ -14,6 +14,7 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.aggmatcher.ExplicitRules;
+import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
 
@@ -56,6 +57,12 @@ public class RolapCube extends CubeBase {
      * List of calculated members.
      */
     private Formula[] calculatedMembers;
+
+    /**
+     * Role based cache of calculated members
+     */
+    private final SoftSmartCache<Role, List<Member>> roleToAccessibleCalculatedMembers =
+            new SoftSmartCache<Role, List<Member>>();
 
     /**
      * List of named sets.
@@ -2407,10 +2414,8 @@ assert is not true.
                 return list;
             }
 
-            for (Formula formula : calculatedMembers) {
-                Member member = formula.getMdxMember();
-                if (member.getHierarchy().equals(hierarchy) &&
-                    getRole().canAccess(member)) {
+            for (Member member : getCalculatedMembers()) {
+                if (member.getHierarchy().equals(hierarchy)) {
                     list.add(member);
                 }
             }
@@ -2424,9 +2429,8 @@ assert is not true.
                 return list;
             }
 
-            for (Member member : getCalculatedMembers(level.getHierarchy())) {
-                if (member.getLevel().equals(level) &&
-                    getRole().canAccess(member)) {
+            for (Member member : getCalculatedMembers()) {
+                if (member.getLevel().equals(level)) {
                     list.add(member);
                 }
             }
@@ -2434,11 +2438,18 @@ assert is not true.
         }
 
         public List<Member> getCalculatedMembers() {
-            List<Member> list = new ArrayList<Member>();
-            for (Formula formula : calculatedMembers) {
-                Member member = formula.getMdxMember();
-                if (getRole().canAccess(member)) {
-                    list.add(member);
+            List<Member> list = roleToAccessibleCalculatedMembers.get(getRole());
+            if (list == null) {
+                list = new ArrayList<Member>();
+                for (Formula formula : calculatedMembers) {
+                    Member member = formula.getMdxMember();
+                    if (getRole().canAccess(member)) {
+                        list.add(member);
+                    }
+                }
+                //  calculatedMembers array may not have been initialized
+                if (list.size() > 0) {
+                    roleToAccessibleCalculatedMembers.put(getRole(), list);
                 }
             }
             return list;
