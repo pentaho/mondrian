@@ -22,6 +22,7 @@ import java.math.BigDecimal;
  * <li>{@link mondrian.olap.Util#enumSetNoneOf(Class)}</li>
  * <li>{@link mondrian.olap.Util#enumSetAllOf(Class)}</li>
  * <li>{@link mondrian.olap.Util#makeBigDecimalFromDouble(double)}</li>
+ * <li>{@link mondrian.olap.Util#quotePattern(String)}</li>
  * </ul></p>
  *
  * <p>This interface could in principle be extended to allow native
@@ -38,6 +39,8 @@ public interface UtilCompatible {
     <E extends Enum<E>> Set<E> enumSetAllOf(Class<E> elementType);
 
     BigDecimal makeBigDecimalFromDouble(double d);
+
+    String quotePattern(String s);
 }
 
 // End UtilCompatible.java

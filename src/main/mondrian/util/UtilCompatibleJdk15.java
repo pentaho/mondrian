@@ -11,6 +11,7 @@ package mondrian.util;
 
 import java.util.Set;
 import java.util.EnumSet;
+import java.util.regex.Pattern;
 import java.math.BigDecimal;
 // Only in Java5 and above
 import java.math.MathContext;
@@ -49,6 +50,10 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
      */
     public BigDecimal makeBigDecimalFromDouble(double d) {
         return new BigDecimal(d, MathContext.DECIMAL64);
+    }
+
+    public String quotePattern(String s) {
+        return Pattern.quote(s);
     }
 }
 

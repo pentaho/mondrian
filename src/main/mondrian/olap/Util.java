@@ -1166,21 +1166,21 @@ public class Util extends XOMUtil {
                 int underscore = value.indexOf('_', i);
                 if (percent == -1 && underscore == -1) {
                     if (i < value.length()) {
-                        buf.append(Pattern.quote(value.substring(i)));
+                        buf.append(quotePattern(value.substring(i)));
                     }
                     break;
                 }
                 if (underscore >= 0 && (underscore < percent || percent < 0)) {
                     if (i < underscore) {
                         buf.append(
-                            Pattern.quote(value.substring(i, underscore)));
+                            quotePattern(value.substring(i, underscore)));
                     }
                     buf.append('.');
                     i = underscore + 1;
                 } else if (percent >= 0 && (percent < underscore || underscore < 0)) {
                     if (i < percent) {
                     buf.append(
-                        Pattern.quote(value.substring(i, percent)));
+                        quotePattern(value.substring(i, percent)));
                     }
                     buf.append(".*");
                     i = percent + 1;
@@ -2052,7 +2052,20 @@ public class Util extends XOMUtil {
     public static BigDecimal makeBigDecimalFromDouble(double d) {
         return compatible.makeBigDecimalFromDouble(d);
     }
-    
+
+    /**
+     * Returns a literal pattern String for the specified String.
+     *
+     * <p>Specification as for {@link Pattern#quote(String)}, which was
+     * introduced in JDK 1.5.
+     *
+     * @param s The string to be literalized
+     * @return A literal string replacement
+     */
+    public static String quotePattern(String s) {
+        return compatible.quotePattern(s);
+    }
+
     /**
      * Creates a new udf instance from the given udf class.
      * 
