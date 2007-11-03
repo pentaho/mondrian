@@ -18,6 +18,7 @@ import mondrian.udf.CurrentDateMemberExactUdf;
 import mondrian.udf.CurrentDateMemberUdf;
 import mondrian.udf.CurrentDateStringUdf;
 import mondrian.util.Bug;
+import mondrian.rolap.RolapUtil;
 
 import org.eigenbase.xom.StringEscaper;
 
@@ -25,6 +26,7 @@ import java.io.*;
 import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * <code>FunctionTest</code> tests the functions defined in
@@ -184,11 +186,11 @@ public class FunctionTest extends FoodMartTestCase {
 
         // MSAS returns "" here.
         assertExprReturns("[Gender].[All Gender].Parent.UniqueName",
-                "[Gender].[#Null]");
+                "[Gender].[#null]");
 
         // MSAS returns "" here.
         assertExprReturns("[Gender].[All Gender].Parent.Name",
-                "#Null");
+                "#null");
 
         // MSAS succeeds too
         assertExprReturns("[Gender].[All Gender].Parent.Children.Count",
@@ -801,7 +803,7 @@ public class FunctionTest extends FoodMartTestCase {
                         "{[Time].[1997].[Q2].[4]}\n" +
                         "Row #0: [Time].[1997].[Q4]\n" +
                         "Row #1: [Time].[1997].[Q2].[6]\n" +
-                        "Row #2: [Time].[#Null]\n" + // MSAS returns "" here.
+                        "Row #2: [Time].[#null]\n" + // MSAS returns "" here.
                         ""));
         }
     }
@@ -3588,7 +3590,7 @@ public class FunctionTest extends FoodMartTestCase {
         // member name
         assertExprReturns("[Store].DefaultMember.Name", "All Stores");
         // name of null member
-        assertExprReturns("[Store].Parent.Name", "#Null");
+        assertExprReturns("[Store].Parent.Name", "#null");
     }
 
 
@@ -3612,7 +3614,8 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testMemberUniqueNameOfNull() {
-        assertExprReturns("[Measures].[Unit Sales].FirstChild.UniqueName", "[Measures].[#Null]"); // MSOLAP gives "" here
+        assertExprReturns("[Measures].[Unit Sales].FirstChild.UniqueName",
+                "[Measures].[#null]"); // MSOLAP gives "" here
     }
 
     public void testCoalesceEmptyDepends() {
@@ -3935,7 +3938,7 @@ public class FunctionTest extends FoodMartTestCase {
         // MSAS returns error here.
         assertExprReturns(
                 "Filter([Gender].members, 1 = 0).Item(0).Name",
-                "#Null");
+                "#null");
 
         // MSAS returns error here.
         assertExprReturns(
@@ -3977,10 +3980,10 @@ public class FunctionTest extends FoodMartTestCase {
         // is null -- and the Item function returns null if the tuple is null.
         assertExprReturns(
                 "([Gender].parent, [Marital Status]).Item(0).Name",
-                "#Null");
+                "#null");
         assertExprReturns(
                 "([Gender].parent, [Marital Status]).Item(1).Name",
-                "#Null");
+                "#null");
     }
 
     private void checkDataResults(
@@ -4355,7 +4358,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Time].[1997].[Q3].[8]}\n" +
                     "Axis #1:\n" +
                     "{[Measures].[Foo]}\n" +
-                    "Row #0: [Time].[#Null]\n"));
+                    "Row #0: [Time].[#null]\n"));
 
         // one parameter, level 1 above member
         assertQueryReturns(
@@ -4397,7 +4400,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Time].[1997].[Q3]}\n" +
                     "Axis #1:\n" +
                     "{[Measures].[Foo]}\n" +
-                    "Row #0: [Time].[#Null]\n"));
+                    "Row #0: [Time].[#null]\n"));
     }
 
     public void _testParallelPeriodThrowsException() {
@@ -6033,8 +6036,8 @@ public class FunctionTest extends FoodMartTestCase {
                 "[Time].[1997].[Q1].[2]");
 
         // Access beyond the list yields the Null member.
-        assertExprReturns("[Time].[1997].Children.Item(6).UniqueName", "[Time].[#Null]");
-        assertExprReturns("[Time].[1997].Children.Item(-1).UniqueName", "[Time].[#Null]");
+        assertExprReturns("[Time].[1997].Children.Item(6).UniqueName", "[Time].[#null]");
+        assertExprReturns("[Time].[1997].Children.Item(-1).UniqueName", "[Time].[#null]");
     }
 
     public void testItemTuple() {

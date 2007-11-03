@@ -263,7 +263,7 @@ public class RolapMember extends MemberBase {
      */
     private static String keyToString(Object key) {
         String name;
-        if (key == null) {
+        if (key == null || RolapUtil.sqlNullValue.equals(key)) {
             name = RolapUtil.mdxNullLiteral;
         } else if (key instanceof Id.Segment) {
             name = ((Id.Segment)key).name;      //MARIN CHANGE: To get the correct key when segments are parsed.

@@ -73,7 +73,12 @@ public class RolapUtil {
         }
     };
 
-    public static final String mdxNullLiteral = "#null";
+    /**
+     * Runtime NullMemberRepresentation property change not taken into
+     * consideration
+     */
+    public static final String mdxNullLiteral =
+            MondrianProperties.instance().NullMemberRepresentation.get();
     public static final String sqlNullLiteral = "null";
 
     /**

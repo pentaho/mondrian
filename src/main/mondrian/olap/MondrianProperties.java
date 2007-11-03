@@ -941,6 +941,16 @@ public class MondrianProperties extends TriggerableProperties {
                     this, "mondrian.rolap.ignoreInvalidMembersDuringQuery", false);
 
     /**
+     * Property which determines how a null member value is represented in the
+     * result output.
+     * <p>AS 2000 shows this as empty value
+     * <p>AS 2005 shows this as "(null)" value
+     */
+    public transient final StringProperty NullMemberRepresentation =
+            new StringProperty(this, "mondrian.olap.NullMemberRepresentation",
+                    "#null");
+
+    /**
      * Property which defines
      * the iteration limit when computing an aggregate; 0 indicates unlimited.
      */

@@ -952,7 +952,7 @@ RME HACK
      */
     static class RolapNullMember extends RolapMember {
         RolapNullMember(final RolapLevel level) {
-            super(null, level, null, "#Null", MemberType.NULL);
+            super(null, level, null, RolapUtil.mdxNullLiteral, MemberType.NULL);
             assert level != null;
         }
     }
