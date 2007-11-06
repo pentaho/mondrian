@@ -481,7 +481,6 @@ META-INF/**"/>
       description="Runs all JUnit tests."
       depends="compile,compile.tests,unzip-databases,set.connectString">
     <antcall target="test-nobuild"/>
-    <antcall target="junit-nobuild-nullmember"/>
     <antcall target="checkJavadoc"/>
   </target>
 
@@ -548,8 +547,6 @@ in {mondrian.foodmart.jdbcURL}.">
         </batchtest>
     </junit>
 
-    <antcall target="junit-nobuild-nullmember"/>
-
     <junitreport todir="junit-results">
       <fileset dir="junit-results">
         <include name="TEST-*.xml"/>
@@ -586,55 +583,6 @@ in {mondrian.foodmart.jdbcURL}.">
         <batchtest fork="yes">
             <fileset dir="${testclasses.dir}">
               <include name="mondrian/test/CacheHitTest.class" />
-            </fileset>
-        </batchtest>
-    </junit>
-    <fail>
-        <condition>
-            <isset property="juniterror"/>
-        </condition>
-    </fail>
-    <fail>
-        <condition>
-            <isset property="junitfailure"/>
-        </condition>
-    </fail>
-  </target>
-
-  <target name="junit-nullmember"
-      description="Runs all Null Member JUnit tests."
-      depends="compile,compile.tests,unzip-databases,set.connectString">
-    <antcall target="junit-nobuild-nullmember"/>
-  </target>
-
-  <!--
-    Each test runs in a forked jvm to overcome limitations due to static
-    variable initializatoin. Can't add to Main
-  -->
-  <target name="junit-nobuild-nullmember">
-    <junit printsummary="yes" fork="yes" forkmode="perTest" haltonfailure="no"
-           haltonerror="no" errorproperty="juniterror"
-           failureproperty="junitfailure" showoutput="yes">
-        <classpath>
-            <path refid="project.test.classpath"/>
-        </classpath>
-        <sysproperty key="log4j.configuration"
-          value="${log4j.configuration}"/>
-        <sysproperty key="mondrian.jdbcDrivers"
-            value="${mondrian.jdbcDrivers}"/>
-        <sysproperty key="mondrian.test.connectString"
-            value="${mondrian.test.connectString}"/>
-        <sysproperty key="mondrian.test.foodmart.catalogURL"
-            value="${mondrian.foodmart.catalogURL}"/>
-        <formatter type="xml" />
-        <batchtest fork="yes">
-            <fileset dir="${testclasses.dir}">
-              <include name="mondrian/olap/NullMemberCustomRepresentationTest.class" />
-            </fileset>
-        </batchtest>
-        <batchtest fork="yes">
-            <fileset dir="${testclasses.dir}">
-              <include name="mondrian/olap/NullMemberEmptyRepresentationTest.class" />
             </fileset>
         </batchtest>
     </junit>

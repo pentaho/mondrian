@@ -10,40 +10,20 @@
 package mondrian.olap;
 
 import mondrian.test.FoodMartTestCase;
+import mondrian.rolap.RolapUtil;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
 
 /**
- * <code>BaseNullMemberRepresentationTest</code> tests the null member
+ * <code>NullMemberRepresentationTest</code> tests the null member
  * custom representation feature supported via
  * {@link mondrian.olap.MondrianProperties#NullMemberRepresentation} property.
- * Each test runs in a forked jvm to overcome limitations due to static
- * variable initialization
- *
  * @author ajogleka
  * @version $Id$
  */
-public abstract class BaseNullMemberRepresentationTest extends FoodMartTestCase {
+public class NullMemberRepresentationTest extends FoodMartTestCase {
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        setNullMemberValueRepresentation("mondrian.olap.NullMemberRepresentation=" +
-                getNullMemberRepresentation());
-    }
-
-    protected abstract String getNullMemberRepresentation();
-
-    private void setNullMemberValueRepresentation(String representation)
-            throws IOException {
-        InputStream is = new ByteArrayInputStream(representation.getBytes());
-        MondrianProperties.instance().load(is);
-    }
-
-
-    public void testClosingPeriodMemberLeafWithCustomNullRepresentation()
-            throws IOException {
+    public void testClosingPeriodMemberLeafWithCustomNullRepresentation() {
 
         assertQueryReturns(
                 "with member [Measures].[Foo] as ' ClosingPeriod().uniquename '\n" +
@@ -86,8 +66,8 @@ public abstract class BaseNullMemberRepresentationTest extends FoodMartTestCase 
 
     }
 
-    protected void tearDown() throws Exception {
-        setNullMemberValueRepresentation("mondrian.olap.NullMemberRepresentation=#null");
-        super.tearDown();
+    private String getNullMemberRepresentation() {
+        return RolapUtil.mdxNullLiteral;
     }
+
 }

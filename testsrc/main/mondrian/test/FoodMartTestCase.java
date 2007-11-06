@@ -217,6 +217,11 @@ public class FoodMartTestCase extends TestCase {
                 getTestContext().getDialect().supportsGroupingSets();
     }
 
+    protected boolean isDefaultNullMemberRepresentation() {
+        return MondrianProperties.instance().NullMemberRepresentation.get()
+                .equals("#null");
+    }
+
     static class QueryAndResult {
         String query;
         String result;

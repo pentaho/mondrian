@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 
 import mondrian.olap.*;
 import mondrian.test.TestContext;
+import mondrian.test.FoodMartTestCase;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import junit.framework.TestCase;
@@ -89,7 +90,7 @@ import junit.framework.TestSuite;
  * &lt;/mdbTest&gt;</pre>
  * </blockquote>
  */
-public class ResultComparatorTest extends TestCase {
+public class ResultComparatorTest extends FoodMartTestCase {
 
     private File file;
 
@@ -112,21 +113,30 @@ public class ResultComparatorTest extends TestCase {
         Document doc = db.parse(file);
 
         Element queryNode = (Element) doc.getElementsByTagName("mdxQuery").item(0);
+        Element expectedResult = (Element) doc.getElementsByTagName(
+                "dataResult").item(0);
+        if (!isDefaultNullMemberRepresentation() &&
+                resultHasDefaultNullMemberRepresentation(expectedResult)) {
+            return;
+        }
         String queryString = XMLUtility.decodeEncodedString(queryNode.getFirstChild()
                 .getNodeValue());
 
-        Connection cxn = TestContext.instance().getFoodMartConnection();
+        Connection cxn = getConnection();
         try {
             Query query = cxn.parseQuery(queryString);
             Result result = cxn.execute(query);
 
-            ResultComparator comp = new ResultComparator((Element) doc.getElementsByTagName(
-                    "dataResult").item(0), result);
+            ResultComparator comp = new ResultComparator(expectedResult, result);
 
             comp.compareResults();
         } finally {
             cxn.close();
         }
+    }
+
+    private boolean resultHasDefaultNullMemberRepresentation(Element expectedResult) {
+        return XMLUtility.toString(expectedResult).indexOf("#null") != -1;
     }
 
     public static TestSuite suite() {

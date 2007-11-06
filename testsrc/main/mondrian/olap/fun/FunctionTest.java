@@ -184,17 +184,19 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("[Gender].[All Gender].Parent.Dimension.UniqueName",
                 "[Gender]");
 
-        // MSAS returns "" here.
-        assertExprReturns("[Gender].[All Gender].Parent.UniqueName",
-                "[Gender].[#null]");
-
-        // MSAS returns "" here.
-        assertExprReturns("[Gender].[All Gender].Parent.Name",
-                "#null");
-
         // MSAS succeeds too
         assertExprReturns("[Gender].[All Gender].Parent.Children.Count",
                 "0");
+
+        if (isDefaultNullMemberRepresentation()) {
+            // MSAS returns "" here.
+            assertExprReturns("[Gender].[All Gender].Parent.UniqueName",
+                    "[Gender].[#null]");
+
+            // MSAS returns "" here.
+            assertExprReturns("[Gender].[All Gender].Parent.Name",
+                    "#null");
+        }
     }
 
     /**
@@ -784,7 +786,7 @@ public class FunctionTest extends FoodMartTestCase {
             // ClosingPeriod(<member>)
             member = executeSingletonAxis("ClosingPeriod([Time].[1997].[Q3].[8])");
             Assert.assertNull(member);
-        } else {
+        } else if (isDefaultNullMemberRepresentation()) {
             assertQueryReturns(
                         "with member [Measures].[Foo] as ' ClosingPeriod().uniquename '\n" +
                         "select {[Measures].[Foo]} on columns,\n" +
@@ -3589,8 +3591,10 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("[Store].Name", "Store");
         // member name
         assertExprReturns("[Store].DefaultMember.Name", "All Stores");
-        // name of null member
-        assertExprReturns("[Store].Parent.Name", "#null");
+        if (isDefaultNullMemberRepresentation()) {
+            // name of null member
+            assertExprReturns("[Store].Parent.Name", "#null");
+        }
     }
 
 
@@ -3614,8 +3618,10 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testMemberUniqueNameOfNull() {
-        assertExprReturns("[Measures].[Unit Sales].FirstChild.UniqueName",
-                "[Measures].[#null]"); // MSOLAP gives "" here
+        if (isDefaultNullMemberRepresentation()) {
+            assertExprReturns("[Measures].[Unit Sales].FirstChild.UniqueName",
+                    "[Measures].[#null]"); // MSOLAP gives "" here
+        }
     }
 
     public void testCoalesceEmptyDepends() {
@@ -3937,17 +3943,19 @@ public class FunctionTest extends FoodMartTestCase {
 
         // MSAS returns error here.
         assertExprReturns(
-                "Filter([Gender].members, 1 = 0).Item(0).Name",
-                "#null");
-
-        // MSAS returns error here.
-        assertExprReturns(
                 "Filter([Gender].members, 1 = 0).Item(0).Parent",
                 "");
         assertExprReturns(
                 "(Filter([Store].members, 0 = 0).Item(0).Item(0)," +
                         "Filter([Store].members, 0 = 0).Item(0).Item(0))",
                 "266,773");
+
+        if (isDefaultNullMemberRepresentation()) {
+            // MSAS returns error here.
+            assertExprReturns(
+                    "Filter([Gender].members, 1 = 0).Item(0).Name",
+                    "#null");
+        }
     }
 
     public void testTupleNull() {
@@ -3976,14 +3984,16 @@ public class FunctionTest extends FoodMartTestCase {
             " ([Gender].[M], [Marital Status])", // not null
             "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status]}");
 
-        // The tuple constructor returns a null tuple if one of its arguments
-        // is null -- and the Item function returns null if the tuple is null.
-        assertExprReturns(
-                "([Gender].parent, [Marital Status]).Item(0).Name",
-                "#null");
-        assertExprReturns(
-                "([Gender].parent, [Marital Status]).Item(1).Name",
-                "#null");
+        if (isDefaultNullMemberRepresentation()) {
+            // The tuple constructor returns a null tuple if one of its arguments
+            // is null -- and the Item function returns null if the tuple is null.
+            assertExprReturns(
+                    "([Gender].parent, [Marital Status]).Item(0).Name",
+                    "#null");
+            assertExprReturns(
+                    "([Gender].parent, [Marital Status]).Item(1).Name",
+                    "#null");
+        }
     }
 
     private void checkDataResults(
@@ -4347,18 +4357,20 @@ public class FunctionTest extends FoodMartTestCase {
         assertAxisReturns("ParallelPeriod([Time].[Year], 1, [Time].[1997])", "");
 
         // one parameter, level 2 above member
-        assertQueryReturns(
+        if (isDefaultNullMemberRepresentation()) {
+            assertQueryReturns(
                     "WITH MEMBER [Measures].[Foo] AS \n" +
-                    " ' ParallelPeriod([Time].[Year]).UniqueName '\n" +
-                    "SELECT {[Measures].[Foo]} ON COLUMNS\n" +
-                    "FROM [Sales]\n" +
-                    "WHERE [Time].[1997].[Q3].[8]",
-                fold(
-                    "Axis #0:\n" +
-                    "{[Time].[1997].[Q3].[8]}\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Foo]}\n" +
-                    "Row #0: [Time].[#null]\n"));
+                            " ' ParallelPeriod([Time].[Year]).UniqueName '\n" +
+                            "SELECT {[Measures].[Foo]} ON COLUMNS\n" +
+                            "FROM [Sales]\n" +
+                            "WHERE [Time].[1997].[Q3].[8]",
+                    fold(
+                            "Axis #0:\n" +
+                                    "{[Time].[1997].[Q3].[8]}\n" +
+                                    "Axis #1:\n" +
+                                    "{[Measures].[Foo]}\n" +
+                                    "Row #0: [Time].[#null]\n"));
+        }
 
         // one parameter, level 1 above member
         assertQueryReturns(
@@ -4389,18 +4401,20 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: [Time].[1997].[Q3].[7]\n"));
 
         //  one parameter, level below member
-        assertQueryReturns(
+        if (isDefaultNullMemberRepresentation()) {
+            assertQueryReturns(
                     "WITH MEMBER [Measures].[Foo] AS \n" +
-                    " ' ParallelPeriod([Time].[Month]).UniqueName '\n" +
-                    "SELECT {[Measures].[Foo]} ON COLUMNS\n" +
-                    "FROM [Sales]\n" +
-                    "WHERE [Time].[1997].[Q3]",
-                fold(
-                    "Axis #0:\n" +
-                    "{[Time].[1997].[Q3]}\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Foo]}\n" +
-                    "Row #0: [Time].[#null]\n"));
+                            " ' ParallelPeriod([Time].[Month]).UniqueName '\n" +
+                            "SELECT {[Measures].[Foo]} ON COLUMNS\n" +
+                            "FROM [Sales]\n" +
+                            "WHERE [Time].[1997].[Q3]",
+                    fold(
+                            "Axis #0:\n" +
+                                    "{[Time].[1997].[Q3]}\n" +
+                                    "Axis #1:\n" +
+                                    "{[Measures].[Foo]}\n" +
+                                    "Row #0: [Time].[#null]\n"));
+        }
     }
 
     public void _testParallelPeriodThrowsException() {
@@ -6036,8 +6050,12 @@ public class FunctionTest extends FoodMartTestCase {
                 "[Time].[1997].[Q1].[2]");
 
         // Access beyond the list yields the Null member.
-        assertExprReturns("[Time].[1997].Children.Item(6).UniqueName", "[Time].[#null]");
-        assertExprReturns("[Time].[1997].Children.Item(-1).UniqueName", "[Time].[#null]");
+        if (isDefaultNullMemberRepresentation()) {
+            assertExprReturns("[Time].[1997].Children.Item(6).UniqueName",
+                    "[Time].[#null]");
+            assertExprReturns("[Time].[1997].Children.Item(-1).UniqueName",
+                    "[Time].[#null]");
+        }
     }
 
     public void testItemTuple() {

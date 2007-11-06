@@ -3032,6 +3032,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      *
      */
     public void testMemberWithNullKey() {
+        if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
         Result result = executeQuery(
                 "select {[Measures].[Unit Sales]} on columns,\n" +
                 "{[Store Size in SQFT].members} on rows\n" +
@@ -5073,39 +5076,44 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testNullMember() {
-        assertQueryReturns(
+        if (isDefaultNullMemberRepresentation()) {
+            assertQueryReturns(
                 "SELECT \n" +
-                "{[Measures].[Store Cost]} ON columns, \n" +
-                "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]} ON rows \n" +
-                "FROM [Sales] \n" +
-                "WHERE [Time].[1997]",
+                        "{[Measures].[Store Cost]} ON columns, \n" +
+                        "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]} ON rows \n" +
+                        "FROM [Sales] \n" +
+                        "WHERE [Time].[1997]",
                 fold("Axis #0:\n" +
-                "{[Time].[1997]}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Store Cost]}\n" +
-                "Axis #2:\n" +
-                "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}\n" +
-                "Row #0: 33,307.69\n"));
+                        "{[Time].[1997]}\n" +
+                        "Axis #1:\n" +
+                        "{[Measures].[Store Cost]}\n" +
+                        "Axis #2:\n" +
+                        "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}\n" +
+                        "Row #0: 33,307.69\n"));
+        }
     }
 
     public void testNullMemberWithOneNonNull() {
-        assertQueryReturns(
+        if (isDefaultNullMemberRepresentation()) {
+            assertQueryReturns(
                 "SELECT \n" +
-                "{[Measures].[Store Cost]} ON columns, \n" +
-                "{[Store Size in SQFT].[All Store Size in SQFTs].[#null],[Store Size in SQFT].[ALL Store Size in SQFTs].[39696]} ON rows \n" +
-                "FROM [Sales] \n" +
-                "WHERE [Time].[1997]",
+                    "{[Measures].[Store Cost]} ON columns, \n" +
+                    "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]," +
+                    "[Store Size in SQFT].[ALL Store Size in SQFTs].[39696]} ON rows \n" +
+                    "FROM [Sales] \n" +
+                    "WHERE [Time].[1997]",
                 fold(
                     "Axis #0:\n" +
-                    "{[Time].[1997]}\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Store Cost]}\n" +
-                    "Axis #2:\n" +
-                    "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}\n" +
-                    "{[Store Size in SQFT].[All Store Size in SQFTs].[39696]}\n" +
-                    "Row #0: 33,307.69\n" +
-                    "Row #1: 21,121.96\n"));
-     }
+                        "{[Time].[1997]}\n" +
+                        "Axis #1:\n" +
+                        "{[Measures].[Store Cost]}\n" +
+                        "Axis #2:\n" +
+                        "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}\n" +
+                        "{[Store Size in SQFT].[All Store Size in SQFTs].[39696]}\n" +
+                        "Row #0: 33,307.69\n" +
+                        "Row #1: 21,121.96\n"));
+        }
+    }
 
     /**
      * Tests whether the agg mgr behaves correctly if a cell request causes

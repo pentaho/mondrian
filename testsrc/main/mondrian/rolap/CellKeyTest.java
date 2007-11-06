@@ -270,6 +270,9 @@ public class CellKeyTest extends FoodMartTestCase {
     }
     
     public void testCellLookup() {
+        if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
         String cubeDef = 
             "<Cube name = \"SalesTest\" defaultMeasure=\"Unit Sales\">\n" +
             "  <Table name=\"sales_fact_1997\"/>\n" +

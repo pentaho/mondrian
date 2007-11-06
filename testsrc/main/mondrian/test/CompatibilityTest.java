@@ -210,6 +210,9 @@ public class CompatibilityTest extends FoodMartTestCase {
             // types to apply a CAST.
             return;
         }
+        if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
         final String cubeName = "Sales_inline";
         TestContext testContext = TestContext.create(
             null,
@@ -267,6 +270,9 @@ public class CompatibilityTest extends FoodMartTestCase {
         if (getTestContext().getDialect().isLucidDB()) {
             // TODO jvs 29-Nov-2006:  See corresponding comment in
             // testCaseInsensitiveNullMember
+            return;
+        }
+        if (!isDefaultNullMemberRepresentation()) {
             return;
         }
         final String cubeName = "Sales_inline";

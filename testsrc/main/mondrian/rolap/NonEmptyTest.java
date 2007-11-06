@@ -1360,6 +1360,9 @@ public class NonEmptyTest extends BatchTestCase {
      * (3) If parent levels include NULLs, comparision includes any unique level.
      */
     public void testMultiLevelMemberConstraintNullParent() {
+        if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
         String dimension =
             "<Dimension name=\"Warehouse2\">\n" +
             "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n" +
@@ -1439,6 +1442,9 @@ public class NonEmptyTest extends BatchTestCase {
      * and non NULL parent levels.
      */
     public void testMultiLevelMemberConstraintMixedNullNonNullParent() {
+        if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
         String dimension =
             "<Dimension name=\"Warehouse2\">\n" +
             "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n" +
@@ -1523,6 +1529,9 @@ public class NonEmptyTest extends BatchTestCase {
      * and non NULL child levels.
      */
     public void testMultiLevelMemberConstraintWithMixedNullNonNullChild() {
+        if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
         String dimension =
             "<Dimension name=\"Warehouse2\">\n" +
             "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n" +

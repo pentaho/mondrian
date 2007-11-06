@@ -22,17 +22,11 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.ParserTest;
-import mondrian.olap.Util;
-import mondrian.olap.UtilTestCase;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.olap.fun.SortTest;
 import mondrian.olap.fun.CrossJoinTest;
 import mondrian.olap.fun.MemberHelperTest;
-import mondrian.olap.HierarchyBugTest;
-import mondrian.olap.QueryTest;
-import mondrian.olap.CellPropertyTest;
+import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQueryTest;
 import mondrian.test.comp.ResultComparatorTest;
@@ -235,7 +229,8 @@ public class Main extends TestSuite {
             suite.addTestSuite(QueryTest.class);
             suite.addTestSuite(RolapSchemaReaderTest.class);
             suite.addTestSuite(RolapCubeTest.class);
-
+            suite.addTestSuite(NullMemberRepresentationTest.class);
+            
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
                 testNonEmpty = false;

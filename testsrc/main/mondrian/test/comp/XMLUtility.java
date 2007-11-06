@@ -12,9 +12,11 @@ package mondrian.test.comp;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.SAXException;
-import org.w3c.dom.Document;
+import org.w3c.dom.*;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+import org.eigenbase.xom.XOMUtil;
+import org.eigenbase.xom.wrappers.W3CDOMWrapper;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -22,6 +24,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.regex.Pattern;
 
 import mondrian.olap.Util;
 
@@ -29,6 +32,8 @@ import mondrian.olap.Util;
  * XML utility methods.
  */
 class XMLUtility {
+    static final Pattern WhitespacePattern = Pattern.compile("\\s*");
+
     public static DocumentBuilder createDomParser(boolean validate,
             boolean ignoreIgnorableWhitespace, boolean usingSchema,
             ErrorHandler handler) {
@@ -122,6 +127,31 @@ class XMLUtility {
         }
 
         return result.toString();
+    }
+
+    public static void stripWhitespace(Element element) {
+        final NodeList childNodeList = element.getChildNodes();
+        for (int i = 0; i < childNodeList.getLength(); i++) {
+            Node node = childNodeList.item(i);
+            switch (node.getNodeType()) {
+            case Node.TEXT_NODE:
+            case Node.CDATA_SECTION_NODE:
+                final String text = ((CharacterData) node).getData();
+                if (WhitespacePattern.matcher(text).matches()) {
+                    element.removeChild(node);
+                    --i;
+                }
+                break;
+            case Node.ELEMENT_NODE:
+                stripWhitespace((Element) node);
+                break;
+            }
+        }
+    }
+
+    public static String toString(Element xmlRoot) {
+        stripWhitespace(xmlRoot);
+        return XOMUtil.wrapperToXml(new W3CDOMWrapper(xmlRoot), false);
     }
 
     public static class UtilityErrorHandler implements ErrorHandler {

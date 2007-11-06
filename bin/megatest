@@ -532,6 +532,9 @@ doAllTests()
   doTest jdk1.6 oracle mondrian.test.VUsers=1
 
   doTest jdk1.5 oracle mondrian.test.ExpDependencies=10 mondrian.test.random.seed=-1 mondrian.expCache.enable=false #mondrian.test.Name=mondrian.test.ParentChildHierarchyTest
+  doTest jdk1.5 access mondrian.olap.NullMemberRepresentation= mondrian.test.Class=mondrian.olap.NullMemberRepresentationTest
+  doTest jdk1.5 access mondrian.olap.NullMemberRepresentation=\(null\) mondrian.test.Class=mondrian.olap.NullMemberRepresentationTest
+  doTest jdk1.5 access mondrian.olap.NullMemberRepresentation=~Missing mondrian.test.Class=mondrian.olap.NullMemberRepresentationTest
 
 #    mondrian.test.Class=mondrian.test.BasicQueryTest
 #    mondrian.test.Name=testQueryTimeout

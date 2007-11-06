@@ -13,14 +13,11 @@ import mondrian.olap.*;
 import mondrian.test.TestContext;
 
 import junit.framework.Assert;
-import org.eigenbase.xom.XOMUtil;
-import org.eigenbase.xom.wrappers.W3CDOMWrapper;
 import org.w3c.dom.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Compares the {@link Result} produced by a query with the expected result
@@ -31,7 +28,6 @@ import java.util.regex.Pattern;
 class ResultComparator {
     private final Element xmlRoot;
     private final Result result;
-    private static final Pattern WhitespacePattern = Pattern.compile("\\s*");
 
     public ResultComparator(Element xmlRoot, Result result) {
         this.xmlRoot = xmlRoot;
@@ -151,40 +147,15 @@ class ResultComparator {
         message += "; expected=" + expected + "; actual=" + actual + Util.nl +
                 "Query: " + Util.unparse(result.getQuery()) + Util.nl;
         TestContext.assertEqualsVerbose(
-                toString(xmlRoot),
+                XMLUtility.toString(xmlRoot),
                 toString(result),
                 false,
                 message);
     }
 
-    private String toString(Element xmlRoot) {
-        stripWhitespace(xmlRoot);
-        return XOMUtil.wrapperToXml(new W3CDOMWrapper(xmlRoot), false);
-    }
-
     private String toString(Result result) {
         Element element = toXml(result);
-        return toString(element);
-    }
-
-    private void stripWhitespace(Element element) {
-        final NodeList childNodeList = element.getChildNodes();
-        for (int i = 0; i < childNodeList.getLength(); i++) {
-            Node node = childNodeList.item(i);
-            switch (node.getNodeType()) {
-            case Node.TEXT_NODE:
-            case Node.CDATA_SECTION_NODE:
-                final String text = ((CharacterData) node).getData();
-                if (WhitespacePattern.matcher(text).matches()) {
-                    element.removeChild(node);
-                    --i;
-                }
-                break;
-            case Node.ELEMENT_NODE:
-                stripWhitespace((Element) node);
-                break;
-            }
-        }
+        return XMLUtility.toString(element);
     }
 
     private Element toXml(Result result) {
