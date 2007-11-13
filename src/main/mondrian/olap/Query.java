@@ -566,8 +566,13 @@ public class Query extends QueryPart {
 
         // Validate axes.
         if (axes != null) {
+            Set<String> axisNames = new HashSet<String>();
             for (QueryAxis axis : axes) {
                 validator.validate(axis);
+                if (!axisNames.add(axis.getAxisName())) {
+                    throw MondrianResource.instance().DuplicateAxis.ex(
+                        axis.getAxisName());
+                }
             }
         }
         if (slicerAxis != null) {

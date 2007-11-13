@@ -220,6 +220,10 @@
     <text>Invalid axis specification. The axis number must be an integer between 0 and {0,number}, but it was {1,number}.</text>
 </exception>
 
+<exception id="350545" name="DuplicateAxis">
+    <text>Duplicate axis name ''{0}''.</text>
+</exception>
+
 <exception id="350550" name="DupDimensionsInTuple">
     <text>Tuple contains more than one member of dimension ''{0}''.</text>
 </exception>

@@ -6009,6 +6009,22 @@ public class BasicQueryTest extends FoodMartTestCase {
             desiredResult);
     }
 
+    public void testDuplicateAxisFails() {
+        assertThrows(
+            "select [Gender].Members on columns,"
+                + " [Measures].Members on columns "
+                + "from [Sales]",
+            "Duplicate axis name 'COLUMNS'.");
+    }
+
+    public void testInvalidAxisFails() {
+        assertThrows(
+            "select [Gender].Members on 0,"
+                + " [Measures].Members on 10 "
+                + "from [Sales]",
+            "Invalid axis specification. The axis number must be an integer between 0 and 5, but it was 10.");
+    }
+
     /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.
