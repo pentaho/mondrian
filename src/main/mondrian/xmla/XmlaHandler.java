@@ -1402,7 +1402,7 @@ public class XmlaHandler implements XmlaConstants {
                 // populate header
                 headers = new String[columnCount];
                 for (int i = 0; i < columnCount; i++) {
-                    headers[i] = md.getColumnName(i + 1);
+                    headers[i] = md.getColumnLabel(i + 1);
                 }
 
                 // skip to first rowset specified in request
