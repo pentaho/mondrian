@@ -74,7 +74,7 @@ interface MemberCache {
      * @param constraint the condition that was used when the members were
      *   fetched. May be null for all members (no constraint)
      */
-    List getLevelMembersFromCache(RolapLevel level, TupleConstraint constraint);
+    List<RolapMember> getLevelMembersFromCache(RolapLevel level, TupleConstraint constraint);
 
     /**
      * Registers that the children of <code>member</code> are

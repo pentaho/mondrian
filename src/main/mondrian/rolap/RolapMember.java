@@ -261,7 +261,7 @@ public class RolapMember extends MemberBase {
      * <code>[Sales].[Store SQFT]</code> dimension comes out "20319.0" but we'd
      * like it to be "20319".
      */
-    private static String keyToString(Object key) {
+    protected static String keyToString(Object key) {
         String name;
         if (key == null || RolapUtil.sqlNullValue.equals(key)) {
             name = RolapUtil.mdxNullLiteral;
@@ -316,7 +316,7 @@ public class RolapMember extends MemberBase {
             // Save memory by only saving the name as a property if it's
             // different from the key.
             setProperty(Property.NAME.name, name);
-        } else {
+        } else if (key != null) {
             setUniqueName(key);
         }
     }
@@ -325,15 +325,24 @@ public class RolapMember extends MemberBase {
         this(parentMember, level, value, null, MemberType.REGULAR);
     }
 
+    /**
+     * Used by RolapCubeMember. Can obsolete when RolapMember becomes a
+     * hierarchy.
+     */
+    protected RolapMember() {
+        super();
+        this.key = null;
+    }
+    
     protected Logger getLogger() {
         return LOGGER;
     }
 
-    public final RolapLevel getLevel() {
+    public RolapLevel getLevel() {
         return (RolapLevel) level;
     }
 
-    public final RolapHierarchy getHierarchy() {
+    public RolapHierarchy getHierarchy() {
         return getLevel().getHierarchy();
     }
 
@@ -342,7 +351,7 @@ public class RolapMember extends MemberBase {
     }
 
     public int hashCode() {
-        return uniqueName.hashCode();
+        return getUniqueName().hashCode();
     }
 
     public boolean equals(Object o) {
@@ -543,6 +552,17 @@ public class RolapMember extends MemberBase {
                 // fall through
             }
         }
+        return getPropertyFromMap(propertyName, matchCase);
+    }
+
+    /**
+     * Returns the value of a property by looking it up in the property map.
+     *
+     * @param propertyName Name of property
+     * @param matchCase Whether to match name case-sensitive
+     * @return Property value
+     */
+    protected Object getPropertyFromMap(String propertyName, boolean matchCase) {
         synchronized (this) {
             if (matchCase) {
                 return mapPropertyNameToValue.get(propertyName);
@@ -557,12 +577,17 @@ public class RolapMember extends MemberBase {
         }
     }
 
-    private boolean childLevelHasApproxRowCount() {
+    protected boolean childLevelHasApproxRowCount() {
         return getLevel().getChildLevel().getApproxRowCount() > Integer.MIN_VALUE;
     }
 
-    public final Property[] getProperties() {
-        return level.getInheritedProperties();
+    protected boolean isAllMember() {
+        return getLevel().getHierarchy().hasAll()
+                && getLevel().getDepth() == 0;
+    }
+
+    public Property[] getProperties() {
+        return getLevel().getInheritedProperties();
     }
 
     public int getOrdinal() {
@@ -669,17 +694,18 @@ public class RolapMember extends MemberBase {
     }
 
     public int getDepth() {
-        return level.getDepth();
-    }
-
-    public Object getSqlKey() {
-        return key;
+        return getLevel().getDepth();
     }
 
     /**
-     * Returns the formatted value of the property named
-     * <code>propertyName</code>.
+     * @deprecated Use {@link #getKey()}
+     *
+     * This method will be removed in mondrian 3.1.
      */
+    public Object getSqlKey() {
+        return getKey();
+    }
+
     public String getPropertyFormattedValue(String propertyName) {
         // do we have a formatter ? if yes, use it
         Property[] props = getLevel().getProperties();

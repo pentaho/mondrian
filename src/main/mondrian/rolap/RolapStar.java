@@ -150,7 +150,12 @@ public class RolapStar {
     private List<AggStar> aggStars;
 
     private DataSourceChangeListener changeListener;
-
+    
+    // temporary model, should eventually use RolapStar.Table and RolapStar.Column
+    private StarNetworkNode factNode;
+    private Map<String, StarNetworkNode> nodeLookup = 
+        new HashMap<String, StarNetworkNode>();
+    
     /**
      * Creates a RolapStar. Please use
      * {@link RolapSchema.RolapStarRegistry#getOrCreateStar} to create a
@@ -166,6 +171,9 @@ public class RolapStar {
         this.dataSource = dataSource;
         this.factTable = new RolapStar.Table(this, fact, null, null);
 
+        // phase out and replace with Table, Column network
+        factNode = new StarNetworkNode(null, factTable.alias, null, null, null);
+        
         this.cubeToLevelToColumnMapMap =
             new HashMap<RolapCube, Map<RolapLevel, Column>>();
         this.cubeToRelationNamesToStarTableMapMap =
@@ -181,6 +189,134 @@ public class RolapStar {
 
         changeListener = schema.getDataSourceChangeListener();
     }
+
+    private class StarNetworkNode {
+        private StarNetworkNode parent;
+        private MondrianDef.Relation origRel; // this is either a table or a view
+        private String foreignKey;
+        private String joinKey;
+        
+        private StarNetworkNode(StarNetworkNode parent, String alias, 
+                MondrianDef.Relation origRel, String foreignKey, 
+                String joinKey) {
+            this.parent = parent;
+            this.origRel = origRel;
+            this.foreignKey = foreignKey;
+            this.joinKey = joinKey;
+        }
+        
+        private boolean isCompatible(
+                StarNetworkNode compatibleParent, MondrianDef.Relation rel, 
+                String compatibleForeignKey, String compatibleJoinKey) {
+            return (parent == compatibleParent && 
+                origRel.getClass().equals(rel.getClass()) &&
+                foreignKey.equals(compatibleForeignKey) && 
+                joinKey.equals(compatibleJoinKey));
+        }
+    }
+    
+    private MondrianDef.Relation cloneRelation(MondrianDef.Relation rel, 
+                                                    String possibleName) {
+        MondrianDef.Relation newrel = null;
+        if (rel instanceof MondrianDef.Table) {
+            MondrianDef.Table tbl = (MondrianDef.Table)rel;
+            newrel = new MondrianDef.Table(tbl.schema, tbl.name, possibleName);
+        } else if (rel instanceof MondrianDef.View) {
+            MondrianDef.View view = (MondrianDef.View)rel;
+            MondrianDef.View newview = new MondrianDef.View();
+            newview.alias = possibleName;
+            newview.selects = view.selects;
+            newrel = newview;
+        } else {
+            throw new UnsupportedOperationException();
+        }
+        return newrel;
+    }
+    
+    /**
+     * Generates a unique relational join to the fact table via re-aliasing
+     * MondrianDef.Relations
+     * 
+     * currently called in the RolapCubeHierarchy constructor.  This should
+     * eventually be phased out and replaced with RolapStar.Table and 
+     * RolapStar.Column references
+     * 
+     * @param rel the relation needing uniqueness
+     * @param factForeignKey the foreign key of the fact table
+     * @param primaryKey the join key of the relation
+     * @param primaryKeyTable the join table of the relation
+     * @return if necessary a new relation that has been re-aliased
+     */
+    public MondrianDef.Relation getUniqueRelation(
+            MondrianDef.Relation rel, String factForeignKey, String primaryKey,
+            String primaryKeyTable) {
+        return getUniqueRelation(
+                factNode, rel, factForeignKey, primaryKey, primaryKeyTable);
+    }
+    
+    private MondrianDef.Relation getUniqueRelation(
+            StarNetworkNode parent, MondrianDef.Relation rel, 
+            String foreignKey, String joinKey, String joinKeyTable) {
+        if (rel == null) {
+            return null;
+        } else if (rel instanceof MondrianDef.Table 
+                    || rel instanceof MondrianDef.View) {
+            int val = 0;
+            String newAlias = 
+                joinKeyTable != null ? joinKeyTable : rel.getAlias();
+            while (true) {
+                StarNetworkNode node = nodeLookup.get(newAlias);
+                if (node == null) {
+                    if (val != 0) {
+                        rel = cloneRelation(rel, newAlias);
+                    }
+                    node = 
+                        new StarNetworkNode(parent, newAlias, rel, 
+                                foreignKey, joinKey);
+                    nodeLookup.put(newAlias, node);
+                    return rel;
+                } else if (node.isCompatible(parent, rel, foreignKey, joinKey)) {
+                    return node.origRel;
+                }
+                newAlias = rel.getAlias() + "_" + (++val);
+            }
+        } else if (rel instanceof MondrianDef.Join) {
+            // determine if the join starts from the left or right side
+            MondrianDef.Join join = (MondrianDef.Join)rel;
+            MondrianDef.Relation left = null;
+            MondrianDef.Relation right = null;
+            if (join.getLeftAlias().equals(joinKeyTable)) {
+                // first manage left then right
+                left = 
+                    getUniqueRelation(parent, join.left, foreignKey, 
+                            joinKey, joinKeyTable);
+                parent = nodeLookup.get(left.getAlias());
+                right = 
+                    getUniqueRelation(parent, join.right, join.leftKey, 
+                        join.rightKey, join.getRightAlias());
+            } else if (join.getRightAlias().equals(joinKeyTable)) {
+                // right side must equal
+                right = 
+                    getUniqueRelation(parent, join.right, foreignKey, 
+                            joinKey, joinKeyTable);
+                parent = nodeLookup.get(right.getAlias());
+                left = 
+                    getUniqueRelation(parent, join.left, join.rightKey, 
+                            join.leftKey, join.getLeftAlias());
+            } else {
+                new MondrianException(
+                        "failed to match primary key table to join tables");
+            }
+
+            if (join.left != left || join.right != right) {
+                join = 
+                    new MondrianDef.Join(left.getAlias(), join.leftKey, 
+                            left, right.getAlias(), join.rightKey, right);
+            }
+            return join;
+        }
+        return null;
+    }    
 
     /**
      * Returns this RolapStar's column count. After a star has been created with

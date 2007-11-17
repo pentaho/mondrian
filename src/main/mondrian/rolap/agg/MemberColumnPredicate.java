@@ -32,7 +32,7 @@ public class MemberColumnPredicate extends ValueColumnPredicate {
      * @param member Member to constrain column to; must not be null
      */
     public MemberColumnPredicate(RolapStar.Column column, RolapMember member) {
-        super(column, member.getSqlKey());
+        super(column, member.getKey());
         this.member = member;
     }
 
@@ -42,7 +42,7 @@ public class MemberColumnPredicate extends ValueColumnPredicate {
     }
 
     public List<RolapStar.Column> getConstrainedColumnList() {
-        return super.getConstrainedColumnList();    //To change body of overridden methods use File | Settings | File Templates.
+        return super.getConstrainedColumnList();
     }
 
     /**

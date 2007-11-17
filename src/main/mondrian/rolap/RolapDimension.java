@@ -112,6 +112,16 @@ class RolapDimension extends DimensionBase {
         }
         this.hierarchies = new RolapHierarchy[xmlDimension.hierarchies.length];
         for (int i = 0; i < xmlDimension.hierarchies.length; i++) {
+
+            // remaps the xml hierarchy relation to the fact table.
+            // moved out of RolapHierarchy constructor
+            // this should eventually be phased out completely
+            if (xmlDimension.hierarchies[i].relation == null &&
+                    xmlDimension.hierarchies[i].memberReaderClass == null &&
+                    cube != null) {
+                xmlDimension.hierarchies[i].relation = cube.fact;
+            }
+            
             RolapHierarchy hierarchy = new RolapHierarchy(
                 cube, this, xmlDimension.hierarchies[i],
                 xmlCubeDimension);
@@ -214,6 +224,14 @@ class RolapDimension extends DimensionBase {
     }
 
     public int getOrdinal(Cube cube) {
+        if (false) {
+            // We believe that this method is only called on the measures
+            // RolapDimension, or from parent-child hierarchy,
+            // otherwise only on RolapCubeDimension.
+            // If so, we can remove the Cube
+            // argument to this method.
+            assert isMeasures();
+        }
         return ((RolapCube) cube).getOrdinal(this.globalOrdinal);
     }
 

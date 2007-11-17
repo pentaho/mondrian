@@ -140,21 +140,8 @@ public class HierarchyUsage {
             // source
             // level
             MondrianDef.DimensionUsage du =
-                      (MondrianDef.DimensionUsage) cubeDim;
-            // Bug 657 - disable hierarchy aliasing
-            if (! du.name.equals(du.source)) {
-                StringBuilder buf = new StringBuilder();
-                buf.append("Cube \"");
-                buf.append(cube.getName());
-                buf.append("\": DimensionUsage name (\"");
-                buf.append(du.name);
-                buf.append("\") must equal source (\"");
-                buf.append(du.source);
-                buf.append("\")");
-                throw new MondrianException(buf.toString());
-            }
+                (MondrianDef.DimensionUsage) cubeDim;
 
-            //this.hierarchyName = du.source;
             this.hierarchyName = hierarchy.getName();
             int index = this.hierarchyName.indexOf('.');
             if (index == -1) {

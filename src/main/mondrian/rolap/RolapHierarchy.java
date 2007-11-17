@@ -46,30 +46,16 @@ public class RolapHierarchy extends HierarchyBase {
      * {@link #createMemberReader(Role)}.
      */
     private MemberReader memberReader;
-    private MondrianDef.Hierarchy xmlHierarchy;
+    protected MondrianDef.Hierarchy xmlHierarchy;
     private String memberReaderClass;
-    private MondrianDef.Relation relation;
+    protected MondrianDef.Relation relation;
     private Member defaultMember;
     private String defaultMemberName;
     private RolapNullMember nullMember;
 
-    /**
-     * If this hierarchy is a public -- that is, it belongs to a dimension
-     * which is a usage of a shared dimension -- then
-     * <code>sharedHierarchyName</code> holds the unique name of the shared
-     * hierarchy; otherwise it is null.
-     *
-     * <p> Suppose this hierarchy is "Weekly" in the dimension "Order Date" of
-     * cube "Sales", and that "Order Date" is a usage of the "Time"
-     * dimension. Then <code>sharedHierarchyName</code> will be
-     * "[Time].[Weekly]".
-     */
     private String sharedHierarchyName;
 
     private Exp aggregateChildrenExpression;
-
-    // for newClosedPeerHierarchy() to copy; but never used??
-    private String primaryKey;
 
     /**
      * Type for members of this hierarchy. Set once to avoid excessive newing.
@@ -79,7 +65,7 @@ public class RolapHierarchy extends HierarchyBase {
     /**
      * The level that the null member belongs too.
      */
-    private final RolapLevel nullLevel;
+    protected final RolapLevel nullLevel;
 
     /**
      * The 'all' member of this hierarchy. This exists even if the hierarchy
@@ -90,15 +76,16 @@ public class RolapHierarchy extends HierarchyBase {
 
     RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll) {
         super(dimension, subName, hasAll);
-
-        this.levels = new RolapLevel[0];
-        setCaption(dimension.getCaption());
-
         this.allLevelName = "(All)";
         this.allMemberName = "All " + name + "s";
         if (hasAll) {
-            Util.discard(newLevel(this.allLevelName,
-                RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE));
+            this.levels = new RolapLevel[1];
+            this.levels[0] = new RolapLevel(
+                    this, 0, this.allLevelName, null, null, null, null,
+                    null, null, null, RolapProperty.emptyArray, RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE, null,
+                    RolapLevel.HideMemberCondition.Never, LevelType.Regular, "");
+        } else {
+            this.levels = new RolapLevel[0];
         }
 
         // The null member belongs to a level with very similar properties to
@@ -126,11 +113,6 @@ public class RolapHierarchy extends HierarchyBase {
     {
         this(dimension, xmlHierarchy.name, xmlHierarchy.hasAll);
 
-        if (xmlHierarchy.relation == null &&
-                xmlHierarchy.memberReaderClass == null &&
-                cube != null) {
-            xmlHierarchy.relation = cube.fact;
-        }
         this.xmlHierarchy = xmlHierarchy;
         this.relation = xmlHierarchy.relation;
         if (xmlHierarchy.relation instanceof MondrianDef.InlineTable) {
@@ -198,7 +180,6 @@ public class RolapHierarchy extends HierarchyBase {
             throw MondrianResource.instance().
                 HierarchyMustNotHaveMoreThanOneSource.ex(getUniqueName());
         }
-        this.primaryKey = xmlHierarchy.primaryKey;
         if (!Util.isEmpty(xmlHierarchy.caption)) {
             setCaption(xmlHierarchy.caption);
         }
@@ -313,11 +294,12 @@ public class RolapHierarchy extends HierarchyBase {
         return this.memberReader;
     }
 
-    RolapLevel newLevel(String name, int flags) {
+    RolapLevel newMeasuresLevel() {
         RolapLevel level =
             new RolapLevel(
-                this, this.levels.length, name, null, null, null, null,
-                null, null, null, RolapProperty.emptyArray, flags, null,
+                this, this.levels.length,
+                "MeasuresLevel", null, null, null, null,
+                null, null, null, RolapProperty.emptyArray, 0, null,
                 RolapLevel.HideMemberCondition.Never, LevelType.Regular, "");
         this.levels = RolapUtil.addElement(this.levels, level);
         return level;
@@ -357,6 +339,10 @@ public class RolapHierarchy extends HierarchyBase {
             return tableExists(tableName, join.left) ||
                 tableExists(tableName, join.right);
         }
+        if (relation instanceof MondrianDef.View) {
+            MondrianDef.View view = (MondrianDef.View) relation;
+            return view.alias.equals(tableName);
+        }
         return false;
     }
 
@@ -378,11 +364,6 @@ public class RolapHierarchy extends HierarchyBase {
             List rootMembers = memberReader.getRootMembers();
             if (rootMembers.size() == 0) {
                 throw MondrianResource.instance().InvalidHierarchyCondition.ex(this.getUniqueName());
-/*
-                throw Util.newError(
-                    "cannot get default member: hierarchy " + getUniqueName() +
-                    " has no root members");
-*/
             }
             defaultMember = (RolapMember) rootMembers.get(0);
         }
@@ -423,6 +404,24 @@ public class RolapHierarchy extends HierarchyBase {
 
     String getAlias() {
         return getName();
+    }
+
+    /**
+     * Returns the name of the source hierarchy, if this hierarchy is shared,
+     * otherwise null.
+     *
+     * <p>If this hierarchy is a public -- that is, it belongs to a dimension
+     * which is a usage of a shared dimension -- then
+     * <code>sharedHierarchyName</code> holds the unique name of the shared
+     * hierarchy; otherwise it is null.
+     *
+     * <p> Suppose this hierarchy is "Weekly" in the dimension "Order Date" of
+     * cube "Sales", and that "Order Date" is a usage of the "Time"
+     * dimension. Then <code>sharedHierarchyName</code> will be
+     * "[Time].[Weekly]".
+     */
+    public String getSharedHierarchyName() {
+        return sharedHierarchyName;
     }
 
     /**
@@ -480,7 +479,7 @@ public class RolapHierarchy extends HierarchyBase {
         SqlQuery query,
         Map<String, RolapStar.Table> aliasedTableNameMap,
         RolapStar.Table table) {
-        if (relation == null) {
+        if (getRelation() == null) {
             throw Util.newError(
                     "cannot add hierarchy " + getUniqueName() +
                     " to query: it does not have a <Table>, <View> or <Join>");
@@ -497,12 +496,12 @@ public class RolapHierarchy extends HierarchyBase {
         	// Search for the smallest subset of the relation which
         	// joins with C.
             assert (aliasedTableNameMap != null);
-        	subRelation = relationSubset(relation, aliasedTableNameMap, table);
+        	subRelation = relationSubset(getRelation(), aliasedTableNameMap, table);
         }
 
         if (subRelation == null) {
             // If no table is found or specified, add the entire base relation.
-            subRelation = relation;
+            subRelation = getRelation();
         }
 
         query.addFrom(subRelation, null, failIfExists);
@@ -632,6 +631,7 @@ public class RolapHierarchy extends HierarchyBase {
     		String relationNames = relation.toString() + relation.getAlias();
     		RolapStar.Table starTable =
                 aliasedTableNameMap.get(relationNames);
+
     		return new MondrianDef.Table(
     				((MondrianDef.Table)relation).schema,
     				((MondrianDef.Table)relation).name,
@@ -668,8 +668,8 @@ public class RolapHierarchy extends HierarchyBase {
                     + this);
         case ALL:
             return (isRagged())
-                ? new RestrictedMemberReader(memberReader, role)
-                : memberReader;
+                ? new RestrictedMemberReader(getMemberReader(), role)
+                : getMemberReader();
 
         case CUSTOM:
             final Role.HierarchyAccess hierarchyAccess =
@@ -679,7 +679,7 @@ public class RolapHierarchy extends HierarchyBase {
             final NumericType returnType = new NumericType();
             switch (rollupPolicy) {
             case FULL:
-                return new RestrictedMemberReader(memberReader, role);
+                return new RestrictedMemberReader(getMemberReader(), role);
             case PARTIAL:
                 Type memberType1 =
                     new mondrian.olap.type.MemberType(
@@ -864,11 +864,10 @@ public class RolapHierarchy extends HierarchyBase {
 
         // Create a peer hierarchy.
         RolapHierarchy peerHier = peerDimension.newHierarchy(subName, true);
-        peerHier.allMemberName = allMemberName;
-        peerHier.allMember = allMember;
-        peerHier.allLevelName = allLevelName;
-        peerHier.sharedHierarchyName = sharedHierarchyName;
-        peerHier.primaryKey = primaryKey;
+        peerHier.allMemberName = getAllMemberName();
+        peerHier.allMember = getAllMember();
+        peerHier.allLevelName = getAllLevelName();
+        peerHier.sharedHierarchyName = getSharedHierarchyName();
         MondrianDef.Join join = new MondrianDef.Join();
         peerHier.relation = join;
         join.left = clos.table;         // the closure table
@@ -961,7 +960,7 @@ RME HACK
      * Calculated member which is also a measure (that is, a member of the
      * [Measures] dimension).
      */
-    private static class RolapCalculatedMeasure
+    protected static class RolapCalculatedMeasure
         extends RolapCalculatedMember
         implements RolapMeasure
     {
@@ -997,19 +996,24 @@ RME HACK
      * or 'hidden'. The member is calculated using an expression which
      * aggregates only visible descendants.
      *
+     * <p>Note that this class extends RolapCubeMember only because other code
+     * expects that all members in a RolapCubeHierarchy are RolapCubeMembers.
+     *
      * @see mondrian.olap.Role.RollupPolicy
      */
-    private static class LimitedRollupMember extends RolapMember {
+    private static class LimitedRollupMember extends RolapCubeMember {
         private final RolapMember member;
         private final Exp exp;
 
         LimitedRollupMember(
-            RolapMember member,
+            RolapCubeMember member,
             Exp exp)
         {
             super(
-                member.getParentMember(), member.getLevel(), member.getKey(),
-                member.getName(), member.getMemberType());
+                member.getParentMember(),
+                member.getRolapMember(),
+                member.getLevel(),
+                member.getHierarchy().getDimension().getCube());
             this.member = member;
             this.exp = exp;
         }
@@ -1021,8 +1025,17 @@ RME HACK
         protected boolean computeCalculated() {
             return true;
         }
+        
+        public boolean isCalculated() {
+            return true;
+        }
     }
 
+    /**
+     * Member reader which wraps a hierarchy's member reader, and if the
+     * role has limited access to the hierarchy, replaces members with
+     * dummy members which evaluate to the sum of only the accessible children.
+     */
     private class MySubstitutingMemberReader extends SubstitutingMemberReader {
         private final Role.HierarchyAccess hierarchyAccess;
         private final Exp exp;
@@ -1034,7 +1047,7 @@ RME HACK
         {
             super(
                 new RestrictedMemberReader(
-                    RolapHierarchy.this.memberReader, role));
+                    RolapHierarchy.this.getMemberReader(), role));
             this.hierarchyAccess = hierarchyAccess;
             this.exp = exp;
         }
@@ -1043,7 +1056,7 @@ RME HACK
             if (hierarchyAccess.hasInaccessibleDescendants(member)) {
                 // Member is visible, but at least one of its
                 // descendants is not.
-                return new LimitedRollupMember(member, exp);
+                return new LimitedRollupMember((RolapCubeMember)member, exp);
             } else {
                 // No need to substitute. Member and all of its
                 // descendants are accessible. Total for member

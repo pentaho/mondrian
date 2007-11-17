@@ -39,6 +39,7 @@ public class RolapCube extends CubeBase {
 
     private final RolapSchema schema;
     private final RolapHierarchy measuresHierarchy;
+    
     /** For SQL generator. Fact table. */
     final MondrianDef.Relation fact;
 
@@ -144,10 +145,10 @@ public class RolapCube extends CubeBase {
             // Look up usages of shared dimensions in the schema before
             // consulting the XML schema (which may be null).
             RolapDimension dimension =
-                getOrCreateDimension(xmlCubeDimension, schema, xmlSchema);
+                getOrCreateDimension(xmlCubeDimension, schema, xmlSchema, i + 1);
             if (getLogger().isDebugEnabled()) {
                 getLogger().debug("RolapCube<init>: dimension="
-                    +dimension.getName());
+                    + dimension.getName());
             }
             this.dimensions[i + 1] = dimension;
 
@@ -180,8 +181,7 @@ public class RolapCube extends CubeBase {
         // since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure
         // can not be treated as the same, measure creation can not be
         // done in a common constructor.
-        RolapLevel measuresLevel =
-            this.measuresHierarchy.newLevel("MeasuresLevel", 0);
+        RolapLevel measuresLevel = this.measuresHierarchy.newMeasuresLevel();
 
         RolapMember measures[] = new RolapMember[xmlCube.measures.length];
         Member defaultMeasure = null;
@@ -302,8 +302,7 @@ public class RolapCube extends CubeBase {
         // Since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure cannot
         // be treated as the same, measure creation cannot be done in a common
         // constructor.
-        RolapLevel measuresLevel =
-            this.measuresHierarchy.newLevel("MeasuresLevel", 0);
+        RolapLevel measuresLevel = this.measuresHierarchy.newMeasuresLevel();
 
         // Recreate CalculatedMembers, as the original members point to
         // incorrect dimensional ordinals for the virtual cube.
@@ -606,26 +605,39 @@ public class RolapCube extends CubeBase {
      * @param xmlCubeDimension XML Dimension or DimensionUsage
      * @param schema Schema
      * @param xmlSchema XML Schema
+     * @param dimensionOrdinal Ordinal of dimension
      * @return A dimension
      */
     private RolapDimension getOrCreateDimension(
         MondrianDef.CubeDimension xmlCubeDimension,
         RolapSchema schema,
-        MondrianDef.Schema xmlSchema) {
-
+        MondrianDef.Schema xmlSchema,
+        int dimensionOrdinal)
+    {
+        RolapDimension dimension = null;
         if (xmlCubeDimension instanceof MondrianDef.DimensionUsage) {
-            MondrianDef.DimensionUsage usage =
+            MondrianDef.DimensionUsage usage = 
                 (MondrianDef.DimensionUsage) xmlCubeDimension;
-            final RolapHierarchy sharedHierarchy =
+            final RolapHierarchy sharedHierarchy = 
                 schema.getSharedHierarchy(usage.source);
             if (sharedHierarchy != null) {
-                return (RolapDimension) sharedHierarchy.getDimension();
+                dimension = 
+                    (RolapDimension) sharedHierarchy.getDimension();
             }
         }
-        MondrianDef.Dimension xmlDimension =
-            xmlCubeDimension.getDimension(xmlSchema);
-        return new RolapDimension(
-            schema, this, xmlDimension, xmlCubeDimension);
+
+        if (dimension == null) {
+            MondrianDef.Dimension xmlDimension = 
+                xmlCubeDimension.getDimension(xmlSchema);
+            dimension = 
+                new RolapDimension(
+                        schema, this, xmlDimension, xmlCubeDimension);
+        }
+        
+        // wrap the shared or regular dimension with a 
+        // rolap cube dimension object
+        return new RolapCubeDimension(
+            this, dimension, xmlCubeDimension, dimensionOrdinal);
     }
 
     /**
@@ -1366,10 +1378,13 @@ assert is not true.
      * Looks up all of the HierarchyUsages with the same "source" returning
      * an array of HierarchyUsage of length 0 or more.
      *
-     * @param source
+     * This method is currently only called if an error occurs in lookupChild(),
+     * so that more information can be displayed in the error log.
+     * 
+     * @param source Name of shared dimension
      * @return array of HierarchyUsage (HierarchyUsage[]) - never null.
      */
-    synchronized HierarchyUsage[] getUsagesBySource(String source) {
+    private synchronized HierarchyUsage[] getUsagesBySource(String source) {
         if (getLogger().isDebugEnabled()) {
             getLogger().debug("RolapCube.getUsagesBySource: source="+source);
         }
@@ -2215,88 +2230,49 @@ assert is not true.
     {
         // Note that non-exact matches aren't supported at this level,
         // so the matchType is ignored
-        OlapElement oe;
         String status = null;
-        if (s.matches("Measures")) {
-            // A Measure is never aliased, so just get it
-            // Note if one calls getUsageByName with "Measures" as the value
-            // it will return null so one must either do this or check for
-            // a null HierarchyUsage below and disambiguate.
-            oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
+        OlapElement oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
 
-        } else {
-            // At this point everything ought to have a HierarchyUsage.
-            //
-            // If one does not exist (null), then odds are one is using
-            // the base/source hierarchy name in a calculated measure
-            // for a shared hierarchy - which is not legal.
-            // But there are cases where its OK here not to have a
-            // usage, i.e., the child is a measure, member or level
-            // (not a RolapDimension), or the cube is virtual.
-            // (Are those the only cases??)
-            //
-            // On the other hand, if the HierarchyUsage is shared, then
-            // use the source name.
-            //
-            // Lastly if the HierarchyUsage is not shared, then there is
-            // no aliasing so just use the value.
-
-            HierarchyUsage hierUsage = getUsageByName(s.name);
-                    
-            if (hierUsage == null) {
-                oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
-                status = "hierUsage == null";
-
-                // Let us see if one is using the source name of a
-                // usage rather than the alias name.
-                if (oe instanceof RolapDimension) {
-                    HierarchyUsage[] usages = getUsagesBySource(s.name);
-
-                    if (usages.length > 0) {
-                        StringBuilder buf = new StringBuilder(64);
-                        buf.append("RolapCube.lookupChild: ");
-                        buf.append("In cube \"");
-                        buf.append(getName());
-                        buf.append("\" use of unaliased Dimension name \"");
-                        buf.append(s);
-
-                        if (usages.length == 1) {
-                            // ERROR: this will work but is bad coding
-                            buf.append("\" rather than the alias name ");
-                            buf.append("\"");
-                            buf.append(usages[0].getName());
-                            buf.append("\" ");
-                            getLogger().error(buf.toString());
-                            throw new MondrianException(buf.toString());
-                        } else {
-                            // ERROR: this is not allowed
-                            buf.append("\" rather than one of the alias names ");
-                            for (HierarchyUsage usage : usages) {
-                                buf.append("\"");
-                                buf.append(usage.getName());
-                                buf.append("\" ");
-                            }
-                            getLogger().error(buf.toString());
-                            throw new MondrianException(buf.toString());
-                        }
+        if (oe == null) {
+            HierarchyUsage[] usages = getUsagesBySource(s.name);
+            if (usages.length > 0) {
+                StringBuilder buf = new StringBuilder(64);
+                buf.append("RolapCube.lookupChild: ");
+                buf.append("In cube \"");
+                buf.append(getName());
+                buf.append("\" use of unaliased Dimension name \"");
+                buf.append(s);
+                if (usages.length == 1) {
+                    // ERROR: this will work but is bad coding
+                    buf.append("\" rather than the alias name ");
+                    buf.append("\"");
+                    buf.append(usages[0].getName());
+                    buf.append("\" ");
+                    getLogger().error(buf.toString());
+                    throw new MondrianException(buf.toString());
+                } else {
+                    // ERROR: this is not allowed
+                    buf.append("\" rather than one of the alias names ");
+                    for (HierarchyUsage usage : usages) {
+                        buf.append("\"");
+                        buf.append(usage.getName());
+                        buf.append("\" ");
                     }
+                    getLogger().error(buf.toString());
+                    throw new MondrianException(buf.toString());
                 }
-            } else if (hierUsage.isShared()) {
-                status = "hierUsage == shared";
-                // Shared, use source
-                Id.Segment source =
-                    new Id.Segment(
-                        hierUsage.getSource(),
-                        Id.Quoting.UNQUOTED);
-                oe = super.lookupChild(schemaReader, source, MatchType.EXACT);
-
-            } else {
-                status = "hierUsage == not shared";
-                // Not shared, cool man
-                oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
             }
         }
+
         if (getLogger().isDebugEnabled()) {
+            if (!s.matches("Measures")) {
+                HierarchyUsage hierUsage = getUsageByName(s.name);
+                if (hierUsage == null) {
+                    status = "hierUsage == null";
+                } else {
+                    status = "hierUsage == " + (hierUsage.isShared() ? "shared" : "not shared");
+                }
+            }
             StringBuilder buf = new StringBuilder(64);
             buf.append("RolapCube.lookupChild: ");
             buf.append("name=");

@@ -393,7 +393,7 @@ public class RolapUtil {
         // create a member corresponding to the member we're trying
         // to locate so we can use it to hierarchically compare against
         // the members array
-        RolapMember searchMember = new RolapMember(parent, level, searchName);
+        Member searchMember = level.getHierarchy().createMember(parent, level, searchName.name, null);
         Member bestMatch = null;
         for (Member member : members) {
             int rc;

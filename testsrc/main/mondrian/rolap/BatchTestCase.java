@@ -330,8 +330,9 @@ public class BatchTestCase extends FoodMartTestCase {
                 false);
         SmartMemberReader memberReader =
             (SmartMemberReader) hierarchy.getMemberReader();
-        memberReader.mapLevelToMembers.cache.clear();
-        memberReader.mapMemberToChildren.cache.clear();
+        MemberCacheHelper cacheHelper = memberReader.cacheHelper;
+        cacheHelper.mapLevelToMembers.cache.clear();
+        cacheHelper.mapMemberToChildren.cache.clear();
 
         // Flush the cache, to ensure that the query gets executed.
         cube.clearCachedAggregations(true);

@@ -51,7 +51,7 @@ public abstract class HierarchyBase
                             boolean hasAll) {
         this.dimension = dimension;
         this.hasAll = hasAll;
-        setCaption(dimension.getCaption());
+        this.caption = dimension.getCaption();
 
         this.subName = subName;
         String name = dimension.getName();
@@ -68,6 +68,16 @@ public abstract class HierarchyBase
         }
     }
 
+
+    /**
+     * Returns the name of the hierarchy sans dimension name.
+     *
+     * @return name of hierarchy sans dimension name
+     */
+    public String getSubName() {
+        return subName;
+    }
+    
     // implement MdxElement
     public String getUniqueName() {
         return uniqueName;
@@ -140,6 +150,15 @@ public abstract class HierarchyBase
 
     public String getAllMemberName() {
         return allMemberName;
+    }
+
+    /**
+     * Returns the name of the 'all' level in this hierarchy.
+     *
+     * @return name of the 'all' level
+     */
+    public String getAllLevelName() {
+        return allLevelName;
     }
 }
 

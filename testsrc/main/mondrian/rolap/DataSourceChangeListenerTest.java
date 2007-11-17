@@ -87,15 +87,29 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         // test caching because things may be garbage collected during the
         // tests.
         SmartMemberReader smr = getSmartMemberReader("Store");
-        smr.mapLevelToMembers.setCache(
+        MemberCacheHelper smrch = (MemberCacheHelper)smr.getMemberCache();
+        smrch.mapLevelToMembers.setCache(
             new HardSmartCache<
                 SmartMemberListCache.Key2<RolapLevel, Object>,
                 List<RolapMember>>());
-        smr.mapMemberToChildren.setCache(
+        smrch.mapMemberToChildren.setCache(
             new HardSmartCache<
                 SmartMemberListCache.Key2<RolapMember, Object>,
                 List<RolapMember>>());
-        smr.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
+        smrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
+        
+        SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
+        MemberCacheHelper ssmrch = (MemberCacheHelper)ssmr.getMemberCache();
+        ssmrch.mapLevelToMembers.setCache(
+            new HardSmartCache<
+                SmartMemberListCache.Key2<RolapLevel, Object>,
+                List<RolapMember>>());
+        ssmrch.mapMemberToChildren.setCache(
+            new HardSmartCache<
+                SmartMemberListCache.Key2<RolapMember, Object>,
+                List<RolapMember>>());
+        ssmrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
+                
 
         // Create a dummy DataSource which will throw a 'bomb' if it is asked
         // to execute a particular SQL statement, but will otherwise behave
@@ -113,7 +127,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             s1 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();
             // s1 should not be empty
-            assertNotSame("[]", s1);
+            
+            assertFalse("[]".equals(s1));
 
             // Run query again, to make sure only cache is used
             Result r2 = executeQuery(
@@ -124,7 +139,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             assertEquals("[]", s2);
 
             // Attach dummy change listener that tells mondrian the datasource is never changed
-            smr.changeListener = new DataSourceChangeListenerImpl();
+            smrch.changeListener = new DataSourceChangeListenerImpl();
+            ssmrch.changeListener = new DataSourceChangeListenerImpl();
 
             // Run query again, to make sure only cache is used
             Result r3 = executeQuery(
@@ -135,19 +151,26 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             assertEquals("[]",s3);
 
             // Manually clear the cache to make compare sql result later on
-            smr.mapKeyToMember.clear();
-            smr.mapLevelToMembers.clear();
-            smr.mapMemberToChildren.clear();
+            smrch.mapKeyToMember.clear();
+            smrch.mapLevelToMembers.clear();
+            smrch.mapMemberToChildren.clear();
+            
+            ssmrch.mapKeyToMember.clear();
+            ssmrch.mapLevelToMembers.clear();
+            ssmrch.mapMemberToChildren.clear();
+            
             // Run query again, to make sure only cache is used
             Result r4 = executeQuery(
                 "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r4);
             s4 = sqlLogger.getSqlQueries().toString();
+            
             sqlLogger.clear();
-            assertNotSame("[]",s4);
+            assertFalse("[]".equals(s4));
 
             // Attach dummy change listener that tells mondrian the datasource is always changed
-            smr.changeListener = new DataSourceChangeListenerImpl2();
+            smrch.changeListener = new DataSourceChangeListenerImpl2();
+            ssmrch.changeListener = new DataSourceChangeListenerImpl2();
 
             // Run query again, to make sure only cache is used
             Result r5 = executeQuery(
@@ -159,9 +182,11 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
 
             // Attach dummy change listener that tells mondrian the datasource is always changed
             // and tells that aggregate cache is always cached
-            smr.changeListener = new DataSourceChangeListenerImpl3();
+            smrch.changeListener = new DataSourceChangeListenerImpl3();
+            ssmrch.changeListener = new DataSourceChangeListenerImpl3();
+            
             RolapStar star = getStar("Sales");
-            star.setChangeListener(smr.changeListener);
+            star.setChangeListener(smrch.changeListener);
             // Run query again, to make sure only cache is used
             Result r6 = executeQuery(
                 "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
@@ -170,7 +195,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             sqlLogger.clear();
             assertEquals(s1,s6);
         } finally {
-            smr.changeListener = null;
+            smrch.changeListener = null;
+            ssmrch.changeListener = null;
             RolapStar star = getStar("Sales");
             star.setChangeListener(null);
 
@@ -366,17 +392,20 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                 null, null, null);
 
         SmartMemberReader smrStore = getSmartMemberReader(testContext.getConnection(), "Store");
+        MemberCacheHelper smrStoreCacheHelper = (MemberCacheHelper)smrStore.getMemberCache();
         SmartMemberReader smrProduct = getSmartMemberReader(testContext.getConnection(), "Product");
+        MemberCacheHelper smrProductCacheHelper = (MemberCacheHelper)smrProduct.getMemberCache();
+        
         // 1/500 of the time, the hierarchies are flushed
         // 1/50 of the time, the aggregates are flushed
-        smrStore.changeListener = new DataSourceChangeListenerImpl4(500,50);
-        smrProduct.changeListener = smrStore.changeListener;
+        smrStoreCacheHelper.changeListener = new DataSourceChangeListenerImpl4(500,50);
+        smrProductCacheHelper.changeListener = smrStoreCacheHelper.changeListener;
 
         RolapStar star = getStar(testContext.getConnection(), "Sales");
-        star.setChangeListener(smrStore.changeListener);
+        star.setChangeListener(smrStoreCacheHelper.changeListener);
 
         star = getStar(testContext.getConnection(), "Warehouse No Cache");
-        star.setChangeListener(smrStore.changeListener);
+        star.setChangeListener(smrStoreCacheHelper.changeListener);
 
 
         for (int i = 0; i < workerCount; i++) {
@@ -484,6 +513,20 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
         return (SmartMemberReader) hierarchy.createMemberReader(schemaReader.getRole());
+    }
+    
+    SmartMemberReader getSharedSmartMemberReader(String hierName) {
+        Connection con = getTestContext().getFoodMartConnection();
+        return getSharedSmartMemberReader(con, hierName);
+    }
+
+    SmartMemberReader getSharedSmartMemberReader(Connection con, String hierName) {
+        RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
+        RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
+        RolapCubeHierarchy hierarchy = (RolapCubeHierarchy) cube.lookupHierarchy(
+                new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
+        assertNotNull(hierarchy);
+        return (SmartMemberReader) hierarchy.getRolapHierarchy().createMemberReader(schemaReader.getRole());
     }
 
     RolapStar getStar(String starName) {

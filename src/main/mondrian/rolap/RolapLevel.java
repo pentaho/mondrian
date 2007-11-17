@@ -76,9 +76,9 @@ public class RolapLevel extends LevelBase {
 
     /** Condition under which members are hidden. */
     private final HideMemberCondition hideMemberCondition;
-    private final MondrianDef.Closure xmlClosure;
+    protected final MondrianDef.Closure xmlClosure;
 
-    private LevelReader levelReader;
+    protected LevelReader levelReader;
 
     /**
      * Creates a level.
@@ -198,7 +198,7 @@ public class RolapLevel extends LevelBase {
         this.hideMemberCondition = hideMemberCondition;
     }
 
-    public final RolapHierarchy getHierarchy() {
+    public RolapHierarchy getHierarchy() {
         return (RolapHierarchy) hierarchy;
     }
 
@@ -229,7 +229,7 @@ public class RolapLevel extends LevelBase {
         return tableName;
     }
 
-    final LevelReader getLevelReader() {
+    LevelReader getLevelReader() {
         return levelReader;
     }
 

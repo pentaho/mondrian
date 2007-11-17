@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 public abstract class OlapElementBase
         implements OlapElement {
 
-    private String caption = null;
+    protected String caption = null;
 
     // cache hash-code because it is often used and elements are immutable
     private int hash;

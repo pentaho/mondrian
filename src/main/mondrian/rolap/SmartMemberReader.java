@@ -15,12 +15,8 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
-import mondrian.rolap.cache.SmartCache;
-import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
-
-import mondrian.spi.DataSourceChangeListener;
 
 import java.util.*;
 
@@ -45,44 +41,24 @@ import java.util.*;
  * @since 21 December, 2001
  * @version $Id$
  */
-public class SmartMemberReader implements MemberReader, MemberCache {
+public class SmartMemberReader implements MemberReader {
     private final SqlConstraintFactory sqlConstraintFactory =
             SqlConstraintFactory.instance();
 
     /** access to <code>source</code> must be synchronized(this) */
-    private final MemberReader source;
+    protected final MemberReader source;
 
-    /** maps a parent member to a list of its children */
-    final SmartMemberListCache<RolapMember, List<RolapMember>> mapMemberToChildren;
+    protected final MemberCacheHelper cacheHelper;
 
-    /** a cache for alle members to ensure uniqueness */
-    SmartCache<Object, RolapMember> mapKeyToMember;
-
-    /** maps a level to its members */
-    final SmartMemberListCache<RolapLevel, List<RolapMember>> mapLevelToMembers;
-
-    DataSourceChangeListener changeListener;
-
-    private List<RolapMember> rootMembers;
+    protected List<RolapMember> rootMembers;
 
     SmartMemberReader(MemberReader source) {
         this.source = source;
-        if (!source.setCache(this)) {
+        this.cacheHelper = new MemberCacheHelper(source.getHierarchy());
+        if (!source.setCache(cacheHelper)) {
             throw Util.newInternal(
                     "MemberSource (" + source + ", " + source.getClass() +
                     ") does not support cache-writeback");
-        }
-        this.mapLevelToMembers =
-            new SmartMemberListCache<RolapLevel, List<RolapMember>>();
-        this.mapKeyToMember = new SoftSmartCache<Object, RolapMember>();
-        this.mapMemberToChildren =
-            new SmartMemberListCache<RolapMember, List<RolapMember>>();
-
-        if (source.getHierarchy() != null) {
-            changeListener = source.getHierarchy().getRolapSchema().getDataSourceChangeListener();
-        }
-        else {
-            changeListener = null;
         }
     }
 
@@ -90,55 +66,16 @@ public class SmartMemberReader implements MemberReader, MemberCache {
     public RolapHierarchy getHierarchy() {
         return source.getHierarchy();
     }
+    
+    public MemberCache getMemberCache() {
+        return cacheHelper;
+    }
 
     // implement MemberSource
     public boolean setCache(MemberCache cache) {
         // we do not support cache writeback -- we must be masters of our
         // own cache
         return false;
-    }
-
-    private synchronized void checkCacheStatus() {
-
-        if (changeListener != null) {
-            if (changeListener.isHierarchyChanged(getHierarchy())) {
-                /* Flush the cache */
-                mapMemberToChildren.clear();
-                mapKeyToMember.clear();
-                mapLevelToMembers.clear();
-            }
-        }
-    }
-
-    // implement MemberCache
-    public Object makeKey(RolapMember parent, Object key) {
-        return new MemberKey(parent, key);
-    }
-
-    // implement MemberCache
-    // synchronization: Must synchronize, because uses mapKeyToMember
-    public synchronized RolapMember getMember(Object key) {
-        return getMember(key, true);
-    }
-
-    // implement MemberCache
-    // synchronization: Must synchronize, because uses mapKeyToMember
-    public synchronized RolapMember getMember(
-        Object key,
-        boolean mustCheckCacheStatus)
-    {
-        if (mustCheckCacheStatus) {
-            checkCacheStatus();
-        }
-
-        return mapKeyToMember.get(key);
-    }
-
-
-    // implement MemberCache
-    // synchronization: Must synchronize, because modifies mapKeyToMember
-    public synchronized Object putMember(Object key, RolapMember value) {
-        return mapKeyToMember.put(key, value);
     }
 
     // implement MemberReader
@@ -163,9 +100,7 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         return rootMembers;
     }
 
-
-    // Synchronization: modifies mapLevelToMembers
-    public synchronized List<RolapMember> getMembersInLevel(
+    public List<RolapMember> getMembersInLevel(
             RolapLevel level,
             int startOrdinal,
             int endOrdinal) {
@@ -174,24 +109,31 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
     }
 
-    public synchronized List<RolapMember> getMembersInLevel(
+    protected void checkCacheStatus() {
+        cacheHelper.checkCacheStatus();
+    }
+    
+    public List<RolapMember> getMembersInLevel(
         RolapLevel level,
         int startOrdinal,
         int endOrdinal,
         TupleConstraint constraint)
     {
-        checkCacheStatus();
-
-        List<RolapMember> members = mapLevelToMembers.get(level, constraint);
-        if (members != null) {
+        synchronized(cacheHelper) {
+            checkCacheStatus();
+    
+            List<RolapMember> members = 
+                cacheHelper.getLevelMembersFromCache(level, constraint);
+            if (members != null) {
+                return members;
+            }
+    
+            members =
+                source.getMembersInLevel(
+                    level, startOrdinal, endOrdinal, constraint);
+            cacheHelper.putLevelMembersInCache(level, constraint, members);
             return members;
         }
-
-        members =
-            source.getMembersInLevel(
-                level, startOrdinal, endOrdinal, constraint);
-        mapLevelToMembers.put(level, constraint, members);
-        return members;
     }
 
     public void getMemberChildren(
@@ -213,7 +155,7 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         getMemberChildren(parentMembers, children, constraint);
     }
 
-    public synchronized void getMemberChildren(
+    public void getMemberChildren(
             List<RolapMember> parentMembers,
             List<RolapMember> children) {
         MemberChildrenConstraint constraint =
@@ -221,29 +163,29 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         getMemberChildren(parentMembers, children, constraint);
     }
 
-    public synchronized void getMemberChildren(
+    public void getMemberChildren(
             List<RolapMember> parentMembers,
             List<RolapMember> children,
             MemberChildrenConstraint constraint) {
-
-        checkCacheStatus();
-
-        List<RolapMember> missed = new ArrayList<RolapMember>();
-        for (RolapMember parentMember : parentMembers) {
-            List<RolapMember> list =
-                mapMemberToChildren.get(parentMember, constraint);
-            if (list == null) {
-                if (parentMember.isNull()) {
+        synchronized(cacheHelper) {
+            checkCacheStatus();
+    
+            List<RolapMember> missed = new ArrayList<RolapMember>();
+            for (RolapMember parentMember : parentMembers) {
+                List<RolapMember> list = 
+                    cacheHelper.getChildrenFromCache(parentMember, constraint);
+                if (list == null) {
                     // the null member has no children
+                    if (!parentMember.isNull()) {
+                        missed.add(parentMember);
+                    }
                 } else {
-                    missed.add(parentMember);
+                    children.addAll(list);
                 }
-            } else {
-                children.addAll(list);
             }
-        }
-        if (missed.size() > 0) {
-            readMemberChildren(missed, children, constraint);
+            if (missed.size() > 0) {
+                readMemberChildren(missed, children, constraint);
+            }
         }
     }
 
@@ -262,7 +204,7 @@ public class SmartMemberReader implements MemberReader, MemberCache {
      * @param constraint restricts the returned members if possible (optional
      *             optimization)
      */
-    private void readMemberChildren(
+    protected void readMemberChildren(
         List<RolapMember> members,
         List<RolapMember> result,
         MemberChildrenConstraint constraint)
@@ -311,14 +253,16 @@ public class SmartMemberReader implements MemberReader, MemberCache {
             list.add(child);
             result.add(child);
         }
-        synchronized (this) {
+        synchronized (cacheHelper) {
             for (Map.Entry<RolapMember, List<RolapMember>> entry :
                 tempMap.entrySet())
             {
                 final RolapMember member = entry.getKey();
-                if (getChildrenFromCache(member, constraint) == null) {
-                final List<RolapMember> list = entry.getValue();
-                    putChildren(member, constraint, list);
+                if (cacheHelper.getChildrenFromCache(member, constraint)
+                    == null) 
+                {
+                    final List<RolapMember> list = entry.getValue();
+                    cacheHelper.putChildren(member, constraint, list);
                 }
             }
         }
@@ -348,60 +292,35 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         return true;
     }
 
-    public synchronized List<RolapMember> getChildrenFromCache(
-            RolapMember member,
-            MemberChildrenConstraint constraint) {
-        if (constraint == null) {
-            constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
-        }
-        return mapMemberToChildren.get(member, constraint);
-    }
-
-    public synchronized List getLevelMembersFromCache(
-            RolapLevel level,
-            TupleConstraint constraint) {
-        if (constraint == null) {
-            constraint = sqlConstraintFactory.getLevelMembersConstraint(null);
-        }
-        return mapLevelToMembers.get(level, constraint);
-    }
-
-    public synchronized void putChildren(
-        RolapMember member,
-        MemberChildrenConstraint constraint,
-        List<RolapMember> children)
-    {
-        if (constraint == null) {
-            constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
-        }
-        mapMemberToChildren.put(member, constraint, children);
-    }
-
-    // synchronization: Must synchronize, because uses mapMemberToChildren
-    public synchronized RolapMember getLeadMember(RolapMember member, int n) {
-        if (n == 0 || member.isNull()) {
-            return member;
-        } else {
-            SiblingIterator iter = new SiblingIterator(this, member);
-            if (n > 0) {
-                RolapMember sibling = null;
-                while (n-- > 0) {
-                    if (!iter.hasNext()) {
-                        return (RolapMember) member.getHierarchy().getNullMember();
-                    }
-                    sibling = iter.nextMember();
-                }
-                return sibling;
+    public RolapMember getLeadMember(RolapMember member, int n) {
+        // uncertain if this method needs to be synchronized 
+        synchronized(cacheHelper) {
+            if (n == 0 || member.isNull()) {
+                return member;
             } else {
-                n = -n;
-                RolapMember sibling = null;
-                while (n-- > 0) {
-                    if (!iter.hasPrevious()) {
-                        return (RolapMember) member.getHierarchy().getNullMember();
+                SiblingIterator iter = new SiblingIterator(this, member);
+                if (n > 0) {
+                    RolapMember sibling = null;
+                    while (n-- > 0) {
+                        if (!iter.hasNext()) {
+                            return 
+                                (RolapMember) member.getHierarchy().getNullMember();
+                        }
+                        sibling = iter.nextMember();
                     }
-                    sibling = iter.previousMember();
+                    return sibling;
+                } else {
+                    n = -n;
+                    RolapMember sibling = null;
+                    while (n-- > 0) {
+                        if (!iter.hasPrevious()) {
+                            return 
+                                (RolapMember) member.getHierarchy().getNullMember();
+                        }
+                        sibling = iter.previousMember();
+                    }
+                    return sibling;
                 }
-                return sibling;
             }
         }
     }

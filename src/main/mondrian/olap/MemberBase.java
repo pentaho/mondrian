@@ -89,17 +89,23 @@ public abstract class MemberBase
             | (level.getHierarchy().getDimension().isMeasures() ? FLAG_MEASURE : 0);
     }
 
+    protected MemberBase() {
+    	this.level = null;
+        this.flags = 0;
+    	this.parentUniqueName = null;
+    }
+    
     public String getQualifiedName() {
-        return MondrianResource.instance().MdxMemberName.str(uniqueName);
+        return MondrianResource.instance().MdxMemberName.str(getUniqueName());
     }
 
     public abstract String getName();
 
-    public final String getUniqueName() {
+    public String getUniqueName() {
         return uniqueName;
     }
 
-    public final String getCaption() {
+    public String getCaption() {
         // if there is a member formatter for the members level,
         //  we will call this interface to provide the display string
         MemberFormatter mf = getLevel().getMemberFormatter();
@@ -112,23 +118,23 @@ public abstract class MemberBase
             : getName();
     }
 
-    public final String getParentUniqueName() {
+    public String getParentUniqueName() {
         return parentUniqueName;
     }
 
     public Dimension getDimension() {
-        return level.getDimension();
+        return getLevel().getDimension();
     }
 
     public Hierarchy getHierarchy() {
-        return level.getHierarchy();
+        return getLevel().getHierarchy();
     }
 
     public Level getLevel() {
         return level;
     }
 
-    public final MemberType getMemberType() {
+    public MemberType getMemberType() {
         return MEMBER_TYPE_VALUES[flags & FLAG_TYPE_MASK];
     }
 
@@ -136,19 +142,19 @@ public abstract class MemberBase
         return null;
     }
 
-    public final boolean isMeasure() {
+    public boolean isMeasure() {
         return (flags & FLAG_MEASURE) != 0;
     }
 
-    public final boolean isAll() {
+    public boolean isAll() {
         return (flags & FLAG_ALL) != 0;
     }
 
-    public final boolean isNull() {
+    public boolean isNull() {
         return (flags & FLAG_NULL) != 0;
     }
 
-    public final boolean isCalculated() {
+    public boolean isCalculated() {
        return (flags & FLAG_CALCULATED) != 0;
     }
 

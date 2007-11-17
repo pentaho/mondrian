@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.olap.MondrianProperties;
 import mondrian.test.SqlPattern;
+import mondrian.util.Bug;
 
 /**
  * Test support for generating SQL queries with the <code>GROUPING SETS</code>
@@ -45,6 +46,17 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testGroupingSetForSingleColumnConstraint() {
+
+        if (!Bug.Bug1833526Fixed) {
+            // flush cache, this method was failing within the suite because
+            // SchemaTest.testMultipleDimensionUsages(), a new method,
+            // alters the schema slightly. use this call eventually: 
+
+            // getConnection().getCacheControl(null).flushSchemaCache();
+    
+            RolapSchema.clearCache();
+        }
+        
         final MondrianProperties properties = MondrianProperties.instance();
         properties.UseAggregates.setString("true");
         properties.ReadAggregates.setString("false");

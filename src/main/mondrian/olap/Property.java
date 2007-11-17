@@ -428,6 +428,17 @@ public class Property extends EnumeratedValues.BasicValue {
      */
     public static final Property KEY =
             new Property("KEY", Datatype.TYPE_STRING, KEY_ORDINAL, false, true, false, "Key.");
+    
+    public static final int UNIQUE_NAME_WITHOUT_HIERARCHY_ORDINAL = 47;
+    /**
+     * Definition of the internal property which
+     * describes the unique name of a member minus it's
+     * hierarchy.
+     */
+    public static final Property UNIQUE_NAME_WITHOUT_HIERARCHY =
+            new Property("$unique_name_without_hierarchy", Datatype.TYPE_STRING, UNIQUE_NAME_WITHOUT_HIERARCHY_ORDINAL, true, true, false, null);
+
+    
     /**
      * The various property names which define a format string.
      */
@@ -562,7 +573,8 @@ public class Property extends EnumeratedValues.BasicValue {
                 VALUE,
                 DATATYPE,
                 MEMBER_KEY,
-                KEY    
+                KEY,
+                UNIQUE_NAME_WITHOUT_HIERARCHY
             });
 
     static {
