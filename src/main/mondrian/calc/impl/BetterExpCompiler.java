@@ -10,6 +10,7 @@
 package mondrian.calc.impl;
 
 import mondrian.olap.*;
+import mondrian.olap.type.*;
 import mondrian.calc.*;
 
 import java.util.List;
@@ -55,9 +56,12 @@ public class BetterExpCompiler extends AbstractExpCompiler {
 
     public TupleCalc compileTuple(Exp exp) {
         final Calc calc = compile(exp);
-        if (calc instanceof TupleCalc) {
+        final Type type = exp.getType();
+        if (type instanceof TupleType) {
+            assert calc instanceof TupleCalc;
             return (TupleCalc) calc;
-        } else if (calc instanceof MemberCalc) {
+        } else if (type instanceof MemberType) {
+            assert calc instanceof MemberCalc;
             final MemberCalc memberCalc = (MemberCalc) calc;
             return new AbstractTupleCalc(exp, new Calc[] {memberCalc}) {
                 public Member[] evaluateTuple(Evaluator evaluator) {

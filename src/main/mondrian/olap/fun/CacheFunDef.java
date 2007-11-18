@@ -11,6 +11,7 @@ package mondrian.olap.fun;
 
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
+import mondrian.olap.type.SetType;
 import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
@@ -18,7 +19,7 @@ import mondrian.mdx.ResolvedFunCall;
 import java.io.PrintWriter;
 
 /**
- * Definition of the <code>$Cache</code> system function, which is smart enough
+ * Definition of the <code>Cache</code> system function, which is smart enough
  * to evaluate its argument only once.
  *
  * @author jhyde
@@ -26,10 +27,10 @@ import java.io.PrintWriter;
  * @version $Id$
  */
 public class CacheFunDef extends FunDefBase {
-    private static final String NAME = "$Cache";
-    private static final String SIGNATURE = "$Cache(<<Exp>>)";
+    static final String NAME = "Cache";
+    private static final String SIGNATURE = "Cache(<<Exp>>)";
     private static final String DESCRIPTION = "Evaluates and returns its sole argument, applying statement-level caching";
-    private static final Syntax SYNTAX = Syntax.Internal;
+    private static final Syntax SYNTAX = Syntax.Function;
     static final CacheFunResolver Resolver = new CacheFunResolver();
 
     CacheFunDef(
@@ -59,6 +60,15 @@ public class CacheFunDef extends FunDefBase {
 
             public Calc[] getCalcs() {
                 return new Calc[] {cacheDescriptor.getCalc()};
+            }
+
+            public ResultStyle getResultStyle() {
+                // cached lists are immutable
+                if (type instanceof SetType) {
+                    return ResultStyle.LIST;
+                } else {
+                    return ResultStyle.VALUE;
+                }
             }
         };
     }

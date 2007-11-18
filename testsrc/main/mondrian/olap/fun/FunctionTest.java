@@ -7793,6 +7793,25 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         pw.print(escaped);
     }
 
+    public void testCache() {
+        // test various data types: integer, string, member, set, tuple
+        assertExprReturns("Cache(1 + 2)", "3");
+        assertExprReturns("Cache('foo' || 'bar')", "foobar");
+        assertAxisReturns("[Gender].Children",
+            fold("[Gender].[All Gender].[F]\n" +
+                "[Gender].[All Gender].[M]"));
+        assertAxisReturns("([Gender].[M], [Marital Status].[S].PrevMember)",
+            "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}");
+
+        // inside another expression
+        assertAxisReturns("Order(Cache([Gender].Children), Cache(([Measures].[Unit Sales], [Time].[1997].[Q1])), BDESC)",
+            fold("[Gender].[All Gender].[M]\n" +
+                "[Gender].[All Gender].[F]"));
+
+        // doesn't work with multiple args
+        assertExprThrows("Cache(1, 2)",
+            "No function matches signature 'Cache(<Numeric Expression>, <Numeric Expression>)'");
+    }
 }
 
 // End FunctionTest.java

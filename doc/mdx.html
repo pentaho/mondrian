@@ -207,13 +207,6 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
-  <td valign=top><code>$Cache</code></td>
-  <td>Evaluates and returns its sole argument, applying statement-level caching
-    <h1>Syntax</h1>
-    $Cache(&lt;&lt;Exp&gt;&gt;)
-  </td>
-</tr>
-<tr>
   <td valign=top><code>()</code></td>
   <td>
     <h1>Syntax</h1>
@@ -445,6 +438,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Cache</code></td>
+  <td>Evaluates and returns its sole argument, applying statement-level caching
+    <h1>Syntax</h1>
+    Cache(&lt;&lt;Exp&gt;&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>CalculatedChild</code></td>
   <td>Returns an existing calculated child member with name &lt;String&gt; from the specified &lt;Member&gt;.
     <h1>Syntax</h1>
@@ -537,7 +537,7 @@ FROM [Sales]
   <td valign=top><code>Cousin</code></td>
   <td>Returns the member with the same relative position under &lt;ancestor member&gt; as the member specified.
     <h1>Syntax</h1>
-    &lt;Member&gt; Cousin(&lt;Member&gt;, &lt;Member&gt;)
+    &lt;Member&gt; Cousin(&lt;Member&gt;, &lt;Ancestor Member&gt;)
   </td>
 </tr>
 <tr>
@@ -684,7 +684,28 @@ FROM [Sales]
   <td>Drills down the members of a set, at a specified level, to one level below. Alternatively, drills down on a specified dimension in the set.
     <h1>Syntax</h1>
     &lt;Set&gt; DrilldownLevel(&lt;Set&gt;)<br/>
-    &lt;Set&gt; DrilldownLevel(&lt;Set&gt;, &lt;Level&gt;)
+    &lt;Set&gt; DrilldownLevel(&lt;Set&gt;, &lt;Level&gt;)<br/>
+    &lt;Set&gt; DrilldownLevel(&lt;Set&gt;, &lt;Empty&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DrilldownLevelBottom</code></td>
+  <td>Drills down the bottommost members of a set, at a specified level, to one level below.
+    <h1>Syntax</h1>
+    &lt;Set&gt; DrilldownLevelBottom(&lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Set&gt; DrilldownLevelBottom(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Level&gt;)<br/>
+    &lt;Set&gt; DrilldownLevelBottom(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Level&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Set&gt; DrilldownLevelBottom(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Empty&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DrilldownLevelTop</code></td>
+  <td>Drills down the topmost members of a set, at a specified level, to one level below.
+    <h1>Syntax</h1>
+    &lt;Set&gt; DrilldownLevelTop(&lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Set&gt; DrilldownLevelTop(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Level&gt;)<br/>
+    &lt;Set&gt; DrilldownLevelTop(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Level&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Set&gt; DrilldownLevelTop(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Empty&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -1304,7 +1325,7 @@ FROM [Sales]
   <td valign=top><code>StrToSet</code></td>
   <td>Constructs a set from a string expression.
     <h1>Syntax</h1>
-    &lt;Set&gt; StrToSet(&lt;String Expression&gt;)
+    &lt;Set&gt; StrToSet(&lt;String&gt;[, &lt;Dimension&gt;...])
   </td>
 </tr>
 <tr>
@@ -1543,9 +1564,9 @@ FROM [Sales]
 <br />
 
 <p>
-    Author: Julian Hyde; last modified August 2006.<br/>
+    Author: Julian Hyde; last modified November 2007.<br/>
     Version: $Id$ (<a href="http://p4web.eigenbase.org/open/mondrian/doc/mdx.html?ac=22">log</a>)<br/>
-    Copyright (C) 2005-2006 Julian Hyde
+    Copyright (C) 2005-2007 Julian Hyde
 </p>
 
 <br />

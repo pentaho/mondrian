@@ -25,12 +25,11 @@ import java.util.List;
  * @since Sep 26, 2005
  */
 public abstract class GenericCalc
-        extends AbstractCalc
-        implements ListCalc, IterCalc,
-            StringCalc, IntegerCalc, DoubleCalc, BooleanCalc,
-            VoidCalc, MemberCalc, LevelCalc, HierarchyCalc, DimensionCalc
+    extends AbstractCalc
+    implements ListCalc, IterCalc, TupleCalc,
+    StringCalc, IntegerCalc, DoubleCalc, BooleanCalc,
+    VoidCalc, MemberCalc, LevelCalc, HierarchyCalc, DimensionCalc
 {
-
     protected GenericCalc(Exp exp) {
         super(exp);
     }
@@ -64,6 +63,10 @@ public abstract class GenericCalc
                 }
             };
         }
+    }
+
+    public Member[] evaluateTuple(Evaluator evaluator) {
+        return (Member[]) evaluate(evaluator);
     }
 
     public String evaluateString(Evaluator evaluator) {

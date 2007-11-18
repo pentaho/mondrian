@@ -37,8 +37,8 @@ public class AbstractAggregateFunDef extends FunDefBase {
             if (MondrianProperties.instance().EnableExpCache.get()) {
                 Exp arg = args[0];
                 final Exp cacheCall = new UnresolvedFunCall(
-                        "$Cache",
-                        Syntax.Internal,
+                        CacheFunDef.NAME,
+                        Syntax.Function,
                         new Exp[] {arg});
                 return validator.validate(cacheCall, false);
             }

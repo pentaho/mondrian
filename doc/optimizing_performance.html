@@ -19,7 +19,7 @@
 <div class="contentheading">Optimizing Mondrian Performance</div>
 <!-- end page title -->
 
-<p>By Sherman Wood; last updated July, 2005.</p>
+<p>By Sherman Wood and Julian Hyde; last updated November, 2007.</p>
 
 <hr noshade size="1">
 
@@ -35,7 +35,9 @@
 		<li><a href="#Choosing_aggregate_tables">Choosing aggregate tables</a></li>
 	</ol>
 	</li>
-	<li><a href="#AggGen">AggGen</a></li>
+	<li><a href="#AggGen">Aggregate Generator (AggGen)</a></li>
+	<li><a href="#Optimizing_Calculations_with_the_Expression_Cache">Optimizing 
+	Calculations with the Expression Cache</a></li>
 </ol>
 
 <h2>Introduction<a name="Introduction">&nbsp;</a></h2>
@@ -223,15 +225,66 @@ optimal for the given query. The generated SQL covers both the "lost"
 and "collapsed" dimensions. For usage, see the documentation for
 <a href="cmdrunner.html#AggGen">CmdRunner</a>.</p>
 
-<p>
+<h2>Optimizing Calculations with the Expression Cache<a name="Optimizing_Calculations_with_the_Expression_Cache">&nbsp;</a></h2>
+
+<p>Mondrian may have performance issues if your schema makes intensive use of 
+calculations. Mondrian executes calculations very efficiently, so usually the 
+time spent calculating expressions is insignificant compared to the time spent 
+executing SQL, but if you have many layers of calculated members and sets, in 
+particular set-oriented constructs like the Aggregate function, it is possible 
+that many thousands of calculations will be required for each cell.</p>
+
+<p>To see whether calculations are causing your performance problem, turn on SQL 
+tracing and measure what proportion of the time is spent executing SQL. If SQL 
+is less than 50% of the time, it is possible that excessive calculations are 
+responsible for the rest. (If the result set is very large, and if you are using 
+JPivot or XML/A, the cost of generating HTML or XML is also worth 
+investigating.)</p>
+
+<p>It caches cell values retrieved from the database, but it does not 
+generally cache the results of calculations. (The sole case where mondrian 
+caches expression results automatically is for the second argument of the <code>
+Rank(&lt;Member&gt;, &lt;Set&gt;[, &lt;Expression&gt;])</code> function,
+since this function is typically evaluated 
+many times for different members over the same set.)</p>
+
+<p>Since calculations are very efficient, this is generally the best policy: it 
+is better for mondrian to use the available memory to cache values retrieved 
+from the database, which are much slower to re-create.</p>
+<p>The expression cache only caches expression results for the duration of a 
+single statement. The results are not available for other statements. The 
+expression cache also takes into account the evaluation context, and the known 
+dependencies of particular functions and operators. For example, the expression</p>
+<blockquote>
+	<p><code>Filter([Store].[City].Members, ([Store].CurrentMember.Parent, 
+	[Time].[1997].[Q1])) &gt; 100)</code></p>
+</blockquote>
+<p>depends on all dimensions besides [Store] and [Time], because the expression 
+overrides the value of the [Store] and [Time] dimensions inherited from the 
+context, but the implicit evaluation of a cell pulls in all other dimensions. If 
+the expression result has been cached for the contexts ([Store].[USA], 
+[Time].[1997].[Q2], [Gender].[M]), the cache knows that it will return the same 
+value for ([Store].[USA].[CA], [Time].[1997].[Q3], [Gender].[M]); however, 
+([Store].[USA], [Time].[1997].[Q2], [Gender].[F]) will require a new cache 
+value, because the dependent dimension [Gender] has a different value.</p>
+<p>However, if your application is very calculation intensive, you can use the
+<code>Cache(&lt;Expression&gt;)</code> function to tell mondrian to store the results 
+of the expression in the expression cache. The first time this function is 
+called, it evaluates its argument and stores it in the expression cache; 
+subsequent calls within the an equivalent context will retrieve the value from 
+the cache. We recommend that you use this function sparingly. If you have cached 
+a frequently evaluated expression, then it will not be necessary to cache 
+sub-expressions or super-expressions; the sub-expressions will be evaluated less 
+frequently, and the super-expressions will evaluate more quickly because their 
+expensive argument has been cached.</p>
 
 <hr>
 
 <p>
-    Author: Sherman Wood; last updated July, 2005.<br/>
+    Author: Sherman Wood &amp; Julian Hyde; last updated November, 2007.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/optimizing_performance.html?ac=22">log</a>)<br/>
-    Copyright (C) 2005-2006 Julian Hyde and others
+    Copyright (C) 2005-2007 Julian Hyde and others
 </p>
 
 <br />

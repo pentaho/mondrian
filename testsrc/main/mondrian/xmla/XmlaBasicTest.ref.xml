@@ -3635,6 +3635,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>BottomSum</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Cache</FUNCTION_NAME>
+                        <DESCRIPTION>Evaluates and returns its sole
+                            argument, applying statement-level caching</DESCRIPTION>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Cache</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>CalculatedChild</FUNCTION_NAME>
                         <DESCRIPTION>Returns an existing calculated
                             child member with name &lt;String> from the
