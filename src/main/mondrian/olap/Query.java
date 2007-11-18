@@ -109,7 +109,7 @@ public class Query extends QueryPart {
     /**
      * Query timeout, in milliseconds
      */
-    private final int queryTimeout;
+    private long queryTimeout;
 
     /**
      * If true, cancel this query
@@ -218,6 +218,17 @@ public class Query extends QueryPart {
         this.load = load;
         this.alertedNonNativeFunDefs = new HashSet<FunDef>();
         resolve();
+    }
+
+    /**
+     * Sets the timeout in milliseconds of this Query.
+     *
+     * <p>Zero means no timeout.
+     *
+     * @param queryTimeoutMillis Timeout in milliseconds
+     */
+    public void setQueryTimeoutMillis(long queryTimeoutMillis) {
+        this.queryTimeout = queryTimeoutMillis;
     }
 
     /**
@@ -357,7 +368,7 @@ public class Query extends QueryPart {
             long currTime = System.currentTimeMillis();
             if ((currTime - startTime) >= queryTimeout) {
                 throw MondrianResource.instance().QueryTimeout.ex(
-                    (long) queryTimeout / 1000);
+                    queryTimeout / 1000);
             }
         }
         if (outOfMemoryMsg != null) {
@@ -655,15 +666,11 @@ public class Query extends QueryPart {
         // Chidren are axes, slicer, and formulas (in that order, to be
         // consistent with replaceChild).
         List<QueryPart> list = new ArrayList<QueryPart>();
-        for (QueryAxis axis : axes) {
-            list.add(axis);
-        }
+        list.addAll(Arrays.asList(axes));
         if (slicerAxis != null) {
             list.add(slicerAxis);
         }
-        for (Formula formula : formulas) {
-            list.add(formula);
-        }
+        list.addAll(Arrays.asList(formulas));
         return list.toArray();
     }
 

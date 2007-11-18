@@ -663,6 +663,12 @@ class RolapResult extends ResultBase {
 
         CellInfo ci = cellInfos.lookup(pos);
         if (ci.value == null) {
+            for (int i = 0; i < pos.length; i++) {
+                int po = pos[i];
+                if (po < 0 || po >= axes[i].getPositions().size()) {
+                    throw Util.newError("coordinates out of range");
+                }
+            }
             ci.value = Util.nullValue;
         }
 
