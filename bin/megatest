@@ -535,6 +535,9 @@ doAllTests()
   doTest jdk1.5 access mondrian.olap.NullMemberRepresentation= mondrian.test.Class=mondrian.olap.NullMemberRepresentationTest
   doTest jdk1.5 access mondrian.olap.NullMemberRepresentation=\(null\) mondrian.test.Class=mondrian.olap.NullMemberRepresentationTest
   doTest jdk1.5 access mondrian.olap.NullMemberRepresentation=~Missing mondrian.test.Class=mondrian.olap.NullMemberRepresentationTest
+  doTest jdk1.5 access mondrian.test.Class=mondrian.rolap.FastBatchingCellReaderTest
+  doTest jdk1.5 derby mondrian.test.Class=mondrian.rolap.FastBatchingCellReaderTest
+  doTest jdk1.5 mysql mondrian.test.Class=mondrian.rolap.FastBatchingCellReaderTest
 
 #    mondrian.test.Class=mondrian.test.BasicQueryTest
 #    mondrian.test.Name=testQueryTimeout

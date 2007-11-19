@@ -1133,6 +1133,111 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
         assertQuerySql(query, patterns);
     }
+
+    public void testDistinctCountBug1785406() {
+        String query = "With \n" +
+                "Set [*BASE_MEMBERS_Product] as {[Product].[All Products].[Food].[Deli]}\n" +
+                "Set [*BASE_MEMBERS_Store] as {[Store].[All Stores].[USA].[WA]}\n" +
+                "Member [Product].[*CTX_MEMBER_SEL~SUM] As\n" +
+                "Aggregate([*BASE_MEMBERS_Product])\n" +
+                "Select\n" +
+                "{[Measures].[Customer Count]} on columns,\n" +
+                "NonEmptyCrossJoin([*BASE_MEMBERS_Store],{([Product].[*CTX_MEMBER_SEL~SUM])})\n" +
+                "on rows\n" +
+                "From [Sales]\n" +
+                "where ([Time].[1997])";
+        String expectedResult = "Axis #0:\n" +
+                "{[Time].[1997]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[WA], [Product].[*CTX_MEMBER_SEL~SUM]}\n" +
+                "Row #0: 889\n";
+
+        String mysqlSql = "select count(distinct `sales_fact_1997`.`customer_id`) as `c` " +
+                "from `sales_fact_1997` as `sales_fact_1997`, `store` as `store`, " +
+                "`time_by_day` as `time_by_day`, `product_class` as `product_class`, " +
+                "`product` as `product` " +
+                "where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
+                "and `store`.`store_state` = 'WA' " +
+                "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
+                "and `time_by_day`.`the_year` = 1997 " +
+                "and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
+                "and `product`.`product_class_id` = `product_class`.`product_class_id` " +
+                "and (`product_class`.`product_department` = 'Deli' " +
+                "and `product_class`.`product_family` = 'Food')";
+        String msaccessSql = "select count(`c`) as `c0` " +
+                "from (select distinct `sales_fact_1997`.`customer_id` as `c` " +
+                "from `store` as `store`, `sales_fact_1997` as `sales_fact_1997`, " +
+                "`time_by_day` as `time_by_day`, `product_class` as `product_class`, " +
+                "`product` as `product` " +
+                "where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
+                "and `store`.`store_state` = 'WA' " +
+                "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
+                "and `time_by_day`.`the_year` = 1997 " +
+                "and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
+                "and `product`.`product_class_id` = `product_class`.`product_class_id` " +
+                "and (`product_class`.`product_department` = 'Deli' " +
+                "and `product_class`.`product_family` = 'Food')) as `dummyname`";
+        String derbySql = "select count(distinct \"sales_fact_1997\".\"customer_id\") as \"c\" " +
+                "from \"sales_fact_1997\" as \"sales_fact_1997\", " +
+                "\"store\" as \"store\", \"time_by_day\" as \"time_by_day\" " +
+                "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+                "and \"store\".\"store_state\" = 'WA' " +
+                "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
+                "and \"time_by_day\".\"the_year\" = 1997";
+
+        SqlPattern[] patterns = {
+            new SqlPattern(SqlPattern.Dialect.ACCESS, msaccessSql, msaccessSql),
+            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
+            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
+
+        assertQuerySql(query, patterns);
+        assertQueryReturns(query,
+                fold(expectedResult));
+    }
+
+    public void testDistinctCountBug1785406_2() {
+        String query = "With Member [Product].[x] as 'Aggregate({Gender.CurrentMember})'\n" +
+                "member [Measures].[foo] as '([Product].[x],[Measures].[Customer Count])'\n" +
+                "select Filter([Gender].members,(Not IsEmpty([Measures].[foo]))) on 0 from Sales";
+        String expectedResult = "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Gender].[All Gender]}\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[All Gender].[M]}\n" +
+                "Row #0: 266,773\n" +
+                "Row #0: 131,558\n" +
+                "Row #0: 135,215\n";
+        assertQueryReturns(query, fold(expectedResult));
+        String mysqlSql = "select count(distinct `sales_fact_1997`.`customer_id`) " +
+                "as `c` from `sales_fact_1997` as `sales_fact_1997`, " +
+                "`time_by_day` as `time_by_day` " +
+                "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
+                "and `time_by_day`.`the_year` = 1997";
+        String msaccessSql = "select count(`c`) as `c0` " +
+                "from (select distinct `sales_fact_1997`.`customer_id` as `c` " +
+                "from `time_by_day` as `time_by_day`, " +
+                "`sales_fact_1997` as `sales_fact_1997` " +
+                "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
+                "and `time_by_day`.`the_year` = 1997) as `dummyname`";
+        String derbySql = "select count(distinct \"sales_fact_1997\".\"customer_id\") " +
+                "as \"c\" from \"sales_fact_1997\" as \"sales_fact_1997\", " +
+                "\"time_by_day\" as \"time_by_day\" " +
+                "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
+                "and \"time_by_day\".\"the_year\" = 1997";
+        SqlPattern[] patterns = {
+            new SqlPattern(SqlPattern.Dialect.ACCESS, msaccessSql, msaccessSql),
+            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
+            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
+
+        assertQuerySql(query, patterns);
+        assertQueryReturns(query,
+                fold(expectedResult));
+    }
+
+
 }
 
 // End FastBatchingCellReaderTest.java

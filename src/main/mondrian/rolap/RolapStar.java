@@ -150,12 +150,12 @@ public class RolapStar {
     private List<AggStar> aggStars;
 
     private DataSourceChangeListener changeListener;
-    
+
     // temporary model, should eventually use RolapStar.Table and RolapStar.Column
     private StarNetworkNode factNode;
-    private Map<String, StarNetworkNode> nodeLookup = 
+    private Map<String, StarNetworkNode> nodeLookup =
         new HashMap<String, StarNetworkNode>();
-    
+
     /**
      * Creates a RolapStar. Please use
      * {@link RolapSchema.RolapStarRegistry#getOrCreateStar} to create a
@@ -173,7 +173,7 @@ public class RolapStar {
 
         // phase out and replace with Table, Column network
         factNode = new StarNetworkNode(null, factTable.alias, null, null, null);
-        
+
         this.cubeToLevelToColumnMapMap =
             new HashMap<RolapCube, Map<RolapLevel, Column>>();
         this.cubeToRelationNamesToStarTableMapMap =
@@ -195,27 +195,27 @@ public class RolapStar {
         private MondrianDef.Relation origRel; // this is either a table or a view
         private String foreignKey;
         private String joinKey;
-        
-        private StarNetworkNode(StarNetworkNode parent, String alias, 
-                MondrianDef.Relation origRel, String foreignKey, 
+
+        private StarNetworkNode(StarNetworkNode parent, String alias,
+                MondrianDef.Relation origRel, String foreignKey,
                 String joinKey) {
             this.parent = parent;
             this.origRel = origRel;
             this.foreignKey = foreignKey;
             this.joinKey = joinKey;
         }
-        
+
         private boolean isCompatible(
-                StarNetworkNode compatibleParent, MondrianDef.Relation rel, 
+                StarNetworkNode compatibleParent, MondrianDef.Relation rel,
                 String compatibleForeignKey, String compatibleJoinKey) {
-            return (parent == compatibleParent && 
+            return (parent == compatibleParent &&
                 origRel.getClass().equals(rel.getClass()) &&
-                foreignKey.equals(compatibleForeignKey) && 
+                foreignKey.equals(compatibleForeignKey) &&
                 joinKey.equals(compatibleJoinKey));
         }
     }
-    
-    private MondrianDef.Relation cloneRelation(MondrianDef.Relation rel, 
+
+    private MondrianDef.Relation cloneRelation(MondrianDef.Relation rel,
                                                     String possibleName) {
         MondrianDef.Relation newrel = null;
         if (rel instanceof MondrianDef.Table) {
@@ -232,15 +232,15 @@ public class RolapStar {
         }
         return newrel;
     }
-    
+
     /**
      * Generates a unique relational join to the fact table via re-aliasing
      * MondrianDef.Relations
-     * 
+     *
      * currently called in the RolapCubeHierarchy constructor.  This should
-     * eventually be phased out and replaced with RolapStar.Table and 
+     * eventually be phased out and replaced with RolapStar.Table and
      * RolapStar.Column references
-     * 
+     *
      * @param rel the relation needing uniqueness
      * @param factForeignKey the foreign key of the fact table
      * @param primaryKey the join key of the relation
@@ -253,16 +253,16 @@ public class RolapStar {
         return getUniqueRelation(
                 factNode, rel, factForeignKey, primaryKey, primaryKeyTable);
     }
-    
+
     private MondrianDef.Relation getUniqueRelation(
-            StarNetworkNode parent, MondrianDef.Relation rel, 
+            StarNetworkNode parent, MondrianDef.Relation rel,
             String foreignKey, String joinKey, String joinKeyTable) {
         if (rel == null) {
             return null;
-        } else if (rel instanceof MondrianDef.Table 
+        } else if (rel instanceof MondrianDef.Table
                     || rel instanceof MondrianDef.View) {
             int val = 0;
-            String newAlias = 
+            String newAlias =
                 joinKeyTable != null ? joinKeyTable : rel.getAlias();
             while (true) {
                 StarNetworkNode node = nodeLookup.get(newAlias);
@@ -270,8 +270,8 @@ public class RolapStar {
                     if (val != 0) {
                         rel = cloneRelation(rel, newAlias);
                     }
-                    node = 
-                        new StarNetworkNode(parent, newAlias, rel, 
+                    node =
+                        new StarNetworkNode(parent, newAlias, rel,
                                 foreignKey, joinKey);
                     nodeLookup.put(newAlias, node);
                     return rel;
@@ -287,21 +287,21 @@ public class RolapStar {
             MondrianDef.Relation right = null;
             if (join.getLeftAlias().equals(joinKeyTable)) {
                 // first manage left then right
-                left = 
-                    getUniqueRelation(parent, join.left, foreignKey, 
+                left =
+                    getUniqueRelation(parent, join.left, foreignKey,
                             joinKey, joinKeyTable);
                 parent = nodeLookup.get(left.getAlias());
-                right = 
-                    getUniqueRelation(parent, join.right, join.leftKey, 
+                right =
+                    getUniqueRelation(parent, join.right, join.leftKey,
                         join.rightKey, join.getRightAlias());
             } else if (join.getRightAlias().equals(joinKeyTable)) {
                 // right side must equal
-                right = 
-                    getUniqueRelation(parent, join.right, foreignKey, 
+                right =
+                    getUniqueRelation(parent, join.right, foreignKey,
                             joinKey, joinKeyTable);
                 parent = nodeLookup.get(right.getAlias());
-                left = 
-                    getUniqueRelation(parent, join.left, join.rightKey, 
+                left =
+                    getUniqueRelation(parent, join.left, join.rightKey,
                             join.leftKey, join.getLeftAlias());
             } else {
                 new MondrianException(
@@ -309,14 +309,14 @@ public class RolapStar {
             }
 
             if (join.left != left || join.right != right) {
-                join = 
-                    new MondrianDef.Join(left.getAlias(), join.leftKey, 
+                join =
+                    new MondrianDef.Join(left.getAlias(), join.leftKey,
                             left, right.getAlias(), join.rightKey, right);
             }
             return join;
         }
         return null;
-    }    
+    }
 
     /**
      * Returns this RolapStar's column count. After a star has been created with
@@ -870,28 +870,8 @@ public class RolapStar {
         Column[] columns = request.getConstrainedColumns();
         Object[] values = request.getSingleValues();
         Util.assertTrue(columns.length == values.length);
-        SqlQuery sqlQuery = getSqlQuery();
-        // add measure
-        Util.assertTrue(measure.getTable() == factTable);
-        factTable.addToFrom(sqlQuery, true, true);
-        sqlQuery.addSelect(
-            measure.aggregator.getExpression(
-                measure.generateExprString(sqlQuery)));
-        // add constraining dimensions
-        for (int i = 0; i < columns.length; i++) {
-            Object value = values[i];
-            if (value == null) {
-                continue; // not constrained
-            }
-            Column column = columns[i];
-            Table table = column.getTable();
-            if (table.isFunky()) {
-                // this is a funky dimension -- ignore for now
-                continue;
-            }
-            table.addToFrom(sqlQuery, true, true);
-        }
-        String sql = sqlQuery.toString();
+        String sql = CompoundQuerySpec.compoundGenerateSql(measure, columns,
+                request.getValueList(), request.getPredicateList());
         final SqlStatement stmt =
             RolapUtil.executeQuery(
                 dataSource, sql, "RolapStar.getCell",
@@ -1178,18 +1158,18 @@ public class RolapStar {
          * Get column cardinality from the schema cache if possible;
          * otherwise issue a select count(distinct) query to retrieve
          * the cardinality and stores it in the cache.
-         * 
+         *
          * @return the column cardinality.
          */
         public int getCardinality() {
             if (cardinality == -1) {
                 RolapStar star = getStar();
                 RolapSchema schema = star.getSchema();
-                Integer card = 
+                Integer card =
                     schema.getCachedRelationExprCardinality(
                         table.getRelation(),
                         expression);
-                
+
                 if (card != null) {
                     cardinality = card.intValue();
                 } else {
@@ -1198,7 +1178,7 @@ public class RolapStar {
                     cardinality = getCardinality(star.getDataSource());
                     schema.putCachedRelationExprCardinality(
                         table.getRelation(),
-                        expression, 
+                        expression,
                         cardinality);
                 }
             }
@@ -1698,7 +1678,7 @@ public class RolapStar {
             Column c = lookupColumnByExpression(xmlExpr);
 
             RolapStar.Column column = null;
-            // Verify Column is not null and not the same as the 
+            // Verify Column is not null and not the same as the
             // nameColumn created previously (bug 1438285)
             if (c != null && !c.equals(nameColumn)) {
                 // Yes, well just reuse it
