@@ -12,9 +12,9 @@
 package mondrian.rolap;
 
 import junit.framework.TestCase;
-import mondrian.olap.Util;
-import mondrian.olap.DriverManager;
+import mondrian.olap.*;
 import mondrian.test.TestContext;
+import mondrian.util.Pair;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -181,6 +181,25 @@ public class RolapConnectionTest extends TestCase {
             testContextSpain.assertQueryReturns(query, expected2);
         } else {
             testContextSpain.assertExprReturns(expr, expected);
+        }
+    }
+
+    public void testConnectSansCatalogFails() {
+        Util.PropertyList properties =
+            TestContext.instance().getFoodMartConnectionProperties();
+        properties.remove(RolapConnectionProperties.Catalog.name());
+        properties.remove(RolapConnectionProperties.CatalogContent.name());
+        System.out.println(properties);
+        try {
+            DriverManager.getConnection(
+                properties,
+                null);
+            fail("expected exception");
+        } catch (MondrianException e) {
+            assertTrue(
+                e.getMessage().indexOf(
+                    "Connect string must contain property 'Catalog' or property 'CatalogContent'")
+                    >= 0);
         }
     }
 }

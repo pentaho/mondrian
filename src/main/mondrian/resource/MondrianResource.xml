@@ -257,6 +257,13 @@
 </exception>
 
 <!-- ====================================================================== -->
+<!-- Connectivity errors -->
+
+<exception id="390000" name="ConnectStringMandatoryProperties">
+    <text>Connect string must contain property ''{0}'' or property ''{1}''</text>
+</exception>
+
+<!-- ====================================================================== -->
 <!-- Catalog errors -->
 
 <exception id="400020" name="NonTimeLevelInTimeHierarchy">

@@ -1477,7 +1477,7 @@ public class Util extends XOMUtil {
             boolean found = false;
             for (int i = 0; i < list.size(); i++) {
                 Pair<String, String> pair = list.get(i);
-                if (pair.getKey().equals(key)) {
+                if (pair.getKey().equalsIgnoreCase(key)) {
                     list.remove(i);
                     found = true;
                     --i;

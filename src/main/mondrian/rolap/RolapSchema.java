@@ -752,11 +752,18 @@ public class RolapSchema implements Schema {
             String dynProcName = connectInfo.get(
                 RolapConnectionProperties.DynamicSchemaProcessor.name());
 
+            String catalogStr = connectInfo.get(
+                RolapConnectionProperties.CatalogContent.name());
+            if (catalogUrl == null && catalogStr == null) {
+                throw MondrianResource.instance()
+                    .ConnectStringMandatoryProperties.ex(
+                    RolapConnectionProperties.Catalog.name(),
+                    RolapConnectionProperties.CatalogContent.name());
+            }
+
             // If CatalogContent is specified in the connect string, ignore
             // everything else. In particular, ignore the dynamic schema
             // processor.
-            String catalogStr = connectInfo.get(
-                RolapConnectionProperties.CatalogContent.name());
             if (catalogStr != null) {
                 dynProcName = null;
                 // REVIEW: Are we including enough in the key to make it
