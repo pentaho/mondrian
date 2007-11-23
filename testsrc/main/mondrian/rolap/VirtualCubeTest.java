@@ -932,6 +932,42 @@ public class VirtualCubeTest extends BatchTestCase {
                 "{[Measures].[foo]}\n" +
                 "Row #0: 5,581\n"));
     }
+
+    /**
+     * Testcase for bug 1835125, "Caption is not set on
+     * RolapVirtualCubeMesure".
+     */
+    public void testVirtualCubeMeasureCaption() {
+        TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"TestStore\">\n" +
+                "  <Table name=\"store\"/>\n" +
+                "  <Dimension name=\"HCB\" caption=\"Has coffee bar caption\">\n" +
+                "    <Hierarchy hasAll=\"true\">\n" +
+                "      <Level name=\"Has coffee bar\" column=\"coffee_bar\" uniqueMembers=\"true\"\n" +
+                "          type=\"Boolean\"/>\n" +
+                "    </Hierarchy>\n" +
+                "  </Dimension>\n" +
+                "  <Measure name=\"Store Sqft\" caption=\"Store Sqft Caption\" column=\"store_sqft\" aggregator=\"sum\" formatString=\"#,###\"/>\n" +
+                "</Cube>\n",
+
+            "<VirtualCube name=\"VirtualTestStore\">\n" +
+                "  <VirtualCubeDimension cubeName=\"TestStore\" name=\"HCB\"/>\n" +
+                "  <VirtualCubeMeasure   cubeName=\"TestStore\" name=\"[Measures].[Store Sqft]\"/>\n" +
+                "</VirtualCube>",
+            null, null, null);
+
+        Result result = testContext.executeQuery(
+            "select {[Measures].[Store Sqft]} ON COLUMNS," +
+                "{[HCB]} ON ROWS " +
+                "from [VirtualTestStore]");
+
+        Axis[] axes = result.getAxes();
+        List<Position> positions = axes[0].getPositions();
+        Member m0 = positions.get(0).get(0);
+        String caption = m0.getCaption();
+        assertEquals("Store Sqft Caption", caption);
+    }
 }
 
 // End VirtualCubeTest.java

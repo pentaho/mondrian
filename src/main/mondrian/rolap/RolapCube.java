@@ -369,6 +369,9 @@ public class RolapCube extends CubeBase {
                         }
                         virtualCubeMeasure.setProperty(Property.VISIBLE.name,
                             visible);
+                        // Inherit caption from the "real" measure
+                        virtualCubeMeasure.setProperty(Property.CAPTION.name,
+                            cubeMeasure.getCaption());
                         origMeasureList.add(virtualCubeMeasure);
                     }
                     break;
