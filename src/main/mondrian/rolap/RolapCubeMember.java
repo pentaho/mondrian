@@ -106,6 +106,18 @@ public class RolapCubeMember extends RolapMember {
         return rolapMember;
     }
 
+    /**
+     * Returns the cube this cube member belongs to.
+     *
+     * <p>This method is not in the {@link Member} interface, because regular
+     * members may be shared, and therefore do not belong to a specific cube.
+     *
+     * @return Cube this cube member belongs to
+     */
+    public RolapCube getCube() {
+        return rolapCube;
+    }
+
     public Member getDataMember() {
 
         RolapMember member = (RolapMember) rolapMember.getDataMember();

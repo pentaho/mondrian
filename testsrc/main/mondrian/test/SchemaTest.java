@@ -13,7 +13,6 @@ import org.apache.log4j.*;
 import org.apache.log4j.varia.LevelRangeFilter;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.util.Bug;
-import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianProperties;
 
 import java.io.StringWriter;
@@ -1400,7 +1399,83 @@ public class SchemaTest extends FoodMartTestCase {
                 "[Gender2].[All Gender].[F]\n" +
                 "[Gender2].[All Gender].[M]"));
     }
-    
+
+    public void testInvalidSchemaAccess() {
+        final TestContext testContext = TestContext.create(
+            null, null, null, null, null,
+            "<Role name=\"Role1\">\n"
+                + "  <SchemaGrant access=\"invalid\"/>\n"
+                + "</Role>")
+            .withRole("Role1");
+        testContext.assertThrows(
+            "select from [Sales]",
+            "In Schema: In Role: In SchemaGrant: "
+                + "Value 'invalid' of attribute 'access' has illegal value 'invalid'.  "
+                + "Legal values: {all, custom, none, all_dimensions}");
+    }
+
+    public void testUnionRole() {
+        final TestContext testContext = TestContext.create(
+            null, null, null, null, null,
+            "<Role name=\"Role1\">\n"
+                + "  <SchemaGrant access=\"all\"/>\n"
+                + "</Role>\n"
+                + "<Role name=\"Role2\">\n"
+                + "  <SchemaGrant access=\"all\"/>\n"
+                + "</Role>\n"
+                + "<Role name=\"Role1Plus2\">\n"
+                + "  <Union>\n"
+                + "    <RoleUsage roleName=\"Role1\"/>\n"
+                + "    <RoleUsage roleName=\"Role2\"/>\n"
+                + "  </Union>\n"
+                + "</Role>\n"
+                + "<Role name=\"Role1Plus2Plus1\">\n"
+                + "  <Union>\n"
+                + "    <RoleUsage roleName=\"Role1Plus2\"/>\n"
+                + "    <RoleUsage roleName=\"Role1\"/>\n"
+                + "  </Union>\n"
+                + "</Role>\n").withRole("Role1Plus2Plus1");
+        testContext.assertQueryReturns("select from [Sales]", fold(
+            "Axis #0:\n" +
+                "{}\n" +
+                "266,773"));
+    }
+
+    public void testUnionRoleContainsGrants() {
+        final TestContext testContext = TestContext.create(
+            null, null, null, null, null,
+            "<Role name=\"Role1\">\n"
+                + "  <SchemaGrant access=\"all\"/>\n"
+                + "</Role>\n"
+                + "<Role name=\"Role1Plus2\">\n"
+                + "  <SchemaGrant access=\"all\"/>\n"
+                + "  <Union>\n"
+                + "    <RoleUsage roleName=\"Role1\"/>\n"
+                + "    <RoleUsage roleName=\"Role1\"/>\n"
+                + "  </Union>\n"
+                + "</Role>\n").withRole("Role1Plus2");
+        testContext.assertThrows(
+            "select from [Sales]", "Union role must not contain grants");
+    }
+
+    public void testUnionRoleIllegalForwardRef() {
+        final TestContext testContext = TestContext.create(
+            null, null, null, null, null,
+            "<Role name=\"Role1\">\n"
+                + "  <SchemaGrant access=\"all\"/>\n"
+                + "</Role>\n"
+                + "<Role name=\"Role1Plus2\">\n"
+                + "  <Union>\n"
+                + "    <RoleUsage roleName=\"Role1\"/>\n"
+                + "    <RoleUsage roleName=\"Role2\"/>\n"
+                + "  </Union>\n"
+                + "</Role>\n"
+                + "<Role name=\"Role2\">\n"
+                + "  <SchemaGrant access=\"all\"/>\n"
+                + "</Role>").withRole("Role1Plus2");
+        testContext.assertThrows(
+            "select from [Sales]", "Unknown role 'Role2'");
+    }
 }
 
 // End SchemaTest.java

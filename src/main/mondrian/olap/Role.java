@@ -167,10 +167,10 @@ public interface Role {
      */
     enum RollupPolicy {
         /**
-         * The value of the cell is obtained by rolling up the values of all
-         * children.
+         * The value of the cell is null if any of the children are
+         * inaccessible.
          */
-        FULL,
+        HIDDEN,
 
         /**
          * The value of the cell is obtained by rolling up the values of
@@ -179,10 +179,11 @@ public interface Role {
         PARTIAL,
 
         /**
-         * The value of the cell is null if any of the children are
-         * inaccessible.
+         * The value of the cell is obtained by rolling up the values of all
+         * children.
          */
-        HIDDEN
+        FULL,
+
     }
 }
 

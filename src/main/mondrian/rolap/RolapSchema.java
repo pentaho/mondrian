@@ -490,6 +490,22 @@ public class RolapSchema implements Schema {
     }
 
     private Role createRole(MondrianDef.Role xmlRole) {
+        if (xmlRole.union != null) {
+            if (xmlRole.schemaGrants != null
+                && xmlRole.schemaGrants.length > 0) {
+                throw MondrianResource.instance().RoleUnionGrants.ex();
+            }
+            List<Role> roleList = new ArrayList<Role>();
+            for (MondrianDef.RoleUsage roleUsage : xmlRole.union.roleUsages) {
+                final Role role = mapNameToRole.get(roleUsage.roleName);
+                if (role == null) {
+                    throw MondrianResource.instance().UnknownRole.ex(
+                        roleUsage.roleName);
+                }
+                roleList.add(role);
+            }
+            return RoleImpl.union(roleList);
+        }
         RoleImpl role = new RoleImpl();
         for (MondrianDef.SchemaGrant schemaGrant : xmlRole.schemaGrants) {
             role.grant(this, getAccess(schemaGrant.access, schemaAllowed));

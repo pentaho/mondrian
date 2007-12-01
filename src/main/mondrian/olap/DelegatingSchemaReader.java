@@ -52,6 +52,10 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getMemberParent(member);
     }
 
+    public Member substitute(Member member) {
+        return schemaReader.substitute(member);
+    }
+
     public Member[] getMemberChildren(Member member) {
         return schemaReader.getMemberChildren(member);
     }

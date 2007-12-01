@@ -408,18 +408,19 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         private String getUniqueNameForMemberWithoutHierarchy(
                 RolapMember member) {
             String name = 
-                (String)member.getPropertyValue(
-                        "__ROLAP_UNIQUE_NAME_WITHOUT_HIERARCHY__");
+                (String) member.getPropertyValue(
+                    "__ROLAP_UNIQUE_NAME_WITHOUT_HIERARCHY__");
             RolapMember parent = member;
             if (name == null) {
-                StringBuffer fullName = new StringBuffer();
+                StringBuilder fullName = new StringBuilder();
                 while (parent != null) {
-                    fullName.append("[" + parent.getName() + "]");
+                    fullName.append("[").append(parent.getName()).append("]");
                     parent = parent.getParentMember();
                 }
                 name = fullName.toString();
-                member.setProperty("__ROLAP_UNIQUE_NAME_WITHOUT_HIERARCHY__",
-                        name);
+                member.setProperty(
+                    "__ROLAP_UNIQUE_NAME_WITHOUT_HIERARCHY__",
+                    name);
             }
             return name;
         }

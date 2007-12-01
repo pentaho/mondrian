@@ -85,6 +85,12 @@ public abstract class RolapSchemaReader
         return memberReader;
     }
 
+    public Member substitute(Member member) {
+        final MemberReader memberReader =
+            getMemberReader(member.getHierarchy());
+        return memberReader.substitute((RolapMember) member);
+    }
+
     public void getMemberRange(
         Level level, Member startMember, Member endMember, List<Member> list)
     {
@@ -173,6 +179,9 @@ public abstract class RolapSchemaReader
      * Returns number of members in a level,
      * if the information can be retrieved from cache.
      * Otherwise {@link Integer#MIN_VALUE}.
+     *
+     * @param level Level
+     * @return number of members in level
      */
     private int getLevelCardinalityFromCache(Level level) {
         final Hierarchy hierarchy = level.getHierarchy();
@@ -312,6 +321,13 @@ public abstract class RolapSchemaReader
         Member parent, Id.Segment childName, MatchType matchType)
     {
         LOGGER.debug("looking for child \"" + childName + "\" of " + parent);
+        assert !(parent instanceof RolapHierarchy.LimitedRollupMember);
+        if (parent instanceof RolapHierarchy.LimitedRollupMember) {
+            Util.deprecated("removeme");
+            RolapHierarchy.LimitedRollupMember limitedRollupMember =
+                (RolapHierarchy.LimitedRollupMember) parent;
+            parent = limitedRollupMember.member;
+        }
         try {
             MemberChildrenConstraint constraint;
             if (matchType == MatchType.EXACT) {

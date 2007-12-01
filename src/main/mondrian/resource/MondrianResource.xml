@@ -380,6 +380,14 @@
     <text>Unknown aggregator ''{0}''; valid aggregators are: {1}</text>
 </exception>
 
+<exception id="40300" name="RoleUnionGrants">
+    <text>Union role must not contain grants</text>
+</exception>
+
+<exception id="40310" name="UnknownRole">
+    <text>Unknown role ''{0}''</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Loader -->
 

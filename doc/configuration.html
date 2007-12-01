@@ -50,15 +50,15 @@
 <h3>1. Properties<a name="Properties">&nbsp;</a></h3>
 
 <p>Mondrian has a properties file to allow you to configure how it executes. The
-mondrian.properties file is loaded when the executing Mondrian JAR detects it
+<code>mondrian.properties</code> file is loaded when the executing Mondrian JAR detects it
 needs properties, but can also be done explicitly in your code. It looks in
 several places, in the following order:</p>
 <ol>
   <li>In the directory where you started your JVM (Current working directory for
-  JVM process, java.exe on Win32, java on *nix).</li>
+  JVM process, java.exe on Win32, java on UNIX/Linux).</li>
   <li>If there isn't mondrian.properties under current working directory of JVM
   process, Class MondrianProperties's classloader will try to locate
-  mondrian.properties in all of its classpaths. So you may put mondrian.properties
+  mondrian.properties in all of its classpaths. So you may put <code>mondrian.properties</code>
   under <code>/WEB-INF/classes</code> when you pack Mondrian into a Java web application.
   The demonstration web applications have this configuration.</li>
 </ol>
@@ -1088,7 +1088,20 @@ OLE DB connect string syntax specification</a>.</p>
         <td>No</td>
         <td><p>The name of the <a href="schema.html#Access_control">role</a> to adopt
         for access-control purposes. If not specified, the connection uses a role
-        which has access to every object in the schema.</p></td>
+        which has access to every object in the schema.</p>
+		<p>This property can contain multiple role names separated by commas. If 
+		so, queries in the connection execute with the sum of the privileges of 
+		all of the rules; the effect is the same as running under a
+		<a href="schema.html#Union_roles">union role</a>, defined using the
+		<code>&lt;Union&gt;</code> element in the schema file.</p>
+		<p>If a role name contains a comma, escape the comma using an extra 
+		comma. For example, a connection created with</p>
+		<blockquote>
+			<p><code>Role='Pacific region manager,Europe,, Middle East and 
+			Africa manager'</code></p>
+		</blockquote>
+		<p>will execute with the combined privileges of the roles &quot;Pacific 
+		region manager&quot;, and &quot;Europe, Middle East and Africa manager&quot;.</p></td>
     </tr>
     <tr>
         <td>jdbc.*</td>
@@ -1300,7 +1313,7 @@ At the current time, I do not know a way around this problem.
 
 <hr noshade size="1"/>
 <p>
-    Author: Julian Hyde; last modified April 2007.<br/>
+    Author: Julian Hyde; last modified November, 2007.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/configuration.html?ac=22">log</a>)<br/>
     Copyright (C) 2006-2007 Julian Hyde

@@ -70,8 +70,18 @@ class SqlMemberSource implements MemberReader, SqlTupleReader.MemberBuilder {
         return count;
     }
 
-    public RolapMember lookupMember(List<Id.Segment> uniqueNameParts,
-                                    boolean failIfNotFound) {
+    public RolapMember substitute(RolapMember member) {
+        return member;
+    }
+
+    public RolapMember desubstitute(RolapMember member) {
+        return member;
+    }
+
+    public RolapMember lookupMember(
+        List<Id.Segment> uniqueNameParts,
+        boolean failIfNotFound)
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -146,9 +156,10 @@ class SqlMemberSource implements MemberReader, SqlTupleReader.MemberBuilder {
      * </blockquote> counts the leaf "name" level of the "customer" hierarchy.
      */
     private String makeLevelMemberCountSql(
-            RolapLevel level,
-            DataSource dataSource,
-            boolean[] mustCount) {
+        RolapLevel level,
+        DataSource dataSource,
+        boolean[] mustCount)
+    {
         mustCount[0] = false;
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
@@ -354,7 +365,10 @@ RME is this right
      * Adds <code>member</code> just before the first element in
      * <code>list</code> which has the same parent.
      */
-    private void addAsOldestSibling(List<RolapMember> list, RolapMember member) {
+    private void addAsOldestSibling(
+        List<RolapMember> list,
+        RolapMember member)
+    {
         int i = list.size();
         while (--i >= 0) {
             RolapMember sibling = list.get(i);
@@ -468,7 +482,8 @@ RME is this right
     String makeChildMemberSql(
         RolapMember member,
         DataSource dataSource,
-        MemberChildrenConstraint constraint) {
+        MemberChildrenConstraint constraint)
+    {
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
                 dataSource,

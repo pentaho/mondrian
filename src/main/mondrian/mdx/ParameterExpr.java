@@ -49,18 +49,19 @@ public class ParameterExpr extends ExpBase {
         // the other one.  The registered one will be resolved after everything
         // else in the query has been resolved.
         String parameterName = parameter.getName();
-        Parameter p = validator.getQuery().getSchemaReader(false).getParameter(
-            parameterName);
+        final SchemaReader schemaReader =
+            validator.getQuery().getSchemaReader(false);
+        Parameter p = schemaReader.getParameter(parameterName);
         if (p == null) {
-          this.parameter = validator.createOrLookupParam(
-              true,
-              parameter.getName(),
-              parameter.getType(),
-              parameter.getDefaultExp(),
-              parameter.getDescription());
-        }
-        else {
-          this.parameter = p;
+            this.parameter =
+                validator.createOrLookupParam(
+                    true,
+                    parameter.getName(),
+                    parameter.getType(),
+                    parameter.getDefaultExp(),
+                    parameter.getDescription());
+        } else {
+            this.parameter = p;
         }
         return this;
     }
@@ -164,6 +165,8 @@ public class ParameterExpr extends ExpBase {
 
     /**
      * Returns whether the parameter can be modified.
+     *
+     * @return whether parameter can be modified
      */
     public boolean isModifiable() {
         return true;
@@ -171,6 +174,8 @@ public class ParameterExpr extends ExpBase {
 
     /**
      * Returns the parameter used by this expression.
+     *
+     * @return parameter used by this expression
      */
     public Parameter getParameter() {
         return parameter;

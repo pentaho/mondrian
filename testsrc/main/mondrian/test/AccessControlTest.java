@@ -79,6 +79,59 @@ public class AccessControlTest extends FoodMartTestCase {
         Assert.assertEquals(memberName, expectedAccess, actualAccess);
     }
 
+    private void assertCubeAccess(
+        final Connection connection,
+        Access expectedAccess,
+        String cubeName)
+    {
+        final Role role = connection.getRole();
+        Schema schema = connection.getSchema();
+        final boolean fail = true;
+        Cube cube = schema.lookupCube(cubeName, fail);
+        final Access actualAccess = role.getAccess(cube);
+        Assert.assertEquals(cubeName, expectedAccess, actualAccess);
+    }
+
+    private void assertHierarchyAccess(
+        final Connection connection,
+        Access expectedAccess,
+        String cubeName,
+        String hierarchyName)
+    {
+        final Role role = connection.getRole();
+        Schema schema = connection.getSchema();
+        final boolean fail = true;
+        Cube cube = schema.lookupCube(cubeName, fail);
+        final SchemaReader schemaReader =
+            cube.getSchemaReader(null); // unrestricted
+        final Hierarchy hierarchy =
+            (Hierarchy) schemaReader.lookupCompound(
+                cube, Util.parseIdentifier(hierarchyName), fail,
+                Category.Hierarchy);
+
+        final Access actualAccess = role.getAccess(hierarchy);
+        Assert.assertEquals(cubeName, expectedAccess, actualAccess);
+    }
+
+    private Role.HierarchyAccess getHierarchyAccess(
+        final Connection connection,
+        String cubeName,
+        String hierarchyName)
+    {
+        final Role role = connection.getRole();
+        Schema schema = connection.getSchema();
+        final boolean fail = true;
+        Cube cube = schema.lookupCube(cubeName, fail);
+        final SchemaReader schemaReader =
+            cube.getSchemaReader(null); // unrestricted
+        final Hierarchy hierarchy =
+            (Hierarchy) schemaReader.lookupCompound(
+                cube, Util.parseIdentifier(hierarchyName), fail,
+                Category.Hierarchy);
+
+        return role.getAccessDetails(hierarchy);
+    }
+
     public void testGrantHierarchy1a() {
         // assert: can access Mexico (explicitly granted)
         // assert: can not access Canada (explicitly denied)
@@ -582,6 +635,161 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     // todo: performance test where 1 of 1000 children is not visible
+
+    public void testUnionRole() {
+        TestContext testContext  =
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name=\"Role1\">\n"
+                    + "  <SchemaGrant access=\"none\">\n"
+                    + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                    + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" rollupPolicy=\"Partial\">\n"
+                    + "        <MemberGrant member=\"[Customers].[USA].[CA]\" access=\"all\"/>\n"
+                    + "        <MemberGrant member=\"[Customers].[USA].[CA].[San Francisco].[Gladys Evans]\" access=\"none\"/>\n"
+                    + "      </HierarchyGrant>\n"
+                    + "      <HierarchyGrant hierarchy=\"[Promotion Media]\" access=\"all\"/>\n"
+                    + "      <HierarchyGrant hierarchy=\"[Marital Status]\" access=\"none\"/>\n"
+                    + "      <HierarchyGrant hierarchy=\"[Gender]\" access=\"none\"/>\n"
+                    + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Store].[Store State]\"/>\n"
+                    + "    </CubeGrant>\n"
+                    + "    <CubeGrant cube=\"Warehouse\" access=\"all\"/>\n"
+                    + "  </SchemaGrant>\n"
+                    + "</Role>\n"
+                    + "<Role name=\"Role2\">\n"
+                    + "  <SchemaGrant access=\"none\">\n"
+                    + "    <CubeGrant cube=\"Sales\" access=\"none\">\n"
+                    + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" rollupPolicy=\"Hidden\">\n"
+                    + "        <MemberGrant member=\"[Customers].[USA]\" access=\"all\"/>\n"
+                    + "        <MemberGrant member=\"[Customers].[USA].[CA]\" access=\"none\"/>\n"
+                    + "        <MemberGrant member=\"[Customers].[USA].[OR]\" access=\"none\"/>\n"
+                    + "        <MemberGrant member=\"[Customers].[USA].[OR].[Portland]\" access=\"all\"/>\n"
+                    + "      </HierarchyGrant>\n"
+                    + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"all\" rollupPolicy=\"Hidden\"/>\n"
+                    + "    </CubeGrant>\n"
+                    + "  </SchemaGrant>\n"
+                    + "</Role>\n");
+
+        Connection connection;
+
+        try {
+            connection = testContext.withRole("Role3,Role2").getConnection();
+            fail("expected exception, got " + connection);
+        } catch (RuntimeException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.indexOf("Role 'Role3' not found") >= 0);
+        }
+
+        try {
+            connection = testContext.withRole("Role1,Role3").getConnection();
+            fail("expected exception, got " + connection);
+        } catch (RuntimeException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.indexOf("Role 'Role3' not found") >= 0);
+        }
+
+        connection = testContext.withRole("Role1,Role2").getConnection();
+
+        // Cube access:
+        // Both can see [Sales]
+        // Role1 only see [Warehouse]
+        // Neither can see [Warehouse and Sales]
+        assertCubeAccess(connection, Access.ALL, "Sales");
+        assertCubeAccess(connection, Access.ALL, "Warehouse");
+        assertCubeAccess(connection, Access.NONE, "Warehouse and Sales");
+
+        // Hierarchy access:
+        // Both can see [Customers] with Custom access
+        // Both can see [Store], Role1 with Custom access, Role2 with All access
+        // Role1 can see [Promotion Media], Role2 cannot
+        // Neither can see [Marital Status]
+        assertHierarchyAccess(connection, Access.CUSTOM, "Sales", "[Customers]");
+        assertHierarchyAccess(connection, Access.ALL, "Sales", "[Store]");
+        assertHierarchyAccess(connection, Access.ALL, "Sales", "[Promotion Media]");
+        assertHierarchyAccess(connection, Access.NONE, "Sales", "[Marital Status]");
+
+        // Rollup policy is the greater of Role1's partian and Role2's hidden
+        final Role.HierarchyAccess hierarchyAccess =
+            getHierarchyAccess(connection, "Sales", "[Store]");
+        assertEquals(Role.RollupPolicy.PARTIAL, hierarchyAccess.getRollupPolicy());
+        assertEquals(0, hierarchyAccess.getTopLevelDepth());
+        assertEquals(4, hierarchyAccess.getBottomLevelDepth());
+
+        // Member access:
+        // both can see [USA]
+        assertMemberAccess(connection, Access.ALL, "[Customers].[USA]");
+        // Role1 can see [CA], Role2 cannot
+        assertMemberAccess(connection, Access.ALL, "[Customers].[USA].[CA]");
+        // Role1 cannoy see [USA].[OR].[Portland], Role2 can
+        assertMemberAccess(connection, Access.ALL, "[Customers].[USA].[OR].[Portland]");
+        // Role1 cannot see [USA].[OR], Role2 can see it by virtue of [Portland]
+        assertMemberAccess(connection, Access.CUSTOM, "[Customers].[USA].[OR]");
+        // Neither can see Beaverton
+        assertMemberAccess(connection, Access.NONE, "[Customers].[USA].[OR].[Beaverton]");
+
+        // Rollup policy
+        String mdx = "select Hierarchize(\n"
+            + "{[Customers].[USA].Children,\n"
+            + " [Customers].[USA].[OR].Children}) on 0\n"
+            + "from [Sales]";
+        testContext.assertQueryReturns(
+            mdx,
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers].[USA].[CA]}\n" +
+                "{[Customers].[All Customers].[USA].[OR]}\n" +
+                "{[Customers].[All Customers].[USA].[OR].[Albany]}\n" +
+                "{[Customers].[All Customers].[USA].[OR].[Beaverton]}\n" +
+                "{[Customers].[All Customers].[USA].[OR].[Corvallis]}\n" +
+                "{[Customers].[All Customers].[USA].[OR].[Lake Oswego]}\n" +
+                "{[Customers].[All Customers].[USA].[OR].[Lebanon]}\n" +
+                "{[Customers].[All Customers].[USA].[OR].[Milwaukie]}\n" +
+                "{[Customers].[All Customers].[USA].[OR].[Oregon City]}\n" +
+                "{[Customers].[All Customers].[USA].[OR].[Portland]}\n" +
+                "{[Customers].[All Customers].[USA].[OR].[Salem]}\n" +
+                "{[Customers].[All Customers].[USA].[OR].[W. Linn]}\n" +
+                "{[Customers].[All Customers].[USA].[OR].[Woodburn]}\n" +
+                "{[Customers].[All Customers].[USA].[WA]}\n" +
+                "Row #0: 74,748\n" +
+                "Row #0: 67,659\n" +
+                "Row #0: 6,806\n" +
+                "Row #0: 4,558\n" +
+                "Row #0: 9,539\n" +
+                "Row #0: 4,910\n" +
+                "Row #0: 9,596\n" +
+                "Row #0: 5,145\n" +
+                "Row #0: 3,708\n" +
+                "Row #0: 3,583\n" +
+                "Row #0: 7,678\n" +
+                "Row #0: 4,175\n" +
+                "Row #0: 7,961\n" +
+                "Row #0: 124,366\n"));
+
+        testContext.withRole("Role1").assertThrows(
+            mdx,
+            "MDX object '[Customers].[USA].[OR]' not found in cube 'Sales'");
+
+        testContext.withRole("Role2").assertThrows(
+            mdx,
+            "MDX cube 'Sales' not found");
+
+        // Compared to above:
+        // a. cities in Oregon are missing besides Portland
+        // b. total for Oregon = total for Portland
+        testContext.withRole("Role1,Role2").assertQueryReturns(
+            mdx,
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers].[USA].[CA]}\n" +
+                "{[Customers].[All Customers].[USA].[OR]}\n" +
+                "{[Customers].[All Customers].[USA].[OR].[Portland]}\n" +
+                "{[Customers].[All Customers].[USA].[WA]}\n" +
+                "Row #0: 74,742\n" +
+                "Row #0: 3,583\n" +
+                "Row #0: 3,583\n" +
+                "Row #0: 124,366\n"));
+    }
 }
 
 // End AccessControlTest.java

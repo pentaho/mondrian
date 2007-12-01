@@ -63,6 +63,12 @@ public interface SchemaReader {
         Level level, boolean approximate, boolean materialize);
 
     /**
+     * Substitutes a member with an equivalent member which enforces the
+     * access control policy of this SchemaReader.
+     */
+    Member substitute(Member member);
+
+    /**
      * Returns direct children of <code>member</code>.
      * @pre member != null
      * @post return != null

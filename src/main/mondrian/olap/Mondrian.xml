@@ -1496,9 +1496,6 @@ Revision is $Id$
     </Element>
 
 
-
-
-
     <Class class="Expression">
         <Code>
             public abstract String getExpression(SqlQuery query);
@@ -1627,6 +1624,7 @@ Revision is $Id$
         </Doc>
         <Attribute name="name" required="true"/>
         <Array name="schemaGrants" type="SchemaGrant"/>
+        <Object name="union" type="Union" required="false" />
     </Element>
 
     <Class class="Grant">
@@ -1726,7 +1724,25 @@ Revision is $Id$
         </Attribute>
     </Element>
 
-    <!-- UserDefinedFunction ====================================================== -->
+    <!-- Union ============================================================ -->
+    <Element type="Union">
+        <Doc>
+            Body of a Role definition which defines a Role to be the union
+            of several Roles. The RoleUsage elements must refer to Roles that
+            have been declared earlier in this schema file.
+        </Doc>
+        <Array name="roleUsages" type="RoleUsage" required="true"/>
+    </Element>
+
+    <!-- RoleUsage ======================================================== -->
+    <Element type="RoleUsage">
+        <Doc>
+            Usage of a Role in a union Role.
+        </Doc>
+        <Attribute name="roleName" required="true"/>
+    </Element>
+
+    <!-- UserDefinedFunction ============================================== -->
     <Element type="UserDefinedFunction">
         <Doc>
             A <code>UserDefinedFunction</code> is a function which

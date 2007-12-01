@@ -33,6 +33,14 @@ class DelegatingMemberReader implements MemberReader {
         this.memberReader = memberReader;
     }
 
+    public RolapMember substitute(RolapMember member) {
+        return memberReader.substitute(member);
+    }
+
+    public RolapMember desubstitute(RolapMember member) {
+        return memberReader.desubstitute(member);
+    }
+
     public RolapMember getLeadMember(RolapMember member, int n) {
         return memberReader.getLeadMember(member, n);
     }

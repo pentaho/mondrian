@@ -96,6 +96,31 @@ interface MemberReader extends MemberSource {
     RolapMember getDefaultMember();
 
     RolapMember getMemberParent(RolapMember member);
+
+    /**
+     * Substitutes a given member.
+     *
+     * <p>This method is called whenever a member is returned from the wrapped
+     * member reader and is to be returned to the caller. You could say that it
+     * translates 'to caller space'.
+     *
+     * @param member Member
+     * @return Substitute member
+     */
+    RolapMember substitute(RolapMember member);
+
+    /**
+     * Returns the member which was substituted.
+     * If member is null, returns null.
+     *
+     * <p>This method is called whenever the caller passes a member into a
+     * method and needs to be passed to a method on the wrapped member reader.
+     * You could say that it translates 'from caller space'.
+     *
+     * @param member Member
+     * @return Internal member
+     */
+    RolapMember desubstitute(RolapMember member);
 }
 
 // End MemberReader.java

@@ -64,6 +64,14 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return false;
     }
 
+    public RolapMember substitute(RolapMember member) {
+        return member;
+    }
+
+    public RolapMember desubstitute(RolapMember member) {
+        return member;
+    }
+
     // implement MemberReader
     public RolapMember[] getMembers() {
         return members;

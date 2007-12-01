@@ -821,35 +821,7 @@ public class Query extends QueryPart {
             // full access control
             role = getConnection().getRole();
         } else {
-            // partial access control - role can access same as connection's
-            // role, but has no restriction on reading members above a 'top'
-            // level on any hierarchy. This allows the reader to resolve
-            // say '[Store].[USA].[CA].[San Francisco]' even if '[Store].[USA]'
-            // is not visible because the top level is [Store State].
-            role = new DelegatingRole(getConnection().getRole()) {
-                public HierarchyAccess getAccessDetails(Hierarchy hierarchy) {
-                    final HierarchyAccess prevDetails =
-                        role.getAccessDetails(hierarchy);
-                    if (prevDetails == null) {
-                        return null;
-                    }
-                    return new DelegatingHierarchyAccess(prevDetails) {
-                        public Access getAccess(Member member) {
-                            if (member.getLevel().getDepth()
-                                < prevDetails.getTopLevelDepth())
-                            {
-                                return Access.ALL;
-                            } else {
-                                return hierarchyAccess.getAccess(member);
-                            }
-                        }
-
-                        public int getTopLevelDepth() {
-                            return 0;
-                        }
-                    };
-                }
-            };
+            role = null;
         }
         final SchemaReader cubeSchemaReader = cube.getSchemaReader(role);
         return new QuerySchemaReader(cubeSchemaReader);

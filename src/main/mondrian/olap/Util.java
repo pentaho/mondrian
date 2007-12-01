@@ -742,9 +742,14 @@ public class Util extends XOMUtil {
             schemaReader.lookupCompound(
                 q.getCube(), nameParts, false, Category.Unknown);
         if (olapElement != null) {
-            Role role = q.getConnection().getRole();
+            final SchemaReader accessConSchemaReader = q.getSchemaReader(true);
+            Role role = accessConSchemaReader.getRole();
             if (!role.canAccess(olapElement)) {
                 olapElement = null;
+            }
+            if (olapElement instanceof Member) {
+                olapElement =
+                    accessConSchemaReader.substitute((Member) olapElement);
             }
         }
         if (olapElement == null) {
@@ -1201,7 +1206,7 @@ public class Util extends XOMUtil {
      * @return  Upper-case string
      */
     public static String camelToUpper(String s) {
-        StringBuffer buf = new StringBuffer(s.length() + 10);
+        StringBuilder buf = new StringBuilder(s.length() + 10);
         int prevUpper = -1;
         for (int i = 0; i < s.length(); ++i) {
             char c = s.charAt(i);
@@ -1216,6 +1221,63 @@ public class Util extends XOMUtil {
             buf.append(c);
         }
         return buf.toString();
+    }
+
+    /**
+     * Parses a comma-separated list.
+     *
+     * <p>If a value contains a comma, escape it with a second comma. For
+     * example, <code>parseCommaList("x,y,,z")</code> returns
+     * <code>{"x", "y,z"}</code>.
+     *
+     * @param nameCommaList List of names separated by commas
+     * @return List of names
+     */
+    public static List<String> parseCommaList(String nameCommaList) {
+        if (nameCommaList.equals("")) {
+            return Collections.emptyList();
+        }
+        if (nameCommaList.endsWith(",")) {
+            // Special treatment for list ending in ",", because split ignores
+            // entries after separator.
+            final String zzz = "zzz";
+            final List<String> list = parseCommaList(nameCommaList + zzz);
+            String last = list.get(list.size() - 1);
+            if (last.equals(zzz)) {
+                list.remove(list.size() - 1);
+            } else {
+                list.set(
+                    list.size() - 1,
+                    last.substring(0, last.length() - zzz.length()));
+            }
+            return list;
+        }
+        List<String> names = new ArrayList<String>();
+        final String[] strings = nameCommaList.split(",");
+        for (String string : strings) {
+            final int count = names.size();
+            if (count > 0
+                && names.get(count - 1).equals(""))
+            {
+                if (count == 1) {
+                    if (string.equals("")) {
+                        names.add("");
+                    } else {
+                        names.set(
+                            0,
+                            "," + string);
+                    }
+                } else {
+                    names.set(
+                        count - 2,
+                        names.get(count - 2) + "," + string);
+                    names.remove(count - 1);
+                }
+            } else {
+                names.add(string);
+            }
+        }
+        return names;
     }
 
     public static class ErrorCellValue {

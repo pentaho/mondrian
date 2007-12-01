@@ -721,7 +721,7 @@ public class RolapHierarchy extends HierarchyBase {
                         },
                         new Exp[0],
                         returnType);
-                return new MySubstitutingMemberReader(
+                return new LimitedRollupSubstitutingMemberReader(
                     role, hierarchyAccess, partialExp);
 
             case HIDDEN:
@@ -740,7 +740,7 @@ public class RolapHierarchy extends HierarchyBase {
                         },
                         new Exp[0],
                         returnType);
-                return new MySubstitutingMemberReader(
+                return new LimitedRollupSubstitutingMemberReader(
                     role, hierarchyAccess, hiddenExp);
             default:
                 throw Util.unexpected(rollupPolicy);
@@ -1001,8 +1001,8 @@ RME HACK
      *
      * @see mondrian.olap.Role.RollupPolicy
      */
-    private static class LimitedRollupMember extends RolapCubeMember {
-        private final RolapMember member;
+    static class LimitedRollupMember extends RolapCubeMember {
+        final RolapMember member;
         private final Exp exp;
 
         LimitedRollupMember(
@@ -1013,7 +1013,8 @@ RME HACK
                 member.getParentMember(),
                 member.getRolapMember(),
                 member.getLevel(),
-                member.getHierarchy().getDimension().getCube());
+                member.getCube());
+            assert !(member instanceof LimitedRollupMember);
             this.member = member;
             this.exp = exp;
         }
@@ -1036,11 +1037,13 @@ RME HACK
      * role has limited access to the hierarchy, replaces members with
      * dummy members which evaluate to the sum of only the accessible children.
      */
-    private class MySubstitutingMemberReader extends SubstitutingMemberReader {
+    private class LimitedRollupSubstitutingMemberReader
+        extends SubstitutingMemberReader
+    {
         private final Role.HierarchyAccess hierarchyAccess;
         private final Exp exp;
 
-        public MySubstitutingMemberReader(
+        public LimitedRollupSubstitutingMemberReader(
             Role role,
             Role.HierarchyAccess hierarchyAccess,
             Exp exp)
@@ -1052,7 +1055,7 @@ RME HACK
             this.exp = exp;
         }
 
-        protected RolapMember substitute(final RolapMember member) {
+        public RolapMember substitute(final RolapMember member) {
             if (hierarchyAccess.hasInaccessibleDescendants(member)) {
                 // Member is visible, but at least one of its
                 // descendants is not.
@@ -1065,8 +1068,7 @@ RME HACK
             }
         }
 
-
-        protected RolapMember desubstitute(RolapMember member) {
+        public RolapMember desubstitute(RolapMember member) {
             if (member instanceof LimitedRollupMember) {
                 return ((LimitedRollupMember) member).member;
             } else {

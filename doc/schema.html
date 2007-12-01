@@ -32,7 +32,7 @@
   	<li><a href="#Cubes_and_dimensions">Logical model</a>
 		<ol>
 			<li><a href="#Cube">Cube</a></li>
-			<li><a href="#Measures">Measures</a>
+			<li><a href="#Measures">Measures</a></li>
 			<li><a href="#Dimensions,_Hierarchies,_Levels">Dimensions, Hierarchies, Levels</a></li>
 				<ol>
 					<li><a href="#Mapping_Hierarchies">Mapping dimensions and hierarchies onto tables</a></li>
@@ -83,10 +83,11 @@
 		</ol>
 	</li>
   	<li><a href="#I18n">Internationalization</a></li>
-  	<li><a href="#Aggregate_tables">Aggregate tables</a> </li>
+  	<li><a href="#Aggregate_tables">Aggregate tables</a></li>
   	<li><a href="#Access_control">Access-control</a>
 		<ol>
 			<li><a href="#Defining_roles">Defining a role</a></li>
+			<li><a href="#Union_roles">Union roles</a></li>
 			<li><a href="#Setting_a_connections_role">Setting a connection's role</a></li>
 		</ol>
 	</li>
@@ -267,7 +268,7 @@ The default is "<code>Numeric</code>", except for "<code>count</code>" and
 Here, we have chosen to output unit sales with no decimal places (since it is an integer), and store sales
 with two decimal places (since it is a currency value). The ',' and '.' symbols are locale-sensitive, so if
 you were running in Italian, store sales might appear as "48.123,45". You can achieve even more wild effects
-using <a href="#Format_strings">advanced format strings</a>.</p>
+using <a href="mdx.html#Format_strings">advanced format strings</a>.</p>
 
 <p>A measure can have a caption attribute to be returned by the
 <code><a href="http://sourceforge.net/api/mondrian/olap/Member.html#getCaption%28%29">Member.getCaption()</a></code>
@@ -1434,8 +1435,7 @@ name="FORMAT_STRING" value="$#,##0.00"/&gt;<br>
 &lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code>
 </blockquote>
 
-<p>Note that the <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
-&gt;</code> (not <code>&lt;<a href="#XML_Property">Property</a>&gt;</code>) element corresponds
+<p>Note that the <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>&gt;</code> (not <code>&lt;<a href="#XML_Property">Property</a>&gt;</code>) element corresponds
 to the <code>FORMAT_STRING = '$#,###'</code> fragment of the MDX statement. You can define
 other properties here too, but <code>FORMAT_STRING</code> is by far the most useful in practice.</p>
 
@@ -1451,7 +1451,8 @@ name="FORMAT_STRING"<br>
 '|($#,##0.00)|style=red', '|$#,##0.00|style=green')"/&gt;</code>
 </blockquote>
 
-<p>For more details about format strings, see the <a href="mdx.html#Format_strings">MDX specification</a>.</p>
+<p>For more details about format strings, see the 
+<a href="mdx.html#Format_strings">MDX specification</a>.</p>
 
 <p>One additional calculated member property that is worth mentioning is DATATYPE.
 As with <a href="#Measures">measures</a>,
@@ -1472,8 +1473,7 @@ name="SOLVE_ORDER" value="2000"/&gt;</code></blockquote>
 
 
 <p>You can make a calculated member or a measure invisible. If you specify <code>visible="false"
-</code> (the default is "true") in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt; or &lt;
-<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element, user-interfaces such as
+</code> (the default is "true") in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt;</code> or <code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element, user-interfaces such as
 JPivot will notice this property and hide the member. This is useful if you want to perform
 calculations in a number of steps, and hide intermediate steps from end-users. For example,
 here only "Margin per Sqft" is visible, and its factors "Store Cost", "Margin" and "Store Sqft"
@@ -1732,7 +1732,7 @@ return null;<br>
   <code>&lt;<a href="#XML_Schema">Schema</a>&gt;<br>
 &nbsp; ...<br>
 &nbsp;&nbsp;&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a>
-name="PlusOne" class="com.acme.PlusOneUdf"&gt;<br>
+name="PlusOne" class="com.acme.PlusOneUdf" /&gt;<br>
 &lt;/<a href="#XML_Schema">Schema</a>&gt;</code>
 </blockquote>
 
@@ -2565,11 +2565,40 @@ cities in California except Los Angeles. They will be able to see USA
 its child, California, is visible), but no other nations, and not All
 Stores
 (because it is above the top level, <code>Store Country</code>).</p>
+
 <!--
-#########################################
-##  9.2 Setting a connection's role #####
-######################################### -->
-<h1>9.2 Setting a connection's role<a name="Setting_a_connections_role">&nbsp;</a></h1>
+#########################
+##  9.2 Union roles #####
+######################### -->
+<h1>9.2. Union roles<a name="Union_roles">&nbsp;</a></h1>
+<p>A union role combines several roles, and has the sum of their privileges.</p>
+<p>A union role can see a particular schema object if one or more of its 
+constituent roles can see it. Similarly, the rollup policy of a union role with 
+respect to a particular hierarchy is the least restrictive of all of the roles' 
+rollup policies.</p>
+<p>Here is an example showing the syntax of a union role.</p>
+
+<blockquote>
+  <code>&lt;<a href="#XML_Role">Role</a> name=&quot;Coastal manager&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_Union">Union</a>&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_RoleUsage">RoleUsage</a> roleName=&quot;California 
+	manager&quot; /&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_RoleUsage">RoleUsage</a> roleName=&quot;Eastern 
+	sales manager&quot; /&gt;<br>
+&nbsp; &lt;/<a href="#XML_Union">Union</a>&gt;<br>
+	&lt;/<a href="#XML_Role">Role</a>&gt;</code></blockquote>
+
+<p>The constituent roles &quot;California manager&quot; and &quot;Eastern sales manager&quot; may be 
+regular roles, user-defined roles or union roles, but they must be declared 
+earlier in the schema file. The &quot;Coastal manager&quot; role will be able to see any 
+member that or a &quot;California manager&quot; and &quot;Eastern sales manager&quot;. It will be 
+able to see all the cells at the intersection of these members, plus it will be 
+able to see cells that neither role can see: for example, if only &quot;California 
+manager&quot; can see <code>[USA].[CA].[Fresno]</code>, and only &quot;Eastern sales 
+manager&quot; see the <code>[Sales Target]</code> measure, then &quot;Coastal manager&quot; 
+will be able to see the sales target for Fresno, which neither of the 
+constituent roles have access to.</p>
+<h1>9.3 Setting a connection's role<a name="Setting_a_connections_role">&nbsp;</a></h1>
 
 <p>A role only has effect when it is associated with a connection. By
 default,
@@ -2586,7 +2615,9 @@ of doing this:</p>
 
 <ol>
   <li><b>In the connect string</b>. If you specify the <code>Role</code>
-keyword in the connect string, the connection will adopt that role. See
+keyword in the connect string, the connection will adopt that role. You can 
+	specify multiple role names separated by commas, and a union role will be 
+	created; if a role name contains a comma, escape it with an extra comma. See
     <a href="api/mondrian/olap/DriverManager.html"> class DriverManager</a>
 for examples of connect string syntax.</li>
   <li><b>Programmatically</b>. Once your application has established a
@@ -2752,6 +2783,14 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
       	<td><code>&lt;<a href="xml_schema.html#MemberGrant" name="XML_MemberGrant">MemberGrant</a>&gt;</code></td>
       	<td>A set of rights to a member and its children.</td>
     </tr>
+	<tr>
+      	<td><code>&lt;<a href="xml_schema.html#Union" name="XML_Union">Union</a>&gt;</code></td>
+      	<td>Definition of a set of rights as the union of a set of roles.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a href="xml_schema.html#RoleUsage" name="XML_RoleUsage">RoleUsage</a>&gt;</code></td>
+      	<td>A reference to a Role.</td>
+    </tr>
     <tr>
       	<td colspan="2"><i><br>Extensions</i></td>
     </tr>
@@ -2808,8 +2847,8 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
 
 <p>Author: Julian Hyde; last modified September 2007.<br/>
     Version: $Id$
-    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">logg</a>)<br/>
-    Copyright (C) 2001-2002 Kana Software, Inc.<br/>
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">log</a>)<br/>
+    Copyright (C) 2001-2002 Kana Software, Inc..<br/>
     Copyright (C) 2002-2007 Julian Hyde and others
 </p>
 

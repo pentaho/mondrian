@@ -354,6 +354,11 @@ public class RoleImpl implements Role {
             levels[levels.length - 1], Role.RollupPolicy.FULL);
     }
 
+    public static Role union(final List<Role> roleList) {
+        assert roleList.size() > 0;
+        return new UnionRoleImpl(roleList);
+    }
+
     // ~ Inner classes --------------------------------------------------------
 
     /**
@@ -558,6 +563,8 @@ public class RoleImpl implements Role {
             return false;
         }
     }
+
+
 }
 
 // End RoleImpl.java

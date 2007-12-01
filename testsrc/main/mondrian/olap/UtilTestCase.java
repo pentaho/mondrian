@@ -386,6 +386,19 @@ public class UtilTestCase extends TestCase {
             "",
             Util.camelToUpper(""));
     }
+
+    public void testParseCommaList() {
+        assertEquals(new ArrayList<String>(), Util.parseCommaList(""));
+        assertEquals(Arrays.asList("x"), Util.parseCommaList("x"));
+        assertEquals(Arrays.asList("x", "y"), Util.parseCommaList("x,y"));
+        assertEquals(Arrays.asList("x,y"), Util.parseCommaList("x,,y"));
+        assertEquals(Arrays.asList(",x", "y"), Util.parseCommaList(",,x,y"));
+        assertEquals(Arrays.asList("x,", "y"), Util.parseCommaList("x,,,y"));
+        assertEquals(Arrays.asList("x,,y"), Util.parseCommaList("x,,,,y"));
+        // ignore trailing comma
+        assertEquals(Arrays.asList("x", "y"), Util.parseCommaList("x,y,"));
+        assertEquals(Arrays.asList("x", "y,"), Util.parseCommaList("x,y,,"));
+    }
 }
 
 // End UtilTestCase.java

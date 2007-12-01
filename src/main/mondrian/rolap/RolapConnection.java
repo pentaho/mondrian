@@ -158,12 +158,31 @@ public class RolapConnection extends ConnectionBase {
                     dataSource,
                     connectInfo);
             }
-            String roleName =
+            String roleNameList =
                 connectInfo.get(RolapConnectionProperties.Role.name());
-            if (roleName != null) {
-                role = schema.lookupRole(roleName);
-                if (role == null) {
-                    throw Util.newError("Role '" + roleName + "' not found");
+            if (roleNameList != null) {
+                List<String> roleNames = Util.parseCommaList(roleNameList);
+                List<Role> roleList = new ArrayList<Role>();
+                for (String roleName : roleNames) {
+                    Role role1 = schema.lookupRole(roleName);
+                    if (role1 == null) {
+                        throw Util.newError("Role '" + roleName + "' not found");
+                    }
+                    roleList.add(role1);
+                }
+                switch (roleList.size()) {
+                case 0:
+                    // If they specify 'Role=;', the list of names will be
+                    // empty, and the effect will be as if they did specify
+                    // Role at all.
+                    role = null;
+                    break;
+                case 1:
+                    role = roleList.get(0);
+                    break;
+                default:
+                    role = RoleImpl.union(roleList);
+                    break;
                 }
             }
         }
