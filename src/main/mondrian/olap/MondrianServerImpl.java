@@ -164,7 +164,7 @@ class MondrianServerImpl extends MondrianServer {
                 String path = resource.getPath();
                 String path2 =
                     Util.replace(
-                        path, "classes/DefaultRules.xml", "VERSION.txt");
+                        path, "DefaultRules.xml", "VERSION.txt");
                 URL resource2 =
                     new URL(
                         resource.getProtocol(),
