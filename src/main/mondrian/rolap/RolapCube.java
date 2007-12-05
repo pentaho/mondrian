@@ -39,7 +39,7 @@ public class RolapCube extends CubeBase {
 
     private final RolapSchema schema;
     private final RolapHierarchy measuresHierarchy;
-    
+
     /** For SQL generator. Fact table. */
     final MondrianDef.Relation fact;
 
@@ -83,6 +83,11 @@ public class RolapCube extends CubeBase {
 
     private final Map<Hierarchy, HierarchyUsage> firstUsageMap =
         new HashMap<Hierarchy, HierarchyUsage>();
+
+    /**
+     * Refers {@link RolapCubeUsages} if this is a virtual cube
+     */
+    private RolapCubeUsages cubeUsages;
 
     /**
      * Private constructor used by both normal cubes and virtual cubes.
@@ -169,7 +174,7 @@ public class RolapCube extends CubeBase {
               MondrianDef.Cube xmlCube,
               boolean load) {
         this(schema, xmlSchema, xmlCube.name, xmlCube.cache,
-            xmlCube.fact, xmlCube.dimensions, load);
+           xmlCube.fact, xmlCube.dimensions, load);
 
         if (fact.getAlias() == null) {
             throw Util.newError(
@@ -315,6 +320,8 @@ public class RolapCube extends CubeBase {
             new TreeMap<RolapCube, List<MondrianDef.CalculatedMember>>(
                 cubeComparator);
         Member defaultMeasure = null;
+
+        this.cubeUsages = new RolapCubeUsages(xmlVirtualCube.cubeUsage);
 
         for (MondrianDef.VirtualCubeMeasure xmlMeasure : xmlVirtualCube.measures) {
             // Lookup a measure in an existing cube.
@@ -619,25 +626,25 @@ public class RolapCube extends CubeBase {
     {
         RolapDimension dimension = null;
         if (xmlCubeDimension instanceof MondrianDef.DimensionUsage) {
-            MondrianDef.DimensionUsage usage = 
+            MondrianDef.DimensionUsage usage =
                 (MondrianDef.DimensionUsage) xmlCubeDimension;
-            final RolapHierarchy sharedHierarchy = 
+            final RolapHierarchy sharedHierarchy =
                 schema.getSharedHierarchy(usage.source);
             if (sharedHierarchy != null) {
-                dimension = 
+                dimension =
                     (RolapDimension) sharedHierarchy.getDimension();
             }
         }
 
         if (dimension == null) {
-            MondrianDef.Dimension xmlDimension = 
+            MondrianDef.Dimension xmlDimension =
                 xmlCubeDimension.getDimension(xmlSchema);
-            dimension = 
+            dimension =
                 new RolapDimension(
                         schema, this, xmlDimension, xmlCubeDimension);
         }
-        
-        // wrap the shared or regular dimension with a 
+
+        // wrap the shared or regular dimension with a
         // rolap cube dimension object
         return new RolapCubeDimension(
             this, dimension, xmlCubeDimension, dimensionOrdinal);
@@ -1383,7 +1390,7 @@ assert is not true.
      *
      * This method is currently only called if an error occurs in lookupChild(),
      * so that more information can be displayed in the error log.
-     * 
+     *
      * @param source Name of shared dimension
      * @return array of HierarchyUsage (HierarchyUsage[]) - never null.
      */
@@ -1762,6 +1769,19 @@ assert is not true.
             format(join.left, buf, subindent);
             format(join.right, buf, indent);
         }
+    }
+
+    /**
+     * This method tells us if unrelated dimensions to measures from
+     * the input base cube should be pushed to default member or not
+     * during aggregation
+     * @param baseCubeName name of the base cube for which we want
+     * to check this property
+     * @return boolean
+     */
+    public boolean shouldIgnoreUnrelatedDimensions(String baseCubeName) {
+        return cubeUsages != null
+                && cubeUsages.shouldIgnoreUnrelatedDimensions(baseCubeName);
     }
 
     /**

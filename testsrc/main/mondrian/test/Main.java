@@ -230,7 +230,8 @@ public class Main extends TestSuite {
             suite.addTestSuite(RolapSchemaReaderTest.class);
             suite.addTestSuite(RolapCubeTest.class);
             suite.addTestSuite(NullMemberRepresentationTest.class);
-            
+            suite.addTestSuite(IgnoreUnrelatedDimensionsTest.class);
+
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
                 testNonEmpty = false;

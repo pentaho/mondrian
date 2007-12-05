@@ -25,7 +25,7 @@ import mondrian.olap.MondrianDef;
  * @since 10 August, 2001
  * @version $Id$
  */
-interface RolapStoredMeasure extends RolapMeasure {
+public interface RolapStoredMeasure extends RolapMeasure {
     /**
      * Returns the cube this measure belongs to.
      */

@@ -529,7 +529,7 @@ quotes:</p>
 <p>Notice that the first hierarchy doesn't have a name. By default, a hierarchy has the
 same name as its dimension, so the first hierarchy is called "Time".</p>
 
-<p>These hierarchies don't have much in common — they don't even have the same table! — except
+<p>These hierarchies don't have much in common ? they don't even have the same table! ? except
 that they are joined from the same column in the fact table, <code>"time_id"</code>.
 The main reason to put two hierarchies in the same dimension is because it makes more sense to
 the end-user: end-users know that it makes no sense to have the "Time" hierarchy on one axis
@@ -934,11 +934,15 @@ queries:</p>
 ########################### -->
 <h1>5.1 Virtual cubes<a name="Virtual_cubes">&nbsp;</a></h1>
 
-<p>A virtual cube combines two regular cubes. It is defined by the <code><a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a></code>
+<p>A virtual cube combines two or more regular cubes. It is defined by the <code><a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a></code>
 element:</p>
 
 <blockquote>
     <p><code>&lt;<a href="#XML_VirtualCube">VirtualCube</a> name=&quot;Warehouse and Sales&quot;&gt;<br>
+    &nbsp; &lt;<a href="#XML_CubeUsages">CubeUsages</a>&gt;<br>
+    &nbsp; &nbsp; &lt;<a href="#XML_CubeUsage">CubeUsage</a> cubeName=&quot;Sales&quot; ignoreUnrelatedDimensions=&quot;true&quot;/&gt;<br>
+    &nbsp; &nbsp; &lt;<a href="#XML_CubeUsage">CubeUsage</a> cubeName=&quot;Warehouse&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_CubeUsages">CubeUsages</a>/&gt;<br>
     &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Customers&quot;/&gt;<br>
     &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Education Level&quot;/&gt;<br>
     &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Gender&quot;/&gt;<br>
@@ -968,6 +972,31 @@ element:</p>
     &nbsp; &lt;/<span><a href="#XML_CalculatedMember">CalculatedMember</a></span>&gt;<br>
     &lt;/<a href="#XML_VirtualCube">VirtualCube</a>&gt;</code></p>
 </blockquote>
+
+<p>The <code>&lt;<a href="#XML_CubeUsages">CubeUsages</a>&gt;</code>
+element is optional. It specifies the cubes that are imported into the virtual cube.
+Holds CubeUsage elements</p>
+
+<p>The <code>&lt;<a href="#XML_CubeUsage">CubeUsage</a>&gt;</code>
+element is optional. It specifies the base cube that is imported into the
+virtual cube. Currently it is possible to define a VirtualCubeMeasure and
+similar imports from base cube without defining CubeUsage for the cube.
+The <code>cubeName</code> attribute specifies the base cube being imported.
+The <code>ignoreUnrelatedDimensions</code> attribute specifies that the measures
+from this base cube will have non joining dimension members pushed to the
+top level member. This behaviour is currently supported for aggregation.
+This attribute is by default false.
+<code>ignoreUnrelatedDimensions</code> is an experimental feature similar to
+the similarly named feature in SSAS 2005. 
+<a href="http://msdn2.microsoft.com/en-us/library/ms128498.aspx">MSDN documentation</a>
+mentions "When IgnoreUnrelatedDimensions is true, unrelated dimensions are forced
+to their top level; when the value is false, dimensions are not forced to their
+top level. This property is similar to the Multidimensional Expressions
+(MDX) ValidMeasure function". Current mondrian implementation of
+<code>ignoreUnrelatedDimensions</code> depends on use of ValidMeasure. E.g. If we
+want to apply this behaviour to "Unit Sales" measure in the "Warehouse and Sales"
+virtual cube then we need to define a CubeUsage entry for "Sales" cube as shown
+in the example above and also wrap this measure with ValidMeasure</p>
 
 <p>The <code>&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a>&gt;</code>
 element imports a dimension from one of the constituent cubes. If you do not
@@ -1435,7 +1464,8 @@ name="FORMAT_STRING" value="$#,##0.00"/&gt;<br>
 &lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code>
 </blockquote>
 
-<p>Note that the <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>&gt;</code> (not <code>&lt;<a href="#XML_Property">Property</a>&gt;</code>) element corresponds
+<p>Note that the <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
+&gt;</code> (not <code>&lt;<a href="#XML_Property">Property</a>&gt;</code>) element corresponds
 to the <code>FORMAT_STRING = '$#,###'</code> fragment of the MDX statement. You can define
 other properties here too, but <code>FORMAT_STRING</code> is by far the most useful in practice.</p>
 
@@ -1451,7 +1481,7 @@ name="FORMAT_STRING"<br>
 '|($#,##0.00)|style=red', '|$#,##0.00|style=green')"/&gt;</code>
 </blockquote>
 
-<p>For more details about format strings, see the 
+<p>For more details about format strings, see the
 <a href="mdx.html#Format_strings">MDX specification</a>.</p>
 
 <p>One additional calculated member property that is worth mentioning is DATATYPE.
@@ -1473,7 +1503,8 @@ name="SOLVE_ORDER" value="2000"/&gt;</code></blockquote>
 
 
 <p>You can make a calculated member or a measure invisible. If you specify <code>visible="false"
-</code> (the default is "true") in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt;</code> or <code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element, user-interfaces such as
+</code> (the default is "true") in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt; or &lt;
+<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element, user-interfaces such as
 JPivot will notice this property and hide the member. This is useful if you want to perform
 calculations in a number of steps, and hide intermediate steps from end-users. For example,
 here only "Margin per Sqft" is visible, and its factors "Store Cost", "Margin" and "Store Sqft"
@@ -2572,31 +2603,31 @@ Stores
 ######################### -->
 <h1>9.2. Union roles<a name="Union_roles">&nbsp;</a></h1>
 <p>A union role combines several roles, and has the sum of their privileges.</p>
-<p>A union role can see a particular schema object if one or more of its 
-constituent roles can see it. Similarly, the rollup policy of a union role with 
-respect to a particular hierarchy is the least restrictive of all of the roles' 
+<p>A union role can see a particular schema object if one or more of its
+constituent roles can see it. Similarly, the rollup policy of a union role with
+respect to a particular hierarchy is the least restrictive of all of the roles'
 rollup policies.</p>
 <p>Here is an example showing the syntax of a union role.</p>
 
 <blockquote>
   <code>&lt;<a href="#XML_Role">Role</a> name=&quot;Coastal manager&quot;&gt;<br>
 &nbsp; &lt;<a href="#XML_Union">Union</a>&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_RoleUsage">RoleUsage</a> roleName=&quot;California 
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_RoleUsage">RoleUsage</a> roleName=&quot;California
 	manager&quot; /&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_RoleUsage">RoleUsage</a> roleName=&quot;Eastern 
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_RoleUsage">RoleUsage</a> roleName=&quot;Eastern
 	sales manager&quot; /&gt;<br>
 &nbsp; &lt;/<a href="#XML_Union">Union</a>&gt;<br>
 	&lt;/<a href="#XML_Role">Role</a>&gt;</code></blockquote>
 
-<p>The constituent roles &quot;California manager&quot; and &quot;Eastern sales manager&quot; may be 
-regular roles, user-defined roles or union roles, but they must be declared 
-earlier in the schema file. The &quot;Coastal manager&quot; role will be able to see any 
-member that or a &quot;California manager&quot; and &quot;Eastern sales manager&quot;. It will be 
-able to see all the cells at the intersection of these members, plus it will be 
-able to see cells that neither role can see: for example, if only &quot;California 
-manager&quot; can see <code>[USA].[CA].[Fresno]</code>, and only &quot;Eastern sales 
-manager&quot; see the <code>[Sales Target]</code> measure, then &quot;Coastal manager&quot; 
-will be able to see the sales target for Fresno, which neither of the 
+<p>The constituent roles &quot;California manager&quot; and &quot;Eastern sales manager&quot; may be
+regular roles, user-defined roles or union roles, but they must be declared
+earlier in the schema file. The &quot;Coastal manager&quot; role will be able to see any
+member that or a &quot;California manager&quot; and &quot;Eastern sales manager&quot;. It will be
+able to see all the cells at the intersection of these members, plus it will be
+able to see cells that neither role can see: for example, if only &quot;California
+manager&quot; can see <code>[USA].[CA].[Fresno]</code>, and only &quot;Eastern sales
+manager&quot; see the <code>[Sales Target]</code> measure, then &quot;Coastal manager&quot;
+will be able to see the sales target for Fresno, which neither of the
 constituent roles have access to.</p>
 <h1>9.3 Setting a connection's role<a name="Setting_a_connections_role">&nbsp;</a></h1>
 
@@ -2615,8 +2646,8 @@ of doing this:</p>
 
 <ol>
   <li><b>In the connect string</b>. If you specify the <code>Role</code>
-keyword in the connect string, the connection will adopt that role. You can 
-	specify multiple role names separated by commas, and a union role will be 
+keyword in the connect string, the connection will adopt that role. You can
+	specify multiple role names separated by commas, and a union role will be
 	created; if a role name contains a comma, escape it with an extra comma. See
     <a href="api/mondrian/olap/DriverManager.html"> class DriverManager</a>
 for examples of connect string syntax.</li>
@@ -2661,6 +2692,14 @@ Schema.lookupRole(String)</a>.</li>
       	<td><code>&lt;<a name="XML_VirtualCube" href="xml_schema.html#VirtualCube">VirtualCube</a>&gt;</code></td>
       	<td>A cube defined by combining the dimensions and measures of one or more cubes.
 A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;</code>.</td>
+    </tr>
+    <tr>
+        <td><code>&lt;<a name="XML_CubeUsages" href="xml_schema.html#CubeUsages">CubeUsages</a>&gt;</code></td>
+        <td>Base cubes that are imported into a virtual cube</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_CubeUsage" href="xml_schema.html#CubeUsage">CubeUsage</a>&gt;</code></td>
+      	<td>Usage of a base cube by a virtual cube.</td>
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_VirtualCubeDimension" href="xml_schema.html#VirtualCubeDimension">VirtualCubeDimension</a>&gt;</code></td>
@@ -2783,7 +2822,7 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
       	<td><code>&lt;<a href="xml_schema.html#MemberGrant" name="XML_MemberGrant">MemberGrant</a>&gt;</code></td>
       	<td>A set of rights to a member and its children.</td>
     </tr>
-	<tr>
+    <tr>
       	<td><code>&lt;<a href="xml_schema.html#Union" name="XML_Union">Union</a>&gt;</code></td>
       	<td>Definition of a set of rights as the union of a set of roles.</td>
     </tr>
@@ -2845,7 +2884,7 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
 <br />
 <br />
 
-<p>Author: Julian Hyde; last modified September 2007.<br/>
+<p>Author: Julian Hyde; last modified December 2007.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">log</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc..<br/>

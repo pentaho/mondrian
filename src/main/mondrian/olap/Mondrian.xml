@@ -237,6 +237,7 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Object name="cubeUsage" type="CubeUsages"><Doc></Doc></Object>
         <Array name="dimensions" type="VirtualCubeDimension"><Doc></Doc></Array>
         <Array name="measures" type="VirtualCubeMeasure"><Doc></Doc></Array>
         <Array name="calculatedMembers" type="CalculatedMember">
@@ -251,6 +252,28 @@ Revision is $Id$
                 return enabled.booleanValue();
             }]]>
         </Code>
+    </Element>
+
+    <!-- CubeUsages ============================================= -->
+    <Element type="CubeUsages">
+        <Doc>
+            List of base cubes used by the virtual cube
+        </Doc>
+        <Array name="cubeUsages" type="CubeUsage" min="1"><Doc></Doc></Array>
+    </Element>
+
+    <!-- CubeUsage ============================================= -->
+    <Element type="CubeUsage">
+        <Attribute name="cubeName" required="true">
+            <Doc>
+                Name of the cube which the virtualCube uses
+            </Doc>
+        </Attribute>
+        <Attribute name="ignoreUnrelatedDimensions" type="Boolean" default="false">
+            <Doc>
+                Unrelated dimensions to measures in this cube will be pushed to default member
+            </Doc>
+        </Attribute>
     </Element>
 
     <!-- VirtualCubeDimension ============================================= -->

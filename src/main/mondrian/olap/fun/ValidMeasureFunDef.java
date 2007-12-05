@@ -42,9 +42,9 @@ public class ValidMeasureFunDef extends FunDefBase
 
     private ValidMeasureFunDef() {
         super(
-            "ValidMeasure",
-            "Returns a valid measure in a virtual cube by forcing inapplicable dimensions to their top level.",
-            "fnt");
+                "ValidMeasure",
+                "Returns a valid measure in a virtual cube by forcing inapplicable dimensions to their top level.",
+                "fnt");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
@@ -59,7 +59,7 @@ public class ValidMeasureFunDef extends FunDefBase
     }
 
     private static class CalcImpl
-        extends GenericCalc {
+            extends GenericCalc {
         private final Calc calc;
 
         public CalcImpl(ResolvedFunCall call, Calc calc) {
@@ -87,36 +87,64 @@ public class ValidMeasureFunDef extends FunDefBase
             }
             // problem: if measure is in two base cubes
             baseCube =
-                getBaseCubeofMeasure(
-                    evaluator, members[measurePosition], baseCube);
+                    getBaseCubeofMeasure(
+                            evaluator, members[measurePosition], baseCube);
             List<Dimension> vMinusBDimensions =
-                getDimensionsToForceToAllLevel(virtualCube, baseCube, members);
+                    getDimensionsToForceToAllLevel(virtualCube, baseCube, members);
             // declare members array and fill in with all needed members
             final Member[] validMeasureMembers =
-                new Member[vMinusBDimensions.size() + members.length];
+                    new Member[vMinusBDimensions.size() + members.length];
             System.arraycopy(members, 0, validMeasureMembers, 0, members.length);
             // start adding to validMeasureMembers at right place
             for (int i = 0; i < vMinusBDimensions.size(); i++) {
-                validMeasureMembers[members.length + i] =
-                    vMinusBDimensions.get(i).getHierarchy().getDefaultMember();
+                final Hierarchy hierarchy = vMinusBDimensions.get(i).getHierarchy();
+                if (hierarchy.hasAll()) {
+                    validMeasureMembers[members.length + i] =
+                            hierarchy.getAllMember();
+                } else {
+                    validMeasureMembers[members.length + i] =
+                            hierarchy.getDefaultMember();
+                }
             }
+            // this needs to be done before validmeasuremembers are set on the
+            // context since calculated members defined on a non joining
+            // dimension might have been pulled to default member
+            List<Member> calculatedMembers = getCalculatedMembersFromContext(evaluator);
+
             evaluator.setContext(validMeasureMembers);
+
+            for (Member member : calculatedMembers) {
+                evaluator.setContext(member);
+            }
+
             return evaluator.evaluateCurrent();
         }
 
+        private List<Member> getCalculatedMembersFromContext(Evaluator evaluator) {
+            Member[] currentMembers = evaluator.getMembers();
+            List<Member> calculatedMembers = new ArrayList<Member>();
+            for (Member currentMember : currentMembers) {
+                if(currentMember.isCalculated()){
+                    calculatedMembers.add(currentMember);
+                }
+            }
+            return calculatedMembers;
+        }
+
+
         public Calc[] getCalcs() {
-            return new Calc[] { calc };
+            return new Calc[]{calc};
         }
 
         private RolapCube getBaseCubeofMeasure(
-            Evaluator evaluator, Member member, RolapCube baseCube) {
+                Evaluator evaluator, Member member, RolapCube baseCube) {
             final Cube[] cubes = evaluator.getSchemaReader().getCubes();
             for (Cube cube1 : cubes) {
                 RolapCube cube = (RolapCube) cube1;
                 if (!cube.isVirtual()) {
                     for (int j = 0; j < cube.getMeasuresMembers().length; j++) {
                         if (cube.getMeasuresMembers()[j].getName().equals(
-                            member.getName())) {
+                                member.getName())) {
                             baseCube = cube;
                         }
                     }
@@ -129,26 +157,26 @@ public class ValidMeasureFunDef extends FunDefBase
         }
 
         private List<Dimension> getDimensionsToForceToAllLevel(
-            RolapCube virtualCube,
-            RolapCube baseCube,
+                RolapCube virtualCube,
+                RolapCube baseCube,
             Member[] memberArray)
         {
             List<Dimension> vMinusBDimensions = new ArrayList<Dimension>();
             boolean foundDim;
             for (int i = 0; i < virtualCube.getDimensions().length; i++) {
                 foundDim = false;
-                for (int j = 0; j<baseCube.getDimensions().length; j++) {
+                for (int j = 0; j < baseCube.getDimensions().length; j++) {
                     // if we find a match
                     if (virtualCube.getDimensions()[i].getName().equals(
-                        baseCube.getDimensions()[j].getName())) {
+                            baseCube.getDimensions()[j].getName())) {
                         foundDim = true;
                         break;
                     }
                 }
                 // we didn't find the dim in the base cube so we need to
                 // add the all member to the tuple
-                if (!foundDim &&!isDimInMembersArray(
-                    memberArray, virtualCube.getDimensions()[i])) {
+                if (!foundDim && !isDimInMembersArray(
+                        memberArray, virtualCube.getDimensions()[i])) {
                     vMinusBDimensions.add(virtualCube.getDimensions()[i]);
                 }
             }
@@ -156,7 +184,7 @@ public class ValidMeasureFunDef extends FunDefBase
         }
 
         private boolean isDimInMembersArray(
-            Member[] members,
+                Member[] members,
             Dimension dimension)
         {
             for (Member member : members) {

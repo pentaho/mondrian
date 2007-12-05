@@ -40,6 +40,12 @@ public interface Hierarchy extends OlapElement {
      */
     Member getDefaultMember();
     /**
+     * Returns the "All" member of this hierarchy.
+     *
+     * @post return != null
+     */
+    Member getAllMember();
+    /**
      * Returns a special member representing the "null" value. This never
      * occurs on an axis, but may occur if functions such as <code>Lead</code>,
      * <code>NextMember</code> and <code>ParentMember</code> walk off the end
