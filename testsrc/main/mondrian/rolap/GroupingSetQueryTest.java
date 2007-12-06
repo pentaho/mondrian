@@ -9,7 +9,12 @@
 */
 package mondrian.rolap;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import mondrian.rolap.BatchTestCase.CellRequestConstraint;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.MondrianProperties;
 import mondrian.test.SqlPattern;
 import mondrian.util.Bug;
@@ -24,25 +29,52 @@ import mondrian.util.Bug;
  */
 public class GroupingSetQueryTest extends BatchTestCase {
 
+    private MondrianProperties prop = MondrianProperties.instance();
+    
     private static final String cubeNameSales2 = "Sales 2";
     private static final String measureStoreSales = "[Measures].[Store Sales]";
     private static final String fieldNameMaritalStatus = "marital_status";
+    private static final String measureCustomerCount = "[Measures].[Customer Count]";
 
     private boolean useGroupingSets;
     private boolean formattedSql;
+    private String origWarnIfNoPatternForDialect;
 
     protected void setUp() throws Exception {
         super.setUp();
         getTestContext().clearConnection();
-        useGroupingSets = MondrianProperties.instance().EnableGroupingSets.get();
-        formattedSql = MondrianProperties.instance().GenerateFormattedSql.get();
-        MondrianProperties.instance().GenerateFormattedSql.set(false);
+        useGroupingSets = prop.EnableGroupingSets.get();
+        formattedSql = prop.GenerateFormattedSql.get();
+        origWarnIfNoPatternForDialect = prop.WarnIfNoPatternForDialect.get();
+        
+        prop.GenerateFormattedSql.set(false);
+        
+        /*
+         * This test warns of missing sql patterns for
+         * 
+         * ACCESS
+         * ORACLE
+         * 
+         */
+        final SqlQuery.Dialect dialect = getTestContext().getDialect();
+        if (prop.WarnIfNoPatternForDialect.get().equals("ANY") ||
+            (dialect.isAccess() || dialect.isOracle())) {
+            prop.WarnIfNoPatternForDialect.set(
+                SqlPattern.Dialect.get(dialect).toString());
+        } else {
+            /*
+             * Do not warn unless the dialect is "ACCESS" or "ORACLE", or
+             * if the test chooses to warn regardless of the dialect.
+             */
+            prop.WarnIfNoPatternForDialect.set("NONE");
+        }
     }
 
     protected void tearDown() throws Exception {
         super.tearDown();
-        MondrianProperties.instance().EnableGroupingSets.set(useGroupingSets);
-        MondrianProperties.instance().GenerateFormattedSql.set(formattedSql);
+        prop.EnableGroupingSets.set(useGroupingSets);
+        prop.GenerateFormattedSql.set(formattedSql);
+        prop.WarnIfNoPatternForDialect.set(origWarnIfNoPatternForDialect);
     }
 
     public void testGroupingSetForSingleColumnConstraint() {
@@ -57,14 +89,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             RolapSchema.clearCache();
         }
         
-        final MondrianProperties properties = MondrianProperties.instance();
-        properties.UseAggregates.setString("true");
-        properties.ReadAggregates.setString("false");
-        properties.ReadAggregates.setString("true");
-
-        properties.ReadAggregates.setString("false");
-        properties.UseAggregates.setString("false");
-        properties.DisableCaching.setString("false");
+        prop.DisableCaching.setString("false");
 
         CellRequest request1 = createRequest(
             cubeNameSales2, measureUnitSales, tableCustomer, fieldGender, "M");
@@ -118,9 +143,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
                     "group by \"customer\".\"gender\"", 26)
         };
 
-        properties.EnableGroupingSets.set(true);
+        prop.EnableGroupingSets.set(true);
 
-        if (properties.ReadAggregates.get() && properties.UseAggregates.get()) {
+        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             assertRequestSql(
                 new CellRequest[] {request3, request1, request2},
                 patternsWithAggs);
@@ -130,9 +155,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 patternsWithGsets);
         }
 
-        properties.EnableGroupingSets.set(false);
+        prop.EnableGroupingSets.set(false);
 
-        if (properties.ReadAggregates.get() && properties.UseAggregates.get()) {
+        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             assertRequestSql(
                 new CellRequest[] {request3, request1, request2},
                 patternsWithAggs);
@@ -142,11 +167,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 patternsWithoutGsets);
         }
     }
-
     public void testNotUsingGroupingSetWhenGroupUsesDifferentAggregateTable() {
-        final MondrianProperties properties = MondrianProperties.instance();
-        if (!(properties.UseAggregates.get() &&
-            properties.ReadAggregates.get())) {
+        if (!(prop.UseAggregates.get() &&
+            prop.ReadAggregates.get())) {
             return;
         }
 
@@ -159,7 +182,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
         CellRequest request3 = createRequest(cubeNameSales,
             measureUnitSales, null, "", "");
 
-        properties.EnableGroupingSets.set(true);
+        prop.EnableGroupingSets.set(true);
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
@@ -183,11 +206,10 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testNotUsingGroupingSet() {
-        final MondrianProperties properties = MondrianProperties.instance();
-        if (properties.ReadAggregates.get() && properties.UseAggregates.get()) {
+        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             return;
         }
-        properties.EnableGroupingSets.set(true);
+        prop.EnableGroupingSets.set(true);
         CellRequest request1 = createRequest(cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
 
@@ -206,7 +228,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             new CellRequest[] {request1, request2},
             patternsWithGsets);
 
-        properties.EnableGroupingSets.set(false);
+        prop.EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
@@ -228,11 +250,10 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testGroupingSetForMultipleMeasureAndSingleConstraint() {
-        final MondrianProperties properties = MondrianProperties.instance();
-        if (properties.ReadAggregates.get() && properties.UseAggregates.get()) {
+        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             return;
         }
-        properties.EnableGroupingSets.set(true);
+        prop.EnableGroupingSets.set(true);
 
         CellRequest request1 = createRequest(cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
@@ -262,7 +283,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 request1, request2, request3, request4, request5, request6},
             patternsWithGsets);
 
-        properties.EnableGroupingSets.set(false);
+        prop.EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
@@ -286,11 +307,11 @@ public class GroupingSetQueryTest extends BatchTestCase {
             patternsWithoutGsets);
     }
 
-    public void testGroupingSetForASummaryCanBeGroupedWith2DetailBatch(final MondrianProperties properties) {
-        properties.EnableGroupingSets.set(true);
-        if (properties.ReadAggregates.get() && properties.UseAggregates.get()) {
+    public void testGroupingSetForASummaryCanBeGroupedWith2DetailBatch() {
+        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             return;
-        }
+        }        
+        prop.EnableGroupingSets.set(true);
         CellRequest request1 = createRequest(cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
         CellRequest request2 = createRequest(cubeNameSales2,
@@ -328,7 +349,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 request1, request2, request3, request4, request5, request6},
             patternWithGsets);
 
-        properties.EnableGroupingSets.set(false);
+        prop.EnableGroupingSets.set(false);
 
         SqlPattern[] patternWithoutGsets = {
             new SqlPattern(
@@ -350,11 +371,10 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testGroupingSetForMultipleColumnConstraint() {
-        final MondrianProperties properties = MondrianProperties.instance();
-        if (properties.ReadAggregates.get() && properties.UseAggregates.get()) {
+        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             return;
         }
-        properties.EnableGroupingSets.set(true);
+        prop.EnableGroupingSets.set(true);
         CellRequest request1 = createRequest(cubeNameSales2,
             measureUnitSales, new String[]{tableCustomer, tableTime},
             new String[]{fieldGender, fieldYear},
@@ -393,7 +413,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             new CellRequest[] {request3, request1, request2},
             patternsWithGsets);
 
-        properties.EnableGroupingSets.set(false);
+        prop.EnableGroupingSets.set(false);
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
@@ -422,6 +442,63 @@ public class GroupingSetQueryTest extends BatchTestCase {
         assertRequestSql(
             new CellRequest[]{request3, request1, request2},
             patternsWithoutGsets);
+    }
+    
+    public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
+        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
+            return;
+        }
+        List<String[]> compoundMembers = new ArrayList<String[]>();
+        compoundMembers.add(new String[] {"Food", "Deli"});
+        compoundMembers.add(new String[] {"Drink", "Beverages"});
+        CellRequestConstraint constraint = 
+            makeConstraintCountryState(compoundMembers);
+        
+        CellRequest request1 = createRequest(cubeNameSales2,
+            measureCustomerCount, new String[]{tableCustomer, tableTime},
+            new String[]{fieldGender, fieldYear},
+            new String[]{"M", "1997"}, constraint);
+
+        CellRequest request2 = createRequest(cubeNameSales2,
+            measureCustomerCount, new String[]{tableCustomer, tableTime},
+            new String[]{fieldGender, fieldYear},
+            new String[]{"F", "1997"}, constraint);
+
+        CellRequest request3 = createRequest(cubeNameSales2,
+            measureCustomerCount, tableTime, fieldYear, "1997", constraint);
+
+        String sqlWithoutGS =
+            "select " +
+            "\"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
+            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
+            "from " +
+            "\"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", " + 
+            "\"customer\" \"customer\", \"store\" \"store\" " + 
+            "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and " +
+            "\"time_by_day\".\"the_year\" = 1997 and " +
+            "\"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and " + 
+            "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+            "and ((\"store\".\"store_country\" = 'Food' and \"store\".\"store_state\" = 'Deli') or " +
+            "(\"store\".\"store_country\" = 'Drink' and \"store\".\"store_state\" = 'Beverages')) " +
+            "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"";
+            
+        SqlPattern[] patternsGSDisabled = {
+            new SqlPattern(SqlPattern.Dialect.ORACLE, sqlWithoutGS, sqlWithoutGS)
+        };
+
+        // Currently grouping sets are disabled for distinct count aggregates.
+        // even without the compound constraints.
+        SqlPattern[] patternsGSEnabled = patternsGSDisabled;
+
+        prop.EnableGroupingSets.set(true);
+
+        assertRequestSql(
+            new CellRequest[] {request3, request1, request2}, patternsGSEnabled);
+
+        prop.EnableGroupingSets.set(false);
+
+        assertRequestSql(
+            new CellRequest[]{request3, request1, request2}, patternsGSDisabled);
     }
 }
 

@@ -65,53 +65,41 @@ public class AggregationManager extends RolapAggregationManager {
      *
      * @param measures Measures to load
      * @param columns this is the CellRequest's constrained columns
-     * @param constrainedColumnsBitKey this is the CellRequest's constrained column BitKey
+     * @param aggregationKey this is the CellRequest's constraint key
      * @param predicates Array of constraints on each column
      * @param pinnedSegments Set of pinned segments
      * @param groupingSetsCollector grouping sets collector
      */
     public void loadAggregation(
-            RolapStar.Measure[] measures,
-            RolapStar.Column[] columns,
-            BitKey constrainedColumnsBitKey,
-            StarColumnPredicate[] predicates,
-            PinSet pinnedSegments,
-            GroupingSetsCollector groupingSetsCollector) {
+        RolapStar.Measure[] measures,
+        RolapStar.Column[] columns,
+        AggregationKey aggregationKey,
+        StarColumnPredicate[] predicates,
+        PinSet pinnedSegments,
+        GroupingSetsCollector groupingSetsCollector) {
         RolapStar star = measures[0].getStar();
         Aggregation aggregation =
-                star.lookupOrCreateAggregation(constrainedColumnsBitKey);
+            star.lookupOrCreateAggregation(aggregationKey);
 
-            // try to eliminate unneccessary constraints
-            // for Oracle: prevent an IN-clause with more than 1000 elements
-            predicates = aggregation.optimizePredicates(columns, predicates);
-            aggregation.load(columns, measures, predicates, pinnedSegments, groupingSetsCollector);
+        // try to eliminate unneccessary constraints
+        // for Oracle: prevent an IN-clause with more than 1000 elements
+        predicates = aggregation.optimizePredicates(columns, predicates);
+        aggregation.load(columns, measures, predicates, pinnedSegments, groupingSetsCollector);
     }
 
     public Object getCellFromCache(CellRequest request) {
-        
-        final RolapStar.Measure measure = request.getMeasure();
-        final Aggregation aggregation =
-            measure.getStar().lookupAggregation(
-                request.getConstrainedColumnsBitKey());
-        if (aggregation == null) {
-            // cell is not in any aggregation
-            return null;
-        }
-        final Object o =
-            aggregation.getCellValue(
-                measure, request.getSingleValues(), null);
-        if (o != null) {
-            return o;
-        }
-        throw Util.newInternal("not found");
+        return getCellFromCache(request, null);
     }
-
+    
     public Object getCellFromCache(CellRequest request, PinSet pinSet) {       
-        Util.assertPrecondition(pinSet != null);
         final RolapStar.Measure measure = request.getMeasure();
+        // REVIEW:
+        // Is it possible to optimize this so not every cell lookup 
+        // causes an AggregationKey to be created.
+        AggregationKey aggregationKey = new AggregationKey(request);
         final Aggregation aggregation =
-            measure.getStar().lookupAggregation(
-                request.getConstrainedColumnsBitKey());
+            measure.getStar().lookupAggregation(aggregationKey);
+        
         if (aggregation == null) {
             // cell is not in any aggregation
             return null;
@@ -121,7 +109,7 @@ public class AggregationManager extends RolapAggregationManager {
             return o;
         }
     }
-
+    
     public String getDrillThroughSql(
         final CellRequest request,
         boolean countOnly)
@@ -147,14 +135,20 @@ public class AggregationManager extends RolapAggregationManager {
      * Generates the query to retrieve the cells for a list of segments.
      * Called by Segment.load
      */
-    public String generateSql(GroupingSetsList groupingSetsList) {
+    public String generateSql(
+        GroupingSetsList groupingSetsList,
+        List<StarPredicate> compoundPredicateList) {
 
         BitKey levelBitKey = groupingSetsList.getDefaultLevelBitKey();
         BitKey measureBitKey = groupingSetsList.getDefaultMeasureBitKey();
 
-
         // Check if using aggregates is enabled.
-        if (MondrianProperties.instance().UseAggregates.get()) {
+        boolean hasCompoundPredicates = false;
+        if (compoundPredicateList != null && compoundPredicateList.size() > 0) {
+            // Do not use Aggregate tables if compound predicates are present.
+            hasCompoundPredicates = true;
+        }
+        if (MondrianProperties.instance().UseAggregates.get() && !hasCompoundPredicates) {
             RolapStar star = groupingSetsList.getStar();
 
             final boolean[] rollup = {false};
@@ -227,7 +221,8 @@ public class AggregationManager extends RolapAggregationManager {
 
         // Fact table query
         SegmentArrayQuerySpec spec =
-            new SegmentArrayQuerySpec(groupingSetsList);
+            new SegmentArrayQuerySpec(groupingSetsList, compoundPredicateList);            
+        
         String sql = spec.generateSqlQuery();
 
         if (getLogger().isDebugEnabled()) {

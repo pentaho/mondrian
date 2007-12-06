@@ -40,6 +40,12 @@ public interface StarPredicate {
     public List<RolapStar.Column> getConstrainedColumnList();
 
     /**
+     * Returns a bitmap of constrained columns to speed up comparison
+     * @return bitmap representing all constraining columns.
+     */
+    public BitKey getConstrainedColumnBitKey();
+
+    /**
      * Appends a description of this predicate to a <code>StringBuilder</code>.
      * For example:<ul>
      * <li>=any</li>

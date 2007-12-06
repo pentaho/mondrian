@@ -72,7 +72,7 @@ public class RolapEvaluator implements Evaluator {
      * ordinary dimensional context if set when a cell value comes to be
      * evaluated.
      */
-    protected List<List<Member>> aggregationLists;
+    protected List<List<RolapMember>> aggregationLists;
 
     private final List<Member> slicerMembers;
 
@@ -111,7 +111,7 @@ public class RolapEvaluator implements Evaluator {
             slicerMembers = new ArrayList<Member> (parent.slicerMembers);
             if (parent.aggregationLists != null) {
                 aggregationLists =
-                        new ArrayList<List<Member>>(parent.aggregationLists);
+                        new ArrayList<List<RolapMember>>(parent.aggregationLists);
             } else {
                 aggregationLists = null;
             }
@@ -316,6 +316,10 @@ public class RolapEvaluator implements Evaluator {
         return currentMembers;
     }
 
+    public final List<List<RolapMember>> getAggregationLists() {
+        return aggregationLists;
+    }
+    
     final void setCellReader(CellReader cellReader) {
         this.cellReader = cellReader;
     }
@@ -372,15 +376,26 @@ public class RolapEvaluator implements Evaluator {
         return parent;
     }
 
-    public final Evaluator pushAggregation(List<Member> list) {
+    public final Evaluator pushAggregation(List list) {
+        // First make sure all items on this list come from the same hierarchy
+        List<RolapMember> rolapList = (List<RolapMember>)list;
+        RolapHierarchy hier = rolapList.get(0).getHierarchy();
+        
+        // Make sure the members in the same list are from the same hierarchy.
+        for (RolapMember aggMember : rolapList) {
+            if (aggMember.getHierarchy() != hier) {
+                throw Util.newInternal(
+                    "mixed hierarchies in compound member");                
+            }
+        }
+        
         RolapEvaluator newEvaluator = _push();
         if (newEvaluator.aggregationLists == null) {
-            newEvaluator.aggregationLists = new ArrayList<List<Member>>();
+            newEvaluator.aggregationLists = new ArrayList<List<RolapMember>>();
         }
-        newEvaluator.aggregationLists.add(list);
+        newEvaluator.aggregationLists.add(rolapList);
         // clear this hierarchy from the regular context
-        newEvaluator.setContext(
-            ((RolapHierarchy) list.get(0).getHierarchy()).getAllMember());
+        newEvaluator.setContext(hier.getAllMember());
         return newEvaluator;
     }
 
@@ -485,9 +500,6 @@ public class RolapEvaluator implements Evaluator {
         // calculated members.
         final Member maxSolveMember = peekCalcMember();
         if (maxSolveMember == null) {
-            if (aggregationLists != null) {
-                return cellReader.getCompound(this, aggregationLists);
-            }
             final Object o = cellReader.get(this);
             if (o == Util.nullValue) {
                 return null;

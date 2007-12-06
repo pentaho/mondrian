@@ -16,8 +16,7 @@ import mondrian.rolap.StarPredicate;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.Util;
 
-import java.util.List;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * Base class for {@link QuerySpec} implementations.
@@ -103,7 +102,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             if (!where.equals("true")) {
                 sqlQuery.addWhere(where);
             }
-
+            
             if (countOnly) {
                 continue;
             }
@@ -116,7 +115,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             } else {
                 sqlQuery.addSelect(expr, getColumnAlias(i));
             }
-
+            
             if (isAggregate()) {
                 sqlQuery.addGroupBy(expr);
             }
@@ -127,6 +126,9 @@ public abstract class AbstractQuerySpec implements QuerySpec {
                 sqlQuery.addOrderBy(expr, true, false, false);
             }
         }
+
+        // Add compound member predicates
+        extraPredicates(sqlQuery);
 
         // add measures
         if (!countOnly) {

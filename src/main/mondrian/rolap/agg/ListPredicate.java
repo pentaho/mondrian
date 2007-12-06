@@ -11,6 +11,7 @@ package mondrian.rolap.agg;
 
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.RolapStar;
+import mondrian.rolap.BitKey;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.Util;
 
@@ -32,8 +33,17 @@ public abstract class ListPredicate implements StarPredicate {
     protected final List<RolapStar.Column> columns =
         new ArrayList<RolapStar.Column>();
 
+    protected BitKey columnBitKey;
+    
     protected ListPredicate(List<StarPredicate> predicateList) {
+        columnBitKey = null; 
         for (StarPredicate predicate : predicateList) {
+            if (columnBitKey == null) {
+                columnBitKey =
+                    predicate.getConstrainedColumnBitKey().copy();
+            } else {
+                columnBitKey.or(predicate.getConstrainedColumnBitKey());
+            }
             children.add(predicate);
             for (RolapStar.Column column :
                 predicate.getConstrainedColumnList()) {
@@ -48,18 +58,55 @@ public abstract class ListPredicate implements StarPredicate {
         return columns;
     }
 
+    public BitKey getConstrainedColumnBitKey() {
+        return columnBitKey;
+    }
+
     public List<StarPredicate> getChildren() {
         return children;
     }
     
     public boolean equalConstraint(StarPredicate that) {
-        return false;
+        boolean isEqual = 
+            that instanceof ListPredicate &&
+            getConstrainedColumnBitKey().equals(
+                that.getConstrainedColumnBitKey());
+        
+        if (isEqual) {        
+            ListPredicate thatPred = (ListPredicate) that;
+            if (getOp() != thatPred.getOp() ||
+                getChildren().size() != thatPred.getChildren().size()) {
+                isEqual = false;
+            }
+
+            if (isEqual) {
+                for (StarPredicate thisChild : getChildren()) {
+                    boolean foundMatch = false;
+                    for (StarPredicate thatChild: thatPred.getChildren()) {
+                        if (thisChild.equalConstraint(thatChild)) {
+                            foundMatch = true;
+                            break;
+                        }
+                    }
+                    if (!foundMatch) {
+                        isEqual = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return isEqual;
+        
     }
 
     public StarPredicate minus(StarPredicate predicate) {
         throw Util.needToImplement(this);
     }
 
+    public abstract boolean inListPossible();
+    public abstract void toInListSql(SqlQuery sqlQuery, StringBuilder buf);
+    
     public void toSql(SqlQuery sqlQuery, StringBuilder buf) {
         if (children.size() == 1) {
             children.get(0).toSql(sqlQuery, buf);

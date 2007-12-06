@@ -37,6 +37,9 @@ import java.io.PrintWriter;
  */
 public abstract class RolapAggregationManager {
 
+    protected RolapAggregationManager() {
+    }
+
     /**
      * Creates a request to evaluate the cell identified by
      * <code>members</code>.
@@ -47,36 +50,10 @@ public abstract class RolapAggregationManager {
      *
      * @param members Set of members which constrain the cell
      * @return Cell request, or null if the requst is unsatisfiable
-     *
-     * @see #makeDrillThroughRequest(mondrian.olap.Member[], boolean)
      */
     public static CellRequest makeRequest(final Member[] members)
     {
-        if (!(members[0] instanceof RolapStoredMeasure)) {
-            return null;
-        }
-
-        final RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
-        final RolapStar.Measure starMeasure =
-            (RolapStar.Measure) measure.getStarMeasure();
-        assert starMeasure != null;
-        final RolapStar star = starMeasure.getStar();
-        final CellRequest request =
-            new CellRequest(starMeasure, false, false);
-        final Map<RolapLevel, RolapStar.Column> levelToColumnMap =
-            star.getLevelToColumnMap(measure.getCube());
-
-        for (int i = 1; i < members.length; i++) {
-            RolapMember member = (RolapMember) members[i];
-            final RolapLevel level = member.getLevel();
-            final boolean needToReturnNull =
-                level.getLevelReader().constrainRequest(
-                    member, levelToColumnMap, request, null);
-            if (needToReturnNull) {
-                return null;
-            }
-        }
-        return request;
+        return makeCellRequest(members, false, false);
     }
 
     /**
@@ -94,14 +71,91 @@ public abstract class RolapAggregationManager {
      *                          queries easier for humans to understand.
      *
      * @return Cell request, or null if the requst is unsatisfiable
-     *
-     * @see #makeRequest(mondrian.olap.Member[])
      */
     public static CellRequest makeDrillThroughRequest(
         final Member[] members,
         final boolean extendedContext)
     {
-        boolean drillThrough = true;
+        return makeCellRequest(members, true, extendedContext);
+    }
+
+    /**
+     * Creates a request to evaluate the cell identified by the context specified
+     * in <code>evaluator</code>.
+     *
+     * <p>If any of the members from the context is the null member, returns
+     * null, since there is no cell. If the measure is calculated, returns
+     * null.
+     *
+     * @param evaluator the cell specified by the evaluator context
+     * @return Cell request, or null if the requst is unsatisfiable
+     */
+    public static CellRequest makeRequest(
+        RolapEvaluator evaluator) {
+        final Member[] currentMembers = evaluator.getMembers();
+        final List<List<RolapMember>> aggregationLists =
+            evaluator.getAggregationLists();
+
+        final RolapStoredMeasure measure = (RolapStoredMeasure) currentMembers[0];
+        final RolapStar.Measure starMeasure =
+            (RolapStar.Measure) measure.getStarMeasure();
+        assert starMeasure != null;        
+        final RolapStar star = starMeasure.getStar();
+        final Map<RolapLevel, RolapStar.Column> levelToColumnMap =
+            star.getLevelToColumnMap(measure.getCube());
+        int starColumnCount = starMeasure.getStar().getColumnCount();
+        
+        CellRequest request = makeCellRequest(currentMembers, false, false);
+
+        /*
+         * Now setting the compound keys.
+         * First find out the columns referenced in the aggregateMemberList.
+         * Each list defines a compound member.
+         */
+        if (aggregationLists == null) {
+            return request;
+        }
+        
+        BitKey compoundBitKey;
+        StarPredicate compoundPredicate;
+        Map<BitKey, List<RolapMember>> compoundGroupMap;
+        boolean unsatisfiable;
+        
+        for (List<RolapMember> aggregationList : aggregationLists) {
+            compoundBitKey = BitKey.Factory.makeBitKey(starColumnCount);
+            compoundBitKey.clear();
+            compoundGroupMap = new HashMap<BitKey, List<RolapMember>>();
+            unsatisfiable =
+                makeCompoundGroup(
+                    starColumnCount, levelToColumnMap, aggregationList, compoundGroupMap);
+            if (unsatisfiable) {
+                return null;
+            }
+            compoundPredicate = 
+                makeCompoundPredicate(levelToColumnMap, compoundGroupMap);
+            if (compoundPredicate != null) {
+                /*
+                 * Only add the compound constraint when it is not empty.
+                 */
+                for (BitKey bitKey : compoundGroupMap.keySet()) {
+                    compoundBitKey = compoundBitKey.or(bitKey);
+                }
+                request.addAggregateList(compoundBitKey, compoundPredicate);
+            }
+        }
+        
+        return request;
+    }
+
+    private static CellRequest makeCellRequest(
+        final Member[] members,
+        boolean drillThrough,
+        final boolean extendedContext)
+    {
+        if (extendedContext) {
+            assert (drillThrough);
+        }
+        
         if (!(members[0] instanceof RolapStoredMeasure)) {
             return null;
         }
@@ -126,7 +180,7 @@ public abstract class RolapAggregationManager {
                 final RolapLevel level = member.getLevel();
                 final boolean needToReturnNull =
                     level.getLevelReader().constrainRequest(
-                        member, levelToColumnMap, request, null);
+                        member, levelToColumnMap, request);
                 if (needToReturnNull) {
                     return null;
                 }
@@ -137,7 +191,7 @@ public abstract class RolapAggregationManager {
                 final RolapLevel level = member.getLevel();
                 final boolean needToReturnNull =
                     level.getLevelReader().constrainRequest(
-                        member, levelToColumnMap, request, null);
+                        member, levelToColumnMap, request);
                 if (needToReturnNull) {
                     return null;
                 }
@@ -145,7 +199,7 @@ public abstract class RolapAggregationManager {
         }
         return request;
     }
-
+    
     /**
      * Adds the key columns as non-constraining columns. For
      * example, if they asked for [Gender].[M], [Store].[USA].[CA]
@@ -196,25 +250,172 @@ public abstract class RolapAggregationManager {
         }
     }
 
-    protected RolapAggregationManager() {
-    }
-
-    /**
-     * Returns the value of a cell from an existing aggregation.
+    /*
+     * Group members from the same compound(i.e. hierarchy) into groups that
+     * are constrained by the same set of columns. e.g
+     * 
+     * Members 
+     * [USA].[CA], 
+     * [Canada].[BC], 
+     * [USA].[CA].[San Francisco], 
+     * [USA].[OR].[Portland]
+     * 
+     * will be grouped into
+     * group 1: [USA].[CA], [Canada].[BC]
+     * group 2: [USA].[CA].[San Francisco], [USA].[OR].[Portland]
+     * 
+     * This helps with generating optimal form of sql.
      */
-    public Object getCellFromCache(final Member[] members) {
-        final CellRequest request = makeRequest(members);
-        return (request == null || request.isUnsatisfiable())
-            // request out of bounds
-            ? Util.nullValue
-            : getCellFromCache(request);
+    private static boolean makeCompoundGroup(
+        int starColumnCount,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        List<RolapMember> memberList,
+        Map<BitKey, List<RolapMember>> compoundGroupMap)
+    {
+        /*
+         * TODO: this should also return a boolean unsatisfiable
+         * if not all members can be constrained.
+         * However, the presense of All member will exonerate the whole list.
+         */
+        boolean unsatisfiable = false;
+        List<RolapMember> compoundGroup;
+        BitKey bitKey = BitKey.Factory.makeBitKey(starColumnCount);
+        int unsatisfiableMemberCount = 0;
+        for (RolapMember member : memberList) {
+            bitKey.clear();
+            RolapMember levelMember = member;
+            while (levelMember != null) {
+                RolapLevel level = levelMember.getLevel();
+                // Only need to constrain the nonAll levels
+                if (!level.isAll()) {
+                    RolapStar.Column column = levelToColumnMap.get(level);
+                    if (column != null) {
+                        bitKey.set(column.getBitPosition());
+                    } else {
+                        // Failed to process compound member constraint. 
+                        unsatisfiableMemberCount ++;
+                        break;
+                    }
+                }
+                
+                levelMember = levelMember.getParentMember();
+            }
+            
+            if (bitKey.isEmpty()) {
+                // Did not find columns to constrain
+                continue;
+            }
+            
+            compoundGroup = compoundGroupMap.get(bitKey);
+            if (compoundGroup ==  null) {
+                compoundGroup = new ArrayList<RolapMember>();
+                compoundGroupMap.put(bitKey, compoundGroup);
+                bitKey = BitKey.Factory.makeBitKey(starColumnCount);
+            }
+            compoundGroup.add(member);
+        }
+        if (unsatisfiableMemberCount == memberList.size()) {
+            unsatisfiable = true;
+        }
+        
+        return unsatisfiable;
     }
+    
+    /*
+     * Translate Map<BitKey, List<RolapMember>> of the smae copound member into 
+     * ListPredicate.
+     * The example above
+     *       
+     * group 1: [USA].[CA], [Canada].[BC]
+     * group 2: [USA].[CA].[San Francisco], [USA].[OR].[Portland]
+     * 
+     * is translated into:
+     * 
+     * (Country=USA AND State=CA) 
+     *     OR (Country=Canada AND State=BC)
+     * OR
+     * (Country=USA AND State=CA AND City=San Francisco) 
+     *     OR (Country=USA AND State=OR AND City=Portland)
+     * 
+     * The caller of this method will translate this representation into 
+     * appropriate SQL form. For exmaple, if the underlying DB supports multi value
+     * IN-list, the second group will turn into this predicate:
+     *     where (country, state, city) IN ((USA, CA, San Francisco), 
+     *                                      (USA, OR, Portland))
+     * or, if the DB does not support multi-value IN list:
+     *     where country=USA AND 
+     *           ((state=CA AND city = San Francisco) OR 
+     *            (state=OR AND city=Portland))
+     */
+    public static StarPredicate makeCompoundPredicate(
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        Map<BitKey, List<RolapMember>> compoundGroupMap) 
+    {
+        List<StarPredicate> compoundPredicateList = 
+            new ArrayList<StarPredicate> ();
+        
+        for (List<RolapMember> memberList : compoundGroupMap.values()) {
+            /*
+             * e.g. [USA].[CA], [Canada].[BC]
+             */
+            StarPredicate compoundGroupPredicate = null;
+            for (RolapMember member : memberList) {
+               /*
+                * [USA].[CA]
+                */ 
+                StarPredicate memberPredicate = null;
+                while (member != null) {
+                    RolapLevel level = member.getLevel();
+                    if (!level.isAll()) {
+                        RolapStar.Column column = levelToColumnMap.get(level);
 
+                        if (memberPredicate == null) {
+                            memberPredicate = 
+                                new ValueColumnPredicate(column, member.getKey());
+                        } else {
+                            memberPredicate = 
+                                memberPredicate.and(
+                                    new ValueColumnPredicate(column, member.getKey()));
+                        }
+                    }
+                    member = member.getParentMember();
+                }
+                if (memberPredicate != null) {                
+                    if (compoundGroupPredicate == null) {
+                        compoundGroupPredicate = memberPredicate;
+                    } else {
+                        compoundGroupPredicate = 
+                            compoundGroupPredicate.or(memberPredicate);
+                    }
+                }
+            }
+            
+            if (compoundGroupPredicate != null) {
+                /*
+                 * Sometimes the compound member list does not constrain any 
+                 * columns; for example, if only AllLevel is present.
+                 */
+                compoundPredicateList.add(compoundGroupPredicate);
+            }
+        }
+        
+        
+        StarPredicate compoundPredicate = null;
+        
+        if (compoundPredicateList.size() > 1) {
+            compoundPredicate = new OrPredicate(compoundPredicateList);
+        } else if (compoundPredicateList.size() == 1) {
+            compoundPredicate = compoundPredicateList.get(0);
+        }
+        
+        return compoundPredicate; 
+    }
+    
     /**
      * Retrieves the value of a cell from the cache.
      *
      * @param request Cell request
-     * @pre request != null
+     * @pre request != null && !request.isUnsatisfiable()
      * @return Cell value, or null if cell is not in any aggregation in cache,
      *   or {@link Util#nullValue} if cell's value is null
      */
@@ -223,21 +424,6 @@ public abstract class RolapAggregationManager {
     public abstract Object getCellFromCache(
         CellRequest request,
         PinSet pinSet);
-
-    private static Object getCellFromStar(
-        Member[] members,
-        List<List<Member>> aggregationLists)
-    {
-        final CellRequest request = makeRequest(members);
-        final RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
-        final RolapStar.Measure starMeasure =
-            (RolapStar.Measure) measure.getStarMeasure();
-
-        assert starMeasure != null;
-
-        final RolapStar star = starMeasure.getStar();
-        return star.getCell(request);
-    }
 
     /**
      * Generates a SQL statement which will return the rows which contribute to
@@ -378,21 +564,18 @@ public abstract class RolapAggregationManager {
      */
     public CellReader getCacheCellReader() {
         return new CellReader() {
-            // implement CellReader
+            // implement CellReader            
             public Object get(RolapEvaluator evaluator) {
-                Member[] members = evaluator.getMembers();
-                return getCellFromCache(members);
+                CellRequest request = makeRequest(evaluator);
+                if (request == null || request.isUnsatisfiable()) {
+                    // request out of bounds
+                    return Util.nullValue;
+                }
+                return getCellFromCache(request);
             }
 
             public int getMissCount() {
                 return 0; // RolapAggregationManager never lies
-            }
-
-            public Object getCompound(
-                RolapEvaluator evaluator, List<List<Member>> aggregationLists)
-            {
-                Member[] members = evaluator.getMembers();
-                return getCellFromStar(members, aggregationLists);
             }
         };
     }
@@ -416,91 +599,6 @@ public abstract class RolapAggregationManager {
      *   of members in the same hierarchy which need to be summed together.
      * @return SQL query, or null if request is unsatisfiable
      */
-    public static String generateMultiSql(
-        RolapEvaluator evaluator,
-        List<List<RolapMember>> aggregationLists)
-    {
-        final RolapCube cube = evaluator.getMeasureCube();
-        final Map<RolapLevel, RolapStar.Column> levelToColumnMap =
-            cube.getStar().getLevelToColumnMap(cube);
-
-        // Given an eval context with a compound member:
-        //
-        //   [Measures].[Customer Count]
-        //   [Time].[1997].[Q1]
-        //   [Store Type].[All Store Types]
-        //   {[Store].[USA].[CA], [Store].[USA].[OR]}
-        //   ... everything else 'all'
-        //
-        // return
-        //
-        //   SELECT COUNT(DISTINCT cust_id)
-        //   FROM sales_fact_1997 AS sales, store, time
-        //   WHERE store.store_id = sales.store_id
-        //   AND time.time_id = sales.time_id
-        //   AND time.year = 1997
-        //   AND time.quarter = 'Q1'
-        //   AND store.store_state IN ('CA', 'OR')
-
-        // Use a CellRequest to convert members in evaluator into
-        // (column, value) pairs; or more accurately, (column, predicate)
-        // pairs.
-        CellRequest request =
-            makeRequest(evaluator.getMembers());
-
-        // Add in the extra constraints in the aggregation list.
-        int[] groupOrdinals = {0, 0, 0};
-        for (List<RolapMember> aggregationList : aggregationLists) {
-            // The aggregation list is compound if it contains members of
-            // different levels.
-            int k = 0;
-            boolean compound = false;
-            final RolapLevel level0 = aggregationList.get(0).getLevel();
-            for (RolapMember member : aggregationList) {
-                if (k++ > 0) {
-                    RolapLevel level = member.getLevel();
-                    if (level != level0) {
-                        compound = true;
-                        if (level.getHierarchy() != level0.getHierarchy()) {
-                            throw Util.newInternal(
-                                "mixed hierarchies in compound member");
-                        }
-                    }
-                }
-            }
-
-            // Compound aggregation lists constrain more than one column.
-            // For example,
-            //   {[Time].[1997].[Q1], [Time].[1997].[Q3].[7]}
-            // generates the SQL predicate
-            //  (  (year = 1997 and quarter = 'Q1')
-            //  or (year = 1997 and quarter = 'Q3' and month = 7) )
-            int unsatisfiableCount = 0;
-            for (RolapMember member : aggregationList) {
-                final boolean unsatisfiable =
-                    member.getLevel().getLevelReader().constrainRequest(
-                        member, levelToColumnMap, request, groupOrdinals);
-                if (unsatisfiable) {
-                    ++unsatisfiableCount;
-                }
-                ++groupOrdinals[1];
-                Arrays.fill(groupOrdinals, 2, groupOrdinals.length, 0);
-            }
-            // If no member is satisfiable, the cell is unsatisfiable.
-            if (unsatisfiableCount == aggregationList.size()) {
-                return null;
-            }
-            ++groupOrdinals[0];
-            Arrays.fill(groupOrdinals, 1, groupOrdinals.length, 0);
-        }
-
-        // Convert the predicates into a SQL query.
-        return CompoundQuerySpec.compoundGenerateSql(
-            request.getMeasure(),
-            request.getConstrainedColumns(),
-            request.getValueList(),
-            request.getPredicateList());
-    }
 
     /**
      * A set of segments which are pinned for a short duration as a result of a

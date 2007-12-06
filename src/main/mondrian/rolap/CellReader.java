@@ -42,6 +42,9 @@ interface CellReader {
     /**
      * Returns the value of the cell which has the context described by the
      * evaluator.
+     * A cell could have optional compound member coordinates usually specified
+     * using the Aggregate function. These compound members are contained in the
+     * evaluator.
      *
      * <p>If no aggregation contains the required cell, returns null.
      *
@@ -51,20 +54,6 @@ interface CellReader {
      * the value is null
      */
     Object get(RolapEvaluator evaluator);
-
-    /**
-     * Returns the value of the cell which has the context described by the
-     * given Evaluator, overlaid with one or more compound members.
-     *
-     * <p>NOTE: Could generalize to allow lists of tuples
-     *
-     * @param evaluator Evaluator
-     * @param aggregationLists List of lists of members or tuples
-     * @return As {@link #get(RolapEvaluator)}
-     */
-    Object getCompound(
-        RolapEvaluator evaluator,
-        List<List<Member>> aggregationLists);
 
     /**
      * Returns the number of times this cell reader has told a lie because the

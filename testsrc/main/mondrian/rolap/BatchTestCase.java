@@ -12,9 +12,7 @@ package mondrian.rolap;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.test.SqlPattern;
-import mondrian.rolap.agg.GroupingSet;
-import mondrian.rolap.agg.CellRequest;
-import mondrian.rolap.agg.ValueColumnPredicate;
+import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.*;
 
@@ -78,6 +76,25 @@ public class BatchTestCase extends FoodMartTestCase {
 
     }
 
+    protected FastBatchingCellReader.Batch createBatch(
+        FastBatchingCellReader fbcr,
+        String[] tableNames, String[] fieldNames, String[][] fieldValues,
+        String cubeName, String measure, CellRequestConstraint constraint)
+    {
+        List<String> values = new ArrayList<String>();
+        for (int i = 0; i < tableNames.length; i++) {
+            values.add(fieldValues[i][0]);
+        }
+        FastBatchingCellReader.Batch batch = fbcr.new Batch(
+            createRequest(cubeName, measure,
+                tableNames, fieldNames, values.toArray(new String[0]), constraint));
+
+        addRequests(batch, cubeName, measure, tableNames, fieldNames,
+            fieldValues, new ArrayList<String>(), 0, constraint);
+        return batch;
+
+    }
+
     private void addRequests(
         FastBatchingCellReader.Batch batch,
         String cubeName,
@@ -98,6 +115,31 @@ public class BatchTestCase extends FoodMartTestCase {
         } else {
             batch.add(createRequest(cubeName, measure, tableNames,
                 fieldNames, selectedValues.toArray(new String[0])));
+        }
+    }
+
+    private void addRequests(
+        FastBatchingCellReader.Batch batch,
+        String cubeName,
+        String measure,
+        String[] tableNames,
+        String[] fieldNames,
+        String[][] fieldValues,
+        List<String> selectedValues,
+        int currPos,
+        CellRequestConstraint constraint)
+    {
+        if (currPos < fieldNames.length) {
+            for (int j = 0; j < fieldValues[currPos].length; j++) {
+                selectedValues.add(fieldValues[currPos][j]);
+                addRequests(batch, cubeName, measure, tableNames,
+                    fieldNames, fieldValues, selectedValues, currPos + 1,
+                    constraint);
+                selectedValues.remove(fieldValues[currPos][j]);
+            }
+        } else {
+            batch.add(createRequest(cubeName, measure, tableNames,
+                fieldNames, selectedValues.toArray(new String[0]), constraint));
         }
     }
 
@@ -144,11 +186,14 @@ public class BatchTestCase extends FoodMartTestCase {
             return;
         }
 
+        boolean patternFound = false;
         for (SqlPattern pattern : patterns) {
             if (!pattern.hasDialect(d)) {
                 continue;
             }
-
+            
+            patternFound = true;
+            
             clearCache(cube);
 
             String sql = sqlPattern.getSql();
@@ -172,10 +217,26 @@ public class BatchTestCase extends FoodMartTestCase {
             } finally {
                 RolapUtil.threadHooks.set(null);
             }
-            assertTrue(bomb != null);
-            TestContext.assertEqualsVerbose(
-                replaceQuotes(sql),
-                replaceQuotes(bomb.sql));
+            if (bomb == null) {
+                fail("expected query [" + sql + "] did not occur");
+            }            
+            assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
+        }
+        
+        /*
+         * Print warning message that no pattern was specified for the current dialect.
+         */
+        if (!patternFound) {
+            String warnDialect =
+                MondrianProperties.instance().WarnIfNoPatternForDialect.get();
+            
+            if (warnDialect.equals(d.toString())) {
+                System.out.println(
+                    "[No expected sqls found for dialect \"" + 
+                    sqlDialect.toString() +
+                    "\" and test not run]"
+                );                    
+            }
         }
     }
 
@@ -266,20 +327,23 @@ public class BatchTestCase extends FoodMartTestCase {
             boolean clearCache)
     {
         Connection connection = testContext.getConnection();
-        RolapSchema schema = (RolapSchema)connection.getSchema();
 
         // Run the test once for each pattern in this dialect.
         // (We could optimize and run it once, collecting multiple queries, and
         // comparing all queries at the end.)
-        SqlQuery.Dialect dialect = schema.getDialect();
+        SqlQuery.Dialect dialect = testContext.getDialect();
         SqlPattern.Dialect d = SqlPattern.Dialect.get(dialect);
+        boolean patternFound = false;        
         for (SqlPattern sqlPattern : patterns) {
             if (!sqlPattern.hasDialect(d)) {
-                // If the dialect is not one in the pattern set, do not run the
-                // test. We do not print any warning message.
+                // If the dialect is not one in the pattern set, skip the
+                // test. If in the end no pattern is located, print a warning
+                // message if required.
                 continue;
             }
 
+            patternFound = true;
+            
             String sql = sqlPattern.getSql();
             String trigger = sqlPattern.getTriggerSql();
 
@@ -314,6 +378,22 @@ public class BatchTestCase extends FoodMartTestCase {
                     fail("expected query [" + sql + "] did not occur");
                 }
                 assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
+            }
+        }
+        
+        /*
+         * Print warning message that no pattern was specified for the current dialect.
+         */
+        if (!patternFound) {
+            String warnDialect =
+                MondrianProperties.instance().WarnIfNoPatternForDialect.get();
+            
+            if (warnDialect.equals(d.toString())) {
+                System.out.println(
+                    "[No expected sqls found for dialect \"" + 
+                    dialect.toString() +
+                    "\" and test not run]"
+                );                    
             }
         }
     }
@@ -353,19 +433,11 @@ public class BatchTestCase extends FoodMartTestCase {
         final String cube, final String measure,
         final String table, final String column, final String value)
     {
-        RolapStar.Measure starMeasure = getMeasure(cube, measure);
-        CellRequest request = new CellRequest(starMeasure, false, false);
-        if (table != null) {
-            final RolapStar star = starMeasure.getStar();
-            final RolapStar.Column storeTypeColumn = star.lookupColumn(
-                table, column);
-            request.addConstrainedColumn(
-                storeTypeColumn,
-                new ValueColumnPredicate(storeTypeColumn, value));
-        }
-        return request;
+        return createRequest(
+            cube, measure, 
+            new String[]{table}, new String[]{column}, new String[]{value});
     }
-
+    
     CellRequest createRequest(
         final String cube, final String measureName,
         final String[] tables, final String[] columns, final String[] values)
@@ -375,15 +447,106 @@ public class BatchTestCase extends FoodMartTestCase {
         final RolapStar star = starMeasure.getStar();
         for (int i = 0; i < tables.length; i++) {
             String table = tables[i];
-            String column = columns[i];
-            String value = values[i];
-            final RolapStar.Column storeTypeColumn =
-                star.lookupColumn(table, column);
-            request.addConstrainedColumn(
-                storeTypeColumn,
-                new ValueColumnPredicate(storeTypeColumn, value));
+            if (table != null && table.length() > 0) {
+                String column = columns[i];
+                String value = values[i];
+                final RolapStar.Column storeTypeColumn =
+                    star.lookupColumn(table, column);
+                request.addConstrainedColumn(
+                    storeTypeColumn,
+                    new ValueColumnPredicate(storeTypeColumn, value));
+            }
         }
         return request;
+    }
+
+    CellRequest createRequest(
+        final String cube, final String measure,
+        final String table, final String column, final String value,
+        CellRequestConstraint aggConstraint)
+    {
+        return createRequest(
+            cube, measure, 
+            new String[]{table}, new String[]{column}, new String[]{value},
+            aggConstraint);
+    }
+    
+    CellRequest createRequest(
+        final String cube, final String measureName,
+        final String[] tables, final String[] columns, final String[] values,
+        CellRequestConstraint aggConstraint)
+    {
+        RolapStar.Measure starMeasure = getMeasure(cube, measureName);
+
+        CellRequest request = 
+            createRequest(cube, measureName, tables, columns, values);
+        final RolapStar star = starMeasure.getStar();
+
+        request.addAggregateList(
+            aggConstraint.getBitKey(star),
+            aggConstraint.toPredicate(star));
+        
+        return request;
+    }
+    
+    static CellRequestConstraint makeConstraintYearQuarterMonth(
+        List<String[]> values) {
+        String[] aggConstraintTables =
+            new String[] { "time_by_day", "time_by_day", "time_by_day" };
+        String[] aggConstraintColumns =
+            new String[] { "the_year", "quarter", "month_of_year" };
+        List<String[]> aggConstraintValues = new ArrayList<String[]>();
+        
+        for (String[] value : values) {
+            assert (value.length == 3);
+            aggConstraintValues.add(value);
+        }
+        
+        CellRequestConstraint aggConstraint =
+            new CellRequestConstraint(
+                aggConstraintTables, aggConstraintColumns, aggConstraintValues);
+
+        return aggConstraint;
+    }
+    
+    static CellRequestConstraint makeConstraintCountryState(
+        List<String[]> values) {
+        String[] aggConstraintTables =
+            new String[] { "store", "store"};
+        String[] aggConstraintColumns =
+            new String[] { "store_country", "store_state"};
+        List<String[]> aggConstraintValues = new ArrayList<String[]>();
+        
+        for (String[] value : values) {
+            assert (value.length == 2);
+            aggConstraintValues.add(value);
+        }
+        
+        CellRequestConstraint aggConstraint =
+            new CellRequestConstraint(
+                aggConstraintTables, aggConstraintColumns, aggConstraintValues);
+
+        return aggConstraint;
+    }
+
+    static CellRequestConstraint makeConstraintProductFamilyDepartment(
+        List<String[]> values) {
+        String[] aggConstraintTables =
+            new String[] { "product_class", "product_class"};
+        String[] aggConstraintColumns =
+            new String[] { "product_family", "product_department"};
+        List<String[]> aggConstraintValues = new ArrayList<String[]>();
+        
+        for (String[] value : values) {
+            assert (value.length == 2);
+            aggConstraintValues.add(value);
+        }
+        
+        CellRequestConstraint aggConstraint =
+            new CellRequestConstraint(
+                aggConstraintTables, aggConstraintColumns, aggConstraintValues);
+
+        return aggConstraint;
     }
 
     protected RolapStar.Measure getMeasure(String cube, String measureName) {
@@ -442,6 +605,47 @@ public class BatchTestCase extends FoodMartTestCase {
             if (matchTrigger(sql)) {
                 throw new Bomb(sql);
             }
+        }
+    }
+    
+    static class CellRequestConstraint {
+        String[] tables;
+        String[] columns;
+        List<String[]> valueList;
+        CellRequestConstraint(
+            String[] tables, 
+            String[] columns, 
+            List<String[]> valueList) {
+            this.tables = tables;
+            this.columns = columns;
+            this.valueList = valueList;
+        }
+        
+        BitKey getBitKey(RolapStar star) {
+            return star.getBitKey(tables, columns);
+        }
+        
+        StarPredicate toPredicate(RolapStar star) {
+            RolapStar.Column starColumn[] = new RolapStar.Column[tables.length];
+            
+            for (int i = 0; i < tables.length; i++) {
+                String table = tables[i];
+                String column = columns[i];
+                starColumn[i] = star.lookupColumn(table, column);
+            }
+            
+            List<StarPredicate> orPredList = new ArrayList<StarPredicate>();
+            for (String[] values : valueList) {
+                assert (values.length == tables.length);
+                List<StarPredicate> andPredList = new ArrayList<StarPredicate>();
+                for (int i = 0; i < values.length; i++) {
+                    String value = values[i];
+                    andPredList.add(new ValueColumnPredicate(starColumn[i], value));
+                }
+                orPredList.add(new AndPredicate(andPredList));
+            }
+            
+            return (new OrPredicate(orPredList));
         }
     }
 }

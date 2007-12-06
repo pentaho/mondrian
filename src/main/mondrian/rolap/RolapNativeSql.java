@@ -38,7 +38,7 @@ public class RolapNativeSql {
      * the constraints from RolapAggregationManager. Also
      * make sure all measures live in the same star.
      *
-     * @see RolapAggregationManager#makeRequest(Member[])
+     * @see RolapAggregationManager#makeRequest(RolapEvaluator)
      */
     private boolean saveStoredMeasure(RolapStoredMeasure m) {
         if (storedMeasure != null) {

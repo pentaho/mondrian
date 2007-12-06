@@ -62,7 +62,8 @@ public class SegmentLoader {
      */
     public void load(
         List<GroupingSet> groupingSets,
-        RolapAggregationManager.PinSet pinnedSegments)
+        RolapAggregationManager.PinSet pinnedSegments,
+        List<StarPredicate> compoundPredicateList)
     {
         GroupingSetsList groupingSetsList =
             new GroupingSetsList(groupingSets);
@@ -71,7 +72,9 @@ public class SegmentLoader {
             groupingSetsList.getDefaultColumns();
         SqlStatement stmt = null;
         try {
-            stmt = createExecuteSql(groupingSetsList);
+            stmt = createExecuteSql(
+                groupingSetsList, 
+                compoundPredicateList);
             int arity = defaultColumns.length;
             SortedSet<Comparable<?>>[] axisValueSets =
                 getDistinctValueWorkspace(arity);
@@ -328,10 +331,13 @@ public class SegmentLoader {
      * @param groupingSetsList Grouping
      * @return An executed SQL statement, or null
      */
-    SqlStatement createExecuteSql(GroupingSetsList groupingSetsList) {
+    SqlStatement createExecuteSql(
+        GroupingSetsList groupingSetsList,
+        List<StarPredicate> compoundPredicateList) {
         RolapStar star = groupingSetsList.getStar();
         String sql =
-            AggregationManager.instance().generateSql(groupingSetsList);
+            AggregationManager.instance().generateSql(
+                groupingSetsList, compoundPredicateList);
         return RolapUtil.executeQuery(
             star.getDataSource(), sql, "Segment.load",
             "Error while loading segment");

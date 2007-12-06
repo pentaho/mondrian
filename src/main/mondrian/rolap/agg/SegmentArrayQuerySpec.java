@@ -10,9 +10,9 @@
 
 package mondrian.rolap.agg;
 
-import mondrian.olap.Util;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.StarColumnPredicate;
+import mondrian.rolap.StarPredicate;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.util.ArrayList;
@@ -30,34 +30,30 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     private final Segment[] segments;
     private final GroupingSetsList groupingSetsList;
 
+    /*
+     * Compunnd member predicates.
+     * Each list constrains one dimension.
+     */
+    private List<StarPredicate> compoundPredicateList;
+
     /**
      * Creates a SegmentArrayQuerySpec.
      *
      * @param groupingSetsList Collection of grouping sets
+     * @param compoundPredicateList list of predicates representing the 
+     * compound member constraints
      */
     SegmentArrayQuerySpec(
-        GroupingSetsList groupingSetsList)
+        GroupingSetsList groupingSetsList,
+        List<StarPredicate> compoundPredicateList)
     {
         super(groupingSetsList.getStar(), false);
         this.segments = groupingSetsList.getDefaultSegments();
         this.groupingSetsList = groupingSetsList;
+        this.compoundPredicateList = compoundPredicateList;
         assert isValid(true);
     }
-
-    /**
-     * Alternative constructor for derived class.
-     *
-     * @param star Star
-     *
-     * @param countOnly If true, generate no GROUP BY clause, so the query
-     * returns a single row containing a grand total
-     */
-    SegmentArrayQuerySpec(RolapStar star, boolean countOnly) {
-        super(star, countOnly);
-        this.segments = null;
-        this.groupingSetsList = null;
-    }
-
+    
     /**
      * Returns whether this query specification is valid, or throws if invalid
      * and <code>fail</code> is true.
@@ -120,6 +116,14 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         return segments[0].axes[i].getPredicate();
     }
 
+    protected List<StarPredicate> getPredicateList() {
+        if (compoundPredicateList == null) {
+            return super.getPredicateList();
+        } else {
+            return compoundPredicateList;
+        }
+    }
+    
     protected void addGroupingFunction(SqlQuery sqlQuery) {
         List<RolapStar.Column> list = groupingSetsList.getRollupColumns();
         for (RolapStar.Column column : list) {

@@ -16,8 +16,7 @@ package mondrian.rolap.agg;
 import mondrian.rolap.*;
 import mondrian.olap.Util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * A <code>CellRequest</code> contains the context necessary to get a cell
@@ -41,6 +40,10 @@ public class CellRequest {
     private final List<StarColumnPredicate> columnPredicateList =
         new ArrayList<StarColumnPredicate>();
 
+    /*
+     * Array of column values;
+     * Not used to represent the compound members along one or more dimensions.
+     */    
     private Object[] singleValues;
 
     /**
@@ -62,6 +65,14 @@ public class CellRequest {
      * fulfill the query.
      */
     private final BitKey constrainedColumnsBitKey;
+    
+    /**
+     * Map from BitKey(represent a group of columns that forms a
+     * compound key) to StarPredicate(represent the predicate 
+     * defining the compound member);
+     */
+    private Map<BitKey, StarPredicate> compoundPredicateMap = 
+        new HashMap<BitKey, StarPredicate>();
 
     /**
      * Whether the request is impossible to satisfy. This is set to 'true' if
@@ -78,8 +89,6 @@ public class CellRequest {
      * both columnPredicateList and columnsCache need to be generated.
      */
     private boolean isDirty = true;
-
-    private List<StarPredicate> predicateList = new ArrayList<StarPredicate>();
 
     /**
      * Creates a {@link CellRequest}.
@@ -108,26 +117,9 @@ public class CellRequest {
      * @param predicate Constraint to apply, or null to add column to the
      *   output without applying constraint
      */
-    public void addConstrainedColumn(
-        RolapStar.Column column,
-        StarColumnPredicate predicate)
-    {
-        addConstrainedColumn(column, predicate, Mode.AND);
-    }
-
-    /**
-     * Adds a constraint to this request, applying a given operation if the
-     * column is already constrained.
-     *
-     * @param column Column to constraint
-     * @param predicate Constraint to apply, or null to add column to the
-     *   output without applying constraint
-     * @param mode Whether to combine with existing constraint using AND or OR
-     */
     public final void addConstrainedColumn(
         RolapStar.Column column,
-        StarColumnPredicate predicate,
-        Mode mode)
+        StarColumnPredicate predicate)
     {
         assert columnsCache == null;
 
@@ -144,26 +136,14 @@ public class CellRequest {
                 // value.
             } else if (predicate == null) {
                 // Previous column was constrained. Nothing to do.
-                assert mode == Mode.AND : "FIXME: OR case";
                 return;
             } else if (predicate.equalConstraint(prevValue)) {
                         // Same constraint again. Nothing to do.
                         return;
             } else {
-                switch (mode) {
-                case AND:
-                    // Different constraint. Request is impossible to satisfy.
-                    predicate = null;
-                    unsatisfiable = true;
-                    break;
-
-                case OR:
-                    predicate = predicate.orColumn(prevValue);
-                    break;
-
-                default:
-                    throw Util.unexpected(mode);
-                }
+                // Different constraint. Request is impossible to satisfy.
+                predicate = null;
+                unsatisfiable = true;
             }
             columnPredicateList.set(index, predicate);
 
@@ -173,7 +153,21 @@ public class CellRequest {
             this.columnPredicateList.add(predicate);
         }
     }
-
+    
+    /**
+     * Add compound member(formed via aggregate function) constraint to the Cell.
+     * 
+     * @param compoundBitKey
+     * @param compoundPredicate
+     */
+    public void addAggregateList(
+        BitKey compoundBitKey,
+        StarPredicate compoundPredicate) 
+    {
+        compoundPredicateMap.put(compoundBitKey, compoundPredicate);
+        return;
+    }
+    
     public RolapStar.Measure getMeasure() {
         return measure;
     }
@@ -196,6 +190,18 @@ public class CellRequest {
         return constrainedColumnsBitKey;
     }
 
+    /**
+     * Get the set of compound predicates
+     * @return list of predicates
+     */
+    public List<StarPredicate> getCompoundPredicateList() {
+        return (new ArrayList<StarPredicate>(compoundPredicateMap.values()));
+    }
+
+    public Map<BitKey, StarPredicate> getCompoundPredicateMap() {
+        return compoundPredicateMap;
+    }
+    
     /**
      * Builds the {@link #columnsCache} and reorders the
      * {@link #columnPredicateList}
@@ -236,15 +242,6 @@ public class CellRequest {
     }
 
     /**
-     * Returns a list of all predicates which are not associated with a column.
-     *
-     * @return list of predicates not associated with a column
-     */
-    public List<StarPredicate> getPredicateList() {
-        return predicateList;
-    }
-
-    /**
      * Returns an array of the values for each column.
      *
      * <p>The caller must check whether this request is satisfiable before
@@ -279,98 +276,6 @@ public class CellRequest {
     public boolean isUnsatisfiable() {
         return unsatisfiable;
     }
-
-    /**
-     * Adds a predicate to the 'ad hoc' predicates which are not associated
-     * with any column.
-     *
-     * <p>Caller must call this method with a non-descending sequence of values
-     * for 'groupOrdinal'. In the following example, the caller uses the
-     * sequence (0, 0, 1) to create two groups.
-     *
-     * <blockquote><pre>
-     * addConstraint("year = 1997 and quarter = Q1", 0)
-     * addConstraint("year = 1997 and quarter = Q3 and month = July", 0)
-     * addConstraint("nation = USA", 1)
-     * </pre></blockquote>
-     *
-     * would create the SQL constraint
-     *
-     * <blockquote><pre>
-     *  ( ( year = 1997 and quarter = Q1 ) or
-     *    ( year = 1997 and quarter = Q3 and month = July ) ) and
-     *  ( nation = USA )
-     * </pre></blockquote>
-     *
-     * <p>It is illegal for a sequence to have
-     * a missing value (0, 2) or a negative value (-1, 0).
-     *
-     * @param predicate Predicate
-     * @param groupOrdinals Location in tree where predicate is to be added
-     */
-    public void addConstraint(StarPredicate predicate, int[] groupOrdinals) {
-        final int size0 = predicateList.size();
-        if (groupOrdinals[0] == size0) {
-            // new predicate
-            predicateList.add(predicate);
-        } else if (groupOrdinals[0] == size0 - 1) {
-            // they want to OR the last predicate in the level#0 list with this
-            // new predicate
-            StarPredicate lastPredicate0 =
-                predicateList.get(size0 - 1);
-            boolean isOr = lastPredicate0 instanceof OrPredicate;
-            boolean isList = lastPredicate0 instanceof ListColumnPredicate;
-
-            // number of input predicates
-            int size1 = 1;
-            
-            if (isOr) {
-                size1 = ((OrPredicate) lastPredicate0).getChildren().size();
-            } else if (isList) {
-                size1 = ((ListColumnPredicate) lastPredicate0).getPredicates().size();
-            }
-            
-            if (groupOrdinals[1] == size1) {
-                // new predicate to be OR'ed together
-                StarPredicate newPredicate = lastPredicate0.or(predicate);
-                predicateList.set(size0 - 1, newPredicate);
-            } else if (groupOrdinals[1] == size1 - 1) {
-                // they want to AND the last predicate in the level#1 list with
-                // this new predicate
-                StarPredicate lastPredicate1 =
-                    lastPredicate0 instanceof OrPredicate ?
-                        ((OrPredicate) lastPredicate0).getChildren().get(size1 - 1) :
-                        lastPredicate0;
-                int size2 = lastPredicate1 instanceof AndPredicate ?
-                    ((AndPredicate) lastPredicate1).getChildren().size() :
-                    1;
-                if (groupOrdinals[2] == size2) {
-                    // new predicate
-                    StarPredicate newPredicate1 = lastPredicate1.and(predicate);
-                    final List<StarPredicate> list =
-                        new ArrayList<StarPredicate>();
-                    if (lastPredicate0 instanceof OrPredicate) {
-                        list.addAll(((OrPredicate) lastPredicate0).getChildren());
-                    } else {
-                        list.add(lastPredicate0);
-                    }
-                    list.set(size1 - 1, newPredicate1);
-                    StarPredicate newPredicate0 = new OrPredicate(list);
-                    predicateList.set(size0 - 1, newPredicate0);
-                } else if (groupOrdinals[2] == size2 - 1) {
-                    assert false;
-                }
-            } else {
-                final StarPredicate newPredicate = lastPredicate0.and(predicate);
-                predicateList.set(size0 - 1, newPredicate);
-            }
-        } else {
-            throw Util.newInternal("invalid ordinal " + groupOrdinals +
-                " when predicateList.size()=" + size0);
-        }
-    }
-
-    public enum Mode { AND, OR }
 }
 
 // End CellRequest.java

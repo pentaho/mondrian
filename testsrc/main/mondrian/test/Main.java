@@ -15,7 +15,7 @@ package mondrian.test;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import junit.framework.Test;
@@ -37,7 +37,7 @@ import mondrian.xmla.impl.DynamicDatasourceXmlaServletTest;
 import mondrian.xmla.test.XmlaTest;
 import mondrian.test.clearview.*;
 import mondrian.calc.impl.ConstantCalcTest;
-
+import mondrian.rolap.agg.SegmentLoaderTest;
 import org.apache.log4j.Logger;
 
 /**
@@ -51,7 +51,12 @@ import org.apache.log4j.Logger;
  */
 public class Main extends TestSuite {
     private static final Logger logger = Logger.getLogger(Main.class);
-
+    /*
+     * Scratch area to store information on the emerging test suite.
+     */
+    private static Map<TestSuite, String> testSuiteInfo = 
+        new HashMap<TestSuite, String>();
+    
     /**
      * Entry point to run test suite from the command line.
      *
@@ -84,9 +89,16 @@ public class Main extends TestSuite {
     /**
      * Creates and runs the root test suite.
      */
-    void run(String[] args) throws Exception {
+    private void run(String[] args) throws Exception {
         final MondrianProperties properties = MondrianProperties.instance();
         Test test = suite();
+        if (args.length == 1 && args[0].equals("-l")) {
+            /*
+             * Only lists the tests to run if invoking ant test-nobuild next.
+             */
+            return;
+        }
+        
         if (properties.Warmup.get()) {
             System.out.println("Starting warmup run...");
             MondrianTestRunner runner = new MondrianTestRunner();
@@ -112,7 +124,7 @@ public class Main extends TestSuite {
      * signature <code>public static Test suite()</code> are recognized
      * automatically by JUnit test-harnesses; see {@link TestSuite}.
      */
-    public static Test suite() throws Exception {
+    private static Test suite() throws Exception {
         RolapUtil.checkTracing();
         MondrianProperties properties = MondrianProperties.instance();
         String testName = properties.TestName.get();
@@ -142,7 +154,7 @@ public class Main extends TestSuite {
                 // the name of a class which extends TestCase. We will invoke
                 // every method which starts with 'test'. (If "testName" is set,
                 // we'll filter this list later.)
-                suite.addTestSuite(clazz);
+                addTest(suite, clazz);
             } else {
                 // e.g. testClass = "mondrian.olap.fun.BuiltinFunTable". Class
                 // does not implement Test, so look for a 'public [static]
@@ -155,82 +167,82 @@ public class Main extends TestSuite {
                     target = clazz.newInstance();
                 }
                 Object o = method.invoke(target);
-                suite.addTest((Test) o);
+                addTest(suite, (Test) o, clazz.getName() + method.getName());
             }
         } else {
-            suite.addTestSuite(IndexedValuesTest.class);
-            suite.addTestSuite(MemoryMonitorTest.class);
-            suite.addTestSuite(ObjectPoolTest.class);
-            suite.addTestSuite(RolapConnectionTest.class);
-            suite.addTestSuite(DialectTest.class);
-            suite.addTest(ResultComparatorTest.suite());
-            suite.addTestSuite(DrillThroughTest.class);
-            suite.addTestSuite(BasicQueryTest.class);
-            suite.addTest(CVBasicTest.suite());
-            suite.addTest(GrandTotalTest.suite());
-            suite.addTest(MetricFilterTest.suite());
-            suite.addTest(MiscTest.suite());
-            suite.addTest(PredicateFilterTest.suite());
-            suite.addTest(SubTotalTest.suite());
-            suite.addTest(SummaryMetricPercentTest.suite());
-            suite.addTest(SummaryTest.suite());
-            suite.addTest(TopBottomTest.suite());
-            suite.addTestSuite(CacheControlTest.class);
-            suite.addTestSuite(FunctionTest.class);
-            suite.addTestSuite(HierarchyBugTest.class);
-            suite.addTestSuite(ScheduleTest.class);
-            suite.addTestSuite(UtilTestCase.class);
-            suite.addTestSuite(SortTest.class);
-            if (isRunOnce()) suite.addTestSuite(TestAggregationManager.class);
-            suite.addTestSuite(VirtualCubeTest.class);
-            suite.addTestSuite(ParameterTest.class);
-            suite.addTestSuite(AccessControlTest.class);
-            suite.addTestSuite(ParserTest.class);
-            suite.addTestSuite(ParentChildHierarchyTest.class);
-            suite.addTestSuite(XmlaBasicTest.class);
-            suite.addTestSuite(XmlaErrorTest.class);
-            suite.addTestSuite(XmlaExcel2000Test.class);
-            suite.addTestSuite(XmlaExcelXPTest.class);
-            suite.addTestSuite(XmlaCognosTest.class);
-            suite.addTestSuite(XmlaTabularTest.class);
-            suite.addTestSuite(XmlaTests.class);
-            suite.addTestSuite(DynamicDatasourceXmlaServletTest.class);
-            suite.addTest(XmlaTest.suite());
-            if (isRunOnce()) suite.addTestSuite(TestCalculatedMembers.class);
-            suite.addTestSuite(RaggedHierarchyTest.class);
-            suite.addTestSuite(NonEmptyPropertyForAllAxisTest.class);
-            suite.addTestSuite(InlineTableTest.class);
-            suite.addTestSuite(CompatibilityTest.class);
-            suite.addTestSuite(CaptionTest.class);
-            suite.addTestSuite(UdfTest.class);
-            suite.addTestSuite(NullValueTest.class);
-            suite.addTestSuite(NamedSetTest.class);
-            suite.addTestSuite(PropertiesTest.class);
-            suite.addTestSuite(MultipleHierarchyTest.class);
-            suite.addTestSuite(I18nTest.class);
-            suite.addTestSuite(FormatTest.class);
-            suite.addTestSuite(ParallelTest.class);
-            suite.addTestSuite(SchemaTest.class);
+            addTest(suite, IndexedValuesTest.class);
+            addTest(suite, MemoryMonitorTest.class);
+            addTest(suite, ObjectPoolTest.class);
+            addTest(suite, RolapConnectionTest.class);
+            addTest(suite, DialectTest.class);
+            addTest(suite, ResultComparatorTest.class, "suite");
+            addTest(suite, DrillThroughTest.class);
+            addTest(suite, BasicQueryTest.class);
+            addTest(suite, CVBasicTest.class, "suite");
+            addTest(suite, GrandTotalTest.class, "suite");
+            addTest(suite, MetricFilterTest.class, "suite");
+            addTest(suite, MiscTest.class, "suite");
+            addTest(suite, PredicateFilterTest.class, "suite");
+            addTest(suite, SubTotalTest.class, "suite");
+            addTest(suite, SummaryMetricPercentTest.class, "suite");
+            addTest(suite, SummaryTest.class, "suite");
+            addTest(suite, TopBottomTest.class, "suite");
+            addTest(suite, CacheControlTest.class);
+            addTest(suite, FunctionTest.class);
+            addTest(suite, HierarchyBugTest.class);
+            addTest(suite, ScheduleTest.class);
+            addTest(suite, UtilTestCase.class);
+            addTest(suite, SortTest.class);
+            if (isRunOnce()) addTest(suite, TestAggregationManager.class);
+            addTest(suite, VirtualCubeTest.class);
+            addTest(suite, ParameterTest.class);
+            addTest(suite, AccessControlTest.class);
+            addTest(suite, ParserTest.class);
+            addTest(suite, ParentChildHierarchyTest.class);
+            addTest(suite, XmlaBasicTest.class);
+            addTest(suite, XmlaErrorTest.class);
+            addTest(suite, XmlaExcel2000Test.class);
+            addTest(suite, XmlaExcelXPTest.class);
+            addTest(suite, XmlaCognosTest.class);
+            addTest(suite, XmlaTabularTest.class);
+            addTest(suite, XmlaTests.class);
+            addTest(suite, DynamicDatasourceXmlaServletTest.class);
+            addTest(suite, XmlaTest.class, "suite");
+            if (isRunOnce()) addTest(suite, TestCalculatedMembers.class);
+            addTest(suite, RaggedHierarchyTest.class);
+            addTest(suite, NonEmptyPropertyForAllAxisTest.class);
+            addTest(suite, InlineTableTest.class);
+            addTest(suite, CompatibilityTest.class);
+            addTest(suite, CaptionTest.class);
+            addTest(suite, UdfTest.class);
+            addTest(suite, NullValueTest.class);
+            addTest(suite, NamedSetTest.class);
+            addTest(suite, PropertiesTest.class);
+            addTest(suite, MultipleHierarchyTest.class);
+            addTest(suite, I18nTest.class);
+            addTest(suite, FormatTest.class);
+            addTest(suite, ParallelTest.class);
+            addTest(suite, SchemaTest.class);
             // GroupingSetQueryTest must be run before any test derived from
             // CsvDBTestCase
-            suite.addTestSuite(GroupingSetQueryTest.class);
-            suite.addTestSuite(CmdRunnerTest.class);
-            suite.addTestSuite(DataSourceChangeListenerTest.class);
-            suite.addTestSuite(ModulosTest.class);
-            suite.addTestSuite(PrimeFinderTest.class);
-            suite.addTestSuite(CellKeyTest.class);
-            suite.addTestSuite(RolapAxisTest.class);
-            suite.addTestSuite(MemberHelperTest.class);
-            suite.addTestSuite(CrossJoinTest.class);
-            suite.addTestSuite(RolapResultTest.class);
-            suite.addTestSuite(ConstantCalcTest.class);
-            suite.addTestSuite(SharedDimensionTest.class);
-            suite.addTestSuite(CellPropertyTest.class);
-            suite.addTestSuite(QueryTest.class);
-            suite.addTestSuite(RolapSchemaReaderTest.class);
-            suite.addTestSuite(RolapCubeTest.class);
-            suite.addTestSuite(NullMemberRepresentationTest.class);
-            suite.addTestSuite(IgnoreUnrelatedDimensionsTest.class);
+            addTest(suite, GroupingSetQueryTest.class);
+            addTest(suite, CmdRunnerTest.class);
+            addTest(suite, DataSourceChangeListenerTest.class);
+            addTest(suite, ModulosTest.class);
+            addTest(suite, PrimeFinderTest.class);
+            addTest(suite, CellKeyTest.class);
+            addTest(suite, RolapAxisTest.class);
+            addTest(suite, MemberHelperTest.class);
+            addTest(suite, CrossJoinTest.class);
+            addTest(suite, RolapResultTest.class);
+            addTest(suite, ConstantCalcTest.class);
+            addTest(suite, SharedDimensionTest.class);
+            addTest(suite, CellPropertyTest.class);
+            addTest(suite, QueryTest.class);
+            addTest(suite, RolapSchemaReaderTest.class);
+            addTest(suite, RolapCubeTest.class);
+            addTest(suite, NullMemberRepresentationTest.class);
+            addTest(suite, IgnoreUnrelatedDimensionsTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
@@ -240,25 +252,37 @@ public class Main extends TestSuite {
                 testNonEmpty = false;
             }
             if (testNonEmpty) {
-                suite.addTestSuite(NonEmptyTest.class);
+                addTest(suite, NonEmptyTest.class);
             } else {
                 logger.warn("skipping NonEmptyTests");
             }
 
-            suite.addTestSuite(FastBatchingCellReaderTest.class);
-            suite.addTestSuite(SqlQueryTest.class);
+            addTest(suite, FastBatchingCellReaderTest.class);
+            addTest(suite, SqlQueryTest.class);
+
             if (MondrianProperties.instance().EnableNativeCrossJoin.get()) {
-                suite.addTest(BatchedFillTest.suite());
+                addTest(suite, BatchedFillTest.class, "suite");
             } else {
                 logger.warn("skipping BatchedFillTests");
             }
         }
+
         if (testName != null && !testName.equals("")) {
-            // Filter the suite, so that only tests whose names match
+            // Filter the suite,  so that only tests whose names match
             // "testName" (in its entirety) will be run.
             Pattern testPattern = Pattern.compile(testName);
-            suite = copySuite(suite, testPattern);
+            suite = copySuite(suite,  testPattern);
         }
+        
+        String testInfo = testSuiteInfo.get(suite);
+        
+        if (testInfo != null && testInfo.length() > 0) {
+            System.out.println(testInfo);
+        } else {
+            System.out.println("No tests to run. Check mondrian.properties setting.");
+        }
+        
+        System.out.flush();
         return suite;
     }
 
@@ -276,8 +300,10 @@ public class Main extends TestSuite {
     /**
      * Make a copy of a suite, filtering certain tests.
      */
-    private static TestSuite copySuite(TestSuite suite, Pattern testPattern) {
-        TestSuite newSuite = new TestSuite();
+    private static TestSuite copySuite(TestSuite suite, Pattern testPattern) 
+        throws Exception
+    {
+        TestSuite newSuite = new TestSuite(suite.getName());
         Enumeration tests = suite.tests();
         while (tests.hasMoreElements()) {
             Test test = (Test) tests.nextElement();
@@ -285,30 +311,55 @@ public class Main extends TestSuite {
                 TestCase testCase = (TestCase) test;
                 final String testName = testCase.getName();
                 if (testPattern == null || testPattern.matcher(testName).matches()) {
-                    newSuite.addTest(test);
+                    addTest(newSuite, test, suite.getName() + testName);
                 }
             } else if (test instanceof TestSuite) {
                 TestSuite subSuite = copySuite((TestSuite) test, testPattern);
                 if (subSuite.countTestCases() > 0) {
-                    newSuite.addTest(subSuite);
+                   addTest(newSuite, subSuite, subSuite.getName());
                 }
             } else {
                 // some other kind of test
-                newSuite.addTest(test);
+                addTest(newSuite, test, " ");
             }
         }
         return newSuite;
     }
+    
+    private static void addTest(TestSuite suite, Class testClass) throws Exception {
+        int startTestCount = suite.countTestCases();
+        suite.addTestSuite(testClass);
+        int endTestCount = suite.countTestCases();
+        printTestInfo(suite, testClass.getName(), startTestCount, endTestCount);
+    }
 
-    /**
-     * Call <code><i>className</i>.suite()</code> and add the
-     * resulting {@link Test}.
-     */
-    static void addSuite(TestSuite suite, String className) throws Exception {
-        Class clazz = Class.forName(className);
-        Method method = clazz.getMethod("suite");
+    private static void addTest(TestSuite suite, Class testClass, String testMethod) throws Exception {
+        Method method = testClass.getMethod(testMethod);
         Object o = method.invoke(null);
+        int startTestCount = suite.countTestCases();        
         suite.addTest((Test) o);
+        int endTestCount = suite.countTestCases();
+        printTestInfo(suite, testClass.getName(), startTestCount, endTestCount);
+    }
+    
+    private static void addTest(TestSuite suite, Test tests, String testClassName) throws Exception {
+        int startTestCount = suite.countTestCases();        
+        suite.addTest(tests);
+        int endTestCount = suite.countTestCases();
+        printTestInfo(suite, testClassName, startTestCount, endTestCount);
+    }
+    
+    private static void printTestInfo(
+        TestSuite suite, String testClassName, int startCount, int endCount) {
+        String testInfo = testSuiteInfo.get(suite);
+        String newTestInfo = 
+            "[" + startCount + " - " + endCount + "] : " + testClassName + "\n";
+        if (testInfo == null) {
+            testInfo = newTestInfo;            
+        } else {
+            testInfo += newTestInfo;                        
+        }
+        testSuiteInfo.put(suite, testInfo);
     }
 }
 

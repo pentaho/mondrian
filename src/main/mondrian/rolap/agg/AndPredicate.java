@@ -9,7 +9,10 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.rolap.RolapUtil;
 import mondrian.rolap.StarPredicate;
+import mondrian.rolap.BitKey;
+import mondrian.rolap.sql.SqlQuery;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -65,6 +68,51 @@ public class AndPredicate extends ListPredicate {
         return new OrPredicate(list);
     }
 
+    public boolean inListPossible() {
+        /*
+         * Check the children are all ValueColumnPredicate type
+         * and the columnBitKey conforms to the set of columns referenced
+         */
+        boolean inListPossible = true;
+        for (StarPredicate predicate : children) {
+            if ((predicate instanceof ValueColumnPredicate) &&
+                ((ValueColumnPredicate) predicate).getValue() != RolapUtil.sqlNullValue) {
+                continue;
+            } else {
+                inListPossible = false;
+                break;                
+            }
+        }
+        return inListPossible;
+    }
+    
+    public boolean inListPossible(BitKey inListLHS) {
+        return (super.columnBitKey.equals(inListLHS) && inListPossible());
+    }
+    
+    /*
+     * Generate value list for this predicate to be used in an IN-list
+     * sql predicate.
+     */
+    public void toInListSql(SqlQuery sqlQuery, StringBuilder buf) {
+        assert (inListPossible());
+        boolean firstValue = true;
+        buf.append("(");
+        for (StarPredicate predicate : children) {
+            if (firstValue) {
+                firstValue = false;
+            } else {
+                buf.append(",");
+            }
+            assert (predicate instanceof ValueColumnPredicate);
+            ValueColumnPredicate pred = (ValueColumnPredicate)predicate;
+            sqlQuery.getDialect().quote(
+                buf, pred.getValue(), 
+                pred.getConstrainedColumn().getDatatype());            
+        }
+        buf.append(")");
+    }
+        
     protected String getOp() {
         return "and";
     }

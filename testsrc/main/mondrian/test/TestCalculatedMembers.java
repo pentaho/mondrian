@@ -998,7 +998,7 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
     
     public void testCreateCalculatedMember() {
-    	
+        // REVIEW: What is the purpose of this test?
     	String query = "WITH MEMBER [Product].[Calculated Member] as 'AGGREGATE({})'\n"
             + "SELECT {[Measures].[Unit Sales]} on 0\n"
             + "FROM [Sales]\n" 

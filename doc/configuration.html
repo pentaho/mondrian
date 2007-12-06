@@ -586,6 +586,33 @@ suite of regression tests.</p>
       value is null, to cope with DBMSs that don't need this.</td>
     </tr>
     <tr>
+      <td><code><a href="api/mondrian/olap/MondrianProperties.html#TestWarnIfNoPatternForDialect">
+      mondrian.test.WarnIfNoPatternForDialect</a></code></td>
+      <td>string</td>
+      <td>NONE</td>
+
+      <td>
+      Property which controls if warning messages should be printed if a sql 
+      comparison tests do not contain expected sqls for the specified dialect. 
+      The tests are skipped if no expected sqls are found for the current dialect.
+      <p> 
+      Possible values are the following:
+      <p>
+      "NONE": no warning (default) <br>
+      "ANY": any dialect <br>
+      "ACCESS" <br>
+      "DERBY" <br>
+      "LUCIDDB" <br>
+      "MYSQL" <br>
+      ...and any Dialect enum in SqlPattern.Dialect
+      <p>
+      Specific tests can overwrite the default setting. The priority
+      between test setting and property file setting is:
+      <p>
+      Settings besides "NONE" in mondrian.properties file < Any setting in the test < "ANY"
+      </td>
+    </tr>
+    <tr>
       <td colspan="4">
 
       <b><br>

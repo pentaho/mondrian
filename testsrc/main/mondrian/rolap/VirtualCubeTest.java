@@ -798,7 +798,14 @@ public class VirtualCubeTest extends BatchTestCase {
      * Native sets referencing different base cubes do not share the cached result.
      */
     public void testNativeSetCaching() {
-
+        /*
+         * Only need to run this against one db to verify caching
+         * behavior is correct. 
+         */ 
+        if (!getTestContext().getDialect().isDerby()) {
+            return;
+        }
+        
         if (!MondrianProperties.instance().EnableNativeCrossJoin.get() &&
             !MondrianProperties.instance().EnableNativeNonEmpty.get()) {
             // Only run the tests if either native CrossJoin or native NonEmpty
@@ -823,11 +830,10 @@ public class VirtualCubeTest extends BatchTestCase {
             "From [Warehouse and Sales]";
 
 
-        String necjSql1;
-        String necjSql2;
+        String derbyNecjSql1, derbyNecjSql2;
 
         if (MondrianProperties.instance().EnableNativeCrossJoin.get()) {
-            necjSql1 =
+            derbyNecjSql1 =
                 "select " +
                 "\"product_class\".\"product_family\", " +
                 "\"store\".\"store_country\" " +
@@ -844,7 +850,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "order by 1 ASC, 2 ASC";
 
 
-            necjSql2 =
+            derbyNecjSql2 =
                 "select " +
                 "\"product_class\".\"product_family\", " +
                 "\"store\".\"store_country\" " +
@@ -864,7 +870,7 @@ public class VirtualCubeTest extends BatchTestCase {
             // however, because the NECJ set should not find match in the cache,
             // each NECJ input will still be joined with the correct
             // fact table if NonEmpty condition is natively evaluated.
-            necjSql1 =
+            derbyNecjSql1 =
                 "select " +
                 "\"store\".\"store_country\" " +
                 "from " +
@@ -875,7 +881,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "group by \"store\".\"store_country\" " +
                 "order by 1 ASC";
 
-            necjSql2 =
+            derbyNecjSql2 =
                 "select " +
                 "\"store\".\"store_country\" " +
                 "from " +
@@ -889,12 +895,12 @@ public class VirtualCubeTest extends BatchTestCase {
 
         SqlPattern[] patterns1 =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, necjSql1, necjSql1)
+                new SqlPattern(SqlPattern.Dialect.DERBY, derbyNecjSql1, derbyNecjSql1)
             };
 
         SqlPattern[] patterns2 =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, necjSql2, necjSql2)
+                new SqlPattern(SqlPattern.Dialect.DERBY, derbyNecjSql2, derbyNecjSql2)
             };
 
         // Run query 1 with cleared cache;
@@ -922,6 +928,16 @@ public class VirtualCubeTest extends BatchTestCase {
                     + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
                     + "</VirtualCube>",
                 null, null, null);
+        /*
+         * This test case does not actually reject the dimension constraint from an 
+         * unrelated base cube. The reason is that the constraint contains an AllLevel
+         * member. Even though semantically constraining Cells using an non-existent 
+         * dimension perhaps does not make sense; however, in the case where the constraint
+         * contains AllLevel member, the constraint can be considered "always true".
+         * 
+         * See the next test case for a constraint that does not contain AllLevel member
+         * and hence cannot be satisfied. The cell should be empty.
+         */
         testContext.assertQueryReturns(
             "with member [Warehouse].[x] as 'Aggregate([Warehouse].members)'\n"
                 + "member [Measures].[foo] AS '([Warehouse].[x],[Measures].[Customer Count])'\n"
@@ -931,6 +947,29 @@ public class VirtualCubeTest extends BatchTestCase {
                 "Axis #1:\n" +
                 "{[Measures].[foo]}\n" +
                 "Row #0: 5,581\n"));
+    }
+
+    
+    public void testBug1778358a() {
+        final TestContext testContext =
+            TestContext.create(null, null,
+                "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n"
+                    + "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\"/>\n"
+                    + "  <VirtualCubeDimension name=\"Time\"/>\n"
+                    + "  <VirtualCubeDimension cubeName=\"Warehouse\" name=\"Warehouse\"/>\n"
+                    + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Customer Count]\"/>\n"
+                    + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
+                    + "</VirtualCube>",
+                null, null, null);
+        testContext.assertQueryReturns(
+            "with member [Warehouse].[x] as 'Aggregate({[Warehouse].[Canada], [Warehouse].[USA]})'\n"
+                + "member [Measures].[foo] AS '([Warehouse].[x],[Measures].[Customer Count])'\n"
+                + "select {[Measures].[foo]} on 0 from [Warehouse And Sales2]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[foo]}\n" +
+                "Row #0: \n"));
     }
 
     /**

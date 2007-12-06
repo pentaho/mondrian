@@ -14,6 +14,7 @@ import mondrian.rolap.StarPredicate;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapMember;
+import mondrian.rolap.BitKey;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.util.List;
@@ -31,7 +32,8 @@ import java.util.Arrays;
 public class MemberTuplePredicate implements StarPredicate {
     private final Bound[] bounds;
     private final List<RolapStar.Column> columnList;
-
+    private BitKey columnBitKey;
+    
     /**
      * Creates a MemberTuplePredicate which evaluates to true for a given
      * range of members.
@@ -54,6 +56,7 @@ public class MemberTuplePredicate implements StarPredicate {
         RolapMember upper,
         boolean upperStrict)
     {
+        columnBitKey = null;
         this.columnList =
             computeColumnList(
                 lower != null ? lower : upper,
@@ -120,7 +123,14 @@ public class MemberTuplePredicate implements StarPredicate {
         List<RolapStar.Column> columnList = new ArrayList<RolapStar.Column>();
         while (true) {
             RolapLevel level = member.getLevel();
-            columnList.add(0, levelToColumnMap.get(level));
+            RolapStar.Column column = levelToColumnMap.get(level);
+            if (columnBitKey == null) {
+                columnBitKey =
+                    BitKey.Factory.makeBitKey(column.getStar().getColumnCount());
+                columnBitKey.clear();
+            }
+            columnBitKey.set(column.getBitPosition());
+            columnList.add(0, column);
             if (level.isUnique()) {
                 return columnList;
             }
@@ -135,6 +145,10 @@ public class MemberTuplePredicate implements StarPredicate {
      */
     public List<RolapStar.Column> getConstrainedColumnList() {
         return columnList;
+    }
+
+    public BitKey getConstrainedColumnBitKey() {
+        return columnBitKey;
     }
 
     public boolean equalConstraint(StarPredicate that) {

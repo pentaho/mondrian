@@ -23,7 +23,7 @@ import java.util.*;
  * to the same, single column. It evaluates to
  * true if any of the predicates evaluates to true.
  *
- * @see mondrian.rolap.agg.ListPredicate
+ * @see mondrian.rolap.agg.ListColumnPredicate
  *
  * @author jhyde
  * @version $Id$
@@ -88,6 +88,35 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
         return false;
     }
 
+    public boolean equalConstraint(StarPredicate that) {
+        boolean isEqual = 
+            that instanceof ListColumnPredicate &&
+            getConstrainedColumnBitKey().equals(
+                that.getConstrainedColumnBitKey());
+        ListColumnPredicate thatPred = (ListColumnPredicate) that;
+        if (getPredicates().size() != thatPred.getPredicates().size()) {
+            isEqual = false;
+        }
+
+        if (isEqual) {
+            for (StarColumnPredicate thisChild : getPredicates()) {
+                boolean foundMatch = false;
+                for (StarColumnPredicate thatChild: thatPred.getPredicates()) {
+                    if (thisChild.equalConstraint(thatChild)) {
+                        foundMatch = true;
+                        break;
+                    }
+                }
+                if (!foundMatch) {
+                    isEqual = false;
+                    break;
+                }
+            }
+        }
+
+        return isEqual;
+    }
+    
     public void describe(StringBuilder buf) {
         buf.append("={");
         for (int j = 0; j < children.size(); j++) {

@@ -20,8 +20,6 @@ import org.eigenbase.util.property.*;
 import org.eigenbase.util.property.Property;
 
 import java.util.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * A <code>FastBatchingCellReader</code> doesn't really Read cells: when asked
@@ -60,7 +58,7 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     private final RolapCube cube;
-    private final Map<BatchKey, Batch> batches;
+    private final Map<AggregationKey, Batch> batches;
 
     /**
      * Records the number of requests. The field is used for correctness: if
@@ -83,16 +81,17 @@ public class FastBatchingCellReader implements CellReader {
     public FastBatchingCellReader(RolapCube cube) {
         assert cube != null;
         this.cube = cube;
-        this.batches = new HashMap<BatchKey, Batch>();
+        this.batches = new HashMap<AggregationKey, Batch>();
     }
 
     public Object get(RolapEvaluator evaluator) {
-        final Member[] currentMembers = evaluator.getMembers();
         final CellRequest request =
-            RolapAggregationManager.makeRequest(currentMembers);
+            RolapAggregationManager.makeRequest(evaluator);
+        
         if (request == null || request.isUnsatisfiable()) {
-            return Util.nullValue; // request out of bounds
+            return Util.nullValue; // request not satisfiable.
         }
+        
         // Try to retrieve a cell and simultaneously pin the segment which
         // contains it.
         final Object o = aggMgr.getCellFromCache(request, pinnedSegments);
@@ -115,56 +114,13 @@ public class FastBatchingCellReader implements CellReader {
         return requestCount;
     }
 
-    public Object getCompound(
-        RolapEvaluator evaluator,
-        List<List<Member>> aggregationLists)
-    {
-        // Aggregates with compound members cannot be stored in cache.
-        // Therefore, it's no use generating a miss, because next time around
-        // we still won't have the value. The present strategy is to generate
-        // and execute a statement which retrieves a single cell. The value
-        // isn't even cached. Obviously, this strategy could be improved.
-
-        String sql = RolapAggregationManager.generateMultiSql(
-            evaluator, (List) aggregationLists);
-        if (sql == null) {
-            return Util.nullValue; // request is not satisfiable
-        }
-        final RolapCube cube = evaluator.getMeasureCube();
-        final SqlStatement stmt =
-            RolapUtil.executeQuery(
-                cube.getStar().getDataSource(), sql,
-                "FastBatchingCellReader.getCompound",
-                "while fetching a cell with compound members");
-        final ResultSet resultSet = stmt.getResultSet();
-        try {
-            final int columnCount = resultSet.getMetaData().getColumnCount();
-            if (!resultSet.next()) {
-                throw Util.newInternal("expected precisely one row, got 0");
-            }
-            ++stmt.rowCount;
-            final Object o = resultSet.getObject(columnCount);
-            if (resultSet.next()) {
-                ++stmt.rowCount;
-                throw Util.newInternal("expected precisely one row, got 2");
-            }
-            return o;
-        } catch (SQLException e) {
-            throw stmt.handle(e);
-        } finally {
-            stmt.close();
-        }
-    }
-
     public final void recordCellRequest(CellRequest request) {
         if (request.isUnsatisfiable()) {
             return;
         }
         ++requestCount;
 
-        final BitKey bitkey = request.getConstrainedColumnsBitKey();
-        final BatchKey key =
-            new BatchKey(bitkey, request.getMeasure().getStar());
+        final AggregationKey key = new AggregationKey(request);
         Batch batch = batches.get(key);
         if (batch == null) {
             batch = new Batch(request);
@@ -252,8 +208,8 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     List<CompositeBatch> groupBatches(List<Batch> batchList) {
-        Map<BatchKey, CompositeBatch> batchGroups =
-            new HashMap<BatchKey, CompositeBatch>();
+        Map<AggregationKey, CompositeBatch> batchGroups =
+            new HashMap<AggregationKey, CompositeBatch>();
         for (int i = 0; i < batchList.size(); i++) {
             for (int j = i + 1; j < batchList.size() && i < batchList.size();) {
                 FastBatchingCellReader.Batch iBatch = batchList.get(i);
@@ -281,7 +237,7 @@ public class FastBatchingCellReader implements CellReader {
 
     private void wrapNonBatchedBatchesWithCompositeBatches(
         List<Batch> batchList,
-        Map<BatchKey, CompositeBatch> batchGroups)
+        Map<AggregationKey, CompositeBatch> batchGroups)
     {
         for (Batch batch : batchList) {
             if (batchGroups.get(batch.batchKey) == null) {
@@ -292,7 +248,7 @@ public class FastBatchingCellReader implements CellReader {
 
 
     void addToCompositeBatch(
-        Map<BatchKey, CompositeBatch> batchGroups,
+        Map<AggregationKey, CompositeBatch> batchGroups,
         Batch detailedBatch,
         Batch summaryBatch)
     {
@@ -382,7 +338,8 @@ public class FastBatchingCellReader implements CellReader {
 
             getSegmentLoader().load(
                 batchCollector.getGroupingSets(),
-                pinnedSegments);
+                pinnedSegments, 
+                detailedBatch.batchKey.getCompoundPredicateList());
         }
 
         SegmentLoader getSegmentLoader() {
@@ -404,23 +361,18 @@ public class FastBatchingCellReader implements CellReader {
     class Batch implements Loadable {
         // the CellRequest's constrained columns
         final RolapStar.Column[] columns;
-        // the CellRequest's constrained column BitKey
-        final BitKey constrainedColumnsBitKey;
         final List<RolapStar.Measure> measuresList =
             new ArrayList<RolapStar.Measure>();
         final Set<StarColumnPredicate>[] valueSets;
-        final BatchKey batchKey;
+        final AggregationKey batchKey;
 
         public Batch(CellRequest request) {
             columns = request.getConstrainedColumns();
-            constrainedColumnsBitKey = request.getConstrainedColumnsBitKey();
             valueSets = new HashSet[columns.length];
             for (int i = 0; i < valueSets.length; i++) {
                 valueSets[i] = new HashSet<StarColumnPredicate>();
             }
-            batchKey =
-                new BatchKey(
-                    constrainedColumnsBitKey, request.getMeasure().getStar());
+            batchKey = new AggregationKey(request);
         }
 
         public final void add(CellRequest request) {
@@ -451,6 +403,10 @@ public class FastBatchingCellReader implements CellReader {
             return measure.getStar();
         }
 
+        public BitKey getConstrainedColumnsBitKey() {
+            return batchKey.getConstrainedColumnsBitKey();
+        }
+        
         public final void loadAggregation() {
             GroupingSetsCollector collectorWithGroupingSetsTurnedOff =
                 new GroupingSetsCollector(false);
@@ -507,8 +463,9 @@ public class FastBatchingCellReader implements CellReader {
                     RolapStar.Measure[] measures = {measure};
                     aggmgr.loadAggregation(
                         measures, columns,
-                        constrainedColumnsBitKey,
-                        predicates, pinnedSegments, groupingSetsCollector);
+                        batchKey,
+                        predicates,
+                        pinnedSegments, groupingSetsCollector);
                     measuresList.remove(measure);
                 }
             }
@@ -517,10 +474,11 @@ public class FastBatchingCellReader implements CellReader {
             if (measureCount > 0) {
                 final RolapStar.Measure[] measures =
                     measuresList.toArray(new RolapStar.Measure[measureCount]);
-                aggmgr.loadAggregation(
-                    measures, columns,
-                    constrainedColumnsBitKey,
-                    predicates, pinnedSegments, groupingSetsCollector);
+                    aggmgr.loadAggregation(
+                        measures, columns,
+                        batchKey,
+                        predicates,
+                        pinnedSegments, groupingSetsCollector);    
             }
 
             if (BATCH_LOGGER.isDebugEnabled()) {
@@ -565,7 +523,7 @@ public class FastBatchingCellReader implements CellReader {
                         new RolapStar.Measure[distinctMeasuresList.size()]);
                 aggmgr.loadAggregation(
                     measures, columns,
-                    constrainedColumnsBitKey,
+                    batchKey,
                     predicates,
                     pinnedSegments, groupingSetsCollector);
             }
@@ -715,8 +673,8 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         boolean hasOverlappingBitKeys(Batch other) {
-            return constrainedColumnsBitKey
-                .isSuperSetOf(other.constrainedColumnsBitKey);
+            return getConstrainedColumnsBitKey()
+                .isSuperSetOf(other.getConstrainedColumnsBitKey());
         }
 
         boolean hasDistinctCountMeasure() {
@@ -726,11 +684,16 @@ public class FastBatchingCellReader implements CellReader {
         boolean haveSameStarAndAggregation(Batch other) {
             boolean rollup[] = {false};
             boolean otherRollup[] = {false};
+            boolean hasSameCompoundPredicates =
+                batchKey.hasSameCompoundPredicate(other.batchKey);
+            
             boolean hasSameAggregation = getAgg(rollup) == other.getAgg(otherRollup);
             boolean hasSameRollupOption = rollup[0] == otherRollup[0];
 
             boolean hasSameStar = getStar().equals(other.getStar());
-            return hasSameStar && hasSameAggregation && hasSameRollupOption;
+            return 
+                hasSameCompoundPredicates && hasSameStar && 
+                hasSameAggregation && hasSameRollupOption;
         }
 
         /**
@@ -743,13 +706,13 @@ public class FastBatchingCellReader implements CellReader {
                 AggregationManager.instance();
             AggStar star =
                 aggregationManager.findAgg(getStar(),
-                    constrainedColumnsBitKey, makeMeasureBitKey(),
+                    getConstrainedColumnsBitKey(), makeMeasureBitKey(),
                     rollup);
             return star;
         }
 
         private BitKey makeMeasureBitKey() {
-            BitKey bitKey = constrainedColumnsBitKey.emptyCopy();
+            BitKey bitKey = getConstrainedColumnsBitKey().emptyCopy();
             for (RolapStar.Measure measure : measuresList) {
                 bitKey.set(measure.getBitPosition());
             }
@@ -794,40 +757,6 @@ public class FastBatchingCellReader implements CellReader {
                                       Set<StarColumnPredicate> thisValueSet)
         {
             return otherValueSet.equals(thisValueSet);
-        }
-    }
-
-    /**
-     * This is needed because for a Virtual Cube: two CellRequests
-     * could have the same BitKey but have different underlying
-     * base cubes. Without this, one get the result in the
-     * SegmentArrayQuerySpec addMeasure Util.assertTrue being
-     * triggered (which is what happened).
-     */
-    static final class BatchKey {
-        final BitKey key;
-        final RolapStar star;
-
-        BatchKey(BitKey key, RolapStar star) {
-            this.key = key;
-            this.star = star;
-        }
-
-        public int hashCode() {
-            return key.hashCode() ^ star.hashCode();
-        }
-
-        public boolean equals(Object other) {
-            if (other instanceof BatchKey) {
-                BatchKey bkey = (BatchKey) other;
-                return key.equals(bkey.key) && star.equals(bkey.star);
-            } else {
-                return false;
-            }
-        }
-
-        public String toString() {
-            return star.getFactTable().getTableName() + " " + key.toString();
         }
     }
 

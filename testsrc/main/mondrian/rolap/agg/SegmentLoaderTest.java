@@ -38,20 +38,22 @@ public class SegmentLoaderTest extends BatchTestCase {
         SegmentLoader loader = new SegmentLoader() {
 
             SqlStatement createExecuteSql(
-                GroupingSetsList groupingSetsList)
+                GroupingSetsList groupingSetsList,
+                List<StarPredicate> compoundPredicateList)
             {
                 return null;
             }
 
 
-            List<Object[]> loadData(SqlStatement stmt,
-                                    GroupingSetsList groupingSetsList) throws
-                SQLException
+            List<Object[]> loadData(
+                SqlStatement stmt,
+                GroupingSetsList groupingSetsList)
+                throws SQLException
             {
                 return getData(true);
             }
         };
-        loader.load(groupingSets, null);
+        loader.load(groupingSets, null,null);
         Aggregation.Axis[] axes = groupingSetsInfo.getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);
@@ -77,7 +79,8 @@ public class SegmentLoaderTest extends BatchTestCase {
         SegmentLoader loader = new SegmentLoader() {
 
             SqlStatement createExecuteSql(
-                    GroupingSetsList groupingSetsList)
+                    GroupingSetsList groupingSetsList,
+                    List<StarPredicate> compoundPredicateList)
             {
                 return null;
             }
@@ -90,7 +93,7 @@ public class SegmentLoaderTest extends BatchTestCase {
                 return getDataWithNullInRollupColumn(true);
             }
         };
-        loader.load(groupingSets, null);
+        loader.load(groupingSets, null, null);
         Segment detailedSegment = groupingSets.get(0).getSegments()[0];
         assertEquals(3, detailedSegment.getCellCount());
     }
@@ -106,7 +109,8 @@ public class SegmentLoaderTest extends BatchTestCase {
         SegmentLoader loader = new SegmentLoader() {
 
             SqlStatement createExecuteSql(
-                GroupingSetsList groupingSetsList)
+                GroupingSetsList groupingSetsList,
+                List<StarPredicate> compoundPredicateList)
             {
                 return null;
             }
@@ -124,7 +128,7 @@ public class SegmentLoaderTest extends BatchTestCase {
                 return true;
             }
         };
-        loader.load(groupingSets, null);
+        loader.load(groupingSets, null, null);
         Aggregation.Axis[] axes = groupingSetsInfo.getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);
@@ -148,7 +152,8 @@ public class SegmentLoaderTest extends BatchTestCase {
         SegmentLoader loader = new SegmentLoader() {
 
             SqlStatement createExecuteSql(
-                GroupingSetsList groupingSetsList)
+                GroupingSetsList groupingSetsList,
+                List<StarPredicate> compoundPredicateList)                
             {
                 return null;
             }
@@ -161,7 +166,7 @@ public class SegmentLoaderTest extends BatchTestCase {
                 return getData(false);
             }
         };
-        loader.load(groupingSets, null);
+        loader.load(groupingSets, null, null);
         Aggregation.Axis[] axes = groupingSetsInfo.getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);

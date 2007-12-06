@@ -596,6 +596,28 @@ public class MondrianProperties extends TriggerableProperties {
         new BooleanProperty(
             this, "mondrian.rolap.agg.enableCacheHitCounters", false);
 
+    /**
+     * Property which controls if warning messages should be printed if a sql 
+     * comparison tests do not contain expected sqls for the specified
+     * dialect. The tests are skipped if no expected sqls are
+     * found for the current dialect.
+     * 
+     * Possible values are the following:
+     * "NONE": no warning (default)
+     * "ANY": any dialect
+     * "ACCESS"
+     * "DERBY"
+     * "LUCIDDB"
+     * "MYSQL"
+     *  ...and any Dialect enum in SqlPattern.Dialect
+     * 
+     * Specific tests can overwrite the default setting. The priority is
+     * Settings besides "ANY" in mondrian.properties file < Any setting in the test < "ANY"
+     * 
+     */
+    public transient final StringProperty WarnIfNoPatternForDialect =
+        new StringProperty(
+                this, "mondrian.test.WarnIfNoPatternForDialect", "NONE");
 
     //////////////////////////////////////////////////////////////////////////
     //

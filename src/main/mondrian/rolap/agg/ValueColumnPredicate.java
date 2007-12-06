@@ -61,6 +61,7 @@ public class ValueColumnPredicate
 
     public boolean equalConstraint(StarPredicate that) {
         return that instanceof ValueColumnPredicate &&
+            getConstrainedColumnBitKey().equals(that.getConstrainedColumnBitKey()) &&
             this.value.equals(((ValueColumnPredicate) that).value);
     }
 

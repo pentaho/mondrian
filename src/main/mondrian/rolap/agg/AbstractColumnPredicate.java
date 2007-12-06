@@ -14,6 +14,7 @@ import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.BitKey;
 import mondrian.olap.Util;
 
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
  */
 public abstract class AbstractColumnPredicate implements StarColumnPredicate {
     private final RolapStar.Column constrainedColumn;
+    private final BitKey constrainedColumnBitKey;
 
     /**
      * Creates an AbstractColumnPredicate.
@@ -36,6 +38,19 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
      */
     protected AbstractColumnPredicate(RolapStar.Column constrainedColumn) {
         this.constrainedColumn = constrainedColumn;
+        /*
+         * Check if contraintedColumns are null. 
+         * (Example: FastBatchingCellReader.testAggregateDistinctCount5()).
+         */
+        if (constrainedColumn != null && constrainedColumn.getTable() != null) {
+            constrainedColumnBitKey =
+                BitKey.Factory.makeBitKey(
+                    constrainedColumn.getStar().getColumnCount());
+            constrainedColumnBitKey.clear();
+            constrainedColumnBitKey.set(constrainedColumn.getBitPosition());
+        } else {
+            constrainedColumnBitKey = null;
+        }
     }
 
     public RolapStar.Column getConstrainedColumn() {
@@ -46,6 +61,10 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
         return Collections.singletonList(constrainedColumn);
     }
 
+    public BitKey getConstrainedColumnBitKey() {
+        return constrainedColumnBitKey;
+    }
+    
     public boolean evaluate(List<Object> valueList) {
         assert valueList.size() == 1;
         return evaluate(valueList.get(0));

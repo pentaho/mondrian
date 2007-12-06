@@ -57,15 +57,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @since 28 August, 2001
  */
 public class Aggregation {
-    private int maxConstraints;
-
-    private final RolapStar star;
 
     /**
-     * This is a BitKey for ALL columns (Measures and Levels) involved in the
-     * query.
+     * The key that uniquely identify this Aggregation. It is also used
+     * to lookup Aggregation.
      */
-    private final BitKey constrainedColumnsBitKey;
+    private AggregationKey aggregationKey;
+    
+    /**
+     * Setting for optimizing sql predicates.
+     */
+    private int maxConstraints;
 
     /**
      * List of soft references to segments.
@@ -74,7 +76,6 @@ public class Aggregation {
      * This is the only mutable field in the class.
      */
     private final List<SoftReference<Segment>> segmentRefs;
-
 
     /**
      * Timestamp of when the aggregation was created. (We use
@@ -92,21 +93,19 @@ public class Aggregation {
     /**
      * Creates an Aggregation.
      *
-     * @param star                     Star that Aggregation belongs to
-     * @param constrainedColumnsBitKey Bitmap of the columns that form the axes
-     *                                 of this Aggregation
+     * @param aggregationKey the key specifying the axes, the context and 
+     * the RolapStar for this Aggregation
      */
     public Aggregation(
-            RolapStar star,
-            BitKey constrainedColumnsBitKey) {
-        this.star = star;
-        this.constrainedColumnsBitKey = constrainedColumnsBitKey;
+        AggregationKey aggregationKey) {
         this.segmentRefs = getThreadSafeListImplementation();
         this.maxConstraints =
-                MondrianProperties.instance().MaxConstraints.get();
+            MondrianProperties.instance().MaxConstraints.get();
         this.creationTimestamp = new Date();
-    }
+        this.aggregationKey = aggregationKey; 
 
+    }
+    
     private CopyOnWriteArrayList<SoftReference<Segment>> getThreadSafeListImplementation() {
         return new CopyOnWriteArrayList<SoftReference<Segment>>();
     }
@@ -141,7 +140,7 @@ public class Aggregation {
             this.columns = columns;
         }
 
-        BitKey measureBitKey = constrainedColumnsBitKey.emptyCopy();
+        BitKey measureBitKey = getConstrainedColumnsBitKey().emptyCopy();
         int axisCount = columns.length;
         Util.assertTrue(predicates.length == axisCount);
 
@@ -154,20 +153,22 @@ public class Aggregation {
         Segment[] segments = addSegmentsToAggregation(measures,
                 measureBitKey, axes, pinnedSegments);
         // The constrained columns are simply the level and foreign columns
-        BitKey levelBitKey = constrainedColumnsBitKey;
+        BitKey levelBitKey = getConstrainedColumnsBitKey();
         GroupingSet groupingSet = new GroupingSet(segments,
                 levelBitKey, measureBitKey, axes, columns);
         if (groupingSetsCollector.useGroupingSets()) {
             groupingSetsCollector.add(groupingSet);
-            //Segments are loaded using group by grouping sets
+            // Segments are loaded using group by grouping sets
             // by CompositeBatch.loadAggregation
         } else {
             ArrayList<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
             groupingSets.add(groupingSet);
-            new SegmentLoader().load(groupingSets, pinnedSegments);
+            new SegmentLoader().load(
+                groupingSets, pinnedSegments, 
+                aggregationKey.getCompoundPredicateList());
         }
     }
-
+    
     private Segment[] addSegmentsToAggregation(
             RolapStar.Measure[] measures, BitKey measureBitKey, Axis[] axes,
             RolapAggregationManager.PinSet pinnedSegments) {
@@ -193,7 +194,7 @@ public class Aggregation {
     public StarColumnPredicate[] optimizePredicates(
             RolapStar.Column[] columns,
             StarColumnPredicate[] predicates) {
-
+        RolapStar star = getStar();
         Util.assertTrue(predicates.length == columns.length);
         StarColumnPredicate[] newPredicates = predicates.clone();
         double[] bloats = new double[columns.length];
@@ -414,7 +415,7 @@ public class Aggregation {
         //  - Column not in flush request, in segment. Ignore it.
         final boolean bitmapsIntersect =
                 cacheRegion.getConstrainedColumnsBitKey().intersects(
-                        constrainedColumnsBitKey);
+                        getConstrainedColumnsBitKey());
 
         // New list of segments - will replace segmentRefs when we're done.
         List<SoftReference<Segment>> newSegmentRefs =
@@ -710,7 +711,7 @@ public class Aggregation {
      * This is called during Sql generation.
      */
     public RolapStar getStar() {
-        return star;
+        return aggregationKey.getStar();
     }
 
     /**
@@ -718,7 +719,7 @@ public class Aggregation {
      * query.
      */
     public BitKey getConstrainedColumnsBitKey() {
-        return constrainedColumnsBitKey;
+        return aggregationKey.getConstrainedColumnsBitKey();
     }
 
     // -- classes -------------------------------------------------------------
