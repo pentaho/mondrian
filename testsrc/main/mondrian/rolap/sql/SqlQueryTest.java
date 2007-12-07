@@ -103,6 +103,13 @@ public class SqlQueryTest extends BatchTestCase {
     }
 
     public void testPredicatesAreOptimizedWhenPropertyIsTrue() {
+        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
+            // Sql pattner will be different if using aggregate tables.
+            // This test cover predicate generation so it's sufficient to
+            // only check sql pattern when aggregate tables are not used.
+            return;
+        }
+        
         String mdx =
             "select {[Time].[1997].[Q1],[Time].[1997].[Q2]," +
             "[Time].[1997].[Q3]} on 0 from sales";
@@ -137,7 +144,14 @@ public class SqlQueryTest extends BatchTestCase {
         assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
     }
 
-    public void testPredicatesAreNotOptimizedWhenPropertyIsFalse() {
+    public void testPredicatesAreNotOptimizedWhenPropertyIsFalse() {        
+        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
+            // Sql pattner will be different if using aggregate tables.
+            // This test cover predicate generation so it's sufficient to
+            // only check sql pattern when aggregate tables are not used.
+            return;
+        }
+
         String mdx =
             "select {[Time].[1997].[Q1],[Time].[1997].[Q2]," +
             "[Time].[1997].[Q3]} on 0 from sales";
@@ -174,6 +188,13 @@ public class SqlQueryTest extends BatchTestCase {
     }
 
     public void testPredicatesAreOptimizedWhenAllTheMembersAreIncluded() {
+        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
+            // Sql pattner will be different if using aggregate tables.
+            // This test cover predicate generation so it's sufficient to
+            // only check sql pattern when aggregate tables are not used.
+            return;
+        }
+        
         String mdx = "select {[Time].[1997].[Q1],[Time].[1997].[Q2]," +
         "[Time].[1997].[Q3],[Time].[1997].[Q4]} on 0 from sales";
         
