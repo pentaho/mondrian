@@ -34,14 +34,12 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      *
      * @param sqlQuery the query to modify
      * @param levelToColumnMap where to find each level's key
-     * @param relationNamesToStarTableMap table alias map
      * @param aggStar Aggregate star, if we are reading from an aggregate table,
      * @param parent the parent member that restricts the returned children
      */
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        Map<String, RolapStar.Table> relationNamesToStarTableMap,        
         AggStar aggStar,
         RolapMember parent);
 
@@ -52,14 +50,12 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      *
      * @param sqlQuery the query to modify
      * @param levelToColumnMap where to find each level's key
-     * @param relationNamesToStarTableMap table alias map
      * @param aggStar Aggregate table, or null if query is against fact table
      * @param parents list of parent members that restrict the returned children.
      */
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        Map<String, RolapStar.Table> relationNamesToStarTableMap,        
         AggStar aggStar,
         List<RolapMember> parents);
 
@@ -71,13 +67,11 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * @param query the query to modify
      * @param aggStar Aggregate table, or null if query is against fact table
      * @param level the level that contains the children
-     * @param levelToColumnMap set in the case of a virtual cube; use this
      */
     public void addLevelConstraint(
         SqlQuery query,
         AggStar aggStar,
-        RolapLevel level,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap);
+        RolapLevel level);
 
 }
 

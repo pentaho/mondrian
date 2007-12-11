@@ -95,6 +95,60 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "</Hierarchy>" +
             "</Dimension>");
     }
+
+    /**
+     * Returns a TestContext in which the "HR" cube contains an extra dimension,
+     * "EmployeesSnowFlake", which is a joined hierarchy with a closure.
+     * this is almost identical to employee, except we do a join with store
+     * to validate joins with closures work
+     */
+    private TestContext getEmpSharedClosureTestContext() {
+        String sharedClosureDimension =
+            "<Dimension name=\"SharedEmployee\">" +
+            "<Hierarchy hasAll=\"true\"" +
+            "    primaryKey=\"employee_id\" primaryKeyTable=\"employee\">" +
+            "  <Join leftKey=\"store_id\"" +  
+            "    rightAlias=\"store\" rightKey=\"store_id\">" +
+            "    <Table name=\"employee\"/>" +
+            "    <Table name=\"store\"/>" +
+            "  </Join>" +
+            "  <Level name=\"Employee Id\" type=\"Numeric\" table=\"employee\" uniqueMembers=\"true\"" +
+            "      column=\"employee_id\" parentColumn=\"supervisor_id\"" +
+            "      nameColumn=\"full_name\" nullParentValue=\"0\">" +
+            "    <Closure parentColumn=\"supervisor_id\" childColumn=\"employee_id\">" +
+            "      <Table name=\"employee_closure\"/>" +
+            "    </Closure>" +
+            "    <Property name=\"Marital Status\" column=\"marital_status\"/>" +
+            "    <Property name=\"Position Title\" column=\"position_title\"/>" +
+            "    <Property name=\"Gender\" column=\"gender\"/>" +
+            "    <Property name=\"Salary\" column=\"salary\"/>" +
+            "    <Property name=\"Education Level\" column=\"education_level\"/>" +
+            "    <Property name=\"Management Role\" column=\"management_role\"/>" +
+            "  </Level>" +
+            "</Hierarchy>" +
+            "</Dimension>";
+        
+        String cube =
+            "<Cube name=\"EmployeeSharedClosureCube\">\n" +
+            "  <Table name=\"salary\" alias=\"salary_closure\" />\n" +
+            "  <DimensionUsage name=\"SharedEmployee\" source=\"SharedEmployee\" foreignKey=\"employee_id\" />\n" +
+            "  <Dimension name=\"Department\" foreignKey=\"department_id\">" +
+            "    <Hierarchy hasAll=\"true\" primaryKey=\"department_id\">" +
+            "      <Table name=\"department\"/>" +
+            "        <Level name=\"Department Description\" uniqueMembers=\"true\"" +
+            "          column=\"department_id\"/>" +
+            "    </Hierarchy>" +
+            "  </Dimension>" +
+            "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"warehouse_id\" />\n" +
+            "  <Measure name=\"Org Salary\" column=\"salary_paid\" aggregator=\"sum\""+
+            "      formatString=\"Currency\"/>"+
+            "   <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\""+
+            "    formatString=\"#,#\"/>" + 
+            "</Cube>";
+        
+        
+        return TestContext.create(sharedClosureDimension, cube, null, null, null, null);
+    }
     
     /**
      * Returns a TestContext in which the "HR" cube contains an extra dimension,
@@ -147,6 +201,24 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Row #0: $39,431.67\n" +
                 "Row #0: 616\n" +
                 "Row #0: $64.01\n"));
+    }
+
+    public void testSharedClosureParentChildHierarchy() {
+        TestContext context = getEmpSharedClosureTestContext(); 
+        context.assertQueryReturns(
+                "Select " +
+                "{[SharedEmployee].[All SharedEmployees].[Sheri Nowmer].[Derrick Whelply].children} on columns " + // [SharedEmployee].[Sheri Nowmer].children
+                "from EmployeeSharedClosureCube",
+                fold(
+                        "Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[SharedEmployee].[All SharedEmployees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n" +
+                        "{[SharedEmployee].[All SharedEmployees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n" +
+                        "{[SharedEmployee].[All SharedEmployees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges]}\n" +
+                        "Row #0: $10,256.30\n" +
+                        "Row #0: $29,121.55\n" +
+                        "Row #0: $35,487.69\n"));
     }
     
     /**
@@ -618,16 +690,16 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "[Employees].[All Employees].[Sheri Nowmer]",
             "$39,431.67",
             "select `time_by_day`.`the_year` as `Year`," +
-            " `employee_1`.`employee_id` as `Employee Id (Key)`," +
+            " `employee`.`employee_id` as `Employee Id (Key)`," +
             " `salary`.`salary_paid` as `Org Salary` " +
             "from `time_by_day` =as= `time_by_day`," +
             " `salary` =as= `salary`," +
-            " `employee` =as= `employee_1` " +
+            " `employee` =as= `employee` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
-            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
-            " and `employee_1`.`employee_id` = 1 " +
-            "order by `time_by_day`.`the_year` ASC, `employee_1`.`employee_id` ASC",
+            " and `salary`.`employee_id` = `employee`.`employee_id`" +
+            " and `employee`.`employee_id` = 1 " +
+            "order by `time_by_day`.`the_year` ASC, `employee`.`employee_id` ASC",
             12);
 
         // Drill-through for row #2, [Employees].[All].[Sheri Nowmer].
@@ -639,16 +711,16 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "[Employees].[All Employees].[Derrick Whelply]",
             "$36,494.07",
             "select `time_by_day`.`the_year` as `Year`," +
-            " `employee_1`.`employee_id` as `Employee Id (Key)`," +
+            " `employee`.`employee_id` as `Employee Id (Key)`," +
             " `salary`.`salary_paid` as `Org Salary` " +
             "from `time_by_day` =as= `time_by_day`," +
             " `salary` =as= `salary`," +
-            " `employee` =as= `employee_1` " +
+            " `employee` =as= `employee` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
-            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
-            " and `employee_1`.`employee_id` = 2 " +
-            "order by `time_by_day`.`the_year` ASC, `employee_1`.`employee_id` ASC",
+            " and `salary`.`employee_id` = `employee`.`employee_id`" +
+            " and `employee`.`employee_id` = 2 " +
+            "order by `time_by_day`.`the_year` ASC, `employee`.`employee_id` ASC",
             12);
     }
 
@@ -676,27 +748,27 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " `store`.`store_name` as `Store Name`," +
             " `position`.`pay_type` as `Pay Type`," +
             " `store`.`store_type` as `Store Type`," +
-            " `employee_1`.`management_role` as `Management Role`," +
-            " `employee_1`.`position_title` as `Position Title`," +
+            " `employee`.`management_role` as `Management Role`," +
+            " `employee`.`position_title` as `Position Title`," +
             " `department`.`department_id` as `Department Description`," +
-            " `employee_1`.`full_name` as `Employee Id`," +
-            " `employee_1`.`employee_id` as `Employee Id (Key)`," +
+            " `employee`.`full_name` as `Employee Id`," +
+            " `employee`.`employee_id` as `Employee Id (Key)`," +
             " `salary`.`salary_paid` as `Org Salary` " +
             "from" +
             " `time_by_day` =as= `time_by_day`," +
             " `salary` =as= `salary`," +
             " `store` =as= `store`," +
-            " `employee` =as= `employee_1`," +
+            " `employee` =as= `employee`," +
             " `position` =as= `position`," +
             " `department` =as= `department` " +
             "where" +
             " `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
-            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
-            " and `employee_1`.`store_id` = `store`.`store_id`" +
-            " and `employee_1`.`position_id` = `position`.`position_id`" +
+            " and `salary`.`employee_id` = `employee`.`employee_id`" +
+            " and `employee`.`store_id` = `store`.`store_id`" +
+            " and `employee`.`position_id` = `position`.`position_id`" +
             " and `salary`.`department_id` = `department`.`department_id`" +
-            " and `employee_1`.`employee_id` = 2 " +
+            " and `employee`.`employee_id` = 2 " +
             "order by" +
             " `time_by_day`.`the_year` ASC," +
             " `time_by_day`.`quarter` ASC," +
@@ -708,11 +780,11 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " `store`.`store_name` ASC," +
             " `position`.`pay_type` ASC," +
             " `store`.`store_type` ASC," +
-            " `employee_1`.`management_role` ASC," +
-            " `employee_1`.`position_title` ASC," +
+            " `employee`.`management_role` ASC," +
+            " `employee`.`position_title` ASC," +
             " `department`.`department_id` ASC," +
-            " `employee_1`.`full_name` ASC," +
-            " `employee_1`.`employee_id` ASC",
+            " `employee`.`full_name` ASC," +
+            " `employee`.`employee_id` ASC",
             12);
     }
 

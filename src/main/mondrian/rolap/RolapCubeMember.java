@@ -16,6 +16,8 @@ package mondrian.rolap;
 import java.util.ArrayList;
 import java.util.List;
 
+import mondrian.mdx.HierarchyExpr;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Exp;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Id;
@@ -54,9 +56,7 @@ public class RolapCubeMember extends RolapMember {
     
     public RolapCubeMember(RolapCubeMember parent, RolapMember member,
             RolapCubeLevel level, RolapCube cube) {
-
         super();
-
         this.rolapParent = parent;
         this.rolapMember = member;
         this.rolapLevel = level;
@@ -67,9 +67,12 @@ public class RolapCubeMember extends RolapMember {
         if (member.isAll()) {
             // this is a special case ...
             // replace hierarchy name portion of all member with new name
+            // special case if we're dealing with a closure
+            String replacement = 
+                level.getHierarchy().getName().replaceAll("\\$", "\\\\\\$");
             rolapAllMemberCubeName = member.getName().replaceAll(
                     member.getLevel().getHierarchy().getName(),
-                    level.getHierarchy().getName());
+                   replacement);
             setUniqueName(rolapAllMemberCubeName);
         } else {
             rolapAllMemberCubeName = null;
@@ -326,8 +329,25 @@ public class RolapCubeMember extends RolapMember {
         return rolapMember.isCalculatedInQuery();
     }
 
+    // this method is overridden to make sure that any HierarchyExpr returns
+    // the cube hierarchy vs. shared hierarchy.  this is the case for  
+    // SqlMemberSource.RolapParentChildMemberNoClosure
     public Exp getExpression() {
-        return rolapMember.getExpression();
+        Exp exp = rolapMember.getExpression();
+        if (exp instanceof ResolvedFunCall) {
+            // convert any args to RolapCubeHierarchies
+            ResolvedFunCall fcall = (ResolvedFunCall)exp;
+            for (int i = 0; i < fcall.getArgCount(); i++) {
+                if (fcall.getArg(i) instanceof HierarchyExpr) {
+                    HierarchyExpr expr = (HierarchyExpr)fcall.getArg(i);
+                    if (expr.getHierarchy().equals(rolapMember.getHierarchy())) {
+                        fcall.getArgs()[i] = new HierarchyExpr(this.getHierarchy());
+                    }
+                }
+            }
+
+        }
+        return exp;
     }
 
     public OlapElement lookupChild(SchemaReader schemaReader,

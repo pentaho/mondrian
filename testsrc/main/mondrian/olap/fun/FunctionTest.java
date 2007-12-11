@@ -18,6 +18,7 @@ import mondrian.udf.CurrentDateMemberExactUdf;
 import mondrian.udf.CurrentDateMemberUdf;
 import mondrian.udf.CurrentDateStringUdf;
 import mondrian.util.Bug;
+import mondrian.rolap.RolapSchema;
 import mondrian.rolap.RolapUtil;
 
 import org.eigenbase.xom.StringEscaper;
@@ -5148,10 +5149,16 @@ public class FunctionTest extends FoodMartTestCase {
      * Tests that the Hierarchize function works correctly when applied to
      * a level whose ordering is determined by an 'ordinal' property.
      * TODO: fix this test (bug 1220787)
+     * 
+     * WG: Note that this is disabled right now due to its impact on other
+     * tests later on within the test suite, specifically XMLA tests that
+     * return a list of cubes.  We could run this test after XMLA, or clear
+     * out the cache to solve this.
      */
-    public void _testHierarchizeOrdinal() {
-        final Connection connection =
-                TestContext.instance().getFoodMartConnection();
+    public void testHierarchizeOrdinal() {
+        
+        TestContext context = getTestContext("[Sales_Hierarchize]");
+        final Connection connection = context.getFoodMartConnection();
         connection.getSchema().createCube(
                 fold(
                     "<Cube name=\"Sales_Hierarchize\">\n" +
@@ -5183,7 +5190,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "</Cube>"));
 
         // The [Time_Alphabetical] is ordered alphabetically by month
-        getTestContext("[Sales_Hierarchize]").assertAxisReturns(
+        context.assertAxisReturns(
                 "Hierarchize([Time_Alphabetical].members)",
                 fold(
                     "[Time_Alphabetical].[1997]\n" +
@@ -5223,7 +5230,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         // The [Month_Alphabetical] is a single-level hierarchy ordered
         // alphabetically by month.
-        getTestContext("[Sales_Hierarchize]").assertAxisReturns(
+        context.assertAxisReturns(
                 "Hierarchize([Month_Alphabetical].members)",
                 fold(
                     "[Month_Alphabetical].[4]\n" +
@@ -5238,6 +5245,10 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Month_Alphabetical].[11]\n" +
                     "[Month_Alphabetical].[10]\n" +
                     "[Month_Alphabetical].[9]"));
+        
+        // clear the cache so that future tests don't fail that expect a 
+        // specific set of cubes
+        RolapSchema.clearCache();
     }
 
     public void testIntersect() {

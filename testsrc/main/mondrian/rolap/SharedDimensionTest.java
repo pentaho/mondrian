@@ -344,37 +344,17 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         // Schema has two cubes sharing a dimension, and a virtual cube built
         // over these two cubes.
         // Query from the virtual cube.
-        
-        if (Bug.Bug1833528Fixed) {
 
-        // currently a null pointer exception is thrown within 
-        // RolapHierarchy.rewriteRelation(), due to a failure to find a RolapStar.Table object:
-        // employeeemployee_manager
-        // the name in the aliasedTableNameMap is employeeemployee_manager_1.  
-        // the base cube for the map is Employee Store Analysis B, 
-        // and the levels are part of Employee Store Analysis, 
-        // the virtual cube.  before the rolap cube member change, it was assumed that 
-        // virtual cube dimensions are mapped to a shared dimension that always contains the same
-        // table alias.  now these shared dimensions can be realiased, causing the problem.
-        
-        // if a check for null is added to RolapHierarchy.rewriteRelation():
-        //    if (starTable == null) {
-        //      return null;
-        //    }
-        // this query generates an invalid SqlTupleReader.readTuples sql query.
-        // the invalid query still returns the expected results, although it runs much slower
-        
-            TestContext testContext =
-                TestContext.create(
-                    sharedDimension,
-                    cubeA + "\n" + cubeB,
-                    virtualCube,
-                    null,
-                    null,
-                    null);
-    
-            testContext.assertQueryReturns(queryVirtualCube, fold(resultVirtualCube));
-        }
+        TestContext testContext =
+            TestContext.create(
+                sharedDimension,
+                cubeA + "\n" + cubeB,
+                virtualCube,
+                null,
+                null,
+                null);
+
+        testContext.assertQueryReturns(queryVirtualCube, fold(resultVirtualCube));
     }
 
     public void testNECJMemberList() {

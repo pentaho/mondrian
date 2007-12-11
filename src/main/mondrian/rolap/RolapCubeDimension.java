@@ -30,29 +30,31 @@ public class RolapCubeDimension extends RolapDimension {
     int cubeOrdinal;
     MondrianDef.CubeDimension xmlDimension;
     
-    public RolapCubeDimension(RolapCube parent, RolapDimension rolapDimension, 
-            MondrianDef.CubeDimension cubeDim, int cubeOrdinal) {
-        super(rolapDimension.getSchema(), cubeDim.name, 
-                rolapDimension.getGlobalOrdinal(), 
-                rolapDimension.getDimensionType());
+    public RolapCubeDimension(RolapCube parent, RolapDimension rolapDim, 
+            MondrianDef.CubeDimension cubeDim, String name, int cubeOrdinal) {
+        super(rolapDim.getSchema(), name, rolapDim.getDimensionType());
         this.xmlDimension = cubeDim;
-        this.rolapDimension = rolapDimension;
+        this.rolapDimension = rolapDim;
         this.cubeOrdinal = cubeOrdinal;
         this.parent = parent;
-        // create new hierarchies
-        hierarchies = new RolapCubeHierarchy[
-                            rolapDimension.getHierarchies().length];
         
-        for (int i = 0; i < rolapDimension.getHierarchies().length; i++) {
+        // create new hierarchies
+        hierarchies = new RolapCubeHierarchy[rolapDim.getHierarchies().length];
+        
+        for (int i = 0; i < rolapDim.getHierarchies().length; i++) {
             hierarchies[i] = new RolapCubeHierarchy(this, cubeDim, 
-                    (RolapHierarchy)rolapDimension.getHierarchies()[i], 
-                    ((HierarchyBase)rolapDimension.getHierarchies()[i])
-                                                        .getSubName());
+                    (RolapHierarchy)rolapDim.getHierarchies()[i], 
+                    ((HierarchyBase)rolapDim.getHierarchies()[i]).getSubName());
         }
     }
 
     public RolapCube getCube() {
         return parent;
+    }
+    
+    // this method should eventually replace the call below
+    public int getOrdinal() {
+        return cubeOrdinal;
     }
     
     // note that the cube is not necessary here

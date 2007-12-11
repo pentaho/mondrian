@@ -24,15 +24,11 @@ import mondrian.resource.MondrianResource;
  * <h2><a name="topic_ordinals">Topic: Dimension ordinals </a></h2>
  *
  * {@link RolapEvaluator} needs each dimension to have an ordinal, so that it
- * can store the evaluation context as an array of members. When virtual cubes
- * and shared dimensions enter the picture, we find that dimensions' ordinals
- * must be unique within the whole schema, not just their cube.
+ * can store the evaluation context as an array of members.
  *
  * <p>
  * The ordinal of a dimension <em>within a particular cube</em> is found by
- * calling {@link #getOrdinal(Cube)}, which is implemented in terms of the
- * {@link RolapCube#localDimensionOrdinals} map. This map converts a
- * dimension's global ordinal into a local one within the cube. Local ordinals
+ * calling {@link #getOrdinal(Cube)}. Ordinals
  * are contiguous and zero-based. Zero is always the <code>[Measures]</code>
  * dimension.
  *
@@ -64,26 +60,13 @@ class RolapDimension extends DimensionBase {
 
     private static final Logger LOGGER = Logger.getLogger(RolapDimension.class);
 
-    /** Generator for {@link #globalOrdinal}. * */
-    synchronized int getNextOrdinal() {
-        return schema.getNextDimensionOrdinal();
-    }
-
     private final Schema schema;
 
-    RolapDimension(Schema schema,
-                   String name,
-                   int globalOrdinal,
-                   DimensionType dimensionType) {
-        super(
-                name,
-                globalOrdinal,
-                // todo: recognition of a time dimension should be improved
-                // allow multiple time dimensions
-                dimensionType);
-
+    RolapDimension(Schema schema, String name, DimensionType dimensionType) {
+        // todo: recognition of a time dimension should be improved
+        // allow multiple time dimensions
+        super(name, dimensionType);
         this.schema = schema;
-        Util.assertTrue((globalOrdinal == 0) == name.equals(MEASURES_NAME));
         this.hierarchies = new RolapHierarchy[0];
     }
 
@@ -96,10 +79,7 @@ class RolapDimension extends DimensionBase {
                    RolapCube cube,
                    MondrianDef.Dimension xmlDimension,
                    MondrianDef.CubeDimension xmlCubeDimension) {
-        this(schema,
-             xmlDimension.name,
-             chooseOrdinal(cube, xmlCubeDimension),
-             xmlDimension.getDimensionType());
+        this(schema, xmlDimension.name, xmlDimension.getDimensionType());
 
         Util.assertPrecondition(schema != null);
 
@@ -123,8 +103,7 @@ class RolapDimension extends DimensionBase {
             }
             
             RolapHierarchy hierarchy = new RolapHierarchy(
-                cube, this, xmlDimension.hierarchies[i],
-                xmlCubeDimension);
+                this, xmlDimension.hierarchies[i], xmlCubeDimension);
             hierarchies[i] = hierarchy;
         }
 
@@ -169,39 +148,12 @@ class RolapDimension extends DimensionBase {
     }
 
     /**
-     * Assigns an ordinal for a dimension usage; also assigns the join-level of
-     * the usage.
-     */
-    private static int chooseOrdinal(
-        RolapCube cube,
-        MondrianDef.CubeDimension xmlCubeDimension)
-    {
-        if (xmlCubeDimension.name.equals(MEASURES_NAME)) {
-            return 0;
-        }
-        RolapSchema schema = cube.getSchema();
-        if (xmlCubeDimension instanceof MondrianDef.DimensionUsage) {
-            MondrianDef.DimensionUsage usage =
-                (MondrianDef.DimensionUsage) xmlCubeDimension;
-            RolapHierarchy hierarchy = schema.getSharedHierarchy(usage.source);
-            if (hierarchy != null) {
-                cube.createUsage(hierarchy, usage);
-
-                RolapDimension dimension =
-                    (RolapDimension) hierarchy.getDimension();
-                return dimension.getGlobalOrdinal();
-            }
-        }
-        return schema.getNextDimensionOrdinal();
-    }
-
-    /**
      * Initializes a dimension within the context of a cube.
      */
-    void init(RolapCube cube, MondrianDef.CubeDimension xmlDimension) {
+    void init(MondrianDef.CubeDimension xmlDimension) {
         for (int i = 0; i < hierarchies.length; i++) {
             if (hierarchies[i] != null) {
-                ((RolapHierarchy) hierarchies[i]).init(cube, xmlDimension);
+                ((RolapHierarchy) hierarchies[i]).init(xmlDimension);
             }
         }
     }
@@ -224,51 +176,14 @@ class RolapDimension extends DimensionBase {
     }
 
     public int getOrdinal(Cube cube) {
-        if (false) {
-            // We believe that this method is only called on the measures
-            // RolapDimension, or from parent-child hierarchy,
-            // otherwise only on RolapCubeDimension.
-            // If so, we can remove the Cube
-            // argument to this method.
-            assert isMeasures();
-        }
-        return ((RolapCube) cube).getOrdinal(this.globalOrdinal);
+        // this is temporary to verify that all calls to this method are for
+        // the measures dimension
+        assert(isMeasures());
+        return 0;
     }
 
     public Schema getSchema() {
         return schema;
-    }
-
-    /**
-     * Returns the ordinal of this dimension, unique within its schema.
-     */
-    int getGlobalOrdinal() {
-        return globalOrdinal;
-    }
-
-    /**
-     * Returns a copy of this dimension with a different name.
-     *
-     * @param cube
-     * @param name Name for the new dimension.
-     * @param xmlCubeDimension
-     */
-    public RolapDimension copy(
-            RolapCube cube,
-            String name,
-            MondrianDef.CubeDimension xmlCubeDimension) {
-        RolapDimension dimension = new RolapDimension(
-            schema,
-            name,
-            getNextOrdinal(),
-            dimensionType);
-        dimension.hierarchies = (Hierarchy[]) hierarchies.clone();
-        for (int i = 0; i < hierarchies.length; i++) {
-            final RolapHierarchy hierarchy = (RolapHierarchy) hierarchies[i];
-            dimension.hierarchies[i] = new RolapHierarchy(cube, dimension,
-                hierarchy.getXmlHierarchy(), xmlCubeDimension);
-        }
-        return dimension;
     }
 }
 

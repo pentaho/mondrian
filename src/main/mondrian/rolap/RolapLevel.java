@@ -35,17 +35,17 @@ public class RolapLevel extends LevelBase {
     /**
      * The column or expression which yields the level's key.
      */
-    private final MondrianDef.Expression keyExp;
+    protected MondrianDef.Expression keyExp;
 
     /**
      * The column or expression which yields the level's ordinal.
      */
-    private final MondrianDef.Expression ordinalExp;
+    protected MondrianDef.Expression ordinalExp;
 
     /**
      * The column or expression which yields the level members' caption.
      */
-    private final MondrianDef.Expression captionExp;
+    protected MondrianDef.Expression captionExp;
 
     private final SqlQuery.Datatype datatype;
 
@@ -67,10 +67,10 @@ public class RolapLevel extends LevelBase {
      * Ths expression which gives the name of members of this level. If null,
      * members are named using the key expression.
      */
-    private final MondrianDef.Expression nameExp;
+    protected MondrianDef.Expression nameExp;
     /** The expression which joins to the parent member in a parent-child
      * hierarchy, or null if this is a regular hierarchy. */
-    private final MondrianDef.Expression parentExp;
+    protected MondrianDef.Expression parentExp;
     /** Value which indicates a null parent in a parent-child hierarchy. */
     private final String nullParentValue;
 
@@ -102,9 +102,9 @@ public class RolapLevel extends LevelBase {
         RolapProperty[] properties,
         int flags,
         SqlQuery.Datatype datatype,
-        HideMemberCondition
-            hideMemberCondition,
-        LevelType levelType, String approxRowCount)
+        HideMemberCondition hideMemberCondition,
+        LevelType levelType, 
+        String approxRowCount)
     {
         super(hierarchy, name, depth, levelType);
         Util.assertPrecondition(properties != null, "properties != null");
@@ -411,17 +411,14 @@ public class RolapLevel extends LevelBase {
         }
     }
 
-    void init(RolapCube cube, MondrianDef.CubeDimension xmlDimension) {
+    void init(MondrianDef.CubeDimension xmlDimension) {
         if (isAll()) {
             this.levelReader = new AllLevelReaderImpl();
         } else if (levelType == LevelType.Null) {
             this.levelReader = new NullLevelReader();
         } else if (xmlClosure != null) {
             final RolapDimension dimension = ((RolapHierarchy) hierarchy)
-                .createClosedPeerDimension(this, xmlClosure, cube, xmlDimension);
-
-            dimension.init(cube, xmlDimension);
-            cube.registerDimension(dimension);
+                .createClosedPeerDimension(this, xmlClosure, xmlDimension);
             RolapLevel closedPeer =
                     (RolapLevel) dimension.getHierarchies()[0].getLevels()[1];
             this.levelReader = new ParentChildLevelReaderImpl(closedPeer);
@@ -708,7 +705,7 @@ public class RolapLevel extends LevelBase {
          * For a parent-child hierarchy with a closure provided by the schema,
          * the equivalent level in the closed hierarchy; otherwise null.
          */
-        private final RolapLevel closedPeer;
+        protected final RolapLevel closedPeer;
 
         ParentChildLevelReaderImpl(RolapLevel closedPeer) {
             this.closedPeer = closedPeer;

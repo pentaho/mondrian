@@ -15,7 +15,7 @@ package mondrian.rolap;
 import mondrian.olap.LevelType;
 import mondrian.olap.MemberFormatter;
 import mondrian.olap.MondrianDef;
-import mondrian.olap.Level;
+import mondrian.rolap.sql.SqlQuery;
 
 /**
  * RolapCubeLevel wraps a RolapLevel for a specific Cube.
@@ -25,13 +25,8 @@ import mondrian.olap.Level;
  */
 public class RolapCubeLevel extends RolapLevel {
     
-    RolapLevel rolapLevel;
-    RolapCubeHierarchy rolapHierarchy;
-    MondrianDef.Expression currentKeyExp = null;
-    MondrianDef.Expression currentNameExp = null;
-    MondrianDef.Expression currentCaptionExp = null;
-    MondrianDef.Expression currentOrdinalExp = null;
-    MondrianDef.Expression currentParentExp = null;
+    private final RolapLevel rolapLevel;
+    private RolapStar.Column rolapStarColumn = null;
     
     public RolapCubeLevel(RolapLevel level, RolapCubeHierarchy hierarchy) {
         super(hierarchy, level.getDepth(), level.getName(), level.getKeyExp(), 
@@ -43,41 +38,70 @@ public class RolapCubeLevel extends RolapLevel {
                 level.getLevelType(), "" + level.getApproxRowCount());
 
         this.rolapLevel = level;
-        this.rolapHierarchy = hierarchy;
         MondrianDef.Relation hierarchyRel = hierarchy.getRelation();
-        currentKeyExp = convertExpression(level.getKeyExp(), hierarchyRel);
-        currentNameExp = convertExpression(level.getNameExp(), hierarchyRel);
-        currentCaptionExp = 
-            convertExpression(level.getCaptionExp(), hierarchyRel);
-        currentOrdinalExp = 
-            convertExpression(level.getOrdinalExp(), hierarchyRel);
-        currentParentExp = 
-            convertExpression(level.getParentExp(), hierarchyRel);
-        
+        keyExp = convertExpression(level.getKeyExp(), hierarchyRel);
+        nameExp = convertExpression(level.getNameExp(), hierarchyRel);
+        captionExp = convertExpression(level.getCaptionExp(), hierarchyRel);
+        ordinalExp = convertExpression(level.getOrdinalExp(), hierarchyRel);
+        parentExp = convertExpression(level.getParentExp(), hierarchyRel);
+    }
+    
+    void init(MondrianDef.CubeDimension xmlDimension) {
         if (isAll()) {
             this.levelReader = new AllLevelReaderImpl();
         } else if (getLevelType() == LevelType.Null) {
             this.levelReader = new NullLevelReader();
         } else if (rolapLevel.xmlClosure != null) {
-            RolapCubeDimension rolapCubeDimension =
-                rolapHierarchy.getDimension();
-            RolapCube cube = rolapCubeDimension.getCube();
-            MondrianDef.CubeDimension xmlDimension = 
-                rolapCubeDimension.xmlDimension;
+            ParentChildLevelReaderImpl lvlReader = 
+                (ParentChildLevelReaderImpl)rolapLevel.getLevelReader();
+            // wrap the already created RolapDimension with a 
+            // RolapCubeDimension, and register it with the cube
             RolapDimension dimension = 
-                hierarchy.createClosedPeerDimension(
-                            this, rolapLevel.xmlClosure, cube, xmlDimension);
-            dimension.init(cube, xmlDimension);
-            cube.registerDimension(dimension);
-            RolapLevel closedPeer = 
-                (RolapLevel) dimension.getHierarchies()[0].getLevels()[1];
-            this.levelReader = new ParentChildLevelReaderImpl(closedPeer);
+                (RolapDimension)lvlReader.closedPeer
+                .getHierarchy().getDimension();
+
+            RolapCubeDimension cubeDimension = 
+                new RolapCubeDimension(
+                        getCube(), dimension, xmlDimension, 
+                        getDimension().getName() + "$Closure", 
+                        getHierarchy().getDimension().getOrdinal());
+
+            /*
+            RME HACK
+              WG: Note that the reason for registering this usage is so that
+              when registerDimension is called, the hierarchy is registered 
+              successfully to the star.  This type of hack will go away once 
+              HierarchyUsage is phased out 
+            */
+            getCube().createUsage(
+                    (RolapCubeHierarchy)cubeDimension.getHierarchies()[0], 
+                    xmlDimension);
             
+            cubeDimension.init(xmlDimension);
+            getCube().registerDimension(cubeDimension);
+            RolapLevel closedPeer = 
+                (RolapLevel) cubeDimension.getHierarchies()[0].getLevels()[1];
+            
+            this.levelReader = new ParentChildLevelReaderImpl(closedPeer);
         } else {
             this.levelReader = new RegularLevelReader();
         }
-        
     }
+    
+    /**
+     * The RolapCubeLevel does not need to realias the expression,
+     * that work has already been done during initialization.
+     * 
+     * @param sqlQuery
+     * @param expr
+     * @return expression string
+     */
+    public String getExpressionWithAlias(
+            SqlQuery sqlQuery,
+            MondrianDef.Expression expr)
+        {
+            return expr.getExpression(sqlQuery);
+        }
     
     /**
      * Converts an expression to new aliases if necessary.
@@ -88,7 +112,7 @@ public class RolapCubeLevel extends RolapLevel {
      */
     private MondrianDef.Expression convertExpression(
             MondrianDef.Expression exp, MondrianDef.Relation rel) {
-        if (this.rolapHierarchy.isUsingCubeFact()) {
+        if (getHierarchy().isUsingCubeFact()) {
             // no conversion necessary
             return exp;
         } else if (exp == null || rel == null) {
@@ -103,7 +127,7 @@ public class RolapCubeLevel extends RolapLevel {
                 // need to determine correct name of alias for this level. 
                 // this may be defined in level
                 // col.table
-                String alias = rolapHierarchy.lookupAlias(col.getTableAlias());
+                String alias = getHierarchy().lookupAlias(col.getTableAlias());
                 return new MondrianDef.Column(alias, col.getColumnName());
             }
         } else if (exp instanceof MondrianDef.ExpressionView) {
@@ -115,6 +139,21 @@ public class RolapCubeLevel extends RolapLevel {
         throw new RuntimeException("conversion of Class "+ exp.getClass() + 
                                     " unsupported at this time");
     }
+    
+    public void setRolapStarColumn(RolapStar.Column column) {
+        rolapStarColumn = column;
+    }
+    
+    /**
+     * rolapStarColumn is the eventual replacement of levelToColumnMap within
+     * the RolapStar.  Currently only the addLevelConstraint code utilizes this
+     * new data structure.
+     * 
+     * @return the RolapStar.Column related to this RolapCubeLevel
+     */
+    public RolapStar.Column getRolapStarColumn() {
+        return rolapStarColumn;
+    }
 
     /**
      * Returns the (non virtual) cube this level belongs to.
@@ -122,7 +161,7 @@ public class RolapCubeLevel extends RolapLevel {
      * @return cube
      */
     public RolapCube getCube() {
-        return rolapHierarchy.getDimension().getCube();
+        return getHierarchy().getDimension().getCube();
     }
     
     // override with stricter return type
@@ -137,26 +176,6 @@ public class RolapCubeLevel extends RolapLevel {
 
     public RolapLevel getRolapLevel() {
         return rolapLevel;
-    }
-    
-    public MondrianDef.Expression getKeyExp() {
-        return currentKeyExp;
-    }
-    
-    MondrianDef.Expression getOrdinalExp() {
-        return currentOrdinalExp;
-    }
-    
-    public MondrianDef.Expression getCaptionExp() {
-        return currentCaptionExp;
-    }
-
-    MondrianDef.Expression getParentExp() {
-        return currentParentExp;
-    }
-
-    public MondrianDef.Expression getNameExp() {
-        return currentNameExp;
     }
     
     public boolean equals(RolapCubeLevel level) {

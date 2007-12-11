@@ -1145,6 +1145,9 @@ Revision is $Id$
                 if (right instanceof Table) {
                     return ((Table) right).getAlias();
                 }
+                if (right instanceof Join) {
+                    return ((Join) right).getLeftAlias();
+                }
                 throw Util.newInternal(
                     "alias is required because " + right + " is not a table");
             }

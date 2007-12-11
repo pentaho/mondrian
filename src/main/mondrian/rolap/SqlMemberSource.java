@@ -498,7 +498,6 @@ RME is this right
         // Create the condition, which is either the parent member or
         // the full context (non empty).
         final Map<RolapLevel, RolapStar.Column> levelToColumnMap;
-        final Map<String, RolapStar.Table> relationNamesToStarTableMap;
         if (constraint instanceof SqlContextConstraint) {
             SqlContextConstraint contextConstraint =
                 (SqlContextConstraint) constraint;
@@ -506,14 +505,11 @@ RME is this right
             RolapCube cube = (RolapCube) evaluator.getCube();
             RolapStar star = cube.getStar();
             levelToColumnMap = star.getLevelToColumnMap(cube);
-            relationNamesToStarTableMap = star.getRelationNamesToStarTableMap(cube);
         } else {
             levelToColumnMap = Collections.emptyMap();
-            relationNamesToStarTableMap = Collections.emptyMap();
         }
         constraint.addMemberConstraint(
-            sqlQuery, levelToColumnMap, relationNamesToStarTableMap,
-            aggStar, member);
+            sqlQuery, levelToColumnMap, aggStar, member);
 
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
@@ -522,7 +518,7 @@ RME is this right
         sqlQuery.addGroupBy(q);
 
         // in non empty mode the level table must be joined to the fact table
-        constraint.addLevelConstraint(sqlQuery, aggStar, level, null);
+        constraint.addLevelConstraint(sqlQuery, aggStar, level);
 
         if (level.hasCaptionColumn()) {
             MondrianDef.Expression captionExp = level.getCaptionExp();

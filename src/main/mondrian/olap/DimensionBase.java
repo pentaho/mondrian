@@ -29,19 +29,16 @@ public abstract class DimensionBase
     protected final String name;
     protected final String uniqueName;
     protected final String description;
-    protected final int globalOrdinal;
     protected Hierarchy[] hierarchies;
     protected DimensionType dimensionType;
 
     protected DimensionBase(
             String name,
-            int globalOrdinal,
             DimensionType dimensionType)
     {
         this.name = name;
         this.uniqueName = Util.makeFqName(name);
         this.description = null;
-        this.globalOrdinal = globalOrdinal;
         this.dimensionType = dimensionType;
     }
 

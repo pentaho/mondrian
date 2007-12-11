@@ -623,7 +623,7 @@ public class RolapSchema implements Schema {
             throw Util.newError(e, "Error while adding dimension to cube '" +
                     cube + "' from XML [" + xml + "]");
         }
-        return ((RolapCube) cube).createDimension(xmlDimension);
+        return ((RolapCube) cube).createDimension(xmlDimension, xmlSchema);
     }
 
     public Cube createCube(String xml) {

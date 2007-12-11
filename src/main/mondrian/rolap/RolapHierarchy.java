@@ -102,17 +102,20 @@ public class RolapHierarchy extends HierarchyBase {
     /**
      * Creates a <code>RolapHierarchy</code>.
      *
-     * @param cube Cube this hierarchy belongs to, or null if this is a shared
-     *     hierarchy
+     * @param dimension the dimension this hierarchy belongs to
+     * @param xmlHierarchy the xml object defining this hierarchy
+     * @param xmlCubeDimension the xml object defining the cube 
+     *   dimension for this object 
      */
     RolapHierarchy(
-        RolapCube cube,
         RolapDimension dimension,
         MondrianDef.Hierarchy xmlHierarchy,
         MondrianDef.CubeDimension xmlCubeDimension)
     {
         this(dimension, xmlHierarchy.name, xmlHierarchy.hasAll);
 
+        assert(!(this instanceof RolapCubeHierarchy));
+        
         this.xmlHierarchy = xmlHierarchy;
         this.relation = xmlHierarchy.relation;
         if (xmlHierarchy.relation instanceof MondrianDef.InlineTable) {
@@ -136,7 +139,7 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             RolapLevel.HideMemberCondition.Never,
             LevelType.Regular, ALL_LEVEL_CARDINALITY);
-        allLevel.init(cube, xmlCubeDimension);
+        allLevel.init(xmlCubeDimension);
         this.allMember = new RolapMember(
             null, allLevel, null, allMemberName, Member.MemberType.ALL);
         // assign "all member" caption
@@ -252,14 +255,14 @@ public class RolapHierarchy extends HierarchyBase {
     /**
      * Initializes a hierarchy within the context of a cube.
      */
-    void init(RolapCube cube, MondrianDef.CubeDimension xmlDimension) {
+    void init(MondrianDef.CubeDimension xmlDimension) {
         // first create memberReader
         if (this.memberReader == null) {
             this.memberReader = getRolapSchema().createMemberReader(
                 sharedHierarchyName, this, memberReaderClass);
         }
         for (Level level : levels) {
-            ((RolapLevel) level).init(cube, xmlDimension);
+            ((RolapLevel) level).init(xmlDimension);
         }
         if (defaultMemberName != null) {
             List<Id.Segment> uniqueNameParts =
@@ -470,15 +473,9 @@ public class RolapHierarchy extends HierarchyBase {
      * adds the table(s) to the FROM clause once.
      *
      * @param query Query to add the hierarchy to
-     * @param aliasedTableNameMap used to disambiguate table names when the
-     * hierarchy belongs to shared dimensions that are referenced in different
-     * cubes.
      * @param table table to add to the query
      */
-    void addToFrom(
-        SqlQuery query,
-        Map<String, RolapStar.Table> aliasedTableNameMap,
-        RolapStar.Table table) {
+    void addToFrom(SqlQuery query, RolapStar.Table table) {
         if (getRelation() == null) {
             throw Util.newError(
                     "cannot add hierarchy " + getUniqueName() +
@@ -495,8 +492,7 @@ public class RolapHierarchy extends HierarchyBase {
         	//   F left join ((A join B) join C).
         	// Search for the smallest subset of the relation which
         	// joins with C.
-            assert (aliasedTableNameMap != null);
-        	subRelation = relationSubset(getRelation(), aliasedTableNameMap, table);
+        	subRelation = lookupRelationSubset(getRelation(), table);
         }
 
         if (subRelation == null) {
@@ -542,51 +538,15 @@ public class RolapHierarchy extends HierarchyBase {
     /**
      * Returns the smallest subset of <code>relation</code> which contains
      * the table <code>targetTable</code>, or null if the targetTable is not
-     * one of the joining table in <code>relation</code>. The returned
-     * relation also contains the correct table aliases.
-     *
-     * @param relation the relation in which to look for targetTable
-     * @param aliasedTableNameMap used to disambiguate table names when the
-     * hierarchy belongs to shared dimensions that are referenced in different
-     * cubes.
-     * @param targetTable table to add to the query
-     * @return the smallest containing relation or null if no matching table
-     * is found in <code>relation</code>
-     */
-    private static MondrianDef.Relation relationSubset(
-        MondrianDef.Relation relation,
-        Map<String, RolapStar.Table> aliasedTableNameMap,
-        RolapStar.Table targetTable) {
-        MondrianDef.Relation relationSubset =
-            lookupRelationSubset(relation, aliasedTableNameMap, targetTable);
-
-        if (relationSubset != null) {
-            // Found a containing relation subset.
-            // Rewrite the sub-relation containing the targetTable, using
-            // the correct aliases.
-            return rewriteRelationWithAliases(relationSubset,
-                aliasedTableNameMap);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns the smallest subset of <code>relation</code> which contains
-     * the table <code>targetTable</code>, or null if the targetTable is not
      * one of the joining table in <code>relation</code>.
      *
      * @param relation the relation in which to look for targetTable
-     * @param aliasedTableNameMap used to disambiguate table names when the
-     * hierarchy belongs to shared dimensions that are referenced in different
-     * cubes.
      * @param targetTable table to add to the query
      * @return the smallest containing relation or null if no matching table
      * is found in <code>relation</code>
      */
     private static MondrianDef.Relation lookupRelationSubset(
         MondrianDef.Relation relation,
-        Map<String, RolapStar.Table> aliasedTableNameMap,
         RolapStar.Table targetTable) {
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table table = (MondrianDef.Table) relation;
@@ -601,53 +561,17 @@ public class RolapHierarchy extends HierarchyBase {
             // and move left along the join chain.
             MondrianDef.Join join = (MondrianDef.Join) relation;
             MondrianDef.Relation rightRelation =
-                relationSubset(join.right, aliasedTableNameMap, targetTable);
+                lookupRelationSubset(join.right, targetTable);
             if (rightRelation == null) {
                 // Keep searching left.
                 return lookupRelationSubset(
-                    join.left, aliasedTableNameMap, targetTable);
+                    join.left, targetTable);
             } else {
                 // Found a match.
                 return join;
             }
         }
         return null;
-    }
-
-    /**
-     * Rewrite <code>relation</code> with aliases given by
-     * <code>aliasedTableNameMap</code>.
-     *
-     * @param relation relation to rewrite
-     * @param aliasedTableNameMap aliases to use for the tables in
-     * <code>relation</code>
-     * @return the rewritten relation
-     */
-    private static MondrianDef.Relation rewriteRelationWithAliases(
-        MondrianDef.Relation relation,
-        Map<String, RolapStar.Table> aliasedTableNameMap) {
-
-    	if (relation instanceof MondrianDef.Table) {
-    		String relationNames = relation.toString() + relation.getAlias();
-    		RolapStar.Table starTable =
-                aliasedTableNameMap.get(relationNames);
-
-    		return new MondrianDef.Table(
-    				((MondrianDef.Table)relation).schema,
-    				((MondrianDef.Table)relation).name,
-    				starTable.getAlias());
-    	} else {
-    		MondrianDef.Join join = (MondrianDef.Join) relation;
-    		MondrianDef.Relation left =
-                rewriteRelationWithAliases(join.left, aliasedTableNameMap);
-    		MondrianDef.Relation right =
-                rewriteRelationWithAliases(join.right, aliasedTableNameMap);
-
-    		return
-    		new MondrianDef.Join(
-    				left.getAlias(), join.leftKey, left,
-    				right.getAlias(), join.rightKey, right);
-    	}
     }
 
     /**
@@ -850,7 +774,6 @@ public class RolapHierarchy extends HierarchyBase {
     RolapDimension createClosedPeerDimension(
         RolapLevel src,
         MondrianDef.Closure clos,
-        RolapCube cube,
         MondrianDef.CubeDimension xmlDimension) {
 
         // REVIEW (mb): What about attribute primaryKeyTable?
@@ -859,7 +782,6 @@ public class RolapHierarchy extends HierarchyBase {
         RolapDimension peerDimension = new RolapDimension(
             dimension.getSchema(),
             dimension.getName() + "$Closure",
-            ((RolapDimension)dimension).getNextOrdinal(),
             DimensionType.StandardDimension);
 
         // Create a peer hierarchy.
@@ -921,11 +843,6 @@ public class RolapHierarchy extends HierarchyBase {
             src.getLevelType(),
             "");
         peerHier.levels = RolapUtil.addElement(peerHier.levels, sublevel);
-
-/*
-RME HACK
-*/
-        cube.createUsage(peerHier, xmlDimension);
 
         return peerDimension;
     }

@@ -43,14 +43,6 @@ public class RolapCube extends CubeBase {
     /** For SQL generator. Fact table. */
     final MondrianDef.Relation fact;
 
-    /**
-     * Mapping such that
-     * <code>localDimensionOrdinals[dimension.globalOrdinal]</code> is equal to
-     * the ordinal of the dimension in this cube. See
-     * <a href="RolapDimension.html#topic_ordinals">dimension ordinals</a>.
-     */
-    private int[] localDimensionOrdinals;
-
     /** Schema reader which can see this cube and nothing else. */
     private SchemaReader schemaReader;
 
@@ -133,7 +125,6 @@ public class RolapCube extends CubeBase {
         RolapDimension measuresDimension = new RolapDimension(
                 schema,
                 Dimension.MEASURES_NAME,
-                0,
                 DimensionType.StandardDimension);
 
         this.dimensions[0] = measuresDimension;
@@ -149,7 +140,7 @@ public class RolapCube extends CubeBase {
             MondrianDef.CubeDimension xmlCubeDimension = dimensions[i];
             // Look up usages of shared dimensions in the schema before
             // consulting the XML schema (which may be null).
-            RolapDimension dimension =
+            RolapCubeDimension dimension =
                 getOrCreateDimension(xmlCubeDimension, schema, xmlSchema, i + 1);
             if (getLogger().isDebugEnabled()) {
                 getLogger().debug("RolapCube<init>: dimension="
@@ -161,6 +152,10 @@ public class RolapCube extends CubeBase {
                 createUsages(dimension, xmlCubeDimension);
             }
 
+            // the register Dimension call was moved here
+            // to keep the RolapStar in sync with the realiasing
+            // within the RolapCubeHierarchy objects.
+            registerDimension(dimension);
         }
 
         schema.addCube(this);
@@ -618,7 +613,7 @@ public class RolapCube extends CubeBase {
      * @param dimensionOrdinal Ordinal of dimension
      * @return A dimension
      */
-    private RolapDimension getOrCreateDimension(
+    private RolapCubeDimension getOrCreateDimension(
         MondrianDef.CubeDimension xmlCubeDimension,
         RolapSchema schema,
         MondrianDef.Schema xmlSchema,
@@ -647,7 +642,8 @@ public class RolapCube extends CubeBase {
         // wrap the shared or regular dimension with a
         // rolap cube dimension object
         return new RolapCubeDimension(
-            this, dimension, xmlCubeDimension, dimensionOrdinal);
+                this, dimension, xmlCubeDimension, 
+                xmlCubeDimension.name, dimensionOrdinal);
     }
 
     /**
@@ -1088,25 +1084,9 @@ public class RolapCube extends CubeBase {
     }
 
     private void init(MondrianDef.CubeDimension[] xmlDimensions) {
-        int max = -1;
         for (Dimension dimension1 : dimensions) {
             final RolapDimension dimension = (RolapDimension) dimension1;
-            dimension.init(this, lookup(xmlDimensions, dimension.getName()));
-            max = Math.max(max, dimension.getGlobalOrdinal());
-        }
-        this.localDimensionOrdinals = new int[max + 1];
-        Arrays.fill(localDimensionOrdinals, -1);
-        for (int i = 0; i < dimensions.length; i++) {
-            final RolapDimension dimension = (RolapDimension) dimensions[i];
-            final int globalOrdinal = dimension.getGlobalOrdinal();
-/*
-When the same Dimension is in two or more DimensionUsages, then this
-assert is not true.
-            Util.assertTrue(
-                    localDimensionOrdinals[globalOrdinal] == -1,
-                    "duplicate dimension globalOrdinal " + globalOrdinal);
-*/
-            localDimensionOrdinals[globalOrdinal] = i;
+            dimension.init(lookup(xmlDimensions, dimension.getName()));
         }
         register();
     }
@@ -1132,16 +1112,6 @@ assert is not true.
         for (RolapBaseCubeMeasure storedMeasure : storedMeasures) {
             table.makeMeasure(storedMeasure);
         }
-
-        // create dimension tables
-        Dimension[] dimensions = this.getDimensions();
-        for (Dimension dimension : dimensions) {
-            registerDimension(dimension);
-        }
-    }
-
-    int getOrdinal(int globalOrdinal) {
-        return this.localDimensionOrdinals[globalOrdinal];
     }
 
     /**
@@ -1228,15 +1198,15 @@ assert is not true.
         return star;
     }
 
-    private void createUsages(RolapDimension dimension,
+    private void createUsages(RolapCubeDimension dimension,
             MondrianDef.CubeDimension xmlCubeDimension) {
         // RME level may not be in all hierarchies
         // If one uses the DimensionUsage attribute "level", which level
         // in a hierarchy to join on, and there is more than one hierarchy,
         // then a HierarchyUsage can not be created for the hierarchies
         // that do not have the level defined.
-        RolapHierarchy[] hierarchies =
-            (RolapHierarchy[]) dimension.getHierarchies();
+        RolapCubeHierarchy[] hierarchies =
+            (RolapCubeHierarchy[]) dimension.getHierarchies();
 
         if (hierarchies.length == 1) {
             // Only one, so let lower level error checking handle problems
@@ -1252,7 +1222,7 @@ assert is not true.
 
             int cnt = 0;
 
-            for (RolapHierarchy hierarchy : hierarchies) {
+            for (RolapCubeHierarchy hierarchy : hierarchies) {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug("RolapCube<init>: hierarchy="
                         + hierarchy.getName());
@@ -1274,7 +1244,7 @@ assert is not true.
 
         } else {
             // just do it
-            for (RolapHierarchy hierarchy : hierarchies) {
+            for (RolapCubeHierarchy hierarchy : hierarchies) {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug("RolapCube<init>: hierarchy="
                         + hierarchy.getName());
@@ -1285,7 +1255,7 @@ assert is not true.
     }
 
     synchronized void createUsage(
-            RolapHierarchy hierarchy,
+            RolapCubeHierarchy hierarchy,
             MondrianDef.CubeDimension cubeDim) {
 
         HierarchyUsage usage = new HierarchyUsage(this, hierarchy, cubeDim);
@@ -1447,7 +1417,7 @@ assert is not true.
      *
      * @param dimension
      */
-    void registerDimension(Dimension dimension) {
+    void registerDimension(RolapCubeDimension dimension) {
         RolapStar star = getStar();
 
         Hierarchy[] hierarchies = dimension.getHierarchies();
@@ -1459,7 +1429,7 @@ assert is not true.
             if (relation == null) {
                 continue; // e.g. [Measures] hierarchy
             }
-            RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
+            RolapCubeLevel[] levels = (RolapCubeLevel[]) hierarchy.getLevels();
 
             HierarchyUsage[] hierarchyUsages = getUsages(hierarchy);
             if (hierarchyUsages.length == 0) {
@@ -1621,9 +1591,6 @@ assert is not true.
                     //   "fact"."foreignKey" = "product_class"."product_id"
 
                     table = table.addJoin(this, relation, joinCondition);
-                } else {
-                    // Register table aliases
-                    table.registerTableAlias(this, relation, table);
                 }
 
                 // The parent Column is used so that non-shared dimensions
@@ -1636,7 +1603,7 @@ assert is not true.
                 // If the level name is not null, then we need only register
                 // those columns for that level and above.
                 if (levelName != null) {
-                    for (RolapLevel level : levels) {
+                    for (RolapCubeLevel level : levels) {
                         if (level.getKeyExp() != null) {
                             parentColumn = makeColumns(table,
                                 level, parentColumn, usagePrefix);
@@ -1648,7 +1615,7 @@ assert is not true.
                 } else {
                     // This is the normal case, no level attribute so register
                     // all columns.
-                    for (RolapLevel level : levels) {
+                    for (RolapCubeLevel level : levels) {
                         if (level.getKeyExp() != null) {
                             parentColumn = makeColumns(table,
                                 level, parentColumn, usagePrefix);
@@ -1666,7 +1633,7 @@ assert is not true.
      */
     protected RolapStar.Column makeColumns(
             RolapStar.Table table,
-            RolapLevel level,
+            RolapCubeLevel level,
             RolapStar.Column parentColumn,
             String usagePrefix) {
 
@@ -2192,55 +2159,26 @@ assert is not true.
         return (fact == null);
     }
 
-    RolapDimension createDimension(MondrianDef.CubeDimension xmlCubeDimension) {
-        MondrianDef.Dimension xmlDimension;
-        final RolapDimension dimension;
-        if (xmlCubeDimension instanceof MondrianDef.Dimension) {
-            xmlDimension = (MondrianDef.Dimension) xmlCubeDimension;
-            dimension = new RolapDimension(schema, this, xmlDimension,
-                xmlCubeDimension);
-        } else if (xmlCubeDimension instanceof MondrianDef.DimensionUsage) {
-            final MondrianDef.DimensionUsage usage =
-                (MondrianDef.DimensionUsage) xmlCubeDimension;
-            final RolapHierarchy sharedHierarchy =
-                schema.getSharedHierarchy(usage.source);
-            if (sharedHierarchy == null) {
-                throw Util.newInternal("todo: Shared hierarchy '" + usage.source +
-                                        "' not found");
-            }
-
-            final RolapDimension sharedDimension =
-                (RolapDimension) sharedHierarchy.getDimension();
-            dimension = sharedDimension.copy(this, usage.name,
-                xmlCubeDimension);
-        } else {
-            throw Util.newInternal("Unexpected subtype, " + xmlCubeDimension);
+    RolapCubeDimension createDimension(
+            MondrianDef.CubeDimension xmlCubeDimension, 
+            MondrianDef.Schema xmlSchema) 
+    {
+        RolapCubeDimension dimension = 
+            getOrCreateDimension(
+                    xmlCubeDimension, schema, xmlSchema, 
+                    dimensions.length);
+        
+        if (! isVirtual()) {
+            createUsages(dimension, xmlCubeDimension);
         }
-
-        dimension.init(this, xmlCubeDimension);
+        registerDimension(dimension);
+        
+        dimension.init(xmlCubeDimension);
+        
         // add to dimensions array
-        final int localOrdinal = dimensions.length;
         this.dimensions = (DimensionBase[])
             RolapUtil.addElement(dimensions, dimension);
 
-        RolapHierarchy hierarchy = (RolapHierarchy) dimension.getHierarchy();
-        createUsage(hierarchy, xmlCubeDimension);
-
-
-        // add to ordinals array
-        final int globalOrdinal = dimension.getGlobalOrdinal();
-        if (globalOrdinal >= localDimensionOrdinals.length) {
-            int[] newLocalDimensionOrdinals = new int[globalOrdinal + 1];
-            System.arraycopy(localDimensionOrdinals, 0,
-                    newLocalDimensionOrdinals, 0, localDimensionOrdinals.length);
-            Arrays.fill(newLocalDimensionOrdinals,
-                    localDimensionOrdinals.length,
-                    newLocalDimensionOrdinals.length, -1);
-            this.localDimensionOrdinals = newLocalDimensionOrdinals;
-        }
-        Util.assertTrue(localDimensionOrdinals[globalOrdinal] == -1);
-        localDimensionOrdinals[globalOrdinal] = localOrdinal;
-        registerDimension(dimension);
         return dimension;
     }
 

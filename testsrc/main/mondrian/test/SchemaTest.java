@@ -11,8 +11,11 @@ package mondrian.test;
 
 import org.apache.log4j.*;
 import org.apache.log4j.varia.LevelRangeFilter;
+
+import mondrian.rolap.RolapCube;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.util.Bug;
+import mondrian.olap.Cube;
 import mondrian.olap.MondrianProperties;
 
 import java.io.StringWriter;
@@ -691,11 +694,16 @@ public class SchemaTest extends FoodMartTestCase {
      * Test Multiple DimensionUsages on same Dimension.
      */
     public void testMultipleDimensionUsages() {
+        // note, this test case is causing some trouble down the line in regard
+        // to aggregate tables.  The solution currently is to flush the cache 
+        // before executing the aggregate manager tests, but another alternative 
+        // could be realiasing this cube's table so it doesn't cause issues with 
+        // the constructed RolapStar.
         TestContext testContext = TestContext.create(
                 null,
 
                 "<Cube name=\"Sales Two Dimensions\">\n" +
-                    "  <Table name=\"sales_fact_1997\"/>\n" +
+                    "  <Table name=\"sales_fact_1997\"/>\n" + 
                     "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
                     "  <DimensionUsage name=\"Time2\" source=\"Time\" foreignKey=\"product_id\"/>\n" +
                     "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n" +
@@ -719,6 +727,111 @@ public class SchemaTest extends FoodMartTestCase {
                     "Axis #2:\n" +
                     "{[Time].[1997].[Q3]}\n" +
                     "Row #0: 16,266\n"));
+    }
+
+    /**
+     * This test verifies that the createDimension() API call is working correctly.
+     */
+    public void testDimensionCreation() {
+        TestContext testContext = TestContext.create(
+                null,
+
+                "<Cube name=\"Sales Create Dimension\">\n" +
+                    "  <Table name=\"sales_fact_1997\"/>\n" +
+                    "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n" +
+                    "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" "+
+                    "   formatString=\"Standard\"/>\n" +
+                    "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"" +
+                    "   formatString=\"#,###.00\"/>\n" +
+                    "</Cube>",
+                    null, null, null, null);
+        Cube cube = testContext.getConnection().getSchema().lookupCube("Sales Create Dimension", true);
+       
+        testContext.assertQueryReturns(
+                "select\n" +
+                    "NON EMPTY {[Store].[All Stores].children} on columns \n" +
+                    "From [Sales Create Dimension]",
+                    fold(
+                            "Axis #0:\n" +
+                            "{}\n" +
+                            "Axis #1:\n" +
+                            "{[Store].[All Stores].[USA]}\n" +
+                            "Row #0: 266,773\n"));
+        
+        String dimension = "<DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>";
+        testContext.getConnection().getSchema().createDimension(cube, dimension);
+        
+        testContext.assertQueryReturns(
+                "select\n" +
+                    "NON EMPTY {[Store].[All Stores].children} on columns, \n" +
+                    "{[Time].[1997].[Q1]} on rows \n" +
+                    "From [Sales Create Dimension]",
+                    fold(
+                            "Axis #0:\n" +
+                            "{}\n" +
+                            "Axis #1:\n" +
+                            "{[Store].[All Stores].[USA]}\n" +
+                            "Axis #2:\n" +
+                            "{[Time].[1997].[Q1]}\n" +
+                            "Row #0: 66,291\n"));
+        
+    }
+    
+    /**
+     * Test DimensionUsage level attribute
+     */
+    public void testDimensionUsageLevel() {
+        TestContext testContext = TestContext.create(
+                null,
+
+                "<Cube name=\"Customer Usage Level\">\n" +
+                    "  <Table name=\"customer\"/>\n" + // alias=\"sales_fact_1997_multi\"/>\n" +
+                    "  <DimensionUsage name=\"Store\" source=\"Store\" level=\"Store State\" foreignKey=\"state_province\"/>\n" +
+                    "  <Measure name=\"Cars\" column=\"num_cars_owned\" aggregator=\"sum\"/>\n" +
+                    "  <Measure name=\"Children\" column=\"total_children\" aggregator=\"sum\"/>\n" +
+                    "</Cube>",
+                    null, null, null, null);
+        
+       testContext.assertQueryReturns(
+                "select\n" +
+                    " {[Store].[Store State].members} on columns \n" +
+                    "From [Customer Usage Level]",
+                    fold(
+                            "Axis #0:\n" +
+                            "{}\n" +
+                            "Axis #1:\n" +
+                            "{[Store].[All Stores].[Canada].[BC]}\n" +
+                            "{[Store].[All Stores].[Mexico].[DF]}\n" +
+                            "{[Store].[All Stores].[Mexico].[Guerrero]}\n" +
+                            "{[Store].[All Stores].[Mexico].[Jalisco]}\n" +
+                            "{[Store].[All Stores].[Mexico].[Veracruz]}\n" +
+                            "{[Store].[All Stores].[Mexico].[Yucatan]}\n" +
+                            "{[Store].[All Stores].[Mexico].[Zacatecas]}\n" +
+                            "{[Store].[All Stores].[USA].[CA]}\n" +
+                            "{[Store].[All Stores].[USA].[OR]}\n" +
+                            "{[Store].[All Stores].[USA].[WA]}\n" +
+                            "Row #0: 7,700\n" +
+                            "Row #0: 1,492\n" +
+                            "Row #0: 228\n" +
+                            "Row #0: 206\n" +
+                            "Row #0: 195\n" +
+                            "Row #0: 229\n" +
+                            "Row #0: 1,209\n" +
+                            "Row #0: 46,965\n" +
+                            "Row #0: 4,686\n" +
+                            "Row #0: 32,767\n"));
+       
+       // BC.children should return an empty list, considering that we've 
+       // joined Store at the State level.
+       
+//       testContext.assertQueryReturns(
+//               "select\n" +
+//                   " {[Store].[All Stores].[Canada].[BC].children} on columns \n" +
+//                   "From [Customer Usage Level]",
+//               fold(
+//                       "Axis #0:\n" +
+//                       "{}\n" +
+//                       "Axis #1:\n"));
     }
 
     

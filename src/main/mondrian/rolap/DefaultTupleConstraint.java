@@ -33,15 +33,13 @@ public class DefaultTupleConstraint implements TupleConstraint {
 
     public void addConstraint(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        Map<String, RolapStar.Table> relationNamesToStarTableMap) {
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
     }
 
     public void addLevelConstraint(
         SqlQuery query,
         AggStar aggStar,
-        RolapLevel level,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
+        RolapLevel level) {
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {

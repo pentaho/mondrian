@@ -53,10 +53,9 @@ public class RolapNativeFilter extends RolapNativeSet {
         
         public void addConstraint(
             SqlQuery sqlQuery,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            Map<String, RolapStar.Table> relationNamesToStarTableMap) {
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
             sqlQuery.addHaving(filterExpr);
-            super.addConstraint(sqlQuery, levelToColumnMap, relationNamesToStarTableMap);
+            super.addConstraint(sqlQuery, levelToColumnMap);
         }
 
         public Object getCacheKey() {

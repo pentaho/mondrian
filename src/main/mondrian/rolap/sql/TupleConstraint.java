@@ -38,8 +38,7 @@ public interface TupleConstraint extends SqlConstraint {
      */
     public void addConstraint(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        Map<String, RolapStar.Table> relationNamesToStarTableMap);
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap);
 
     /**
      * Will be called multiple times for every "group by" level in
@@ -51,13 +50,11 @@ public interface TupleConstraint extends SqlConstraint {
      * @param query the query to modify
      * @param aggStar Aggregate table, or null if query is against fact table
      * @param level the level which is accessed in the Level.Members query
-     * @param levelToColumnMap set in the case of a virtual cube; use this
      */
     public void addLevelConstraint(
         SqlQuery query,
         AggStar aggStar,
-        RolapLevel level,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap);
+        RolapLevel level);
 
     /**
      * When the members of a level are fetched, the result is grouped

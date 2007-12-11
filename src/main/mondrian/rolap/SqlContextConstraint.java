@@ -204,8 +204,8 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     * @param strict defines the behaviour if the evaluator context
     * contains calculated members. If true, an exception is thrown,
     * otherwise calculated members are silently ignored. The
-    * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, java.util.Map, mondrian.rolap.aggmatcher.AggStar, RolapMember)} and
-    * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, java.util.Map, mondrian.rolap.aggmatcher.AggStar, java.util.List)} will
+    * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, mondrian.rolap.aggmatcher.AggStar, RolapMember)} and
+    * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, mondrian.rolap.aggmatcher.AggStar, java.util.List)} will
     * never accept a calculated member as parent.
     */
     SqlContextConstraint(RolapEvaluator evaluator, boolean strict) {
@@ -238,7 +238,6 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        Map<String, RolapStar.Table> relationNamesToStarTableMap,
         AggStar aggStar,
         RolapMember parent)
     {
@@ -248,8 +247,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         Evaluator e = evaluator.push(parent);
         SqlConstraintUtils.addContextConstraint(sqlQuery, aggStar, e, strict);
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, levelToColumnMap, relationNamesToStarTableMap,
-            aggStar, parent, true);
+            sqlQuery, levelToColumnMap, aggStar, parent, true);
     }
 
     /**
@@ -259,15 +257,13 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        Map<String, RolapStar.Table> relationNamesToStarTableMap,
         AggStar aggStar,
         List<RolapMember> parents)
     {
         SqlConstraintUtils.addContextConstraint(
             sqlQuery, aggStar, evaluator, strict);
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, levelToColumnMap, relationNamesToStarTableMap,
-            aggStar, parents, true, false);
+            sqlQuery, levelToColumnMap, aggStar, parents, true, false);
     }
 
     /**
@@ -275,8 +271,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      * context.
      */
     public void addConstraint(
-        SqlQuery sqlQuery, Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        Map<String, RolapStar.Table> relationNamesToStarTableMap) {
+        SqlQuery sqlQuery, Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
         SqlConstraintUtils.addContextConstraint(
             sqlQuery, null, evaluator, strict);
     }
@@ -303,13 +298,12 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     public void addLevelConstraint(
         SqlQuery sqlQuery,
         AggStar aggStar,
-        RolapLevel level,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
+        RolapLevel level) {
         if (!isJoinRequired()) {
             return;
         }
         SqlConstraintUtils.joinLevelTableToFactTable(
-            sqlQuery, aggStar, evaluator, level, levelToColumnMap);
+            sqlQuery, aggStar, evaluator, (RolapCubeLevel)level);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {

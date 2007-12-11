@@ -108,6 +108,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                             new RolapCubeLevel(
                                     rolapHierarchy.getAllMember().getLevel(), 
                                     this);
+                        allLevel.init(dimension.xmlDimension);
                     }
                     
                     this.currentAllMember = 
@@ -318,8 +319,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         
     }
         
-    void init(RolapCube cube, MondrianDef.CubeDimension xmlDimension) {
-        rolapHierarchy.init(cube, xmlDimension);
+    void init(MondrianDef.CubeDimension xmlDimension) {
+        // first init shared hierarchy
+        rolapHierarchy.init(xmlDimension);
+        // second init cube hierarchy
+        super.init(xmlDimension);
     }
  
     /******
@@ -409,7 +413,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 RolapMember member) {
             String name = 
                 (String) member.getPropertyValue(
-                    "__ROLAP_UNIQUE_NAME_WITHOUT_HIERARCHY__");
+                        Property.UNIQUE_NAME_WITHOUT_HIERARCHY.getName());
             RolapMember parent = member;
             if (name == null) {
                 StringBuilder fullName = new StringBuilder();
@@ -419,8 +423,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 }
                 name = fullName.toString();
                 member.setProperty(
-                    "__ROLAP_UNIQUE_NAME_WITHOUT_HIERARCHY__",
-                    name);
+                        Property.UNIQUE_NAME_WITHOUT_HIERARCHY.getName(),
+                        name);
             }
             return name;
         }
@@ -447,7 +451,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             // if not get them from our own source
             boolean joinReq = 
                 (constraint instanceof SqlContextConstraint) 
-                && ((SqlContextConstraint)constraint).isJoinRequired();
+                && (((SqlContextConstraint)constraint).isJoinRequired() || 
+                    ((SqlContextConstraint)constraint).getEvaluator().isNonEmpty());
             if (joinReq) {
                 source.getMemberChildren(parentMembers, 
                         rolapChildren, constraint);

@@ -52,7 +52,7 @@ import java.util.*;
  * then we can not store the parent/child pairs in the MemberCache and
  * {@link TupleConstraint#getMemberChildrenConstraint(RolapMember)}
  * must return null. Also
- * {@link TupleConstraint#addConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, java.util.Map)}
+ * {@link TupleConstraint#addConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map)}
  * is required to join the fact table for the levels table.</li>
  * </ul>
  *
@@ -608,53 +608,30 @@ public class SqlTupleReader implements TupleReader {
                 WhichSelect whichSelect =
                     finalSelect ? WhichSelect.LAST :
                         WhichSelect.NOT_LAST;
-                selectString +=
-                    generateSelectForLevels(
-                        dataSource,
-                        entry.getValue(),
-                        baseCube.getStar().getRelationNamesToStarTableMap(baseCube),
-                        whichSelect);
+                selectString += 
+                    generateSelectForLevels(dataSource, baseCube, whichSelect);
                 if (!finalSelect) {
                     selectString += " union ";
                 }
             }
             return selectString;
         } else {
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap =
-                cube == null ?
-                    null :
-                    cube.getStar().getLevelToColumnMap(cube);
-
-            // Pass in the new map to make shared dimensions know about
-            // their relational aliases.
-            Map<String, RolapStar.Table> relationNamesToStarTableMap =
-                cube == null ?
-                    null :
-                    cube.getStar().getRelationNamesToStarTableMap(cube);
-
-            return generateSelectForLevels(
-                dataSource,
-                levelToColumnMap,
-                relationNamesToStarTableMap,
-                WhichSelect.ONLY);
+            return generateSelectForLevels(dataSource, cube, WhichSelect.ONLY);
         }
     }
 
     /**
      * Generates the SQL string corresponding to the levels referenced.
      *
-     * @param dataSource jdbc connection that they query will execute
-     * against
-     * @param levelToColumnMap set only in the case of virtual cubes;
-     * provides the appropriate mapping for the base cube being processed
-     * @param relationNamesToStarTableMap map to disambiguate table aliases
+     * @param dataSource jdbc connection that they query will execute against
+     * @param baseCube this is the cube object for regular cubes, and the 
+     *   underlying base cube for virtual cubes
      * @param whichSelect Position of this select statement in a union
      * @return SQL statement string
      */
     private String generateSelectForLevels(
         DataSource dataSource,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        Map<String, RolapStar.Table> relationNamesToStarTableMap,
+        RolapCube baseCube,
         WhichSelect whichSelect) {
 
         String s = "while generating query to retrieve members of level(s) " + targets;
@@ -668,19 +645,47 @@ public class SqlTupleReader implements TupleReader {
                 addLevelMemberSql(
                     sqlQuery,
                     target.getLevel(),
-                    levelToColumnMap,
-                    relationNamesToStarTableMap,
+                    baseCube,
                     whichSelect);
             }
         }
 
         // additional constraints
-        constraint.addConstraint(
-            sqlQuery, levelToColumnMap, relationNamesToStarTableMap);
-
+        // the level to column map is still required due to 
+        // RolapNativeSet.SetConstraint
+        constraint.addConstraint(sqlQuery, null); 
+        
         return sqlQuery.toString();
     }
 
+    /**
+     * Locates the base cube hierarchy for this particular virtual hierarchy.
+     * If not found, return null. This should be converted to a map lookup
+     * or cached in some way to avoid performance issues with cubes that have
+     * large numbers of hierarchies
+     * 
+     * @param baseCube this is the cube object for regular cubes, and the 
+     *   underlying base cube for virtual cubes
+     * @param hierarchy
+     * @return base cube hierarchy if found
+     */
+    private RolapHierarchy findBaseCubeHiearchy(
+            RolapCube baseCube, RolapHierarchy hierarchy) 
+    {
+        for (int i = 0; i < baseCube.getDimensions().length; i++) {
+            Dimension dimension = baseCube.getDimensions()[i]; 
+            if (dimension.getName().equals(hierarchy.getDimension().getName())) {
+                for (int j = 0; j <  dimension.getHierarchies().length; j++) {
+                    Hierarchy hier = dimension.getHierarchies()[j];
+                    if (hier.getName().equals(hierarchy.getName())) {
+                        return (RolapHierarchy)hier;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
     /**
      * Generates the SQL statement to access members of <code>level</code>. For
      * example, <blockquote>
@@ -700,65 +705,52 @@ public class SqlTupleReader implements TupleReader {
      *
      * @param sqlQuery the query object being constructed
      * @param level level to be added to the sql query
-     * @param levelToColumnMap set only in the case of virtual cubes;
-     * provides the appropriate mapping for the base cube being processed
-     * @param relationNamesToStarTableMap map to disambiguate table aliases
+     * @param baseCube this is the cube object for regular cubes, and the 
+     *   underlying base cube for virtual cubes
      * @param whichSelect describes whether this select belongs to a larger
      * select containing unions or this is a non-union select
      */
     private void addLevelMemberSql(
         SqlQuery sqlQuery,
         RolapLevel level,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        Map<String, RolapStar.Table> relationNamesToStarTableMap,
+        RolapCube baseCube,
         WhichSelect whichSelect)
     {
         RolapHierarchy hierarchy = level.getHierarchy();
 
+        // lookup RolapHierarchy of base cube that matches this hierarchy
+        
+        if (hierarchy instanceof RolapCubeHierarchy) {
+            RolapCubeHierarchy cubeHierarchy = (RolapCubeHierarchy)hierarchy;
+            if (baseCube != null && !cubeHierarchy.getDimension().getCube().equals(baseCube)) {
+                // replace the hierarchy with the underlying base cube hierarchy
+                // in the case of virtual cubes
+                hierarchy = findBaseCubeHiearchy(baseCube, hierarchy);
+            }
+        }
+
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         int levelDepth = level.getDepth();
         for (int i = 0; i <= levelDepth; i++) {
-            RolapLevel level2 = levels[i];
-            if (level2.isAll()) {
+            RolapLevel currLevel = levels[i];
+            if (currLevel.isAll()) {
                 continue;
             }
 
-            MondrianDef.Expression keyExp = level2.getKeyExp();
-            MondrianDef.Expression ordinalExp = level2.getOrdinalExp();
-            MondrianDef.Expression captionExp = level2.getCaptionExp();
+            MondrianDef.Expression keyExp = currLevel.getKeyExp();
+            MondrianDef.Expression ordinalExp = currLevel.getOrdinalExp();
+            MondrianDef.Expression captionExp = currLevel.getCaptionExp();
 
-            String keySql =
-                level2.getExpressionWithAlias(
-                    sqlQuery, levelToColumnMap, keyExp);
-            String ordinalSql =
-                    level2.getExpressionWithAlias(
-                        sqlQuery, levelToColumnMap, ordinalExp);
+            String keySql = keyExp.getExpression(sqlQuery);
+            String ordinalSql = ordinalExp.getExpression(sqlQuery);
+
+            hierarchy.addToFrom(sqlQuery, keyExp);
+            hierarchy.addToFrom(sqlQuery, ordinalExp);
 
             String captionSql = null;
             if (captionExp != null) {
-                captionSql =
-                    level2.getExpressionWithAlias(
-                        sqlQuery, levelToColumnMap, captionExp);
-            }
-
-            if (levelToColumnMap != null &&
-                relationNamesToStarTableMap != null) {
-
-                RolapStar.Table targetTable =
-                    levelToColumnMap.get(level2).getTable();
-
-                hierarchy.addToFrom(
-                    sqlQuery,
-                    relationNamesToStarTableMap,
-                    targetTable);
-            } else {
-                hierarchy.addToFrom(sqlQuery, keyExp);
-
-                hierarchy.addToFrom(sqlQuery, ordinalExp);
-
-                if (captionExp != null) {
-                    hierarchy.addToFrom(sqlQuery, captionExp);
-                }
+                captionSql = captionExp.getExpression(sqlQuery);
+                hierarchy.addToFrom(sqlQuery, captionExp);
             }
 
             sqlQuery.addSelect(keySql);
@@ -774,8 +766,7 @@ public class SqlTupleReader implements TupleReader {
                 sqlQuery.addGroupBy(captionSql);
             }
 
-            constraint.addLevelConstraint(
-                sqlQuery, null, level2, levelToColumnMap);
+            constraint.addLevelConstraint(sqlQuery, null, currLevel);
 
             // If this is a select on a virtual cube, the query will be
             // a union, so the order by columns need to be numbers,
@@ -792,14 +783,9 @@ public class SqlTupleReader implements TupleReader {
                 break;
             }
 
-            RolapProperty[] properties = level2.getProperties();
+            RolapProperty[] properties = currLevel.getProperties();
             for (RolapProperty property : properties) {
-                String propSql =
-                    level2.getExpressionWithAlias(
-                        sqlQuery,
-                        levelToColumnMap,
-                        property.getExp());
-
+                String propSql = property.getExp().getExpression(sqlQuery);
                 sqlQuery.addSelect(propSql);
                 sqlQuery.addGroupBy(propSql);
             }

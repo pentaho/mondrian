@@ -87,14 +87,6 @@ public class RolapStar {
     private final Map<RolapCube, Map<RolapLevel, Column>>
         cubeToLevelToColumnMapMap;
 
-    /**
-     * Maps {@link RolapCube} to a {@link HashMap} which maps {@link String}
-     * to {@link RolapStar.Table}. Again the indirection is required because
-     * shared hierarchies can be used in different cubes by different names.
-     */
-    private final Map<RolapCube, Map<String, RolapStar.Table>>
-    	cubeToRelationNamesToStarTableMapMap;
-
     /** Holds all global aggregations of this star. */
     private final Map<AggregationKey,Aggregation> sharedAggregations;
 
@@ -176,8 +168,7 @@ public class RolapStar {
 
         this.cubeToLevelToColumnMapMap =
             new HashMap<RolapCube, Map<RolapLevel, Column>>();
-        this.cubeToRelationNamesToStarTableMapMap =
-            new HashMap<RolapCube, Map<String, RolapStar.Table>>();
+
         this.sharedAggregations = new HashMap<AggregationKey, Aggregation>();
         
         this.pendingAggregations = new HashMap<AggregationKey, Aggregation>();
@@ -311,8 +302,13 @@ public class RolapStar {
 
             if (join.left != left || join.right != right) {
                 join =
-                    new MondrianDef.Join(left.getAlias(), join.leftKey,
-                            left, right.getAlias(), join.rightKey, right);
+                    new MondrianDef.Join(
+                        left instanceof MondrianDef.Join ? null : left.getAlias(),
+                        join.leftKey,
+                        left, 
+                        right instanceof MondrianDef.Join ? null : right.getAlias(),
+                        join.rightKey, 
+                        right);
             }
             return join;
         }
@@ -449,26 +445,6 @@ public class RolapStar {
             this.cubeToLevelToColumnMapMap.put(cube, levelToColumnMap);
         }
         return levelToColumnMap;
-    }
-
-    /**
-     * Gets the (String, Table) map associated with a cube.
-     *
-     * @param cube Cube
-     * @return the (String, RolapStar.Table) map
-     */
-    Map<String, RolapStar.Table> getRelationNamesToStarTableMap(
-        RolapCube cube)
-    {
-        Map<String, RolapStar.Table> relationNamesToStarTableMap =
-            this.cubeToRelationNamesToStarTableMapMap.get(cube);
-        if (relationNamesToStarTableMap == null) {
-            relationNamesToStarTableMap =
-            	new HashMap<String, RolapStar.Table>();
-            this.cubeToRelationNamesToStarTableMapMap.put(
-            		cube, relationNamesToStarTableMap);
-        }
-        return relationNamesToStarTableMap;
     }
 
     /**
@@ -1572,7 +1548,7 @@ public class RolapStar {
          */
         synchronized Column makeColumns(
                 RolapCube cube,
-                RolapLevel level,
+                RolapCubeLevel level,
                 Column parentColumn,
                 String usagePrefix) {
 
@@ -1609,6 +1585,8 @@ public class RolapStar {
                 usagePrefix);
 
             if (column != null) {
+                // level.rolapStarColumn should eventually replace levelToColumnMap
+                level.setRolapStarColumn(column);
                 Map<RolapLevel, Column> map = star.getLevelToColumnMap(cube);
                 map.put(level, column);
             }
@@ -1678,25 +1656,6 @@ public class RolapStar {
         }
 
         /**
-         * Register RolapStar.table with its associated names.
-         *
-         * @param cube cube referencing this table
-         * @param relation mondiran refresentation of the table
-         * @param starTable rolap representation of the table
-         */
-        public void registerTableAlias(
-            RolapCube cube,
-            MondrianDef.Relation relation,
-            RolapStar.Table starTable)
-        {
-            Map<String, RolapStar.Table> map =
-                star.getRelationNamesToStarTableMap(cube);
-            String relationNames =
-                relation.toString() + relation.getAlias();
-            map.put(relationNames, starTable);
-        }
-
-        /**
          * Extends this 'leg' of the star by adding <code>relation</code>
          * joined by <code>joinCondition</code>. If the same expression is
          * already present, does not create it again. Stores the unaliased
@@ -1718,11 +1677,7 @@ public class RolapStar {
                     }
                     this.children.add(starTable);
                 }
-                // Register table aliases
-                registerTableAlias(cube, relation, starTable);
-
                 return starTable;
-
             } else if (relation instanceof MondrianDef.Join) {
                 MondrianDef.Join join = (MondrianDef.Join) relation;
                 RolapStar.Table leftTable = addJoin(cube, join.left, joinCondition);
