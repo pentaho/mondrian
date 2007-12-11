@@ -20,12 +20,6 @@ import java.util.Date;
 public interface Schema {
 
     /**
-     * returns the next available ordinal. Ths should not be part of the public
-     * API but this is temporary, will be removed with the "compiled expressions".
-     */
-    int getNextDimensionOrdinal();
-
-    /**
      * Returns the name of this schema.
      * @post return != null
      * @post return.length() > 0
