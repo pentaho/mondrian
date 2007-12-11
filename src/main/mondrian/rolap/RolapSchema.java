@@ -1764,13 +1764,6 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         return nativeRegistry;
     }
 
-    /** Generator for {@link RolapDimension#globalOrdinal}. */
-    private int nextDimensionOrdinal = 1; // 0 is reserved for [Measures]
-
-    public synchronized int getNextDimensionOrdinal() {
-        return nextDimensionOrdinal++;
-    }
-
     /**
      * @return Returns the dataSourceChangeListener.
      */
