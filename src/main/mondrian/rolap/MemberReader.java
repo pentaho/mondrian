@@ -73,23 +73,60 @@ interface MemberReader extends MemberSource {
      *     zero if m1 is equal to m2, or if <code>siblingsAreEqual</code> and
      *         m1 and m2 have the same parent
      */
-    int compare(RolapMember m1, RolapMember m2, boolean siblingsAreEqual);
+    int compare(
+        RolapMember m1,
+        RolapMember m2,
+        boolean siblingsAreEqual);
 
+    /**
+     * Populates a list of the children of a Member, optionally applying a
+     * constraint.
+     *
+     * @param member Members whose children to find
+     * @param children List to populate with members
+     * @param constraint Constraint
+     */
     void getMemberChildren(
-            RolapMember member,
-            List<RolapMember> children,
-            MemberChildrenConstraint constraint);
+        RolapMember member,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint);
 
+    /**
+     * Populates a list of the children of a given set of Members, optionally
+     * applying a constraint.
+     *
+     * @param parentMembers List of members whose children to find
+     * @param children List to populate with members
+     * @param constraint Constraint
+     */
     void getMemberChildren(
-            List<RolapMember> parentMembers,
-            List<RolapMember> children,
-            MemberChildrenConstraint constraint);
+        List<RolapMember> parentMembers,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint);
 
+    /**
+     * Returns the members in the given Level, optionally between a range
+     * of ordinals and applying a constraint.
+     *
+     * @param level Level
+     * @param startOrdinal Ordinal of first member to retrieve
+     * @param endOrdinal Ordinal of last member to upper bound
+     * @param constraint Constraint
+     * @return list of members
+     */
     List<RolapMember> getMembersInLevel(
-            RolapLevel level,
-            int startOrdinal,
-            int endOrdinal,
-            TupleConstraint constraint);
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal,
+        TupleConstraint constraint);
+
+    /**
+     * Returns the number of members in this level.
+     *
+     * @param level Level
+     * @return number of members in level
+     */
+    int getLevelMemberCount(RolapLevel level);
 
     MemberBuilder getMemberBuilder();
 

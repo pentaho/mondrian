@@ -353,6 +353,23 @@ enum RowsetDefinition {
         }
     },
 
+    DBSCHEMA_SCHEMATA(
+        8, null,
+        new Column[] {
+            DbschemaSchemataRowset.CatalogName,
+            DbschemaSchemataRowset.SchemaName,
+            DbschemaSchemataRowset.SchemaOwner,
+        },
+        new Column[] {
+            DbschemaSchemataRowset.CatalogName,
+            DbschemaSchemataRowset.SchemaName,
+            DbschemaSchemataRowset.SchemaOwner,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new DbschemaSchemataRowset(request, handler);
+        }
+    },
+    
     /**
      * http://msdn2.microsoft.com/en-us/library/ms126299(SQL.90).aspx
      *
@@ -2016,7 +2033,6 @@ enum RowsetDefinition {
                 super.setProperty(propertyDef, value);
             }
         }
-
     }
 
     static class DbschemaCatalogsRowset extends Rowset {
@@ -2745,6 +2761,82 @@ TODO: see above
                 addRow(row, rows);
             }
         }
+        protected void setProperty(PropertyDefinition propertyDef, String value) {
+            switch (propertyDef) {
+            case Content:
+                break;
+            default:
+                super.setProperty(propertyDef, value);
+            }
+        }
+    }
+
+    static class DbschemaSchemataRowset extends Rowset {
+        private final RestrictionTest catalogNameRT;
+        DbschemaSchemataRowset(XmlaRequest request, XmlaHandler handler) {
+            super(DBSCHEMA_SCHEMATA, request, handler);
+            catalogNameRT = getRestrictionTest(CatalogName);
+        }
+
+        /*
+         * These are the columns returned by SQL Server.
+         */
+        private static final Column CatalogName =
+            new Column(
+                "CATALOG_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
+                "The provider-specific data type name.");
+        private static final Column SchemaName =
+            new Column(
+                "SCHEMA_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
+                "The indicator of the data type.");
+        private static final Column SchemaOwner =
+            new Column(
+                "SCHEMA_OWNER",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
+                "The length of a non-numeric column. If the data type is numeric, this is the upper bound on the maximum precision of the data type.");
+
+        public void populate(
+            XmlaResponse response,
+            List<Row> rows)
+            throws XmlaException
+        {
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
+            String roleName = request.getRoleName();
+            Role role = request.getRole();
+
+            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                    continue;
+                }
+                Connection connection =
+                    handler.getConnection(dsCatalog, role, roleName);
+                if (connection == null) {
+                    continue;
+                }
+                if (!catalogNameRT.passes(dsCatalog.name)) {
+                    continue;
+                }
+                final Schema schema = connection.getSchema();
+                Row row = new Row();
+                row.set(CatalogName.name, dsCatalog.name);
+                row.set(SchemaName.name, schema.getName());
+                row.set(SchemaOwner.name, "");
+                addRow(row, rows);
+            }
+        }
+
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef) {
             case Content:

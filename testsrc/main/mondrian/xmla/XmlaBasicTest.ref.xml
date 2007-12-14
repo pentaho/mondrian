@@ -2395,7 +2395,7 @@
                         <DIMENSION_CAPTION>Customers</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>9</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>10282</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>10182</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Customers]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Sales Ragged Cube - Customers Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
@@ -2446,7 +2446,7 @@
                         <DIMENSION_CAPTION>Geography</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>24</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Geography]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Sales Ragged Cube - Geography Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
@@ -10031,6 +10031,22 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Description/>
                     </row>
                     <row>
+                        <SchemaName>DBSCHEMA_SCHEMATA</SchemaName>
+                        <Restrictions>
+                            <Name>CATALOG_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>SCHEMA_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>SCHEMA_OWNER</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Description/>
+                    </row>
+                    <row>
                         <SchemaName>DBSCHEMA_TABLES</SchemaName>
                         <Restrictions>
                             <Name>TABLE_CATALOG</Name>
@@ -10521,6 +10537,85 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                 </root>
             </xmla:return>
         </xmla:DiscoverResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testDBSchemata">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element name="CATALOG_NAME"
+                                    sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element name="SCHEMA_NAME"
+                                    sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="SCHEMA_OWNER"
+                                    sql:field="SCHEMA_OWNER" type="xsd:string"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <SCHEMA_OWNER/>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>

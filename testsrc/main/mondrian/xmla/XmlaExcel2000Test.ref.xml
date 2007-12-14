@@ -240,6 +240,22 @@
                         <Description/>
                     </row>
                     <row>
+                        <SchemaName>DBSCHEMA_SCHEMATA</SchemaName>
+                        <Restrictions>
+                            <Name>CATALOG_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>SCHEMA_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>SCHEMA_OWNER</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Description/>
+                    </row>
+                    <row>
                         <SchemaName>DBSCHEMA_TABLES</SchemaName>
                         <Restrictions>
                             <Name>TABLE_CATALOG</Name>
@@ -3092,6 +3108,22 @@ The default value for this property is an empty string.</PropertyDescription>
                         <Restrictions>
                             <Name>BEST_MATCH</Name>
                             <Type>xsd:boolean</Type>
+                        </Restrictions>
+                        <Description/>
+                    </row>
+                    <row>
+                        <SchemaName>DBSCHEMA_SCHEMATA</SchemaName>
+                        <Restrictions>
+                            <Name>CATALOG_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>SCHEMA_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>SCHEMA_OWNER</Name>
+                            <Type>xsd:string</Type>
                         </Restrictions>
                         <Description/>
                     </row>

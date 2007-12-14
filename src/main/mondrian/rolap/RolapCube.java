@@ -125,7 +125,7 @@ public class RolapCube extends CubeBase {
         RolapDimension measuresDimension = new RolapDimension(
                 schema,
                 Dimension.MEASURES_NAME,
-                DimensionType.StandardDimension);
+                DimensionType.MeasuresDimension);
 
         this.dimensions[0] = measuresDimension;
 

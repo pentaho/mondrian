@@ -116,12 +116,17 @@ class CacheMemberReader implements MemberReader, MemberCache {
 
     // don't need to implement this MemberCache method because we're never
     // used in a context where it is needed
-    public List getLevelMembersFromCache(RolapLevel level, TupleConstraint constraint) {
+    public List<RolapMember> getLevelMembersFromCache(
+        RolapLevel level,
+        TupleConstraint constraint)
+    {
         return null;
     }
 
-    public RolapMember lookupMember(List<Id.Segment> uniqueNameParts,
-                                    boolean failIfNotFound) {
+    public RolapMember lookupMember(
+        List<Id.Segment> uniqueNameParts,
+        boolean failIfNotFound)
+    {
         return RolapUtil.lookupMember(this, uniqueNameParts, failIfNotFound);
     }
 
@@ -160,6 +165,17 @@ class CacheMemberReader implements MemberReader, MemberCache {
         TupleConstraint constraint)
     {
         return getMembersInLevel(level, startOrdinal, endOrdinal);
+    }
+
+    public int getLevelMemberCount(RolapLevel level) {
+        int count = 0;
+        int levelDepth = level.getDepth();
+        for (RolapMember member : members) {
+            if (member.getLevel().getDepth() == levelDepth) {
+                ++count;
+            }
+        }
+        return count;
     }
 
     public void getMemberChildren(
@@ -228,12 +244,11 @@ class CacheMemberReader implements MemberReader, MemberCache {
         RolapMember endMember,
         List<RolapMember> list)
     {
-        Util.assertPrecondition(startMember != null, "startMember != null");
-        Util.assertPrecondition(endMember != null, "endMember != null");
-        Util.assertPrecondition(startMember.getLevel() == endMember.getLevel(),
-                "startMember.getLevel() == endMember.getLevel()");
-
-        for (int i = startMember.getOrdinal(); i <= endMember.getOrdinal(); i++) {
+        assert startMember != null;
+        assert endMember != null;
+        assert startMember.getLevel() == endMember.getLevel();
+        final int endOrdinal = endMember.getOrdinal();
+        for (int i = startMember.getOrdinal(); i <= endOrdinal; i++) {
             if (members[i].getLevel() == endMember.getLevel()) {
                 list.add(members[i]);
             }

@@ -192,7 +192,7 @@ public abstract class RolapSchemaReader
         List list = ((MemberCache)memberReader).getLevelMembersFromCache(
             (RolapLevel) level, null);
         if (list == null) {
-          return Integer.MIN_VALUE;
+            return Integer.MIN_VALUE;
         }
         return list.size();
     }
@@ -221,7 +221,10 @@ public abstract class RolapSchemaReader
             if (materialize) {
                 // Either the approximate row count hasn't been set,
                 // or they want the precise row count.
-                rowCount = getLevelMembers(level, false).length;
+                final MemberReader memberReader =
+                    getMemberReader(level.getHierarchy());
+                rowCount =
+                    memberReader.getLevelMemberCount((RolapLevel) level);
                 // Cache it for future.
                 ((RolapLevel) level).setApproxRowCount(rowCount);
             }

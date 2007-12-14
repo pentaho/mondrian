@@ -121,6 +121,8 @@ class RolapDimension extends DimensionBase {
                         // not set yet - set it according to current level
                         dimensionType = (lev.getLevelType().isTime())
                             ? DimensionType.TimeDimension
+                            : isMeasures()
+                            ? DimensionType.MeasuresDimension
                             : DimensionType.StandardDimension;
 
                     } else {

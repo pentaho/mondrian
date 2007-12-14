@@ -85,7 +85,7 @@ class SqlMemberSource implements MemberReader, SqlTupleReader.MemberBuilder {
         throw new UnsupportedOperationException();
     }
 
-    private int getLevelMemberCount(RolapLevel level) {
+    public int getLevelMemberCount(RolapLevel level) {
         if (level.isAll()) {
             return 1;
         }

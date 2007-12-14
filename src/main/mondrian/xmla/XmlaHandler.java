@@ -1226,7 +1226,7 @@ public class XmlaHandler implements XmlaConstants {
         checkFormat(request);
 
         DataSourcesConfig.DataSource ds = getDataSource(request);
-        DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
+        DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds, true);
         String roleName = request.getRoleName();
         Role role = request.getRole();
 
@@ -1538,7 +1538,7 @@ public class XmlaHandler implements XmlaConstants {
             checkFormat(request);
 
             DataSourcesConfig.DataSource ds = getDataSource(request);
-            DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
+            DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds, true);
             String roleName = request.getRoleName();
             Role role = request.getRole();
 
@@ -1641,9 +1641,7 @@ public class XmlaHandler implements XmlaConstants {
             Dimension[] dimensions = cube.getDimensions();
             for (Dimension dimension : dimensions) {
                 Hierarchy[] hierarchies = dimension.getHierarchies();
-                for (Hierarchy hierarchy : hierarchies) {
-                    hierarchyList.add(hierarchy);
-                }
+                hierarchyList.addAll(Arrays.asList(hierarchies));
             }
 
             writer.startElement("OlapInfo");
@@ -1664,11 +1662,8 @@ public class XmlaHandler implements XmlaConstants {
             List<Hierarchy> axisHierarchyList = new ArrayList<Hierarchy>();
             for (int i = 0; i < axes.length; i++) {
                 Hierarchy[] hiers =
-                        axisInfo(writer, axes[i], queryAxes[i], "Axis" + i);
-                for (Hierarchy hier : hiers) {
-                    axisHierarchyList.add(hier);
-                }
-
+                    axisInfo(writer, axes[i], queryAxes[i], "Axis" + i);
+                axisHierarchyList.addAll(Arrays.asList(hiers));
             }
             // Remove all seen axes.
             // What this does is for each hierarchy in one of the
@@ -1793,12 +1788,15 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         private String getXsdType(String prop) {
-            Property.Datatype datatype = Property.lookup(prop, false).getType();
-            if(Property.Datatype.TYPE_NUMERIC.equals(datatype)){
+            final Property property = Property.lookup(prop, false);
+            if (property != null) {
+                Property.Datatype datatype = property.getType();
+                switch (datatype) {
+                case TYPE_NUMERIC:
                     return RowsetDefinition.Type.UnsignedInteger.columnType;
-            }
-            if(Property.Datatype.TYPE_BOOLEAN.equals(datatype)){
+                case TYPE_BOOLEAN:
                     return RowsetDefinition.Type.Boolean.columnType;
+                }
             }
             return RowsetDefinition.Type.String.columnType;
         }
@@ -2782,19 +2780,33 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
      *
      * @param request Request
      * @param ds DataSource
+     * @param required Whether to throw an error if catalog name is not
+     * specified
+     *
      * @return DataSourcesConfig Catalog or null
      * @throws XmlaException If error occurs
      */
     public DataSourcesConfig.Catalog getCatalog(
         XmlaRequest request,
-        DataSourcesConfig.DataSource ds)
+        DataSourcesConfig.DataSource ds,
+        boolean required)
         throws XmlaException
     {
         Map<String, String> properties = request.getProperties();
         final String catalogName =
             properties.get(PropertyDefinition.Catalog.name());
         DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
-        if ((dsCatalog == null) && (catalogName != null)) {
+        if (dsCatalog == null) {
+            if (catalogName == null) {
+                if (required) {
+                    throw new XmlaException(
+                        CLIENT_FAULT_FC,
+                        HSB_CONNECTION_DATA_SOURCE_CODE,
+                        HSB_CONNECTION_DATA_SOURCE_FAULT_FS,
+                        Util.newError("catalog not specified"));
+                }
+                return null;
+            }
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_CONNECTION_DATA_SOURCE_CODE,
@@ -2810,7 +2822,7 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
         checkFormat(request);
 
         DataSourcesConfig.DataSource ds = getDataSource(request);
-        DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
+        DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds, true);
         String roleName = request.getRoleName();
         Role role = request.getRole();
 
@@ -2914,6 +2926,22 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
                 HSB_DRILL_THROUGH_SQL_CODE,
                 HSB_DRILL_THROUGH_SQL_FAULT_FS,
                 rte);
+        }
+    }
+
+    public static void main(String[] args) {
+        for (RowsetDefinition def : RowsetDefinition.values()) {
+            System.out.print("    " + def.name() + "(");
+            int k = 0;
+            for (RowsetDefinition.Column column : def.columnDefinitions) {
+                if (k++ == 0) {
+                    System.out.println();
+                } else {
+                    System.out.println(",");
+                }
+                System.out.print("        new MetadataColumn(\"" + column.name + "\")");
+            }
+            System.out.println("),");
         }
     }
 }

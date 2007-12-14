@@ -144,6 +144,12 @@ public class SmartMemberReader implements MemberReader {
         }
     }
 
+    public int getLevelMemberCount(RolapLevel level) {
+        // No need to cache the result: the caller saves the result by calling
+        // RolapLevel.setApproxRowCount
+        return source.getLevelMemberCount(level);
+    }
+
     public void getMemberChildren(
         RolapMember parentMember,
         List<RolapMember> children)

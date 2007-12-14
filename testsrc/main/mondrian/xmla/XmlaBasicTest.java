@@ -174,6 +174,10 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         String requestType = "DBSCHEMA_CATALOGS";
         doTestRT(requestType, TestContext.instance());
     }
+    public void testDBSchemata() throws Exception {
+        String requestType = "DBSCHEMA_SCHEMATA";
+        doTestRT(requestType, TestContext.instance());
+    }
     // passes 2/25 - I think that this is good but not sure
     public void _testDBColumns() throws Exception {
         String requestType = "DBSCHEMA_COLUMNS";

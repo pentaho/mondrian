@@ -26,7 +26,12 @@ public enum DimensionType {
     /**
      * Indicates that a dimension is a time dimension.
      */
-    TimeDimension
+    TimeDimension,
+
+    /**
+     * Indicates the a dimension is the measures dimension.
+     */
+    MeasuresDimension,
 }
 
 // End DimensionType.java

@@ -137,6 +137,10 @@ class DelegatingMemberReader implements MemberReader {
             level, startOrdinal, endOrdinal, constraint);
     }
 
+    public int getLevelMemberCount(RolapLevel level) {
+        return memberReader.getLevelMemberCount(level);
+    }
+
     public MemberBuilder getMemberBuilder() {
         return memberReader.getMemberBuilder();
     }
