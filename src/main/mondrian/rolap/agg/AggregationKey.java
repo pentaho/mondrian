@@ -45,9 +45,12 @@ public class AggregationKey
     private final BitKey constrainedColumnsBitKey;
 
     /*
+    * This map must be deternimistic; otherwise different runs generate SQL
+    * statements in different orders.
+    *
      * TODO: change this to SortedMap to speed up comparison.
      */
-    private Map<BitKey, StarPredicate> compoundPredicateMap;
+    private final Map<BitKey, StarPredicate> compoundPredicateMap;
 
     public AggregationKey(CellRequest request) {
         this.constrainedColumnsBitKey = request.getConstrainedColumnsBitKey();

@@ -75,7 +75,7 @@ public interface Modulos {
         public abstract int getCellOrdinal(int[] pos);
 
         public String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append('(');
             for (int i = 0; i < modulos.length; i++) {
                 if (i > 0) {
@@ -88,11 +88,11 @@ public interface Modulos {
         }
     }
     public class Zero extends Base {
+        private static final int[] pos = new int[0];
         private Zero(final Axis[] axes) {
             super(axes);
         }
         public final int[] getCellPos(final int cellOrdinal) {
-            int[] pos = new int[0];
             return pos;
         }
         public final int getCellOrdinal(final int[] pos) {
@@ -205,12 +205,20 @@ public interface Modulos {
      * Converts a cell ordinal to a set of cell coordinates. Converse of
      * {@link #getCellOrdinal}. For example, if this result is 10 x 10 x 10,
      * then cell ordinal 537 has coordinates (5, 3, 7).
+     *
+     * @param cellOrdinal Cell ordinal
+     * @return cell coordinates
      */
     int[] getCellPos(int cellOrdinal);
 
     /**
      * Converts a set of cell coordinates to a cell ordinal. Converse of
      * {@link #getCellPos}.
+     *
+     * @param pos Cell coordinates
+     * @return cell ordinal
      */
     int getCellOrdinal(int[] pos);
 }
+
+// End Modulos.java

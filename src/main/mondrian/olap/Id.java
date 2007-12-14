@@ -59,15 +59,9 @@ public class Id
     }
 
     public String toString() {
-        final StringBuffer sb = new StringBuffer();
-        boolean theFirst = true;
-        for(Segment segment : segments) {
-            if(!theFirst) sb.append(".");
-            theFirst = false;
-            if(segment.quoting==Quoting.KEY) sb.append("&");
-            sb.append("[").append(segment.name).append("]");
-        }
-        return sb.toString();
+        final StringBuilder buf = new StringBuilder();
+        Util.quoteMdxIdentifier(segments, buf);
+        return buf.toString();
     }
 
     public String[] toStringArray() {

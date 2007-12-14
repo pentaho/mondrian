@@ -1134,9 +1134,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         //
         // (6) ([1997 Q1 Plus July], [TV])
         //     ([1997 Q1 Plus July], [radio])      
-        final String accessSql = "select count(`c`) as `c0` " +
+        final String accessSql = "select count(`m0`) as `c0` " +
             "from (" +
-            "select distinct `sales_fact_1997`.`customer_id` as `c` " +
+            "select distinct `sales_fact_1997`.`customer_id` as `m0` " +
             "from `time_by_day` as `time_by_day`," +
             " `sales_fact_1997` as `sales_fact_1997`," +
             " `promotion` as `promotion` " +
@@ -1145,7 +1145,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             " or (`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997)) " +
             "and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` " +
             "and `promotion`.`media_type` in ('TV', 'Radio')) as `dummyname`";
-        
+
         final String oracleSql =
             "select " +
             "\"time_by_day\".\"the_year\" as \"c0\", \"time_by_day\".\"quarter\" as \"c1\", " +
@@ -1163,7 +1163,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "group by " +
             "\"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", " +
             "\"promotion\".\"media_type\"";
-                
+
         final String mysqlSql =
             "select " +
             "`time_by_day`.`the_year` as `c0`, `time_by_day`.`quarter` as `c1`, " +
@@ -1218,33 +1218,24 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "SELECT {[Measures].[Customer Count], [Measures].[Unit Sales]} ON COLUMNS,\n" +
             "      {[Store].[CA plus USA]} * {[Time].[Q1 plus July]} ON ROWS\n" +
             "FROM Sales";
-        assertQueryReturns(
-            mdxQuery,
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Customer Count]}\n" +
-                "{[Measures].[Unit Sales]}\n" +
-                "Axis #2:\n" +
-                "{[Store].[CA plus USA], [Time].[Q1 plus July]}\n" +
-                "Row #0: 3,505\n" +
-                "Row #0: 112,347\n"));
 
-        final String accessSql = "select count(`c`) as `c0` " +
-            "from (" +
-            "select distinct `sales_fact_1997`.`customer_id` as `c` " +
-            "from `store` as `store`," +
-            " `sales_fact_1997` as `sales_fact_1997`," +
-            " `time_by_day` as `time_by_day` " +
-            "where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
-            // not quite right: should be
-            //   store_state = 'CA' and store_country = 'USA' or store_country = 'USA'
-            "and (`store`.`store_state` = 'CA' or `store`.`store_country` = 'USA') " +
-            "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-            "and ((`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997)" +
-            " or (`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997))" +
-            ") as `dummyname`";
-        String derbySql = 
+        String accessSql = "select count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
+            "from \"store\" as \"store\"," +
+            " \"sales_fact_1997\" as \"sales_fact_1997\"," +
+            " \"time_by_day\" as \"time_by_day\" " +
+            "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+            "and (\"store\".\"store_country\" = 'USA'" +
+            " or (\"store\".\"store_state\" = 'CA'" +
+            " and \"store\".\"store_country\" = 'USA')) " +
+            "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
+            "and ((\"time_by_day\".\"quarter\" = 'Q1'" +
+            " and \"time_by_day\".\"the_year\" = 1997)" +
+            " or (\"time_by_day\".\"month_of_year\" = 7" +
+            " and \"time_by_day\".\"quarter\" = 'Q3' " +
+            "and \"time_by_day\".\"the_year\" = 1997))";
+        accessSql = "select count(`m0`) as `c0` from (select distinct `sales_fact_1997`.`customer_id` as `m0` from `store` as `store`, `sales_fact_1997` as `sales_fact_1997`, `time_by_day` as `time_by_day` where `sales_fact_1997`.`store_id` = `store`.`store_id` and ((`store`.`store_state` = 'CA' and `store`.`store_country` = 'USA') or `store`.`store_country` = 'USA') and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and ((`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997))) as `dummyname`";
+
+        String derbySql =
             "select " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
             "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
@@ -1273,6 +1264,18 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
             new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)            
         });
+
+        assertQueryReturns(
+            mdxQuery,
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[CA plus USA], [Time].[Q1 plus July]}\n" +
+                "Row #0: 3,505\n" +
+                "Row #0: 112,347\n"));
     }
     
     /**
@@ -1380,12 +1383,18 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "and (`product_class`.`product_department` = 'Deli' " +
             "and `product_class`.`product_family` = 'Food') " +
             "group by `store`.`store_state`, `time_by_day`.`the_year`";
-        
-        String msaccessSql = "select count(`c`) as `c0` " +
-                "from (select distinct `sales_fact_1997`.`customer_id` as `c` " +
-                "from `store` as `store`, `sales_fact_1997` as `sales_fact_1997`, " +
-                "`time_by_day` as `time_by_day`, `product_class` as `product_class`, " +
-                "`product` as `product` " +
+
+        String accessSql = "select `d0` as `c0`," +
+                " `d1` as `c1`," +
+                " count(`m0`) as `c2` " +
+                "from (select distinct `store`.`store_state` as `d0`," +
+                " `time_by_day`.`the_year` as `d1`," +
+                " `sales_fact_1997`.`customer_id` as `m0` " +
+                "from `store` as `store`," +
+                " `sales_fact_1997` as `sales_fact_1997`," +
+                " `time_by_day` as `time_by_day`," +
+                " `product_class` as `product_class`," +
+                " `product` as `product` " +
                 "where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
                 "and `store`.`store_state` = 'WA' " +
                 "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
@@ -1393,8 +1402,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 "and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
                 "and `product`.`product_class_id` = `product_class`.`product_class_id` " +
                 "and (`product_class`.`product_department` = 'Deli' " +
-                "and `product_class`.`product_family` = 'Food')) as `dummyname`";
-        
+                "and `product_class`.`product_family` = 'Food')) as `dummyname` " +
+                "group by `d0`, `d1`";
+
         String derbySql = 
             "select " +
             "\"store\".\"store_state\" as \"c0\", " +
@@ -1418,7 +1428,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
             
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.ACCESS, msaccessSql, msaccessSql),
+            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
             new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
 
@@ -1456,12 +1466,14 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "and `time_by_day`.`the_year` = 1997 " +
             "group by `time_by_day`.`the_year`";
         
-        String msaccessSql = "select count(`c`) as `c0` " +
-                "from (select distinct `sales_fact_1997`.`customer_id` as `c` " +
-                "from `time_by_day` as `time_by_day`, " +
-                "`sales_fact_1997` as `sales_fact_1997` " +
-                "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-                "and `time_by_day`.`the_year` = 1997) as `dummyname`";
+        String accessSql = "select `d0` as `c0`," +
+             " count(`m0`) as `c1` " +
+             "from (select distinct `time_by_day`.`the_year` as `d0`," +
+             " `sales_fact_1997`.`customer_id` as `m0` " +
+             "from `time_by_day` as `time_by_day`, " +
+             "`sales_fact_1997` as `sales_fact_1997` " +
+             "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
+             "and `time_by_day`.`the_year` = 1997) as `dummyname` group by `d0`";
 
         String derbySql = 
             "select " +
@@ -1476,7 +1488,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "group by \"time_by_day\".\"the_year\"";
             
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.ACCESS, msaccessSql, msaccessSql),
+            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
             new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
 

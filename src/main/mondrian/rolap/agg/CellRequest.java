@@ -14,7 +14,6 @@
 package mondrian.rolap.agg;
 
 import mondrian.rolap.*;
-import mondrian.olap.Util;
 
 import java.util.*;
 
@@ -67,12 +66,17 @@ public class CellRequest {
     private final BitKey constrainedColumnsBitKey;
     
     /**
-     * Map from BitKey(represent a group of columns that forms a
-     * compound key) to StarPredicate(represent the predicate 
-     * defining the compound member);
+     * Map from BitKey (representing a group of columns that forms a
+     * compound key) to StarPredicate (representing the predicate
+     * defining the compound member).
+     *
+     * <p>We use LinkedHashMap so that the entries occur in deterministic
+     * order; otherwise, successive runs generate different SQL queries.
+     * Another solution worth considering would be to use the inherent ordering
+     * of BitKeys and create a sorted map.
      */
-    private Map<BitKey, StarPredicate> compoundPredicateMap = 
-        new HashMap<BitKey, StarPredicate>();
+    private final Map<BitKey, StarPredicate> compoundPredicateMap =
+        new LinkedHashMap<BitKey, StarPredicate>();
 
     /**
      * Whether the request is impossible to satisfy. This is set to 'true' if
@@ -155,7 +159,8 @@ public class CellRequest {
     }
     
     /**
-     * Add compound member(formed via aggregate function) constraint to the Cell.
+     * Add compound member (formed via aggregate function) constraint to the
+     * Cell.
      * 
      * @param compoundBitKey
      * @param compoundPredicate
@@ -165,7 +170,6 @@ public class CellRequest {
         StarPredicate compoundPredicate) 
     {
         compoundPredicateMap.put(compoundBitKey, compoundPredicate);
-        return;
     }
     
     public RolapStar.Measure getMeasure() {

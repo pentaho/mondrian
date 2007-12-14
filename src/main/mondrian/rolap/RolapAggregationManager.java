@@ -124,7 +124,7 @@ public abstract class RolapAggregationManager {
         for (List<RolapMember> aggregationList : aggregationLists) {
             compoundBitKey = BitKey.Factory.makeBitKey(starColumnCount);
             compoundBitKey.clear();
-            compoundGroupMap = new HashMap<BitKey, List<RolapMember>>();
+            compoundGroupMap = new LinkedHashMap<BitKey, List<RolapMember>>();
             unsatisfiable =
                 makeCompoundGroup(
                     starColumnCount, levelToColumnMap, aggregationList, compoundGroupMap);

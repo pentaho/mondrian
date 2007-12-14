@@ -155,6 +155,8 @@ public class LocalizingDynamicSchemaProcessor
     }
 
     private String doRegExReplacements(String schema) {
+        // As of JDK 1.5, cannot use StringBuilder - appendReplacement requires
+        // the antediluvian StringBuffer.
         StringBuffer intlSchema = new StringBuffer();
         Matcher match = pattern.matcher(schema);
         String key;
