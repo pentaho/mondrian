@@ -24,7 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * A <code>Aggregation</code> is a pre-computed aggregation over a set of
  * columns.
- * <p/>
+ *
  * <p>Rollup operations:<ul>
  * <li>drop an unrestricted column (e.g. state=*)</li>
  * <li>tighten any restriction (e.g. year={1997,1998} becomes
@@ -32,22 +32,22 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <li>restrict an unrestricted column (e.g. year=* becomes
  * year={1997})</li>
  * </ul>
- * <p/>
+ *
  * <p>Representation of aggregations. Sparse and dense representations are
  * necessary for different data sets. Should adapt automatically. Use an
  * interface to hold the data set, so the segment doesn't care.</p>
- * <p/>
+ *
  * Suppose we have a segment {year=1997, quarter={1,2,3},
  * state={CA,WA}}. We want to roll up to a segment for {year=1997,
  * state={CA,WA}}.  We need to know that we have all quarters.  We don't.
  * Because year and quarter are independent, we know that we have all of
  * the ...</p>
- * <p/>
+ *
  * <p>Suppose we have a segment specified by {region=West, state=*,
  * year=*}, which materializes to ({West}, {CA,WA,OR}, {1997,1998}).
  * Because state=*, we can rollup to {region=West, year=*} or {region=West,
  * year=1997}.</p>
- * <p/>
+ *
  * <p>The space required for a segment depends upon the dimensionality (d),
  * cell count (c) and the value count (v). We don't count the space
  * required for the actual values, which is the same in any scheme.</p>
@@ -63,7 +63,7 @@ public class Aggregation {
      * to lookup Aggregation.
      */
     private AggregationKey aggregationKey;
-    
+
     /**
      * Setting for optimizing sql predicates.
      */
@@ -93,19 +93,19 @@ public class Aggregation {
     /**
      * Creates an Aggregation.
      *
-     * @param aggregationKey the key specifying the axes, the context and 
-     * the RolapStar for this Aggregation
+     * @param aggregationKey the key specifying the axes, the context and
+     *                       the RolapStar for this Aggregation
      */
     public Aggregation(
-        AggregationKey aggregationKey) {
+            AggregationKey aggregationKey) {
         this.segmentRefs = getThreadSafeListImplementation();
         this.maxConstraints =
-            MondrianProperties.instance().MaxConstraints.get();
+                MondrianProperties.instance().MaxConstraints.get();
         this.creationTimestamp = new Date();
-        this.aggregationKey = aggregationKey; 
+        this.aggregationKey = aggregationKey;
 
     }
-    
+
     private CopyOnWriteArrayList<SoftReference<Segment>> getThreadSafeListImplementation() {
         return new CopyOnWriteArrayList<SoftReference<Segment>>();
     }
@@ -121,10 +121,10 @@ public class Aggregation {
      * Loads a set of segments into this aggregation, one per measure,
      * each constrained by the same set of column values, and each pinned
      * once.
-     * <p/>
+     *
      * A Column and its constraints are accessed at the same level in their
      * respective arrays.
-     * <p/>
+     *
      * For example,
      * measures = {unit_sales, store_sales},
      * state = {CA, OR},
@@ -164,11 +164,11 @@ public class Aggregation {
             ArrayList<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
             groupingSets.add(groupingSet);
             new SegmentLoader().load(
-                groupingSets, pinnedSegments, 
-                aggregationKey.getCompoundPredicateList());
+                    groupingSets, pinnedSegments,
+                    aggregationKey.getCompoundPredicateList());
         }
     }
-    
+
     private Segment[] addSegmentsToAggregation(
             RolapStar.Measure[] measures, BitKey measureBitKey, Axis[] axes,
             RolapAggregationManager.PinSet pinnedSegments) {
@@ -646,13 +646,13 @@ public class Aggregation {
      * Retrieves the value identified by <code>keys</code>.
      * If the requested cell is found in the loading segment, current Thread
      * will be blocked until segment is loaded.
-     * <p/>
+     *
      * <p>If <code>pinSet</code> is not null, pins the
      * segment which holds it. <code>pinSet</code> ensures that a segment is
      * only pinned once.
-     * <p/>
+     *
      * <p>Returns <code>null</code> if no segment contains the cell.
-     * <p/>
+     *
      * <p>Returns {@link Util#nullValue} if a segment contains the cell and the
      * cell's value is null.
      */
@@ -733,7 +733,7 @@ public class Aggregation {
 
         /**
          * Map holding the position of each key value.
-         * <p/>
+         *
          * <p>TODO: Hold keys in a sorted array, then deduce ordinal by doing
          * binary search.
          */
@@ -837,7 +837,7 @@ public class Aggregation {
         /**
          * Returns whether this axis contains a given key, or would contain it
          * if it existed.
-         * <p/>
+         *
          * <p>For example, if this axis is unconstrained, then this method
          * returns <code>true</code> for any value.
          *
@@ -868,26 +868,26 @@ public class Aggregation {
     /**
      * Helper class to figure out which axis values evaluate to true at least
      * once by a given predicate.
-     * <p/>
+     *
      * <p>Consider, for example, the flush predicate<blockquote><code>
-     * <p/>
+     *
      * member between [Time].[1997].[Q3] and [Time].[1999].[Q1]
-     * <p/>
+     *
      * </code></blockquote>applied to the segment <blockquote><code>
-     * <p/>
+     *
      * year in (1996, 1997, 1998, 1999)<br/>
      * quarter in (Q1, Q2, Q3, Q4)
-     * <p/>
+     *
      * </code></blockquote> The predicate evaluates to true for the pairs
      * <blockquote><code>
-     * <p/>
+     *
      * {(1997, Q3), (1997, Q4),
      * (1998, Q1), (1998, Q2), (1998, Q3), (1998, Q4), (1999, Q1)}
-     * <p/>
+     *
      * </code></blockquote> and therefore we wish to eliminate these pairs from
      * the segment. But we can eliminate a value only if <em>all</em> of its
      * values are eliminated.
-     * <p/>
+     *
      * <p>In this case, year=1998 is the only value which can be eliminated from
      * the segment.
      */

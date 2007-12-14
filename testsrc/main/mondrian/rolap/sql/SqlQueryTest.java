@@ -342,7 +342,7 @@ public class SqlQueryTest extends BatchTestCase {
     /**
      * Verifies that the correct SQL string is generated for literals of
      * SQL type "double".
-     * <p/>
+     *
      * <p>Mondrian only generates SQL DOUBLE values in a special format for
      * LucidDB; therefore, this test is a no-op on other databases.
      */
