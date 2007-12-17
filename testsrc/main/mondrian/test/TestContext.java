@@ -12,27 +12,29 @@
 */
 package mondrian.test;
 
-import junit.framework.ComparisonFailure;
 import junit.framework.Assert;
+import junit.framework.ComparisonFailure;
+import mondrian.calc.Calc;
+import mondrian.calc.CalcWriter;
 import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
+import mondrian.olap.Member;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.resource.MondrianResource;
-import mondrian.calc.Calc;
-import mondrian.calc.CalcWriter;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
+import mondrian.util.DelegatingInvocationHandler;
 
 import javax.sql.DataSource;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.regex.Pattern;
-import java.util.List;
-import java.util.Locale;
 import java.sql.*;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.lang.reflect.*;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information
@@ -241,7 +243,9 @@ public class TestContext {
      * Returns a connection to the FoodMart database
      * with an inline schema.
      */
-    public synchronized Connection getFoodMartConnection(String catalogContent) {
+    public synchronized Connection getFoodMartConnection(
+        String catalogContent)
+    {
         Util.PropertyList properties = getFoodMartConnectionProperties();
         properties.put(
             RolapConnectionProperties.CatalogContent.name(),
@@ -254,7 +258,8 @@ public class TestContext {
      * a given role.
      */
     public synchronized Connection getFoodMartConnection(
-        String catalogContent, String role)
+        String catalogContent,
+        String role)
     {
         Util.PropertyList properties = getFoodMartConnectionProperties();
         properties.put(
@@ -273,7 +278,9 @@ public class TestContext {
      * @param useSchemaPool If false, use a fresh connection, not one from the
      *   schema pool
      */
-    public synchronized Connection getFoodMartConnection(boolean useSchemaPool) {
+    public synchronized Connection getFoodMartConnection(
+        boolean useSchemaPool)
+    {
         Util.PropertyList properties = getFoodMartConnectionProperties();
         properties.put(
             RolapConnectionProperties.UseSchemaPool.name(),
@@ -363,8 +370,7 @@ public class TestContext {
             }
         }
 
-        String s = unadulteratedFoodMartSchema;
-        return s;
+        return unadulteratedFoodMartSchema;
     }
 
     /**
@@ -527,8 +533,9 @@ public class TestContext {
      * returns the expected string.
      */
     public void assertAxisReturns(
-            String expression,
-            String expected) {
+        String expression,
+        String expected)
+    {
         Axis axis = executeAxis(expression);
         assertEqualsVerbose(expected, toString(axis.getPositions()));
     }
@@ -621,8 +628,9 @@ public class TestContext {
      * evaulated against the default cube.
      */
     public void assertAxisThrows(
-            String expression,
-            String pattern) {
+        String expression,
+        String pattern)
+    {
         Throwable throwable = null;
         Connection connection = getConnection();
         try {
@@ -697,10 +705,10 @@ public class TestContext {
      * literal.
      */
     public static void assertEqualsVerbose(
-            String expected,
-            String actual,
-            boolean java,
-            String message)
+        String expected,
+        String actual,
+        boolean java,
+        String message)
     {
         if ((expected == null) && (actual == null)) {
             return;
@@ -720,27 +728,6 @@ public class TestContext {
             message += "Actual java:" + nl + toJavaString(actual) + nl;
         }
         throw new ComparisonFailure(message, expected, actual);
-    }
-
-    private static String toJavaStringWithNl(String s) {
-
-        // Convert [string with "quotes" split
-        // across lines]
-        // into ["string with \"quotes\" split" + nl +
-        // "across lines
-        //
-        s = Util.replace(s, "\"", "\\\"");
-        s = LineBreakPattern.matcher(s).replaceAll(lineBreak);
-        s = TabPattern.matcher(s).replaceAll("\\\\t");
-        s = "\"" + s + "\"";
-//        private static final String spurious = "," + nl + "\"\"";
-//        if (s.endsWith(spurious)) {
-//            s = s.substring(0, s.length() - spurious.length());
-//        }
-        if (s.indexOf(lineBreak) >= 0) {
-            s = "fold(new String[] {" + nl + s + "})";
-        }
-        return s;
     }
 
     private static String toJavaString(String s) {
@@ -899,6 +886,40 @@ public class TestContext {
                 }
             }
         }
+    }
+
+    /**
+     * Creates a dialect without using a connection.
+     *
+     * @return dialect of an Access persuasion
+     */
+    public static SqlQuery.Dialect getFakeDialect()
+    {
+        final DatabaseMetaData data =
+            (DatabaseMetaData) Proxy.newProxyInstance(
+                null,
+                new Class<?>[] {DatabaseMetaData.class},
+                new DelegatingInvocationHandler() {
+                    public boolean supportsResultSetConcurrency(
+                        int type, int concurrency)
+                    {
+                        return false;
+                    }
+                    public String getDatabaseProductName() {
+                        return "Access";
+                    }
+                    public String getIdentifierQuoteString() {
+                        return "\"";
+                    }
+                    public String getDatabaseProductVersion() {
+                        return "1.0";
+                    }
+                    public boolean isReadOnly() {
+                        return true;
+                    }
+                }
+            );
+        return SqlQuery.Dialect.create(data);
     }
 
     /**
@@ -1088,16 +1109,16 @@ public class TestContext {
     }
 
     private void checkDependsOn(
-            final Query query,
-            final Exp expression,
-            String expectedDimList,
-            final boolean scalar) {
+        final Query query,
+        final Exp expression,
+        String expectedDimList,
+        final boolean scalar)
+    {
         final Calc calc = query.compileExpression(expression, scalar);
         final Dimension[] dimensions = query.getCube().getDimensions();
         StringBuilder buf = new StringBuilder("{");
         int dependCount = 0;
-        for (int i = 0; i < dimensions.length; i++) {
-            Dimension dimension = dimensions[i];
+        for (Dimension dimension : dimensions) {
             if (calc.dependsOn(dimension)) {
                 if (dependCount++ > 0) {
                     buf.append(", ");
