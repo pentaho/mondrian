@@ -497,12 +497,13 @@ Revision is $Id$
             </Doc>
         </Attribute>
 
-        <Object name="relation" type="Relation">
+        <Object name="relation" type="RelationOrJoin">
             <Doc>
                 The {@link MondrianDef.Table table},
-                {@link MondrianDef.Join set of tables}, or
-                {@link MondrianDef.View SQL statement} which populates this
-                hierarchy.
+                {@link MondrianDef.Join set of tables},
+                {@link MondrianDef.View SQL statement}, or
+                {@link MondrianDef.InlineTable inline table}
+                which populates this hierarchy.
             </Doc>
         </Object>
         <Array name="levels" type="Level"><Doc></Doc></Array>
@@ -985,17 +986,23 @@ Revision is $Id$
         <Attribute name="value"/>
     </Element>
 
-    <Class class="Relation">
+    <Class class="RelationOrJoin">
         <Doc>A table or a join</Doc>
         <Code>
             public abstract Relation find(String seekAlias);
-            public abstract String getAlias();
             public boolean equals(Object o) {
                 return this == o;
             }
             public int hashCode() {
                 return System.identityHashCode(this);
             }
+        </Code>
+    </Class>
+
+    <Class class="Relation" superclass="RelationOrJoin">
+        <Doc>A table, inline table or view</Doc>
+        <Code>
+            public abstract String getAlias();
         </Code>
     </Class>
 
@@ -1006,11 +1013,18 @@ Revision is $Id$
         <Attribute name="alias" required="true"/>
         <Array name="selects" type="SQL" min="1"/>
         <Code>
+            /**
+             * Copy constructor.
+             */
+            public View(View view) {
+                this.alias = view.alias;
+                this.selects = view.selects.clone();
+            }
             public String toString() {
                 return selects[0].cdata;
             }
 
-            public Relation find(String seekAlias) {
+            public View find(String seekAlias) {
                 if (seekAlias.equals(alias)) {
                     return this;
                 } else {
@@ -1092,7 +1106,7 @@ Revision is $Id$
         </Code>
     </Element>
 
-    <Element type="Join" class="Relation">
+    <Element type="Join" class="RelationOrJoin">
         <Attribute name="leftAlias">
             <Doc>
                 Defaults to left's alias if left is a table, otherwise
@@ -1107,12 +1121,18 @@ Revision is $Id$
             </Doc>
         </Attribute>
         <Attribute name="rightKey" required="true"/>
-        <Object name="left" type="Relation" required="true"/>
-        <Object name="right" type="Relation" required="true"/>
+        <Object name="left" type="RelationOrJoin" required="true"/>
+        <Object name="right" type="RelationOrJoin" required="true"/>
         <Code>
             /** Convenience constructor. */
-            public Join(String leftAlias, String leftKey, Relation left,
-                String rightAlias, String rightKey, Relation right) {
+            public Join(
+                String leftAlias,
+                String leftKey,
+                RelationOrJoin left,
+                String rightAlias, 
+                String rightKey,
+                RelationOrJoin right)
+            {
                 this.leftAlias = leftAlias;
                 this.leftKey = leftKey;
                 this.left = left;
@@ -1128,8 +1148,8 @@ Revision is $Id$
                 if (leftAlias != null) {
                     return leftAlias;
                 }
-                if (left instanceof Table) {
-                    return ((Table) left).getAlias();
+                if (left instanceof Relation) {
+                    return ((Relation) left).getAlias();
                 }
                 throw Util.newInternal(
                     "alias is required because " + left + " is not a table");
@@ -1142,8 +1162,8 @@ Revision is $Id$
                 if (rightAlias != null) {
                     return rightAlias;
                 }
-                if (right instanceof Table) {
-                    return ((Table) right).getAlias();
+                if (right instanceof Relation) {
+                    return ((Relation) right).getAlias();
                 }
                 if (right instanceof Join) {
                     return ((Join) right).getLeftAlias();
@@ -1162,9 +1182,6 @@ Revision is $Id$
                     relation = right.find(seekAlias);
                 }
                 return relation;
-            }
-            public String getAlias() {
-                throw Util.newInternal("join does not have alias");
             }
         </Code>
     </Element>
@@ -1213,7 +1230,7 @@ Revision is $Id$
                     name :
                     schema + "." + name;
             }
-            public Relation find(String seekAlias) {
+            public Table find(String seekAlias) {
                 return seekAlias.equals(name) ? this :
                     (alias != null) && seekAlias.equals(alias) ? this :
                     null;
@@ -1257,13 +1274,21 @@ Revision is $Id$
         <Object name="columnDefs" type="ColumnDefs" required="true"/>
         <Object name="rows" type="Rows" required="true"/>
         <Code><![CDATA[
+            /** Convenience constructor. */
+            public InlineTable(InlineTable inlineTable) {
+                this.alias = inlineTable.alias;
+                this.columnDefs = new ColumnDefs();
+                this.columnDefs.array = inlineTable.columnDefs.array.clone();
+                this.rows = new Rows();
+                this.rows.array = inlineTable.rows.array.clone();
+            }
             public String getAlias() {
                 return alias;
             }
             public String toString() {
                 return "<inline data>";
             }
-            public Relation find(String seekAlias) {
+            public InlineTable find(String seekAlias) {
                 return seekAlias.equals(this.alias) ? this : null;
             }
             public boolean equals(Object o) {

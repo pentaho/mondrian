@@ -12,13 +12,14 @@
 */
 
 package mondrian.rolap;
+
 import mondrian.olap.*;
-import mondrian.rolap.agg.*;
+import mondrian.rolap.agg.Aggregation;
+import mondrian.rolap.agg.AggregationKey;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.DataSourceChangeListener;
 import mondrian.util.Bug;
-
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.Property;
 import org.eigenbase.util.property.TriggerBase;
@@ -184,13 +185,17 @@ public class RolapStar {
 
     private class StarNetworkNode {
         private StarNetworkNode parent;
-        private MondrianDef.Relation origRel; // this is either a table or a view
+        private MondrianDef.Relation origRel;
         private String foreignKey;
         private String joinKey;
 
-        private StarNetworkNode(StarNetworkNode parent, String alias,
-                MondrianDef.Relation origRel, String foreignKey,
-                String joinKey) {
+        private StarNetworkNode(
+            StarNetworkNode parent,
+            String alias,
+            MondrianDef.Relation origRel,
+            String foreignKey,
+            String joinKey)
+        {
             this.parent = parent;
             this.origRel = origRel;
             this.foreignKey = foreignKey;
@@ -198,8 +203,11 @@ public class RolapStar {
         }
 
         private boolean isCompatible(
-                StarNetworkNode compatibleParent, MondrianDef.Relation rel,
-                String compatibleForeignKey, String compatibleJoinKey) {
+            StarNetworkNode compatibleParent,
+            MondrianDef.Relation rel,
+            String compatibleForeignKey,
+            String compatibleJoinKey)
+        {
             return (parent == compatibleParent &&
                 origRel.getClass().equals(rel.getClass()) &&
                 foreignKey.equals(compatibleForeignKey) &&
@@ -207,22 +215,28 @@ public class RolapStar {
         }
     }
 
-    private MondrianDef.Relation cloneRelation(MondrianDef.Relation rel,
-                                                    String possibleName) {
-        MondrianDef.Relation newrel = null;
+    private MondrianDef.RelationOrJoin cloneRelation(
+        MondrianDef.Relation rel,
+        String possibleName)
+    {
         if (rel instanceof MondrianDef.Table) {
             MondrianDef.Table tbl = (MondrianDef.Table)rel;
-            newrel = new MondrianDef.Table(tbl.schema, tbl.name, possibleName);
+            return new MondrianDef.Table(tbl.schema, tbl.name, possibleName);
         } else if (rel instanceof MondrianDef.View) {
             MondrianDef.View view = (MondrianDef.View)rel;
-            MondrianDef.View newview = new MondrianDef.View();
-            newview.alias = possibleName;
-            newview.selects = view.selects;
-            newrel = newview;
+            MondrianDef.View newView = new MondrianDef.View(view);
+            newView.alias = possibleName;
+            return newView;
+        } else if (rel instanceof MondrianDef.InlineTable) {
+            MondrianDef.InlineTable inlineTable =
+                (MondrianDef.InlineTable) rel;
+            MondrianDef.InlineTable newInlineTable =
+                new MondrianDef.InlineTable(inlineTable);
+            newInlineTable.alias = possibleName;
+            return newInlineTable;
         } else {
             throw new UnsupportedOperationException();
         }
-        return newrel;
     }
 
     /**
@@ -239,75 +253,96 @@ public class RolapStar {
      * @param primaryKeyTable the join table of the relation
      * @return if necessary a new relation that has been re-aliased
      */
-    public MondrianDef.Relation getUniqueRelation(
-            MondrianDef.Relation rel, String factForeignKey, String primaryKey,
-            String primaryKeyTable) {
+    public MondrianDef.RelationOrJoin getUniqueRelation(
+        MondrianDef.RelationOrJoin rel,
+        String factForeignKey,
+        String primaryKey,
+        String primaryKeyTable)
+    {
         return getUniqueRelation(
-                factNode, rel, factForeignKey, primaryKey, primaryKeyTable);
+            factNode, rel, factForeignKey, primaryKey, primaryKeyTable);
     }
 
-    private MondrianDef.Relation getUniqueRelation(
-            StarNetworkNode parent, MondrianDef.Relation rel,
-            String foreignKey, String joinKey, String joinKeyTable) {
-        if (rel == null) {
+    private MondrianDef.RelationOrJoin getUniqueRelation(
+        StarNetworkNode parent,
+        MondrianDef.RelationOrJoin relOrJoin,
+        String foreignKey,
+        String joinKey,
+        String joinKeyTable)
+    {
+        if (relOrJoin == null) {
             return null;
-        } else if (rel instanceof MondrianDef.Table
-                    || rel instanceof MondrianDef.View) {
+        } else if (relOrJoin instanceof MondrianDef.Relation) {
             int val = 0;
+            MondrianDef.Relation rel =
+                (MondrianDef.Relation) relOrJoin;
             String newAlias =
                 joinKeyTable != null ? joinKeyTable : rel.getAlias();
             while (true) {
                 StarNetworkNode node = nodeLookup.get(newAlias);
                 if (node == null) {
                     if (val != 0) {
-                        rel = cloneRelation(rel, newAlias);
+                        rel = (MondrianDef.Relation)
+                            cloneRelation(rel, newAlias);
                     }
                     node =
-                        new StarNetworkNode(parent, newAlias, rel,
-                                foreignKey, joinKey);
+                        new StarNetworkNode(
+                            parent, newAlias, rel, foreignKey, joinKey);
                     nodeLookup.put(newAlias, node);
                     return rel;
-                } else if (node.isCompatible(parent, rel, foreignKey, joinKey)) {
+                } else if (node.isCompatible(
+                    parent, rel, foreignKey, joinKey))
+                {
                     return node.origRel;
                 }
                 newAlias = rel.getAlias() + "_" + (++val);
             }
-        } else if (rel instanceof MondrianDef.Join) {
+        } else if (relOrJoin instanceof MondrianDef.Join) {
             // determine if the join starts from the left or right side
-            MondrianDef.Join join = (MondrianDef.Join)rel;
-            MondrianDef.Relation left = null;
-            MondrianDef.Relation right = null;
+            MondrianDef.Join join = (MondrianDef.Join)relOrJoin;
+            MondrianDef.RelationOrJoin left = null;
+            MondrianDef.RelationOrJoin right = null;
             if (join.getLeftAlias().equals(joinKeyTable)) {
                 // first manage left then right
                 left =
-                    getUniqueRelation(parent, join.left, foreignKey,
-                            joinKey, joinKeyTable);
-                parent = nodeLookup.get(left.getAlias());
+                    getUniqueRelation(
+                        parent, join.left, foreignKey,
+                        joinKey, joinKeyTable);
+                parent = nodeLookup.get(
+                    ((MondrianDef.Relation) left).getAlias());
                 right =
-                    getUniqueRelation(parent, join.right, join.leftKey,
+                    getUniqueRelation(
+                        parent, join.right, join.leftKey,
                         join.rightKey, join.getRightAlias());
             } else if (join.getRightAlias().equals(joinKeyTable)) {
                 // right side must equal
                 right =
-                    getUniqueRelation(parent, join.right, foreignKey,
-                            joinKey, joinKeyTable);
-                parent = nodeLookup.get(right.getAlias());
+                    getUniqueRelation(
+                        parent, join.right, foreignKey,
+                        joinKey, joinKeyTable);
+                parent = nodeLookup.get(
+                    ((MondrianDef.Relation) right).getAlias());
                 left =
-                    getUniqueRelation(parent, join.left, join.rightKey,
-                            join.leftKey, join.getLeftAlias());
+                    getUniqueRelation(
+                        parent, join.left, join.rightKey,
+                        join.leftKey, join.getLeftAlias());
             } else {
                 new MondrianException(
-                        "failed to match primary key table to join tables");
+                    "failed to match primary key table to join tables");
             }
 
             if (join.left != left || join.right != right) {
                 join =
                     new MondrianDef.Join(
-                        left instanceof MondrianDef.Join ? null : left.getAlias(),
+                        left instanceof MondrianDef.Relation
+                            ? ((MondrianDef.Relation) left).getAlias()
+                            : null,
                         join.leftKey,
                         left, 
-                        right instanceof MondrianDef.Join ? null : right.getAlias(),
-                        join.rightKey, 
+                        right instanceof MondrianDef.Relation
+                            ? ((MondrianDef.Relation) right).getAlias()
+                            : null,
+                        join.rightKey,
                         right);
             }
             return join;
@@ -1326,7 +1361,7 @@ public class RolapStar {
      * Definition of a table in a star schema.
      *
      * <p>A 'table' is defined by a
-     * {@link mondrian.olap.MondrianDef.Relation} so may, in fact, be a view.
+     * {@link mondrian.olap.MondrianDef.RelationOrJoin} so may, in fact, be a view.
      *
      * <p>Every table in the star schema except the fact table has a parent
      * table, and a condition which specifies how it is joined to its parent.
@@ -1343,17 +1378,13 @@ public class RolapStar {
         private final String alias;
 
         private Table(
-                RolapStar star,
-                MondrianDef.Relation relation,
-                Table parent,
-                Condition joinCondition) {
+            RolapStar star,
+            MondrianDef.Relation relation,
+            Table parent,
+            Condition joinCondition)
+        {
             this.star = star;
             this.relation = relation;
-            Util.assertTrue(
-                    relation instanceof MondrianDef.Table ||
-                    relation instanceof MondrianDef.View,
-                    "todo: allow dimension which is not a Table or View, [" +
-                    relation + "]");
             this.alias = chooseAlias();
             this.parent = parent;
             final AliasReplacer aliasReplacer =
@@ -1664,29 +1695,33 @@ public class RolapStar {
          */
         synchronized Table addJoin(
             RolapCube cube,
-            MondrianDef.Relation relation,
-            RolapStar.Condition joinCondition) {
-            if (relation instanceof MondrianDef.Table ||
-                relation instanceof MondrianDef.View) {
-                RolapStar.Table starTable = findChild(relation, joinCondition);
+            MondrianDef.RelationOrJoin relationOrJoin,
+            RolapStar.Condition joinCondition)
+        {
+            if (relationOrJoin instanceof MondrianDef.Relation) {
+                final MondrianDef.Relation relation =
+                    (MondrianDef.Relation) relationOrJoin;
+                RolapStar.Table starTable =
+                    findChild(relation, joinCondition);
                 if (starTable == null) {
-                    starTable = new RolapStar.Table(star, relation, this,
-                        joinCondition);
+                    starTable = new RolapStar.Table(
+                        star, relation, this, joinCondition);
                     if (this.children.isEmpty()) {
                         this.children = new ArrayList<Table>();
                     }
                     this.children.add(starTable);
                 }
                 return starTable;
-            } else if (relation instanceof MondrianDef.Join) {
-                MondrianDef.Join join = (MondrianDef.Join) relation;
+            } else if (relationOrJoin instanceof MondrianDef.Join) {
+                MondrianDef.Join join = (MondrianDef.Join) relationOrJoin;
                 RolapStar.Table leftTable = addJoin(cube, join.left, joinCondition);
                 String leftAlias = join.leftAlias;
                 if (leftAlias == null) {
-                    leftAlias = join.left.getAlias();
+                    // REVIEW: is cast to Relation valid?
+                    leftAlias = ((MondrianDef.Relation) join.left).getAlias();
                     if (leftAlias == null) {
                         throw Util.newError(
-                            "missing leftKeyAlias in " + relation);
+                            "missing leftKeyAlias in " + relationOrJoin);
                     }
                 }
                 assert leftTable.findAncestor(leftAlias) == leftTable;
@@ -1700,14 +1735,21 @@ public class RolapStar {
                     // if so, we need to use the right relation join's
                     // left relation's alias.
                     if (join.right instanceof MondrianDef.Join) {
-                        MondrianDef.Join joinright = (MondrianDef.Join)  join.right;
-                        rightAlias = joinright.left.getAlias();
+                        MondrianDef.Join joinright =
+                            (MondrianDef.Join) join.right;
+                        // REVIEW: is cast to Relation valid?
+                        rightAlias =
+                            ((MondrianDef.Relation) joinright.left)
+                                .getAlias();
                     } else {
-                        rightAlias = join.right.getAlias();
+                        // REVIEW: is cast to Relation valid?
+                        rightAlias =
+                            ((MondrianDef.Relation) join.right)
+                                .getAlias();
                     }
                     if (rightAlias == null) {
                         throw Util.newError(
-                            "missing rightKeyAlias in " + relation);
+                            "missing rightKeyAlias in " + relationOrJoin);
                     }
                 }
                 joinCondition = new RolapStar.Condition(
@@ -1718,7 +1760,7 @@ public class RolapStar {
                 return rightTable;
 
             } else {
-                throw Util.newInternal("bad relation type " + relation);
+                throw Util.newInternal("bad relation type " + relationOrJoin);
             }
         }
 
@@ -1940,11 +1982,12 @@ public class RolapStar {
          * Returns whether this table has a column with the given name.
          */
         public boolean containsColumn(String columnName) {
-            if (relation instanceof MondrianDef.Table) {
-                return star.containsColumn(((MondrianDef.Table) relation).name,
+            if (relation instanceof MondrianDef.Relation) {
+                return star.containsColumn(
+                    ((MondrianDef.Relation) relation).getAlias(),
                     columnName);
             } else {
-                // todo: Deal with join and view.
+                // todo: Deal with join.
                 return false;
             }
         }

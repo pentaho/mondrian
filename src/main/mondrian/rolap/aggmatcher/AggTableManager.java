@@ -451,7 +451,7 @@ public class AggTableManager {
 
             dbFactTable.setTableUsageType(JdbcSchema.TableUsageType.FACT);
 
-            MondrianDef.Relation relation = star.getFactTable().getRelation();
+            MondrianDef.RelationOrJoin relation = star.getFactTable().getRelation();
             String schema = null;
             if (relation instanceof MondrianDef.Table) {
                 schema = ((MondrianDef.Table) relation).schema;

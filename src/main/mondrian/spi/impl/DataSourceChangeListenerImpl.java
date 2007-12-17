@@ -27,7 +27,7 @@ import mondrian.rolap.agg.Aggregation;
  * the datasource has changed for a dimension, cube, ... then mondrian will
  * flush the cache and read from database again.
  *
- * It is specified in the connection string, like this :
+ * It is specified in the connection string, like this:
  *
  * <blockquote><code>
  * Jdbc=jdbc:odbc:MondrianFoodMart; JdbcUser=ziggy; JdbcPassword=stardust; DataSourceChangeListener=com.acme.MyChangeListener;
@@ -58,13 +58,14 @@ public class DataSourceChangeListenerImpl implements DataSourceChangeListener {
     }
 
     public String getTableName(RolapHierarchy hierarchy) {
-        MondrianDef.Relation relation = hierarchy.getRelation();
+        MondrianDef.RelationOrJoin relation = hierarchy.getRelation();
         if (relation instanceof MondrianDef.Table) {
-            MondrianDef.Table tableRelation = (MondrianDef.Table)relation;
-
+            MondrianDef.Table tableRelation = (MondrianDef.Table) relation;
             return tableRelation.name;
         } else {
             return null;
         }
     }
 }
+
+// End DataSourceChangeListenerImpl.java

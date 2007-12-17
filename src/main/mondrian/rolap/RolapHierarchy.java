@@ -48,7 +48,7 @@ public class RolapHierarchy extends HierarchyBase {
     private MemberReader memberReader;
     protected MondrianDef.Hierarchy xmlHierarchy;
     private String memberReaderClass;
-    protected MondrianDef.Relation relation;
+    protected MondrianDef.RelationOrJoin relation;
     private Member defaultMember;
     private String defaultMemberName;
     private RolapNullMember nullMember;
@@ -119,8 +119,10 @@ public class RolapHierarchy extends HierarchyBase {
         this.xmlHierarchy = xmlHierarchy;
         this.relation = xmlHierarchy.relation;
         if (xmlHierarchy.relation instanceof MondrianDef.InlineTable) {
-            this.relation = convertInlineTableToRelation(
-                    (MondrianDef.InlineTable) xmlHierarchy.relation);
+            this.relation =
+                RolapUtil.convertInlineTableToRelation(
+                    (MondrianDef.InlineTable) xmlHierarchy.relation,
+                    getRolapSchema().getDialect());
         }
         this.memberReaderClass = xmlHierarchy.memberReaderClass;
 
@@ -187,41 +189,6 @@ public class RolapHierarchy extends HierarchyBase {
             setCaption(xmlHierarchy.caption);
         }
         defaultMemberName = xmlHierarchy.defaultMember;
-    }
-
-    private MondrianDef.Relation convertInlineTableToRelation(
-            MondrianDef.InlineTable inlineTable) {
-        MondrianDef.View view = new MondrianDef.View();
-        view.alias = inlineTable.alias;
-        final SqlQuery.Dialect dialect = getRolapSchema().getDialect();
-
-        final int columnCount = inlineTable.columnDefs.array.length;
-        List<String> columnNames = new ArrayList<String>();
-        List<String> columnTypes = new ArrayList<String>();
-        for (int i = 0; i < columnCount; i++) {
-            columnNames.add(inlineTable.columnDefs.array[i].name);
-            columnTypes.add(inlineTable.columnDefs.array[i].type);
-        }
-        List<String[]> valueList = new ArrayList<String[]>();
-        for (MondrianDef.Row row : inlineTable.rows.array) {
-            String[] values = new String[columnCount];
-            for (MondrianDef.Value value : row.values) {
-                final int columnOrdinal = columnNames.indexOf(value.column);
-                if (columnOrdinal < 0) {
-                    throw Util.newError(
-                        "Unknown column '" + value.column + "'");
-                }
-                values[columnOrdinal] = value.cdata;
-            }
-            valueList.add(values);
-        }
-        view.addCode(
-            "generic",
-            dialect.generateInline(
-                columnNames,
-                columnTypes,
-                valueList));
-        return view;
     }
 
     protected Logger getLogger() {
@@ -314,9 +281,8 @@ public class RolapHierarchy extends HierarchyBase {
      * otherwise, returns null.
      */
     MondrianDef.Relation getUniqueTable() {
-        if (relation instanceof MondrianDef.Table ||
-                relation instanceof MondrianDef.View) {
-            return relation;
+        if (relation instanceof MondrianDef.Relation) {
+            return (MondrianDef.Relation) relation;
         } else if (relation instanceof MondrianDef.Join) {
             return null;
         } else {
@@ -329,31 +295,26 @@ public class RolapHierarchy extends HierarchyBase {
         return (relation != null) && tableExists(tableName, relation);
     }
 
-    private static boolean tableExists(String tableName,
-                                       MondrianDef.Relation relation) {
-        if (relation instanceof MondrianDef.Table) {
-            MondrianDef.Table table = (MondrianDef.Table) relation;
-            // Check by table name and alias
-            return table.name.equals(tableName) ||
-                ((table.alias != null) && table.alias.equals(tableName));
-        }
-        if (relation instanceof MondrianDef.Join) {
-            MondrianDef.Join join = (MondrianDef.Join) relation;
+    private static boolean tableExists(
+        String tableName,
+        MondrianDef.RelationOrJoin relationOrJoin)
+    {
+        if (relationOrJoin instanceof MondrianDef.Relation) {
+            MondrianDef.Relation relation =
+                (MondrianDef.Relation) relationOrJoin;
+            return relation.getAlias().equals(tableName);
+        } else {
+            MondrianDef.Join join = (MondrianDef.Join) relationOrJoin;
             return tableExists(tableName, join.left) ||
                 tableExists(tableName, join.right);
         }
-        if (relation instanceof MondrianDef.View) {
-            MondrianDef.View view = (MondrianDef.View) relation;
-            return view.alias.equals(tableName);
-        }
-        return false;
     }
 
     public RolapSchema getRolapSchema() {
         return (RolapSchema) dimension.getSchema();
     }
 
-    public MondrianDef.Relation getRelation() {
+    public MondrianDef.RelationOrJoin getRelation() {
         return relation;
     }
 
@@ -446,7 +407,7 @@ public class RolapHierarchy extends HierarchyBase {
                     " to query: it does not have a <Table>, <View> or <Join>");
         }
         final boolean failIfExists = false;
-        MondrianDef.Relation subRelation = relation;
+        MondrianDef.RelationOrJoin subRelation = relation;
         if (relation instanceof MondrianDef.Join) {
             if (expression != null) {
                 // Suppose relation is
@@ -482,7 +443,7 @@ public class RolapHierarchy extends HierarchyBase {
                     " to query: it does not have a <Table>, <View> or <Join>");
         }
         final boolean failIfExists = false;
-        MondrianDef.Relation subRelation = null;
+        MondrianDef.RelationOrJoin subRelation = null;
         if (table != null) {
         	// Suppose relation is
         	//   (((A join B) join C) join D)
@@ -512,20 +473,20 @@ public class RolapHierarchy extends HierarchyBase {
      * @return the smallest containing relation or null if no matching table
      * is found in <code>relation</code>
      */
-    private static MondrianDef.Relation relationSubset(
-        MondrianDef.Relation relation,
-        String alias) {
-
-        if (relation instanceof MondrianDef.Table) {
-            MondrianDef.Table table = (MondrianDef.Table) relation;
-            // lookup by both alias and table name
-            return (table.getAlias().equals(alias))
+    private static MondrianDef.RelationOrJoin relationSubset(
+        MondrianDef.RelationOrJoin relation,
+        String alias)
+    {
+        if (relation instanceof MondrianDef.Relation) {
+            MondrianDef.Relation table =
+                (MondrianDef.Relation) relation;
+            return table.getAlias().equals(alias)
                 ? relation
-                : (table.name.equals(alias) ? relation : null);
+                : null;
 
         } else if (relation instanceof MondrianDef.Join) {
             MondrianDef.Join join = (MondrianDef.Join) relation;
-            MondrianDef.Relation rightRelation = relationSubset(join.right, alias);
+            MondrianDef.RelationOrJoin rightRelation = relationSubset(join.right, alias);
             return (rightRelation == null)
                 ? relationSubset(join.left, alias)
                 : join;
@@ -545,9 +506,10 @@ public class RolapHierarchy extends HierarchyBase {
      * @return the smallest containing relation or null if no matching table
      * is found in <code>relation</code>
      */
-    private static MondrianDef.Relation lookupRelationSubset(
-        MondrianDef.Relation relation,
-        RolapStar.Table targetTable) {
+    private static MondrianDef.RelationOrJoin lookupRelationSubset(
+        MondrianDef.RelationOrJoin relation,
+        RolapStar.Table targetTable)
+    {
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table table = (MondrianDef.Table) relation;
             if (table.name.equals(targetTable.getTableName())) {
@@ -560,7 +522,7 @@ public class RolapHierarchy extends HierarchyBase {
             // Search inside relation, starting from the rightmost table,
             // and move left along the join chain.
             MondrianDef.Join join = (MondrianDef.Join) relation;
-            MondrianDef.Relation rightRelation =
+            MondrianDef.RelationOrJoin rightRelation =
                 lookupRelationSubset(join.right, targetTable);
             if (rightRelation == null) {
                 // Keep searching left.

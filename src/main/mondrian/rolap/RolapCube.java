@@ -12,19 +12,19 @@
 */
 
 package mondrian.rolap;
+
+import mondrian.mdx.MdxVisitorImpl;
+import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.rolap.cache.SoftSmartCache;
-import mondrian.resource.MondrianResource;
-import mondrian.mdx.*;
-
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
-import java.util.Set;
 
 /**
  * <code>RolapCube</code> implements {@link Cube} for a ROLAP database.
@@ -88,13 +88,15 @@ public class RolapCube extends CubeBase {
      * @param name
      * @param fact
      */
-    private RolapCube(RolapSchema schema,
-                      MondrianDef.Schema xmlSchema,
-                      String name,
-                      boolean isCache,
-                      MondrianDef.Relation fact,
-                      MondrianDef.CubeDimension[] dimensions,
-                      boolean load) {
+    private RolapCube(
+        RolapSchema schema,
+        MondrianDef.Schema xmlSchema,
+        String name,
+        boolean isCache,
+        MondrianDef.Relation fact,
+        MondrianDef.CubeDimension[] dimensions,
+        boolean load)
+    {
         super(name, new RolapDimension[dimensions.length + 1]);
 
         this.schema = schema;
@@ -164,12 +166,15 @@ public class RolapCube extends CubeBase {
     /**
      * Creates a <code>RolapCube</code> from a regular cube.
      */
-    RolapCube(RolapSchema schema,
-              MondrianDef.Schema xmlSchema,
-              MondrianDef.Cube xmlCube,
-              boolean load) {
-        this(schema, xmlSchema, xmlCube.name, xmlCube.cache,
-           xmlCube.fact, xmlCube.dimensions, load);
+    RolapCube(
+        RolapSchema schema,
+        MondrianDef.Schema xmlSchema,
+        MondrianDef.Cube xmlCube,
+        boolean load)
+    {
+        this(
+            schema, xmlSchema, xmlCube.name, xmlCube.cache,
+            xmlCube.fact, xmlCube.dimensions, load);
 
         if (fact.getAlias() == null) {
             throw Util.newError(
@@ -514,7 +519,7 @@ public class RolapCube extends CubeBase {
         for (Dimension dimension : dimensions) {
             final Hierarchy[] hierarchies = dimension.getHierarchies();
             for (Hierarchy hierarchy : hierarchies) {
-                MondrianDef.Relation relation =
+                MondrianDef.RelationOrJoin relation =
                     ((RolapHierarchy) hierarchy).getRelation();
                 if (relation != null) {
                     final HierarchyUsage hierarchyUsage =
@@ -532,7 +537,7 @@ public class RolapCube extends CubeBase {
 
     private void validateRelation(
         Map<String, List<Object>> aliases,
-        MondrianDef.Relation relation,
+        MondrianDef.RelationOrJoin relation,
         List<Object> joinPath) {
         if (relation instanceof MondrianDef.Join) {
             MondrianDef.Join join = (MondrianDef.Join) relation;
@@ -548,20 +553,9 @@ public class RolapCube extends CubeBase {
                 joinPath.remove(joinPath.size() - 1);
             }
         } else {
-            String alias;
-            if (relation instanceof MondrianDef.Table) {
-                MondrianDef.Table table = (MondrianDef.Table) relation;
-                alias = table.alias;
-                if (alias == null) {
-                    alias = table.name;
-                }
-            } else if (relation instanceof MondrianDef.InlineTable) {
-                MondrianDef.InlineTable table = (MondrianDef.InlineTable) relation;
-                alias = table.alias;
-            } else {
-                final MondrianDef.View view = (MondrianDef.View) relation;
-                alias = view.alias;
-            }
+            MondrianDef.Relation table =
+                (MondrianDef.Relation) relation;
+            String alias = table.getAlias();
             joinPath.add(relation);
             joinPath.add(alias);
             List joinPath2 = aliases.get(alias);
@@ -578,7 +572,7 @@ public class RolapCube extends CubeBase {
         }
     }
 
-    private void flatten(MondrianDef.Relation relation, List<Object> joinPath) {
+    private void flatten(MondrianDef.RelationOrJoin relation, List<Object> joinPath) {
         if (relation instanceof MondrianDef.Join) {
             MondrianDef.Join join = (MondrianDef.Join) relation;
             flatten(join.left, joinPath);
@@ -1425,7 +1419,7 @@ public class RolapCube extends CubeBase {
         for (Hierarchy hierarchy1 : hierarchies) {
             RolapHierarchy hierarchy = (RolapHierarchy) hierarchy1;
 
-            MondrianDef.Relation relation = hierarchy.getRelation();
+            MondrianDef.RelationOrJoin relation = hierarchy.getRelation();
             if (relation == null) {
                 continue; // e.g. [Measures] hierarchy
             }
@@ -1472,7 +1466,7 @@ public class RolapCube extends CubeBase {
 
                     // RME
                     // take out after things seem to be working
-                    MondrianDef.Relation relationTmp1 = relation;
+                    MondrianDef.RelationOrJoin relationTmp1 = relation;
 
                     relation = reorder(relation, levels);
 
@@ -1485,7 +1479,7 @@ public class RolapCube extends CubeBase {
                     }
                 }
 
-                MondrianDef.Relation relationTmp2 = relation;
+                MondrianDef.RelationOrJoin relationTmp2 = relation;
 
                 if (levelName != null) {
                     //System.out.println("RolapCube.registerDimension: levelName=" +levelName);
@@ -1693,19 +1687,19 @@ public class RolapCube extends CubeBase {
     //
 
     /**
-     * Formats a {@link mondrian.olap.MondrianDef.Relation}, indenting joins for
+     * Formats a {@link mondrian.olap.MondrianDef.RelationOrJoin}, indenting joins for
      * readability.
      *
      * @param relation
      */
-    private static String format(MondrianDef.Relation relation) {
+    private static String format(MondrianDef.RelationOrJoin relation) {
         StringBuilder buf = new StringBuilder();
         format(relation, buf, "");
         return buf.toString();
     }
 
     private static void format(
-            MondrianDef.Relation relation,
+            MondrianDef.RelationOrJoin relation,
             StringBuilder buf, String indent) {
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table table = (MondrianDef.Table) relation;
@@ -1761,23 +1755,29 @@ public class RolapCube extends CubeBase {
     private static class RelNode {
 
         /**
-         * Find a RelNode by table name or, if that fails, by table alias
+         * Finds a RelNode by table name or, if that fails, by table alias
          * from a map of RelNodes.
          *
          * @param table
          * @param map
          */
-        private static RelNode lookup(MondrianDef.Table table, Map<String, RelNode> map) {
-            RelNode relNode = map.get(table.name);
-            if ((relNode == null) && (table.alias != null)) {
-                relNode = map.get(table.alias);
+        private static RelNode lookup(
+            MondrianDef.Relation table,
+            Map<String, RelNode> map)
+        {
+            RelNode relNode;
+            if (table instanceof MondrianDef.Table) {
+                relNode = map.get(((MondrianDef.Table) table).name);
+                if (relNode != null) {
+                    return relNode;
+                }
             }
-            return relNode;
+            return map.get(table.getAlias());
         }
 
         private int depth;
         private String alias;
-        private MondrianDef.Table table;
+        private MondrianDef.Relation table;
         RelNode(String alias, int depth) {
             this.alias = alias;
             this.depth = depth;
@@ -1786,7 +1786,7 @@ public class RolapCube extends CubeBase {
     }
 
     /**
-     * Attempts to transform a {@link mondrian.olap.MondrianDef.Relation}
+     * Attempts to transform a {@link mondrian.olap.MondrianDef.RelationOrJoin}
      * into the "canonical" form.
      *
      * <p>What is the canonical form? It is only relevant
@@ -1895,8 +1895,8 @@ public class RolapCube extends CubeBase {
      * @param relation
      * @param levels
      */
-    private static MondrianDef.Relation reorder(
-            MondrianDef.Relation relation,
+    private static MondrianDef.RelationOrJoin reorder(
+            MondrianDef.RelationOrJoin relation,
             RolapLevel[] levels) {
         // Need at least two levels, with only one level theres nothing to do.
         if (levels.length < 2) {
@@ -1945,11 +1945,12 @@ public class RolapCube extends CubeBase {
      * @param map
      */
     private static boolean validateNodes(
-        MondrianDef.Relation relation,
+        MondrianDef.RelationOrJoin relation,
         Map<String, RelNode> map)
     {
-        if (relation instanceof MondrianDef.Table) {
-            MondrianDef.Table table = (MondrianDef.Table) relation;
+        if (relation instanceof MondrianDef.Relation) {
+            MondrianDef.Relation table =
+                (MondrianDef.Relation) relation;
 
             RelNode relNode = RelNode.lookup(table, map);
             return (relNode != null);
@@ -1975,11 +1976,12 @@ public class RolapCube extends CubeBase {
      * @param map
      */
     private static int leftToRight(
-        MondrianDef.Relation relation,
+        MondrianDef.RelationOrJoin relation,
         Map<String, RelNode> map)
     {
-        if (relation instanceof MondrianDef.Table) {
-            MondrianDef.Table table = (MondrianDef.Table) relation;
+        if (relation instanceof MondrianDef.Relation) {
+            MondrianDef.Relation table =
+                (MondrianDef.Relation) relation;
 
             RelNode relNode = RelNode.lookup(table, map);
             // Associate the table with its RelNode!!!! This is where this
@@ -1998,7 +2000,7 @@ public class RolapCube extends CubeBase {
                 // switch
                 String leftAlias = join.leftAlias;
                 String leftKey = join.leftKey;
-                MondrianDef.Relation left = join.left;
+                MondrianDef.RelationOrJoin left = join.left;
                 join.leftAlias = join.rightAlias;
                 join.leftKey = join.rightKey;
                 join.left = join.right;
@@ -2025,7 +2027,7 @@ public class RolapCube extends CubeBase {
      *
      * @param relation
      */
-    private static void topToBottom(MondrianDef.Relation relation) {
+    private static void topToBottom(MondrianDef.RelationOrJoin relation) {
         if (relation instanceof MondrianDef.Table) {
             // nothing
 
@@ -2055,20 +2057,24 @@ public class RolapCube extends CubeBase {
     }
 
     /**
-     * Copies a {@link mondrian.olap.MondrianDef.Relation}.
+     * Copies a {@link mondrian.olap.MondrianDef.RelationOrJoin}.
      *
      * @param relation
      */
-    private static MondrianDef.Relation copy(MondrianDef.Relation relation) {
+    private static MondrianDef.RelationOrJoin copy(MondrianDef.RelationOrJoin relation) {
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table table = (MondrianDef.Table) relation;
             return new MondrianDef.Table(table);
 
+        } else if (relation instanceof MondrianDef.InlineTable) {
+            MondrianDef.InlineTable table = (MondrianDef.InlineTable) relation;
+            return new MondrianDef.InlineTable(table);
+
         } else if (relation instanceof MondrianDef.Join) {
             MondrianDef.Join join = (MondrianDef.Join) relation;
 
-            MondrianDef.Relation left = copy(join.left);
-            MondrianDef.Relation right = copy(join.right);
+            MondrianDef.RelationOrJoin left = copy(join.left);
+            MondrianDef.RelationOrJoin right = copy(join.right);
 
             return new MondrianDef.Join(join.leftAlias, join.leftKey, left,
                         join.rightAlias, join.rightKey, right);
@@ -2086,8 +2092,8 @@ public class RolapCube extends CubeBase {
      * @param relation
      * @param tableName
      */
-    private static MondrianDef.Relation snip(
-            MondrianDef.Relation relation,
+    private static MondrianDef.RelationOrJoin snip(
+            MondrianDef.RelationOrJoin relation,
             String tableName) {
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table table = (MondrianDef.Table) relation;
@@ -2100,7 +2106,7 @@ public class RolapCube extends CubeBase {
             MondrianDef.Join join = (MondrianDef.Join) relation;
 
             // snip left
-            MondrianDef.Relation left = snip(join.left, tableName);
+            MondrianDef.RelationOrJoin left = snip(join.left, tableName);
             if (left == null) {
                 // left got snipped so return the right
                 // (the join is no longer a join).
@@ -2111,7 +2117,7 @@ public class RolapCube extends CubeBase {
                 join.left = left;
 
                 // snip right
-                MondrianDef.Relation right = snip(join.right, tableName);
+                MondrianDef.RelationOrJoin right = snip(join.right, tableName);
                 if (right == null) {
                     // right got snipped so return the left.
                     return join.left;
@@ -2147,7 +2153,7 @@ public class RolapCube extends CubeBase {
     /**
      * Returns this cube's fact table, null if the cube is virtual.
      */
-    MondrianDef.Relation getFact() {
+    MondrianDef.RelationOrJoin getFact() {
         return fact;
     }
 

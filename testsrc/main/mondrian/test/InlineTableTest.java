@@ -117,6 +117,64 @@ public class InlineTableTest extends FoodMartTestCase {
                     "Row #0: 195,448\n" +
                     "Row #0: \n"));
     }
+
+    public void testInlineTableSnowflake() {
+        final String cubeName = "Sales_inline_snowflake";
+        TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"" + cubeName + "\">\n"
+                + "  <Table name=\"sales_fact_1997\"/>\n"
+                + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+                + "  <Dimension name=\"Store\" foreignKeyTable=\"store\" foreignKey=\"store_id\">\n"
+                + "    <Hierarchy hasAll=\"true\" primaryKeyTable=\"store\" primaryKey=\"store_id\">\n"
+                + "      <Join leftKey=\"store_country\" rightKey=\"nation_name\">\n"
+                + "      <Table name=\"store\"/>\n"
+                + "        <InlineTable alias=\"nation\">\n"
+                + "          <ColumnDefs>\n"
+                + "            <ColumnDef name=\"nation_name\" type=\"String\"/>\n"
+                + "            <ColumnDef name=\"nation_shortcode\" type=\"String\"/>\n"
+                + "          </ColumnDefs>\n"
+                + "          <Rows>\n"
+                + "            <Row>\n"
+                + "              <Value column=\"nation_name\">USA</Value>\n"
+                + "              <Value column=\"nation_shortcode\">US</Value>\n"
+                + "            </Row>\n"
+                + "            <Row>\n"
+                + "              <Value column=\"nation_name\">Mexico</Value>\n"
+                + "              <Value column=\"nation_shortcode\">MX</Value>\n"
+                + "            </Row>\n"
+                + "            <Row>\n"
+                + "              <Value column=\"nation_name\">Canada</Value>\n"
+                + "              <Value column=\"nation_shortcode\">CA</Value>\n"
+                + "            </Row>\n"
+                + "          </Rows>\n"
+                + "        </InlineTable>\n"
+                + "      </Join>\n"
+                + "      <Level name=\"Store Country\" table=\"nation\" column=\"nation_name\" nameColumn=\"nation_shortcode\" uniqueMembers=\"true\"/>\n"
+                + "      <Level name=\"Store State\" table=\"store\" column=\"store_state\" uniqueMembers=\"true\"/>\n"
+                + "      <Level name=\"Store City\" table=\"store\" column=\"store_city\" uniqueMembers=\"false\"/>\n"
+                + "      <Level name=\"Store Name\" table=\"store\" column=\"store_name\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+                + "      formatString=\"Standard\" visible=\"false\"/>\n"
+                + "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###.00\"/>\n"
+                + "</Cube>",
+            null, null, null, null);
+        testContext.assertQueryReturns(
+            "select {[Store].children} ON COLUMNS\n"
+                + "from [" + cubeName + "] ",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[CA]}\n" +
+                "{[Store].[All Stores].[MX]}\n" +
+                "{[Store].[All Stores].[US]}\n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: 266,773\n"));
+    }
 }
 
 // End InlineTableTest.java

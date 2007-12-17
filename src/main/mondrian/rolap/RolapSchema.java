@@ -161,7 +161,7 @@ public class RolapSchema implements Schema {
      * identifies a relational expression(e.g. a column) specified
      * in the xml schema.
      */
-    private final Map<MondrianDef.Relation, Map<MondrianDef.Expression, Integer>> 
+    private final Map<MondrianDef.Relation, Map<MondrianDef.Expression, Integer>>
         relationExprCardinalityMap;
 
     /**
@@ -1589,7 +1589,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * @return the cardinality map
      */
     Integer getCachedRelationExprCardinality(
-        MondrianDef.Relation relation, 
+        MondrianDef.Relation relation,
         MondrianDef.Expression columnExpr) {
         Integer card = null;
         synchronized (relationExprCardinalityMap) {
@@ -1610,9 +1610,10 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * @param cardinality the cardinality for the column expression
      */
     void putCachedRelationExprCardinality(
-        MondrianDef.Relation relation, 
+        MondrianDef.Relation relation,
         MondrianDef.Expression columnExpr, 
-        Integer cardinality) {
+        Integer cardinality)
+    {
         synchronized (relationExprCardinalityMap) {
             Map<MondrianDef.Expression, Integer> exprCardinalityMap = 
                 relationExprCardinalityMap.get(relation);
@@ -1652,7 +1653,9 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
          *
          * <p> {@link RolapStar.Table#addJoin} works in a similar way.
          */
-        synchronized RolapStar getOrCreateStar(final MondrianDef.Relation fact) {
+        synchronized RolapStar getOrCreateStar(
+            final MondrianDef.Relation fact)
+        {
             String factTableName = fact.toString();
             RolapStar star = stars.get(factTableName);
             if (star == null) {

@@ -254,6 +254,7 @@ public class HierarchyUsage {
     public MondrianDef.Relation getJoinTable() {
         return this.joinTable;
     }
+
     public MondrianDef.Expression getJoinExp() {
         return this.joinExp;
     }
@@ -332,7 +333,8 @@ public class HierarchyUsage {
                                 cube.getUniqueName(),
                                 cubeDim.level);
             }
-            this.joinTable = findJoinTable(hierarchy, joinLevel.getKeyExp().getTableAlias());
+            this.joinTable =
+                findJoinTable(hierarchy, joinLevel.getKeyExp().getTableAlias());
             this.joinExp = joinLevel.getKeyExp();
         } else if (hierarchy.getXmlHierarchy() != null &&
                 hierarchy.getXmlHierarchy().primaryKey != null) {

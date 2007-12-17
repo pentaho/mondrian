@@ -16,6 +16,7 @@ package mondrian.rolap.sql;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.rolap.RolapUtil;
 import org.eigenbase.util.property.Property;
 import org.eigenbase.util.property.Trigger;
 
@@ -301,9 +302,10 @@ public class SqlQuery {
      * @param failIfExists Whether to fail if relation is already present
      * @return true, if relation *was* added to query
      */
-    public boolean addFrom(final MondrianDef.Relation relation,
-                           final String alias,
-                           final boolean failIfExists)
+    public boolean addFrom(
+        final MondrianDef.RelationOrJoin relation,
+        final String alias,
+        final boolean failIfExists)
     {
         if (relation instanceof MondrianDef.View) {
             final MondrianDef.View view = (MondrianDef.View) relation;
@@ -311,16 +313,21 @@ public class SqlQuery {
                     ? view.getAlias()
                     : alias;
             final String sqlString = view.getCodeSet().chooseQuery(dialect);
-
             return addFromQuery(sqlString, viewAlias, false);
+
+        } else if (relation instanceof MondrianDef.InlineTable) {
+            final MondrianDef.Relation relation1 =
+                RolapUtil.convertInlineTableToRelation(
+                    (MondrianDef.InlineTable) relation, dialect);
+            return addFrom(relation1, alias, failIfExists);
 
         } else if (relation instanceof MondrianDef.Table) {
             final MondrianDef.Table table = (MondrianDef.Table) relation;
             final String tableAlias = (alias == null)
                     ? table.getAlias()
                     : alias;
-
-            return addFromTable(table.schema, table.name, tableAlias,
+            return addFromTable(
+                table.schema, table.name, tableAlias,
                 table.getFilter(), failIfExists);
 
         } else if (relation instanceof MondrianDef.Join) {
@@ -1320,9 +1327,10 @@ public class SqlQuery {
          * @return SQL string
          */
         public String generateInline(
-                List<String> columnNames,
-                List<String> columnTypes,
-                List<String[]> valueList) {
+            List<String> columnNames,
+            List<String> columnTypes,
+            List<String[]> valueList)
+        {
             if (isOracle()) {
                 return generateInlineGeneric(
                     columnNames, columnTypes, valueList,
@@ -1332,7 +1340,7 @@ public class SqlQuery {
                 // Access SQL has no way to generate values not from a table.
                 return generateInlineGeneric(
                     columnNames, columnTypes, valueList,
-                    "from [days] where [day] = 1");
+                    " from `days` where `day` = 1");
             } else if (isMySQL() || isIngres()) {
                 return generateInlineGeneric(
                         columnNames, columnTypes, valueList, null);

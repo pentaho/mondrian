@@ -12,9 +12,7 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.LevelType;
-import mondrian.olap.MemberFormatter;
-import mondrian.olap.MondrianDef;
+import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
 
 /**
@@ -38,7 +36,7 @@ public class RolapCubeLevel extends RolapLevel {
                 level.getLevelType(), "" + level.getApproxRowCount());
 
         this.rolapLevel = level;
-        MondrianDef.Relation hierarchyRel = hierarchy.getRelation();
+        MondrianDef.RelationOrJoin hierarchyRel = hierarchy.getRelation();
         keyExp = convertExpression(level.getKeyExp(), hierarchyRel);
         nameExp = convertExpression(level.getNameExp(), hierarchyRel);
         captionExp = convertExpression(level.getCaptionExp(), hierarchyRel);
@@ -111,7 +109,9 @@ public class RolapCubeLevel extends RolapLevel {
      * @return returns the converted expression
      */
     private MondrianDef.Expression convertExpression(
-            MondrianDef.Expression exp, MondrianDef.Relation rel) {
+        MondrianDef.Expression exp,
+        MondrianDef.RelationOrJoin rel)
+    {
         if (getHierarchy().isUsingCubeFact()) {
             // no conversion necessary
             return exp;
@@ -120,10 +120,11 @@ public class RolapCubeLevel extends RolapLevel {
         } else if (exp instanceof MondrianDef.Column) {
             MondrianDef.Column col = (MondrianDef.Column)exp;
             if (rel instanceof MondrianDef.Table) {
-                return 
-                    new MondrianDef.Column(rel.getAlias(), col.getColumnName());
+                return new MondrianDef.Column(
+                    ((MondrianDef.Table) rel).getAlias(),
+                    col.getColumnName());
             } else if (rel instanceof MondrianDef.Join 
-                        || rel instanceof MondrianDef.View) {
+                        || rel instanceof MondrianDef.Relation) {
                 // need to determine correct name of alias for this level. 
                 // this may be defined in level
                 // col.table

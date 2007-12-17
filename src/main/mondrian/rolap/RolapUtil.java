@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import mondrian.calc.ExpCompiler;
+import mondrian.rolap.sql.SqlQuery;
 
 import javax.sql.DataSource;
 
@@ -437,6 +438,42 @@ public class RolapUtil {
             return null;
         }
         return bestMatch;
+    }
+
+    public static MondrianDef.Relation convertInlineTableToRelation(
+        MondrianDef.InlineTable inlineTable,
+        final SqlQuery.Dialect dialect)
+    {
+        MondrianDef.View view = new MondrianDef.View();
+        view.alias = inlineTable.alias;
+
+        final int columnCount = inlineTable.columnDefs.array.length;
+        List<String> columnNames = new ArrayList<String>();
+        List<String> columnTypes = new ArrayList<String>();
+        for (int i = 0; i < columnCount; i++) {
+            columnNames.add(inlineTable.columnDefs.array[i].name);
+            columnTypes.add(inlineTable.columnDefs.array[i].type);
+        }
+        List<String[]> valueList = new ArrayList<String[]>();
+        for (MondrianDef.Row row : inlineTable.rows.array) {
+            String[] values = new String[columnCount];
+            for (MondrianDef.Value value : row.values) {
+                final int columnOrdinal = columnNames.indexOf(value.column);
+                if (columnOrdinal < 0) {
+                    throw Util.newError(
+                        "Unknown column '" + value.column + "'");
+                }
+                values[columnOrdinal] = value.cdata;
+            }
+            valueList.add(values);
+        }
+        view.addCode(
+            "generic",
+            dialect.generateInline(
+                columnNames,
+                columnTypes,
+                valueList));
+        return view;
     }
 
     /**
