@@ -29,6 +29,10 @@ mackerel-winxp)
   databaseList="access derby"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
+marmalade)
+  databaseList="oracle mysql"
+  jdkList="jdk1.4 jdk1.5 jdk1.6"
+  ;;
 *)
   databaseList="derby oracle mysql"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
@@ -84,38 +88,39 @@ doTest2() {
   case $database in
   access)
     (
-      echo mondrian.foodmart.jdbcURL=jdbc:odbc:MondrianFoodMart;
-      echo mondrian.jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;
+      echo mondrian.foodmart.jdbcURL=jdbc:odbc:MondrianFoodMart
+      echo mondrian.jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver
     ) >> megatest.properties
     ;;
   oracle)
     (
       #export ORACLE_HOME=G:/oracle/product/10.1.0/Db_1
       if [ -n "$ORACLE_HOME" ]; then
-        echo driver.classpath=${ORACLE_HOME}/jdbc/lib/ojdbc14.jar;
+        echo driver.classpath=${ORACLE_HOME}/jdbc/lib/ojdbc14.jar
       else
         # If Oracle is not installed, you must copy Oracle's JDBC driver into
         # testlib.
         if [ ! -f testlib/ojdbc14.jar ]; then
-          echo "Oracle JDBC not found"; exit 1;
+          echo "Oracle JDBC not found"
+          exit 1
         fi
-        echo driver.classpath=testlib/ojdbc14.jar;
+        echo driver.classpath=${OPEN_DIR}/mondrian/testlib/ojdbc14.jar
       fi
-      jdbcURL=jdbc:oracle:thin:foodmart/foodmart@//marmalade.hydromatic.net:1521/XE;
-      echo mondrian.foodmart.jdbcURL=${jdbcURL};
-      echo mondrian.jdbcDrivers=oracle.jdbc.OracleDriver;
+      jdbcURL=jdbc:oracle:thin:foodmart/foodmart@//marmalade.hydromatic.net:1521/XE
+      echo mondrian.foodmart.jdbcURL=${jdbcURL}
+      echo mondrian.jdbcDrivers=oracle.jdbc.OracleDriver
       echo mondrian.foodmart.jdbcUser=foodmart
       echo mondrian.foodmart.jdbcPassword=foodmart
-      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=demo/FoodMart.xml;JdbcDrivers=oracle.jdbc.OracleDriver;RoleXX='California manager';"
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=oracle.jdbc.OracleDriver;RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   derby)
     (
 #     echo mondrian.foodmart.jdbcURL=jdbc:derby:jar:\(demo/derby/derby-foodmart.zip\)/foodmart
-      echo mondrian.foodmart.jdbcURL=jdbc:derby:demo/derby/foodmart
+      echo mondrian.foodmart.jdbcURL=jdbc:derby:${OPEN_DIR}/mondrian/demo/derby/foodmart
       echo mondrian.jdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver
-      echo driver.classpath=testlib/derby.jar
-      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=jdbc:derby:demo/derby/foodmart;JdbcUser=sa;JdbcPassword=sa;PoolNeeded=false;Catalog=demo/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;RoleXX='California manager';"
+      echo driver.classpath=${OPEN_DIR}/mondrian/testlib/derby.jar
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=jdbc:derby:${OPEN_DIR}/mondrian/demo/derby/foodmart;JdbcUser=sa;JdbcPassword=sa;PoolNeeded=false;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   mysql)
@@ -123,7 +128,7 @@ doTest2() {
       echo mondrian.foodmart.jdbcURL=jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart
       echo mondrian.jdbcDrivers=com.mysql.jdbc.Driver
       echo driver.classpath=/usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar
-      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart;JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=demo/FoodMart.xml;JdbcDrivers=com.mysql.jdbc.Driver;RoleXX='California manager';"
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart;JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=com.mysql.jdbc.Driver;RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   *) echo "Unknown database $database"; exit 1 ;;
@@ -186,9 +191,10 @@ doTest2() {
       case $database in
       derby|access)
         $ANT_HOME/bin/ant $ANT_FLAGS ;
-        $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests unzip-databases test-nobuild
+        $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests unzip-databases # test-nobuild
         ;;
-      *) $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests test-nobuild ;;
+      *) $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests # test-nobuild
+        ;;
       esac
     fi
   fi
@@ -199,13 +205,35 @@ doTest2() {
     date
     echo "Running olap4j test with JDK=$jdk"
     (
-    cd ../olap4j
-    ant clean
-    ant
-    # Javadoc only runs clean under jdk16, because it depends on JDBC 4.0
-    case "$jdk" in
-    jdk1.6) ant javadoc ;;
-    esac
+      CONNECT_STRING=$(
+        awk '
+/^mondrian.test.connectString=/ {
+  print substr($0, length("mondrian.test.connectString=Provider=mondrian;") + 1)
+}           ' megatest.properties)
+      DRIVER_CLASSPATH=$(
+        awk '
+/^driver.classpath=/ {
+  print substr($0, length("driver.classpath=") + 1)
+}           ' megatest.properties)
+      cd ../olap4j
+      ant clean
+      (
+        echo "org.olap4j.test.connectUrl=jdbc:mondrian:${CONNECT_STRING}"
+        echo 'org.olap4j.test.helperClassName=org.olap4j.MondrianTester'
+        echo "org.olap4j.test.driverClasspath=${DRIVER_CLASSPATH}"
+      ) > test.properties
+      ant test
+      (
+        echo "org.olap4j.test.connectUrl=jdbc:mondrian:${CONNECT_STRING}"
+        echo 'org.olap4j.test.helperClassName=org.olap4j.XmlaTester'
+        echo "org.olap4j.XmlaTester.CatalogUrl=file:${OPEN_DIR}/mondrian/demo/FoodMart.xml"
+        echo "org.olap4j.test.driverClasspath=${DRIVER_CLASSPATH}"
+      ) > test.properties
+      ant test
+      # Javadoc only runs clean under jdk16, because it depends on JDBC 4.0
+      case "$jdk" in
+      jdk1.6) ant javadoc ;;
+      esac
     )
   fi
 }
@@ -382,6 +410,21 @@ doExoticTests()
     mondrian.native.topcount.enable=false \
     mondrian.native.nonempty.enable=false \
     mondrian.xmla.drillthroughTotalCount.enable=false
+
+  # Caused lots of out of memory errors towards the end of the test
+  echo "This caused out of memory errors"
+  doTest --retroweave jdk1.5 oracle \
+    mondrian.rolap.aggregates.Use=true \
+    mondrian.rolap.aggregates.Read=true \
+    mondrian.olap.case.sensitive=false \
+    mondrian.test.ExpDependencies=10 \
+    mondrian.rolap.evaluate.MaxEvalDepth=6 \
+    mondrian.rolap.star.disableCaching=true \
+    mondrian.native.topcount.enable=false \
+    mondrian.native.filter.enable=false \
+    mondrian.native.nonempty.enable=false \
+    mondrian.xmla.drillthroughTotalCount.enable=false \
+    mondrian.rolap.LargeDimensionThreshold=25000
 }
 
 # Returns one of its arguments with equal probability
@@ -506,12 +549,19 @@ doRandom()
     args="$args mondrian.rolap.groupingsets.enable=true"
   fi
 
+  # Different representation of null.
+  if [ "$(maybe 0.2)" ]; then
+    args="$args mondrian.olap.NullMemberRepresentation=TheNullMember"
+  fi
+
   doTest $args
 }
 
 doQuick()
 {
-  doTest jdk1.6 access
+   doTest --olap4j jdk1.5 derby
+#  doTest jdk1.6 mysql mondrian.native.crossjoin.enable=false mondrian.native.topcount.enable=false mondrian.xmla.drillthroughTotalCount.enable=false mondrian.rolap.LargeDimensionThreshold=1
+
 }
 
 doAllTests()
