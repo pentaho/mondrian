@@ -190,7 +190,9 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
                 tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
                 return tableRenderer;
-            } else if (value.getClass() == MondrianGuiDef.Relation.class) {
+            } else if (value.getClass() == MondrianGuiDef.RelationOrJoin.class) {
+                // REVIEW: Seems impossible to get here: RelationOrJoin is an
+                // abstract class.
                 SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
                 PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_RELATION);
@@ -213,9 +215,6 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
                 return tableRenderer;
             } else if (value.getClass() == MondrianGuiDef.Closure.class) {
-
-
-
                 SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
                 PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_CLOSURE);
@@ -269,7 +268,7 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
     }
 
     private String generateLeftRightStr(Object value) {
-        MondrianGuiDef.Relation currentObj = (MondrianGuiDef.Relation) value;
+        MondrianGuiDef.RelationOrJoin currentObj = (MondrianGuiDef.RelationOrJoin) value;
         if (currentObj instanceof MondrianGuiDef.Table)
             return (((MondrianGuiDef.Table) currentObj).alias == null || ((MondrianGuiDef.Table) currentObj).alias.equals("")?((MondrianGuiDef.Table) currentObj).name:((MondrianGuiDef.Table) currentObj).alias);
         MondrianGuiDef.Join currentJoin = (MondrianGuiDef.Join)currentObj;
@@ -296,7 +295,7 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 }
 
                 value = relationTable.getValueAt(i, 1);
-                if ( value instanceof MondrianGuiDef.Relation) {
+                if ( value instanceof MondrianGuiDef.RelationOrJoin) {
                     tableH += comp.getPreferredSize().height;
                     tableW = Math.max(tableW, comp.getPreferredSize().width +stringRenderer.getMaximumSize().width);
                 } else if (value == null) {

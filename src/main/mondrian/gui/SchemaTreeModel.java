@@ -364,7 +364,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             return -1;
         } else if (parent instanceof MondrianGuiDef.Cube) {
             MondrianGuiDef.Cube c = (MondrianGuiDef.Cube)parent;
-            if (child instanceof MondrianGuiDef.Relation) {
+            if (child instanceof MondrianGuiDef.RelationOrJoin) {
                 if (c.fact.equals(child)) {
                     return 0;
                 }
@@ -441,7 +441,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
                         return i + h.levels.length;}
                 }
                 return -1;
-            } else if (child instanceof MondrianGuiDef.Relation) {
+            } else if (child instanceof MondrianGuiDef.RelationOrJoin) {
                 if (h.relation.equals(child) && (h.relation == child) ) {
                     return h.levels.length + h.memberReaderParameters.length; }
                 return -1;
@@ -499,7 +499,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             return -1;
         } else if (parent instanceof MondrianGuiDef.Join) {
             MondrianGuiDef.Join j = (MondrianGuiDef.Join)parent;
-            if (child instanceof MondrianGuiDef.Relation) {
+            if (child instanceof MondrianGuiDef.RelationOrJoin) {
                 if (j.left.equals(child)) {
                     return 0;
                 } else if (j.right.equals(child)) {

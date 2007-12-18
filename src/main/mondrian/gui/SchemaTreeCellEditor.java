@@ -14,7 +14,6 @@ import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.EventObject;
-import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JTree;
@@ -64,7 +63,7 @@ public class SchemaTreeCellEditor extends javax.swing.tree.DefaultTreeCellEditor
         Component retValue=null;
 
 
-        if (value instanceof MondrianGuiDef.Relation) {
+        if (value instanceof MondrianGuiDef.RelationOrJoin) {
             String valueClass = value.getClass().getName();
             String simpleName[] = valueClass.split("[$.]",0);
 
@@ -100,7 +99,7 @@ public class SchemaTreeCellEditor extends javax.swing.tree.DefaultTreeCellEditor
                         Object value = path.getLastPathComponent();
                         TreePath parentPath = path.getParentPath();
                         Object parent = (parentPath==null?null:parentPath.getLastPathComponent());
-                        if (value instanceof MondrianGuiDef.Relation && (parent instanceof MondrianGuiDef.Hierarchy || parent instanceof MondrianGuiDef.Relation)) {
+                        if (value instanceof MondrianGuiDef.RelationOrJoin && (parent instanceof MondrianGuiDef.Hierarchy || parent instanceof MondrianGuiDef.RelationOrJoin)) {
                             // editing of relation(cube fact table is not allowed
                             //===System.out.println("Super iscelleditable="+ super.isCellEditable(event)); //editable;
                             if(((MouseEvent)event).getClickCount() == 2) {
@@ -153,7 +152,7 @@ public class SchemaTreeCellEditor extends javax.swing.tree.DefaultTreeCellEditor
 
     public void setValueAt(JTree tree) {
         String retValue;
-        MondrianGuiDef.Relation relationObj=null;
+        MondrianGuiDef.RelationOrJoin relationObj=null;
 
         retValue = (String) getCellEditorValue();
         if (retValue.equals("Join")) {

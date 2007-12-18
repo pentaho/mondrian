@@ -40,7 +40,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.util.ResourceBundle;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.plaf.basic.BasicArrowButton;
@@ -1589,8 +1588,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             } else if  ( fs[i].getType().isInstance(child) ) {  // parent's field is an instanceof child object'
                 try {
                     if (parent instanceof MondrianGuiDef.Join ||
-                        (parent instanceof MondrianGuiDef.Cube && child instanceof MondrianGuiDef.Relation) ||
-                        (parent instanceof MondrianGuiDef.Closure && child instanceof MondrianGuiDef.Relation)
+                        (parent instanceof MondrianGuiDef.Cube && child instanceof MondrianGuiDef.RelationOrJoin) ||
+                        (parent instanceof MondrianGuiDef.Closure && child instanceof MondrianGuiDef.RelationOrJoin)
                         ) {
                         // do not delete if deleting left or right table of a join
                         // do not delete table of cube or closure
@@ -2403,7 +2402,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         MondrianGuiDef.Hierarchy hierarchy = (MondrianGuiDef.Hierarchy) path;
 
-        MondrianGuiDef.Relation relation = new MondrianGuiDef.Table("", "Table", "");
+        MondrianGuiDef.RelationOrJoin relation = new MondrianGuiDef.Table("", "Table", "");
 
         //add relation to hierarchy
         hierarchy.relation = relation;
@@ -3034,9 +3033,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                         jPopupMenu.add(addSQL);
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
-                    } else if (pathSelected instanceof MondrianGuiDef.Relation) {
+                    } else if (pathSelected instanceof MondrianGuiDef.RelationOrJoin) {
                         Object po = path.getParentPath().getLastPathComponent();
-                        if (! (po instanceof MondrianGuiDef.Relation) &&
+                        if (! (po instanceof MondrianGuiDef.RelationOrJoin) &&
                             ! (po instanceof MondrianGuiDef.Closure)) {
                             if (po instanceof MondrianGuiDef.Cube) {
                                 jPopupMenu.add(addAggName);

@@ -525,7 +525,9 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             activeEditor = tableEditor;
         } else if (value.getClass() == MondrianGuiDef.NameExpression.class) {
             return null;
-        } else if (value.getClass() == MondrianGuiDef.Relation.class) {
+        } else if (value.getClass() == MondrianGuiDef.RelationOrJoin.class) {
+            // REVIEW: I don't think this code will ever be executed, because
+            // class RelationOrJoin is abstract. 
             SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(workbench);
             tableEditor.setDefaultEditor(Object.class, spce);
             SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);

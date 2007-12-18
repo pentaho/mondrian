@@ -16,7 +16,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.Field;
-import java.util.ResourceBundle;
 
 import org.eigenbase.xom.ElementDef;
 
@@ -95,8 +94,8 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
             super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("hierarchy"))));
             this.setPreferredSize(new java.awt.Dimension(this.getPreferredSize().width+1, 25)); //Do not remove this
 
-//        } else if (value instanceof MondrianGuiDef.Relation) {
-        } else if ((value instanceof MondrianGuiDef.Relation) ||
+        } else if ((value instanceof MondrianGuiDef.RelationOrJoin) ||
+            // REVIEW: '||' is superfluous - a Table is always a RelationOrJoin
                 (value instanceof MondrianGuiDef.Table)) {
             TreePath tpath = tree.getPathForRow(row);
             String prefix = "";
@@ -124,6 +123,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                         "{0}Table: {1}", new String[] {(prefix.length() == 0 ? "" : prefix + " : "), ((MondrianGuiDef.Table) value).name}));
                 super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("table"))));
             }
+            // REVIEW: Need to deal with InlineTable and View here
             this.getPreferredSize();
             this.setPreferredSize(new Dimension(this.getPreferredSize().width+35, 24)); //Do not remove this
             //this.setSize(new Dimension(this.getPreferredSize().width, 24)); //Do not remove this
