@@ -22,8 +22,8 @@ branston)
   jdkList="jdk1.5 jdk1.6"
   ;;
 mackerel)
-  databaseList="access derby oracle mysql"
-  jdkList="jdk1.6"
+  databaseList="access derby"
+  jdkList="jdk1.4 jdk1.6"
   ;;
 mackerel-winxp)
   databaseList="access derby"
@@ -88,8 +88,12 @@ doTest2() {
   case $database in
   access)
     (
-      echo mondrian.foodmart.jdbcURL=jdbc:odbc:MondrianFoodMart
+      jdbcURL=jdbc:odbc:MondrianFoodMart
+      jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver
+      echo mondrian.foodmart.jdbcURL=${jdbcURL}
+      echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo mondrian.jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   oracle)
@@ -107,28 +111,33 @@ doTest2() {
         echo driver.classpath=${OPEN_DIR}/mondrian/testlib/ojdbc14.jar
       fi
       jdbcURL=jdbc:oracle:thin:foodmart/foodmart@//marmalade.hydromatic.net:1521/XE
+      jdbcDrivers=oracle.jdbc.OracleDriver
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
-      echo mondrian.jdbcDrivers=oracle.jdbc.OracleDriver
+      echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo mondrian.foodmart.jdbcUser=foodmart
       echo mondrian.foodmart.jdbcPassword=foodmart
-      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=oracle.jdbc.OracleDriver;RoleXX='California manager';"
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   derby)
     (
-#     echo mondrian.foodmart.jdbcURL=jdbc:derby:jar:\(demo/derby/derby-foodmart.zip\)/foodmart
-      echo mondrian.foodmart.jdbcURL=jdbc:derby:${OPEN_DIR}/mondrian/demo/derby/foodmart
-      echo mondrian.jdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver
+      jdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver
+      jdbcURL=jdbc:derby:${OPEN_DIR}/mondrian/demo/derby/foodmart
+#     jdbcURL=jdbc:derby:jar:\(demo/derby/derby-foodmart.zip\)/foodmart
+      echo mondrian.foodmart.jdbcURL=${jdbcURL}
+      echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo driver.classpath=${OPEN_DIR}/mondrian/testlib/derby.jar
-      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=jdbc:derby:${OPEN_DIR}/mondrian/demo/derby/foodmart;JdbcUser=sa;JdbcPassword=sa;PoolNeeded=false;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;RoleXX='California manager';"
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=sa;JdbcPassword=sa;PoolNeeded=false;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   mysql)
     (
-      echo mondrian.foodmart.jdbcURL=jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart
-      echo mondrian.jdbcDrivers=com.mysql.jdbc.Driver
+      jdbcDrivers=com.mysql.jdbc.Driver
+      jdbcURL=jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart
+      echo mondrian.foodmart.jdbcURL=${jdbcURL}
+      echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo driver.classpath=/usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar
-      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart;JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=com.mysql.jdbc.Driver;RoleXX='California manager';"
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   *) echo "Unknown database $database"; exit 1 ;;
@@ -216,6 +225,10 @@ doTest2() {
   print substr($0, length("driver.classpath=") + 1)
 }           ' megatest.properties)
       cd ../olap4j
+      case $(uname) in
+      Cygwin*) FILE_PREFIX=file:/ ;;
+      *) FILE_PREFIX=file: ;;
+      esac
       ant clean
       (
         echo "org.olap4j.test.connectUrl=jdbc:mondrian:${CONNECT_STRING}"
@@ -226,7 +239,7 @@ doTest2() {
       (
         echo "org.olap4j.test.connectUrl=jdbc:mondrian:${CONNECT_STRING}"
         echo 'org.olap4j.test.helperClassName=org.olap4j.XmlaTester'
-        echo "org.olap4j.XmlaTester.CatalogUrl=file:${OPEN_DIR}/mondrian/demo/FoodMart.xml"
+        echo "org.olap4j.XmlaTester.CatalogUrl=${FILE_PREFIX}${OPEN_DIR}/mondrian/demo/FoodMart.xml"
         echo "org.olap4j.test.driverClasspath=${DRIVER_CLASSPATH}"
       ) > test.properties
       ant test
@@ -264,7 +277,13 @@ chooseAntHome()
 chooseJavaHome() {
   jdk=$1
   case $(uname -n) in
-  branston|mackerel)
+  mackerel)
+    case $jdk in
+    jdk1.4) echo /c/j2sdk1.4.2_16 ;;
+    jdk1.5|jdk1.6) echo /c/jdk1.6.0_01 ;;
+    *) echo "Unknown java version $jdk"; exit 1 ;;
+    esac;;
+  branston)
     case $jdk in
     jdk1.5) echo /e/jdk1.5.0_08 ;;
     jdk1.6) echo /c/jdk1.6.0_01 ;;
@@ -559,7 +578,7 @@ doRandom()
 
 doQuick()
 {
-   doTest --olap4j jdk1.6 access
+  doTest --olap4j jdk1.6 access
 }
 
 doAllTests()
