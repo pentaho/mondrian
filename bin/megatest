@@ -191,9 +191,9 @@ doTest2() {
       case $database in
       derby|access)
         $ANT_HOME/bin/ant $ANT_FLAGS ;
-        $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests unzip-databases # test-nobuild
+        $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests unzip-databases test-nobuild
         ;;
-      *) $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests # test-nobuild
+      *) $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests test-nobuild
         ;;
       esac
     fi
@@ -559,9 +559,7 @@ doRandom()
 
 doQuick()
 {
-   doTest --olap4j jdk1.5 derby
-#  doTest jdk1.6 mysql mondrian.native.crossjoin.enable=false mondrian.native.topcount.enable=false mondrian.xmla.drillthroughTotalCount.enable=false mondrian.rolap.LargeDimensionThreshold=1
-
+   doTest --olap4j jdk1.6 access
 }
 
 doAllTests()
