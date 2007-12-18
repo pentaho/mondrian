@@ -1062,6 +1062,40 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final BooleanProperty EnableGroupingSets =
             new BooleanProperty(
                     this, "mondrian.rolap.groupingsets.enable", false);
+
+    /**
+     * Property which defines whether to ignore measure when non joining
+     * dimension is in the tuple during aggregation
+     *
+     * If there are unrelated dimensions to a measure in context during
+     * aggregation, the measure is ignored in the evaluation context. This
+     * behaviour kicks in only if the cubeusage for this measure has
+     * IgnoreUnrelatedDimensions attribute set to false
+     * 
+     * Gender doesn't join with [Warehouse Sales] measure
+     *
+     * With mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension=true
+     * Warehouse Sales gets eliminated and is ignored in the aggregate value
+     *                                         [Store Sales] + [Warehouse Sales]
+     * SUM({Product.members * Gender.members})	        7,913,333.82
+     *
+     * With mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension=false
+     * Warehouse Sales with Gender All level member contributes to the aggregate
+     * value
+     *                                         [Store Sales] + [Warehouse Sales]
+     * SUM({Product.members * Gender.members})	        9,290,730.03
+     * 
+     * On a report where Gender M, F and All members exist a user will see a
+     * large aggregated value compared to the aggregated value that can be
+     * arrived at by suming up values against Gender M and F. This can be
+     * confusing to the user. This feature can be used to eliminate such a
+     * situation
+     */
+    public transient final BooleanProperty IgnoreMeasureForNonJoiningDimension =
+            new BooleanProperty(
+                    this,
+                    "mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension",
+                    false);
 }
 
 // End MondrianProperties.java

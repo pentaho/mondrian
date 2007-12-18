@@ -243,6 +243,7 @@ public class Main extends TestSuite {
             addTest(suite, RolapCubeTest.class);
             addTest(suite, NullMemberRepresentationTest.class);
             addTest(suite, IgnoreUnrelatedDimensionsTest.class);
+            addTest(suite, IgnoreMeasureForNonJoiningDimensionInAggregationTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {

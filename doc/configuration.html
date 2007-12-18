@@ -387,6 +387,35 @@ suite of regression tests.</p>
       </td>
     </tr>
     <tr>
+      <td>
+        <code>
+        <a href="api/mondrian/olap/MondrianProperties.html#IgnoreMeasureForNonJoiningDimension">mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension</a></code></td>
+      <td>boolean</td>
+      <td>false</td>
+      <td>
+         If there are unrelated dimensions to a measure in context during
+         aggregation, the measure is ignored in the evaluation context. This
+         behaviour kicks in only if the cubeusage for this measure has
+         IgnoreUnrelatedDimensions attribute set to false
+
+         <p>For example, Gender doesn't join with [Warehouse Sales] measure
+
+         <p>With <code>mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension=true</code>
+         <p>Warehouse Sales gets eliminated and is ignored in the aggregate value
+         <blockquote><code>SUM({Product.members * Gender.members})</code></blockquote>
+         <blockquote><code>[Store Sales] + [Warehouse Sales] = 7,913,333.82</code></blockquote>
+         <p>With <code>mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension=false</code>
+         <p>Warehouse Sales is part of the aggregate value
+         <blockquote><code>SUM({Product.members * Gender.members})</code></blockquote>
+         <blockquote><code>[Store Sales] + [Warehouse Sales] = 9,290,730.03</code></blockquote>
+         <p>On a report where Gender M, F and All members exist a user will see a
+         large aggregated value compared to the aggregated value that can be
+         arrived at by suming up values against Gender M and F. This can be
+         confusing to the user. This feature can be used to eliminate such a
+         situation
+      </td>
+    </tr>
+    <tr>
       <td colspan="4">
 
       <b><br>
