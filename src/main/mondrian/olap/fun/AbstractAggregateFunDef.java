@@ -66,8 +66,8 @@ public class AbstractAggregateFunDef extends FunDefBase {
      * @return list of evaluated members or tuples
      */
     protected static List evaluateCurrentList(
-            ListCalc listCalc,
-            Evaluator evaluator)
+        ListCalc listCalc,
+        Evaluator evaluator)
     {
         List tuples = listCalc.evaluateList(evaluator);
 
@@ -78,8 +78,8 @@ public class AbstractAggregateFunDef extends FunDefBase {
     }
 
     protected Iterable evaluateCurrentIterable(
-            IterCalc iterCalc,
-            Evaluator evaluator)
+        IterCalc iterCalc,
+        Evaluator evaluator)
     {
         Iterable iter = iterCalc.evaluateIterable(evaluator);
 
@@ -91,7 +91,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
 
     private static void crossProd(Evaluator evaluator, int currLen) {
         long iterationLimit =
-                MondrianProperties.instance().IterationLimit.get();
+            MondrianProperties.instance().IterationLimit.get();
         if (iterationLimit > 0) {
             int productLen = currLen;
             Evaluator parent = evaluator.getParent();
@@ -101,7 +101,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
             }
             if (productLen > iterationLimit) {
                 throw MondrianResource.instance().
-                        IterationLimitExceeded.ex(iterationLimit);
+                    IterationLimitExceeded.ex(iterationLimit);
             }
         }
         evaluator.setIterationLength(currLen);
@@ -110,12 +110,12 @@ public class AbstractAggregateFunDef extends FunDefBase {
     /**
      * Pushes unrelated dimensions to the top level member from the given list
      * of tuples if the ignoreUnrelatedDimensions property is set on the base
-     * cube usage in the virtual cube
+     * cube usage in the virtual cube.
      *
-     * If IgnoreMeasureForNonJoiningDimension is set to true and
+     * <p>If IgnoreMeasureForNonJoiningDimension is set to true and
      * ignoreUnrelatedDimensions on CubeUsage is set to false then if a non
      * joining dimension exists in the aggregation list then return an empty
-     * list else return the original list
+     * list else return the original list.
      *
      * @param tuplesForAggregation is a list of members or tuples used in
      * computing the aggregate
@@ -123,8 +123,9 @@ public class AbstractAggregateFunDef extends FunDefBase {
      * @return list of members or tuples
      */
     private static List processUnrelatedDimensions(
-            List tuplesForAggregation,
-            Evaluator evaluator) {
+        List tuplesForAggregation,
+        Evaluator evaluator)
+    {
 
         RolapMember measure = (RolapMember) evaluator.getMembers()[0];
 
@@ -146,7 +147,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
 
     /**
      * If a non joining dimension exists in the aggregation list then return
-     * an empty list else return the original list
+     * an empty list else return the original list.
 
      * @param tuplesForAggregation is a list of members or tuples used in
      * computing the aggregate
@@ -154,11 +155,11 @@ public class AbstractAggregateFunDef extends FunDefBase {
      * @return list of members or tuples
      */
     private static List ignoreMeasureForNonJoiningDimension(
-            List tuplesForAggregation,
-            RolapCube baseCube)
+        List tuplesForAggregation,
+        RolapCube baseCube)
     {
         Set nonJoiningDimensions =
-                nonJoiningDimensions(baseCube, tuplesForAggregation);
+            nonJoiningDimensions(baseCube, tuplesForAggregation);
         if (nonJoiningDimensions.size() > 0) {
             return new ArrayList();
         }
@@ -168,26 +169,26 @@ public class AbstractAggregateFunDef extends FunDefBase {
     /**
      * Pushes unrelated dimensions to the top level member from the given list
      * of tuples if the ignoreUnrelatedDimensions property is set on the base
-     * cube usage in the virtual cube
+     * cube usage in the virtual cube.
      *
      * @param tuplesForAggregation is a list of members or tuples used in
      * computing the aggregate
      * @return list of members or tuples
      */
     private static List ignoreUnrelatedDimensions(
-            List tuplesForAggregation,
-            RolapCube baseCube)
+        List tuplesForAggregation,
+        RolapCube baseCube)
     {
         Set nonJoiningDimensions =
-                nonJoiningDimensions(baseCube, tuplesForAggregation);
+            nonJoiningDimensions(baseCube, tuplesForAggregation);
         Set processedTuples = new LinkedHashSet(tuplesForAggregation.size());
         for (int i = 0; i < tuplesForAggregation.size(); i++) {
             Member[] tuples = copy(tupleAsArray(tuplesForAggregation.get(i)));
             for (int j = 0; j < tuples.length; j++) {
                 if (nonJoiningDimensions.contains(
-                        tuples[j].getDimension().getUniqueName())) {
+                    tuples[j].getDimension().getUniqueName())) {
                     final Hierarchy hierarchy =
-                            tuples[j].getDimension().getHierarchy();
+                        tuples[j].getDimension().getHierarchy();
                     if(hierarchy.hasAll()){
                         tuples[j] = hierarchy.getAllMember();
                     } else {
@@ -206,15 +207,15 @@ public class AbstractAggregateFunDef extends FunDefBase {
     }
 
     private static Set nonJoiningDimensions(
-            RolapCube baseCube,
-            List tuplesForAggregation)
+        RolapCube baseCube,
+        List tuplesForAggregation)
     {
         Set nonJoiningDimensions = new HashSet();
         Dimension[] baseCubeDimensions = baseCube.getDimensions();
         Member[] tuple = tupleAsArray(tuplesForAggregation.get(0));
         for (Member member : tuple) {
             nonJoiningDimensions.add(member.getHierarchy().getDimension()
-                    .getUniqueName());
+                .getUniqueName());
         }
         for (Dimension dimension : baseCubeDimensions) {
             nonJoiningDimensions.remove(dimension.getUniqueName());
@@ -227,7 +228,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
 
     private static boolean shouldIgnoreMeasureForNonJoiningDimension() {
         return MondrianProperties.instance()
-                .IgnoreMeasureForNonJoiningDimension.get();
+            .IgnoreMeasureForNonJoiningDimension.get();
     }
 
     private static List tuplesAsList(Set tuples) {
@@ -271,11 +272,10 @@ public class AbstractAggregateFunDef extends FunDefBase {
 
         public boolean equals(Object obj) {
             return Arrays.deepEquals(
-                    memberArray,
-                    ((MemberArray) obj).memberArray);
+                memberArray,
+                ((MemberArray) obj).memberArray);
         }
     }
-
 }
 
 // End AbstractAggregateFunDef.java

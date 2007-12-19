@@ -257,7 +257,7 @@ Revision is $Id$
     <!-- CubeUsages ============================================= -->
     <Element type="CubeUsages">
         <Doc>
-            List of base cubes used by the virtual cube
+            List of base cubes used by the virtual cube.
         </Doc>
         <Array name="cubeUsages" type="CubeUsage" min="1"><Doc></Doc></Array>
     </Element>
@@ -266,12 +266,13 @@ Revision is $Id$
     <Element type="CubeUsage">
         <Attribute name="cubeName" required="true">
             <Doc>
-                Name of the cube which the virtualCube uses
+                Name of the cube which the virtualCube uses.
             </Doc>
         </Attribute>
         <Attribute name="ignoreUnrelatedDimensions" type="Boolean" default="false">
             <Doc>
-                Unrelated dimensions to measures in this cube will be pushed to default member
+                Unrelated dimensions to measures in this cube will be pushed to
+                top level member.
             </Doc>
         </Attribute>
     </Element>

@@ -16,7 +16,7 @@ import mondrian.olap.MondrianProperties;
 /**
  * Test ignoring of measure when unrelated Dimension is in
  * aggregation list when IgnoreMeasureForNonJoiningDimension property is
- * set to true
+ * set to true.
  * @author ajoglekar
  * @since Dec 12, 2007
  * @version $Id$
@@ -77,14 +77,14 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest extends FoodMa
 
     public void testNoTotalForMeasureWithCrossJoinOfJoiningAndNonJoiningDims() {
         assertQueryReturns("with member [Product].x as " +
-                "'sum({Product.members}  * {Gender.members})' " +
-                "select {[Measures].[Warehouse Sales]} on 0, " +
-                "{Product.x} on 1 from [Warehouse and Sales]",
-                fold(
-                    "Axis #0:\n" +
-                    "{}\n" +
-                    "Axis #1:\n" +
-                    "Axis #2:\n"));
+            "'sum({Product.members}  * {Gender.members})' " +
+            "select {[Measures].[Warehouse Sales]} on 0, " +
+            "{Product.x} on 1 from [Warehouse and Sales]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "Axis #2:\n"));
     }
 
     public void testShouldTotalAMeasureWithAllJoiningDimensions() {

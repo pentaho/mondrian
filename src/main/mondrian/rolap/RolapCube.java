@@ -1735,14 +1735,14 @@ public class RolapCube extends CubeBase {
     /**
      * This method tells us if unrelated dimensions to measures from
      * the input base cube should be pushed to default member or not
-     * during aggregation
+     * during aggregation.
      * @param baseCubeName name of the base cube for which we want
      * to check this property
      * @return boolean
      */
     public boolean shouldIgnoreUnrelatedDimensions(String baseCubeName) {
         return cubeUsages != null
-                && cubeUsages.shouldIgnoreUnrelatedDimensions(baseCubeName);
+            && cubeUsages.shouldIgnoreUnrelatedDimensions(baseCubeName);
     }
 
     /**

@@ -16,7 +16,7 @@ import mondrian.olap.MondrianProperties;
 /**
  * <code>IgnoreUnrelatedDimensionsTest</code> Test case to
  * push unrelatedDimensions to top level when ignoreUnrelatedDimensions property
- * is set to true on a base cube usage
+ * is set to true on a base cube usage.
  * @author ajoglekar
  * @since Dec 03, 2007
  * @version $Id$
@@ -115,7 +115,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             "{Gender.G} ON 1 " +
             "FROM [WAREHOUSE AND SALES2]",
             fold(
-            "Axis #0:\n" +
+                "Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Unit Sales VM]}\n" +
@@ -136,7 +136,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             "{[MEASURES].[Total Sales]} ON 0," +
             "{Gender.G} ON 1 FROM [WAREHOUSE AND SALES2]",
             fold(
-            "Axis #0:\n" +
+                "Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Total Sales]}\n" +
@@ -148,7 +148,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
     public void testAggregateMemberDefinedOnNonJoiningDimensionWithNonAllDefaultMember(){
         // Gender dim to have Gender.F as default member
         TestContext context = TestContext.create(null, cubeSales3,
-                cubeWarehouseAndSales3, null, null, null);
+            cubeWarehouseAndSales3, null, null, null);
         context.assertQueryReturns(
             "WITH MEMBER [Measures].[Total Sales] AS " +
             "'ValidMeasure(Measures.[Warehouse Sales]) + [Measures].[Unit Sales]'," +
@@ -160,7 +160,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             "{[MEASURES].[Total Sales]} ON 0," +
             "{Gender.G} ON 1 FROM [WAREHOUSE AND SALES 3]",
             fold(
-            "Axis #0:\n" +
+                "Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Total Sales]}\n" +
@@ -180,7 +180,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             "{[MEASURES].[Unit Sales VM], [MEASURES].[STORE COST]} ON 0," +
             "{PRODUCT.G} ON 1 FROM [WAREHOUSE AND SALES2]",
             fold(
-            "Axis #0:\n" +
+                "Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Unit Sales VM]}\n" +
