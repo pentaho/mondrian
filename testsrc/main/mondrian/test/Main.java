@@ -22,10 +22,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
-import mondrian.olap.fun.FunctionTest;
-import mondrian.olap.fun.SortTest;
-import mondrian.olap.fun.CrossJoinTest;
-import mondrian.olap.fun.MemberHelperTest;
+import mondrian.olap.fun.*;
 import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQueryTest;
@@ -38,6 +35,7 @@ import mondrian.xmla.test.XmlaTest;
 import mondrian.test.clearview.*;
 import mondrian.calc.impl.ConstantCalcTest;
 import mondrian.rolap.agg.SegmentLoaderTest;
+import mondrian.rolap.agg.AggregationOnDistinctCountMeasuresTest;
 import org.apache.log4j.Logger;
 
 /**
@@ -244,6 +242,9 @@ public class Main extends TestSuite {
             addTest(suite, NullMemberRepresentationTest.class);
             addTest(suite, IgnoreUnrelatedDimensionsTest.class);
             addTest(suite, IgnoreMeasureForNonJoiningDimensionInAggregationTest.class);
+            addTest(suite, SetFunDefTest.class);
+            addTest(suite, AggregationOnDistinctCountMeasuresTest.class);
+            addTest(suite, BitKeyTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {

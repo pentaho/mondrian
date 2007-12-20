@@ -99,12 +99,12 @@ public abstract class RolapAggregationManager {
         final RolapStoredMeasure measure = (RolapStoredMeasure) currentMembers[0];
         final RolapStar.Measure starMeasure =
             (RolapStar.Measure) measure.getStarMeasure();
-        assert starMeasure != null;        
+        assert starMeasure != null;
         final RolapStar star = starMeasure.getStar();
         final Map<RolapLevel, RolapStar.Column> levelToColumnMap =
             star.getLevelToColumnMap(measure.getCube());
         int starColumnCount = starMeasure.getStar().getColumnCount();
-        
+
         CellRequest request = makeCellRequest(currentMembers, false, false);
 
         /*
@@ -115,12 +115,12 @@ public abstract class RolapAggregationManager {
         if (aggregationLists == null) {
             return request;
         }
-        
+
         BitKey compoundBitKey;
         StarPredicate compoundPredicate;
         Map<BitKey, List<RolapMember>> compoundGroupMap;
         boolean unsatisfiable;
-        
+
         for (List<RolapMember> aggregationList : aggregationLists) {
             compoundBitKey = BitKey.Factory.makeBitKey(starColumnCount);
             compoundBitKey.clear();
@@ -131,7 +131,7 @@ public abstract class RolapAggregationManager {
             if (unsatisfiable) {
                 return null;
             }
-            compoundPredicate = 
+            compoundPredicate =
                 makeCompoundPredicate(levelToColumnMap, compoundGroupMap);
             if (compoundPredicate != null) {
                 /*
@@ -143,7 +143,7 @@ public abstract class RolapAggregationManager {
                 request.addAggregateList(compoundBitKey, compoundPredicate);
             }
         }
-        
+
         return request;
     }
 
@@ -155,7 +155,7 @@ public abstract class RolapAggregationManager {
         if (extendedContext) {
             assert (drillThrough);
         }
-        
+
         if (!(members[0] instanceof RolapStoredMeasure)) {
             return null;
         }
@@ -199,7 +199,7 @@ public abstract class RolapAggregationManager {
         }
         return request;
     }
-    
+
     /**
      * Adds the key columns as non-constraining columns. For
      * example, if they asked for [Gender].[M], [Store].[USA].[CA]
@@ -252,24 +252,39 @@ public abstract class RolapAggregationManager {
 
     /*
      * Group members from the same compound(i.e. hierarchy) into groups that
-     * are constrained by the same set of columns. e.g
-     * 
-     * Members 
-     * [USA].[CA], 
-     * [Canada].[BC], 
-     * [USA].[CA].[San Francisco], 
+     * are constrained by the same set of columns by traversing list of tuples
+     * or members.
+     * E.g.
+     *
+     * Members
+     * [USA].[CA],
+     * [Canada].[BC],
+     * [USA].[CA].[San Francisco],
      * [USA].[OR].[Portland]
-     * 
+     *
      * will be grouped into
      * group 1: [USA].[CA], [Canada].[BC]
      * group 2: [USA].[CA].[San Francisco], [USA].[OR].[Portland]
-     * 
+     *
      * This helps with generating optimal form of sql.
+     *
+     * <p>Incase of aggregating over a list of tuples, each tuple forms a
+     * seperate group
+     * E.g.
+     *
+     * Tuples:
+     * ([Gender].[M], [Store].[All Stores].[USA].[CA])
+     * ([Gender].[F], [Store].[All Stores].[USA].[CA])
+     *
+     * will be grouped into
+     * group 1: [Gender].[M], [Store].[All Stores].[USA].[CA]
+     * group 2: [Gender].[F], [Store].[All Stores].[USA].[CA]
+     *
      */
     private static boolean makeCompoundGroup(
         int starColumnCount,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        List<RolapMember> memberList,
+        List memberList,
         Map<BitKey, List<RolapMember>> compoundGroupMap)
     {
         /*
@@ -277,140 +292,306 @@ public abstract class RolapAggregationManager {
          * if not all members can be constrained.
          * However, the presense of All member will exonerate the whole list.
          */
-        boolean unsatisfiable = false;
-        List<RolapMember> compoundGroup;
-        BitKey bitKey = BitKey.Factory.makeBitKey(starColumnCount);
+
+        int unsatisfiableMemberCount;
+
+        if (containsTuple(memberList)) {
+            unsatisfiableMemberCount =
+                makeTuplesCompoundGroup(
+                    starColumnCount,
+                    levelToColumnMap,
+                    memberList,
+                    compoundGroupMap);
+        }
+        else {
+            unsatisfiableMemberCount =
+                makeMembersCompoundGroup(
+                    starColumnCount,
+                    levelToColumnMap,
+                    memberList,
+                    compoundGroupMap);
+        }
+        return (unsatisfiableMemberCount == memberList.size());
+    }
+
+    private static boolean containsTuple(List memberList) {
+        return memberList.get(0) instanceof Member[];
+    }
+
+    private static int makeTuplesCompoundGroup(
+        int starColumnCount,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        List memberList,
+        Map<BitKey, List<RolapMember>> compoundGroupMap)
+    {
         int unsatisfiableMemberCount = 0;
-        for (RolapMember member : memberList) {
-            bitKey.clear();
-            RolapMember levelMember = member;
-            while (levelMember != null) {
-                RolapLevel level = levelMember.getLevel();
-                // Only need to constrain the nonAll levels
-                if (!level.isAll()) {
-                    RolapStar.Column column = levelToColumnMap.get(level);
-                    if (column != null) {
-                        bitKey.set(column.getBitPosition());
-                    } else {
-                        // Failed to process compound member constraint. 
-                        unsatisfiableMemberCount ++;
-                        break;
-                    }
-                }
-                
-                levelMember = levelMember.getParentMember();
+
+        for (Object object : memberList) {
+            Member[] tuple = (Member[]) object;
+
+            BitKey bitKey = BitKey.Factory.makeBitKey(starColumnCount);
+            for (Member member : tuple) {
+                unsatisfiableMemberCount +=
+                    makeCompoundGroupForAMember(member, levelToColumnMap, bitKey);
             }
-            
             if (bitKey.isEmpty()) {
                 // Did not find columns to constrain
                 continue;
             }
-            
-            compoundGroup = compoundGroupMap.get(bitKey);
-            if (compoundGroup ==  null) {
-                compoundGroup = new ArrayList<RolapMember>();
-                compoundGroupMap.put(bitKey, compoundGroup);
-                bitKey = BitKey.Factory.makeBitKey(starColumnCount);
-            }
-            compoundGroup.add(member);
+            createCompoundGroupBasedOnBitKey(tuple, bitKey, compoundGroupMap);
         }
-        if (unsatisfiableMemberCount == memberList.size()) {
-            unsatisfiable = true;
-        }
-        
-        return unsatisfiable;
+        return unsatisfiableMemberCount;
     }
-    
-    /*
-     * Translate Map<BitKey, List<RolapMember>> of the smae copound member into 
-     * ListPredicate.
-     * The example above
-     *       
-     * group 1: [USA].[CA], [Canada].[BC]
+
+    private static int makeMembersCompoundGroup(
+        int starColumnCount,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        List<RolapMember> memberList,
+        Map<BitKey, List<RolapMember>> compoundGroupMap)
+    {
+        int unsatisfiableMemberCount=0;
+        for (Member member : memberList) {
+            BitKey bitKey = BitKey.Factory.makeBitKey(starColumnCount);
+            unsatisfiableMemberCount +=
+                makeCompoundGroupForAMember(member, levelToColumnMap, bitKey);
+
+            if (bitKey.isEmpty()) {
+                // Did not find columns to constrain
+                continue;
+            }
+
+            createCompoundGroupBasedOnBitKey(member, bitKey, compoundGroupMap);
+        }
+        return unsatisfiableMemberCount;
+    }
+
+    private static void createCompoundGroupBasedOnBitKey(
+        Object member,
+        BitKey bitKey,
+        Map<BitKey, List<RolapMember>> compoundGroupMap)
+    {
+        List compoundGroup = compoundGroupMap.get(bitKey);
+        if (compoundGroup == null) {
+            compoundGroup = new ArrayList<RolapMember>();
+            compoundGroupMap.put(bitKey, compoundGroup);
+        }
+        compoundGroup.add(member);
+
+    }
+
+    private static int makeCompoundGroupForAMember(
+        Member member,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        BitKey bitKey)
+    {
+        Member levelMember = member;
+        int unsatisfiableMemberCount=0;
+        while (levelMember != null) {
+            Level level = levelMember.getLevel();
+            // Only need to constrain the nonAll levels
+            if (!level.isAll()) {
+                RolapStar.Column column = levelToColumnMap.get(level);
+                if (column != null) {
+                    bitKey.set(column.getBitPosition());
+                } else {
+                    // Failed to process compound member constraint.
+                    unsatisfiableMemberCount++;
+                    break;
+                }
+            }
+
+            levelMember = levelMember.getParentMember();
+        }
+        return unsatisfiableMemberCount;
+    }
+
+    /**
+     * Translate Map<BitKey, List<RolapMember>> of the same compound member into
+     * ListPredicate by traversing list of members or tuples.
+     * <p>1. The example below is for list of tuples
+     *
+     * <blockquote>
+     * <p>group 1: [Gender].[M], [Store].[All Stores].[USA].[CA]
+     * group 2: [Gender].[F], [Store].[All Stores].[USA].[CA]
+     * </blockquote>
+     * is translated into
+     * <blockquote>
+     * <p>(Gender=M AND Store_State=CA AND Store_Country=USA)
+     * OR
+     * (Gender=F AND Store_State=CA AND Store_Country=USA)
+     * </blockquote>
+     * <p>The caller of this method will translate this representation into
+     * appropriate SQL form as
+     * <blockquote>
+     *  <p>where (gender = 'M' and Store_State = 'CA' AND Store_Country = 'USA')
+     *     OR (Gender = 'F' and Store_State = 'CA' AND Store_Country = 'USA')
+     * </blockquote>
+     * <p>2. The example below for a list of members
+     * <blockquote>
+     * <p>group 1: [USA].[CA], [Canada].[BC]
      * group 2: [USA].[CA].[San Francisco], [USA].[OR].[Portland]
-     * 
+     * </blockquote>
      * is translated into:
-     * 
-     * (Country=USA AND State=CA) 
+     * <blockquote>
+     * <p>(Country=USA AND State=CA)
      *     OR (Country=Canada AND State=BC)
      * OR
-     * (Country=USA AND State=CA AND City=San Francisco) 
+     * (Country=USA AND State=CA AND City=San Francisco)
      *     OR (Country=USA AND State=OR AND City=Portland)
-     * 
-     * The caller of this method will translate this representation into 
+     * </blockquote>
+     * <p>The caller of this method will translate this representation into
      * appropriate SQL form. For exmaple, if the underlying DB supports multi value
      * IN-list, the second group will turn into this predicate:
-     *     where (country, state, city) IN ((USA, CA, San Francisco), 
+     * <blockquote>
+     * <p>    where (country, state, city) IN ((USA, CA, San Francisco),
      *                                      (USA, OR, Portland))
+     * </blockquote>
      * or, if the DB does not support multi-value IN list:
-     *     where country=USA AND 
-     *           ((state=CA AND city = San Francisco) OR 
+     * <blockquote>
+     * <p>    where country=USA AND
+     *           ((state=CA AND city = San Francisco) OR
      *            (state=OR AND city=Portland))
+     * </blockquote>
+     *
+     * @param levelToColumnMap
+     * @param compoundGroupMap
+     * @return compound predicate for a tuple or a member
      */
     public static StarPredicate makeCompoundPredicate(
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        Map<BitKey, List<RolapMember>> compoundGroupMap) 
+        Map<BitKey, List<RolapMember>> compoundGroupMap)
     {
-        List<StarPredicate> compoundPredicateList = 
-            new ArrayList<StarPredicate> ();
-        
-        for (List<RolapMember> memberList : compoundGroupMap.values()) {
-            /*
-             * e.g. [USA].[CA], [Canada].[BC]
-             */
-            StarPredicate compoundGroupPredicate = null;
-            for (RolapMember member : memberList) {
-               /*
-                * [USA].[CA]
-                */ 
-                StarPredicate memberPredicate = null;
-                while (member != null) {
-                    RolapLevel level = member.getLevel();
-                    if (!level.isAll()) {
-                        RolapStar.Column column = levelToColumnMap.get(level);
-
-                        if (memberPredicate == null) {
-                            memberPredicate = 
-                                new ValueColumnPredicate(column, member.getKey());
-                        } else {
-                            memberPredicate = 
-                                memberPredicate.and(
-                                    new ValueColumnPredicate(column, member.getKey()));
-                        }
-                    }
-                    member = member.getParentMember();
-                }
-                if (memberPredicate != null) {                
-                    if (compoundGroupPredicate == null) {
-                        compoundGroupPredicate = memberPredicate;
-                    } else {
-                        compoundGroupPredicate = 
-                            compoundGroupPredicate.or(memberPredicate);
-                    }
-                }
-            }
-            
-            if (compoundGroupPredicate != null) {
-                /*
-                 * Sometimes the compound member list does not constrain any 
-                 * columns; for example, if only AllLevel is present.
-                 */
-                compoundPredicateList.add(compoundGroupPredicate);
-            }
+        List<StarPredicate> compoundPredicateList;
+        if(containsTuple(compoundGroupMap)){
+            compoundPredicateList =
+                makeCompoundPredicateForTuple(
+                    compoundGroupMap, levelToColumnMap);
         }
-        
-        
+        else{
+            compoundPredicateList =
+                makeCompoundPredicateForMembers(
+                    compoundGroupMap, levelToColumnMap);
+        }
         StarPredicate compoundPredicate = null;
-        
+
         if (compoundPredicateList.size() > 1) {
             compoundPredicate = new OrPredicate(compoundPredicateList);
         } else if (compoundPredicateList.size() == 1) {
             compoundPredicate = compoundPredicateList.get(0);
         }
-        
-        return compoundPredicate; 
+
+        return compoundPredicate;
     }
-    
+
+    private static List<StarPredicate> makeCompoundPredicateForMembers(
+        Map<BitKey, List<RolapMember>> compoundGroupMap,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap)
+    {
+        List<StarPredicate> compoundPredicateList =
+            new ArrayList<StarPredicate> ();
+        for (List<RolapMember> groups : compoundGroupMap.values()) {
+            /*
+             * e.g. [USA].[CA], [Canada].[BC]
+             */
+            StarPredicate compoundGroupPredicate = null;
+            for (RolapMember member : groups) {
+               /*
+                * [USA].[CA]
+                */
+                StarPredicate memberPredicate = null;
+                memberPredicate = makeCompoundPredicateForAMember(member,
+                    levelToColumnMap, memberPredicate);
+                if (memberPredicate != null) {
+                    if (compoundGroupPredicate == null) {
+                        compoundGroupPredicate = memberPredicate;
+                    } else {
+                        compoundGroupPredicate =
+                            compoundGroupPredicate.or(memberPredicate);
+                    }
+                }
+            }
+            addToCompoundPredicateList(
+                compoundGroupPredicate, compoundPredicateList);
+        }
+        return compoundPredicateList;
+    }
+
+    private static void addToCompoundPredicateList(
+        StarPredicate startPredicate,
+        List<StarPredicate> compoundPredicateList)
+    {
+        if (startPredicate != null) {
+            /*
+             * Sometimes the compound member list does not constrain any
+             * columns; for example, if only AllLevel is present.
+             */
+            compoundPredicateList.add(startPredicate);
+        }
+    }
+
+    private static List<StarPredicate> makeCompoundPredicateForTuple(
+        Map<BitKey, List<RolapMember>> compoundGroupMap,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap)
+    {
+        List<StarPredicate> compoundPredicateList =
+            new ArrayList<StarPredicate>();
+        for (List groups : compoundGroupMap.values()) {
+            /*
+             * e.g. ([USA].[CA], [Gender].[M])
+             */
+            for (Object membersArray : groups) {
+                Member[] tuple = (Member[]) membersArray;
+                StarPredicate tuplePredicate = null;
+                for (Member m1 : tuple) {
+                    RolapMember member = (RolapMember) m1;
+                    /*
+                    * [USA].[CA]
+                    */
+                    tuplePredicate =
+                        makeCompoundPredicateForAMember(
+                            member, levelToColumnMap, tuplePredicate);
+                }
+                addToCompoundPredicateList(tuplePredicate, compoundPredicateList);
+            }
+        }
+        return compoundPredicateList;
+    }
+
+    private static boolean containsTuple(
+        Map<BitKey, List<RolapMember>> compoundGroupMap)
+    {
+        Collection<List<RolapMember>> lists = compoundGroupMap.values();
+        Iterator<List<RolapMember>> iterator = lists.iterator();
+
+        if(!iterator.hasNext()) return false;
+        List list = iterator.next();
+        return list.get(0) instanceof Member[];
+    }
+
+    private static StarPredicate makeCompoundPredicateForAMember(
+        RolapMember member,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        StarPredicate memberPredicate)
+    {
+        while (member != null) {
+            RolapLevel level = member.getLevel();
+            if (!level.isAll()) {
+                RolapStar.Column column = levelToColumnMap.get(level);
+
+                if (memberPredicate == null) {
+                    memberPredicate =
+                        new ValueColumnPredicate(column, member.getKey());
+                } else {
+                    memberPredicate =
+                        memberPredicate.and(
+                            new ValueColumnPredicate(column, member.getKey()));
+                }
+            }
+            member = member.getParentMember();
+        }
+        return memberPredicate;
+    }
+
     /**
      * Retrieves the value of a cell from the cache.
      *
@@ -564,7 +745,7 @@ public abstract class RolapAggregationManager {
      */
     public CellReader getCacheCellReader() {
         return new CellReader() {
-            // implement CellReader            
+            // implement CellReader
             public Object get(RolapEvaluator evaluator) {
                 CellRequest request = makeRequest(evaluator);
                 if (request == null || request.isUnsatisfiable()) {

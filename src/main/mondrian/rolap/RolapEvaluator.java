@@ -377,26 +377,36 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final Evaluator pushAggregation(List list) {
-        // First make sure all items on this list come from the same hierarchy
-        List<RolapMember> rolapList = (List<RolapMember>)list;
-        RolapHierarchy hier = rolapList.get(0).getHierarchy();
-        
-        // Make sure the members in the same list are from the same hierarchy.
-        for (RolapMember aggMember : rolapList) {
-            if (aggMember.getHierarchy() != hier) {
-                throw Util.newInternal(
-                    "mixed hierarchies in compound member");                
-            }
-        }
-        
         RolapEvaluator newEvaluator = _push();
-        if (newEvaluator.aggregationLists == null) {
-            newEvaluator.aggregationLists = new ArrayList<List<RolapMember>>();
-        }
-        newEvaluator.aggregationLists.add(rolapList);
-        // clear this hierarchy from the regular context
-        newEvaluator.setContext(hier.getAllMember());
+        newEvaluator.addToAggregationList(list);
+        clearHierarchyFromRegularContext(list, newEvaluator);
         return newEvaluator;
+    }
+        
+    private void addToAggregationList(List list){
+        if (aggregationLists == null) {
+            aggregationLists = new ArrayList<List<RolapMember>>();
+        }
+        aggregationLists.add(list);
+    }
+        
+    private void clearHierarchyFromRegularContext(
+        List list,
+        RolapEvaluator newEvaluator)
+    {
+        if (containsTuple(list)) {
+            Member[] tuple = (Member[]) list.get(0);
+            for (Member member : tuple) {
+                newEvaluator.setContext(member.getHierarchy().getAllMember());
+            }
+        } else {
+            newEvaluator.setContext(((RolapMember) list.get(0)).getHierarchy()
+                .getAllMember());
+        }
+    }
+
+    private boolean containsTuple(List rolapList) {
+        return rolapList.get(0) instanceof Member[];
     }
 
     /**

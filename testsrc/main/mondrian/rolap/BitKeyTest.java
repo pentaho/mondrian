@@ -101,8 +101,8 @@ public class BitKeyTest extends TestCase {
 
         size = 64;
         bitKey = BitKey.Factory.makeBitKey(size);
-        assertTrue("BitKey size " +size+ " not BitKey.Small",
-            (bitKey.getClass() == BitKey.Small.class));
+        assertTrue("BitKey size " +size+ " not BitKey.Mid128",
+            (bitKey.getClass() == BitKey.Mid128.class));
 
         size = 65;
         bitKey = BitKey.Factory.makeBitKey(size);
@@ -116,8 +116,8 @@ public class BitKeyTest extends TestCase {
 
         size = 128;
         bitKey = BitKey.Factory.makeBitKey(size);
-        assertTrue("BitKey size " +size+ " not BitKey.Mid128",
-            (bitKey.getClass() == BitKey.Mid128.class));
+        assertTrue("BitKey size " +size+ " not BitKey.Big",
+            (bitKey.getClass() == BitKey.Big.class));
 
         size = 129;
         bitKey = BitKey.Factory.makeBitKey(size);
@@ -268,6 +268,19 @@ public class BitKeyTest extends TestCase {
                 (bitKey2.equals(bitKey_64)));
         assertTrue("BitKey 2 not equals after clear to 128",
                 (bitKey2.equals(bitKey_128)));
+    }
+
+    public void testNewBitKeyIsTheSameAsAClearedBitKey(){
+        BitKey bitKey = BitKey.Factory.makeBitKey(8);
+        bitKey.set(1);
+        assertFalse(BitKey.Factory.makeBitKey(8).equals(bitKey));
+        bitKey.clear();
+        assertEquals(BitKey.Factory.makeBitKey(8), bitKey);
+    }
+
+    public void testEmptyCopyCreatesBitKeyOfTheSameSize(){
+        BitKey bitKey = BitKey.Factory.makeBitKey(8);
+        assertEquals(bitKey, bitKey.emptyCopy());
     }
 
     /**
