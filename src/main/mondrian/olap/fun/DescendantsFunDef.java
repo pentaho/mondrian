@@ -16,6 +16,7 @@ import java.util.List;
 
 import mondrian.olap.*;
 import mondrian.olap.type.NumericType;
+import mondrian.olap.type.NullType;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
@@ -33,7 +34,7 @@ class DescendantsFunDef extends FunDefBase {
             "Descendants",
             "Descendants(<Member>[, <Level>[, <Desc_flag>]])",
             "Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.",
-            new String[]{"fxm", "fxml", "fxmly", "fxmn", "fxmny"},
+            new String[]{"fxm", "fxml", "fxmly", "fxmn", "fxmny", "fxmey"},
             DescendantsFunDef.class,
             Flag.getNames());
 
@@ -50,25 +51,37 @@ class DescendantsFunDef extends FunDefBase {
         }
         final boolean depthSpecified = call.getArgCount() >= 2 &&
             call.getArg(1).getType() instanceof NumericType;
+        final boolean depthEmpty = call.getArgCount() >= 2 &&
+            call.getArg(1).getType() instanceof NullType;
         if (call.getArgCount() >= 3) {
             flag = FunUtil.getLiteralArg(call, 2, Flag.SELF, Flag.class);
         }
 
-        if (depthSpecified && flag.leaves) {
-            final IntegerCalc depthCalc = call.getArgCount() > 1 ?
-                    compiler.compileInteger(call.getArg(1)) :
-                    null;
+        if (call.getArgCount() >= 2 && depthEmpty) {
+            if (flag != Flag.LEAVES) {
+                throw Util.newError(
+                    "depth must be specified unless DESC_FLAG is LEAVES");
+            }
+        }
+        if ((depthSpecified || depthEmpty) && flag.leaves) {
+            final IntegerCalc depthCalc = depthSpecified ?
+                compiler.compileInteger(call.getArg(1)) :
+                null;
             return new AbstractListCalc(call, new Calc[] {memberCalc, depthCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     final Member member = memberCalc.evaluateMember(evaluator);
                     List<Member> result = new ArrayList<Member>();
-                    int depth = depthCalc.evaluateInteger(evaluator);
-                    if (depth < 0) {
-                        depth = -1; // no limit
+                    int depth = -1;
+                    if (depthCalc != null) {
+                        depth = depthCalc.evaluateInteger(evaluator);
+                        if (depth < 0) {
+                            depth = -1; // no limit
+                        }
                     }
-                    final SchemaReader schemaReader = evaluator.getSchemaReader();
+                    final SchemaReader schemaReader =
+                        evaluator.getSchemaReader();
                     descendantsLeavesByDepth(
-                            member, result, schemaReader, depth);
+                        member, result, schemaReader, depth);
                     hierarchize(result, false);
                     return result;
                 }

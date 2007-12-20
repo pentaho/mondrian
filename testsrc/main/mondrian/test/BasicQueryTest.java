@@ -6026,6 +6026,74 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * Tests various ways to sum the properties of the descendants of a member,
+     * inspired by forum post
+     * <a href="http://forums.pentaho.org/showthread.php?p=177135">summing
+     * properties</a>.
+     */
+    public void testSummingProperties() {
+        final String expected = fold(
+            "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[USA]}\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[All Gender].[M]}\n" +
+                "Row #0: 131,558\n" +
+                "Row #0: 36,759\n" +
+                "Row #1: 135,215\n" +
+                "Row #1: 37,989\n");
+
+        assertQueryReturns(
+            "with member [Measures].[Sum Sqft] as '"
+                + "sum("
+                + "  Descendants([Store].CurrentMember, [Store].Levels(5)),"
+                + "  [Store].CurrentMember.Properties(\"Store Sqft\")) '\n"
+                + "select {[Store].[USA], [Store].[USA].[CA]} on 0,\n"
+                + " [Gender].Children on 1\n"
+                + "from [Sales]",
+            expected);
+
+        // same query, except get level by name not ordinal, should give same
+        // result
+        assertQueryReturns(
+            "with member [Measures].[Sum Sqft] as '"
+                + "sum("
+                + "  Descendants([Store].CurrentMember, [Store].Levels(\"Store Name\")),"
+                + "  [Store].CurrentMember.Properties(\"Store Sqft\")) '\n"
+                + "select {[Store].[USA], [Store].[USA].[CA]} on 0,\n"
+                + " [Gender].Children on 1\n"
+                + "from [Sales]",
+            expected);
+
+        // same query, except level is hard-coded; same result again
+        assertQueryReturns(
+            "with member [Measures].[Sum Sqft] as '"
+                + "sum("
+                + "  Descendants([Store].CurrentMember, [Store].[Store Name]),"
+                + "  [Store].CurrentMember.Properties(\"Store Sqft\")) '\n"
+                + "select {[Store].[USA], [Store].[USA].[CA]} on 0,\n"
+                + " [Gender].Children on 1\n"
+                + "from [Sales]",
+            expected);
+
+
+        // same query, except using the level-less form of the DESCENDANTS
+        // function; same result again
+        assertQueryReturns(
+            "with member [Measures].[Sum Sqft] as '"
+                + "sum("
+                + "  Descendants([Store].CurrentMember, , LEAVES),"
+                + "  [Store].CurrentMember.Properties(\"Store Sqft\")) '\n"
+                + "select {[Store].[USA], [Store].[USA].[CA]} on 0,\n"
+                + " [Gender].Children on 1\n"
+                + "from [Sales]",
+            expected);
+    }
+
+    /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.
      */

@@ -249,6 +249,43 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
+        // "<Hierarchy>.Levels(<String Expression>)"
+        define(new FunDefBase(
+                "Levels",
+                "Returns the level whose name is specified by a string expression.",
+                "mlhS") {
+            public Type getResultType(Validator validator, Exp[] args) {
+                final Type argType = args[0].getType();
+                return LevelType.forType(argType);
+            }
+
+            public Calc compileCall(
+                final ResolvedFunCall call, ExpCompiler compiler)
+            {
+                final HierarchyCalc hierarchyCalc =
+                    compiler.compileHierarchy(call.getArg(0));
+                final StringCalc nameCalc =
+                    compiler.compileString(call.getArg(1));
+                return new AbstractLevelCalc(
+                    call, new Calc[] {hierarchyCalc, nameCalc}) {
+                    public Level evaluateLevel(Evaluator evaluator) {
+                        Hierarchy hierarchy =
+                            hierarchyCalc.evaluateHierarchy(evaluator);
+                        String name = nameCalc.evaluateString(evaluator);
+                        for (Level level : hierarchy.getLevels()) {
+                            if (level.getName().equals(name)) {
+                                return level;
+                            }
+                        }
+                        throw newEvalException(
+                            call.getFunDef(),
+                            "Level '" + name + "' not found in hierarchy '"
+                                + hierarchy + "'");
+                    }
+                };
+            }
+        });
+
         // "Levels(<String Expression>)"
         define(new FunDefBase(
                 "Levels",

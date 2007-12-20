@@ -299,6 +299,15 @@ public class FunctionTest extends FoodMartTestCase {
                 "Index '8' out of bounds");
     }
 
+    public void testHierarchyLevelsString() {
+        assertExprReturns("[Time].Levels(\"Year\").UniqueName", "[Time].[Year]");
+    }
+
+    public void testHierarchyLevelsStringFail() {
+        assertExprThrows("[Time].Levels(\"nonexistent\").UniqueName",
+                "Level 'nonexistent' not found in hierarchy '[Time]'");
+    }
+
     public void testLevelsString() {
         assertExprReturns("Levels(\"[Time].[Year]\").UniqueName", "[Time].[Year]");
     }
@@ -3123,6 +3132,24 @@ public class FunctionTest extends FoodMartTestCase {
     public void testDescendantsMFarLeaves() {
         assertAxisReturns("Descendants([Time].[1997], 10000, Leaves)",
                 months);
+    }
+
+    public void testDescendantsMEmptyLeaves() {
+        assertAxisReturns(
+            "Descendants([Time].[1997], , Leaves)",
+            months);
+    }
+
+    public void testDescendantsMEmptyLeavesFail() {
+        assertAxisThrows(
+            "Descendants([Time].[1997], )",
+            "Syntax error at line 1, column 36, token ')'");
+    }
+
+    public void testDescendantsMEmptyLeavesFail2() {
+        assertAxisThrows(
+            "Descendants([Time].[1997], , AFTER)",
+            "depth must be specified unless DESC_FLAG is LEAVES");
     }
 
     public void testDescendantsMFarSelf() {
