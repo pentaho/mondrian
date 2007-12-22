@@ -4001,6 +4001,17 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Descendants</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            member at a specified level, optionally
+                            including or excluding descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Member, Empty, Symbol</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Dimension</FUNCTION_NAME>
                         <DESCRIPTION>Returns the dimension that contains
                             a specified hierarchy.</DESCRIPTION>
@@ -4743,6 +4754,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <DESCRIPTION>Returns the level whose position in
                             a hierarchy is specified by a numeric expression.</DESCRIPTION>
                         <PARAMETER_LIST>Hierarchy, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Levels</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Levels</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the level whose name is
+                            specified by a string expression.</DESCRIPTION>
+                        <PARAMETER_LIST>Hierarchy, String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
