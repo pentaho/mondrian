@@ -356,28 +356,26 @@ public class SchemaTest extends FoodMartTestCase {
      * note that this works when native cross join is disabled
      */
     public void testDimensionsShareTableNativeNonEmptyCrossJoin() {
-        if (Bug.Bug1735827Fixed) {
-            final TestContext testContext = TestContext.createSubstitutingCube(
-                "Sales",
-                "<Dimension name=\"Yearly Income2\" foreignKey=\"product_id\">\n" +
-                    "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n" +
-                    "    <Table name=\"customer\" alias=\"customerx\" />\n" +
-                    "    <Level name=\"Yearly Income\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n" +
-                    "  </Hierarchy>\n" +
-                    "</Dimension>");
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Yearly Income2\" foreignKey=\"product_id\">\n" +
+                "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n" +
+                "    <Table name=\"customer\" alias=\"customerx\" />\n" +
+                "    <Level name=\"Yearly Income\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n" +
+                "  </Hierarchy>\n" +
+                "</Dimension>");
 
-            testContext.assertQueryReturns(
-                    "select NonEmptyCrossJoin({[Yearly Income2].[All Yearly Income2s]},{[Customers].[All Customers]}) on rows," +
-                    "NON EMPTY {[Measures].[Unit Sales]} on columns" +
-                    " from [Sales]",
-                    fold("Axis #0:\n" +
-                         "{}\n" +
-                         "Axis #1:\n" +
-                         "{[Measures].[Unit Sales]}\n" +
-                         "Axis #2:\n" +
-                         "{[Yearly Income2].[All Yearly Income2s], [Customers].[All Customers]}\n" +
-                         "Row #0: 266,773\n"));
-        }
+        testContext.assertQueryReturns(
+                "select NonEmptyCrossJoin({[Yearly Income2].[All Yearly Income2s]},{[Customers].[All Customers]}) on rows," +
+                "NON EMPTY {[Measures].[Unit Sales]} on columns" +
+                " from [Sales]",
+                fold("Axis #0:\n" +
+                     "{}\n" +
+                     "Axis #1:\n" +
+                     "{[Measures].[Unit Sales]}\n" +
+                     "Axis #2:\n" +
+                     "{[Yearly Income2].[All Yearly Income2s], [Customers].[All Customers]}\n" +
+                     "Row #0: 266,773\n"));
     }
 
     /**
