@@ -694,11 +694,6 @@ public class SchemaTest extends FoodMartTestCase {
      * Test Multiple DimensionUsages on same Dimension.
      */
     public void testMultipleDimensionUsages() {
-        // note, this test case is causing some trouble down the line in regard
-        // to aggregate tables.  The solution currently is to flush the cache 
-        // before executing the aggregate manager tests, but another alternative 
-        // could be realiasing this cube's table so it doesn't cause issues with 
-        // the constructed RolapStar.
         TestContext testContext = TestContext.create(
                 null,
 

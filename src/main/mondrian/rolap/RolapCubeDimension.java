@@ -13,8 +13,10 @@
 package mondrian.rolap;
 
 import mondrian.olap.Cube;
+import mondrian.olap.DimensionType;
 import mondrian.olap.HierarchyBase;
 import mondrian.olap.MondrianDef;
+import mondrian.olap.Schema;
 
 /**
  * RolapCubeDimension wraps a RolapDimension for a specific Cube.
@@ -32,7 +34,7 @@ public class RolapCubeDimension extends RolapDimension {
     
     public RolapCubeDimension(RolapCube parent, RolapDimension rolapDim, 
             MondrianDef.CubeDimension cubeDim, String name, int cubeOrdinal) {
-        super(rolapDim.getSchema(), name, rolapDim.getDimensionType());
+        super(null, name, null);
         this.xmlDimension = cubeDim;
         this.rolapDimension = rolapDim;
         this.cubeOrdinal = cubeOrdinal;
@@ -50,6 +52,10 @@ public class RolapCubeDimension extends RolapDimension {
 
     public RolapCube getCube() {
         return parent;
+    }
+    
+    public Schema getSchema() {
+        return rolapDimension.getSchema();
     }
     
     // this method should eventually replace the call below
@@ -94,6 +100,11 @@ public class RolapCubeDimension extends RolapDimension {
         }
         rolapDimension.setCaption(caption);
     }
+    
+    public DimensionType getDimensionType() {
+        return rolapDimension.getDimensionType();
+    }
+    
 }
 
 // End RolapCubeDimension.java

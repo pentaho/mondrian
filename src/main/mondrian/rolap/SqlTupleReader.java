@@ -52,7 +52,7 @@ import java.util.*;
  * then we can not store the parent/child pairs in the MemberCache and
  * {@link TupleConstraint#getMemberChildrenConstraint(RolapMember)}
  * must return null. Also
- * {@link TupleConstraint#addConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map)}
+ * {@link TupleConstraint#addConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapCube)}
  * is required to join the fact table for the levels table.</li>
  * </ul>
  *
@@ -592,22 +592,15 @@ public class SqlTupleReader implements TupleReader {
         if (virtualCube) {
             String selectString = "";
             Query query = constraint.getEvaluator().getQuery();
-            Map<RolapCube, Map<RolapLevel, RolapStar.Column>>
-                baseCubeToLevelToColumnMap =
-                    query.getBaseCubeToLevelToColumnMap();
-
+            Set<RolapCube> baseCubes = query.getBaseCubes();
+            
             // generate sub-selects, each one joining with one of
             // underlying fact tables
             int k = -1;
-            for (Map.Entry<RolapCube, Map<RolapLevel, RolapStar.Column>> entry :
-                baseCubeToLevelToColumnMap.entrySet())
-            {
-                final RolapCube baseCube = entry.getKey();
-                boolean finalSelect =
-                    (++k == baseCubeToLevelToColumnMap.size() - 1);
+            for (RolapCube baseCube : baseCubes) {
+                boolean finalSelect = (++k == baseCubes.size() - 1);
                 WhichSelect whichSelect =
-                    finalSelect ? WhichSelect.LAST :
-                        WhichSelect.NOT_LAST;
+                    finalSelect ? WhichSelect.LAST : WhichSelect.NOT_LAST;
                 selectString += 
                     generateSelectForLevels(dataSource, baseCube, whichSelect);
                 if (!finalSelect) {
@@ -651,39 +644,9 @@ public class SqlTupleReader implements TupleReader {
         }
 
         // additional constraints
-        // the level to column map is still required due to 
-        // RolapNativeSet.SetConstraint
-        constraint.addConstraint(sqlQuery, null); 
+        constraint.addConstraint(sqlQuery, baseCube); 
         
         return sqlQuery.toString();
-    }
-
-    /**
-     * Locates the base cube hierarchy for this particular virtual hierarchy.
-     * If not found, return null. This should be converted to a map lookup
-     * or cached in some way to avoid performance issues with cubes that have
-     * large numbers of hierarchies
-     * 
-     * @param baseCube this is the cube object for regular cubes, and the 
-     *   underlying base cube for virtual cubes
-     * @param hierarchy
-     * @return base cube hierarchy if found
-     */
-    private RolapHierarchy findBaseCubeHiearchy(
-            RolapCube baseCube, RolapHierarchy hierarchy) 
-    {
-        for (int i = 0; i < baseCube.getDimensions().length; i++) {
-            Dimension dimension = baseCube.getDimensions()[i]; 
-            if (dimension.getName().equals(hierarchy.getDimension().getName())) {
-                for (int j = 0; j <  dimension.getHierarchies().length; j++) {
-                    Hierarchy hier = dimension.getHierarchies()[j];
-                    if (hier.getName().equals(hierarchy.getName())) {
-                        return (RolapHierarchy)hier;
-                    }
-                }
-            }
-        }
-        return null;
     }
     
     /**
@@ -725,7 +688,7 @@ public class SqlTupleReader implements TupleReader {
             if (baseCube != null && !cubeHierarchy.getDimension().getCube().equals(baseCube)) {
                 // replace the hierarchy with the underlying base cube hierarchy
                 // in the case of virtual cubes
-                hierarchy = findBaseCubeHiearchy(baseCube, hierarchy);
+                hierarchy = baseCube.findBaseCubeHierarchy(hierarchy);
             }
         }
 
@@ -766,7 +729,7 @@ public class SqlTupleReader implements TupleReader {
                 sqlQuery.addGroupBy(captionSql);
             }
 
-            constraint.addLevelConstraint(sqlQuery, null, currLevel);
+            constraint.addLevelConstraint(sqlQuery, baseCube, null, currLevel);
 
             // If this is a select on a virtual cube, the query will be
             // a union, so the order by columns need to be numbers,

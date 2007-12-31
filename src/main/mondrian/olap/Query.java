@@ -142,12 +142,10 @@ public class Query extends QueryPart {
 
     /**
      * Used for virtual cubes.
-     * Maps a base cube to the map from the levels referenced in a virtual
-     * cube to the columns in the underlying base cubes.
+     * Comtains a list of base cubes related to a virtual cube
      */
-    private Map<RolapCube, Map<RolapLevel, RolapStar.Column>>
-        baseCubeToLevelToColumnMap;
-
+    private Set<RolapCube> baseCubes;
+    
     /**
      * If true, loading schema
      */
@@ -1110,23 +1108,23 @@ public class Query extends QueryPart {
     }
 
     /**
-     * Saves away the level to column maps for the underlying cubes that make
-     * up the virtual cube referenced in this query
-     *
-     * @param map map to be saved
+     * Saves away the base cubes related to the virtual cube
+     * referenced in this query
+     * 
+     * @param baseCubes set of base cubes
      */
-    public void setBaseCubeToLevelToColumnMap(
-        Map<RolapCube, Map<RolapLevel, RolapStar.Column>> map)
-    {
-        baseCubeToLevelToColumnMap = map;
+    public void setBaseCubes(Set<RolapCube> baseCubes) {
+        this.baseCubes = baseCubes;
     }
-
+    
     /**
-     * @return the map from base cube to its associated level to column map
+     * return the set of base cubes associated with the virtual cube referenced
+     * in this query
+     * 
+     * @return set of base cubes
      */
-    public Map<RolapCube, Map<RolapLevel, RolapStar.Column>> getBaseCubeToLevelToColumnMap()
-    {
-        return baseCubeToLevelToColumnMap;
+    public Set<RolapCube> getBaseCubes() {
+        return baseCubes;
     }
 
     public Object accept(MdxVisitor visitor) {

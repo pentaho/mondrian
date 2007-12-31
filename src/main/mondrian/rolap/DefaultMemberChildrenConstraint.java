@@ -9,7 +9,6 @@
 package mondrian.rolap;
 
 import java.util.List;
-import java.util.Map;
 
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
@@ -36,32 +35,27 @@ public class DefaultMemberChildrenConstraint
 
     public void addMemberConstraint(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        RolapCube baseCube,
         AggStar aggStar,
         RolapMember parent)
     {
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, levelToColumnMap,
-            aggStar, parent, true);
+                sqlQuery, baseCube, aggStar, parent, true);
     }
 
     public void addMemberConstraint(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        RolapCube baseCube,
         AggStar aggStar,
         List<RolapMember> parents)
     {
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery,
-            levelToColumnMap,
-            aggStar,
-            parents,
-            true,
-            false);
+            sqlQuery, baseCube, aggStar, parents, true, false);
     }
 
     public void addLevelConstraint(
         SqlQuery query,
+        RolapCube baseCube,
         AggStar aggStar,
         RolapLevel level) {
     }

@@ -57,14 +57,6 @@ public class NonEmptyTest extends BatchTestCase {
 
     public NonEmptyTest() {
         super();
-        if (!Bug.Bug1833526Fixed) {
-            // clear the cache so NonEmptyTest runs normally with new 
-            // rolapcubemember functionality.  All the tests still pass
-            // without clearing the cache, but they run much slower.
-            
-            // getConnection().getCacheControl(null).flushSchemaCache();
-            RolapSchema.clearCache();
-        }
     }
 
     public NonEmptyTest(String name) {

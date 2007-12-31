@@ -78,17 +78,6 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testGroupingSetForSingleColumnConstraint() {
-
-        if (!Bug.Bug1833526Fixed) {
-            // flush cache, this method was failing within the suite because
-            // SchemaTest.testMultipleDimensionUsages(), a new method,
-            // alters the schema slightly. use this call eventually: 
-
-            // getConnection().getCacheControl(null).flushSchemaCache();
-    
-            RolapSchema.clearCache();
-        }
-        
         prop.DisableCaching.setString("false");
 
         CellRequest request1 = createRequest(

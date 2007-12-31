@@ -386,7 +386,7 @@ public class RolapMember extends MemberBase {
         }
     }
 
-    private void setUniqueName(Object key) {
+    protected void setUniqueName(Object key) {
         String name = keyToString(key);
         this.uniqueName = (parentMember == null)
             ? Util.makeFqName(getHierarchy(), name)

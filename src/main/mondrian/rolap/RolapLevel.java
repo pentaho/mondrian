@@ -14,7 +14,6 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
 
 import org.apache.log4j.Logger;
@@ -60,6 +59,8 @@ public class RolapLevel extends LevelBase {
      */
     static final int FLAG_UNIQUE = 0x04;
 
+    private RolapLevel closedPeer;
+    
     private final RolapProperty[] properties;
     private final RolapProperty[] inheritedProperties;
 
@@ -77,8 +78,6 @@ public class RolapLevel extends LevelBase {
     /** Condition under which members are hidden. */
     private final HideMemberCondition hideMemberCondition;
     protected final MondrianDef.Closure xmlClosure;
-
-    protected LevelReader levelReader;
 
     /**
      * Creates a level.
@@ -229,10 +228,6 @@ public class RolapLevel extends LevelBase {
         return tableName;
     }
 
-    LevelReader getLevelReader() {
-        return levelReader;
-    }
-
     public MondrianDef.Expression getKeyExp() {
         return keyExp;
     }
@@ -243,41 +238,6 @@ public class RolapLevel extends LevelBase {
 
     public MondrianDef.Expression getCaptionExp() {
         return captionExp;
-    }
-
-    /**
-     * Return SQL expression for table column expression using the table
-     * alias provided.
-     * @param sqlQuery sqlQuery context to generate SQL for
-     * @param levelToColumnMap maps level to table columns
-     * @param expr expression that references this level
-     * @return SQL string for the expression
-     */
-    public String getExpressionWithAlias(
-        SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        MondrianDef.Expression expr)
-    {
-        if (expr instanceof MondrianDef.Column &&
-            levelToColumnMap != null) {
-            RolapStar.Column targetColumn = levelToColumnMap.get(this);
-
-            if (targetColumn != null) {
-                String tableAlias = targetColumn.getTable().getAlias();
-
-                if (tableAlias != null) {
-                    MondrianDef.Column col =
-                        new MondrianDef.Column(
-                            tableAlias,
-                            ((MondrianDef.Column)expr).getColumnName());
-                    return col.getExpression(sqlQuery);
-                }
-            }
-        }
-
-        // If not column expression, or no way to map level to columns
-        // return the default SQL translation for this expression.
-        return expr.getExpression(sqlQuery);
     }
 
     public boolean hasCaptionColumn(){
@@ -412,18 +372,11 @@ public class RolapLevel extends LevelBase {
     }
 
     void init(MondrianDef.CubeDimension xmlDimension) {
-        if (isAll()) {
-            this.levelReader = new AllLevelReaderImpl();
-        } else if (levelType == LevelType.Null) {
-            this.levelReader = new NullLevelReader();
-        } else if (xmlClosure != null) {
+        if (xmlClosure != null) {
             final RolapDimension dimension = ((RolapHierarchy) hierarchy)
                 .createClosedPeerDimension(this, xmlClosure, xmlDimension);
-            RolapLevel closedPeer =
+            closedPeer =
                     (RolapLevel) dimension.getHierarchies()[0].getLevels()[1];
-            this.levelReader = new ParentChildLevelReaderImpl(closedPeer);
-        } else {
-            this.levelReader = new RegularLevelReader();
         }
     }
 
@@ -493,7 +446,11 @@ public class RolapLevel extends LevelBase {
      * an equivalent closed level.
      */
     boolean hasClosedPeer() {
-        return levelReader instanceof ParentChildLevelReaderImpl;
+        return closedPeer != null;
+    }
+    
+    public RolapLevel getClosedPeer() {
+        return closedPeer;
     }
 
     public static RolapLevel lookupLevel(
@@ -506,290 +463,6 @@ public class RolapLevel extends LevelBase {
             }
         }
         return null;
-    }
-
-    /**
-     * Encapsulation of the difference between levels in terms of how
-     * constraints are generated. There are implementations for 'all' levels,
-     * the 'null' level, parent-child levels and regular levels.
-     */
-    interface LevelReader {
-
-        /**
-         * Adds constraints to a cell request for a member of this level.
-         *
-         * @param member Member to be constrained
-         * @param levelToColumnMap Level to column map
-         * @param request Request to be constrained
-         * 
-         * @return true if request is unsatisfiable (e.g. if the member is the
-         * null member)
-         */
-        boolean constrainRequest(
-            RolapMember member,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            CellRequest request);
-
-        /**
-         * Adds constraints to a cache region for a member of this level.
-         *
-         * @param predicate Predicate
-         * @param levelToColumnMap Level to column map
-         * @param cacheRegion Cache region to be constrained
-         */
-        void constrainRegion(
-            StarColumnPredicate predicate,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            RolapCacheRegion cacheRegion);
-    }
-
-    /**
-     * Level reader for a regular level.
-     */
-    class RegularLevelReader implements LevelReader {        
-        public boolean constrainRequest(
-            RolapMember member,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            CellRequest request)
-        {
-            assert member.getLevel() == RolapLevel.this;
-            if (member.getKey() == null) {
-                if (member == member.getHierarchy().getNullMember()) {
-                    // cannot form a request if one of the members is null
-                    return true;
-                } else {
-                    throw Util.newInternal("why is key null?");
-                }
-            }
-
-            RolapStar.Column column = levelToColumnMap.get(RolapLevel.this);
-            if (column == null) {
-                // This hierarchy is not one which qualifies the starMeasure
-                // (this happens in virtual cubes). The starMeasure only has
-                // a value for the 'all' member of the hierarchy (or for the
-                // default member if the hierarchy has no 'all' member)
-                return member != hierarchy.getDefaultMember() ||
-                    hierarchy.hasAll();
-            }
-
-            final StarColumnPredicate predicate;
-            if (member.isCalculated()) {
-                predicate = null;
-            } else {
-                predicate = false ? new MemberColumnPredicate(column, member) :
-                    new ValueColumnPredicate(column, member.getKey());
-            }
-
-            // use the member as constraint; this will give us some
-            //  optimization potential
-            request.addConstrainedColumn(column, predicate);
-
-            if (request.extendedContext &&
-                getNameExp() != null)
-            {
-                final RolapStar.Column nameColumn = column.getNameColumn();
-
-                assert nameColumn != null;
-                request.addConstrainedColumn(nameColumn, null);
-            }
-
-            if (member.isCalculated()) {
-                return false;
-            }
-
-            // If member is unique without reference to its parent,
-            // no further constraint is required.
-            if (isUnique()) {
-                return false;
-            }
-
-            // Constrain the parent member, if any.
-            RolapMember parent = member.getParentMember();
-            while (true) {
-                if (parent == null) {
-                    return false;
-                }
-                RolapLevel level = parent.getLevel();
-                final LevelReader levelReader = level.levelReader;
-                if (levelReader == this) {
-                    // We are looking at a parent in a parent-child hierarchy,
-                    // for example, we have moved from Fred to Fred's boss,
-                    // Wilma. We don't want to include Wilma's key in the
-                    // request.
-                    parent = parent.getParentMember();
-                    continue;
-                }
-                return levelReader.constrainRequest(
-                    parent, levelToColumnMap, request);
-            }
-        }
-
-        public void constrainRegion(
-            StarColumnPredicate predicate,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            RolapCacheRegion cacheRegion)
-        {
-            final RolapStar.Column column =
-                levelToColumnMap.get(RolapLevel.this);
-            if (column == null) {
-                // This hierarchy is not one which qualifies the starMeasure
-                // (this happens in virtual cubes). The starMeasure only has
-                // a value for the 'all' member of the hierarchy (or for the
-                // default member if the hierarchy has no 'all' member)
-                return;
-            }
-
-            if (predicate instanceof MemberColumnPredicate) {
-                MemberColumnPredicate memberColumnPredicate =
-                    (MemberColumnPredicate) predicate;
-                RolapMember member = memberColumnPredicate.getMember();
-                assert member.getLevel() == RolapLevel.this;
-                assert !member.isCalculated();
-                assert memberColumnPredicate.getMember().getKey() != null;
-                assert !member.isNull();
-
-                // use the member as constraint, this will give us some
-                //  optimization potential
-                cacheRegion.addPredicate(column, predicate);
-                return;
-            } else if (predicate instanceof RangeColumnPredicate) {
-                RangeColumnPredicate rangeColumnPredicate =
-                    (RangeColumnPredicate) predicate;
-                final ValueColumnPredicate lowerBound =
-                    rangeColumnPredicate.getLowerBound();
-                RolapMember lowerMember;
-                if (lowerBound == null) {
-                    lowerMember = null;
-                } else if (lowerBound instanceof MemberColumnPredicate) {
-                    MemberColumnPredicate memberColumnPredicate =
-                        (MemberColumnPredicate) lowerBound;
-                    lowerMember = memberColumnPredicate.getMember();
-                } else {
-                    throw new UnsupportedOperationException();
-                }
-                final ValueColumnPredicate upperBound =
-                    rangeColumnPredicate.getUpperBound();
-                RolapMember upperMember;
-                if (upperBound == null) {
-                    upperMember = null;
-                } else if (upperBound instanceof MemberColumnPredicate) {
-                    MemberColumnPredicate memberColumnPredicate =
-                        (MemberColumnPredicate) upperBound;
-                    upperMember = memberColumnPredicate.getMember();
-                } else {
-                    throw new UnsupportedOperationException();
-                }
-                MemberTuplePredicate predicate2 =
-                    new MemberTuplePredicate(
-                        levelToColumnMap,
-                        lowerMember,
-                        !rangeColumnPredicate.getLowerInclusive(),
-                        upperMember,
-                        !rangeColumnPredicate.getUpperInclusive());
-                // use the member as constraint, this will give us some
-                //  optimization potential
-                cacheRegion.addPredicate(predicate2);
-                return;
-            }
-
-            // Unknown type of constraint.
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    /**
-     * Level reader for a parent-child level which has a closed peer level.
-     */
-    class ParentChildLevelReaderImpl extends RegularLevelReader {
-        /**
-         * For a parent-child hierarchy with a closure provided by the schema,
-         * the equivalent level in the closed hierarchy; otherwise null.
-         */
-        protected final RolapLevel closedPeer;
-
-        ParentChildLevelReaderImpl(RolapLevel closedPeer) {
-            this.closedPeer = closedPeer;
-        }
-
-        public boolean constrainRequest(
-            RolapMember member,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            CellRequest request)
-        {
-
-            // Replace a parent/child level by its closed equivalent, when
-            // available; this is always valid, and improves performance by
-            // enabling the database to compute aggregates.
-            if (member.getDataMember() == null) {
-                // Member has no data member because it IS the data
-                // member of a parent-child hierarchy member. Leave
-                // it be. We don't want to aggregate.
-                return super.constrainRequest(
-                    member, levelToColumnMap, request);
-            } else if (request.drillThrough) {
-                member = (RolapMember) member.getDataMember();
-                return super.constrainRequest(
-                    member, levelToColumnMap, request);
-            } else {
-                RolapLevel level = closedPeer;
-                final RolapMember allMember = (RolapMember)
-                        level.getHierarchy().getDefaultMember();
-                assert allMember.isAll();
-                member = new RolapMember(allMember, level, member.getKey());
-                return level.getLevelReader().constrainRequest(
-                    member, levelToColumnMap, request);
-            }
-        }
-
-        public void constrainRegion(
-            StarColumnPredicate predicate,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            RolapCacheRegion cacheRegion)
-        {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    /**
-     * Level reader for the level which contains the 'all' member.
-     */
-    static class AllLevelReaderImpl implements LevelReader {
-        public boolean constrainRequest(
-            RolapMember member,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            CellRequest request)
-        {
-            // We don't need to apply any constraints.
-            return false;
-        }
-
-        public void constrainRegion(
-            StarColumnPredicate predicate,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            RolapCacheRegion cacheRegion)
-        {
-            // We don't need to apply any constraints.
-        }
-    }
-
-    /**
-     * Level reader for the level which contains the null member.
-     */
-    static class NullLevelReader implements LevelReader {
-        public boolean constrainRequest(
-            RolapMember member,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            CellRequest request)
-        {
-            return true;
-        }
-
-        public void constrainRegion(
-            StarColumnPredicate predicate,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            RolapCacheRegion cacheRegion)
-        {
-        }
     }
 }
 

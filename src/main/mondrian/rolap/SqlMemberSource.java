@@ -476,6 +476,8 @@ RME is this right
      * GROUP BY "city"</pre>
      * </blockquote> retrieves the children of the member
      * <code>[Canada].[BC]</code>.
+     * <p>Note that this method is never called in the context of 
+     * virtual cubes, it is only called on regular cubes.
      *
      * <p>See also {@link SqlTupleReader#makeLevelMembersSql}.
      */
@@ -497,19 +499,7 @@ RME is this right
 
         // Create the condition, which is either the parent member or
         // the full context (non empty).
-        final Map<RolapLevel, RolapStar.Column> levelToColumnMap;
-        if (constraint instanceof SqlContextConstraint) {
-            SqlContextConstraint contextConstraint =
-                (SqlContextConstraint) constraint;
-            Evaluator evaluator = contextConstraint.getEvaluator();
-            RolapCube cube = (RolapCube) evaluator.getCube();
-            RolapStar star = cube.getStar();
-            levelToColumnMap = star.getLevelToColumnMap(cube);
-        } else {
-            levelToColumnMap = Collections.emptyMap();
-        }
-        constraint.addMemberConstraint(
-            sqlQuery, levelToColumnMap, aggStar, member);
+        constraint.addMemberConstraint(sqlQuery, null, aggStar, member);
 
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
@@ -518,7 +508,7 @@ RME is this right
         sqlQuery.addGroupBy(q);
 
         // in non empty mode the level table must be joined to the fact table
-        constraint.addLevelConstraint(sqlQuery, aggStar, level);
+        constraint.addLevelConstraint(sqlQuery, null, aggStar, level);
 
         if (level.hasCaptionColumn()) {
             MondrianDef.Expression captionExp = level.getCaptionExp();
@@ -570,12 +560,18 @@ RME is this right
         Member measure = members[0];
         int ordinal = measure.getOrdinal();
 
+        // childLevel will always end up being a RolapCubeLevel, but the API
+        // calls into this method can be both shared RolapMembers and
+        // RolapCubeMembers so this cast is necessary for now. Also note that
+        // this method will never be called in the context of a virtual cube
+        // so baseCube isn't necessary for retrieving the correct column
+        
         // get the level using the current depth
-        RolapLevel childLevel = (RolapLevel) member.getLevel().getChildLevel();
-        final Map<RolapLevel, RolapStar.Column> levelToColumnMap =
-            star.getLevelToColumnMap(cube);
-        RolapStar.Column column = levelToColumnMap.get(childLevel);
-
+        RolapCubeLevel childLevel = 
+            (RolapCubeLevel) member.getLevel().getChildLevel();
+        
+        RolapStar.Column column = childLevel.getStarKeyColumn();
+        
         // set a bit for each level which is constrained in the context
         final CellRequest request =
             RolapAggregationManager.makeRequest(members);

@@ -64,7 +64,7 @@ public abstract class MemberBase
     private static final int FLAG_CALCULATED = 0x40;
     private static final int FLAG_MEASURE = 0x80;
 
-    protected final String parentUniqueName;
+    protected String parentUniqueName;
 
     /**
      * Cached values of {@link mondrian.olap.Member.MemberType} enumeration.

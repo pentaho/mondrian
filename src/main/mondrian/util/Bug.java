@@ -80,13 +80,6 @@ public class Bug {
      * is fixed.
      */
     public static final boolean Bug1791609Fixed = false;
-
-    /**
-     * Whether
-     * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1833526&group_id=35302&atid=414613">bug 1833526, "Member Cache Not Clearing As Expected"</a>
-     * is fixed.
-     */
-    public static final boolean Bug1833526Fixed = false;
     
     /**
      * Returns whether to avoid a test because the memory monitor may cause it

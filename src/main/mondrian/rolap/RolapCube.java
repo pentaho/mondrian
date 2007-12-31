@@ -263,6 +263,8 @@ public class RolapCube extends CubeBase {
 
         this.measuresHierarchy.setMemberReader(new CacheMemberReader(
                 new MeasureMemberSource(this.measuresHierarchy, measures)));
+        // this invalidates any cached schema reader
+        this.schemaReader = null;
         this.measuresHierarchy.setDefaultMember(defaultMeasure);
         init(xmlCube.dimensions);
         init(xmlCube);
@@ -454,8 +456,9 @@ public class RolapCube extends CubeBase {
         this.measuresHierarchy.setMemberReader(
             new CacheMemberReader(
                 new MeasureMemberSource(this.measuresHierarchy, measures)));
-
-
+        // this invalidates any cached schema reader
+        this.schemaReader = null;
+        
         this.measuresHierarchy.setDefaultMember(defaultMeasure);
 
 
@@ -1043,26 +1046,29 @@ public class RolapCube extends CubeBase {
 
     /**
      * Returns the schema reader which enforces the appropriate access-control
-     * context.
+     * context. schemaReader is cached, and needs to stay in sync with
+     * any changes to the cube.
      *
      * @post return != null
      * @see #getSchemaReader(Role)
      */
     public synchronized SchemaReader getSchemaReader() {
         if (schemaReader == null) {
-            schemaReader = getSchemaReader(null);
+            RoleImpl schemaDefaultRoleImpl = schema.getDefaultRole();
+            RoleImpl roleImpl = schemaDefaultRoleImpl.makeMutableClone();
+            roleImpl.grant(this, Access.ALL);
+            Role role = roleImpl;
+            schemaReader = new RolapCubeSchemaReader(role);
         }
         return schemaReader;
     }
 
     public SchemaReader getSchemaReader(Role role) {
         if (role == null) {
-            RoleImpl schemaDefaultRoleImpl = schema.getDefaultRole();
-            RoleImpl roleImpl = schemaDefaultRoleImpl.makeMutableClone();
-            roleImpl.grant(this, Access.ALL);
-            role = roleImpl;
+            return getSchemaReader();
+        } else {
+            return new RolapCubeSchemaReader(role);
         }
-        return new RolapCubeSchemaReader(role);
     }
 
     MondrianDef.CubeDimension lookup(
@@ -2165,6 +2171,61 @@ public class RolapCube extends CubeBase {
         return (fact == null);
     }
 
+    
+    /**
+     * Locates the base cube hierarchy for a particular virtual hierarchy.
+     * If not found, return null. This may be converted to a map lookup
+     * or cached in some way in the future to increase performance 
+     * with cubes that have large numbers of hierarchies
+     * 
+     * @param hierarchy virtual hierarchy
+     * @return base cube hierarchy if found
+     */
+    RolapHierarchy findBaseCubeHierarchy(RolapHierarchy hierarchy) {
+        for (int i = 0; i < getDimensions().length; i++) {
+            Dimension dimension = getDimensions()[i]; 
+            if (dimension.getName().equals(hierarchy.getDimension().getName())) {
+                for (int j = 0; j <  dimension.getHierarchies().length; j++) {
+                    Hierarchy hier = dimension.getHierarchies()[j];
+                    if (hier.getName().equals(hierarchy.getName())) {
+                        return (RolapHierarchy)hier;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    
+    /**
+     * Locates the base cube level for a particular virtual level.
+     * If not found, return null. This may be converted to a map lookup
+     * or cached in some way in the future to increase performance 
+     * with cubes that have large numbers of hierarchies and levels
+     * 
+     * @param level virtual level
+     * @return base cube level if found
+     */
+    public RolapCubeLevel findBaseCubeLevel(RolapLevel level) {
+        for (int i = 0; i < getDimensions().length; i++) {
+            Dimension dimension = getDimensions()[i]; 
+            if (dimension.getName().equals(level.getDimension().getName())) {
+                for (int j = 0; j <  dimension.getHierarchies().length; j++) {
+                    Hierarchy hier = dimension.getHierarchies()[j];
+                    if (hier.getName().equals(level.getHierarchy().getName())) {
+                        for (int k = 0; k < hier.getLevels().length; k++) {
+                            Level lvl = hier.getLevels()[k];
+                            if (lvl.getName().equals(level.getName())) {
+                                return (RolapCubeLevel)lvl;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
     RolapCubeDimension createDimension(
             MondrianDef.CubeDimension xmlCubeDimension, 
             MondrianDef.Schema xmlSchema) 
@@ -2497,6 +2558,8 @@ public class RolapCube extends CubeBase {
                     new CacheMemberReader(
                         new MeasureMemberSource(
                             virtualCube.measuresHierarchy, measures)));
+                // this invalidates any cached schema reader
+                RolapCube.this.schemaReader = null;
                 MondrianDef.CalculatedMember xmlCalcMember =
                     schema.lookupXmlCalculatedMember(
                         calcMember.getUniqueName(),

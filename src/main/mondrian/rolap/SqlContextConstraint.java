@@ -72,44 +72,41 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         }
         if (cube.isVirtual()) {
             Query query = context.getQuery();
-            Map<RolapCube, Map<RolapLevel, RolapStar.Column>> baseCubeToLevelToColumnMap =
-                new HashMap<RolapCube, Map<RolapLevel, RolapStar.Column>>();
-            if (!findVirtualCubeJoinLevels(
-                query,
-                baseCubeToLevelToColumnMap)) {
+            Set<RolapCube> baseCubes = new HashSet<RolapCube>();
+            if (!findVirtualCubeBaseCubes(query, baseCubes)) {
                 return false;
             }
             assert(levels != null);
             // we need to make sure all the levels join with each fact table;
             // otherwise, it doesn't make sense to do the processing
             // natively, as you'll end up with cartesian product joins!
-            for (Map<RolapLevel, RolapStar.Column> map :
-                 baseCubeToLevelToColumnMap.values()) {
+            // for each rolap cube, make sure there is a base cube level 
+            // equivalent
+            for (RolapCube baseCube : baseCubes) {
                 for (Level level : levels) {
-                    if (map.get((RolapLevel) level) == null) {
+                    if (baseCube.findBaseCubeHierarchy(
+                            (RolapHierarchy)level.getHierarchy()) == null) {
                         return false;
                     }
                 }
             }
-            query.setBaseCubeToLevelToColumnMap(baseCubeToLevelToColumnMap);
+                        
+            query.setBaseCubes(baseCubes);
         }
         return true;
     }
 
     /**
-     * Locates joins required with the underlying fact tables that make up a
-     * virtual cube by validating the measures referenced in the query.
+     * Locates base cubes related to the measures referenced in the query.
      *
      * @param query query referencing the virtual cube
-     * @param baseCubeToLevelToColumnMap level to column maps corresponding
-     *  to the base cubes referenced from the virtual cube
+     * @param baseCubes set of base cubes
      *
      * @return true if valid measures exist
      */
-    private static boolean findVirtualCubeJoinLevels(
+    private static boolean findVirtualCubeBaseCubes(
         Query query,
-        Map<RolapCube, Map<RolapLevel, RolapStar.Column>>
-            baseCubeToLevelToColumnMap)
+        Set<RolapCube> baseCubes)
     {
         // Gather the unique set of level-to-column maps corresponding
         // to the underlying star/cube where the measure column
@@ -125,16 +122,12 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         }
         for (Member member : query.getMeasuresMembers()) {
             if (member instanceof RolapStoredMeasure) {
-                addMeasure(
-                    (RolapStoredMeasure) member,
-                    baseCubeToLevelToColumnMap);
+                addMeasure((RolapStoredMeasure) member, baseCubes);
             } else if (member instanceof RolapCalculatedMember) {
-                findMeasures(
-                    member.getExpression(),
-                    baseCubeToLevelToColumnMap);
+                findMeasures(member.getExpression(), baseCubes);
             }
         }
-        if (baseCubeToLevelToColumnMap.isEmpty()) {
+        if (baseCubes.isEmpty()) {
             return false;
         }
 
@@ -145,54 +138,39 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      * Adds information regarding a stored measure to maps
      *
      * @param measure the stored measure
-     * @param baseCubeToLevelToColumnMap level to column maps for the
-     * underlying cubes that make up the virtual cube referenced in a query
+     * @param baseCubes set of base cubes
      */
     private static void addMeasure(
         RolapStoredMeasure measure,
-        Map<RolapCube, Map<RolapLevel, RolapStar.Column>>
-            baseCubeToLevelToColumnMap)
+        Set<RolapCube> baseCubes) 
     {
-        RolapStar.Measure starMeasure =
-            (RolapStar.Measure) measure.getStarMeasure();
-        RolapStar star = starMeasure.getStar();
         RolapCube baseCube = measure.getCube();
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap =
-            star.getLevelToColumnMap(baseCube);
-        baseCubeToLevelToColumnMap.put(baseCube, levelToColumnMap);
+        baseCubes.add(baseCube);
     }
 
     /**
      * Extracts the stored measures referenced in an expression
      *
      * @param exp expression
-     * @param baseCubeToLevelToColumnMap level to column maps for the
-     * underlying cubes that make up the virtual cube referenced in a query
+     * @param baseCubes set of base cubes
      */
     private static void findMeasures(
         Exp exp,
-        Map<RolapCube, Map<RolapLevel, RolapStar.Column>>
-            baseCubeToLevelToColumnMap)
+        Set<RolapCube> baseCubes) 
     {
         if (exp instanceof MemberExpr) {
             MemberExpr memberExpr = (MemberExpr) exp;
             Member member = memberExpr.getMember();
             if (member instanceof RolapStoredMeasure) {
-                addMeasure(
-                    (RolapStoredMeasure) member,
-                    baseCubeToLevelToColumnMap);
+                addMeasure((RolapStoredMeasure) member, baseCubes);
             } else if (member instanceof RolapCalculatedMember) {
-                findMeasures(
-                    member.getExpression(),
-                    baseCubeToLevelToColumnMap);
+                findMeasures(member.getExpression(), baseCubes);
             }
         } else if (exp instanceof ResolvedFunCall) {
             ResolvedFunCall funCall = (ResolvedFunCall) exp;
             Exp [] args = funCall.getArgs();
             for (Exp arg : args) {
-                findMeasures(
-                    arg,
-                    baseCubeToLevelToColumnMap);
+                findMeasures(arg, baseCubes);
             }
         }
     }
@@ -204,8 +182,8 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     * @param strict defines the behaviour if the evaluator context
     * contains calculated members. If true, an exception is thrown,
     * otherwise calculated members are silently ignored. The
-    * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, mondrian.rolap.aggmatcher.AggStar, RolapMember)} and
-    * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, mondrian.rolap.aggmatcher.AggStar, java.util.List)} will
+    * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapCube, mondrian.rolap.aggmatcher.AggStar, RolapMember)} and
+    * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapCube, mondrian.rolap.aggmatcher.AggStar, java.util.List)} will
     * never accept a calculated member as parent.
     */
     SqlContextConstraint(RolapEvaluator evaluator, boolean strict) {
@@ -226,8 +204,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         // code in RolapResult() that replaces the default measure seems to
         // do that.
         if (((RolapCube)evaluator.getCube()).isVirtual()) {
-            cacheKey.addAll(
-                evaluator.getQuery().getBaseCubeToLevelToColumnMap().keySet());
+            cacheKey.addAll(evaluator.getQuery().getBaseCubes());
         }
     }
 
@@ -237,7 +214,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      */
     public void addMemberConstraint(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        RolapCube baseCube,
         AggStar aggStar,
         RolapMember parent)
     {
@@ -247,7 +224,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         Evaluator e = evaluator.push(parent);
         SqlConstraintUtils.addContextConstraint(sqlQuery, aggStar, e, strict);
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, levelToColumnMap, aggStar, parent, true);
+                sqlQuery, baseCube, aggStar, parent, true);
     }
 
     /**
@@ -256,22 +233,21 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      */
     public void addMemberConstraint(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        RolapCube baseCube,
         AggStar aggStar,
         List<RolapMember> parents)
     {
         SqlConstraintUtils.addContextConstraint(
             sqlQuery, aggStar, evaluator, strict);
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, levelToColumnMap, aggStar, parents, true, false);
+            sqlQuery, baseCube, aggStar, parents, true, false);
     }
 
     /**
      * Called from LevelMembers: restricts the SQL resultset to the current
      * context.
      */
-    public void addConstraint(
-        SqlQuery sqlQuery, Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
+    public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
         SqlConstraintUtils.addContextConstraint(
             sqlQuery, null, evaluator, strict);
     }
@@ -297,13 +273,15 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
 
     public void addLevelConstraint(
         SqlQuery sqlQuery,
+        RolapCube baseCube,
         AggStar aggStar,
-        RolapLevel level) {
+        RolapLevel level) 
+    {
         if (!isJoinRequired()) {
             return;
         }
         SqlConstraintUtils.joinLevelTableToFactTable(
-            sqlQuery, aggStar, evaluator, (RolapCubeLevel)level);
+            sqlQuery, baseCube, aggStar, evaluator, (RolapCubeLevel)level);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {

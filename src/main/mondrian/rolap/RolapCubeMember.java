@@ -19,14 +19,12 @@ import java.util.List;
 import mondrian.mdx.HierarchyExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Exp;
-import mondrian.olap.Hierarchy;
 import mondrian.olap.Id;
 import mondrian.olap.MatchType;
 import mondrian.olap.Member;
 import mondrian.olap.OlapElement;
 import mondrian.olap.Property;
 import mondrian.olap.SchemaReader;
-import mondrian.olap.Util;
 
 /**
  * RolapCubeMember wraps RolapMembers and binds them to a specific cube.
@@ -47,22 +45,16 @@ public class RolapCubeMember extends RolapMember {
 
     protected final RolapCube rolapCube;
 
-    // REVIEW: this may cause issues with caching
-    protected RolapCubeMember rolapParent;
-
-    protected String rolapUniqueName;
-
-    protected String rolapParentUniqueName;
-    
     public RolapCubeMember(RolapCubeMember parent, RolapMember member,
             RolapCubeLevel level, RolapCube cube) {
         super();
-        this.rolapParent = parent;
+        
+        this.parentMember = parent;
         this.rolapMember = member;
         this.rolapLevel = level;
         this.rolapCube = cube;
         if (parent != null) {
-            this.rolapParentUniqueName = parent.getUniqueName();
+            this.parentUniqueName = parent.getUniqueName();
         }
         if (member.isAll()) {
             // this is a special case ...
@@ -133,12 +125,6 @@ public class RolapCubeMember extends RolapMember {
         } else {
             return null;
         }
-    }
-
-    private void setUniqueName(Object key) {
-        String name = keyToString(key);
-        this.rolapUniqueName = (rolapParent == null) ? Util.makeFqName(
-                getHierarchy(), name) : Util.makeFqName(rolapParent, name);
     }
 
     public int compareTo(Object o) {
@@ -221,6 +207,7 @@ public class RolapCubeMember extends RolapMember {
         // we need to wrap these children as rolap cube members
         Property property = Property.lookup(propertyName, matchCase);
         if (property != null) {
+            Member parentMember;
             switch (property.ordinal) {
             case Property.CONTRIBUTING_CHILDREN_ORDINAL:
                 List<RolapMember> list = new ArrayList<RolapMember>();
@@ -291,30 +278,7 @@ public class RolapCubeMember extends RolapMember {
     }
 
     public RolapCubeMember getParentMember() {
-        // use the cache if possible (getAdoMember can be very expensive)
-        if (rolapParentUniqueName == null) {
-            return null; // we are root member, which has no parent
-        } else if (rolapParent != null) {
-            return rolapParent;
-        } else {
-            boolean failIfNotFound = true;
-            final Hierarchy hierarchy = getHierarchy();
-            final SchemaReader schemaReader = hierarchy.getDimension()
-                    .getSchema().getSchemaReader();
-            List<Id.Segment> parentUniqueNameParts =
-                Util.parseIdentifier(rolapParentUniqueName);
-            rolapParent = (RolapCubeMember) schemaReader.getMemberByUniqueName(
-                    parentUniqueNameParts, failIfNotFound);
-            return rolapParent;
-        }
-    }
-
-    public String getParentUniqueName() {
-        return rolapParentUniqueName;
-    }
-
-    public String getUniqueName() {
-        return rolapUniqueName;
+        return (RolapCubeMember) super.getParentMember();
     }
 
     public String getCaption() {

@@ -79,15 +79,6 @@ public class RolapStar {
 
     private final Table factTable;
 
-    /**
-     * Maps {@link RolapCube} to a {@link HashMap} which maps
-     * {@link RolapLevel} to {@link Column}. The double indirection is
-     * necessary because in different cubes, a shared hierarchy might be joined
-     * onto the fact table at different levels.
-     */
-    private final Map<RolapCube, Map<RolapLevel, Column>>
-        cubeToLevelToColumnMapMap;
-
     /** Holds all global aggregations of this star. */
     private final Map<AggregationKey,Aggregation> sharedAggregations;
 
@@ -165,10 +156,7 @@ public class RolapStar {
         this.factTable = new RolapStar.Table(this, fact, null, null);
 
         // phase out and replace with Table, Column network
-        factNode = new StarNetworkNode(null, factTable.alias, null, null, null);
-
-        this.cubeToLevelToColumnMapMap =
-            new HashMap<RolapCube, Map<RolapLevel, Column>>();
+        this.factNode = new StarNetworkNode(null, factTable.alias, null, null, null);
 
         this.sharedAggregations = new HashMap<AggregationKey, Aggregation>();
         
@@ -178,12 +166,12 @@ public class RolapStar {
         
         clearAggStarList();
 
-        sqlQueryDialect = schema.getDialect();
+        this.sqlQueryDialect = schema.getDialect();
 
-        changeListener = schema.getDataSourceChangeListener();
+        this.changeListener = schema.getDataSourceChangeListener();
     }
 
-    private class StarNetworkNode {
+    private static class StarNetworkNode {
         private StarNetworkNode parent;
         private MondrianDef.Relation origRel;
         private String foreignKey;
@@ -463,23 +451,6 @@ public class RolapStar {
      */
     public SqlQuery.Dialect getSqlQueryDialect() {
         return sqlQueryDialect;
-    }
-
-    /**
-     * Maps a cube to a Map of level to colunms. Now the only reason
-     * the star needs to map via a cube is that more than one cube can
-     * share the same star.
-     *
-     * @param cube Cube
-     */
-    Map<RolapLevel, Column> getLevelToColumnMap(RolapCube cube) {
-        Map<RolapLevel, Column> levelToColumnMap =
-            this.cubeToLevelToColumnMapMap.get(cube);
-        if (levelToColumnMap == null) {
-            levelToColumnMap = new HashMap<RolapLevel, Column>();
-            this.cubeToLevelToColumnMapMap.put(cube, levelToColumnMap);
-        }
-        return levelToColumnMap;
     }
 
     /**
@@ -1616,10 +1587,7 @@ public class RolapStar {
                 usagePrefix);
 
             if (column != null) {
-                // level.rolapStarColumn should eventually replace levelToColumnMap
-                level.setRolapStarColumn(column);
-                Map<RolapLevel, Column> map = star.getLevelToColumnMap(cube);
-                map.put(level, column);
+                level.setStarKeyColumn(column);
             }
 
             return column;

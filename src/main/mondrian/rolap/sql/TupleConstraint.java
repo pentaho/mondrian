@@ -10,12 +10,10 @@
 package mondrian.rolap.sql;
 
 import mondrian.olap.Evaluator;
+import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapMember;
-import mondrian.rolap.RolapStar;
 import mondrian.rolap.aggmatcher.AggStar;
-
-import java.util.Map;
 
 /**
  * Restricts the SQL result of {@link mondrian.rolap.TupleReader}. This is also
@@ -33,12 +31,9 @@ public interface TupleConstraint extends SqlConstraint {
      * Modifies a Level.Members query.
      *
      * @param sqlQuery the query to modify
-     * @param levelToColumnMap maps a level to the column which holds its key
-     *   in the current RolapStar
+     * @param baseCube base cube for virtual cube constraints
      */
-    public void addConstraint(
-        SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap);
+    public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube);
 
     /**
      * Will be called multiple times for every "group by" level in
@@ -48,11 +43,13 @@ public interface TupleConstraint extends SqlConstraint {
      * it may join the levels table to the fact table.
      *
      * @param query the query to modify
+     * @param baseCube base cube for virtual cube constraints
      * @param aggStar Aggregate table, or null if query is against fact table
      * @param level the level which is accessed in the Level.Members query
      */
     public void addLevelConstraint(
         SqlQuery query,
+        RolapCube baseCube,
         AggStar aggStar,
         RolapLevel level);
 

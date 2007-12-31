@@ -9,8 +9,6 @@
 package mondrian.rolap;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Collections;
 
 import mondrian.olap.Evaluator;
 import mondrian.rolap.sql.TupleConstraint;
@@ -44,24 +42,17 @@ class DescendantsConstraint implements TupleConstraint {
         this.mcc = mcc;
     }
 
-    public void addConstraint(
-        SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap)
-    {
-        if (levelToColumnMap == null) {
-            levelToColumnMap = Collections.emptyMap();
-        }
-        mcc.addMemberConstraint(
-            sqlQuery, levelToColumnMap,
-            null, parentMembers);
+    public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
+        mcc.addMemberConstraint(sqlQuery, baseCube, null, parentMembers);
     }
 
     public void addLevelConstraint(
-        SqlQuery sqlQuery, 
+        SqlQuery sqlQuery,
+        RolapCube baseCube,
         AggStar aggStar, 
         RolapLevel level)
     {
-        mcc.addLevelConstraint(sqlQuery, aggStar, level);
+        mcc.addLevelConstraint(sqlQuery, baseCube, aggStar, level);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {

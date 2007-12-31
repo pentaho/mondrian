@@ -10,6 +10,9 @@
 package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapCubeLevel;
+import mondrian.rolap.RolapCubeMember;
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapLevel;
@@ -19,7 +22,6 @@ import mondrian.rolap.sql.SqlQuery;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Arrays;
 
 /**
@@ -41,7 +43,7 @@ public class MemberTuplePredicate implements StarPredicate {
      * <p>The range can be open above or below, but at least one bound is
      * required.
      *
-     * @param levelToColumnMap Map from levels to a columns in the current star
+     * @param baseCube base cube for virtual members
      * @param lower Member which forms the lower bound, or null if range is
      *   open below
      * @param lowerStrict Whether lower bound of range is strict
@@ -50,7 +52,7 @@ public class MemberTuplePredicate implements StarPredicate {
      * @param upperStrict Whether upper bound of range is strict
      */
     public MemberTuplePredicate(
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        RolapCube baseCube,
         RolapMember lower,
         boolean lowerStrict,
         RolapMember upper,
@@ -58,9 +60,7 @@ public class MemberTuplePredicate implements StarPredicate {
     {
         columnBitKey = null;
         this.columnList =
-            computeColumnList(
-                lower != null ? lower : upper,
-                levelToColumnMap);
+            computeColumnList(lower != null ? lower : upper, baseCube);
 
         if (lower == null) {
             assert upper != null;
@@ -83,17 +83,11 @@ public class MemberTuplePredicate implements StarPredicate {
      * Creates a MemberTuplePredicate which evaluates to true for a given
      * member.
      *
-     * @param levelToColumnMap Map from levels to a columns in the current star
+     * @param baseCube base cube for virtual members
      * @param member Member
      */
-    public MemberTuplePredicate(
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        RolapMember member)
-    {
-        this.columnList =
-            computeColumnList(
-                member,
-                levelToColumnMap);
+    public MemberTuplePredicate(RolapCube baseCube, RolapCubeMember member) {
+        this.columnList = computeColumnList(member, baseCube);
 
         this.bounds = new Bound[] {
             new Bound(member, RelOp.EQ)
@@ -118,15 +112,24 @@ public class MemberTuplePredicate implements StarPredicate {
 
     private List<RolapStar.Column> computeColumnList(
         RolapMember member,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap)
+        RolapCube baseCube
+    )
     {
         List<RolapStar.Column> columnList = new ArrayList<RolapStar.Column>();
         while (true) {
             RolapLevel level = member.getLevel();
-            RolapStar.Column column = levelToColumnMap.get(level);
+            RolapStar.Column column = null;
+            if (level instanceof RolapCubeLevel) {
+                column = ((RolapCubeLevel)level)
+                                .getBaseStarKeyColumn(baseCube);
+            } else {
+                (new Exception()).printStackTrace();
+            }
+
             if (columnBitKey == null) {
                 columnBitKey =
-                    BitKey.Factory.makeBitKey(column.getStar().getColumnCount());
+                    BitKey.Factory.makeBitKey(
+                            column.getStar().getColumnCount());
                 columnBitKey.clear();
             }
             columnBitKey.set(column.getBitPosition());

@@ -165,10 +165,31 @@ public abstract class RolapSchemaReader
     public int getChildrenCountFromCache(Member member) {
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
+        if (memberReader instanceof 
+                RolapCubeHierarchy.RolapCubeHierarchyMemberReader) {
+            List list = 
+                ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader)memberReader)
+                    .getRolapCubeMemberCacheHelper()
+                        .getChildrenFromCache((RolapMember)member, null);
+            if (list == null) {
+              return -1;
+            }
+            return list.size(); 
+        }
+        
+        if (memberReader instanceof SmartMemberReader) {
+            List list = ((SmartMemberReader)memberReader).getMemberCache()
+                            .getChildrenFromCache((RolapMember)member, null);
+            if (list == null) {
+              return -1;
+            }
+            return list.size();
+        }
         if( !(memberReader instanceof MemberCache)) {
             return -1;
         }
-        List list = ((MemberCache)memberReader).getChildrenFromCache((RolapMember)member, null);
+        List list = ((MemberCache)memberReader)
+                        .getChildrenFromCache((RolapMember)member, null);
         if (list == null) {
           return -1;
         }
@@ -186,6 +207,27 @@ public abstract class RolapSchemaReader
     private int getLevelCardinalityFromCache(Level level) {
         final Hierarchy hierarchy = level.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
+        if (memberReader instanceof 
+                RolapCubeHierarchy.RolapCubeHierarchyMemberReader) {
+            List list = 
+                ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader)memberReader)
+                    .getRolapCubeMemberCacheHelper()
+                        .getLevelMembersFromCache((RolapLevel) level, null);
+            if (list == null) {
+                return Integer.MIN_VALUE;
+            }
+            return list.size();
+        }
+        
+        if (memberReader instanceof SmartMemberReader) {
+            List list = ((SmartMemberReader)memberReader).getMemberCache()
+                            .getLevelMembersFromCache((RolapLevel) level, null);
+                if (list == null) {
+                    return Integer.MIN_VALUE;
+                }
+                return list.size();
+        }
+        
         if( !(memberReader instanceof MemberCache)) {
             return Integer.MIN_VALUE;
         }

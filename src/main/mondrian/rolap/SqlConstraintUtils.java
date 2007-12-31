@@ -179,11 +179,12 @@ public class SqlConstraintUtils {
      */
     public static void joinLevelTableToFactTable(
         SqlQuery sqlQuery,
+        RolapCube baseCube,
         AggStar aggStar,
         Evaluator e,
         RolapCubeLevel level)
     {
-        RolapStar.Column starColumn = level.getRolapStarColumn();
+        RolapStar.Column starColumn = level.getBaseStarKeyColumn(baseCube);
         if (aggStar != null) {
             int bitPos = starColumn.getBitPosition();
             AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
@@ -200,7 +201,7 @@ public class SqlConstraintUtils {
      * Creates a "WHERE parent = value" constraint.
      *
      * @param sqlQuery the query to modify
-     * @param levelToColumnMap where to find each level's key
+     * @param baseCube base cube if virtual
      * @param aggStar Definition of the aggregate table, or null
      * @param parent the list of parent members
      * @param restrictMemberTypes defines the behavior if <code>parent</code>
@@ -208,15 +209,14 @@ public class SqlConstraintUtils {
      */
     public static void addMemberConstraint(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        RolapCube baseCube,
         AggStar aggStar,
         RolapMember parent,
         boolean restrictMemberTypes)
     {
         List<RolapMember> list = Collections.singletonList(parent);
         addMemberConstraint(
-            sqlQuery, levelToColumnMap,
-            aggStar, list, restrictMemberTypes, false);
+            sqlQuery, baseCube, aggStar, list, restrictMemberTypes, false);
     }
 
     /**
@@ -232,7 +232,7 @@ public class SqlConstraintUtils {
      * instead.
      *
      * @param sqlQuery the query to modify
-     * @param levelToColumnMap where to find each level's key
+     * @param baseCube base cube if virtual
      * @param aggStar (not used)
      * @param members the list of members for this constraint
      * @param restrictMemberTypes defines the behavior if <code>parents</code>
@@ -243,7 +243,7 @@ public class SqlConstraintUtils {
      */
     public static void addMemberConstraint(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        RolapCube baseCube,
         AggStar aggStar,
         List<RolapMember> members,
         boolean restrictMemberTypes,
@@ -285,15 +285,15 @@ public class SqlConstraintUtils {
             condition +=
                 constrainMultiLevelMembers(
                     sqlQuery,
-                    levelToColumnMap,
+                    baseCube,
                     members,
                     firstUniqueParentLevel,
                     restrictMemberTypes);
         } else {
             condition +=
                 generateSingleValueInExpr(
-                    sqlQuery, 
-                    levelToColumnMap,
+                    sqlQuery,
+                    baseCube,
                     members,
                     firstUniqueParentLevel,
                     restrictMemberTypes);                  
@@ -344,7 +344,7 @@ public class SqlConstraintUtils {
      * list of members
      *
      * @param sqlQuery query containing the where clause
-     * @param levelToColumnMap where to find each level's key
+     * @param baseCube base cube if virtual
      * @param members list of constraining members
      * @param fromLevel lowest parent level that is unique
      * @param restrictMemberTypes defines the behavior when calculated members are present
@@ -353,7 +353,7 @@ public class SqlConstraintUtils {
      */    
     private static String constrainMultiLevelMembers(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        RolapCube baseCube,
         List<RolapMember> members,
         RolapLevel fromLevel,
         boolean restrictMemberTypes)
@@ -368,7 +368,7 @@ public class SqlConstraintUtils {
             condition +=
                 generateMultiValueInExpr(
                     sqlQuery, 
-                    levelToColumnMap,
+                    baseCube,
                     members,
                     fromLevel,
                     restrictMemberTypes,
@@ -466,13 +466,16 @@ public class SqlConstraintUtils {
                     RolapHierarchy hierarchy =
                         (RolapHierarchy) level.getHierarchy();
 
-                    // phase out levelToColumnMap to avoid this
+                    // this method can be called within the context of shared
+                    // members, outside of the normal rolap star, therefore 
+                    // we need to check the level to see if it is a shared or
+                    // cube level.
+
                     RolapStar.Column column = null;
-                    if (levelToColumnMap != null) {
-                        column = levelToColumnMap.get(level);
-                    } else {
-                        assert(level instanceof RolapCubeLevel);
-                        column = ((RolapCubeLevel)level).getRolapStarColumn();
+                    if (level instanceof RolapCubeLevel) {
+                        column =
+                            ((RolapCubeLevel)level).
+                                    getBaseStarKeyColumn(baseCube);
                     }
                     
                     if (column != null) {
@@ -491,10 +494,10 @@ public class SqlConstraintUtils {
 
                 condition += constrainLevel(
                     level,
-                    levelToColumnMap,
                     sqlQuery,
+                    baseCube,
                     getColumnValue(
-                        gp.getSqlKey(),
+                        gp.getKey(),
                         sqlQuery.getDialect(),
                         level.getDatatype()),
                         false);
@@ -524,7 +527,7 @@ public class SqlConstraintUtils {
                     condition +=
                         generateMultiValueInExpr(
                             sqlQuery, 
-                            levelToColumnMap,
+                            baseCube,
                             children,
                             childrenLevel,
                             restrictMemberTypes,
@@ -539,7 +542,7 @@ public class SqlConstraintUtils {
                     condition +=
                         generateSingleValueInExpr(
                             sqlQuery, 
-                            levelToColumnMap,
+                            baseCube,
                             children,
                             childrenLevel,
                             restrictMemberTypes);
@@ -606,8 +609,8 @@ public class SqlConstraintUtils {
      * Generates a sql expression constraining a level by some value
      *
      * @param level the level
-     * @param levelToColumnMap where to find each level's key
      * @param query the query that the sql expression will be added to
+     * @param baseCube base cube for virtual levels
      * @param columnValue value constraining the level
      * @param caseSensitive if true, need to handle case sensitivity of the
      * member value
@@ -616,28 +619,50 @@ public class SqlConstraintUtils {
      */
     public static String constrainLevel(
         RolapLevel level,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
         SqlQuery query,
+        RolapCube baseCube,
         String columnValue,
         boolean caseSensitive)
     {
-        MondrianDef.Expression exp = level.getNameExp();
-        SqlQuery.Datatype datatype;
-        if (exp == null) {
-            exp = level.getKeyExp();
-            datatype = level.getDatatype();
-        } else {
-            // The schema doesn't specify the datatype of the name column, but
-            // we presume that it is a string.
-            datatype = SqlQuery.Datatype.String;
+       
+        // this method can be called within the context of shared members,
+        // outside of the normal rolap star, therefore we need to 
+        // check the level to see if it is a shared or cube level.
+        
+        RolapStar.Column column = null;
+        if (level instanceof RolapCubeLevel) {
+            column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
         }
-        String column =
-            level.getExpressionWithAlias(query, levelToColumnMap, exp);
+        
+        String columnString;
+        SqlQuery.Datatype datatype;
+        if (column != null) {
+            if (column.getNameColumn() == null) {
+                datatype = level.getDatatype();
+            } else {
+                column = column.getNameColumn();
+                // The schema doesn't specify the datatype of the name column, but
+                // we presume that it is a string.
+                datatype = SqlQuery.Datatype.String;
+            }
+            columnString = column.generateExprString(query);
+        } else {
+            MondrianDef.Expression exp = level.getNameExp();
+            if (exp == null) {
+                exp = level.getKeyExp();
+                datatype = level.getDatatype();
+            } else {
+                // The schema doesn't specify the datatype of the name column, but
+                // we presume that it is a string.
+                datatype = SqlQuery.Datatype.String;
+            }
+            columnString = exp.getExpression(query);
+        }
 
         String constraint;
 
         if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(columnValue)) {
-            constraint = column + " is " + RolapUtil.sqlNullLiteral;
+            constraint = columnString + " is " + RolapUtil.sqlNullLiteral;
         } else {
             if (datatype.isNumeric()) {
                 // make sure it can be parsed
@@ -652,12 +677,12 @@ public class SqlConstraintUtils {
                 // rather than in Java (e.g. 'FOO') in case the DBMS is running
                 // a different locale.
                 if (!MondrianProperties.instance().CaseSensitive.get()) {
-                    column = query.getDialect().toUpper(column);
+                    columnString = query.getDialect().toUpper(columnString);
                     value = query.getDialect().toUpper(value);
                 }
             }
 
-            constraint = column + " = " + value;
+            constraint = columnString + " = " + value;
         }
 
         return constraint;
@@ -669,7 +694,7 @@ public class SqlConstraintUtils {
      * of a query, provided the member values are all non-null
      *
      * @param sqlQuery query containing the where clause
-     * @param levelToColumnMap where to find each level's key
+     * @param baseCube base cube if virtual
      * @param members list of constraining members
      * @param fromLevel lowest parent level that is unique
      * @param restrictMemberTypes defines the behavior when calculated members are present
@@ -679,7 +704,7 @@ public class SqlConstraintUtils {
      */
     private static String generateMultiValueInExpr(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        RolapCube baseCube,
         List<RolapMember> members,
         RolapLevel fromLevel,
         boolean restrictMemberTypes,
@@ -697,37 +722,36 @@ public class SqlConstraintUtils {
                 continue;
             }
             RolapLevel level = m.getLevel();
-
-            RolapHierarchy hierarchy =
-                (RolapHierarchy) level.getHierarchy();
+            RolapHierarchy hierarchy = (RolapHierarchy) level.getHierarchy();
             
-            // phase out levelToColumnMap to avoid this
+            // this method can be called within the context of shared members,
+            // outside of the normal rolap star, therefore we need to 
+            // check the level to see if it is a shared or cube level.
+            
             RolapStar.Column column = null;
-            if (levelToColumnMap != null) {
-                column = levelToColumnMap.get(level);
-            } else {
-                assert(level instanceof RolapCubeLevel);
-                column = ((RolapCubeLevel)level).getRolapStarColumn();
+            if (level instanceof RolapCubeLevel) {
+                column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
             }
 
+            String columnString = null;
             if (column != null) {
                 RolapStar.Table targetTable = column.getTable();
                 hierarchy.addToFrom(sqlQuery, targetTable);
+                
+                RolapStar.Column nameColumn = column.getNameColumn();
+                if (nameColumn == null) {
+                    nameColumn = column;
+                }
+                columnString = nameColumn.generateExprString(sqlQuery);
             } else {
-                hierarchy.addToFrom(sqlQuery, level.getKeyExp());                
-            }                        
-
-            MondrianDef.Expression exp = level.getNameExp();
-
-            if (exp == null) {
-                exp = level.getKeyExp();
+                hierarchy.addToFrom(sqlQuery, level.getKeyExp());
+                
+                MondrianDef.Expression nameExp = level.getNameExp();
+                if (nameExp == null) {
+                    nameExp = level.getKeyExp();
+                }
+                columnString = nameExp.getExpression(sqlQuery);
             }
-
-            String columnString =
-                level.getExpressionWithAlias(
-                    sqlQuery,
-                    levelToColumnMap,
-                    exp);
 
             if (!isFirstLevelInMultiple) {
                 columnBuf.append(",");
@@ -772,7 +796,7 @@ public class SqlConstraintUtils {
                 RolapLevel level = p.getLevel();
 
                 String value = getColumnValue(
-                    p.getSqlKey(),
+                    p.getKey(),
                     sqlQuery.getDialect(),
                     level.getDatatype());
                 
@@ -842,7 +866,7 @@ public class SqlConstraintUtils {
      * of a query, provided the member values are all non-null
      *
      * @param sqlQuery query containing the where clause
-     * @param levelToColumnMap where to find each level's key
+     * @param baseCube base cube if virtual
      * @param members list of constraining members
      * @param fromLevel lowest parent level that is unique
      * @param restrictMemberTypes defines the behavior when calculated members are present
@@ -850,7 +874,7 @@ public class SqlConstraintUtils {
      */
     private static String generateSingleValueInExpr(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        RolapCube baseCube,
         List<RolapMember> members,
         RolapLevel fromLevel,        
         boolean restrictMemberTypes)
@@ -877,26 +901,25 @@ public class SqlConstraintUtils {
             }
             RolapLevel level = m.getLevel();
             RolapHierarchy hierarchy = level.getHierarchy();
-
-            String q = 
-                level.getExpressionWithAlias(
-                    sqlQuery, levelToColumnMap, level.getKeyExp());
             
-            // phase out levelToColumnMap to avoid this
+            // this method can be called within the context of shared members,
+            // outside of the normal rolap star, therefore we need to 
+            // check the level to see if it is a shared or cube level.
+            
             RolapStar.Column column = null;
-            if (levelToColumnMap != null) {
-                column = levelToColumnMap.get(level);
-            } else {
-                assert(level instanceof RolapCubeLevel);
-                column = ((RolapCubeLevel)level).getRolapStarColumn();
+            if (level instanceof RolapCubeLevel) {
+                column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
             }
+            
             StarColumnPredicate cc = getColumnPredicates(column, c);
-
+            String q = null;
             if (column != null) {
                 RolapStar.Table targetTable = column.getTable();
                 hierarchy.addToFrom(sqlQuery, targetTable);
+                q = column.generateExprString(sqlQuery);
             } else {
-                hierarchy.addToFrom(sqlQuery, level.getKeyExp());                
+                hierarchy.addToFrom(sqlQuery, level.getKeyExp());
+                q = level.getKeyExp().getExpression(sqlQuery);
             }
 
             if (cc instanceof ListColumnPredicate &&
@@ -920,7 +943,7 @@ public class SqlConstraintUtils {
                 }
             }
 
-            if (level.isUnique() || level == fromLevel) {
+            if (m.getLevel().isUnique() || m.getLevel() == fromLevel) {
                 break; // no further qualification needed
             }
         }

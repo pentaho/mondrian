@@ -10,11 +10,10 @@
 package mondrian.rolap.sql;
 
 import java.util.List;
-import java.util.Map;
 
+import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapMember;
-import mondrian.rolap.RolapStar;
 import mondrian.rolap.aggmatcher.AggStar;
 
 /**
@@ -33,13 +32,13 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * of <code>parent</code> will be returned in the result set.
      *
      * @param sqlQuery the query to modify
-     * @param levelToColumnMap where to find each level's key
+     * @param baseCube base cube for virtual members
      * @param aggStar Aggregate star, if we are reading from an aggregate table,
      * @param parent the parent member that restricts the returned children
      */
     public void addMemberConstraint(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        RolapCube baseCube,
         AggStar aggStar,
         RolapMember parent);
 
@@ -49,13 +48,13 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * will be returned in the result set.
      *
      * @param sqlQuery the query to modify
-     * @param levelToColumnMap where to find each level's key
+     * @param baseCube base cube for virtual members
      * @param aggStar Aggregate table, or null if query is against fact table
      * @param parents list of parent members that restrict the returned children.
      */
     public void addMemberConstraint(
         SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        RolapCube baseCube,
         AggStar aggStar,
         List<RolapMember> parents);
 
@@ -65,11 +64,13 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * it may join the levels table to the fact table.
      *
      * @param query the query to modify
+     * @param baseCube base cube for virtual members
      * @param aggStar Aggregate table, or null if query is against fact table
      * @param level the level that contains the children
      */
     public void addLevelConstraint(
         SqlQuery query,
+        RolapCube baseCube,
         AggStar aggStar,
         RolapLevel level);
 

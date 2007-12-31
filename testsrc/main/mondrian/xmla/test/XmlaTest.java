@@ -77,20 +77,6 @@ public class XmlaTest extends TestCase {
     }
 
     protected void runTest() throws Exception {
-        
-        if (!Bug.Bug1833526Fixed && this.getName().equals("executeHR")) { // BUG ID HERE
-            // without flushing the cache, executeHR()
-            // fails right now, due to some form of caching issue. This test passes when 
-            // executed on it's own, but fails when ran in the test suite.  Looking into it
-            // further, XmlaBasicTest.testMDimensions() calls LevelBase.setApproxRowCount()
-            // on the level HR -> [Employee].[Employee Id]. In the old code base, by the 
-            // time executeHR() is written, this value is no longer set.  With the new code,
-            // this value is still set, causing a diff in the expected Xmla.
-            
-            // getConnection().getCacheControl(null).flushSchemaCache();
-            RolapSchema.clearCache();
-        }
-        
         DiffRepository diffRepos = getDiffRepos();
         String request = diffRepos.expand(null, "${request}");
         String expectedResponse = diffRepos.expand(null, "${response}");

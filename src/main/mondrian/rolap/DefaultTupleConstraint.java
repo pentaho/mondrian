@@ -14,8 +14,6 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.aggmatcher.AggStar;
 
-import java.util.Map;
-
 /**
  * TupleConstraint which does not restrict the result.
  *
@@ -31,13 +29,12 @@ public class DefaultTupleConstraint implements TupleConstraint {
     protected DefaultTupleConstraint() {
     }
 
-    public void addConstraint(
-        SqlQuery sqlQuery,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
+    public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
     }
 
     public void addLevelConstraint(
         SqlQuery query,
+        RolapCube baseCube,
         AggStar aggStar,
         RolapLevel level) {
     }
