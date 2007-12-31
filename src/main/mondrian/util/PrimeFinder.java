@@ -8,7 +8,7 @@
 // You must accept the terms of that agreement to use this software.
 */
 
-//   Copyright (c) 1999 CERN - European Organization for Nuclear Research.
+//   Copyright (c) 1999-2007 CERN - European Organization for Nuclear Research.
 //   Permission to use, copy, modify, distribute and sell this software
 //   and its documentation for any purpose is hereby granted without fee,
 //   provided that the above copyright notice appear in all copies and
