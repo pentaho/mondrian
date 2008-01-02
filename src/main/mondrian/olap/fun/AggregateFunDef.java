@@ -73,10 +73,12 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             }
             final List list = evaluateCurrentList(listCalc, evaluator);
             if (aggregator == RolapAggregator.DistinctCount) {
-                //If the list is empty, there is no need to evaluate any further
+                // If the list is empty, it means the current context
+                // contains no qualifying cells. The result set is empty.
                 if (list.size() == 0) {
                     return DoubleNull;
                 }
+                
                 // TODO: Optimize the list
                 // E.g.
                 // List consists of:
@@ -125,6 +127,10 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          * @param list
          */
         private void checkIfAggregationSizeIsTooLarge(List list) {
+            /*
+             * REVIEW: Could something other than a hard coded value be used here,
+             * e.g. something configurable?
+             */
             if (list.size() > 100) {
                 throw newEvalException(
                     null,"Distinct Count aggregation is not supported over a " +
