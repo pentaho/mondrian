@@ -124,4 +124,92 @@ Row #24: 11
 ]]>
         </Resource>
     </TestCase>
+    <TestCase name="testSlicerStackOverflowNotContain">
+        <Resource name="description">
+            <![CDATA[
+Tests that we do not get a stackoverflow for non-native necj evluation with slicer members that references the necj. (We do not get stackoverflow because if a dimension is referenced in the necj, then same dimension in the slicer is ignored.)
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],NonEmptyCrossJoin([*BASE_MEMBERS_Product],NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Education Level])))'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+  Set [*BASE_MEMBERS_Gender] as '[Gender].[Gender].Members'
+  Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})'
+  Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Name].Members,[Product].CurrentMember.Name Not Matches ("(?i).*\QLow Fat Bologna\E.*"))'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Set [*BASE_MEMBERS_Time] as '{[Time].[1997]}'
+  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+  Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[High School Degree]}'
+  Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+  Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-200
+  Member [Time].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Time])', SOLVE_ORDER=-200
+  Member [Education Level].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Education Level])', SOLVE_ORDER=-200
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember)}) on rows
+From [Sales]
+Where ([Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER])
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{[Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER]}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Gender].[All Gender].[F]}
+{[Gender].[All Gender].[M]}
+Row #0: 37,895
+Row #1: 40,498
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSlicerStackOverflowNotEqual">
+        <Resource name="description">
+            <![CDATA[
+Tests that we do not get a stackoverflow for non-native necj evluation with slicer members that references the necj. (We do not get stackoverflow because if a dimension is referenced in the necj, then same dimension in the slicer is ignored.)
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],NonEmptyCrossJoin([*BASE_MEMBERS_Product],NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Education Level])))'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+  Set [*BASE_MEMBERS_Gender] as '[Gender].[Gender].Members'
+  Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})'
+  Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Name].Members,[Product].CurrentMember Not In {[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American].[American Low Fat Bologna]})'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Set [*BASE_MEMBERS_Time] as '{[Time].[1997]}'
+  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+  Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[High School Degree]}'
+  Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+  Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-200
+  Member [Time].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Time])', SOLVE_ORDER=-200
+  Member [Education Level].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Education Level])', SOLVE_ORDER=-200
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember)}) on rows
+From [Sales]
+Where ([Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER])
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{[Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER]}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Gender].[All Gender].[F]}
+{[Gender].[All Gender].[M]}
+Row #0: 38,023
+Row #1: 40,576
+]]>
+        </Resource>
+    </TestCase>
 </Root>
