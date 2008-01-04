@@ -1177,11 +1177,8 @@ Assumes that mondrian.jar exists (use 'jar' target)">
 
     <!-- Build the WEB-INF directory. -->
     <copy file="${webapp.dir}/WEB-INF/web-jpivot.xml"
-        filtering="true"
         tofile="${build.dir}/mondrian/WEB-INF/web.xml" />
-    <copy
-        todir="${build.dir}/mondrian/WEB-INF"
-        flatten="true">
+    <copy todir="${build.dir}/mondrian/WEB-INF">
       <fileset
           dir="${webapp.dir}/WEB-INF"
           includes="mondrian.properties,datasources.xml,*.xsl,*.tld,**/*.jsp"/>
@@ -1232,9 +1229,7 @@ Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded data
     <copy file="${webapp.dir}/WEB-INF/web-jpivot.xml"
         filtering="true"
         tofile="${build.dir}/mondrian-embedded/WEB-INF/web.xml" />
-    <copy
-        todir="${build.dir}/mondrian-embedded/WEB-INF"
-        flatten="true">
+    <copy todir="${build.dir}/mondrian-embedded/WEB-INF">
       <fileset
           dir="${webapp.dir}/WEB-INF"
           includes="mondrian.properties,datasources.xml,*.xsl,*.tld,**/*.jsp"/>
