@@ -35,12 +35,18 @@ public class ConstantCalc extends GenericCalc {
         this.d = initializeDouble(o);
     }
 
+    public ResultStyle getResultStyle() {
+        return o == null
+            ? ResultStyle.VALUE
+            : ResultStyle.VALUE_NOT_NULL;
+    }
+
     private double initializeDouble(Object o) {
         double value;
-        if(o instanceof Number){
-           value = ((Number) o).doubleValue();
+        if (o instanceof Number) {
+            value = ((Number) o).doubleValue();
         } else {
-            if(o == null){
+            if (o == null) {
                 value = FunUtil.DoubleNull;
             } else {
                 value = 0;
@@ -48,13 +54,13 @@ public class ConstantCalc extends GenericCalc {
         }
         return value;
     }
-    
-     private int initializeInteger(Object o) {
+
+    private int initializeInteger(Object o) {
         int value;
-        if(o instanceof Number){
-           value = ((Number) o).intValue();
+        if (o instanceof Number) {
+            value = ((Number) o).intValue();
         } else {
-            if(o == null){
+            if (o == null) {
                 value = FunUtil.IntegerNull;
             } else {
                 value = 0;
@@ -91,60 +97,101 @@ public class ConstantCalc extends GenericCalc {
     }
 
     /**
-     * Creates an expression which evaluates to an integer.
+     * Creates an expression which evaluates to a given integer.
+     *
+     * @param i Integer value
+     * @return Constant integer expression
      */
     public static ConstantCalc constantInteger(int i) {
-        return new ConstantCalc(new NumericType(), i);
+        return new ConstantCalc(new DecimalType(Integer.MAX_VALUE, 0), i);
     }
 
     /**
-     * Creates an expression which evaluates to a string.
+     * Creates an expression which evaluates to a given double.
+     *
+     * @param v Double value
+     * @return Constant double expression
+     */
+    public static DoubleCalc constantDouble(double v) {
+        return new ConstantCalc(new NumericType(), v);
+    }
+
+    /**
+     * Creates an expression which evaluates to a given string.
+     *
+     * @param s String value
+     * @return Constant string expression
      */
     public static StringCalc constantString(String s) {
         return new ConstantCalc(new StringType(), s);
     }
 
     /**
+     * Creates an expression which evaluates to a given boolean.
+     *
+     * @param b Boolean value
+     * @return Constant boolean expression
+     */
+    public static BooleanCalc constantBoolean(boolean b) {
+        return new ConstantCalc(new BooleanType(), b);
+    }
+
+    /**
      * Creates an expression which evaluates to null.
+     *
+     * @param type Type
+     * @return Constant null expression
      */
     public static ConstantCalc constantNull(Type type) {
         return new ConstantCalc(type, null);
     }
 
     /**
-     * Creates an expression which evaluates to a member.
+     * Creates an expression which evaluates to a given member.
+     *
+     * @param member Member
+     * @return Constant member expression
      */
     public static Calc constantMember(Member member) {
         return new ConstantCalc(
-                MemberType.forMember(member),
-                member);
+            MemberType.forMember(member),
+            member);
     }
 
     /**
-     * Creates an expression which evaluates to a level.
+     * Creates an expression which evaluates to a given level.
+     *
+     * @param level Level
+     * @return Constant level expression
      */
     public static Calc constantLevel(Level level) {
         return new ConstantCalc(
-                LevelType.forLevel(level),
-                level);
+            LevelType.forLevel(level),
+            level);
     }
 
     /**
-     * Creates an expression which evaluates to a hierarchy.
+     * Creates an expression which evaluates to a given hierarchy.
+     *
+     * @param hierarchy Hierarchy
+     * @return Constant hierarchy expression
      */
     public static Calc constantHierarchy(Hierarchy hierarchy) {
         return new ConstantCalc(
-                HierarchyType.forHierarchy(hierarchy),
-                hierarchy);
+            HierarchyType.forHierarchy(hierarchy),
+            hierarchy);
     }
 
     /**
-     * Creates an expression which evaluates to a dimension.
+     * Creates an expression which evaluates to a given dimension.
+     *
+     * @param dimension Dimension
+     * @return Constant dimension expression
      */
     public static Calc constantDimension(Dimension dimension) {
         return new ConstantCalc(
-                DimensionType.forDimension(dimension),
-                dimension);
+            DimensionType.forDimension(dimension),
+            dimension);
     }
 }
 

@@ -103,7 +103,7 @@ public class RankFunDef extends FunDefBase {
         }
     }
 
-    private static class Rank2TupleCalc extends AbstractDoubleCalc {
+    private static class Rank2TupleCalc extends AbstractIntegerCalc {
         private final TupleCalc tupleCalc;
         private final Calc listCalc;
 
@@ -113,13 +113,13 @@ public class RankFunDef extends FunDefBase {
             this.listCalc = listCalc;
         }
 
-        public double evaluateDouble(Evaluator evaluator) {
+        public int evaluateInteger(Evaluator evaluator) {
             // Get member or tuple.
             // If the member is null (or the tuple contains a null member)
             // the result is null (even if the list is null).
             final Member[] members = tupleCalc.evaluateTuple(evaluator);
             if (members == null) {
-                return DoubleNull;
+                return IntegerNull;
             }
             assert !tupleContainsNullMember(members);
 
@@ -140,24 +140,27 @@ public class RankFunDef extends FunDefBase {
         }
     }
 
-    private static class Rank2MemberCalc extends AbstractDoubleCalc {
+    private static class Rank2MemberCalc extends AbstractIntegerCalc {
         private final MemberCalc memberCalc;
         private final Calc listCalc;
 
-        public Rank2MemberCalc(ResolvedFunCall call, MemberCalc memberCalc, Calc listCalc) {
+        public Rank2MemberCalc(
+            ResolvedFunCall call, MemberCalc memberCalc, Calc listCalc)
+        {
             super(call, new Calc[] {memberCalc, listCalc});
             this.memberCalc = memberCalc;
             this.listCalc = listCalc;
         }
 
-        public double evaluateDouble(Evaluator evaluator) {
+        public int evaluateInteger(Evaluator evaluator) {
             // Get member or tuple.
             // If the member is null (or the tuple contains a null member)
             // the result is null (even if the list is null).
             final Member member = memberCalc.evaluateMember(evaluator);
             if (member == null ||
-                    member.isNull()) {
-                return DoubleNull;
+                member.isNull())
+            {
+                return IntegerNull;
             }
             // Get the set of members/tuples.
             // If the list is empty, MSAS cannot figure out the type of the
@@ -176,26 +179,27 @@ public class RankFunDef extends FunDefBase {
         }
     }
 
-    private static class Rank3TupleCalc extends AbstractDoubleCalc {
+    private static class Rank3TupleCalc extends AbstractIntegerCalc {
         private final TupleCalc tupleCalc;
         private final Calc sortCalc;
         private final ExpCacheDescriptor cacheDescriptor;
 
         public Rank3TupleCalc(
-                ResolvedFunCall call,
-                TupleCalc tupleCalc,
-                Calc sortCalc,
-                ExpCacheDescriptor cacheDescriptor) {
+            ResolvedFunCall call,
+            TupleCalc tupleCalc,
+            Calc sortCalc,
+            ExpCacheDescriptor cacheDescriptor)
+        {
             super(call, new Calc[] {tupleCalc, sortCalc});
             this.tupleCalc = tupleCalc;
             this.sortCalc = sortCalc;
             this.cacheDescriptor = cacheDescriptor;
         }
 
-        public double evaluateDouble(Evaluator evaluator) {
+        public int evaluateInteger(Evaluator evaluator) {
             Member[] members = tupleCalc.evaluateTuple(evaluator);
             if (members == null) {
-                return DoubleNull;
+                return IntegerNull;
             }
             assert !tupleContainsNullMember(members);
 
@@ -217,7 +221,7 @@ public class RankFunDef extends FunDefBase {
             }
             if (sortResult.empty) {
                 // If list is empty, the rank is null.
-                return DoubleNull;
+                return IntegerNull;
             }
 
             // If value is null, it won't be in the values array.
@@ -343,8 +347,7 @@ public class RankFunDef extends FunDefBase {
             RuntimeException exception = null;
             Object[] values = new Object[members.size()];
             int j = 0;
-            for (Object member1 : members) {
-                final Object o = member1;
+            for (Object o : members) {
                 if (o instanceof Member) {
                     Member member = (Member) o;
                     evaluator2.setContext(member);
@@ -357,7 +360,7 @@ public class RankFunDef extends FunDefBase {
                         exception = (RuntimeException) value;
                     }
                 } else if (Util.isNull(value)) {
-                    ;
+                    // nothing to do
                 } else {
                     values[j++] = value;
                 }

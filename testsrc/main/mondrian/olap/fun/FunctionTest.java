@@ -19,7 +19,6 @@ import mondrian.udf.CurrentDateMemberUdf;
 import mondrian.udf.CurrentDateStringUdf;
 import mondrian.util.Bug;
 import mondrian.rolap.RolapSchema;
-import mondrian.rolap.RolapUtil;
 
 import org.eigenbase.xom.StringEscaper;
 
@@ -27,7 +26,6 @@ import java.io.*;
 import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
-import java.util.Properties;
 
 /**
  * <code>FunctionTest</code> tests the functions defined in
@@ -3824,7 +3822,7 @@ public class FunctionTest extends FoodMartTestCase {
         // constructing a tuple.
         assertExprCompilesTo(
                 "([Gender].[M], [Time].Children.Item(2), [Measures].[Unit Sales])",
-                "MemberValueCalc([Gender].[All Gender].[M], Item(Children(CurrentMember([Time])), 2.0), [Measures].[Unit Sales])");
+                "MemberValueCalc([Gender].[All Gender].[M], Item(Children(CurrentMember([Time])), 2), [Measures].[Unit Sales])");
     }
 
     /**
@@ -6417,22 +6415,29 @@ public class FunctionTest extends FoodMartTestCase {
     /**
      * Executes a scalar expression, and asserts that the result is within
      * delta of the expected result.
+     *
+     * @param expr MDX scalar expression
+     * @param expected Expected value
+     * @param delta Maximum allowed deviation from expected value
      */
     public void assertExprReturns(
-            String expr, double expected, double delta) {
-        String actual = executeExpr(expr);
+        String expr, double expected, double delta)
+    {
+        Object value = getTestContext().executeExprRaw(expr).getValue();
 
         try {
-            Assert.assertEquals(null,
-                    expected,
-                    Double.parseDouble(actual),
-                    delta);
-        } catch (NumberFormatException ex) {
+            double actual = ((Number) value).doubleValue();
+            Assert.assertEquals(
+                null,
+                expected,
+                actual,
+                delta);
+        } catch (ClassCastException ex) {
             String msg = "Actual value \"" +
-                    actual +
-                    "\" is not a double.";
+                    value +
+                    "\" is not a number.";
             throw new ComparisonFailure(
-                    msg, Double.toString(expected), actual);
+                msg, Double.toString(expected), String.valueOf(value));
         }
     }
 
@@ -6451,7 +6456,7 @@ public class FunctionTest extends FoodMartTestCase {
             // 'DependencyTestingCalc' instances embedded in it.
             return;
         }
-        assertEquals(actualCalc, expectedCalc);
+        assertEquals(expectedCalc, actualCalc);
     }
 
     /**
@@ -7539,19 +7544,17 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         MondrianProperties.instance().MaxEvalDepth.set(origDepth);
     }
 
-    public void testLeftFunctionWithValidArguments(){
-
+    public void testLeftFunctionWithValidArguments() {
         assertQueryReturns("select filter([Store].MEMBERS," +
-                "Left([Store].CURRENTMEMBER.Name, 4)=\"Bell\") on 0 from sales",
-                fold("Axis #0:\n" +
-                        "{}\n" +
-                        "Axis #1:\n" +
-                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
-                        "Row #0: 2,237\n"));
+            "Left([Store].CURRENTMEMBER.Name, 4)=\"Bell\") on 0 from sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                "Row #0: 2,237\n"));
     }
 
-    public void testLeftFunctionWithLengthValueZero(){
-
+    public void testLeftFunctionWithLengthValueZero() {
         assertQueryReturns("select filter([Store].MEMBERS," +
                 "Left([Store].CURRENTMEMBER.Name, 0)=\"\" And " +
                 "[Store].CURRENTMEMBER.Name = \"Bellingham\" ) on 0 from sales",
@@ -7562,8 +7565,7 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
                         "Row #0: 2,237\n"));
     }
 
-    public void testLeftFunctionWithLengthValueEqualToStringLength(){
-
+    public void testLeftFunctionWithLengthValueEqualToStringLength() {
         assertQueryReturns("select filter([Store].MEMBERS," +
                 "Left([Store].CURRENTMEMBER.Name, 10)=\"Bellingham\") " +
                 "on 0 from sales",
@@ -7574,8 +7576,7 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
                         "Row #0: 2,237\n"));
     }
 
-    public void testLeftFunctionWithLengthMoreThanStringLength(){
-
+    public void testLeftFunctionWithLengthMoreThanStringLength() {
         assertQueryReturns("select filter([Store].MEMBERS," +
                 "Left([Store].CURRENTMEMBER.Name, 20)=\"Bellingham\") " +
                 "on 0 from sales",
@@ -7586,57 +7587,50 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
                         "Row #0: 2,237\n"));
     }
 
-    public void testLeftFunctionWithZeroLengthString(){
-
+    public void testLeftFunctionWithZeroLengthString() {
         assertQueryReturns("select filter([Store].MEMBERS,Left(\"\", 20)=\"\" " +
-                "And [Store].CURRENTMEMBER.Name = \"Bellingham\" ) " +
-                "on 0 from sales",
-                fold("Axis #0:\n" +
-                        "{}\n" +
-                        "Axis #1:\n" +
-                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
-                        "Row #0: 2,237\n"));
+            "And [Store].CURRENTMEMBER.Name = \"Bellingham\" ) " +
+            "on 0 from sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                "Row #0: 2,237\n"));
     }
 
-    public void testLeftFunctionWithNegativeLength(){
-
+    public void testLeftFunctionWithNegativeLength() {
         assertThrows("select filter([Store].MEMBERS," +
-                "Left([Store].CURRENTMEMBER.Name, -20)=\"Bellingham\") " +
-                "on 0 from sales",
-                "Invalid parameter. Length parameter of Left function can't " +
-                        "be negative");
+            "Left([Store].CURRENTMEMBER.Name, -20)=\"Bellingham\") " +
+            "on 0 from sales",
+            "StringIndexOutOfBoundsException: String index out of range: -20");
     }
 
-    public void testMidFunctionWithValidArguments(){
-
+    public void testMidFunctionWithValidArguments() {
         assertQueryReturns("select filter([Store].MEMBERS," +
-                "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
-                "And Mid(\"Bellingham\", 4, 6) = \"lingha\")" +
-                "on 0 from sales"
-                ,
-                fold("Axis #0:\n" +
-                        "{}\n" +
-                        "Axis #1:\n" +
-                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
-                        "Row #0: 2,237\n"));
+            "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
+            "And Mid(\"Bellingham\", 4, 6) = \"lingha\")" +
+            "on 0 from sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                "Row #0: 2,237\n"));
     }
 
-    public void testMidFunctionWithZeroLenghtStringArgument(){
-
+    public void testMidFunctionWithZeroLengthStringArgument() {
         assertQueryReturns("select filter([Store].MEMBERS," +
-                "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
-                "And Mid(\"\", 4, 6) = \"\")" +
-                "on 0 from sales"
-                ,
-                fold("Axis #0:\n" +
-                        "{}\n" +
-                        "Axis #1:\n" +
-                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
-                        "Row #0: 2,237\n"));
+            "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
+            "And Mid(\"\", 4, 6) = \"\")" +
+            "on 0 from sales"
+            ,
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                "Row #0: 2,237\n"));
     }
 
-    public void testMidFunctionWithLengthArgumentLargerThanStringLength(){
-
+    public void testMidFunctionWithLengthArgumentLargerThanStringLength() {
         assertQueryReturns("select filter([Store].MEMBERS," +
                 "[Store].CURRENTMEMBER.Name = \"Bellingham\"" +
                 "And Mid(\"Bellingham\", 4, 20) = \"lingham\")" +
@@ -7849,6 +7843,40 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         // doesn't work with multiple args
         assertExprThrows("Cache(1, 2)",
             "No function matches signature 'Cache(<Numeric Expression>, <Numeric Expression>)'");
+    }
+
+    // The following methods test VBA functions. They don't test all of them,
+    // because the raw methods are tested in VbaTest, but they test the core
+    // functionalities like error handling and operator overloading.
+
+    public void testVbaBasic() {
+        // Exp is a simple function: one arg.
+        assertExprReturns("exp(0)", "1");
+        assertExprReturns("exp(1)", Math.E, 0.00000001);
+        assertExprReturns("exp(-2)", 1d / (Math.E * Math.E), 0.00000001);
+
+        // If any arg is null, result is null.
+        assertExprReturns("exp(cast(null as numeric))", "");
+    }
+
+    // Test a VBA function with variable number of args.
+    public void testVbaOverloading() {
+        assertExprReturns("replace('xyzxyz', 'xy', 'a')", "azaz");
+        assertExprReturns("replace('xyzxyz', 'xy', 'a', 2)", "xyzaz");
+        assertExprReturns("replace('xyzxyz', 'xy', 'a', 1, 1)", "azxyz");
+    }
+
+    // Test VBA exception handling
+    public void testVbaExceptions() {
+        assertExprThrows("right(\"abc\", -4)",
+            "StringIndexOutOfBoundsException: String index out of range: -4");
+    }
+
+    public void testVbaDateTime() {
+        // function which returns date
+        assertExprReturns("Format(DateSerial(2006, 4, 29), \"Long Date\")", "Saturday, April 29, 2006");
+        // function with date parameter
+        assertExprReturns("Year(DateSerial(2006, 4, 29))", "2,006");
     }
 }
 

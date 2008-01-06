@@ -46,6 +46,8 @@ public class FunInfo implements Comparable<FunInfo> {
     FunInfo(FunDef funDef) {
         this.syntax = funDef.getSyntax();
         this.name = funDef.getName();
+        assert name != null;
+        assert syntax != null;
         this.returnTypes = new int[] { funDef.getReturnCategory() };
         this.parameterTypes = new int[][] { funDef.getParameterCategories() };
 
@@ -60,6 +62,8 @@ public class FunInfo implements Comparable<FunInfo> {
     FunInfo(MultiResolver multiResolver) {
         this.syntax = multiResolver.getSyntax();
         this.name = multiResolver.getName();
+        assert name != null;
+        assert syntax != null;
         this.description = multiResolver.getDescription();
 
         String[] signatures = multiResolver.getSignatures();
@@ -75,6 +79,8 @@ public class FunInfo implements Comparable<FunInfo> {
     FunInfo(Resolver resolver) {
         this.syntax = resolver.getSyntax();
         this.name = resolver.getName();
+        assert name != null;
+        assert syntax != null;
         this.description = resolver.getDescription();
         this.returnTypes = null;
         this.parameterTypes = null;

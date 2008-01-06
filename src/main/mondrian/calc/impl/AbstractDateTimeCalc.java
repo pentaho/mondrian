@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2008-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,40 +11,32 @@ package mondrian.calc.impl;
 
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
-import mondrian.olap.fun.FunUtil;
-import mondrian.olap.type.NumericType;
-import mondrian.calc.IntegerCalc;
-import mondrian.calc.Calc;
+import mondrian.calc.*;
 
 /**
- * Abstract implementation of the {@link mondrian.calc.IntegerCalc} interface.
+ * Abstract implementation of the {@link mondrian.calc.DateTimeCalc} interface.
  *
  * <p>The derived class must
- * implement the {@link #evaluateInteger(mondrian.olap.Evaluator)} method,
+ * implement the {@link #evaluateDateTime(mondrian.olap.Evaluator)} method,
  * and the {@link #evaluate(mondrian.olap.Evaluator)} method will call it.
  *
  * @author jhyde
  * @version $Id$
  * @since Sep 26, 2005
  */
-public abstract class AbstractIntegerCalc
-        extends AbstractCalc
-        implements IntegerCalc {
+public abstract class AbstractDateTimeCalc
+    extends AbstractCalc
+    implements DateTimeCalc
+{
     private final Calc[] calcs;
 
-    protected AbstractIntegerCalc(Exp exp, Calc[] calcs) {
+    protected AbstractDateTimeCalc(Exp exp, Calc[] calcs) {
         super(exp);
         this.calcs = calcs;
-        assert getType() instanceof NumericType;
     }
 
     public Object evaluate(Evaluator evaluator) {
-        int i = evaluateInteger(evaluator);
-        if (i == FunUtil.IntegerNull) {
-            return null;
-        } else {
-            return i;
-        }
+        return evaluateDateTime(evaluator);
     }
 
     public Calc[] getCalcs() {
@@ -52,4 +44,4 @@ public abstract class AbstractIntegerCalc
     }
 }
 
-// End AbstractIntegerCalc.java
+// End AbstractDateTimeCalc.java

@@ -109,6 +109,8 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
         int returnCategory,
         int[] parameterCategories)
     {
+        assert name != null;
+        assert syntax != null;
         this.name = name;
         this.signature = signature;
         this.description = description;
@@ -185,23 +187,31 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
 
     /**
      * Convenience constructor when we are created by a {@link Resolver}.
+     *
+     * @param resolver Resolver
+     * @param returnType Return type
+     * @param parameterTypes Parameter types
      */
     FunDefBase(Resolver resolver, int returnType, int[] parameterTypes) {
-        this(resolver.getName(),
-                null,
-                null,
-                resolver.getSyntax(),
-                returnType,
-                parameterTypes);
+        this(
+            resolver.getName(),
+            null,
+            null,
+            resolver.getSyntax(),
+            returnType,
+            parameterTypes);
     }
 
     /**
      * Copy constructor.
+     *
+     * @param funDef Function definition to copy
      */
     FunDefBase(FunDef funDef) {
-        this(funDef.getName(), funDef.getSignature(),
-                funDef.getDescription(), funDef.getSyntax(),
-                funDef.getReturnCategory(), funDef.getParameterCategories());
+        this(
+            funDef.getName(), funDef.getSignature(),
+            funDef.getDescription(), funDef.getSyntax(),
+            funDef.getReturnCategory(), funDef.getParameterCategories());
     }
 
     public String getName() {
@@ -279,6 +289,8 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
             return new DecimalType(Integer.MAX_VALUE, 0);
         case Category.String:
             return new StringType();
+        case Category.DateTime:
+            return new DateTimeType();
         case Category.Symbol:
             return new SymbolType();
         case Category.Value:
@@ -357,6 +369,7 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
      *
      * @param validator Validator
      * @param args Arguments to the call to this operator
+     * @return result type of a call this function
      */
     public Type getResultType(Validator validator, Exp[] args) {
         Type firstArgType =

@@ -3468,6 +3468,17 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>_CaseTest</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Abs</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a value of the same type
+                            that is passed to it specifying the absolute
+                            value of a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Abs</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>AddCalculatedMembers</FUNCTION_NAME>
                         <DESCRIPTION>Adds calculated members to a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
@@ -3561,6 +3572,26 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>AND</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Asc</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an Integer representing the
+                            character code corresponding to the first
+                            letter in a string.</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Asc</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>AscB</FUNCTION_NAME>
+                        <DESCRIPTION>See Asc.</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>AscB</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Ascendants</FUNCTION_NAME>
                         <DESCRIPTION>Returns the set of the ascendants
                             of a specified member.</DESCRIPTION>
@@ -3569,6 +3600,25 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Ascendants</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>AscW</FUNCTION_NAME>
+                        <DESCRIPTION>See Asc.</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>AscW</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Atn</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            arctangent of a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Atn</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Avg</FUNCTION_NAME>
@@ -3701,6 +3751,36 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Cast</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>CBool</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression that has been
+                            converted to a Variant of subtype Boolean.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>CBool</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>CByte</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression that has been
+                            converted to a Variant of subtype Byte.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>CByte</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>CDbl</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression that has been
+                            converted to a Variant of subtype Double.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>CDbl</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Children</FUNCTION_NAME>
                         <DESCRIPTION>Returns the children of a member.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
@@ -3708,6 +3788,45 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Children</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Chr</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a String containing the
+                            character associated with the specified
+                            character code.</DESCRIPTION>
+                        <PARAMETER_LIST>Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Chr</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>ChrB</FUNCTION_NAME>
+                        <DESCRIPTION>See Chr.</DESCRIPTION>
+                        <PARAMETER_LIST>Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>ChrB</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>ChrW</FUNCTION_NAME>
+                        <DESCRIPTION>See Chr.</DESCRIPTION>
+                        <PARAMETER_LIST>Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>ChrW</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>CInt</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression that has been
+                            converted to a Variant of subtype Integer.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>CInt</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>ClosingPeriod</FUNCTION_NAME>
@@ -3779,6 +3898,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Correlation</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Cos</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            cosine of an angle.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Cos</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Count</FUNCTION_NAME>
@@ -3926,6 +4055,121 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>DataMember</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Date</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Date) containing
+                            the current system date.</DESCRIPTION>
+                        <PARAMETER_LIST/>
+                        <RETURN_TYPE>7</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Date</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DateAdd</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Date) containing
+                            a date to which a specified time interval
+                            has been added.</DESCRIPTION>
+                        <PARAMETER_LIST>String, Numeric Expression, DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>7</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DateAdd</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DateDiff</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Long) specifying
+                            the number of time intervals between two
+                            specified dates.</DESCRIPTION>
+                        <PARAMETER_LIST>String, DateTime, DateTime,
+                            Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DateDiff</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DateDiff</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Long) specifying
+                            the number of time intervals between two
+                            specified dates.</DESCRIPTION>
+                        <PARAMETER_LIST>String, DateTime, DateTime, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DateDiff</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DateDiff</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Long) specifying
+                            the number of time intervals between two
+                            specified dates.</DESCRIPTION>
+                        <PARAMETER_LIST>String, DateTime, DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DateDiff</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DatePart</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            containing the specified part of a given date.</DESCRIPTION>
+                        <PARAMETER_LIST>String, DateTime, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DatePart</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DatePart</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            containing the specified part of a given date.</DESCRIPTION>
+                        <PARAMETER_LIST>String, DateTime, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DatePart</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DatePart</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            containing the specified part of a given date.</DESCRIPTION>
+                        <PARAMETER_LIST>String, DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DatePart</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DateSerial</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Date) for a
+                            specified year, month, and day.</DESCRIPTION>
+                        <PARAMETER_LIST>Integer, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>7</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DateSerial</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DateValue</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Date).</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>7</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DateValue</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Day</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            specifying a whole number between 1 and 31,
+                            inclusive, representing the day of the month.</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Day</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>DefaultMember</FUNCTION_NAME>
@@ -4242,6 +4486,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Except</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Exp</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying e (the
+                            base of natural logarithms) raised to a power.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Exp</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Extract</FUNCTION_NAME>
                         <DESCRIPTION>Returns a set of tuples from
                             extracted dimension elements. The opposite
@@ -4303,7 +4557,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <FUNCTION_NAME>Format</FUNCTION_NAME>
-                        <DESCRIPTION>Formats a number to string.</DESCRIPTION>
+                        <DESCRIPTION>Formats a number or date to a string.</DESCRIPTION>
                         <PARAMETER_LIST>Member, String</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -4312,12 +4566,61 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <FUNCTION_NAME>Format</FUNCTION_NAME>
-                        <DESCRIPTION>Formats a number to string.</DESCRIPTION>
+                        <DESCRIPTION>Formats a number or date to a string.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression, String</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Format</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Format</FUNCTION_NAME>
+                        <DESCRIPTION>Formats a number or date to a string.</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime, String</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Format</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FV</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            future value of an annuity based on
+                            periodic, fixed payments and a fixed
+                            interest rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Logical Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FV</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FV</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            future value of an annuity based on
+                            periodic, fixed payments and a fixed
+                            interest rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FV</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FV</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            future value of an annuity based on
+                            periodic, fixed payments and a fixed
+                            interest rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FV</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Generate</FUNCTION_NAME>
@@ -4416,6 +4719,17 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Hierarchy</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Hour</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            specifying a whole number between 0 and 23,
+                            inclusive, representing the hour of the day.</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Hour</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
@@ -4711,6 +5025,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>LastSibling</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>LCase</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a String that has been
+                            converted to lowercase.</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>LCase</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Lead</FUNCTION_NAME>
                         <DESCRIPTION>Returns a member further along the
                             specified member's dimension.</DESCRIPTION>
@@ -4723,8 +5047,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <FUNCTION_NAME>Left</FUNCTION_NAME>
                         <DESCRIPTION>Returns a specified number of
-                            characters from the left side of a string</DESCRIPTION>
-                        <PARAMETER_LIST>String, Numeric Expression</PARAMETER_LIST>
+                            characters from the left side of a string.</DESCRIPTION>
+                        <PARAMETER_LIST>String, Integer</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -4889,6 +5213,27 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>LinRegVariance</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Log</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            natural logarithm of a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Log</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>LTrim</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (String)
+                            containing a copy of a specified string
+                            without leading spaces.</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>LTrim</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>MATCHES</FUNCTION_NAME>
                         <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
@@ -4976,9 +5321,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <FUNCTION_NAME>Mid</FUNCTION_NAME>
                         <DESCRIPTION>Returns a specified number of
-                            characters from a string</DESCRIPTION>
-                        <PARAMETER_LIST>String, Numeric Expression,
-                            Numeric Expression</PARAMETER_LIST>
+                            characters from a string.</DESCRIPTION>
+                        <PARAMETER_LIST>String, Integer, Integer</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -4986,9 +5330,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <FUNCTION_NAME>Mid</FUNCTION_NAME>
-                        <DESCRIPTION>Returns all the characters starting
-                            from specified index from the string</DESCRIPTION>
-                        <PARAMETER_LIST>String, Numeric Expression</PARAMETER_LIST>
+                        <DESCRIPTION>Returns a specified number of
+                            characters from a string.</DESCRIPTION>
+                        <PARAMETER_LIST>String, Integer</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -5013,6 +5357,38 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Min</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Minute</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            specifying a whole number between 0 and 59,
+                            inclusive, representing the minute of the hour.</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Minute</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Month</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            specifying a whole number between 1 and 12,
+                            inclusive, representing the month of the year.</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Month</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>MonthName</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a string indicating the
+                            specified month.</DESCRIPTION>
+                        <PARAMETER_LIST>Integer, Logical Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>MonthName</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Mtd</FUNCTION_NAME>
@@ -5101,6 +5477,43 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>NOT</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Now</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Date) specifying
+                            the current date and time according your
+                            computer's system date and time.</DESCRIPTION>
+                        <PARAMETER_LIST/>
+                        <RETURN_TYPE>7</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Now</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>NPer</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            number of periods for an annuity based on
+                            periodic, fixed payments and a fixed
+                            interest rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Logical Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>NPer</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>NPV</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the net
+                            present value of an investment based on a
+                            series of periodic cash flows (payments and
+                            receipts) and a discount rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Array</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>NPV</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>NullValue</FUNCTION_NAME>
@@ -5332,6 +5745,19 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>PeriodsToDate</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Pmt</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            payment for an annuity based on periodic,
+                            fixed payments and a fixed interest rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Logical Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Pmt</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>PrevMember</FUNCTION_NAME>
                         <DESCRIPTION>Returns the previous member in the
                             level that contains a specified member.</DESCRIPTION>
@@ -5349,6 +5775,20 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Properties</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>PV</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            present value of an annuity based on
+                            periodic, fixed payments to be paid in the
+                            future and a fixed interest rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Logical Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>PV</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Qtd</FUNCTION_NAME>
@@ -5413,6 +5853,102 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Rank</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Replace</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a string in which a
+                            specified substring has been replaced with
+                            another substring a specified number of times.</DESCRIPTION>
+                        <PARAMETER_LIST>String, String, String, Integer,
+                            Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Replace</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Replace</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a string in which a
+                            specified substring has been replaced with
+                            another substring a specified number of times.</DESCRIPTION>
+                        <PARAMETER_LIST>String, String, String, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Replace</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Replace</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a string in which a
+                            specified substring has been replaced with
+                            another substring a specified number of times.</DESCRIPTION>
+                        <PARAMETER_LIST>String, String, String, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Replace</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Replace</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>String, String, String</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Replace</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Right</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (String)
+                            containing a specified number of characters
+                            from the right side of a string.</DESCRIPTION>
+                        <PARAMETER_LIST>String, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Right</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Round</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a number rounded to a
+                            specified number of decimal places.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Round</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Round</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a number rounded to a
+                            specified number of decimal places.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Round</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>RTrim</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (String)
+                            containing a copy of a specified string
+                            without trailing spaces.</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>RTrim</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Second</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            specifying a whole number between 0 and 59,
+                            inclusive, representing the second of the minute.</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Second</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>SetToStr</FUNCTION_NAME>
                         <DESCRIPTION>Constructs a string from a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
@@ -5420,6 +5956,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>SetToStr</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Sgn</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            indicating the sign of a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Sgn</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Siblings</FUNCTION_NAME>
@@ -5432,6 +5978,36 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Siblings</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Sin</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            sine of an angle.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Sin</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Space</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (String)
+                            consisting of the specified number of spaces.</DESCRIPTION>
+                        <PARAMETER_LIST>Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Space</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Sqr</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            square root of a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Sqr</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Stddev</FUNCTION_NAME>
                         <DESCRIPTION>Alias for Stdev.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
@@ -5506,6 +6082,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>StdevP</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>String</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>String</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>StripCalculatedMembers</FUNCTION_NAME>
@@ -5515,6 +6100,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>StripCalculatedMembers</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>StrReverse</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a string in which the
+                            character order of a specified string is reversed.</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>StrReverse</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>StrToMember</FUNCTION_NAME>
@@ -5601,6 +6196,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Tail</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Tan</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            tangent of an angle.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Tan</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>ThirdQ</FUNCTION_NAME>
                         <DESCRIPTION>Returns the 3rd quartile value of a
                             numeric expression evaluated over a set.</DESCRIPTION>
@@ -5619,6 +6224,46 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>ThirdQ</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Time</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Date) indicating
+                            the current system time.</DESCRIPTION>
+                        <PARAMETER_LIST/>
+                        <RETURN_TYPE>7</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Time</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Timer</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Single representing the
+                            number of seconds elapsed since midnight.</DESCRIPTION>
+                        <PARAMETER_LIST/>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Timer</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>TimeSerial</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Date) containing
+                            the time for a specific hour, minute, and second.</DESCRIPTION>
+                        <PARAMETER_LIST>Integer, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>7</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>TimeSerial</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>TimeValue</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Date) containing
+                            the time.</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>7</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>TimeValue</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>ToggleDrillState</FUNCTION_NAME>
@@ -5685,6 +6330,17 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>TopSum</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Trim</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (String)
+                            containing a copy of a specified string
+                            without leading and trailing spaces.</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Trim</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>TupleToStr</FUNCTION_NAME>
@@ -5888,6 +6544,38 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>VisualTotals</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Weekday</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            containing a whole number representing the
+                            day of the week.</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Weekday</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Weekday</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            containing a whole number representing the
+                            day of the week.</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Weekday</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>WeekdayName</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a string indicating the
+                            specified day of the week.</DESCRIPTION>
+                        <PARAMETER_LIST>Integer, Logical Expression, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>WeekdayName</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Wtd</FUNCTION_NAME>
                         <DESCRIPTION>A shortcut function for the
                             PeriodsToDate function that specifies the
@@ -5918,6 +6606,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>XOR</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Year</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            containing a whole number representing the year.</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Year</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Ytd</FUNCTION_NAME>

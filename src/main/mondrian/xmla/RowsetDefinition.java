@@ -3953,6 +3953,8 @@ TODO: see above
                 case Category.Symbol:
                 case Category.Constant:
                     return String;
+                case Category.DateTime:
+                    return Date;
                 case Category.Integer:
                 case Category.Mask:
                     return Integer;

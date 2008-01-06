@@ -44,10 +44,17 @@ public enum ResultStyle {
 
     /**
      * Indicates that the expression results its result as an immutable
-     * value. This is typical for expressions which return string and
+     * value. This is typical for expressions which return string, datetime and
      * numeric values.
      */
-    VALUE;
+    VALUE,
+
+    /**
+     * Indicates that the expression results its result as an immutable
+     * value which will never be null. This is typical for expressions which
+     * return string, datetime and numeric values.
+     */
+    VALUE_NOT_NULL;
 
     // ---------------------------------------------------------------
     // There follow a set of convenience constants for commonly-used

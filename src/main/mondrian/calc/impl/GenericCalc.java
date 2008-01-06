@@ -13,9 +13,7 @@ import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.calc.*;
 
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Adapter which computes an expression and converts it to any required type.
@@ -27,7 +25,7 @@ import java.util.List;
 public abstract class GenericCalc
     extends AbstractCalc
     implements ListCalc, IterCalc, TupleCalc,
-    StringCalc, IntegerCalc, DoubleCalc, BooleanCalc,
+    StringCalc, IntegerCalc, DoubleCalc, BooleanCalc, DateTimeCalc,
     VoidCalc, MemberCalc, LevelCalc, HierarchyCalc, DimensionCalc
 {
     protected GenericCalc(Exp exp) {
@@ -95,6 +93,10 @@ public abstract class GenericCalc
 
     public boolean evaluateBoolean(Evaluator evaluator) {
         return (Boolean) evaluate(evaluator);
+    }
+
+    public Date evaluateDateTime(Evaluator evaluator) {
+        return (Date) evaluate(evaluator);
     }
 
     public void evaluateVoid(Evaluator evaluator) {

@@ -192,9 +192,17 @@ public class AbstractExpCompiler implements ExpCompiler {
 
     public IntegerCalc compileInteger(Exp exp) {
         final Calc calc = compileScalar(exp, false);
-        if (calc instanceof IntegerCalc) {
+        final Type type = calc.getType();
+        if (type instanceof DecimalType
+            && ((DecimalType) type).getScale() == 0) {
             return (IntegerCalc) calc;
-        } else if (calc instanceof DoubleCalc) {
+        } else if (type instanceof NumericType) {
+            if (calc instanceof ConstantCalc) {
+                ConstantCalc constantCalc = (ConstantCalc) calc;
+                return new ConstantCalc(
+                    new DecimalType(Integer.MAX_VALUE, 0),
+                    constantCalc.evaluateInteger(null));
+            }
             final DoubleCalc doubleCalc = (DoubleCalc) calc;
             return new AbstractIntegerCalc(exp, new Calc[] {doubleCalc}) {
                 public int evaluateInteger(Evaluator evaluator) {
@@ -208,6 +216,10 @@ public class AbstractExpCompiler implements ExpCompiler {
 
     public StringCalc compileString(Exp exp) {
         return (StringCalc) compile(exp);
+    }
+
+    public DateTimeCalc compileDateTime(Exp exp) {
+        return (DateTimeCalc) compile(exp);
     }
 
     public ListCalc compileList(Exp exp) {
@@ -226,15 +238,14 @@ public class AbstractExpCompiler implements ExpCompiler {
         return (IterCalc) compileAs(exp, null, ResultStyle.ITERABLE_ONLY);
     }
 
-    /**
-     * compiles a boolean calc, support for converting 
-     * integers and doubles.
-     * 
-     * @param exp the expression to generate a calc for
-     */
     public BooleanCalc compileBoolean(Exp exp) {
         final Calc calc = compileScalar(exp, false);
         if (calc instanceof BooleanCalc) {
+            if (calc instanceof ConstantCalc
+                && !(calc.evaluate(null) instanceof Boolean)) {
+                return ConstantCalc.constantBoolean(
+                    ((ConstantCalc) calc).evaluateBoolean(null));
+            }
             return (BooleanCalc) calc;
         } else if (calc instanceof DoubleCalc) {
             final DoubleCalc doubleCalc = (DoubleCalc) calc;
@@ -256,14 +267,20 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 
     public DoubleCalc compileDouble(Exp exp) {
-        return (DoubleCalc) compileScalar(exp, false);
+        final DoubleCalc calc = (DoubleCalc) compileScalar(exp, false);
+        if (calc instanceof ConstantCalc
+            && !(calc.evaluate(null) instanceof Double)) {
+            return ConstantCalc.constantDouble(
+                calc.evaluateDouble(null));
+        }
+        return calc;
     }
 
     public TupleCalc compileTuple(Exp exp) {
         return (TupleCalc) compile(exp);
     }
 
-    public Calc compileScalar(Exp exp, boolean convert) {
+    public Calc compileScalar(Exp exp, boolean specific) {
         final Type type = exp.getType();
         if (type instanceof MemberType) {
             MemberType memberType = (MemberType) type;
@@ -299,7 +316,7 @@ public class AbstractExpCompiler implements ExpCompiler {
                     new DummyExp(tupleType.getValueType()), tupleCalc);
             return scalarCalc.optimize();
         } else if (type instanceof ScalarType) {
-            if (convert) {
+            if (specific) {
                 if (type instanceof BooleanType) {
                     return compileBoolean(exp);
                 } else if (type instanceof NumericType) {

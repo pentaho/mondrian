@@ -31,6 +31,11 @@ public class DelegatingExpCompiler implements ExpCompiler {
 
     /**
      * Hook for post-processing.
+     *
+     * @param exp Expression to compile
+     * @param calc Calculator created by compiler
+     * @param mutable Whether the result is mutuable
+     * @return Calculator after post-processing
      */
     protected Calc afterCompile(Exp exp, Calc calc, boolean mutable) {
         return calc;
@@ -84,6 +89,11 @@ public class DelegatingExpCompiler implements ExpCompiler {
     public StringCalc compileString(Exp exp) {
         final StringCalc calc = parent.compileString(exp);
         return (StringCalc) afterCompile(exp, calc, false);
+    }
+
+    public DateTimeCalc compileDateTime(Exp exp) {
+        final DateTimeCalc calc = parent.compileDateTime(exp);
+        return (DateTimeCalc) afterCompile(exp, calc, false);
     }
 
     public ListCalc compileList(Exp exp) {

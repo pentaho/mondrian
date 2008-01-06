@@ -4,7 +4,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == Copyright (C) 2005-2007 Julian Hyde
+  == Copyright (C) 2005-2008 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -111,9 +111,23 @@ For example, the following query finds all employees whose name starts with 'sam
 FROM [HR]</code>
 </blockquote>
 <!--
-########################
-##  Comments       #####
-######################## -->
+#######################
+##  VBA functions #####
+####################### -->
+<h3>Visual Basic for Applications (VBA) functions<a name="VBA_functions">&nbsp;</a></h3>
+
+<p>Since the first implementation of MDX was as part of Microsoft SQL Server 
+OLAP Services, the language inherited the built-in functions available in that 
+environment, namely the Visual Basic for Applications (VBA) specification. This 
+specification includes functions for conversion (CBool, CInt, IsNumber), 
+arithmetic (Tan, Exp), finance (NPer, NPV), and date/time (DatePart, Now). Even 
+though Mondrian cannot interface with Visual Basic, it includes a large number 
+of VBA functions to allow MDX queries written in a Microsoft environment to run 
+unchanged.</p>
+<p>This document describes which VBA functions are available in mondrian; for 
+more detailed descriptions of all VBA functions, see Visual Basic Functions. 
+Note that that document includes some VBA functions which are not implemented in 
+mondrian.</p>
 <h3>Comments<a name="Comments">&nbsp;</a></h3>
 
 <p>MDX statements can contain comments. There are 3 syntactic forms for comments:</p>
@@ -358,6 +372,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Abs</code></td>
+  <td>Returns a value of the same type that is passed to it specifying the absolute value of a number.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Abs(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>AddCalculatedMembers</code></td>
   <td>Adds calculated members to a set.
     <h1>Syntax</h1>
@@ -402,10 +423,38 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Asc</code></td>
+  <td>Returns an Integer representing the character code corresponding to the first letter in a string.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Asc(&lt;String&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>AscB</code></td>
+  <td>See Asc.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; AscB(&lt;String&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>AscW</code></td>
+  <td>See Asc.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; AscW(&lt;String&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Ascendants</code></td>
   <td>Returns the set of the ascendants of a specified member.
     <h1>Syntax</h1>
     &lt;Set&gt; Ascendants(&lt;Member&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Atn</code></td>
+  <td>Returns a Double specifying the arctangent of a number.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Atn(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -436,6 +485,34 @@ FROM [Sales]
   <td>Sorts a set and returns the bottom N elements whose cumulative total is at least a specified value.
     <h1>Syntax</h1>
     &lt;Set&gt; BottomSum(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>CBool</code></td>
+  <td>Returns an expression that has been converted to a Variant of subtype Boolean.
+    <h1>Syntax</h1>
+    &lt;Logical Expression&gt; CBool(&lt;Value&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>CByte</code></td>
+  <td>Returns an expression that has been converted to a Variant of subtype Byte.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; CByte(&lt;Value&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>CDbl</code></td>
+  <td>Returns an expression that has been converted to a Variant of subtype Double.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; CDbl(&lt;Value&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>CInt</code></td>
+  <td>Returns an expression that has been converted to a Variant of subtype Integer.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; CInt(&lt;Value&gt;)
   </td>
 </tr>
 <tr>
@@ -495,6 +572,27 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Chr</code></td>
+  <td>Returns a String containing the character associated with the specified character code.
+    <h1>Syntax</h1>
+    &lt;String&gt; Chr(&lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>ChrB</code></td>
+  <td>See Chr.
+    <h1>Syntax</h1>
+    &lt;String&gt; ChrB(&lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>ChrW</code></td>
+  <td>See Chr.
+    <h1>Syntax</h1>
+    &lt;String&gt; ChrW(&lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>ClosingPeriod</code></td>
   <td>Returns the last descendant of a member at a level.
     <h1>Syntax</h1>
@@ -517,6 +615,13 @@ FROM [Sales]
     <h1>Syntax</h1>
     &lt;Numeric Expression&gt; Correlation(&lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
     &lt;Numeric Expression&gt; Correlation(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Cos</code></td>
+  <td>Returns a Double specifying the cosine of an angle.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Cos(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -607,6 +712,83 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Date</code></td>
+  <td>Returns a Variant (Date) containing the current system date.
+    <h1>Syntax</h1>
+    &lt;DateTime&gt; Date()
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DateAdd</code></td>
+  <td>Returns a Variant (Date) containing a date to which a specified time interval has been added.
+    <h1>Syntax</h1>
+    &lt;DateTime&gt; DateAdd(&lt;String&gt;, &lt;Numeric Expression&gt;, &lt;DateTime&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DateDiff</code></td>
+  <td>Returns a Variant (Long) specifying the number of time intervals between two specified dates.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; DateDiff(&lt;String&gt;, &lt;DateTime&gt;, &lt;DateTime&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DateDiff</code></td>
+  <td>Returns a Variant (Long) specifying the number of time intervals between two specified dates.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; DateDiff(&lt;String&gt;, &lt;DateTime&gt;, &lt;DateTime&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DateDiff</code></td>
+  <td>Returns a Variant (Long) specifying the number of time intervals between two specified dates.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; DateDiff(&lt;String&gt;, &lt;DateTime&gt;, &lt;DateTime&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DatePart</code></td>
+  <td>Returns a Variant (Integer) containing the specified part of a given date.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; DatePart(&lt;String&gt;, &lt;DateTime&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DatePart</code></td>
+  <td>Returns a Variant (Integer) containing the specified part of a given date.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; DatePart(&lt;String&gt;, &lt;DateTime&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DatePart</code></td>
+  <td>Returns a Variant (Integer) containing the specified part of a given date.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; DatePart(&lt;String&gt;, &lt;DateTime&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DateSerial</code></td>
+  <td>Returns a Variant (Date) for a specified year, month, and day.
+    <h1>Syntax</h1>
+    &lt;DateTime&gt; DateSerial(&lt;Integer&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DateValue</code></td>
+  <td>Returns a Variant (Date).
+    <h1>Syntax</h1>
+    &lt;DateTime&gt; DateValue(&lt;DateTime&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Day</code></td>
+  <td>Returns a Variant (Integer) specifying a whole number between 1 and 31, inclusive, representing the day of the month.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Day(&lt;DateTime&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>DefaultMember</code></td>
   <td>Returns the default member of a dimension.
     <h1>Syntax</h1>
@@ -628,7 +810,8 @@ FROM [Sales]
     &lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Level&gt;)<br/>
     &lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Level&gt;, &lt;Symbol&gt;)<br/>
     &lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Numeric Expression&gt;)<br/>
-    &lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Numeric Expression&gt;, &lt;Symbol&gt;)
+    &lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Numeric Expression&gt;, &lt;Symbol&gt;)<br/>
+    &lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Empty&gt;, &lt;Symbol&gt;)
   </td>
 </tr>
 <tr>
@@ -726,10 +909,38 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Exp</code></td>
+  <td>Returns a Double specifying e (the base of natural logarithms) raised to a power.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Exp(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Extract</code></td>
   <td>Returns a set of tuples from extracted dimension elements. The opposite of Crossjoin.
     <h1>Syntax</h1>
     Extract(&lt;Set&gt;, &lt;Dimension&gt;[, &lt;Dimension&gt;...])
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FV</code></td>
+  <td>Returns a Double specifying the future value of an annuity based on periodic, fixed payments and a fixed interest rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; FV(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Logical Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FV</code></td>
+  <td>Returns a Double specifying the future value of an annuity based on periodic, fixed payments and a fixed interest rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; FV(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FV</code></td>
+  <td>Returns a Double specifying the future value of an annuity based on periodic, fixed payments and a fixed interest rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; FV(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -763,10 +974,11 @@ FROM [Sales]
 </tr>
 <tr>
   <td valign=top><code>Format</code></td>
-  <td>Formats a number to string.
+  <td>Formats a number or date to a string.
     <h1>Syntax</h1>
     &lt;String&gt; Format(&lt;Member&gt;, &lt;String&gt;)<br/>
-    &lt;String&gt; Format(&lt;Numeric Expression&gt;, &lt;String&gt;)
+    &lt;String&gt; Format(&lt;Numeric Expression&gt;, &lt;String&gt;)<br/>
+    &lt;String&gt; Format(&lt;DateTime&gt;, &lt;String&gt;)
   </td>
 </tr>
 <tr>
@@ -813,6 +1025,13 @@ FROM [Sales]
   <td>Returns a member&#39;s hierarchy.
     <h1>Syntax</h1>
     &lt;Member&gt;.Hierarchy
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Hour</code></td>
+  <td>Returns a Variant (Integer) specifying a whole number between 0 and 23, inclusive, representing the hour of the day.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Hour(&lt;DateTime&gt;)
   </td>
 </tr>
 <tr>
@@ -910,6 +1129,20 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>LCase</code></td>
+  <td>Returns a String that has been converted to lowercase.
+    <h1>Syntax</h1>
+    &lt;String&gt; LCase(&lt;String&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>LTrim</code></td>
+  <td>Returns a Variant (String) containing a copy of a specified string without leading spaces.
+    <h1>Syntax</h1>
+    &lt;String&gt; LTrim(&lt;String&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Lag</code></td>
   <td>Returns a member further along the specified member&#39;s dimension.
     <h1>Syntax</h1>
@@ -947,9 +1180,9 @@ FROM [Sales]
 </tr>
 <tr>
   <td valign=top><code>Left</code></td>
-  <td>Returns a specified number of characters from the left side of a string
+  <td>Returns a specified number of characters from the left side of a string.
     <h1>Syntax</h1>
-    &lt;String&gt; Left(&lt;String&gt;, &lt;Numeric Expression&gt;)
+    &lt;String&gt; Left(&lt;String&gt;, &lt;Integer&gt;)
   </td>
 </tr>
 <tr>
@@ -971,6 +1204,13 @@ FROM [Sales]
   <td>Returns the level whose position in a hierarchy is specified by a numeric expression.
     <h1>Syntax</h1>
     &lt;Level&gt; &lt;Hierarchy&gt;.Levels(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Levels</code></td>
+  <td>Returns the level whose name is specified by a string expression.
+    <h1>Syntax</h1>
+    &lt;Level&gt; &lt;Hierarchy&gt;.Levels(&lt;String&gt;)
   </td>
 </tr>
 <tr>
@@ -1021,17 +1261,18 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Log</code></td>
+  <td>Returns a Double specifying the natural logarithm of a number.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Log(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Max</code></td>
   <td>Returns the maximum value of a numeric expression evaluated over a set.
     <h1>Syntax</h1>
     &lt;Numeric Expression&gt; Max(&lt;Set&gt;)<br/>
     &lt;Numeric Expression&gt; Max(&lt;Set&gt;, &lt;Numeric Expression&gt;)
-  </td>
-</tr>
-<tr>
-  <td valign=top>MATCHES</td>
-  <td>Returns whether an expression matches a regular expression.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; MATCHES &lt;String&gt;</code><br/>
   </td>
 </tr>
 <tr>
@@ -1072,16 +1313,16 @@ FROM [Sales]
 </tr>
 <tr>
   <td valign=top><code>Mid</code></td>
-  <td>Returns a specified number of characters from a string
+  <td>Returns a specified number of characters from a string.
     <h1>Syntax</h1>
-    &lt;String&gt; Mid(&lt;String&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+    &lt;String&gt; Mid(&lt;String&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
   </td>
 </tr>
 <tr>
   <td valign=top><code>Mid</code></td>
-  <td>Returns all the characters starting from specified index from the string
+  <td>Returns a specified number of characters from a string.
     <h1>Syntax</h1>
-    &lt;String&gt; Mid(&lt;String&gt;, &lt;Numeric Expression&gt;)
+    &lt;String&gt; Mid(&lt;String&gt;, &lt;Integer&gt;)
   </td>
 </tr>
 <tr>
@@ -1090,6 +1331,27 @@ FROM [Sales]
     <h1>Syntax</h1>
     &lt;Numeric Expression&gt; Min(&lt;Set&gt;)<br/>
     &lt;Numeric Expression&gt; Min(&lt;Set&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Minute</code></td>
+  <td>Returns a Variant (Integer) specifying a whole number between 0 and 59, inclusive, representing the minute of the hour.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Minute(&lt;DateTime&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Month</code></td>
+  <td>Returns a Variant (Integer) specifying a whole number between 1 and 12, inclusive, representing the month of the year.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Month(&lt;DateTime&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>MonthName</code></td>
+  <td>Returns a string indicating the specified month.
+    <h1>Syntax</h1>
+    &lt;String&gt; MonthName(&lt;Integer&gt;, &lt;Logical Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -1108,22 +1370,24 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>NPV</code></td>
+  <td>Returns a Double specifying the net present value of an investment based on a series of periodic cash flows (payments and receipts) and a discount rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; NPV(&lt;Numeric Expression&gt;, &lt;Array&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>NPer</code></td>
+  <td>Returns a Double specifying the number of periods for an annuity based on periodic, fixed payments and a fixed interest rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; NPer(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Logical Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Name</code></td>
   <td>Returns the name of a dimension.
     <h1>Syntax</h1>
     &lt;Dimension&gt;.Name
-  </td>
-</tr>
-<tr>
-  <td valign=top>NOT IN</td>
-  <td>Returns whether a member is not contained in a set.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; NOT IN &lt;Set&gt;</code><br/>
-  </td>
-</tr>
-<tr>
-  <td valign=top>NOT MATCHES</td> 
-  <td>Returns whether an expression does not match a regular expression.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; NOT MATCHES &lt;String&gt;</code><br/>
   </td>
 </tr>
 <tr>
@@ -1162,6 +1426,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Now</code></td>
+  <td>Returns a Variant (Date) specifying the current date and time according your computer&#39;s system date and time.
+    <h1>Syntax</h1>
+    &lt;DateTime&gt; Now()
+  </td>
+</tr>
+<tr>
   <td valign=top><code>OR</code></td>
   <td>Returns the disjunction of two conditions.
     <h1>Syntax</h1>
@@ -1190,6 +1461,13 @@ FROM [Sales]
   <td>Returns the zero-based ordinal value associated with a level.
     <h1>Syntax</h1>
     &lt;Level&gt;.Ordinal
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>PV</code></td>
+  <td>Returns a Double specifying the present value of an annuity based on periodic, fixed payments to be paid in the future and a fixed interest rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; PV(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Logical Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -1238,6 +1516,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Pmt</code></td>
+  <td>Returns a Double specifying the payment for an annuity based on periodic, fixed payments and a fixed interest rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Pmt(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Logical Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>PrevMember</code></td>
   <td>Returns the previous member in the level that contains a specified member.
     <h1>Syntax</h1>
@@ -1260,6 +1545,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>RTrim</code></td>
+  <td>Returns a Variant (String) containing a copy of a specified string without trailing spaces.
+    <h1>Syntax</h1>
+    &lt;String&gt; RTrim(&lt;String&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Rank</code></td>
   <td>Returns the one-based rank of a tuple in a set.
     <h1>Syntax</h1>
@@ -1270,6 +1562,62 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Replace</code></td>
+  <td>Returns a string in which a specified substring has been replaced with another substring a specified number of times.
+    <h1>Syntax</h1>
+    &lt;String&gt; Replace(&lt;String&gt;, &lt;String&gt;, &lt;String&gt;, &lt;Integer&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Replace</code></td>
+  <td>Returns a string in which a specified substring has been replaced with another substring a specified number of times.
+    <h1>Syntax</h1>
+    &lt;String&gt; Replace(&lt;String&gt;, &lt;String&gt;, &lt;String&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Replace</code></td>
+  <td>Returns a string in which a specified substring has been replaced with another substring a specified number of times.
+    <h1>Syntax</h1>
+    &lt;String&gt; Replace(&lt;String&gt;, &lt;String&gt;, &lt;String&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Replace</code></td>
+  <td>
+    <h1>Syntax</h1>
+    &lt;String&gt; Replace(&lt;String&gt;, &lt;String&gt;, &lt;String&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Right</code></td>
+  <td>Returns a Variant (String) containing a specified number of characters from the right side of a string.
+    <h1>Syntax</h1>
+    &lt;String&gt; Right(&lt;String&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Round</code></td>
+  <td>Returns a number rounded to a specified number of decimal places.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Round(&lt;Numeric Expression&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Round</code></td>
+  <td>Returns a number rounded to a specified number of decimal places.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Round(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Second</code></td>
+  <td>Returns a Variant (Integer) specifying a whole number between 0 and 59, inclusive, representing the second of the minute.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Second(&lt;DateTime&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>SetToStr</code></td>
   <td>Constructs a string from a set.
     <h1>Syntax</h1>
@@ -1277,10 +1625,38 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Sgn</code></td>
+  <td>Returns a Variant (Integer) indicating the sign of a number.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Sgn(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Siblings</code></td>
   <td>Returns the siblings of a specified member, including the member itself.
     <h1>Syntax</h1>
     &lt;Member&gt;.Siblings
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Sin</code></td>
+  <td>Returns a Double specifying the sine of an angle.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Sin(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Space</code></td>
+  <td>Returns a Variant (String) consisting of the specified number of spaces.
+    <h1>Syntax</h1>
+    &lt;String&gt; Space(&lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Sqr</code></td>
+  <td>Returns a Double specifying the square root of a number.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Sqr(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -1316,6 +1692,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>StrReverse</code></td>
+  <td>Returns a string in which the character order of a specified string is reversed.
+    <h1>Syntax</h1>
+    &lt;String&gt; StrReverse(&lt;String&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>StrToMember</code></td>
   <td>Returns a member from a unique name String in MDX format.
     <h1>Syntax</h1>
@@ -1334,6 +1717,13 @@ FROM [Sales]
   <td>Constructs a tuple from a string.
     <h1>Syntax</h1>
     &lt;Tuple&gt; StrToTuple(&lt;String&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>String</code></td>
+  <td>
+    <h1>Syntax</h1>
+    &lt;String&gt; String(&lt;Integer&gt;, &lt;Integer&gt;)
   </td>
 </tr>
 <tr>
@@ -1368,11 +1758,46 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Tan</code></td>
+  <td>Returns a Double specifying the tangent of an angle.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Tan(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>ThirdQ</code></td>
   <td>Returns the 3rd quartile value of a numeric expression evaluated over a set.
     <h1>Syntax</h1>
     &lt;Numeric Expression&gt; ThirdQ(&lt;Set&gt;)<br/>
     &lt;Numeric Expression&gt; ThirdQ(&lt;Set&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Time</code></td>
+  <td>Returns a Variant (Date) indicating the current system time.
+    <h1>Syntax</h1>
+    &lt;DateTime&gt; Time()
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>TimeSerial</code></td>
+  <td>Returns a Variant (Date) containing the time for a specific hour, minute, and second.
+    <h1>Syntax</h1>
+    &lt;DateTime&gt; TimeSerial(&lt;Integer&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>TimeValue</code></td>
+  <td>Returns a Variant (Date) containing the time.
+    <h1>Syntax</h1>
+    &lt;DateTime&gt; TimeValue(&lt;DateTime&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Timer</code></td>
+  <td>Returns a Single representing the number of seconds elapsed since midnight.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Timer()
   </td>
 </tr>
 <tr>
@@ -1403,6 +1828,13 @@ FROM [Sales]
   <td>Sorts a set and returns the top N elements whose cumulative total is at least a specified value.
     <h1>Syntax</h1>
     &lt;Set&gt; TopSum(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Trim</code></td>
+  <td>Returns a Variant (String) containing a copy of a specified string without leading and trailing spaces.
+    <h1>Syntax</h1>
+    &lt;String&gt; Trim(&lt;String&gt;)
   </td>
 </tr>
 <tr>
@@ -1510,6 +1942,27 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Weekday</code></td>
+  <td>Returns a Variant (Integer) containing a whole number representing the day of the week.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Weekday(&lt;DateTime&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Weekday</code></td>
+  <td>Returns a Variant (Integer) containing a whole number representing the day of the week.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Weekday(&lt;DateTime&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>WeekdayName</code></td>
+  <td>Returns a string indicating the specified day of the week.
+    <h1>Syntax</h1>
+    &lt;String&gt; WeekdayName(&lt;Integer&gt;, &lt;Logical Expression&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Wtd</code></td>
   <td>A shortcut function for the PeriodsToDate function that specifies the level to be Week.
     <h1>Syntax</h1>
@@ -1522,6 +1975,13 @@ FROM [Sales]
   <td>Returns whether two conditions are mutually exclusive.
     <h1>Syntax</h1>
     &lt;Logical Expression&gt; XOR &lt;Logical Expression&gt;
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Year</code></td>
+  <td>Returns a Variant (Integer) containing a whole number representing the year.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Year(&lt;DateTime&gt;)
   </td>
 </tr>
 <tr>
@@ -1565,9 +2025,9 @@ FROM [Sales]
 <br />
 
 <p>
-    Author: Julian Hyde; last modified November 2007.<br/>
+    Author: Julian Hyde; last modified January 2008.<br/>
     Version: $Id$ (<a href="http://p4web.eigenbase.org/open/mondrian/doc/mdx.html?ac=22">log</a>)<br/>
-    Copyright (C) 2005-2007 Julian Hyde
+    Copyright (C) 2005-2008 Julian Hyde
 </p>
 
 <br />

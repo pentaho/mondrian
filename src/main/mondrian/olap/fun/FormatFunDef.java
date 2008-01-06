@@ -13,9 +13,7 @@ import mondrian.olap.FunDef;
 import mondrian.olap.Exp;
 import mondrian.olap.Literal;
 import mondrian.olap.Evaluator;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.StringCalc;
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractStringCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.util.Format;
@@ -32,9 +30,9 @@ import java.util.Locale;
 class FormatFunDef extends FunDefBase {
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
             "Format",
-            "Format(<Numeric Expression>, <String Expression>)",
-            "Formats a number to string.",
-            new String[] { "fSmS", "fSnS" },
+            "Format(<Expression>, <String Expression>)",
+            "Formats a number or date to a string.",
+            new String[] { "fSmS", "fSnS", "fSDS" },
             FormatFunDef.class);
 
     public FormatFunDef(FunDef dummyFunDef) {
@@ -70,9 +68,8 @@ class FormatFunDef extends FunDefBase {
                     return format.format(o);
                 }
             };
-
         }
-    };
+    }
 }
 
 // End FormatFunDef.java

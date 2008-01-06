@@ -107,6 +107,12 @@ public interface ExpCompiler {
     StringCalc compileString(Exp exp);
 
     /**
+     * Compiles an expression which yields a {@link java.util.Date} result.
+     * The expression is implicitly converted into a scalar.
+     */
+    DateTimeCalc compileDateTime(Exp exp);
+
+    /**
      * Compiles an expression which yields an immutable {@link java.util.List}
      * result.
      *

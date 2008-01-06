@@ -1,0 +1,854 @@
+/*
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2007-2007 Julian Hyde
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
+package mondrian.olap.fun.vba;
+
+import junit.framework.TestCase;
+
+import java.util.*;
+import java.text.SimpleDateFormat;
+
+/**
+ * Unit tests for implementations of Visual Basic for Applications (VBA)
+ * functions.
+ *
+ * <p>Every function defined in {@link Vba} must have a test here. In addition,
+ * there should be MDX tests (usually in
+ * {@link mondrian.olap.fun.FunctionTest}) if handling of argument types,
+ * result types, operator overloading, exception handling or null handling
+ * are non-trivial.
+ *
+ * @author jhyde
+ * @version $Id$
+ * @since Dec 31, 2007
+ */
+public class VbaTest extends TestCase {
+    private static final double SMALL = 1e-10d;
+    private static final Date SAMPLE_DATE = sampleDate();
+
+    // Conversion functions
+
+    public void testCBool() {
+        assertEquals(true, Vba.cBool(Boolean.TRUE)); // not quite to spec
+        assertEquals(false, Vba.cBool(Boolean.FALSE)); // not quite to spec
+        assertEquals(true, Vba.cBool(1.5));
+        assertEquals(true, Vba.cBool("1.5"));
+        assertEquals(false, Vba.cBool("0.00"));
+        try {
+            Object o = Vba.cBool("a");
+            fail("expected error, got " + o);
+        } catch (RuntimeException e) {
+            assertMessage(e, "NumberFormatException");
+        }
+        // Per the spec, the string "true" is no different from any other
+        try {
+            Object o = Vba.cBool("true");
+            fail("expected error, got " + o);
+        } catch (RuntimeException e) {
+            assertMessage(e, "NumberFormatException");
+        }
+    }
+
+    private void assertMessage(RuntimeException e, final String expected) {
+        final String message = e.getClass().getName() + ": " + e.getMessage();
+        assertTrue(
+            "expected message to contain '" + expected + "', got '"
+                + message + "'",
+            message.indexOf(expected) >= 0);
+    }
+
+    public void testCInt() {
+        assertEquals(1, Vba.cInt(1));
+        assertEquals(1, Vba.cInt(1.4));
+        // CInt rounds to the nearest even number
+        assertEquals(2, Vba.cInt(1.5));
+        assertEquals(2, Vba.cInt(2.5));
+        assertEquals(2, Vba.cInt(1.6));
+        assertEquals(-1, Vba.cInt(-1.4));
+        assertEquals(-2, Vba.cInt(-1.5));
+        assertEquals(-2, Vba.cInt(-1.6));
+        assertEquals(Integer.MAX_VALUE, Vba.cInt((double) Integer.MAX_VALUE));
+        assertEquals(Integer.MIN_VALUE, Vba.cInt((double) Integer.MIN_VALUE));
+        assertEquals(
+            Short.MAX_VALUE, Vba.cInt(((float) Short.MAX_VALUE) + .4));
+        assertEquals(
+            Short.MIN_VALUE, Vba.cInt(((float) Short.MIN_VALUE) + .4));
+        try {
+            Object o = Vba.cInt("a");
+            fail("expected error, got " + o);
+        } catch (RuntimeException e) {
+            assertMessage(e, "NumberFormatException");
+        }
+    }
+
+    // DateTime
+
+    public void testDateAdd() {
+        assertEquals("2008/04/24 19:10:45", SAMPLE_DATE);
+
+        // 2008-02-01 0:00:00
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(2007, 1 /* 0-based! */, 1, 0, 0, 0);
+        final Date feb2007 = calendar.getTime();
+        assertEquals("2007/02/01 00:00:00", feb2007);
+
+        assertEquals("2008/04/24 19:10:45", Vba.dateAdd("yyyy", 0, SAMPLE_DATE));
+        assertEquals("2009/04/24 19:10:45", Vba.dateAdd("yyyy", 1, SAMPLE_DATE));
+        assertEquals("2006/04/24 19:10:45", Vba.dateAdd("yyyy", -2, SAMPLE_DATE));
+        // partial years interpolate
+        assertEquals("2010/10/24 07:10:45", Vba.dateAdd("yyyy", 2.5, SAMPLE_DATE));
+        assertEquals("2009/01/24 19:10:45", Vba.dateAdd("q", 3, SAMPLE_DATE));
+
+        // partial months are interesting!
+        assertEquals("2008/06/24 19:10:45", Vba.dateAdd("m", 2, SAMPLE_DATE));
+        assertEquals("2007/01/01 00:00:00", Vba.dateAdd("m", -1, feb2007));
+        assertEquals("2007/03/01 00:00:00", Vba.dateAdd("m", 1, feb2007));
+        assertEquals("2007/02/08 00:00:00", Vba.dateAdd("m", .25, feb2007));
+        // feb 2008 is a leap month, so a quarter month is 7.25 days
+        assertEquals("2008/02/08 06:00:00", Vba.dateAdd("m", 12.25, feb2007));
+
+        assertEquals("2008/05/01 19:10:45", Vba.dateAdd("y", 7, SAMPLE_DATE));
+        assertEquals("2008/05/02 01:10:45", Vba.dateAdd("y", 7.25, SAMPLE_DATE));
+        assertEquals("2008/04/24 23:10:45", Vba.dateAdd("h", 4, SAMPLE_DATE));
+        assertEquals("2008/04/24 20:00:45", Vba.dateAdd("n", 50, SAMPLE_DATE));
+        assertEquals("2008/04/24 19:10:36", Vba.dateAdd("s", -9, SAMPLE_DATE));
+    }
+
+    public void testDateDiff() {
+        // TODO:
+    }
+
+    public void testDatePart2() {
+        assertEquals(2008, Vba.datePart("yyyy", SAMPLE_DATE));
+        assertEquals(2, Vba.datePart("q", SAMPLE_DATE)); // 2nd quarter
+        assertEquals(4, Vba.datePart("m", SAMPLE_DATE));
+        assertEquals(5, Vba.datePart("w", SAMPLE_DATE)); // thursday
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE));
+        assertEquals(115, Vba.datePart("y", SAMPLE_DATE));
+        assertEquals(19, Vba.datePart("h", SAMPLE_DATE));
+        assertEquals(10, Vba.datePart("n", SAMPLE_DATE));
+        assertEquals(45, Vba.datePart("s", SAMPLE_DATE));
+    }
+
+    public void testDatePart3() {
+        assertEquals(5, Vba.datePart("w", SAMPLE_DATE, Calendar.SUNDAY));
+        assertEquals(4, Vba.datePart("w", SAMPLE_DATE, Calendar.MONDAY));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.SUNDAY));
+        assertEquals(18, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY));
+        assertEquals(18, Vba.datePart("ww", SAMPLE_DATE, Calendar.THURSDAY));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.FRIDAY));
+    }
+
+    public void testDatePart4() {
+        // 2008 starts on a Tuesday
+        // 2008-04-29 is a Thursday
+        // That puts it in week 17 by most ways of computing weeks
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.SUNDAY, 0));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.SUNDAY, 1));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.SUNDAY, 2));
+        assertEquals(16, Vba.datePart("ww", SAMPLE_DATE, Calendar.SUNDAY, 3));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.MONDAY, 0));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.MONDAY, 1));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.MONDAY, 2));
+        assertEquals(16, Vba.datePart("ww", SAMPLE_DATE, Calendar.MONDAY, 3));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.TUESDAY, 0));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.TUESDAY, 1));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.TUESDAY, 2));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.TUESDAY, 3));
+        assertEquals(18, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY, 0));
+        assertEquals(18, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY, 1));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY, 2));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY, 3));
+        assertEquals(18, Vba.datePart("ww", SAMPLE_DATE, Calendar.THURSDAY, 0));
+        assertEquals(18, Vba.datePart("ww", SAMPLE_DATE, Calendar.THURSDAY, 1));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.THURSDAY, 2));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.THURSDAY, 3));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.FRIDAY, 0));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.FRIDAY, 1));
+        assertEquals(16, Vba.datePart("ww", SAMPLE_DATE, Calendar.FRIDAY, 2));
+        assertEquals(16, Vba.datePart("ww", SAMPLE_DATE, Calendar.FRIDAY, 3));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.SATURDAY, 0));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.SATURDAY, 1));
+        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.SATURDAY, 2));
+        assertEquals(16, Vba.datePart("ww", SAMPLE_DATE, Calendar.SATURDAY, 3));
+        try {
+            int i = Vba.datePart("ww", SAMPLE_DATE, Calendar.SUNDAY, 4);
+            fail("expected error, got " + i);
+        } catch (RuntimeException e) {
+            assertMessage(e, "ArrayIndexOutOfBoundsException");
+        }
+    }
+
+    public void testDate() {
+        final Date date = Vba.date();
+        assertNotNull(date);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        assertEquals(0, calendar.get(Calendar.HOUR_OF_DAY));
+        assertEquals(0, calendar.get(Calendar.MILLISECOND));
+    }
+
+    public void testDateSerial() {
+        final Date date = Vba.dateSerial(2008, 2, 1);
+        assertEquals("2008/02/01 00:00:00", date);
+    }
+
+    private void assertEquals(
+        String expected,
+        Date date)
+    {
+        final SimpleDateFormat dateFormat =
+            new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US);
+        final String dateString = dateFormat.format(date);
+        assertEquals(expected, dateString);
+    }
+
+    public void testDateValue() {
+        Date date = new Date();
+        final Date date1 = Vba.dateValue(date);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date1);
+        assertEquals(0, calendar.get(Calendar.HOUR_OF_DAY));
+        assertEquals(0, calendar.get(Calendar.MINUTE));
+        assertEquals(0, calendar.get(Calendar.SECOND));
+        assertEquals(0, calendar.get(Calendar.MILLISECOND));
+    }
+
+    private static Date sampleDate() {
+        Calendar calendar = Calendar.getInstance();
+        // Thursday 2008-04-24 7:10:45pm
+        // Chose a Thursday because 2008 starts on a Tuesday - it makes weeks
+        // interesting.
+        calendar.set(2008, 3 /* 0-based! */, 24, 19, 10, 45);
+        return calendar.getTime();
+    }
+
+    public void testDay() {
+        assertEquals(24, Vba.day(SAMPLE_DATE));
+    }
+
+    public void testHour() {
+        assertEquals(19, Vba.hour(SAMPLE_DATE));
+    }
+
+    public void testMinute() {
+        assertEquals(10, Vba.minute(SAMPLE_DATE));
+    }
+
+    public void testMonth() {
+        assertEquals(4, Vba.month(SAMPLE_DATE));
+    }
+
+    public void testNow() {
+        final Date date = Vba.now();
+        assertNotNull(date);
+    }
+
+    public void testSecond() {
+        assertEquals(45, Vba.second(SAMPLE_DATE));
+    }
+
+    public void testTimeSerial() {
+        final Date date = Vba.timeSerial(17, 42, 10);
+        assertEquals("1970/01/01 17:42:10", date);
+    }
+
+    public void testTimeValue() {
+        assertEquals("1970/01/01 19:10:45", Vba.timeValue(SAMPLE_DATE));
+    }
+
+    public void testTimer() {
+        final float v = Vba.timer();
+        assertTrue(v >= 0);
+        assertTrue(v < 24 * 60 * 60);
+    }
+
+    public void testWeekday1() {
+        if (Calendar.getInstance().getFirstDayOfWeek() == Calendar.SUNDAY) {
+            assertEquals(Calendar.THURSDAY, Vba.weekday(SAMPLE_DATE));
+        }
+    }
+
+    public void testWeekday2() {
+        // 2008/4/24 falls on a Thursday.
+
+        // If Sunday is the first day of the week, Thursday is day 5.
+        assertEquals(5, Vba.weekday(SAMPLE_DATE, Calendar.SUNDAY));
+
+        // If Monday is the first day of the week, then 2008/4/24 falls on the
+        // 4th day of the week
+        assertEquals(4, Vba.weekday(SAMPLE_DATE, Calendar.MONDAY));
+
+        assertEquals(3, Vba.weekday(SAMPLE_DATE, Calendar.TUESDAY));
+        assertEquals(2, Vba.weekday(SAMPLE_DATE, Calendar.WEDNESDAY));
+        assertEquals(1, Vba.weekday(SAMPLE_DATE, Calendar.THURSDAY));
+        assertEquals(7, Vba.weekday(SAMPLE_DATE, Calendar.FRIDAY));
+        assertEquals(6, Vba.weekday(SAMPLE_DATE, Calendar.SATURDAY));
+    }
+
+    public void testYear() {
+        assertEquals(2008, Vba.year(SAMPLE_DATE));
+    }
+
+    // Financial
+
+    public void testFv() {
+        double f, r, y, p, x;
+        int n;
+        boolean t;
+
+        r = 0;
+        n = 3;
+        y = 2;
+        p = 7;
+        t = true;
+        f = Vba.fV(r, n, y, p, t);
+        x = -13;
+        assertEquals(x, f);
+
+        r = 1;
+        n = 10;
+        y = 100;
+        p = 10000;
+        t = false;
+        f = Vba.fV(r, n, y, p, t);
+        x = -10342300;
+        assertEquals(x, f);
+
+        r = 1;
+        n = 10;
+        y = 100;
+        p = 10000;
+        t = true;
+        f = Vba.fV(r, n, y, p, t);
+        x = -10444600;
+        assertEquals(x, f);
+
+        r = 2;
+        n = 12;
+        y = 120;
+        p = 12000;
+        t = false;
+        f = Vba.fV(r, n, y, p, t);
+        x = -6409178400d;
+        assertEquals(x, f);
+
+        r = 2;
+        n = 12;
+        y = 120;
+        p = 12000;
+        t = true;
+        f = Vba.fV(r, n, y, p, t);
+        x = -6472951200d;
+        assertEquals(x, f);
+
+        // cross tests with pv
+        r = 2.95;
+        n = 13;
+        y = 13000;
+        p = -4406.78544294496;
+        t = false;
+        f = Vba.fV(r, n, y, p, t);
+        x = 333891.230010986; // as returned by excel
+        assertEquals(x, f, 1e-2);
+
+        r = 2.95;
+        n = 13;
+        y = 13000;
+        p = -17406.7852148156;
+        t = true;
+        f = Vba.fV(r, n, y, p, t);
+        x = 333891.230102539; // as returned by excel
+        assertEquals(x, f, 1e-2);
+    }
+
+    public void testNpv() {
+        double r, v[], npv, x;
+
+        r = 1;
+        v = new double[] {100, 200, 300, 400};
+        npv = Vba.nPV(r, v);
+        x = 162.5;
+        assertEquals(x, npv);
+
+        r = 2.5;
+        v = new double[] {1000, 666.66666, 333.33, 12.2768416};
+        npv = Vba.nPV(r, v);
+        x = 347.99232604144827;
+        assertEquals(x, npv, SMALL);
+
+        r = 12.33333;
+        v = new double[] {1000, 0, -900, -7777.5765};
+        npv = Vba.nPV(r, v);
+        x = 74.3742433377061;
+        assertEquals(x, npv, 1e-12);
+
+        r = 0.05;
+        v = new double[] {
+            200000, 300000.55, 400000, 1000000, 6000000, 7000000, -300000
+        };
+        npv = Vba.nPV(r, v);
+        x = 11342283.4233124;
+        assertEquals(x, npv, 1e-8);
+    }
+
+    public void testPmt() {
+        double f, r, y, p, x;
+        int n;
+        boolean t;
+
+        r = 0;
+        n = 3;
+        p = 2;
+        f = 7;
+        t = true;
+        y = Vba.pmt(r, n, p, f, t);
+        x = -3;
+        assertEquals(x, y);
+
+        // cross check with pv
+        r = 1;
+        n = 10;
+        p = -109.66796875;
+        f = 10000;
+        t = false;
+        y = Vba.pmt(r, n, p, f, t);
+        x = 100;
+        assertEquals(x, y);
+
+        r = 1;
+        n = 10;
+        p = -209.5703125;
+        f = 10000;
+        t = true;
+        y = Vba.pmt(r, n, p, f, t);
+        x = 100;
+        assertEquals(x, y);
+
+        // cross check with fv
+        r = 2;
+        n = 12;
+        f = -6409178400d;
+        p = 12000;
+        t = false;
+        y = Vba.pmt(r, n, p, f, t);
+        x = 120;
+        assertEquals(x, y);
+
+        r = 2;
+        n = 12;
+        f = -6472951200d;
+        p = 12000;
+        t = true;
+        y = Vba.pmt(r, n, p, f, t);
+        x = 120;
+        assertEquals(x, y);
+    }
+
+    public void testPv() {
+        double f, r, y, p, x;
+        int n;
+        boolean t;
+
+        r = 0;
+        n = 3;
+        y = 2;
+        f = 7;
+        t = true;
+        f = Vba.pV(r, n, y, f, t);
+        x = -13;
+        assertEquals(x, f);
+
+        r = 1;
+        n = 10;
+        y = 100;
+        f = 10000;
+        t = false;
+        p = Vba.pV(r, n, y, f, t);
+        x = -109.66796875;
+        assertEquals(x, p);
+
+        r = 1;
+        n = 10;
+        y = 100;
+        f = 10000;
+        t = true;
+        p = Vba.pV(r, n, y, f, t);
+        x = -209.5703125;
+        assertEquals(x, p);
+
+        r = 2.95;
+        n = 13;
+        y = 13000;
+        f = 333891.23;
+        t = false;
+        p = Vba.pV(r, n, y, f, t);
+        x = -4406.78544294496;
+        assertEquals(x, p, 1e-10);
+
+        r = 2.95;
+        n = 13;
+        y = 13000;
+        f = 333891.23;
+        t = true;
+        p = Vba.pV(r, n, y, f, t);
+        x = -17406.7852148156;
+        assertEquals(x, p, 1e-10);
+
+        // cross tests with fv
+        r = 2;
+        n = 12;
+        y = 120;
+        f = -6409178400d;
+        t = false;
+        p = Vba.pV(r, n, y, f, t);
+        x = 12000;
+        assertEquals(x, p);
+
+        r = 2;
+        n = 12;
+        y = 120;
+        f = -6472951200d;
+        t = true;
+        p = Vba.pV(r, n, y, f, t);
+        x = 12000;
+        assertEquals(x, p);
+    }
+
+    public void testNper() {
+        double f, r, y, p, x, n;
+        boolean t;
+
+        r = 0;
+        y = 7;
+        p = 2;
+        f = 3;
+        t = false;
+        n = Vba.nPer(r, y, p, f, t);
+        x =
+            -0.71428571429; // can you believe it? excel returns nper as a fraction!??
+        assertEquals(x, n, 1e-10);
+
+        // cross check with pv
+        r = 1;
+        y = 100;
+        p = -109.66796875;
+        f = 10000;
+        t = false;
+        n = Vba.nPer(r, y, p, f, t);
+        x = 10;
+        assertEquals(x, n, 1e-12);
+
+        r = 1;
+        y = 100;
+        p = -209.5703125;
+        f = 10000;
+        t = true;
+        n = Vba.nPer(r, y, p, f, t);
+        x = 10;
+        assertEquals(x, n, 1e-14);
+
+        // cross check with fv
+        r = 2;
+        y = 120;
+        f = -6409178400d;
+        p = 12000;
+        t = false;
+        n = Vba.nPer(r, y, p, f, t);
+        x = 12;
+        assertEquals(x, n, SMALL);
+
+        r = 2;
+        y = 120;
+        f = -6472951200d;
+        p = 12000;
+        t = true;
+        n = Vba.nPer(r, y, p, f, t);
+        x = 12;
+        assertEquals(x, n, SMALL);
+    }
+
+    // String functions
+
+    public void testAsc() {
+        assertEquals(0x61, Vba.asc("abc"));
+        assertEquals(0x1234, Vba.asc("\u1234abc"));
+        try {
+            Object o = Vba.asc("");
+            fail("expected error, got " + o);
+        } catch (RuntimeException e) {
+            assertMessage(e, "StringIndexOutOfBoundsException");
+        }
+    }
+
+    public void testAscB() {
+        assertEquals(0x61, Vba.ascB("abc"));
+        assertEquals(0x34, Vba.ascB("\u1234abc")); // not sure about this
+        try {
+            Object o = Vba.ascB("");
+            fail("expected error, got " + o);
+        } catch (RuntimeException e) {
+            assertMessage(e, "StringIndexOutOfBoundsException");
+        }
+    }
+
+    public void testAscW() {
+        // ascW behaves identically to asc
+        assertEquals(0x61, Vba.ascW("abc"));
+        assertEquals(0x1234, Vba.ascW("\u1234abc"));
+        try {
+            Object o = Vba.ascW("");
+            fail("expected error, got " + o);
+        } catch (RuntimeException e) {
+            assertMessage(e, "StringIndexOutOfBoundsException");
+        }
+    }
+
+    public void testChr() {
+        assertEquals("a", Vba.chr(0x61));
+        assertEquals("\u1234", Vba.chr(0x1234));
+    }
+
+    public void testChrB() {
+        assertEquals("a", Vba.chrB(0x61));
+        assertEquals("\u0034", Vba.chrB(0x1234));
+    }
+
+    public void testChrW() {
+        assertEquals("a", Vba.chrW(0x61));
+        assertEquals("\u1234", Vba.chrW(0x1234));
+    }
+
+    public void testLCase() {
+        assertEquals("", Vba.lCase(""));
+        assertEquals("abc", Vba.lCase("AbC"));
+    }
+
+    // NOTE: BuiltinFunTable already implements Left; todo: use this
+    public void testLeft() {
+        assertEquals("abc", Vba.left("abcxyz", 3));
+        assertEquals("", Vba.left("abcxyz", 0));
+        // Spec says: "If greater than or equal to the number of characters in
+        // string, the entire string is returned."
+        assertEquals("abcxyz", Vba.left("abcxyz", 8));
+        assertEquals("", Vba.left("", 3));
+        try {
+            String s = Vba.left("xyz", -2);
+            fail("expected error, got " + s);
+        } catch (RuntimeException e) {
+            assertMessage(e, "StringIndexOutOfBoundsException");
+        }
+    }
+
+    public void testLTrim() {
+        assertEquals("", Vba.lTrim(""));
+        assertEquals("", Vba.lTrim("  "));
+        assertEquals("abc  \r", Vba.lTrim(" \n\tabc  \r"));
+    }
+
+    public void testMonthName() {
+        assertEquals("January", Vba.monthName(1, false));
+        assertEquals("Jan", Vba.monthName(1, true));
+        assertEquals("Dec", Vba.monthName(12, true));
+        try {
+            String s = Vba.monthName(0, true);
+            fail("expected error, got " + s);
+        } catch (RuntimeException e) {
+            assertMessage(e, "ArrayIndexOutOfBoundsException");
+        }
+    }
+
+    public void testReplace3() {
+        // replace with longer string
+        assertEquals("abczabcz", Vba.replace("xyzxyz", "xy", "abc"));
+        // replace with shorter string
+        assertEquals("wazwaz", Vba.replace("wxyzwxyz", "xy", "a"));
+        // replace with string which contains seek
+        assertEquals("wxyz", Vba.replace("xyz", "xy", "wxy"));
+        // replace with string which combines with following char to make seek
+        assertEquals("wxyzwx", Vba.replace("xyyzxy", "xy", "wx"));
+        // replace with empty string
+        assertEquals("wxyza", Vba.replace("wxxyyzxya", "xy", ""));
+    }
+
+    public void testReplace4() {
+        assertEquals("azaz", Vba.replace("xyzxyz", "xy", "a", 1));
+        assertEquals("xyzaz", Vba.replace("xyzxyz", "xy", "a", 2));
+        assertEquals("xyzxyz", Vba.replace("xyzxyz", "xy", "a", 30));
+        // spec doesn't say, but assume starting before start of string is ok
+        assertEquals("azaz", Vba.replace("xyzxyz", "xy", "a", 0));
+        assertEquals("azaz", Vba.replace("xyzxyz", "xy", "a", -5));
+    }
+
+    public void testReplace5() {
+        assertEquals("azaz", Vba.replace("xyzxyz", "xy", "a", 1, -1));
+        assertEquals("azxyz", Vba.replace("xyzxyz", "xy", "a", 1, 1));
+        assertEquals("azaz", Vba.replace("xyzxyz", "xy", "a", 1, 2));
+        assertEquals("xyzazxyz", Vba.replace("xyzxyzxyz", "xy", "a", 2, 1));
+    }
+
+    public void testReplace6() {
+        // compare is currently ignored
+        assertEquals("azaz", Vba.replace("xyzxyz", "xy", "a", 1, -1, 1000));
+        assertEquals("azxyz", Vba.replace("xyzxyz", "xy", "a", 1, 1, 0));
+        assertEquals("azaz", Vba.replace("xyzxyz", "xy", "a", 1, 2, -6));
+        assertEquals(
+            "xyzazxyz", Vba.replace("xyzxyzxyz", "xy", "a", 2, 1, 11));
+    }
+
+    public void testRight() {
+        assertEquals("xyz", Vba.right("abcxyz", 3));
+        assertEquals("", Vba.right("abcxyz", 0));
+        // Spec says: "If greater than or equal to the number of characters in
+        // string, the entire string is returned."
+        assertEquals("abcxyz", Vba.right("abcxyz", 8));
+        assertEquals("", Vba.right("", 3));
+        try {
+            String s = Vba.right("xyz", -2);
+            fail("expected error, got " + s);
+        } catch (RuntimeException e) {
+            assertMessage(e, "StringIndexOutOfBoundsException");
+        }
+    }
+
+    public void testRTrim() {
+        assertEquals("", Vba.rTrim(""));
+        assertEquals("", Vba.rTrim("  "));
+        assertEquals(" \n\tabc", Vba.rTrim(" \n\tabc"));
+        assertEquals(" \n\tabc", Vba.rTrim(" \n\tabc  \r"));
+    }
+
+    public void testSpace() {
+        assertEquals("   ", Vba.space(3));
+        assertEquals("", Vba.space(0));
+        try {
+            String s = Vba.space(-2);
+            fail("expected error, got " + s);
+        } catch (RuntimeException e) {
+            assertMessage(e, "NegativeArraySizeException");
+        }
+    }
+
+    public void testString() {
+        assertEquals("xxx", Vba.string(3, 'x'));
+        assertEquals("", Vba.string(0, 'y'));
+        try {
+            String s = Vba.string(-2, 'z');
+            fail("expected error, got " + s);
+        } catch (RuntimeException e) {
+            assertMessage(e, "NegativeArraySizeException");
+        }
+        assertEquals("", Vba.string(100, '\0'));
+    }
+
+    public void testStrReverse() {
+        // odd length
+        assertEquals("cba", Vba.strReverse("abc"));
+        // even length
+        assertEquals("wxyz", Vba.strReverse("zyxw"));
+        // zero length
+        assertEquals("", Vba.strReverse(""));
+    }
+
+    public void testTrim() {
+        assertEquals("", Vba.trim(""));
+        assertEquals("", Vba.trim("  "));
+        assertEquals("abc", Vba.trim("abc"));
+        assertEquals("abc", Vba.trim(" \n\tabc  \r"));
+    }
+
+    public void testWeekdayName() {
+        // If Sunday (1) is the first day of the week
+        // then day 1 is Sunday,
+        // then day 2 is Monday,
+        // and day 7 is Saturday
+        assertEquals("Sunday", Vba.weekdayName(1, false, 1));
+        assertEquals("Monday", Vba.weekdayName(2, false, 1));
+        assertEquals("Saturday", Vba.weekdayName(7, false, 1));
+        assertEquals("Sat", Vba.weekdayName(7, true, 1));
+
+        // If Monday (2) is the first day of the week
+        // then day 1 is Monday,
+        // and day 7 is Sunday
+        assertEquals("Monday", Vba.weekdayName(1, false, 2));
+        assertEquals("Sunday", Vba.weekdayName(7, false, 2));
+
+        // Use weekday start from locale. Test for the 2 most common.
+        switch (Calendar.getInstance().getFirstDayOfWeek()) {
+        case Calendar.SUNDAY:
+            assertEquals("Sunday", Vba.weekdayName(1, false, 0));
+            assertEquals("Monday", Vba.weekdayName(2, false, 0));
+            assertEquals("Saturday", Vba.weekdayName(7, false, 0));
+            assertEquals("Sat", Vba.weekdayName(7, true, 0));
+            break;
+        case Calendar.MONDAY:
+            assertEquals("Monday", Vba.weekdayName(1, false, 0));
+            assertEquals("Tuesday", Vba.weekdayName(2, false, 0));
+            assertEquals("Sunday", Vba.weekdayName(7, false, 0));
+            assertEquals("Sun", Vba.weekdayName(7, true, 0));
+            break;
+        }
+    }
+
+    // Mathematical
+
+    public void testAbs() {
+        assertEquals(Vba.abs(-1.7d), 1.7d);
+    }
+
+    public void testAtn() {
+        assertEquals(0d, Vba.atn(0), SMALL);
+        assertEquals(Math.PI / 4d, Vba.atn(1), SMALL);
+    }
+
+    public void testCos() {
+        assertEquals(1d, Vba.cos(0), 0d);
+        assertEquals(Vba.sqr(0.5d), Vba.cos(Math.PI / 4d), 0d);
+        assertEquals(0d, Vba.cos(Math.PI / 2d), SMALL);
+        assertEquals(-1d, Vba.cos(Math.PI), 0d);
+    }
+
+    public void testExp() {
+        assertEquals(1d, Vba.exp(0));
+        assertEquals(Math.E, Vba.exp(1), 1e-10);
+    }
+
+    public void testRound() {
+        assertEquals(123d, Vba.round(123.4567d), SMALL);
+    }
+
+    public void testRound2() {
+        assertEquals(123d, Vba.round(123.4567d, 0), SMALL);
+        assertEquals(123.46d, Vba.round(123.4567d, 2), SMALL);
+        assertEquals(120d, Vba.round(123.45d, -1), SMALL);
+        assertEquals(-123.46d, Vba.round(-123.4567d, 2), SMALL);
+    }
+
+    public void testSgn() {
+        assertEquals(1, Vba.sgn(3.11111d), 0d);
+        assertEquals(-1, Vba.sgn(-Math.PI), 0d);
+        assertTrue(0 == Vba.sgn(-0d));
+        assertTrue(0 == Vba.sgn(0d));
+    }
+
+    public void testSin() {
+        assertEquals(Vba.sqr(0.5d), Vba.sin(Math.PI / 4d), SMALL);
+    }
+
+    public void testSqr() {
+        assertEquals(2d, Vba.sqr(4d), 0d);
+        assertEquals(0d, Vba.sqr(0d), 0d);
+        assertTrue(Double.isNaN(Vba.sqr(-4)));
+    }
+
+    public void testTan() {
+        assertEquals(1d, Vba.tan(Math.PI / 4d), SMALL);
+    }
+}
+
+// End VbaTest.java

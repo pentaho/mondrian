@@ -17,8 +17,10 @@ import mondrian.calc.impl.*;
 import mondrian.mdx.DimensionExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.olap.Member;
 import mondrian.olap.fun.extra.NthQuartileFunDef;
 import mondrian.olap.fun.extra.CalculatedChildFunDef;
+import mondrian.olap.fun.vba.Vba;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.olap.type.Type;
@@ -2004,36 +2006,6 @@ public class BuiltinFunTable extends FunTableImpl {
 
         define(CastFunDef.Resolver);
 
-        // Left(<String Expression>, <Numeric Expression>)
-        define(new FunDefBase(
-                "Left",
-                "Returns a specified number of characters " +
-                             "from the left side of a string",
-                "fSSn") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final StringCalc stringCalc = compiler.compileString(call.getArg(0));
-                final Calc numericCalc = compiler.compileScalar(call.getArg(1), true);
-                return new AbstractStringCalc(call, new Calc[] {stringCalc, numericCalc}) {
-                    public String evaluateString(Evaluator evaluator) {
-                        String value = stringCalc.evaluateString(evaluator);
-
-                        int index = ((Double) numericCalc.evaluate(evaluator))
-                                .intValue();
-                        if (index < 0) {
-                            throw new InvalidArgumentException("Invalid parameter. " +
-                                    "Length parameter of Left function " +
-                                    "can't be negative");
-                        }
-
-                        return index < value.length() ?
-                                value.substring(0, index) : value;
-
-                    }
-                };
-            }
-
-        });
-
         // UCase(<String Expression>)
         define(new FunDefBase(
                 "UCase",
@@ -2069,55 +2041,93 @@ public class BuiltinFunTable extends FunTableImpl {
 
         });
 
-        // Mid(<String Expression>, <Numeric Expression1>, <Numeric Expression2>)
-        define(new FunDefBase(
-                "Mid",
-                "Returns a specified number of characters from a string",
-                "fSSnn") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final StringCalc stringCalc = compiler.compileString(call.getArg(0));
-                final Calc numericCalc1 = compiler.compileScalar(call.getArg(1), true);
-                final Calc numericCalc2 = compiler.compileScalar(call.getArg(2), true);
-                Calc[] calcs = new Calc[]{stringCalc, numericCalc1, numericCalc2};
-
-                return new AbstractStringCalc(call, calcs) {
-                    public String evaluateString(Evaluator evaluator) {
-                        String value = stringCalc.evaluateString(evaluator);
-                        int val = ((Double) numericCalc1.evaluate(evaluator))
-                                .intValue();
-                        int beginIndex = val == 0 ? val : val - 1;
-                        int length = ((Double) numericCalc2.evaluate(evaluator))
-                                .intValue();
-                        return mid(value, beginIndex, length);
-                    }
-                };
-            }
-        });
-
-        // Mid(<String Expression>, <Numeric Expression>)
-        define(new FunDefBase(
-                "Mid",
-                "Returns all the characters starting from specified index from the string",
-                "fSSn") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final StringCalc stringCalc = compiler.compileString(call.getArg(0));
-                final Calc numericCalc = compiler.compileScalar(call.getArg(1), true);
-                Calc[] calcs = new Calc[]{stringCalc, numericCalc};
-
-                return new AbstractStringCalc(call, calcs) {
-                    public String evaluateString(Evaluator evaluator) {
-                        String value = stringCalc.evaluateString(evaluator);
-                        int val = ((Double) numericCalc.evaluate(evaluator))
-                                .intValue();
-                        int beginIndex = val == 0 ? val : val - 1;
-                        return mid(value, beginIndex, value.length());
-                    }
-                };
-            }
-        });
+        // Define VBA functions.
+        for (FunDef funDef : JavaFunDef.scan(Vba.class)) {
+            define(funDef);
+        }
     }
 
-    /** Returns (creating if necessary) the singleton. */
+    public static void main(String[] args) {
+
+        // Conversion
+        defineVbFunction("CBool", "CBool(expression)", "");
+        defineVbFunction("CInt", "CInt(expression)", "");
+
+        // DateTime
+        defineVbFunction("DateAdd", "DateAdd(interval, number, date)", "");
+        defineVbFunction("DateDiff", "DateDiff(interval, date1, date2[, firstdayofweek[, firstweekofyear]])",
+            "");
+        defineVbFunction("DatePart", "DatePart(interval, date[,firstdayofweek[, firstweekofyear]])",
+            "");
+        defineVbFunction("Date", "Date", "");
+        defineVbFunction("DateSerial", "DateSerial(year, month, day)", "");
+        defineVbFunction("DateValue", "DateValue(date)", "");
+        defineVbFunction("Day", "Day(date)", "");
+        defineVbFunction("Hour", "Hour(time)", "");
+        defineVbFunction("Minute", "Minute(time)", "");
+        defineVbFunction("Month", "Month(date)", "");
+        defineVbFunction("Now", "Now()", "");
+        defineVbFunction("Second", "Second(time)", "");
+        defineVbFunction("Time", "Time()", "");
+        defineVbFunction("TimeSerial", "TimeSerial(hour, minute, second)", "");
+        defineVbFunction("TimeValue", "TimeValue(time)", "");
+        defineVbFunction("Timer", "Timer()", "");
+        defineVbFunction("Weekday", "Weekday(date[, firstDayOfWeek])", "");
+        defineVbFunction("Year", "Year(date)", "");
+
+        // Financial
+        defineVbFunction("FV", "FV(rate, nper, pmt[, pv[, type]])", "");
+        defineVbFunction("NPer", "NPer(rate, pmt, pv[, fv[, type]])", "");
+        defineVbFunction("NPV", "NPV(rate, values())", "");
+        defineVbFunction("Pmt", "Pmt(rate, nper, pv[, fv[, type]])", "");
+        defineVbFunction("PV", "PV(rate, nper, pmt[, fv[, type]])", "");
+
+        // Mathematical
+        defineVbFunction("Abs", "Abs(number)", "Returns a value of the same type that is passed to it specifying the absolute value of a number.");
+        defineVbFunction("Atn", "Atn(number)", "Returns a Double specifying the arctangent of a number.");
+        defineVbFunction("Cos", "Cos(number)", "Returns a Double specifying the cosine of an angle.");
+        defineVbFunction("Exp", "Exp(number)", "Returns a Double specifying e (the base of natural logarithms) raised to a power.");
+        defineVbFunction("Log", "Log(number)", "");
+        defineVbFunction("Round", "Round(number[, numDigitsAfterDecimal])", "");
+        defineVbFunction("Sgn", "Sgn(number)", "");
+        defineVbFunction("Sin", "Sin(number)", "");
+        defineVbFunction("Sqr", "Sqr(number)", "");
+        defineVbFunction("Tan", "Tan(number)", "");
+        defineVbFunction("Asc", "Asc(string)", "");
+        defineVbFunction("AscB", "AscB(string)", "");
+        defineVbFunction("AscW", "AscW(string)", "");
+        defineVbFunction("Chr", "Chr(charcode)", "");
+        defineVbFunction("ChrB", "ChrB(charcode)", "");
+        defineVbFunction("ChrW", "ChrW(charcode)", "");
+        defineVbFunction("LCase", "LCase(string)", "");
+        defineVbFunction("LTrim", "LTrim(string)", "");
+        defineVbFunction("Left", "Left(string, length)", "Returns a specified number of characters from the left side of a string");
+        defineVbFunction("Mid", "Mid(value, beginIndex[, length])", "Returns a specified number of characters from a string");
+        defineVbFunction("MonthName", "MonthName(month, abbreviate)", "");
+        defineVbFunction("RTrim", "RTrim(string)", "");
+        defineVbFunction("Replace", "Replace(expression, find, replace[, start[, count[, compare]]])",
+            "");
+        defineVbFunction("Right", "Right(string, length)", "");
+        defineVbFunction("Space", "Space(number)", "");
+        defineVbFunction("StrReverse", "StrReverse(string)", "");
+        defineVbFunction("String", "String(number, character)", "");
+        defineVbFunction("Trim", "Trim(string)", "");
+        defineVbFunction("WeekdayName", "WeekdayName(weekday, abbreviate, firstdayofweek)",
+            "");
+    }
+
+    private static void defineVbFunction(String s, String s1, String s2) {
+        System.out.println("    @FunctionName(\"" + s + "\")");
+        System.out.println("    @Signature(\"" + s1 + "\")");
+        System.out.println("    @Description(\"" + s2 + "\")");
+        System.out.println();
+    }
+
+    /**
+     * Returns the singleton, creating if necessary.
+     *
+     * @return the singleton
+     */
     public static BuiltinFunTable instance() {
         if (instance == null) {
             instance = new BuiltinFunTable();
@@ -2125,7 +2135,6 @@ public class BuiltinFunTable extends FunTableImpl {
         }
         return instance;
     }
-
 }
 
 // End BuiltinFunTable.java

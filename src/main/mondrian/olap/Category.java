@@ -37,19 +37,19 @@ public class Category extends EnumeratedValues {
                 "unknown", "array", "dimension", "hierarchy", "level",
                 "logical", "member", "numeric", "set",
                 "string", "tuple", "symbol", "cube", "value", "integer",
-                "null", "empty",
+                "null", "empty", "datetime",
             },
             new int[] {
                 Unknown, Array, Dimension, Hierarchy, Level,
                 Logical, Member, Numeric, Set,
                 String, Tuple, Symbol, Cube, Value, Integer,
-                Null, Empty,
+                Null, Empty, DateTime,
             },
             new String[] {
                 "Unknown", "Array", "Dimension", "Hierarchy", "Level",
                 "Logical Expression", "Member", "Numeric Expression", "Set",
                 "String", "Tuple", "Symbol", "Cube", "Value", "Integer",
-                "Null", "Empty",
+                "Null", "Empty", "DateTime",
             }
         );
     }
@@ -154,6 +154,11 @@ public class Category extends EnumeratedValues {
      * Represents an empty expression.
      */
     public static final int Empty     = 17;
+
+    /**
+     * Represents a DataTime expression.
+     */
+    public static final int DateTime  = 18;
 
     /**
      * <code>Expression</code> is a flag which, when bitwise-OR-ed with a
