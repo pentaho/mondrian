@@ -916,7 +916,11 @@ public class Vba {
     @Description("Returns a Variant (Integer) indicating the sign of a number.")
     public static int sgn(double number) {
         // We could use Math.signum(double) from JDK 1.5 onwards.
-        return Double.compare(number, 0d);
+        return number < 0.0d
+            ? -1
+            : number > 0.0d
+                ? 1
+                : 0;
     }
 
     @FunctionName("Sin")
