@@ -11,6 +11,7 @@ package mondrian.util;
 
 import java.util.Set;
 import java.math.BigDecimal;
+import java.lang.reflect.Method;
 
 /**
  * Interface containing methods which are implemented differently in different
@@ -41,6 +42,9 @@ public interface UtilCompatible {
     BigDecimal makeBigDecimalFromDouble(double d);
 
     String quotePattern(String s);
+
+    <T> T getAnnotation(
+        Method method, String annotationClassName, T defaultValue);
 }
 
 // End UtilCompatible.java

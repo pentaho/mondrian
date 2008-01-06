@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.math.BigDecimal;
+import java.lang.reflect.Method;
 
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
@@ -1278,6 +1279,24 @@ public class Util extends XOMUtil {
             }
         }
         return names;
+    }
+
+    /**
+     * Returns an annotation of a particular class on a method. Returns the
+     * default value if the annotation is not present, or in JDK 1.4.
+     *
+     * @param method Method containing annotation
+     * @param annotationClassName Name of annotation class to find
+     * @param defaultValue Value to return if annotation is not present
+     * @return value of annotation
+     */
+    public static <T> T getAnnotation(
+        Method method,
+        String annotationClassName,
+        T defaultValue)
+    {
+        return compatible.getAnnotation(
+            method, annotationClassName, defaultValue);
     }
 
     public static class ErrorCellValue {

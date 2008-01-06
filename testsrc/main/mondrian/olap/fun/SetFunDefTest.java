@@ -14,7 +14,8 @@ package mondrian.olap.fun;
 import mondrian.test.FoodMartTestCase;
 
 /**
- * <code>SetFunDefTest</code> tests the <code>SetFunDef</code>
+ * Unit test for the set constructor function <code>{ ... }</code>,
+ * {@link SetFunDef}.
  *
  * @author ajogleka
  * @version $Id$
@@ -39,14 +40,17 @@ public class SetFunDefTest extends FoodMartTestCase {
     private void assertQueryFailsInSetValidation(String query) {
         try {
             assertQueryReturns(query, "");
-            fail();
+            fail("expected error");
         } catch (Throwable e) {
             while (e.getCause() != null) {
                 e = e.getCause();
             }
-            assertTrue(e.getMessage().
-                contains("Mondrian Error:All arguments to function '{}' " +
-                "must have same hierarchy"));
+            assertTrue(
+                e.getMessage().indexOf(
+                    "Mondrian Error:All arguments to function '{}' " +
+                        "must have same hierarchy") >= 0);
         }
     }
 }
+
+// End SetFunDefTest.java

@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.math.BigDecimal;
+import java.lang.reflect.Method;
 
 /**
  * Implementation of {@link UtilCompatible} which runs in
@@ -31,9 +32,7 @@ public class UtilCompatibleJdk14 implements UtilCompatible {
     public <E extends Enum<E>> Set<E> enumSetOf(E first, E... rest) {
         HashSet<E> set = new HashSet<E>();
         set.add(first);
-        for (E e : rest) {
-            set.add(e);
-        }
+        set.addAll(Arrays.asList(rest));
         return set;
     }
 
@@ -63,7 +62,6 @@ public class UtilCompatibleJdk14 implements UtilCompatible {
 
         StringBuilder sb = new StringBuilder(s.length() * 2);
         sb.append("\\Q");
-        slashEIndex = 0;
         int current = 0;
         while ((slashEIndex = s.indexOf("\\E", current)) != -1) {
             sb.append(s.substring(current, slashEIndex));
@@ -73,6 +71,12 @@ public class UtilCompatibleJdk14 implements UtilCompatible {
         sb.append(s.substring(current, s.length()));
         sb.append("\\E");
         return sb.toString();
+    }
+
+    public <T> T getAnnotation(
+        Method method, String annotationClassName, T defaultValue)
+    {
+        return defaultValue;
     }
 }
 

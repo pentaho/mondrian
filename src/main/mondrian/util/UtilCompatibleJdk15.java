@@ -15,6 +15,9 @@ import java.util.regex.Pattern;
 import java.math.BigDecimal;
 // Only in Java5 and above
 import java.math.MathContext;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.annotation.Annotation;
 
 /**
  * Implementation of {@link UtilCompatible} which runs in
@@ -54,6 +57,33 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
 
     public String quotePattern(String s) {
         return Pattern.quote(s);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getAnnotation(
+        Method method, String annotationClassName, T defaultValue)
+    {
+        try {
+            Class<? extends Annotation> annotationClass =
+                (Class<? extends Annotation>)
+                    Class.forName(annotationClassName);
+            if (method.isAnnotationPresent(annotationClass)) {
+                final Annotation annotation =
+                    method.getAnnotation(annotationClass);
+                final Method method1 =
+                    annotation.getClass().getMethod("value");
+                return (T) method1.invoke(annotation);
+            }
+        } catch (IllegalAccessException e) {
+            return defaultValue;
+        } catch (InvocationTargetException e) {
+            return defaultValue;
+        } catch (NoSuchMethodException e) {
+            return defaultValue;
+        } catch (ClassNotFoundException e) {
+            return defaultValue;
+        }
+        return defaultValue;
     }
 }
 

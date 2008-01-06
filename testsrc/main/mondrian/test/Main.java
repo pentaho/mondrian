@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import mondrian.olap.fun.*;
+import mondrian.olap.fun.vba.VbaTest;
 import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQueryTest;
@@ -34,7 +35,6 @@ import mondrian.xmla.impl.DynamicDatasourceXmlaServletTest;
 import mondrian.xmla.test.XmlaTest;
 import mondrian.test.clearview.*;
 import mondrian.calc.impl.ConstantCalcTest;
-import mondrian.rolap.agg.SegmentLoaderTest;
 import mondrian.rolap.agg.AggregationOnDistinctCountMeasuresTest;
 import org.apache.log4j.Logger;
 
@@ -86,6 +86,9 @@ public class Main extends TestSuite {
 
     /**
      * Creates and runs the root test suite.
+     *
+     * @param args Command-line arguments
+     * @throws Exception on error
      */
     private void run(String[] args) throws Exception {
         final MondrianProperties properties = MondrianProperties.instance();
@@ -121,6 +124,9 @@ public class Main extends TestSuite {
      * Creates a TestSuite to test the whole of mondrian. Methods with the
      * signature <code>public static Test suite()</code> are recognized
      * automatically by JUnit test-harnesses; see {@link TestSuite}.
+     *
+     * @return test suite
+     * @throws Exception on error
      */
     private static Test suite() throws Exception {
         RolapUtil.checkTracing();
@@ -187,6 +193,7 @@ public class Main extends TestSuite {
             addTest(suite, TopBottomTest.class, "suite");
             addTest(suite, CacheControlTest.class);
             addTest(suite, FunctionTest.class);
+            addTest(suite, VbaTest.class);
             addTest(suite, HierarchyBugTest.class);
             addTest(suite, ScheduleTest.class);
             addTest(suite, UtilTestCase.class);
@@ -289,8 +296,10 @@ public class Main extends TestSuite {
     }
 
     /**
-     * Check to see if the tests are running one user, one iteration.
+     * Checks to see if the tests are running one user, one iteration.
      * Some tests are not thread safe so have to be skipped if this is not true.
+     *
+     * @return whether the tests are run with one user, one iteration
      */
     private static boolean isRunOnce() {
         final MondrianProperties properties = MondrianProperties.instance();
@@ -300,7 +309,12 @@ public class Main extends TestSuite {
     }
 
     /**
-     * Make a copy of a suite, filtering certain tests.
+     * Makes a copy of a suite, filtering certain tests.
+     *
+     * @param suite Test suite
+     * @param testPattern Regular expression of name of tests to include
+     * @return copy of test suite
+     * @throws Exception on error
      */
     private static TestSuite copySuite(TestSuite suite, Pattern testPattern) 
         throws Exception
