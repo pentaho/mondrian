@@ -168,7 +168,7 @@ doTest2() {
   cat megatest.properties >> mondrian.properties
 
   case $jdk in
-  jdk1.4) retroweave=true ;;
+  (jdk1.4) retroweave=true ;;
   esac
 
   echo
@@ -178,84 +178,46 @@ doTest2() {
   if [ "$build" ]; then
     echo build=${build}
     if [ "$retroweave" ]; then
-    case $jdk in
-    jdk1.4)
-      # Cannot build or retroweave under 1.4, so switch JDK briefly
-      (
-        export JAVA_HOME=$(chooseJavaHome jdk1.5)
-        export PATH="$JAVA_HOME/bin:$PATH"
-        export ANT_HOME=$(chooseAntHome jdk1.5)
+      case $jdk in
+      jdk1.4)
+        # Cannot build or retroweave under 1.4, so switch JDK briefly
+        (
+          export JAVA_HOME=$(chooseJavaHome jdk1.5)
+          export PATH="$JAVA_HOME/bin:$PATH"
+          export ANT_HOME=$(chooseAntHome jdk1.5)
+          $ANT_HOME/bin/ant $ANT_FLAGS clean all retroweave
+        )
+        export JAVA_HOME=$(chooseJavaHome jdk1.4)
+        export PATH=$JAVA_HOME/bin:$PATH
+        ;;
+      *)
         $ANT_HOME/bin/ant $ANT_FLAGS clean all retroweave
-      )
-      export JAVA_HOME=$(chooseJavaHome jdk1.4)
-      export PATH=$JAVA_HOME/bin:$PATH
-      ;;
-    *)
-      $ANT_HOME/bin/ant $ANT_FLAGS clean all retroweave
-      ;;
-    esac
-    $ANT_HOME/bin/ant $ANT_FLAGS -Dmondrian.retroweave=true test-nobuild
-  else
+        ;;
+      esac
+      $ANT_HOME/bin/ant $ANT_FLAGS -Dmondrian.retroweave=true test-nobuild
+    else
       export ANT_HOME=$(chooseAntHome $jdk)
       case $database in
-      derby|access)
+      (derby|access)
         $ANT_HOME/bin/ant $ANT_FLAGS ;
         $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests unzip-databases test-nobuild
         ;;
-      *) $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests test-nobuild
+      (*) $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests test-nobuild
         ;;
       esac
     fi
   fi
 
   if [ "$olap4j" ]; then
-    echo
-    echo "========================================"
-    date
-    echo "Running olap4j test with JDK=$jdk"
-    (
-      CONNECT_STRING=$(
-        awk '
-/^mondrian.test.connectString=/ {
-  print substr($0, length("mondrian.test.connectString=Provider=mondrian;") + 1)
-}           ' megatest.properties)
-      DRIVER_CLASSPATH=$(
-        awk '
-/^driver.classpath=/ {
-  print substr($0, length("driver.classpath=") + 1)
-}           ' megatest.properties)
-      cd ../olap4j
-      case $(uname) in
-      Cygwin*) FILE_PREFIX=file:/ ;;
-      *) FILE_PREFIX=file: ;;
-      esac
-      ant clean
-      (
-        echo "org.olap4j.test.connectUrl=jdbc:mondrian:${CONNECT_STRING}"
-        echo 'org.olap4j.test.helperClassName=org.olap4j.MondrianTester'
-        echo "org.olap4j.test.driverClasspath=${DRIVER_CLASSPATH}"
-      ) > test.properties
-      ant test
-      (
-        echo "org.olap4j.test.connectUrl=jdbc:mondrian:${CONNECT_STRING}"
-        echo 'org.olap4j.test.helperClassName=org.olap4j.XmlaTester'
-        echo "org.olap4j.XmlaTester.CatalogUrl=${FILE_PREFIX}${OPEN_DIR}/mondrian/demo/FoodMart.xml"
-        echo "org.olap4j.test.driverClasspath=${DRIVER_CLASSPATH}"
-      ) > test.properties
-      ant test
-      # Javadoc only runs clean under jdk16, because it depends on JDBC 4.0
-      case "$jdk" in
-      jdk1.6) ant javadoc ;;
-      esac
-    )
+    (olap4j $jdk mondrian)
+    #(olap4j $jdk xmla)
   fi
 }
 
 # Echoes a value for ANT_HOME consistent with the JDK.
 # JDK 1.4 can't run modern versions of ant (because junit requires annotations)
 # but retroweaver cannot run on old versions of ant.
-chooseAntHome()
-{
+chooseAntHome() {
   jdk=$1
   case $jdk in
   jdk1.4)
@@ -277,38 +239,98 @@ chooseAntHome()
 chooseJavaHome() {
   jdk=$1
   case $(uname -n) in
-  mackerel)
+  (mackerel)
     case $jdk in
-    jdk1.4) echo /c/j2sdk1.4.2_16 ;;
-    jdk1.5|jdk1.6) echo /c/jdk1.6.0_01 ;;
-    *) echo "Unknown java version $jdk"; exit 1 ;;
+    (jdk1.4) echo /c/j2sdk1.4.2_16 ;;
+    (jdk1.5|jdk1.6) echo /c/jdk1.6.0_01 ;;
+    (*) echo "Unknown java version $jdk"; exit 1 ;;
     esac;;
-  branston)
+  (branston)
     case $jdk in
-    jdk1.5) echo /e/jdk1.5.0_08 ;;
-    jdk1.6) echo /c/jdk1.6.0_01 ;;
-    *) echo "Unknown java version $jdk"; exit 1 ;;
+    (jdk1.5) echo /e/jdk1.5.0_08 ;;
+    (jdk1.6) echo /c/jdk1.6.0_01 ;;
+    (*) echo "Unknown java version $jdk"; exit 1 ;;
     esac;;
-  mackerel-winxp)
+  (mackerel-winxp)
     case $jdk in
-    jdk1.4) echo /c/jdk1.4.2_15 ;;
-    jdk1.5) echo /c/jdk1.5.0_12 ;;
-    jdk1.6) echo /c/jdk1.6.0_02 ;;
-    *) echo "Unknown java version $jdk"; exit 1 ;;
+    (jdk1.4) echo /c/jdk1.4.2_15 ;;
+    (jdk1.5) echo /c/jdk1.5.0_12 ;;
+    (jdk1.6) echo /c/jdk1.6.0_02 ;;
+    (*) echo "Unknown java version $jdk"; exit 1 ;;
     esac;;
-  *)
+  (*)
     case $jdk in
-    jdk1.4) echo /usr/local/j2sdk1.4.2_13 ;;
-    jdk1.5) echo /usr/local/jdk1.5.0_12 ;;
-    jdk1.6) echo /usr/local/jdk1.6.0_01 ;;
-    *) echo "Unknown java version $jdk"; exit 1 ;;
+    (jdk1.4) echo /usr/local/j2sdk1.4.2_13 ;;
+    (jdk1.5) echo /usr/local/jdk1.5.0_12 ;;
+    (jdk1.6) echo /usr/local/jdk1.6.0_01 ;;
+    (*) echo "Unknown java version $jdk"; exit 1 ;;
     esac;;
   esac
-
 }
 
-doLotsOfTests()
-{
+olap4j() {
+  jdk=$1
+  driver=$2
+  echo
+  echo "========================================"
+  date
+  echo "Running olap4j test with JDK=$jdk driver=$driver"
+  CONNECT_STRING=$(
+    awk '
+/^mondrian.test.connectString=/ {
+  print substr($0, length("mondrian.test.connectString=Provider=mondrian;") + 1)
+}       ' megatest.properties)
+  DRIVER_CLASSPATH=$(
+    awk '
+/^driver.classpath=/ {
+  print substr($0, length("driver.classpath=") + 1)
+}       ' megatest.properties)
+  cd ../olap4j
+  case $(uname) in
+  (Cygwin*) FILE_PREFIX=file:/ ;;
+  (*) FILE_PREFIX=file: ;;
+  esac
+  ant clean
+
+  case $driver in
+  (mondrian)
+    echo "org.olap4j.test.connectUrl=jdbc:mondrian:${CONNECT_STRING}"
+    echo 'org.olap4j.test.helperClassName=org.olap4j.MondrianTester'
+    echo "org.olap4j.test.driverClasspath=${DRIVER_CLASSPATH}"
+    ;;
+  (xmla)
+    echo "org.olap4j.test.connectUrl=jdbc:mondrian:${CONNECT_STRING}"
+    echo 'org.olap4j.test.helperClassName=org.olap4j.XmlaTester'
+    echo "org.olap4j.XmlaTester.CatalogUrl=${FILE_PREFIX}${OPEN_DIR}/mondrian/demo/FoodMart.xml"
+    echo "org.olap4j.test.driverClasspath=${DRIVER_CLASSPATH}"
+    ;;
+  esac > test.properties
+
+  case $jdk in
+  (jdk1.4)
+    # Cannot build or retroweave under 1.4, so switch JDK briefly
+    (
+      export JAVA_HOME=$(chooseJavaHome jdk1.5)
+      export PATH="$JAVA_HOME/bin:$PATH"
+      export ANT_HOME=$(chooseAntHome jdk1.5)
+      $ANT_HOME/bin/ant $ANT_FLAGS all retroweave
+    )
+    export JAVA_HOME=$(chooseJavaHome jdk1.4)
+    export PATH=$JAVA_HOME/bin:$PATH
+    ant test
+    ;;
+  (*)
+    $ANT_HOME/bin/ant $ANT_FLAGS test
+    ;;
+  esac
+
+  # Javadoc only runs clean under jdk16, because it depends on JDBC 4.0
+  case "$jdk" in
+  (jdk1.6) ant javadoc ;;
+  esac
+}
+
+doLotsOfTests() {
   for agg in true false; do
     for vusers in 1 5; do
       for jdk in $jdkList; do
@@ -321,7 +343,7 @@ doLotsOfTests()
             # false if db does not support it.
             if [ "$groupingSets" = false ] ; then
                case "$database" in
-               access|mysql|derby) continue;;
+               (access|mysql|derby) continue;;
                esac
             fi
             doTest $jdk $database \
@@ -336,8 +358,7 @@ doLotsOfTests()
   done
 }
 
-doExoticTests()
-{
+doExoticTests() {
   # Test exp dependencies
   doTest jdk1.5 oracle \
     mondrian.test.ExpDependencies=10 \
@@ -447,8 +468,7 @@ doExoticTests()
 }
 
 # Returns one of its arguments with equal probability
-chooseOne()
-{
+chooseOne() {
   echo "$@" | awk '
 {
   srand();
@@ -460,14 +480,12 @@ chooseOne()
 
 # Prints "true" with a given probability, else "".
 # For example, "maybe 0.2" prints "true" 20% of the time.
-maybe()
-{
+maybe() {
   echo | awk '{srand(); r = rand(); if (0) print "r=" r ", p=" p; if (r < p) print "true"; else print "";}' p=$1
   sleep 1s
 }
 
-doRandom()
-{
+doRandom() {
   args=
   jdk="$(chooseOne jdk1.4 jdk1.5 jdk1.6)"
   args="$args $jdk"
@@ -475,7 +493,7 @@ doRandom()
   # 20% of the time, run jdk1.5 and jdk1.6 against retrowoven code. jdk1.4
   # is always retrowoven.
   case $jdk in
-  jdk1.5|jdk1.6)
+  (jdk1.5|jdk1.6)
     if [ "$(maybe 0.8 --retroweave)" ]; then
       args="--retroweave $args"
     fi
@@ -576,13 +594,11 @@ doRandom()
   doTest $args
 }
 
-doQuick()
-{
+doQuick() {
   doTest --olap4j jdk1.6 access
 }
 
-doAllTests()
-{
+doAllTests() {
   # With olap4j
   doTest --olap4j jdk1.6 oracle
   doTest --olap4j jdk1.5 oracle
@@ -618,7 +634,7 @@ doAllTests()
 
   # Do some tests with random configurations
   echo ::: do 10 random tests :::
-  for ((i=0; i < 10; i++)) do
+  for ((k=0; k < 10; k++)) do
     doRandom
   done
 
@@ -630,8 +646,7 @@ doAllTests()
   fi
 }
 
-doTests()
-{
+doTests() {
   if [ "$quick" ]; then
     doQuick
   elif [ "$random" ]; then
@@ -641,8 +656,7 @@ doTests()
   fi
 }
 
-checkJavadoc()
-{
+checkJavadoc() {
   export JAVA_HOME=$(chooseJavaHome jdk1.6)
   export ANT_HOME=$(chooseAntHome jdk1.6)
 
@@ -652,8 +666,7 @@ checkJavadoc()
     grep -v -F -f ant-javadoc-expected.log -
 }
 
-usage()
-{
+usage() {
   echo "megatest [--help] [--nightly] [--quick] [--random] [--nobuild]"
   echo "Options:"
   echo "  --help     Print this help"
@@ -669,27 +682,27 @@ random=
 build=true
 while [ $# -gt 0 ]; do
   case "$1" in
-  --help)
+  (--help)
     usage
     exit 0
     ;;
-  --nightly)
+  (--nightly)
     nightly=true
     shift
     ;;
-  --quick)
+  (--quick)
     quick=true
     shift
     ;;
-  --random)
+  (--random)
     random=true
     shift
     ;;
-  --nobuild)
+  (--nobuild)
     build=
     shift
     ;;
-  *)
+  (*)
     break
     ;;
   esac
