@@ -5273,7 +5273,7 @@ public class FunctionTest extends FoodMartTestCase {
         
         // clear the cache so that future tests don't fail that expect a 
         // specific set of cubes
-        RolapSchema.clearCache();
+        connection.getCacheControl(null).flushSchemaCache();
     }
 
     public void testIntersect() {

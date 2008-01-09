@@ -19,7 +19,6 @@ import mondrian.olap.Query;
 import mondrian.olap.Result;
 import mondrian.olap.Util;
 import mondrian.olap.MondrianProperties;
-import mondrian.rolap.cache.CachePool;
 import mondrian.rolap.cache.HardSmartCache;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
@@ -81,7 +80,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         // turn on caching
         properties.DisableCaching.setString("false");
 
-        CachePool.instance().flush();
+        cacheControl.flushSchemaCache();
 
         // Use hard caching for testing. When using soft references, we can not
         // test caching because things may be garbage collected during the

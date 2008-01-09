@@ -14,7 +14,6 @@ package mondrian.test;
 import mondrian.olap.*;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
-import mondrian.rolap.cache.CachePool;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.util.Bug;
@@ -2421,7 +2420,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * {@link ArrayIndexOutOfBoundsException}
      */
     public void testBug804903() {
-        CachePool.instance().flush();
+        getConnection().getCacheControl(null).flushSchemaCache();
         assertQueryReturns(
                 "select {[Measures].[Customer Count]} ON columns,\n" +
                 "  {([Promotion Media].[All Media], [Product].[All Products])} ON rows\n" +
@@ -3343,7 +3342,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * test has been known to fail when run standalone.
      */
     public void testBasketAnalysisAfterFlush() {
-        CachePool.instance().flush();
+        getConnection().getCacheControl(null).flushSchemaCache();
         testBasketAnalysis();
     }
 
@@ -4457,7 +4456,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                                 QueryAndResult query = queries.get(queryIndex);
                                 assertQueryReturns(query.query, query.result);
                                 if (flush && i == 0) {
-                                    CachePool.instance().flush();
+                                    getConnection().getCacheControl(null)
+                                        .flushSchemaCache();
                                 }
                                 synchronized (executeCount) {
                                     executeCount[0]++;
@@ -4512,7 +4512,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * were used in filters.
      */
     public void testFilteredCrossJoin() {
-        CachePool.instance().flush();
+        getConnection().getCacheControl(null).flushSchemaCache();
         Result result = executeQuery(
                 "select {[Measures].[Store Sales]} on columns,\n" +
                 "  NON EMPTY Crossjoin(\n" +
@@ -4545,7 +4545,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             // memory.
             return;
         }
-        CachePool.instance().flush();
+        getConnection().getCacheControl(null).flushSchemaCache();
         Result result = executeQuery(
                 "select {[Measures].[Store Sales]} on columns,\n" +
                 "  NON EMPTY Crossjoin(\n" +
@@ -4568,7 +4568,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * (see http://blogs.msdn.com/bi_systems/articles/162841.aspx)
      */
     public void testNonEmptyNonEmptyCrossJoin1() {
-        CachePool.instance().flush();
+        getConnection().getCacheControl(null).flushSchemaCache();
         Result result = executeQuery(
                    "select {[Education Level].[All Education Levels].[Graduate Degree]} on columns,\n" +
                    "   CrossJoin(\n" +
@@ -4582,7 +4582,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testNonEmptyNonEmptyCrossJoin2() {
-        CachePool.instance().flush();
+        getConnection().getCacheControl(null).flushSchemaCache();
         Result result = executeQuery(
                    "select {[Education Level].[All Education Levels].[Graduate Degree]} on columns,\n" +
                    "   NonEmptyCrossJoin(\n" +
@@ -4596,7 +4596,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testNonEmptyNonEmptyCrossJoin3() {
-        CachePool.instance().flush();
+        getConnection().getCacheControl(null).flushSchemaCache();
         Result result = executeQuery(
                    "select {[Education Level].[All Education Levels].[Graduate Degree]} on columns,\n" +
                    "   Non Empty CrossJoin(\n" +
@@ -4610,7 +4610,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testNonEmptyNonEmptyCrossJoin4() {
-        CachePool.instance().flush();
+        getConnection().getCacheControl(null).flushSchemaCache();
         Result result = executeQuery(
                    "select {[Education Level].[All Education Levels].[Graduate Degree]} on columns,\n" +
                    "   Non Empty NonEmptyCrossJoin(\n" +
@@ -4693,8 +4693,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * which is connected to the [Unit Sales] column
      */
     public void _testCubeWhichUsesSameSharedDimTwice() {
-        Schema schema = getConnection().getSchema();
-        final Cube salesCube = schema.lookupCube("Sales", true);
         // Create a second usage of the "Store" shared dimension called "Other
         // Store". Attach it to the "unit_sales" column (which has values [1,
         // 6] whereas store has values [1, 24].
@@ -6126,7 +6124,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 } catch (Exception ex) {
                     return null;
                 }
-                return new Double(((Number) argValue).doubleValue() + 1);
+                return ((Number) argValue).doubleValue() + 1;
             } else {
                 // Argument might be a RuntimeException indicating that
                 // the cache does not yet have the required cell value. The

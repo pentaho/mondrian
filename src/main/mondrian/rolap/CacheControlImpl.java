@@ -141,7 +141,7 @@ public class CacheControlImpl implements CacheControl {
     }
 
     public void flushSchemaCache() {
-        throw new UnsupportedOperationException();
+        RolapSchema.Pool.instance().clear();
     }
 
     // todo: document

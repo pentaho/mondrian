@@ -168,10 +168,10 @@ public class RolapSchema implements Schema {
      * This is ONLY called by other constructors (and MUST be called
      * by them) and NEVER by the Pool.
      *
-     * @param key
-     * @param connectInfo
-     * @param dataSource
-     * @param md5Bytes
+     * @param key Key
+     * @param connectInfo Connect properties
+     * @param dataSource Data source
+     * @param md5Bytes MD5 hash
      */
     private RolapSchema(
             final String key,
@@ -300,7 +300,7 @@ public class RolapSchema implements Schema {
                         StringBuilder buf = new StringBuilder(1000);
                         FileContent fileContent1 = file.getContent();
                         InputStream in = fileContent1.getInputStream();
-                        int n = 0;
+                        int n;
                         while ((n = in.read()) != -1) {
                             buf.append((char) n);
                         }
@@ -371,6 +371,8 @@ public class RolapSchema implements Schema {
      *
      * <p>NOTE: This method is not cheap. The implementation gets a connection
      * from the connection pool.
+     *
+     * @return dialect
      */
     public SqlQuery.Dialect getDialect() {
         DataSource dataSource = getInternalConnection().getDataSource();
@@ -807,6 +809,7 @@ public class RolapSchema implements Schema {
                 assert catalogStr == null;
 
                 try {
+                    @SuppressWarnings("unchecked")
                     final Class<DynamicSchemaProcessor> clazz =
                         (Class<DynamicSchemaProcessor>)
                             Class.forName(dynProcName);
@@ -1040,7 +1043,7 @@ public class RolapSchema implements Schema {
         /**
          * This returns an iterator over a copy of the RolapSchema's container.
          *
-         * @return Iterator over RolapSchemas.
+         * @return Iterator over RolapSchemas
          */
         synchronized Iterator<RolapSchema> getRolapSchemas() {
             List<RolapSchema> list = new ArrayList<RolapSchema>();
@@ -1087,8 +1090,7 @@ public class RolapSchema implements Schema {
             appendIfNotNull(buf, jdbcUser);
             appendIfNotNull(buf, dataSourceStr);
 
-            final String key = buf.toString();
-            return key;
+            return buf.toString();
         }
 
         /**
@@ -1105,8 +1107,7 @@ public class RolapSchema implements Schema {
             buf.append("external#");
             buf.append(System.identityHashCode(dataSource));
 
-            final String key = buf.toString();
-            return key;
+            return buf.toString();
         }
 
         private static void appendIfNotNull(StringBuilder buf, String s) {
@@ -1117,42 +1118,6 @@ public class RolapSchema implements Schema {
                 buf.append(s);
             }
         }
-    }
-
-    /**
-     * @deprecated Use {@link mondrian.olap.CacheControl#flushSchema(String, String, String, String)}.
-     * This method will be removed in mondrian-2.5.
-     */
-    public static void flushSchema(
-        final String catalogUrl,
-        final String connectionKey,
-        final String jdbcUser,
-        String dataSourceStr)
-    {
-        Pool.instance().remove(
-            catalogUrl,
-            connectionKey,
-            jdbcUser,
-            dataSourceStr);
-    }
-
-    /**
-     * @deprecated Use {@link mondrian.olap.CacheControl#flushSchema(String, javax.sql.DataSource)}.
-     * This method will be removed in mondrian-2.5.
-     */
-    public static void flushSchema(
-        final String catalogUrl,
-        final DataSource dataSource)
-    {
-        Pool.instance().remove(catalogUrl, dataSource);
-    }
-
-    /**
-     * @deprecated Use {@link mondrian.olap.CacheControl#flushSchemaCache()}.
-     * This method will be removed in mondrian-2.5.
-     */
-    public static void clearCache() {
-        Pool.instance().clear();
     }
 
     public static Iterator<RolapSchema> getRolapSchemas() {

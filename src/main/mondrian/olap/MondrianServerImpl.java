@@ -9,10 +9,10 @@
 */
 package mondrian.olap;
 
-import mondrian.rolap.RolapSchema;
+import mondrian.rolap.agg.AggregationManager;
 
 import java.net.URL;
-import java.io.IOException;
+import java.io.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.List;
@@ -90,7 +90,9 @@ class MondrianServerImpl extends MondrianServer {
     };
 
     public void flushSchemaCache() {
-        RolapSchema.clearCache();
+        final CacheControl cacheControl =
+            AggregationManager.instance().getCacheControl(null);
+        cacheControl.flushSchemaCache();
     }
 
     public void flushDataCache() {

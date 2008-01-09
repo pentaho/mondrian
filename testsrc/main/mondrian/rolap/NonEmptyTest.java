@@ -30,7 +30,6 @@ import mondrian.rolap.RolapConnection.NonEmptyResult;
 import mondrian.rolap.RolapNative.Listener;
 import mondrian.rolap.RolapNative.NativeEvent;
 import mondrian.rolap.RolapNative.TupleEvent;
-import mondrian.rolap.cache.CachePool;
 import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
@@ -1703,7 +1702,7 @@ public class NonEmptyTest extends BatchTestCase {
      * is not evaluated in NON EMPTY context.
      */
     public void testCalcMemberWithNonEmptyCrossJoin() {
-        CachePool.instance().flush();
+        getConnection().getCacheControl(null).flushSchemaCache();
         Result result = executeQuery("with member [Measures].[CustomerCount] as \n"
                 + "'Count(CrossJoin({[Product].[All Products]}, [Customers].[Name].Members))'\n"
                 + "select \n"
@@ -1755,7 +1754,7 @@ public class NonEmptyTest extends BatchTestCase {
         }
 
         private Result run() {
-            CachePool.instance().flush();
+            getConnection().getCacheControl(null).flushSchemaCache();
             IntegerProperty monLimit = MondrianProperties.instance().ResultLimit;
             int oldLimit = monLimit.get();
             try {
@@ -3166,7 +3165,7 @@ public class NonEmptyTest extends BatchTestCase {
      * @param expectedResult expected result string
      */
     private void checkNotNative(int rowCount, String mdx, String expectedResult) {
-        CachePool.instance().flush();
+        getConnection().getCacheControl(null).flushSchemaCache();
         Connection con = getTestContext().getFoodMartConnection(false);
         RolapNativeRegistry reg = getRegistry(con);
         reg.setListener(new Listener() {
@@ -3244,7 +3243,7 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
 
-        CachePool.instance().flush();
+        getConnection().getCacheControl(null).flushSchemaCache();
         try {
             logger.debug("*** Native: " + mdx);
             boolean reuseConnection = !freshConnection;
@@ -3273,7 +3272,7 @@ public class NonEmptyTest extends BatchTestCase {
             con.close();
 
             logger.debug("*** Interpreter: " + mdx);
-            CachePool.instance().flush();
+            getConnection().getCacheControl(null).flushSchemaCache();
             con = getTestContext().getFoodMartConnection(false);
             reg = getRegistry(con);
             listener.setFoundEvaluator(false);
