@@ -17,6 +17,7 @@ import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.util.Bug;
 import mondrian.olap.Cube;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Result;
 
 import java.io.StringWriter;
 
@@ -690,13 +691,15 @@ public class SchemaTest extends FoodMartTestCase {
 
     /**
      * Test Multiple DimensionUsages on same Dimension.
+     * Alias the fact table to avoid issues with aggregation rules
+     * and multiple column names
      */
     public void testMultipleDimensionUsages() {
         TestContext testContext = TestContext.create(
                 null,
 
                 "<Cube name=\"Sales Two Dimensions\">\n" +
-                    "  <Table name=\"sales_fact_1997\"/>\n" + 
+                    "  <Table name=\"sales_fact_1997\" alias=\"sales_fact_1997_mdu\"/>\n" + 
                     "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
                     "  <DimensionUsage name=\"Time2\" source=\"Time\" foreignKey=\"product_id\"/>\n" +
                     "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n" +
@@ -1466,41 +1469,46 @@ public class SchemaTest extends FoodMartTestCase {
      * this test verifies that RolapHierarchy.tableExists() supports views
      */
     public void testLevelTableAttributeAsView() {
-        // Don't run this test if aggregates are enabled: two levels mapped to
-        // the "gender" column confuse the agg engine.
-        if (MondrianProperties.instance().ReadAggregates.get()) {
-            return;
-        }
-        TestContext testContext = TestContext.createSubstitutingCube(
-            "Sales",
-            "<Dimension name=\"Gender2\" foreignKey=\"customer_id\">\n" +
-                "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n" +
-                "    <View alias=\"gender2\">\n" +
-                "      <SQL dialect=\"generic\">\n" +
-                "        <![CDATA[SELECT * FROM customer]]>\n" +
-                "      </SQL>\n" +
-                "      <SQL dialect=\"oracle\">\n" +
-                "        <![CDATA[SELECT * FROM \"customer\"]]>\n" +
-                "      </SQL>\n" +
-                "      <SQL dialect=\"derby\">\n" +
-                "        <![CDATA[SELECT * FROM \"customer\"]]>\n" +
-                "      </SQL>\n" +
-                "      <SQL dialect=\"luciddb\">\n" +
-                "        <![CDATA[SELECT * FROM \"customer\"]]>\n" +
-                "      </SQL>\n" +
-                "      <SQL dialect=\"db2\">\n" +
-                "        <![CDATA[SELECT * FROM \"customer\"]]>\n" +
-                "      </SQL>\n" +
-                "    </View>\n" +
-                "    <Level name=\"Gender\" table=\"gender2\" column=\"gender\" uniqueMembers=\"true\"/>\n" +
-                "  </Hierarchy>\n" +
-                "</Dimension>",
-            null);
+        final TestContext testContext = TestContext.create(
+              null,
+              "<Cube name=\"GenderCube\">\n"
+              + "  <Table name=\"sales_fact_1997\" alias=\"sales_fact_1997_gender\"/>\n"
+              + "<Dimension name=\"Gender2\" foreignKey=\"customer_id\">\n"
+              + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
+              + "    <View alias=\"gender2\">\n"
+              + "      <SQL dialect=\"generic\">\n"
+              + "        <![CDATA[SELECT * FROM customer]]>\n"
+              + "      </SQL>\n"
+              + "      <SQL dialect=\"oracle\">\n"
+              + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+              + "      </SQL>\n"
+              + "      <SQL dialect=\"derby\">\n"
+              + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+              + "      </SQL>\n"
+              + "      <SQL dialect=\"luciddb\">\n"
+              + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+              + "      </SQL>\n"
+              + "      <SQL dialect=\"db2\">\n"
+              + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+              + "      </SQL>\n"
+              + "    </View>\n"
+              + "    <Level name=\"Gender\" table=\"gender2\" column=\"gender\" uniqueMembers=\"true\"/>\n"
+              + "  </Hierarchy>\n"
+              + "</Dimension>"  
+              + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+              + "      formatString=\"Standard\"/>\n"
+              + "</Cube>",
+              null, null, null, null);
+        
         if (!testContext.getDialect().allowsFromQuery()) {
             return;
         }
-        testContext.assertAxisReturns(
-            "[Gender2].members",
+        
+        Result result = testContext.executeQuery(
+                "select {[Gender2].members} on columns from [GenderCube]");
+        
+        TestContext.assertEqualsVerbose(
+            TestContext.toString(result.getAxes()[0].getPositions()),
             fold("[Gender2].[All Gender]\n" +
                 "[Gender2].[All Gender].[F]\n" +
                 "[Gender2].[All Gender].[M]"));
