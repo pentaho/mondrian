@@ -101,6 +101,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/eigenbase-xom.jar"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
     <pathelement location="${lib.dir}/log4j-1.2.9.jar"/>
+    <pathelement location="${lib.dir}/olap4j.jar"/>
     <pathelement location="${lib.dir}/xalan.jar"/>
     <pathelement location="${lib.dir}/xml-apis.jar"/>
     <pathelement location="${lib.dir}/xercesImpl.jar"/>
@@ -150,6 +151,16 @@ demo/access/MondrianFoodMart.mdb"/>
         <contains string="${java.version}" substring="1.4." />
         <equals arg1="${mondrian.retroweave}" arg2="true" />
       </or>
+    </not>
+  </condition>
+
+  <condition property="jdk16.present">
+    <equals arg1="${ant.java.version}" arg2="1.6"/>
+  </condition>
+
+  <condition property="jdk16.not.present">
+    <not>
+      <equals arg1="${ant.java.version}" arg2="1.6"/>
     </not>
   </condition>
 
@@ -361,6 +372,8 @@ compile.java"/>
         classpathref="project.build.classpath"
         source="1.5">
       <include name="mondrian/**/*.java"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java" if="jdk16.present"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java" if="jdk16.not.present"/>
     </javac>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>
