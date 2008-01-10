@@ -12,11 +12,11 @@ import org.olap4j.CellSetAxisMetaData;
 import org.olap4j.Axis;
 import org.olap4j.metadata.Hierarchy;
 import org.olap4j.metadata.Property;
+import org.olap4j.metadata.Dimension;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Implementation of {@link org.olap4j.CellSetMetaData}
@@ -28,11 +28,11 @@ import java.util.ArrayList;
 */
 class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
     private final QueryAxis queryAxis;
-    private final MondrianOlap4jConnection olap4jConnection;
+    private final MondrianOlap4jCellSetMetaData cellSetMetaData;
     private final List<Property> propertyList = new ArrayList<Property>();
 
     MondrianOlap4jCellSetAxisMetaData(
-        MondrianOlap4jConnection olap4jConnection,
+        MondrianOlap4jCellSetMetaData cellSetMetaData,
         QueryAxis queryAxis)
     {
         if (queryAxis == null) {
@@ -41,7 +41,7 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
                 QueryAxis.SubtotalVisibility.Undefined);
         }
         this.queryAxis = queryAxis;
-        this.olap4jConnection = olap4jConnection;
+        this.cellSetMetaData = cellSetMetaData;
 
         // populate property list
         for (Id id : queryAxis.getDimensionProperties()) {
@@ -61,19 +61,27 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
     }
 
     public List<Hierarchy> getHierarchies() {
+        List<Hierarchy> hierarchyList =
+            new ArrayList<Hierarchy>();
         final Type type;
+        final Exp exp = queryAxis.getSet();
         switch (queryAxis.getAxisOrdinal()) {
         case SLICER:
-            type = queryAxis.getSet().getType();
+            type =
+                exp == null
+                    ? null
+                    : exp.getType();
             break;
         default:
             final SetType setType =
-                (SetType) queryAxis.getSet().getType();
+                (SetType) exp.getType();
             type = setType.getElementType();
         }
-        List<Hierarchy> hierarchyList =
-            new ArrayList<Hierarchy>();
-        if (type instanceof TupleType) {
+        final MondrianOlap4jConnection olap4jConnection =
+            cellSetMetaData.olap4jStatement.olap4jConnection;
+        if (type == null) {
+            // nothing; will deal with slicer later
+        } else if (type instanceof TupleType) {
             final TupleType tupleType = (TupleType) type;
             for (Type elementType : tupleType.elementTypes) {
                 hierarchyList.add(
@@ -82,7 +90,34 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
             }
         } else {
             hierarchyList.add(
-                olap4jConnection.toOlap4j(type.getHierarchy()));
+                olap4jConnection.toOlap4j(
+                    type.getHierarchy()));
+        }
+
+        // Slicer contains all dimensions not mentioned on other axes. So, if
+        // this is the slicer, now add to the list the default hierarchy of
+        // each dimension not already in the slicer or in another axes.
+        switch (queryAxis.getAxisOrdinal()) {
+        case SLICER:
+            Set<Dimension> dimensionSet = new HashSet<Dimension>();
+            for (Hierarchy hierarchy : hierarchyList) {
+                dimensionSet.add(hierarchy.getDimension());
+            }
+            for (CellSetAxisMetaData cellSetAxisMetaData
+                : cellSetMetaData.getAxesMetaData())
+            {
+                for (Hierarchy hierarchy
+                    : cellSetAxisMetaData.getHierarchies())
+                {
+                    dimensionSet.add(hierarchy.getDimension());
+                }
+            }
+            for (Dimension dimension
+                : cellSetMetaData.getCube().getDimensions()) {
+                if (dimensionSet.add(dimension)) {
+                    hierarchyList.add(dimension.getDefaultHierarchy());
+                }
+            }
         }
         return hierarchyList;
     }

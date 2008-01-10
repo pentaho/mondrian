@@ -9,12 +9,11 @@
 */
 package mondrian.olap4j;
 
+import mondrian.olap.AxisOrdinal;
 import org.olap4j.*;
 import org.olap4j.metadata.*;
 
 import java.util.*;
-
-import mondrian.olap.AxisOrdinal;
 
 /**
  * Implementation of {@link org.olap4j.CellSetAxis}
@@ -67,17 +66,51 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
     }
 
     public List<Position> getPositions() {
-        return new AbstractList<Position>() {
-            public Position get(final int index) {
-                final mondrian.olap.Position mondrianPosition =
-                    axis.getPositions().get(index);
-                return new MondrianOlap4jPosition(mondrianPosition, index);
+        switch (getAxisOrdinal()) {
+        case FILTER:
+            final List<Hierarchy> hierarchyList =
+                getAxisMetaData().getHierarchies();
+            final Member[] members = new Member[hierarchyList.size()];
+            final MondrianOlap4jConnection olap4jConnection =
+                olap4jCellSet.olap4jStatement.olap4jConnection;
+            for (mondrian.olap.Member member : axis.getPositions().get(0)) {
+                final MondrianOlap4jHierarchy hierarchy =
+                    olap4jConnection.toOlap4j(
+                        member.getHierarchy());
+                members[hierarchyList.indexOf(hierarchy)] =
+                    olap4jConnection.toOlap4j(
+                        member);
             }
+            int k = -1;
+            for (Hierarchy hierarchy : hierarchyList) {
+                ++k;
+                if (members[k] == null) {
+                    members[k] = hierarchy.getDefaultMember();
+                }
+            }
+            final Position position = new Position() {
+                public List<Member> getMembers() {
+                    return Arrays.asList(members);
+                }
 
-            public int size() {
-                return axis.getPositions().size();
-            }
-        };
+                public int getOrdinal() {
+                    return 0;
+                }
+            };
+            return Collections.singletonList(position);
+        default:
+            return new AbstractList<Position>() {
+                public Position get(final int index) {
+                    final mondrian.olap.Position mondrianPosition =
+                        axis.getPositions().get(index);
+                    return new MondrianOlap4jPosition(mondrianPosition, index);
+                }
+
+                public int size() {
+                    return axis.getPositions().size();
+                }
+            };
+        }
     }
 
     public int getPositionCount() {

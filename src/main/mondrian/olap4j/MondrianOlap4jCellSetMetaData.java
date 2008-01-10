@@ -26,7 +26,7 @@ import java.sql.SQLException;
  * @since Jun 13, 2007
  */
 class MondrianOlap4jCellSetMetaData implements CellSetMetaData {
-    private final MondrianOlap4jStatement olap4jStatement;
+    final MondrianOlap4jStatement olap4jStatement;
     private final Query query;
     private final NamedList<CellSetAxisMetaData> axesMetaData =
         new ArrayNamedListImpl<CellSetAxisMetaData>() {
@@ -43,16 +43,14 @@ class MondrianOlap4jCellSetMetaData implements CellSetMetaData {
         this.olap4jStatement = olap4jStatement;
         this.query = query;
 
-        final MondrianOlap4jConnection olap4jConnection =
-            olap4jStatement.olap4jConnection;
         for (final QueryAxis queryAxis : query.getAxes()) {
             axesMetaData.add(
                 new MondrianOlap4jCellSetAxisMetaData(
-                    olap4jConnection, queryAxis));
+                    this, queryAxis));
         }
         filterAxisMetaData =
             new MondrianOlap4jCellSetAxisMetaData(
-                olap4jConnection, query.getSlicerAxis());
+                this, query.getSlicerAxis());
     }
 
     // implement CellSetMetaData
