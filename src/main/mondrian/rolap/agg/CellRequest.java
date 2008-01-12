@@ -195,13 +195,9 @@ public class CellRequest {
     }
 
     /**
-     * Get the set of compound predicates
-     * @return list of predicates
+     * Get the map of compound predicates
+     * @return predicate map
      */
-    public List<StarPredicate> getCompoundPredicateList() {
-        return (new ArrayList<StarPredicate>(compoundPredicateMap.values()));
-    }
-
     public Map<BitKey, StarPredicate> getCompoundPredicateMap() {
         return compoundPredicateMap;
     }

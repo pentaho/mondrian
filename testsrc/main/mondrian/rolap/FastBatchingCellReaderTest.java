@@ -1253,8 +1253,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "and ((`store`.`store_state` = 'CA' and `store`.`store_country` = 'USA')"
             + " or `store`.`store_country` = 'USA') "
             + "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
-            + "and ((`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997)"
-            + " or (`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997))";
+            + "and ((`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997) "
+            + "or (`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997))";
 
         assertQuerySql(mdxQuery, new SqlPattern[] {
             new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
@@ -1277,7 +1277,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     
     /**
      * Fix a problem when genergating predicates for distinct count aggregate loading 
-     * when using the aggregatefunction in the slicer.
+     * and using the aggregate function in the slicer.
      */
     public void testAggregateDistinctCount5() {
         String query =
@@ -1333,6 +1333,66 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         assertQuerySql(query, patterns);
     }
 
+    /*
+     * Test for multiple members on different levels within the same hierarchy.
+     */
+    public void testAggregateDistinctCount6() {
+        // CA and USA are overlapping members
+        final String mdxQuery = 
+            "WITH " +
+            " MEMBER [Store].[Select Region] AS " +
+            " 'AGGREGATE({[Store].[USA].[CA], [Store].[Mexico], [Store].[Canada], [Store].[USA].[OR]})', solve_order=1\n" +
+            " MEMBER [Time].[Select Time Period] AS " +
+            " 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7], [Time].[1997].[Q4], [Time].[1997]})', solve_order=1\n" +
+            "SELECT {[Measures].[Customer Count], [Measures].[Unit Sales]} ON COLUMNS,\n" +
+            "      {[Store].[Select Region]} * {[Time].[Select Time Period]} ON ROWS\n" +
+            "FROM Sales";
+
+        String derbySql = 
+            "select "
+            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
+            + "from \"store\" as \"store\","
+            + " \"sales_fact_1997\" as \"sales_fact_1997\","
+            + " \"time_by_day\" as \"time_by_day\" "
+            + "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
+            + "and (((\"store\".\"store_state\" = 'CA' and \"store\".\"store_country\" = 'USA')"
+            + " or (\"store\".\"store_state\" = 'OR' and \"store\".\"store_country\" = 'USA'))"
+            + " or \"store\".\"store_country\" in ('Mexico', 'Canada')) "
+            + "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+            + "and (((\"time_by_day\".\"quarter\" = 'Q1' and \"time_by_day\".\"the_year\" = 1997)"
+            + " or (\"time_by_day\".\"quarter\" = 'Q4' and \"time_by_day\".\"the_year\" = 1997))"
+            + " or (\"time_by_day\".\"month_of_year\" = 7 and \"time_by_day\".\"quarter\" = 'Q3' and \"time_by_day\".\"the_year\" = 1997)"
+            + " or \"time_by_day\".\"the_year\" = 1997)";
+
+        final String mysqlSql = 
+            "select count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
+            "from `store` as `store`, `sales_fact_1997` as `sales_fact_1997`, `time_by_day` as `time_by_day` " +
+            "where `sales_fact_1997`.`store_id` = `store`.`store_id` and " +
+            "((((`store`.`store_country`, `store`.`store_state`) in (('USA', 'CA'), ('USA', 'OR')))) " +
+            "or `store`.`store_country` in ('Mexico', 'Canada')) " +
+            "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and " +
+            "((`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997) " +
+            "or (((`time_by_day`.`the_year`, `time_by_day`.`quarter`) in ((1997, 'Q1'), (1997, 'Q4')))) " +
+            "or `time_by_day`.`the_year` = 1997)";
+
+        assertQuerySql(mdxQuery, new SqlPattern[] {
+            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
+            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)            
+        });
+
+        assertQueryReturns(
+            mdxQuery,
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[Select Region], [Time].[Select Time Period]}\n" +
+                "Row #0: 3,753\n" +
+                "Row #0: 229,496\n"));
+    }
+    
     /*
      * Test case for bug 1785406 to fix "query already contains alias" exception.
      * 

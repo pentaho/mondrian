@@ -14,8 +14,7 @@ import mondrian.rolap.StarPredicate;
 import mondrian.rolap.BitKey;
 import mondrian.rolap.sql.SqlQuery;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Predicate which is the intersection of a list of predicates. It evaluates to
@@ -68,47 +67,108 @@ public class AndPredicate extends ListPredicate {
         return new OrPredicate(list);
     }
 
-    public boolean inListPossible() {
-        /*
-         * Check the children are all ValueColumnPredicate type
-         * and the columnBitKey conforms to the set of columns referenced
-         */
-        boolean inListPossible = true;
-        for (StarPredicate predicate : children) {
-            if ((predicate instanceof ValueColumnPredicate) &&
-                ((ValueColumnPredicate) predicate).getValue() != RolapUtil.sqlNullValue) {
-                continue;
-            } else {
-                inListPossible = false;
-                break;                
+    public BitKey checkInList(SqlQuery sqlQuery, BitKey inListLHSBitKey) {
+        
+        // AND predicate by itself is not using IN list; when it is
+        // one of the children to an OR predicate, then using IN list
+        // is helpful. The later is checked by passing in a bitmap that
+        // represent the LHS or the IN list, i.e. the columns that are
+        // constrained by the OR.
+
+        // If the child predicates contains null values, those predicates cannot
+        // be translated as IN list; however, the rest of the child predicates
+        // might still be translated to IN.
+        // For example, neither of the two AND conditions below(part of an OR list)
+        // can be translated using IN list, covering all the levels
+        // 
+        //  (null, null, San Francisco)
+        //  (null, null, New York)
+        //
+        // However, after extracting the null part, they can be translated to:
+        //
+        // (country is null AND state is null AND city IN ("San Fancisco", "New York"))
+        //
+        // which is still more compact than the default AND/OR translation:
+        //
+        // (country is null AND state is null AND city = "San Francisco") OR
+        // (country is null AND state is null AND city = "New York")
+        //
+        // This method will mark all the columns that can be translated as part of IN
+        // list, so that similar predicates can be grouped together to form partial
+        // IN list sql. By default, all columns constrained by this predicates can be
+        // part of an IN list.
+        //
+        // This is very similar to the logic in SqlConstraintUtil.generateMultiValueInExpr().
+        // The only difference being that the predicates here are all "flattened" so the 
+        // hierarchy information is no longer available to guide the grouping of predicates
+        // with common parents. So some optimization possible in generateMultiValueInExpr()
+        // is not tried here, as they require implementing "longest common prefix" algorithm
+        // which is an overkill.
+        BitKey inListRHSBitKey = inListLHSBitKey.copy();
+        
+        if (!columnBitKey.equals(inListLHSBitKey) ||
+            (children.size() > 1 && 
+             !sqlQuery.getDialect().supportsMultiValueInExpr())) {
+            inListRHSBitKey.clear();
+        } else {
+            for (StarPredicate predicate : children) {
+                // If any predicate requires comparison to null value, cannot use 
+                // IN list for this predicate.
+                if (predicate instanceof ValueColumnPredicate) {
+                    ValueColumnPredicate columnPred = ((ValueColumnPredicate) predicate);
+                    if (columnPred.getValue() == RolapUtil.sqlNullValue) {
+                        // This column predicate cannot be translated to IN
+                        inListRHSBitKey.clear(
+                            columnPred.getConstrainedColumn().getBitPosition());
+                    } 
+                    // else 
+                    // do nothing because this column predicate can be translated to IN
+                } else {
+                    inListRHSBitKey.clear();
+                    break;
+                }
             }
         }
-        return inListPossible;
-    }
-    
-    public boolean inListPossible(BitKey inListLHS) {
-        return (super.columnBitKey.equals(inListLHS) && inListPossible());
+        return inListRHSBitKey;
     }
     
     /*
      * Generate value list for this predicate to be used in an IN-list
      * sql predicate.
+     * 
+     * The values in a multi-column IN list predicates are generated in the
+     * same order, based on the bit position from the columnBitKey.
+     * 
      */
-    public void toInListSql(SqlQuery sqlQuery, StringBuilder buf) {
-        assert (inListPossible());
+    public void toInListSql(SqlQuery sqlQuery, StringBuilder buf, BitKey inListRHSBitKey) {
         boolean firstValue = true;
         buf.append("(");
+        /*
+         * Arranging children according to the bit position. This is required
+         * as RHS of IN list needs to list the column values in the same order.
+         */
+        Set<ValueColumnPredicate> sortedPredicates = 
+            new TreeSet<ValueColumnPredicate>();
+        
         for (StarPredicate predicate : children) {
+            // inListPossible() checks gaurantees that predicate is of type
+            // ValueColumnPredicate
+            assert(predicate instanceof ValueColumnPredicate);
+            if (inListRHSBitKey.get(
+                ((ValueColumnPredicate)predicate).getConstrainedColumn().getBitPosition())) {
+                sortedPredicates.add((ValueColumnPredicate)predicate);
+            }
+        }
+        
+        for (ValueColumnPredicate predicate : sortedPredicates) {
             if (firstValue) {
                 firstValue = false;
             } else {
-                buf.append(",");
+                buf.append(", ");
             }
-            assert (predicate instanceof ValueColumnPredicate);
-            ValueColumnPredicate pred = (ValueColumnPredicate)predicate;
             sqlQuery.getDialect().quote(
-                buf, pred.getValue(), 
-                pred.getConstrainedColumn().getDatatype());            
+                buf, predicate.getValue(), 
+                predicate.getConstrainedColumn().getDatatype());            
         }
         buf.append(")");
     }

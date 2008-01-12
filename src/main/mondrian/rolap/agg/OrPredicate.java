@@ -11,11 +11,11 @@ package mondrian.rolap.agg;
 
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.RolapStar;
+import mondrian.rolap.BitKey;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Predicate which is the union of a list of predicates. It evaluates to
@@ -70,69 +70,197 @@ public class OrPredicate extends ListPredicate {
         return new AndPredicate(list);
     }
 
-    public boolean inListPossible() {
-        boolean inListPossible = true;
-        boolean isMultiColumn = columns.size() > 1 ? true : false;
+    /**
+     * Check if a predicate can be translated using IN list, and group predicates
+     * based on how many columns can be translated using IN list. If none of the
+     * columns can be made part of IN, the entire predicate will be translated using
+     * AND/OR. This method identified all the columns that can be part of IN and
+     * and categorizes this predicate based on number of column values to use in the
+     * IN list. 
+     * 
+     * @param predicate predicate to analyze
+     * @param sqlQuery
+     * @param predicateMap the map containing predicates analyzed so far
+     */
+    private void checkInListForPredicate(
+        StarPredicate predicate,
+        SqlQuery sqlQuery,
+        Map<BitKey, List<StarPredicate>> predicateMap) {
+        BitKey inListRHSBitKey;
         
-        for (StarPredicate predicate : children) {
-            if ((predicate instanceof ValueColumnPredicate &&
-                 !isMultiColumn &&
-                 predicate.getConstrainedColumnBitKey().equals(columnBitKey) &&
-                 ((ValueColumnPredicate) predicate).getValue() != RolapUtil.sqlNullValue) ||
-                (predicate instanceof AndPredicate &&
-                 isMultiColumn &&
-                 ((AndPredicate) predicate).inListPossible(columnBitKey))) {
-                continue;
-            } else {
-                inListPossible = false;
-                break;
-            }
+        if (predicate instanceof ValueColumnPredicate) {
+            // OR of column values from the same column
+            inListRHSBitKey = 
+                ((ValueColumnPredicate) predicate).checkInList(columnBitKey);
+        } else if (predicate instanceof AndPredicate) {                          
+            // OR of ANDs over a set of values over the same column set 
+            inListRHSBitKey =
+                  ((AndPredicate) predicate).checkInList(sqlQuery, columnBitKey);
+        } else {
+            inListRHSBitKey = columnBitKey.emptyCopy();
         }
-        return inListPossible;
+        List<StarPredicate> predicateGroup = 
+            predicateMap.get(inListRHSBitKey);
+        if (predicateGroup == null) {
+            predicateGroup = new ArrayList<StarPredicate> ();
+            predicateMap.put(inListRHSBitKey, predicateGroup);
+        }
+        predicateGroup.add(predicate);
     }
     
-    public void toInListSql(SqlQuery sqlQuery, StringBuilder buf) {
-        assert (inListPossible());
-        /*
-         * First generate the RHS
-         */
-        boolean first = true;
-        boolean isMultiColumn = columns.size() > 1 ? true : false;
-        if (isMultiColumn) {
-            buf.append("(");
-        }
-        for (RolapStar.Column column : columns) {
-            if (first) {
-                first = false;
-            } else {
-                buf.append(",");
-            }
-            String expr = column.generateExprString(sqlQuery);
-            buf.append(expr);
-        }
-        if (isMultiColumn) {
-            buf.append(")");
-        }
-        buf.append(" in (");
-        first = true;
+    private void checkInList(
+        SqlQuery sqlQuery, 
+        Map<BitKey, List<StarPredicate>> predicateMap) {
+
         for (StarPredicate predicate : children) {
-            if (first) {
-                first = false;
+            checkInListForPredicate(predicate, sqlQuery, predicateMap);
+        }
+    }
+
+    /**
+     * Translate a list of predicates over the same set of columns into sql using IN
+     * list where possible.
+     * 
+     * @param sqlQuery 
+     * @param buf buffer to build sql
+     * @param inListRHSBitKey which column positions are included in the IN predicate
+     * The non included positions corresponde to columns that are nulls.
+     * @param predicateList the list of predicates to translate.
+     */
+    private void toInListSql(
+        SqlQuery sqlQuery, 
+        StringBuilder buf, 
+        BitKey inListRHSBitKey,
+        List<StarPredicate> predicateList) {
+        // Make a col position to column map to aid search.
+        Map<Integer, RolapStar.Column> columnMap =
+            new HashMap<Integer, RolapStar.Column>();
+        
+        for (RolapStar.Column column : columns) {
+            columnMap.put(column.getBitPosition(), column);
+        }
+        
+        buf.append("(");
+        // First generate nulls for the columns which will not be included
+        // in the IN list
+        
+        boolean firstNullColumnPredicate = true;
+        for (Integer colPos : columnBitKey.andNot(inListRHSBitKey)) {
+            if (firstNullColumnPredicate) {
+                firstNullColumnPredicate = false;
             } else {
-                buf.append(",");
+                buf.append(" and ");
             }
+            String expr = columnMap.get(colPos).generateExprString(sqlQuery);
+            buf.append(expr);
+            buf.append(" is null");
+        }
+
+        // Now the IN list part
+        if (inListRHSBitKey.isEmpty()) {
+            return;
+        }
+
+        if (firstNullColumnPredicate) {
+            firstNullColumnPredicate = false;
+        } else {
+            buf.append(" and ");
+        }
+
+        // First add the column names;
+        boolean multiInList = inListRHSBitKey.toBitSet().cardinality() > 1;
+        if (multiInList) {
+            // Multi-IN list
+            buf.append("(");
+        }            
+        
+        boolean firstColumn = true;
+        for (Integer colPos : inListRHSBitKey) {
+            if (firstColumn) {
+                firstColumn = false;
+            } else {
+                buf.append(", ");
+            }
+            String expr = columnMap.get(colPos).generateExprString(sqlQuery);
+            buf.append(expr);            
+        }
+        if (multiInList) {
+            // Multi-IN list
+            buf.append(")");
+        }            
+        buf.append(" in (");
+
+        boolean firstPredicate = true;
+        for (StarPredicate predicate : predicateList) {
+            if (firstPredicate) {
+                firstPredicate = false;
+            } else {
+                buf.append(", ");
+            }
+            
             if (predicate instanceof AndPredicate) {
-                assert(isMultiColumn);
-                ((AndPredicate)predicate).toInListSql(sqlQuery, buf);
+                ((AndPredicate)predicate).toInListSql(sqlQuery, buf, inListRHSBitKey);                        
             } else {
                 assert (predicate instanceof ValueColumnPredicate);
-                ValueColumnPredicate pred = (ValueColumnPredicate)predicate;
-                sqlQuery.getDialect().quote(
-                    buf, pred.getValue(), 
-                    pred.getConstrainedColumn().getDatatype());
+                ((ValueColumnPredicate)predicate).toInListSql(sqlQuery, buf);
             }
         }
         buf.append(")");
+        buf.append(")");
+    }
+
+    public void toSql(SqlQuery sqlQuery, StringBuilder buf) {
+        //
+        // If possible, translate the predicate using IN lists.
+        //
+        // Two possibilities:
+        // (1) top-level can be directly tranlated to IN-list
+        //  examples:
+        //   (country IN (USA, Canada))
+        //
+        //   ((country, satte) in ((USA, CA), (USA, OR)))
+        //
+        // (2) child level can be translated to IN list: this allows IN list
+        // predicates generated such as:
+        //   (country, state) IN ((USA, CA), (USA, OR))
+        //   OR
+        //   (country, state, city) IN ((USA, CA, SF), (USA, OR, Portland))
+        // 
+        // The second case is handled by calling toSql on the children in
+        // super.toSql().
+        //
+        Map<BitKey, List<StarPredicate>> predicateMap =
+            new HashMap<BitKey, List<StarPredicate>> ();
+        
+        boolean first = true;
+        checkInList(sqlQuery, predicateMap);
+        buf.append("(");
+        
+        for (BitKey columnKey : predicateMap.keySet()) {
+            List<StarPredicate> predList = predicateMap.get(columnKey);
+            if (columnKey.isEmpty() || predList.size() <= 1) {
+                // Not possible to have IN list, or only one predicate
+                // in the group.
+                for (StarPredicate pred : predList) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        buf.append(" or ");                        
+                    }
+                    pred.toSql(sqlQuery, buf);
+                }
+            } else {
+                // Translate the rest
+                if (first) {
+                    first = false;
+                } else {
+                    buf.append(" or ");                        
+                }
+                toInListSql(sqlQuery, buf, columnKey, predList);                
+            }
+        }
+            
+        buf.append(")");            
     }
     
     protected String getOp() {

@@ -42,7 +42,8 @@ public abstract class ListPredicate implements StarPredicate {
                 columnBitKey =
                     predicate.getConstrainedColumnBitKey().copy();
             } else {
-                columnBitKey.or(predicate.getConstrainedColumnBitKey());
+                columnBitKey =
+                    columnBitKey.or(predicate.getConstrainedColumnBitKey());
             }
             children.add(predicate);
             for (RolapStar.Column column :
@@ -104,9 +105,6 @@ public abstract class ListPredicate implements StarPredicate {
         throw Util.needToImplement(this);
     }
 
-    public abstract boolean inListPossible();
-    public abstract void toInListSql(SqlQuery sqlQuery, StringBuilder buf);
-    
     public void toSql(SqlQuery sqlQuery, StringBuilder buf) {
         if (children.size() == 1) {
             children.get(0).toSql(sqlQuery, buf);

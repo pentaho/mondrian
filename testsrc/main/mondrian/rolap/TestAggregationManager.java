@@ -803,8 +803,8 @@ public class TestAggregationManager extends BatchTestCase {
             "where `sales_fact_1997`.`product_id` = `product`.`product_id` and " +
             "`product`.`product_class_id` = `product_class`.`product_class_id` and " +
             "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and " +
-            "((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`month_of_year` = 1) " +
-            "or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`month_of_year` = 7)) " +
+            "(((`time_by_day`.`the_year`, `time_by_day`.`quarter`, `time_by_day`.`month_of_year`) " +
+            "in ((1997, 'Q1', 1), (1997, 'Q3', 7)))) " +
             "group by `product_class`.`product_family`";
         
         String derbySql =

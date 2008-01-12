@@ -131,7 +131,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
              * REVIEW: Could something other than a hard coded value be used here,
              * e.g. something configurable?
              */
-            if (list.size() > 100) {
+            if (list.size() > MondrianProperties.instance().MaxConstraints.get()) {
                 throw newEvalException(
                     null,"Distinct Count aggregation is not supported over a " +
                     "large list");

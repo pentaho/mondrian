@@ -93,27 +93,27 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
             that instanceof ListColumnPredicate &&
             getConstrainedColumnBitKey().equals(
                 that.getConstrainedColumnBitKey());
-        ListColumnPredicate thatPred = (ListColumnPredicate) that;
-        if (getPredicates().size() != thatPred.getPredicates().size()) {
-            isEqual = false;
-        }
-
+        
         if (isEqual) {
-            for (StarColumnPredicate thisChild : getPredicates()) {
-                boolean foundMatch = false;
-                for (StarColumnPredicate thatChild: thatPred.getPredicates()) {
-                    if (thisChild.equalConstraint(thatChild)) {
-                        foundMatch = true;
+            ListColumnPredicate thatPred = (ListColumnPredicate) that;
+            if (getPredicates().size() != thatPred.getPredicates().size()) {
+                isEqual = false;
+            } else {
+                for (StarColumnPredicate thisChild : getPredicates()) {
+                    boolean foundMatch = false;
+                    for (StarColumnPredicate thatChild: thatPred.getPredicates()) {
+                        if (thisChild.equalConstraint(thatChild)) {
+                            foundMatch = true;
+                            break;
+                        }
+                    }
+                    if (!foundMatch) {
+                        isEqual = false;
                         break;
                     }
                 }
-                if (!foundMatch) {
-                    isEqual = false;
-                    break;
-                }
             }
         }
-
         return isEqual;
     }
     
