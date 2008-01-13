@@ -1622,7 +1622,7 @@ public class XmlaHandler implements XmlaConstants {
     }
 
     static class MDDataSet_Multidimensional extends MDDataSet {
-        private Hierarchy[] slicerAxisHierarchies;
+        private List<Hierarchy> slicerAxisHierarchies;
 
         protected MDDataSet_Multidimensional(Result result) {
             super(result);
@@ -1637,12 +1637,9 @@ public class XmlaHandler implements XmlaConstants {
         private void olapInfo(SaxWriter writer) {
             // What are all of the cube's hierachies
             Cube cube = result.getQuery().getCube();
-            List<Hierarchy> hierarchyList = new ArrayList<Hierarchy>();
-            Dimension[] dimensions = cube.getDimensions();
-            for (Dimension dimension : dimensions) {
-                Hierarchy[] hierarchies = dimension.getHierarchies();
-                hierarchyList.addAll(Arrays.asList(hierarchies));
-            }
+            List<Dimension> unseenDimensionList =
+                new ArrayList<Dimension>(
+                    Arrays.asList(cube.getDimensions()));
 
             writer.startElement("OlapInfo");
             writer.startElement("CubeInfo");
@@ -1661,38 +1658,24 @@ public class XmlaHandler implements XmlaConstants {
             //axisInfo(writer, result.getSlicerAxis(), "SlicerAxis");
             List<Hierarchy> axisHierarchyList = new ArrayList<Hierarchy>();
             for (int i = 0; i < axes.length; i++) {
-                Hierarchy[] hiers =
+                List<Hierarchy> hiers =
                     axisInfo(writer, axes[i], queryAxes[i], "Axis" + i);
-                axisHierarchyList.addAll(Arrays.asList(hiers));
+                axisHierarchyList.addAll(hiers);
             }
-            // Remove all seen axes.
-            // What this does is for each hierarchy in one of the
-            // axes, find its Dimension and then all of that Dimension's
-            // Hierarchies (most of the time you are back to the original
-            // Hierarchy) and then for each Hierarchy remove it from the
-            // list of all Hierarchies.
-            // NOTE: Don't know if this is correct!!
+            // Remove all seen dimensions.
             for (Hierarchy hier1 : axisHierarchyList) {
-                Dimension dim = hier1.getDimension();
-                Hierarchy[] hiers = dim.getHierarchies();
-                for (Hierarchy h : hiers) {
-                    String uniqueName = h.getUniqueName();
-                    for (Iterator<Hierarchy> it2 = hierarchyList.iterator(); it2
-                        .hasNext();) {
-                        Hierarchy hier2 = it2.next();
-                        if (uniqueName.equals(hier2.getUniqueName())) {
-                            it2.remove();
-                            break;
-                        }
-                    }
-                }
+                unseenDimensionList.remove(hier1.getDimension());
             }
 
             ///////////////////////////////////////////////
             // create AxesInfo for slicer axes
             //
-            Hierarchy[] hierarchies =
-                hierarchyList.toArray(new Hierarchy[hierarchyList.size()]);
+            // The slicer axes contains the default hierarchy of each dimension
+            // not seen on another axis.
+            List<Hierarchy> hierarchies = new ArrayList<Hierarchy>();
+            for (Dimension dimension : unseenDimensionList) {
+                hierarchies.add(dimension.getHierarchy());
+            }
             writer.startElement("AxisInfo",
                     new String[] { "name", "SlicerAxis"});
             final QueryAxis slicerAxis = result.getQuery().getSlicerAxis();
@@ -1724,7 +1707,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.endElement(); // OlapInfo
         }
 
-        private Hierarchy[] axisInfo(
+        private List<Hierarchy> axisInfo(
                 SaxWriter writer,
                 Axis axis,
                 QueryAxis queryAxis,
@@ -1732,17 +1715,16 @@ public class XmlaHandler implements XmlaConstants {
 
             writer.startElement("AxisInfo", new String[] { "name", axisName});
 
-            Hierarchy[] hierarchies;
+            List<Hierarchy> hierarchies;
             Iterator<Position> it = axis.getPositions().iterator();
             if (it.hasNext()) {
                 final Position position = it.next();
-                List<Hierarchy> l = new ArrayList<Hierarchy>();
-                for (Member member: position) {
-                    l.add(member.getHierarchy());
+                hierarchies = new ArrayList<Hierarchy>();
+                for (Member member : position) {
+                    hierarchies.add(member.getHierarchy());
                 }
-                hierarchies = l.toArray(new Hierarchy[l.size()]);
             } else {
-                hierarchies = new Hierarchy[0];
+                hierarchies = Collections.emptyList();
                 //final QueryAxis queryAxis = this.result.getQuery().axes[i];
                 // TODO:
             }
@@ -1757,7 +1739,7 @@ public class XmlaHandler implements XmlaConstants {
 
         private void writeHierarchyInfo(
                 SaxWriter writer,
-                Hierarchy[] hierarchies,
+                List<Hierarchy> hierarchies,
                 String[] props) {
 
             for (Hierarchy hierarchy : hierarchies) {
@@ -1822,7 +1804,7 @@ public class XmlaHandler implements XmlaConstants {
             ////////////////////////////////////////////
             // now generate SlicerAxis information
             //
-            Hierarchy[] hierarchies = slicerAxisHierarchies;
+            List<Hierarchy> hierarchies = slicerAxisHierarchies;
             writer.startElement("Axis", new String[] { "name", "SlicerAxis"});
             writer.startElement("Tuples");
             writer.startElement("Tuple");

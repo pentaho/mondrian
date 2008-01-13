@@ -12057,8 +12057,8 @@ FROM Sales
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -12353,13 +12353,6 @@ FROM Sales
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
-                                <HierarchyInfo name="Time.Weekly">
-                                    <UName name="[Time.Weekly].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time.Weekly].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time.Weekly].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time.Weekly].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time.Weekly].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
                                 <HierarchyInfo name="Product">
                                     <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Product].[MEMBER_CAPTION]"/>
@@ -12505,13 +12498,6 @@ FROM Sales
                                     <LNum>1</LNum>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
-                                    <Member Hierarchy="Time.Weekly">
-                                    <UName>[Time.Weekly].[All Time.Weeklys].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time.Weekly].[Year]</LName>
-                                    <LNum>1</LNum>
-                                    <DisplayInfo>52</DisplayInfo>
-                                    </Member>
                                     <Member Hierarchy="Product">
                                     <UName>[Product].[All Products]</UName>
                                     <Caption>All Products</Caption>
@@ -12578,8 +12564,8 @@ FROM Sales
                         </Cell>
                     </CellData>
                 </root>
-            </xmla:return>
-        </xmla:ExecuteResponse>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -12908,13 +12894,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
-                                <HierarchyInfo name="Time.Weekly">
-                                    <UName name="[Time.Weekly].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time.Weekly].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time.Weekly].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time.Weekly].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time.Weekly].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
                                 <HierarchyInfo name="Product">
                                     <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Product].[MEMBER_CAPTION]"/>
@@ -13026,13 +13005,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <LName>[Time].[Year]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>4</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Time.Weekly">
-                                    <UName>[Time.Weekly].[All Time.Weeklys].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time.Weekly].[Year]</LName>
-                                    <LNum>1</LNum>
-                                    <DisplayInfo>52</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Product">
                                     <UName>[Product].[All Products]</UName>
@@ -13427,13 +13399,6 @@ FROM Sales
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
-                                <HierarchyInfo name="Time.Weekly">
-                                    <UName name="[Time.Weekly].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time.Weekly].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time.Weekly].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time.Weekly].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time.Weekly].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
                                 <HierarchyInfo name="Product">
                                     <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Product].[MEMBER_CAPTION]"/>
@@ -13544,13 +13509,6 @@ FROM Sales
                                     <LName>[Time].[Year]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>4</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Time.Weekly">
-                                    <UName>[Time.Weekly].[All Time.Weeklys].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time.Weekly].[Year]</LName>
-                                    <LNum>1</LNum>
-                                    <DisplayInfo>52</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Product">
                                     <UName>[Product].[All Products]</UName>
@@ -13943,13 +13901,6 @@ FROM Sales
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
-                                <HierarchyInfo name="Time.Weekly">
-                                    <UName name="[Time.Weekly].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time.Weekly].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time.Weekly].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time.Weekly].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time.Weekly].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
                                 <HierarchyInfo name="Product">
                                     <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Product].[MEMBER_CAPTION]"/>
@@ -14062,13 +14013,6 @@ FROM Sales
                                     <LNum>0</LNum>
                                     <DisplayInfo>4</DisplayInfo>
                                     </Member>
-                                    <Member Hierarchy="Time.Weekly">
-                                    <UName>[Time.Weekly].[All Time.Weeklys].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time.Weekly].[Year]</LName>
-                                    <LNum>1</LNum>
-                                    <DisplayInfo>52</DisplayInfo>
-                                    </Member>
                                     <Member Hierarchy="Product">
                                     <UName>[Product].[All Products]</UName>
                                     <Caption>All Products</Caption>
@@ -14175,8 +14119,8 @@ FROM Sales
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -14431,7 +14375,7 @@ FROM Sales
                                     <LName name="[Gender].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Gender].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Gender].[DISPLAY_INFO]"/>
-                                     <PARENT_LEVEL
+                                    <PARENT_LEVEL
                                     name="[Gender].[PARENT_LEVEL]" type="xsd:unsignedInt"/>
                                     <PARENT_UNIQUE_NAME
                                     name="[Gender].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
@@ -14473,13 +14417,6 @@ FROM Sales
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
-                                <HierarchyInfo name="Time.Weekly">
-                                    <UName name="[Time.Weekly].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time.Weekly].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time.Weekly].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time.Weekly].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time.Weekly].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
                                 <HierarchyInfo name="Product">
                                     <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Product].[MEMBER_CAPTION]"/>
@@ -14627,13 +14564,6 @@ FROM Sales
                                     <LNum>1</LNum>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
-                                    <Member Hierarchy="Time.Weekly">
-                                    <UName>[Time.Weekly].[All Time.Weeklys].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time.Weekly].[Year]</LName>
-                                    <LNum>1</LNum>
-                                    <DisplayInfo>52</DisplayInfo>
-                                    </Member>
                                     <Member Hierarchy="Product">
                                     <UName>[Product].[All Products]</UName>
                                     <Caption>All Products</Caption>
@@ -14700,8 +14630,8 @@ FROM Sales
                         </Cell>
                     </CellData>
                 </root>
-            </xmla:return>
-        </xmla:ExecuteResponse>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -14743,8 +14673,8 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -15036,13 +14966,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <LName name="[Time].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Time.Weekly">
-                                    <UName name="[Time.Weekly].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time.Weekly].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time.Weekly].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time.Weekly].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time.Weekly].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
                                 <HierarchyInfo name="Product">
                                     <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
@@ -15187,13 +15110,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <LNum>1</LNum>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
-                                    <Member Hierarchy="Time.Weekly">
-                                    <UName>[Time.Weekly].[All Time.Weeklys].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time.Weekly].[Year]</LName>
-                                    <LNum>1</LNum>
-                                    <DisplayInfo>52</DisplayInfo>
-                                    </Member>
                                     <Member Hierarchy="Product">
                                     <UName>[Product].[All Products]</UName>
                                     <Caption>All Products</Caption>
@@ -15260,8 +15176,8 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         </Cell>
                     </CellData>
                 </root>
-            </xmla:return>
-        </xmla:ExecuteResponse>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -15303,8 +15219,8 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -15597,13 +15513,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
-                                <HierarchyInfo name="Time.Weekly">
-                                    <UName name="[Time.Weekly].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time.Weekly].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time.Weekly].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time.Weekly].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time.Weekly].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
                                 <HierarchyInfo name="Product">
                                     <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Product].[MEMBER_CAPTION]"/>
@@ -15746,13 +15655,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <LNum>1</LNum>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
-                                    <Member Hierarchy="Time.Weekly">
-                                    <UName>[Time.Weekly].[All Time.Weeklys].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time.Weekly].[Year]</LName>
-                                    <LNum>1</LNum>
-                                    <DisplayInfo>52</DisplayInfo>
-                                    </Member>
                                     <Member Hierarchy="Product">
                                     <UName>[Product].[All Products]</UName>
                                     <Caption>All Products</Caption>
@@ -15817,8 +15719,8 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         </Cell>
                     </CellData>
                 </root>
-            </xmla:return>
-        </xmla:ExecuteResponse>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -15861,8 +15763,8 @@ Cell Properties Format_String, Formatted_Value
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -16155,13 +16057,6 @@ Cell Properties Format_String, Formatted_Value
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
-                                <HierarchyInfo name="Time.Weekly">
-                                    <UName name="[Time.Weekly].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time.Weekly].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time.Weekly].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time.Weekly].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time.Weekly].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
                                 <HierarchyInfo name="Product">
                                     <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Product].[MEMBER_CAPTION]"/>
@@ -16305,13 +16200,6 @@ Cell Properties Format_String, Formatted_Value
                                     <LNum>1</LNum>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
-                                    <Member Hierarchy="Time.Weekly">
-                                    <UName>[Time.Weekly].[All Time.Weeklys].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time.Weekly].[Year]</LName>
-                                    <LNum>1</LNum>
-                                    <DisplayInfo>52</DisplayInfo>
-                                    </Member>
                                     <Member Hierarchy="Product">
                                     <UName>[Product].[All Products]</UName>
                                     <Caption>All Products</Caption>
@@ -16378,8 +16266,8 @@ Cell Properties Format_String, Formatted_Value
                         </Cell>
                     </CellData>
                 </root>
-            </xmla:return>
-        </xmla:ExecuteResponse>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -16713,13 +16601,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
-                                <HierarchyInfo name="Time.Weekly">
-                                    <UName name="[Time.Weekly].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time.Weekly].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time.Weekly].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time.Weekly].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time.Weekly].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
                                 <HierarchyInfo name="Promotion Media">
                                     <UName name="[Promotion Media].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Promotion Media].[MEMBER_CAPTION]"/>
@@ -16909,13 +16790,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <LName>[Time].[Year]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>4</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Time.Weekly">
-                                    <UName>[Time.Weekly].[All Time.Weeklys].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time.Weekly].[Year]</LName>
-                                    <LNum>1</LNum>
-                                    <DisplayInfo>52</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Promotion Media">
                                     <UName>[Promotion Media].[All Media]</UName>
@@ -17294,13 +17168,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
-                                <HierarchyInfo name="Time.Weekly">
-                                    <UName name="[Time.Weekly].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time.Weekly].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time.Weekly].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time.Weekly].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time.Weekly].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
                                 <HierarchyInfo name="Promotion Media">
                                     <UName name="[Promotion Media].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Promotion Media].[MEMBER_CAPTION]"/>
@@ -17538,13 +17405,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <LName>[Time].[Year]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>4</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Time.Weekly">
-                                    <UName>[Time.Weekly].[All Time.Weeklys].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time.Weekly].[Year]</LName>
-                                    <LNum>1</LNum>
-                                    <DisplayInfo>52</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Promotion Media">
                                     <UName>[Promotion Media].[All Media]</UName>

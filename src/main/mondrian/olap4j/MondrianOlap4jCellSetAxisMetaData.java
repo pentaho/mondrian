@@ -61,65 +61,77 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
     }
 
     public List<Hierarchy> getHierarchies() {
-        List<Hierarchy> hierarchyList =
-            new ArrayList<Hierarchy>();
-        final Type type;
-        final Exp exp = queryAxis.getSet();
-        switch (queryAxis.getAxisOrdinal()) {
-        case SLICER:
-            type =
-                exp == null
-                    ? null
-                    : exp.getType();
-            break;
-        default:
-            final SetType setType =
-                (SetType) exp.getType();
-            type = setType.getElementType();
-        }
-        final MondrianOlap4jConnection olap4jConnection =
-            cellSetMetaData.olap4jStatement.olap4jConnection;
-        if (type == null) {
-            // nothing; will deal with slicer later
-        } else if (type instanceof TupleType) {
-            final TupleType tupleType = (TupleType) type;
-            for (Type elementType : tupleType.elementTypes) {
-                hierarchyList.add(
-                    olap4jConnection.toOlap4j(
-                        elementType.getHierarchy()));
-            }
-        } else {
-            hierarchyList.add(
-                olap4jConnection.toOlap4j(
-                    type.getHierarchy()));
-        }
-
-        // Slicer contains all dimensions not mentioned on other axes. So, if
-        // this is the slicer, now add to the list the default hierarchy of
-        // each dimension not already in the slicer or in another axes.
-        switch (queryAxis.getAxisOrdinal()) {
-        case SLICER:
+        if (queryAxis.getAxisOrdinal() == AxisOrdinal.SLICER) {
+            // Slicer contains all dimensions not mentioned on other axes.
+            // The list contains the default hierarchy of
+            // each dimension not already in the slicer or in another axes.
             Set<Dimension> dimensionSet = new HashSet<Dimension>();
-            for (Hierarchy hierarchy : hierarchyList) {
-                dimensionSet.add(hierarchy.getDimension());
-            }
             for (CellSetAxisMetaData cellSetAxisMetaData
-                : cellSetMetaData.getAxesMetaData())
-            {
+                : cellSetMetaData.getAxesMetaData()) {
                 for (Hierarchy hierarchy
-                    : cellSetAxisMetaData.getHierarchies())
-                {
+                    : cellSetAxisMetaData.getHierarchies()) {
                     dimensionSet.add(hierarchy.getDimension());
                 }
             }
+            List<Hierarchy> hierarchyList =
+                new ArrayList<Hierarchy>();
             for (Dimension dimension
                 : cellSetMetaData.getCube().getDimensions()) {
                 if (dimensionSet.add(dimension)) {
                     hierarchyList.add(dimension.getDefaultHierarchy());
                 }
             }
+            // In case a dimension has multiple hierarchies, return the
+            // declared type of the slicer expression. For example, if the
+            // WHERE clause contains [Time].[Weekly].[1997].[Week 6], the
+            // slicer should contain [Time].[Weekly] not the default hierarchy
+            // [Time].
+            for (Hierarchy hierarchy : getHierarchiesNonFilter()) {
+                if (hierarchy.getDimension().getHierarchies().size() == 1) {
+                    continue;
+                }
+                for (int i = 0; i < hierarchyList.size(); i++) {
+                    Hierarchy hierarchy1 = hierarchyList.get(i);
+                    if (hierarchy1.getDimension().equals(
+                        hierarchy.getDimension())
+                        && hierarchy1 != hierarchy)
+                    {
+                        hierarchyList.set(i, hierarchy);
+                    }
+                }
+            }
+            return hierarchyList;
+        } else {
+            return getHierarchiesNonFilter();
         }
-        return hierarchyList;
+    }
+
+    private List<Hierarchy> getHierarchiesNonFilter() {
+        final Exp exp = queryAxis.getSet();
+        if (exp == null) {
+            return Collections.emptyList();
+        }
+        Type type = exp.getType();
+        if (type instanceof SetType) {
+            type = ((SetType) type).getElementType();
+        }
+        final MondrianOlap4jConnection olap4jConnection =
+            cellSetMetaData.olap4jStatement.olap4jConnection;
+        if (type instanceof TupleType) {
+            final TupleType tupleType = (TupleType) type;
+            List<Hierarchy> hierarchyList =
+                new ArrayList<Hierarchy>();
+            for (Type elementType : tupleType.elementTypes) {
+                hierarchyList.add(
+                    olap4jConnection.toOlap4j(
+                        elementType.getHierarchy()));
+            }
+            return hierarchyList;
+        } else {
+            return Collections.singletonList(
+                (Hierarchy) olap4jConnection.toOlap4j(
+                    type.getHierarchy()));
+        }
     }
 
     public List<Property> getProperties() {

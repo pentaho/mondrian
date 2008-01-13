@@ -86,18 +86,16 @@ abstract class MondrianOlap4jCellSet implements CellSet {
         }
 
         // initialize filter axis
-        final QueryAxis queryAxis = result.getQuery().getSlicerAxis();
+        QueryAxis queryAxis = result.getQuery().getSlicerAxis();
         final Axis axis = result.getSlicerAxis();
         if (queryAxis == null) {
             // Dummy slicer axis.
-            QueryAxis queryAxis2 =
+            queryAxis =
                 new QueryAxis(
                     false, null, AxisOrdinal.SLICER,
                     QueryAxis.SubtotalVisibility.Undefined);
-            filterAxis = new MondrianOlap4jCellSetAxis(this, queryAxis2, axis);
-        } else {
-            filterAxis = new MondrianOlap4jCellSetAxis(this, queryAxis, axis);
         }
+        filterAxis = new MondrianOlap4jCellSetAxis(this, queryAxis, axis);
     }
 
     public CellSetMetaData getMetaData() {

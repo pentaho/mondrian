@@ -399,10 +399,6 @@ class FactoryJdbc4Impl implements Factory {
             super(olap4jStatement, query);
         }
 
-        public CellSetMetaData getMetaData() {
-            return super.getMetaData();
-        }
-
         // implement java.sql.CellSet methods
         // introduced in JDBC 4.0/JDK 1.6
 
