@@ -3228,13 +3228,6 @@ The default value for this property is an empty string.</PropertyDescription>
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
-                                <HierarchyInfo name="Time.Weekly">
-                                    <UName name="[Time.Weekly].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time.Weekly].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time.Weekly].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time.Weekly].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time.Weekly].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
                                 <HierarchyInfo name="Product">
                                     <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Product].[MEMBER_CAPTION]"/>
@@ -3428,13 +3421,6 @@ The default value for this property is an empty string.</PropertyDescription>
                                     <LName>[Time].[Year]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>4</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Time.Weekly">
-                                    <UName>[Time.Weekly].[All Time.Weeklys].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time.Weekly].[Year]</LName>
-                                    <LNum>1</LNum>
-                                    <DisplayInfo>52</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Product">
                                     <UName>[Product].[All Products]</UName>

@@ -274,7 +274,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
      * @throws Exception on error
      */
     public void testMDFunctions() throws Exception {
-        if (Util.PreJdk15) {
+        if (Util.PreJdk15 || Util.Retrowoven) {
             // MDSCHEMA_FUNCTIONS produces different output in JDK 1.4.
             return;
         }
@@ -297,7 +297,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
      * @throws Exception on error
      */
     public void testMDFunctionsJdk14() throws Exception {
-        if (!Util.PreJdk15) {
+        if (!(Util.PreJdk15 || Util.Retrowoven)) {
             // MDSCHEMA_FUNCTIONS produces different output in JDK 1.4.
             return;
         }
