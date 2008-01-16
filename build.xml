@@ -1012,7 +1012,10 @@ doc/**/*.xml"
 
   <target name="javadoc-strict" description="
 Generates javadoc as part of the nightly regress,
-to make sure that all javadoc references are valid.">
+to make sure that all javadoc references are valid.
+
+Javadoc is known to produce errors against JDK 1.4 and 1.5; it runs
+clean against JDK 1.6.">
     <antcall target="javadoc-internal">
       <param name="additionalparam" value=""/>
       <param name="access" value="private"/>
@@ -1053,7 +1056,8 @@ to make sure that all javadoc references are valid.">
            scope="constructors,methods"/>
       <tag name="testcase" description="Test-case:"
            scope="constructors,methods,types"/>
-      <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
+      <link href="http://java.sun.com/javese/6/docs/api/"/>
+      <link href="http://www.olap4j.org/api/"/>
       <link href="http://junit.sourceforge.net/javadoc"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
       <link href="http://eigenbase.sourceforge.net/resgen/api/"/>
