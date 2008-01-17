@@ -1056,7 +1056,7 @@ clean against JDK 1.6.">
            scope="constructors,methods"/>
       <tag name="testcase" description="Test-case:"
            scope="constructors,methods,types"/>
-      <link href="http://java.sun.com/javese/6/docs/api/"/>
+      <link href="http://java.sun.com/javase/6/docs/api/"/>
       <link href="http://www.olap4j.org/api/"/>
       <link href="http://junit.sourceforge.net/javadoc"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
