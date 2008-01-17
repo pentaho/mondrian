@@ -201,7 +201,7 @@ demo/access/MondrianFoodMart.mdb"/>
   <property name="mondrian.test.Name" value=""/>
 
   <!-- Arguments to the java process spawned by the junit task. -->
-  <property name="junit.jvmargs" value="-ea -esa -Xms1024m -Xmx1024m"/>
+  <property name="junit.jvmargs" value="-ea -esa -Xmx256m"/>
 
   <target name="help">
       <echo>
