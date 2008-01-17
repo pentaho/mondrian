@@ -201,7 +201,7 @@ demo/access/MondrianFoodMart.mdb"/>
   <property name="mondrian.test.Name" value=""/>
 
   <!-- Arguments to the java process spawned by the junit task. -->
-  <property name="junit.jvmargs" value="-ea -esa -Xmx256m"/>
+  <property name="junit.jvmargs" value="-ea -esa -Xms1024m -Xmx1024m"/>
 
   <target name="help">
       <echo>
@@ -1039,6 +1039,7 @@ clean against JDK 1.6.">
       <fileset dir="${testclasses.dir}" includes="**/package.html"/>
     </delete>
     <javadoc sourcepath="${java.dir}:${javatest.dir}"
+        maxmemory="1024m"
         classpathref="project.test.classpath"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*"
