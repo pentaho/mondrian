@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -857,16 +857,21 @@ public class FunUtil extends Util {
                 values, value, DescendingValueComparator.instance);
     }
 
-    static Object median(Evaluator evaluator, List members, Calc exp) {
+    static double percentile(
+        Evaluator evaluator,
+        List members,
+        Calc exp,
+        double p)
+    {
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         if (sw.errorCount > 0) {
-            return new Double(Double.NaN);
+            return Double.NaN;
         } else if (sw.v.size() == 0) {
-            return Util.nullValue;
+            return FunUtil.DoubleNull;
         }
         double[] asArray = new double[sw.v.size()];
         for (int i = 0; i < asArray.length; i++) {
-            asArray[i] = ((Double) sw.v.get(i)).doubleValue();
+            asArray[i] = (Double) sw.v.get(i);
         }
         Arrays.sort(asArray);
 
@@ -880,13 +885,30 @@ public class FunUtil extends Util {
          * (entries[length/2 - 1] + entries[length/2]) / 2.
          */
         int length = asArray.length;
-        Double result = ((length & 1) == 1)
-            // The length is odd. Note that length/2 is an integer expression,
-            // and it's positive so we save ourselves a divide...
-            ? new Double(asArray[length >> 1])
-            : new Double((asArray[(length >> 1) - 1] + asArray[length >> 1]) / 2.0);
 
-        return result;
+        if (p == 0.5) {
+            // Special case for median.
+            if ((length & 1) == 1) {
+                // The length is odd. Note that length/2 is an integer
+                // expression, and it's positive so we save ourselves a divide.
+                return asArray[length >> 1];
+            } else {
+                return (asArray[(length >> 1) - 1] + asArray[length >> 1])
+                    / 2.0;
+            }
+        } else if (p <= 0.0) {
+            return asArray[0];
+        } else if (p >= 1.0) {
+            return asArray[length - 1];
+        } else {
+            final double jD = Math.floor(length * p);
+            int j = (int) jD;
+            double alpha = (p - jD) * length;
+            assert alpha >= 0;
+            assert alpha <= 1;
+            return asArray[j] * (1.0 - alpha)
+                + asArray[j + 1] * alpha;
+        }
     }
 
     /**
@@ -1584,143 +1606,6 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
                 (ordinal1 < ordinal2) ?
                 -1 :
                 1;
-        }
-    }
-
-    /**
-     * Returns whether we can convert an argument to a parameter tyoe.
-     * @param fromExp argument type
-     * @param to   parameter type
-     * @param conversionCount in/out count of number of conversions performed;
-     *             is incremented if the conversion is non-trivial (for
-     *             example, converting a member to a level).
-     */
-    public static boolean canConvert(
-            Exp fromExp,
-            int to,
-            int[] conversionCount) {
-        int from = fromExp.getCategory();
-        if (from == to) {
-            return true;
-        }
-        switch (from) {
-        case Category.Array:
-            return false;
-        case Category.Dimension:
-            // Seems funny that you can 'downcast' from a dimension, doesn't
-            // it? But we add an implicit 'CurrentMember', for example,
-            // '[Time].PrevMember' actually means
-            // '[Time].CurrentMember.PrevMember'.
-            switch (to) {
-            case Category.Member:
-            case Category.Tuple:
-                // It's easier to convert dimension to member than dimension
-                // to hierarchy or level.
-                conversionCount[0]++;
-                return true;
-            case Category.Hierarchy:
-            case Category.Level:
-                conversionCount[0] += 2;
-                return true;
-            default:
-                return false;
-            }
-        case Category.Hierarchy:
-            switch (to) {
-            case Category.Dimension:
-            case Category.Member:
-            case Category.Tuple:
-                conversionCount[0]++;
-                return true;
-            default:
-                return false;
-            }
-        case Category.Level:
-            switch (to) {
-            case Category.Dimension:
-                // It's more difficult to convert to a dimension than a
-                // hierarchy. For example, we want '[Store City].CurrentMember'
-                // to resolve to <Hierarchy>.CurrentMember rather than
-                // <Dimension>.CurrentMember.
-                conversionCount[0] += 2;
-                return true;
-            case Category.Hierarchy:
-                conversionCount[0]++;
-                return true;
-            default:
-                return false;
-            }
-        case Category.Logical:
-            return false;
-        case Category.Member:
-            switch (to) {
-            case Category.Dimension:
-            case Category.Hierarchy:
-            case Category.Level:
-            case Category.Tuple:
-                conversionCount[0]++;
-                return true;
-            case (Category.Numeric | Category.Expression):
-                // We assume that members are numeric, so a cast to a numeric
-                // expression is less expensive than a conversion to a string
-                // expression.
-                conversionCount[0]++;
-                return true;
-            case Category.Value:
-            case (Category.String | Category.Expression):
-                conversionCount[0] += 2;
-                return true;
-            default:
-                return false;
-            }
-        case Category.Numeric | Category.Constant:
-            return to == Category.Value ||
-                to == Category.Numeric;
-        case Category.Numeric:
-            switch (to) {
-            case Category.Logical:
-                conversionCount[0]++;
-                return true;
-            default:
-                return to == Category.Value ||
-                    to == Category.Integer ||
-                    to == (Category.Integer | Category.Constant) ||
-                    to == (Category.Numeric | Category.Constant);
-            }
-
-        case Category.Integer:
-            return to == Category.Value ||
-                to == (Category.Integer | Category.Constant) ||
-                to == Category.Numeric ||
-                to == (Category.Numeric | Category.Constant);
-        case Category.Set:
-            return false;
-        case Category.String | Category.Constant:
-            return to == Category.Value ||
-                to == Category.String;
-        case Category.String:
-            return to == Category.Value ||
-                to == (Category.String | Category.Constant);
-        case Category.DateTime | Category.Constant:
-            return to == Category.Value ||
-                to == Category.DateTime;
-        case Category.DateTime:
-            return to == Category.Value ||
-                to == (Category.DateTime | Category.Constant);
-        case Category.Tuple:
-            return to == Category.Value ||
-                to == Category.Numeric;
-        case Category.Value:
-            return false;
-        case Category.Symbol:
-            return false;
-        case Category.Null:
-        	// now null supports members as well as numerics
-            return  to == Category.Numeric || to == Category.Member;
-        case Category.Empty:
-            return false;
-        default:
-            throw newInternal("unknown category " + from);
         }
     }
 

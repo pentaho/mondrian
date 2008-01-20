@@ -3479,6 +3479,32 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Abs</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Acos</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the arccosine, or inverse
+                            cosine, of a number. The arccosine is the
+                            angle whose cosine is Arg1. The returned
+                            angle is given in radians in the range 0
+                            (zero) to pi.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Acos</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Acosh</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the inverse hyperbolic
+                            cosine of a number. Number must be greater
+                            than or equal to 1. The inverse hyperbolic
+                            cosine is the value whose hyperbolic cosine
+                            is Arg1, so Acosh(Cosh(number)) equals Arg1.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Acosh</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>AddCalculatedMembers</FUNCTION_NAME>
                         <DESCRIPTION>Adds calculated members to a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
@@ -3609,6 +3635,56 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>AscW</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Asin</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the arcsine, or inverse
+                            sine, of a number. The arcsine is the angle
+                            whose sine is Arg1. The returned angle is
+                            given in radians in the range -pi/2 to pi/2.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Asin</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Asinh</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the inverse hyperbolic sine
+                            of a number. The inverse hyperbolic sine is
+                            the value whose hyperbolic sine is Arg1, so
+                            Asinh(Sinh(number)) equals Arg1.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Asinh</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Atan2</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the arctangent, or inverse
+                            tangent, of the specified x- and
+                            y-coordinates. The arctangent is the angle
+                            from the x-axis to a line containing the
+                            origin (0, 0) and a point with coordinates
+                            (x_num, y_num). The angle is given in
+                            radians between -pi and pi, excluding -pi.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Atan2</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Atanh</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the inverse hyperbolic
+                            tangent of a number. Number must be between
+                            -1 and 1 (excluding -1 and 1).</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Atanh</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Atn</FUNCTION_NAME>
@@ -3910,6 +3986,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Cos</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Cosh</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the hyperbolic cosine of a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Cosh</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Count</FUNCTION_NAME>
                         <DESCRIPTION>Returns the number of tuples in a
                             set, empty cells included unless the
@@ -4188,6 +4273,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>DefaultMember</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Degrees</FUNCTION_NAME>
+                        <DESCRIPTION>Converts radians to degrees.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Degrees</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
@@ -4733,11 +4827,51 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns one of two dimension values
+                            determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Dimension, Dimension</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IIf</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IIf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns one of two hierarchy values
+                            determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Hierarchy, Hierarchy</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IIf</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IIf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns one of two level values
+                            determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Level, Level</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IIf</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IIf</FUNCTION_NAME>
                         <DESCRIPTION>Returns boolean determined by a
                             logical test.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, Logical
-                            Expression, Numeric Expression</PARAMETER_LIST>
+                            Expression, Logical Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IIf</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IIf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns one of two member values
+                            determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Member, Member</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>IIf</CAPTION>
@@ -4749,6 +4883,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <PARAMETER_LIST>Logical Expression, Numeric
                             Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IIf</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IIf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns one of two set values
+                            determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Set, Set</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>IIf</CAPTION>
@@ -5221,6 +5365,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Log</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Log10</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the base-10 logarithm of a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Log10</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>LTrim</FUNCTION_NAME>
@@ -5712,6 +5865,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Parent</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Percentile</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the value of the tuple that
+                            is at a given percentile of a set.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Percentile</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>PeriodsToDate</FUNCTION_NAME>
                         <DESCRIPTION>Returns a set of periods (members)
                             from a specified level starting with the
@@ -5745,6 +5908,17 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>PeriodsToDate</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Pi</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the number
+                            3.14159265358979, the mathematical constant
+                            pi, accurate to 15 digits.</DESCRIPTION>
+                        <PARAMETER_LIST/>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Pi</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Pmt</FUNCTION_NAME>
                         <DESCRIPTION>Returns a Double specifying the
                             payment for an annuity based on periodic,
@@ -5756,6 +5930,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Pmt</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Power</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the result of a number
+                            raised to a power.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Power</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>PrevMember</FUNCTION_NAME>
@@ -5811,6 +5995,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Qtd</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Radians</FUNCTION_NAME>
+                        <DESCRIPTION>Converts degrees to radians.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Radians</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Rank</FUNCTION_NAME>
@@ -5988,6 +6181,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Sin</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Sinh</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the hyperbolic sine of a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Sinh</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Space</FUNCTION_NAME>
                         <DESCRIPTION>Returns a Variant (String)
                             consisting of the specified number of spaces.</DESCRIPTION>
@@ -6006,6 +6208,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Sqr</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>SqrtPi</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the square root of (number
+                            * pi).</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>SqrtPi</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Stddev</FUNCTION_NAME>
@@ -6204,6 +6416,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Tan</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Tanh</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the hyperbolic tangent of a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Tanh</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>ThirdQ</FUNCTION_NAME>

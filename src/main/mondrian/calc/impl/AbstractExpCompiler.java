@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -163,7 +163,8 @@ public class AbstractExpCompiler implements ExpCompiler {
         if (type instanceof HierarchyType) {
             final HierarchyCalc hierarchyCalc = compileHierarchy(exp);
             return new HierarchyDimensionFunDef.CalcImpl(
-                    exp, hierarchyCalc);
+                new DummyExp(new DimensionType(type.getDimension())),
+                    hierarchyCalc);
         }
         assert type instanceof DimensionType : type;
         return (DimensionCalc) compile(exp);
@@ -241,10 +242,12 @@ public class AbstractExpCompiler implements ExpCompiler {
     public BooleanCalc compileBoolean(Exp exp) {
         final Calc calc = compileScalar(exp, false);
         if (calc instanceof BooleanCalc) {
-            if (calc instanceof ConstantCalc
-                && !(calc.evaluate(null) instanceof Boolean)) {
-                return ConstantCalc.constantBoolean(
-                    ((ConstantCalc) calc).evaluateBoolean(null));
+            if (calc instanceof ConstantCalc) {
+                final Object o = calc.evaluate(null);
+                if (!(o instanceof Boolean)) {
+                    return ConstantCalc.constantBoolean(
+                        CastFunDef.toBoolean(o, new BooleanType()));
+                }
             }
             return (BooleanCalc) calc;
         } else if (calc instanceof DoubleCalc) {
@@ -394,6 +397,9 @@ public class AbstractExpCompiler implements ExpCompiler {
          * Sets a compiled expression to compute the default value of the
          * parameter.
          *
+         * @param calc Compiled expression to compute default value of
+         * parameter
+         * 
          * @see #getDefaultValueCalc()
          */
         private void setDefaultValueCalc(Calc calc) {

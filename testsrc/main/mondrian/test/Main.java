@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,6 +25,7 @@ import junit.framework.TestSuite;
 import mondrian.olap.fun.*;
 import mondrian.olap.fun.vba.VbaTest;
 import mondrian.olap.*;
+import mondrian.olap.type.TypeTest;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQueryTest;
 import mondrian.test.comp.ResultComparatorTest;
@@ -140,7 +141,9 @@ public class Main extends TestSuite {
 
         TestSuite suite = new TestSuite();
         if (testClass != null && !testClass.equals("")) {
-            Class clazz = Class.forName(testClass);
+            //noinspection unchecked
+            Class<? extends TestCase> clazz =
+                (Class<? extends TestCase>) Class.forName(testClass);
 
             // use addTestSuite only if the class has test methods
             // Allows you to run individual queries with ResultComparatorTest
@@ -164,7 +167,7 @@ public class Main extends TestSuite {
                 // does not implement Test, so look for a 'public [static]
                 // Test suite()' method.
                 Method method = clazz.getMethod("suite", new Class[0]);
-                Object target;
+                TestCase target;
                 if (Modifier.isStatic(method.getModifiers())) {
                     target = null;
                 } else {
@@ -252,6 +255,7 @@ public class Main extends TestSuite {
             addTest(suite, SetFunDefTest.class);
             addTest(suite, AggregationOnDistinctCountMeasuresTest.class);
             addTest(suite, BitKeyTest.class);
+            addTest(suite, TypeTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
@@ -342,14 +346,21 @@ public class Main extends TestSuite {
         return newSuite;
     }
     
-    private static void addTest(TestSuite suite, Class testClass) throws Exception {
+    private static void addTest(
+        TestSuite suite,
+        Class<? extends TestCase> testClass) throws Exception
+    {
         int startTestCount = suite.countTestCases();
         suite.addTestSuite(testClass);
         int endTestCount = suite.countTestCases();
         printTestInfo(suite, testClass.getName(), startTestCount, endTestCount);
     }
 
-    private static void addTest(TestSuite suite, Class testClass, String testMethod) throws Exception {
+    private static void addTest(
+        TestSuite suite,
+        Class<? extends TestCase> testClass,
+        String testMethod) throws Exception
+    {
         Method method = testClass.getMethod(testMethod);
         Object o = method.invoke(null);
         int startTestCount = suite.countTestCases();        
@@ -358,7 +369,11 @@ public class Main extends TestSuite {
         printTestInfo(suite, testClass.getName(), startTestCount, endTestCount);
     }
     
-    private static void addTest(TestSuite suite, Test tests, String testClassName) throws Exception {
+    private static void addTest(
+        TestSuite suite,
+        Test tests,
+        String testClassName) throws Exception
+    {
         int startTestCount = suite.countTestCases();        
         suite.addTest(tests);
         int endTestCount = suite.countTestCases();

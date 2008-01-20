@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -170,6 +170,26 @@ public class Category extends EnumeratedValues {
     public static final int Constant = 64;
     /** <code>Mask</code> is a mask to remove flags. */
     public static final int Mask = 31;
+
+    /**
+     * Returns whether a category represents a scalar type.
+     *
+     * @param category Category
+     * @return Whether is scalar
+     */
+    public static boolean isScalar(int category) {
+        switch (category & Mask) {
+        case Value:
+        case Logical:
+        case Numeric:
+        case Integer:
+        case String:
+        case DateTime:
+            return true;
+        default:
+            return false;
+        }
+    }
 }
 
 // End Category.java

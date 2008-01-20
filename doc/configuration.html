@@ -4,7 +4,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == Copyright (C) 2006-2007 Julian Hyde
+  == Copyright (C) 2006-2008 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -35,10 +35,10 @@
 			<li><a href="#Connect_string_syntax">Syntax</a></li>
     		<li><a href="#Connect_string_properties">Connect string properties</a></li>
     	</ol>
-    <li><a href="#Cache_management">Cache_management</a><ol>
-			<li><a href="#Schema_cache">Schema_cache</a></li>
+    <li><a href="#Cache_management">Cache management</a><ol>
+			<li><a href="#Schema_cache">Schema cache</a></li>
     	</ol>
-    <li><a href="#Memory_management">Memory_management</a><ol>
+    <li><a href="#Memory_management">Memory management</a><ol>
 			<li><a href="#Out_of_memory">Out of memory</a></li>
     	</ol>
     </li>
@@ -142,7 +142,7 @@ suite of regression tests.</p>
       <blockquote>
           <p><code>Number of members to be read exceeded limit 50,000</code></p>
 
-      </blockquote></p>
+      </blockquote>
 
       <p>and Mondrian throws a
       <a href="api/mondrian/olap/ResourceLimitExceededException.html">
@@ -301,7 +301,6 @@ suite of regression tests.</p>
           <p><code>Query timeout of 10 seconds reached</code></p>
 
       </blockquote>
-      </p>
 
       <p>See also
       <a href="#limit_properties">limit properties</a>.</p></td>
@@ -585,10 +584,7 @@ suite of regression tests.</p>
       <p>If you set the value to -1, Mondrian uses the next seed from an
       internal random-number generator. This is a little more deterministic than
       setting the value to 0.</p>
-
-      <p>public final IntegerProperty TestSeed = new IntegerProperty(<br>
-
-      this, &quot;&quot;, 1234);</p></td>
+      </td>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#TestJdbcURL">
@@ -596,8 +592,8 @@ suite of regression tests.</p>
       <td>string</td>
       <td>-</td>
 
-      <td>Property containing the JDBC URL of a test database. It does not
-      default.</td>
+      <td>Property containing the JDBC URL of a test database. There is no
+      default value.</td>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#TestJdbcUser">
@@ -627,21 +623,24 @@ suite of regression tests.</p>
       Property which controls if warning messages should be printed if a sql 
       comparison tests do not contain expected sqls for the specified dialect. 
       The tests are skipped if no expected sqls are found for the current dialect.
-      <p> 
-      Possible values are the following:
-      <p>
-      "NONE": no warning (default) <br>
-      "ANY": any dialect <br>
-      "ACCESS" <br>
-      "DERBY" <br>
-      "LUCIDDB" <br>
-      "MYSQL" <br>
-      ...and any Dialect enum in SqlPattern.Dialect
-      <p>
-      Specific tests can overwrite the default setting. The priority
-      between test setting and property file setting is:
-      <p>
+
+      <p>Possible values are the following:
+      <ul>
+      <li>"NONE": no warning (default) </li>
+      <li>"ANY": any dialect</li>
+      <li>"ACCESS"</li>
+      <li>"DERBY"</li>
+      <li>"LUCIDDB"</li>
+      <li>"MYSQL"</li>
+      <li>... and any Dialect enum in SqlPattern.Dialect</li>
+      </ul>
+      
+      <p>Specific tests can overwrite the default setting. The priority
+      between test setting and property file setting is:</p>
+      
+      <blockquote>
       Settings besides "NONE" in mondrian.properties file < Any setting in the test < "ANY"
+      </blockquote>
       </td>
     </tr>
     <tr>
@@ -896,7 +895,7 @@ href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported
       mondrian.rolap.maxConstraints</a></code></td>
       <td style="vertical-align: top;">int</td>
 
-      <td style="vertical-align: top;">1,000</td>
+      <td style="vertical-align: top;">500</td>
       <td style="vertical-align: top;">Max number of constraints in a single
       `IN' SQL clause.<p>This value may be variant among database products and
       their runtime settings. Oracle, for example, gives the error &quot;ORA-01795:
@@ -936,7 +935,7 @@ href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported
     <tr>
       <td><code>
       <a href="api/mondrian/olap/MondrianProperties.html#EnableTotalCount">
-      mondrian.xmla.drillthrough TotalCount.enable</a></code></td>
+      mondrian.xmla.drillthroughTotalCount.enable</a></code></td>
 
       <td>boolean</td>
       <td>true</td>
@@ -945,7 +944,7 @@ href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#MaxRows">
-      mondrian.xmla.drillthrough MaxRows</a></code></td>
+      mondrian.xmla.drillthroughMaxRows</a></code></td>
 
       <td>int</td>
       <td>1,000</td>
@@ -1228,7 +1227,7 @@ OLE DB connect string syntax specification</a>.</p>
         <p>Example values are &quot;en&quot; (English), &quot;en_US&quot;
         (United States English), &quot;hu&quot; (Hungarian). If Locale is not specified, then the name of system's default will be used, as per
         <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Locale.html#getDefault()">
-        java.util.Locale#getDefault().</td>
+        java.util.Locale#getDefault()</a>.</td>
     </tr>
 </table>
 <p>Connect string properties are also documented in the
@@ -1239,16 +1238,16 @@ RolapConnectionProperties</a> class.</p>
 
 <h3>Schema cache<a name="Schema_cache"></a></h3>
 
-<font SIZE="2">
 <p>To flush all schema definitions, use
-the <a href="api/mondrian/olap/MondrianServer.html#flushSchemaCache()">mondrian.olap.MondrianServer.flushSchemaCache()</a>
+the <a href="api/mondrian/olap/CacheControl.html#flushSchemaCache()">mondrian.olap.CacheControl.flushSchemaCache()</a>
 method:</p>
 
 <blockquote>
     <p><code>import mondrian.olap.*;<br>
     <br>
     Connection connection;<br>
-    MondrianServer.forConnection(connection).flushSchemaCache();</code></p>
+    CacheControl cacheControl = connection.getCacheControl(null);<br>
+    cacheControl.flushSchemaCache();</code></p>
 
 </blockquote>
 <p>The cache is only used when creating new connections; existing connections
@@ -1256,22 +1255,21 @@ retain their schemas.</p>
 <p>
 There are four connect string properties that control the use of the 
 Schema cache:
-UseSchemaPool.
-UseContentChecksum,
-CatalogContent and
-DynamicSchemaProcessor.
+<code>UseSchemaPool</code>,
+<code>UseContentChecksum</code>,
+<code>CatalogContent</code> and
+<code>DynamicSchemaProcessor</code>.
 </p>
-<p>
-The UseSchemaPool property controls whether or not the cache is used
-regardless of the values of any of the other properties. It UseSchemaPool
+
+<p>The <code>UseSchemaPool</code> property controls whether or not the cache is used
+regardless of the values of any of the other properties. If UseSchemaPool
 is "false", then the cache is not used; each request for a new schema
 object creates a new one (entailing the re-parsing of the schema definition
 and re-scanning of the database for meta data and aggregate tables - 
 very slow, and, in addition, there is no reuse of the in-memory aggregate
-cache).
-</p>
-<p>
-Next, if UseContentChecksum is "true", then a check sum (MD5) is created
+cache).</p>
+
+<p>Next, if <code>UseContentChecksum</code> is "true", then a check sum (MD5) is created
 from the schema definition content (not URL) and it is this check sum
 that is used as the key to lookup previously cached versions of the 
 schema definition. If two schema definitions produce different check
@@ -1289,28 +1287,23 @@ the connection attributes
 or 
 "catalogUrl", 
 "dataSource" 
-are used to create the key.
-</p>
-<p>
-If the CatalogContent is specified, then it is used as the schema
+are used to create the key.</p>
+
+<p>If the <code>CatalogContent</code> is specified, then it is used as the schema
 definition content. If, in fact, it is specified, then the value of
-DynamicSchemaProcessor, if any, is ignored.
-</p>
-<p>
-Finally, the DynamicSchemaProcessor connection string property is the
+DynamicSchemaProcessor, if any, is ignored.</p>
+
+<p>Finally, the <code>DynamicSchemaProcessor</code> connection string property is the
 class name of a class that implements the DynamicSchemaProcessor
 interface. If set, an instance of the class is created for each
 schema request and its "processSchema" method is called which
-returns the schema definition content.
-</p>
-
-</font>
+returns the schema definition content.</p>
 
 <h2>Memory management<a name="Memory_management"></a></h2>
 
 <h3>Out Of Memory<a name="Out_of_memory"></a></h3>
 
-<p>Java <code>OutOfMemoryError</code>s have always been an issue with
+<p>Java <code>OutOfMemoryError</code> errors have always been an issue with
 applications. When the JVM throws an <code>Error</code> as
 opposed to an <code>Exception</code> it is telling the application
 that its world has ended and it has no recourse but to die.
@@ -1372,10 +1365,10 @@ At the current time, I do not know a way around this problem.
 
 <hr noshade size="1"/>
 <p>
-    Author: Julian Hyde; last modified November, 2007.<br/>
+    Author: Julian Hyde; last modified January, 2008.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/configuration.html?ac=22">log</a>)<br/>
-    Copyright (C) 2006-2007 Julian Hyde
+    Copyright (C) 2006-2008 Julian Hyde
 </p>
 
 <br />

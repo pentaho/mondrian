@@ -3,15 +3,13 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.type;
 
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
+import mondrian.olap.*;
 
 /**
  * The type of an expression which represents a Dimension.
@@ -71,8 +69,41 @@ public class DimensionType implements Type {
         return dimension;
     }
 
+    public int hashCode() {
+        return digest.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        if (obj instanceof DimensionType) {
+            DimensionType that = (DimensionType) obj;
+            return Util.equals(this.getDimension(), that.getDimension());
+        }
+        return false;
+    }
+
     public String toString() {
         return digest;
+    }
+
+    public Type computeCommonType(Type type, int[] conversionCount) {
+        if (conversionCount != null && type instanceof HierarchyType) {
+            HierarchyType hierarchyType = (HierarchyType) type;
+            if (Util.equals(hierarchyType.getDimension(), dimension)) {
+                ++conversionCount[0];
+                return this;
+            }
+            return null;
+        }
+        if (!(type instanceof DimensionType)) {
+            return null;
+        }
+        DimensionType that = (DimensionType) type;
+        if (this.getDimension() != null
+            && this.getDimension().equals(that.getDimension())) {
+            return new DimensionType(
+                this.getDimension());
+        }
+        return DimensionType.Unknown;
     }
 }
 

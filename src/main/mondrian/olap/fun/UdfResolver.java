@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -73,22 +73,21 @@ public class UdfResolver implements Resolver {
             return null;
         }
         int[] parameterCategories = new int[parameterTypes.length];
-        Type[] argTypes = new Type[parameterTypes.length];
         Type[] castArgTypes = new Type[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             Type parameterType = parameterTypes[i];
             final Exp arg = args[i];
-            final Type argType = argTypes[i] = arg.getType();
-            if (parameterType.equals(argType)) {
-                continue;
-            }
+            final Type argType = arg.getType();
             final int parameterCategory = TypeUtil.typeToCategory(parameterType);
             if (!validator.canConvert(
                     arg, parameterCategory, conversionCount)) {
                 return null;
             }
-            castArgTypes[i] = FunDefBase.castType(argType, parameterCategory);
             parameterCategories[i] = parameterCategory;
+            if (!parameterType.equals(argType)) {
+                castArgTypes[i] =
+                    FunDefBase.castType(argType, parameterCategory);
+            }
         }
         final Type returnType = udf.getReturnType(castArgTypes);
         return new UdfFunDef(parameterCategories, returnType);

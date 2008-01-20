@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2006 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,10 +25,16 @@ public class NumericType extends ScalarType {
      * Creates a numeric type.
      */
     public NumericType() {
+        this("NUMERIC");
     }
 
-    public String toString() {
-        return "NUMERIC";
+    protected NumericType(String digest) {
+        super(digest);
+    }
+
+    public boolean equals(Object obj) {
+        return obj instanceof NumericType
+            && toString().equals(obj.toString());
     }
 }
 

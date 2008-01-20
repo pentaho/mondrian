@@ -3,15 +3,13 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.type;
 
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Dimension;
-import mondrian.olap.Level;
+import mondrian.olap.*;
 
 /**
  * The type of an expression which represents a hierarchy.
@@ -75,6 +73,37 @@ public class HierarchyType implements Type {
 
     public String toString() {
         return digest;
+    }
+
+    public int hashCode() {
+        return digest.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        if (obj instanceof HierarchyType) {
+            HierarchyType that = (HierarchyType) obj;
+            return Util.equals(this.hierarchy, that.hierarchy)
+                && Util.equals(this.dimension, that.dimension);
+        }
+        return false;
+    }
+
+    public Type computeCommonType(Type type, int[] conversionCount) {
+        if (!(type instanceof HierarchyType)) {
+            return null;
+        }
+        HierarchyType that = (HierarchyType) type;
+        if (this.getHierarchy() != null
+            && this.getHierarchy().equals(that.getHierarchy())) {
+            return this;
+        }
+        if (this.getDimension() != null
+            && this.getDimension().equals(that.getDimension())) {
+            return new HierarchyType(
+                this.getDimension(),
+                null);
+        }
+        return HierarchyType.Unknown;
     }
 }
 

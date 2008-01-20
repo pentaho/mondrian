@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -21,6 +21,7 @@ import mondrian.olap.Member;
 import mondrian.olap.fun.extra.NthQuartileFunDef;
 import mondrian.olap.fun.extra.CalculatedChildFunDef;
 import mondrian.olap.fun.vba.Vba;
+import mondrian.olap.fun.vba.Excel;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.olap.type.Type;
@@ -645,10 +646,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 SchemaReader schemaReader = evaluator.getSchemaReader();
                 List<Id.Segment> uniqueNameParts =
                     Util.parseIdentifier(memberName);
-                Member member =
-                    (Member) schemaReader.lookupCompound(
-                        cube, uniqueNameParts, true, Category.Member);
-                return member;
+                return (Member) schemaReader.lookupCompound(
+                    cube, uniqueNameParts, true, Category.Member);
             }
         });
 
@@ -739,86 +738,14 @@ public class BuiltinFunTable extends FunTableImpl {
         define(CovarianceFunDef.CovarianceResolver);
         define(CovarianceFunDef.CovarianceNResolver);
 
-        // IIf(<Logical Expression>, <String Expression>, <String Expression>)
-        define(new FunDefBase(
-                "IIf",
-                "Returns one of two string values determined by a logical test.",
-                "fSbSS") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final BooleanCalc booleanCalc =
-                        compiler.compileBoolean(call.getArg(0));
-                final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                final StringCalc calc2 = compiler.compileString(call.getArg(2));
-                return new AbstractStringCalc(call, new Calc[] {booleanCalc, calc1, calc2}) {
-                    public String evaluateString(Evaluator evaluator) {
-                        final boolean b =
-                                booleanCalc.evaluateBoolean(evaluator);
-                        StringCalc calc = b ? calc1 : calc2;
-                        return calc.evaluateString(evaluator);
-                    }
-                };
-            }
-        });
-
-        // IIf(<Logical Expression>, <Numeric Expression>, <Numeric Expression>)
-        define(new FunDefBase(
-                "IIf",
-                "Returns one of two numeric values determined by a logical test.",
-                "fnbnn") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final BooleanCalc booleanCalc =
-                        compiler.compileBoolean(call.getArg(0));
-                final Calc calc1 = compiler.compileScalar(call.getArg(1), true);
-                final Calc calc2 = compiler.compileScalar(call.getArg(2), true);
-                return new GenericCalc(call) {
-                    public Object evaluate(Evaluator evaluator) {
-                        final boolean b =
-                                booleanCalc.evaluateBoolean(evaluator);
-                        Calc calc = b ? calc1 : calc2;
-                        return calc.evaluate(evaluator);
-                    }
-
-                    public Calc[] getCalcs() {
-                        return new Calc[] {booleanCalc, calc1, calc2};
-                    }
-                };
-            }
-
-        });
-
-        // IIf(<Logical Expression>, <Boolean Expression>, <Boolean Expression>)
-        define(new FunDefBase(
-                "IIf",
-                "Returns boolean determined by a logical test.",
-                "fbbbn") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final BooleanCalc booleanCalc =
-                        compiler.compileBoolean(call.getArg(0));
-                final BooleanCalc booleanCalc1 = compiler.compileBoolean(call.getArg(1));
-                final Calc numericCalc = compiler.compileScalar(call.getArg(2), true);
-                Calc[] calcs = new Calc[]{booleanCalc, booleanCalc, numericCalc};
-                return new AbstractBooleanCalc(call, calcs) {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final boolean condition =
-                                booleanCalc.evaluateBoolean(evaluator);
-                        final boolean firstParam =
-                                booleanCalc1.evaluateBoolean(evaluator);
-                        int value =
-                                ((Double) numericCalc.evaluate(evaluator))
-                                        .intValue();
-
-                        boolean secondParam = false;
-                        if (value > 0) {
-                            secondParam = true;
-                        }
-
-                        return condition ? firstParam : secondParam;
-
-                    }
-                };
-            }
-
-        });
+        define(IifFunDef.STRING_INSTANCE);
+        define(IifFunDef.NUMERIC_INSTANCE);
+        define(IifFunDef.BOOLEAN_INSTANCE);
+        define(IifFunDef.MEMBER_INSTANCE);
+        define(IifFunDef.LEVEL_INSTANCE);
+        define(IifFunDef.HIERARCHY_INSTANCE);
+        define(IifFunDef.DIMENSION_INSTANCE);
+        define(IifFunDef.SET_INSTANCE);
 
         // InStr(<String Expression>, <String Expression>)
         define(new FunDefBase(
@@ -846,10 +773,10 @@ public class BuiltinFunTable extends FunTableImpl {
         define(LinReg.VarianceResolver);
 
         define(MinMaxFunDef.MaxResolver);
+        define(MinMaxFunDef.MinResolver);
 
         define(MedianFunDef.Resolver);
-
-        define(MinMaxFunDef.MinResolver);
+        define(PercentileFunDef.Resolver);
 
         // <Level>.Ordinal
         define(new FunDefBase(
@@ -2043,6 +1970,11 @@ public class BuiltinFunTable extends FunTableImpl {
 
         // Define VBA functions.
         for (FunDef funDef : JavaFunDef.scan(Vba.class)) {
+            define(funDef);
+        }
+
+        // Define Excel functions.
+        for (FunDef funDef : JavaFunDef.scan(Excel.class)) {
             define(funDef);
         }
     }

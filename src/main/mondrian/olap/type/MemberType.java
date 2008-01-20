@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,7 +25,8 @@ public class MemberType implements Type {
     private final Member member;
     private final String digest;
 
-    public static final MemberType Unknown = new MemberType(null, null, null, null);
+    public static final MemberType Unknown =
+        new MemberType(null, null, null, null);
 
     /**
      * Creates a type representing a member.
@@ -154,6 +155,54 @@ public class MemberType implements Type {
                     type.getLevel(),
                     null);
         }
+    }
+
+    public Type computeCommonType(Type type, int[] conversionCount) {
+        if (type instanceof ScalarType) {
+            return getValueType().computeCommonType(type, conversionCount);
+        }
+        if (type instanceof TupleType) {
+            TupleType tupleType = (TupleType) type;
+            if (tupleType.elementTypes.length == 1) {
+                return new TupleType(new Type[] {type}).computeCommonType(tupleType,
+                    conversionCount);
+            } else {
+                return null;
+            }
+        }
+        if (!(type instanceof MemberType)) {
+            return null;
+        }
+        MemberType that = (MemberType) type;
+        if (this.getMember() != null
+            && this.getMember().equals(that.getMember())) {
+            return this;
+        }
+        if (this.getLevel() != null
+            && this.getLevel().equals(that.getLevel())) {
+            return new MemberType(
+                this.getDimension(),
+                this.getHierarchy(),
+                this.getLevel(),
+                null);
+        }
+        if (this.getHierarchy() != null
+            && this.getHierarchy().equals(that.getHierarchy())) {
+            return new MemberType(
+                this.getDimension(),
+                this.getHierarchy(),
+                null,
+                null);
+        }
+        if (this.getDimension() != null
+            && this.getDimension().equals(that.getDimension())) {
+            return new MemberType(
+                this.getDimension(),
+                null,
+                null,
+                null);
+        }
+        return MemberType.Unknown;
     }
 }
 

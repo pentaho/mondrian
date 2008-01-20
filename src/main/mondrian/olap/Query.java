@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,7 +16,6 @@ import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ResultStyle;
 import mondrian.mdx.*;
-import mondrian.olap.fun.FunUtil;
 import mondrian.olap.fun.ParameterFunDef;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
@@ -1310,7 +1309,10 @@ public class Query extends QueryPart {
         }
 
         public boolean canConvert(Exp fromExp, int to, int[] conversionCount) {
-            return FunUtil.canConvert(fromExp, to, conversionCount);
+            return TypeUtil.canConvert(
+                fromExp.getCategory(),
+                to,
+                conversionCount);
         }
 
         public boolean requiresExpression() {

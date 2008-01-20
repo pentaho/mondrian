@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -49,6 +49,25 @@ public class CubeType implements Type {
 
     public Level getLevel() {
         return null;
+    }
+
+    public int hashCode() {
+        return cube.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        if (obj instanceof CubeType) {
+            CubeType that = (CubeType) obj;
+            return this.cube.equals(that.cube);
+        } else {
+            return false;
+        }
+    }
+
+    public Type computeCommonType(Type type, int[] conversionCount) {
+        return this.equals(type)
+            ? this
+            : null;
     }
 }
 

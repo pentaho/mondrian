@@ -3,15 +3,13 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.type;
 
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
+import mondrian.olap.*;
 
 /**
  * Set type.
@@ -23,6 +21,7 @@ import mondrian.olap.Level;
 public class SetType implements Type {
 
     private final Type elementType;
+    private final String digest;
 
     /**
      * Creates a type representing a set of elements of a given type.
@@ -36,6 +35,24 @@ public class SetType implements Type {
                     elementType instanceof TupleType;
         }
         this.elementType = elementType;
+        this.digest = "SetType<" + elementType + ">";
+    }
+
+    public int hashCode() {
+        return digest.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        if (obj instanceof SetType) {
+            SetType that = (SetType) obj;
+            return Util.equals(this.elementType, that.elementType);
+        } else {
+            return false;
+        }
+    }
+
+    public String toString() {
+        return digest;
     }
 
     /**
@@ -79,6 +96,20 @@ public class SetType implements Type {
         return elementType instanceof TupleType ?
             ((TupleType) elementType).elementTypes.length :
             1;
+    }
+
+    public Type computeCommonType(Type type, int[] conversionCount) {
+        if (!(type instanceof SetType)) {
+            return null;
+        }
+        SetType that = (SetType) type;
+        final Type mostGeneralElementType =
+            this.getElementType().computeCommonType(
+                that.getElementType(), conversionCount);
+        if (mostGeneralElementType == null) {
+            return null;
+        }
+        return new SetType(mostGeneralElementType);
     }
 }
 

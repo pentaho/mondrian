@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2006 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -22,14 +22,11 @@ import mondrian.olap.Category;
  */
 public class TypeUtil {
     public static Hierarchy typeToHierarchy(Type type) {
-        if (type instanceof MemberType) {
-            return ((MemberType) type).getHierarchy();
-        } else if (type instanceof LevelType) {
-            return ((LevelType) type).getHierarchy();
-        } else if (type instanceof HierarchyType) {
-            return ((HierarchyType) type).getHierarchy();
-        } else if (type instanceof DimensionType) {
-            return ((DimensionType) type).getHierarchy();
+        if (type instanceof MemberType
+            || type instanceof LevelType
+            || type instanceof HierarchyType
+            || type instanceof DimensionType) {
+            return type.getHierarchy();
         } else {
             throw Util.newInternal("not an mdx object");
         }
@@ -38,6 +35,9 @@ public class TypeUtil {
     /**
      * Given a set type, returns the element type. Or its element type, if it
      * is a set type. And so on.
+     *
+     * @param type Type
+     * @return underlying element type which is not a set type
      */
     public static Type stripSetType(Type type) {
         while (type instanceof SetType) {
@@ -49,11 +49,14 @@ public class TypeUtil {
     /**
      * Converts a type to a member or tuple type.
      * If it cannot, returns null.
+     *
+     * @param type Type
+     * @return member or tuple type
      */
     public static Type toMemberOrTupleType(Type type) {
         type = stripSetType(type);
         if (type instanceof TupleType) {
-            return (TupleType) type;
+            return type;
         } else {
             return toMemberType(type);
         }
@@ -66,6 +69,9 @@ public class TypeUtil {
      * If it is a dimension, hierarchy or level type, converts it to
      * a member type.
      * If it is a tuple, number, string, or boolean, returns null.
+     *
+     * @param type Type
+     * @return type as a member type
      */
     public static MemberType toMemberType(Type type) {
         type = stripSetType(type);
@@ -84,6 +90,10 @@ public class TypeUtil {
      * Returns whether this type is union-compatible with another.
      * In general, to be union-compatible, types must have the same
      * dimensionality.
+     *
+     * @param type1 First type
+     * @param type2 Second type
+     * @return whether types are union-compatible
      */
     public static boolean isUnionCompatible(Type type1, Type type2) {
         if (type1 instanceof TupleType) {
@@ -120,6 +130,7 @@ public class TypeUtil {
 
     private static boolean equal(
             final Hierarchy hierarchy1, final Hierarchy hierarchy2) {
+        //noinspection RedundantIfStatement
         if (hierarchy1 == null ||
                 hierarchy2 == null ||
                 hierarchy2.getUniqueName().equals(
@@ -174,9 +185,16 @@ public class TypeUtil {
 
     /**
      * Converts a {@link Type} value to a {@link Category} ordinal.
+     * 
+     * @param type Type
+     * @return category ordinal
      */
     public static int typeToCategory(Type type) {
-        if (type instanceof NumericType) {
+        if (type instanceof NullType) {
+            return Category.Null;
+        } else if (type instanceof DateTimeType) {
+            return Category.DateTime;
+        } else if (type instanceof NumericType) {
             return Category.Numeric;
         } else if (type instanceof BooleanType) {
             return Category.Logical;
@@ -201,6 +219,194 @@ public class TypeUtil {
         } else {
             throw Util.newInternal("Unknown type " + type);
         }
+    }
+
+    /**
+     * Returns a type sufficiently broad to hold any value of several types,
+     * but as narrow as possible. If there is no such type, returns null.
+     *
+     * <p>The result is equivalent to calling
+     * {@link Type#computeCommonType(Type, int[])} pairwise.
+     *
+     * @param allowConversions Whether to allow implicit conversions
+     * @param types Array of types
+     * @return Most general type which encompases all types
+     */
+    public static Type computeCommonType(
+        boolean allowConversions,
+        Type... types)
+    {
+        if (types.length == 0) {
+            return null;
+        }
+        Type type = types[0];
+        int[] conversionCount = allowConversions ? new int[] {0} : null;
+        for (int i = 1; i < types.length; ++i) {
+            if (type == null) {
+                return null;
+            }
+            type = type.computeCommonType(types[i], conversionCount);
+        }
+        return type;
+    }
+
+    /**
+     * Returns whether we can convert an argument of a given category to a
+     * given parameter category.
+     *
+     * @param from actual argument category
+     * @param to   formal parameter category
+     * @param conversionCount in/out count of number of conversions performed;
+     *             is incremented if the conversion is non-trivial (for
+     *             example, converting a member to a level).
+     * @return whether can convert from 'from' to 'to'
+     */
+    public static boolean canConvert(
+        int from,
+        int to,
+        int[] conversionCount)
+    {
+        if (from == to) {
+            return true;
+        }
+        switch (from) {
+        case Category.Array:
+            return false;
+        case Category.Dimension:
+            // Seems funny that you can 'downcast' from a dimension, doesn't
+            // it? But we add an implicit 'CurrentMember', for example,
+            // '[Time].PrevMember' actually means
+            // '[Time].CurrentMember.PrevMember'.
+            switch (to) {
+            case Category.Member:
+            case Category.Tuple:
+                // It's easier to convert dimension to member than dimension
+                // to hierarchy or level.
+                conversionCount[0]++;
+                return true;
+            case Category.Hierarchy:
+            case Category.Level:
+                conversionCount[0] += 2;
+                return true;
+            default:
+                return false;
+            }
+        case Category.Hierarchy:
+            switch (to) {
+            case Category.Dimension:
+            case Category.Member:
+            case Category.Tuple:
+                conversionCount[0]++;
+                return true;
+            default:
+                return false;
+            }
+        case Category.Level:
+            switch (to) {
+            case Category.Dimension:
+                // It's more difficult to convert to a dimension than a
+                // hierarchy. For example, we want '[Store City].CurrentMember'
+                // to resolve to <Hierarchy>.CurrentMember rather than
+                // <Dimension>.CurrentMember.
+                conversionCount[0] += 2;
+                return true;
+            case Category.Hierarchy:
+                conversionCount[0]++;
+                return true;
+            default:
+                return false;
+            }
+        case Category.Logical:
+            switch (to) {
+            case Category.Value:
+                return true;
+            default:
+                return false;
+            }
+        case Category.Member:
+            switch (to) {
+            case Category.Dimension:
+            case Category.Hierarchy:
+            case Category.Level:
+            case Category.Tuple:
+                conversionCount[0]++;
+                return true;
+            case Category.Numeric:
+                // We assume that members are numeric, so a cast to a numeric
+                // expression is less expensive than a conversion to a string
+                // expression.
+                conversionCount[0]++;
+                return true;
+            case Category.Value:
+            case Category.String:
+                conversionCount[0] += 2;
+                return true;
+            default:
+                return false;
+            }
+        case Category.Numeric | Category.Constant:
+            return to == Category.Value ||
+                to == Category.Numeric;
+        case Category.Numeric:
+            switch (to) {
+            case Category.Logical:
+                conversionCount[0]++;
+                return true;
+            default:
+                return to == Category.Value ||
+                    to == Category.Integer ||
+                    to == (Category.Integer | Category.Constant) ||
+                    to == (Category.Numeric | Category.Constant);
+            }
+        case Category.Integer:
+            return to == Category.Value ||
+                to == (Category.Integer | Category.Constant) ||
+                to == Category.Numeric ||
+                to == (Category.Numeric | Category.Constant);
+        case Category.Set:
+            return false;
+        case Category.String | Category.Constant:
+            return to == Category.Value ||
+                to == Category.String;
+        case Category.String:
+            return to == Category.Value ||
+                to == (Category.String | Category.Constant);
+        case Category.DateTime | Category.Constant:
+            return to == Category.Value ||
+                to == Category.DateTime;
+        case Category.DateTime:
+            return to == Category.Value ||
+                to == (Category.DateTime | Category.Constant);
+        case Category.Tuple:
+            return to == Category.Value ||
+                to == Category.Numeric;
+        case Category.Value:
+            return false;
+        case Category.Symbol:
+            return false;
+        case Category.Null:
+        	// now null supports members as well as scalars; but scalar is
+            // preferred
+            if (Category.isScalar(to)) {
+                return true;
+            } else if (to == Category.Member) {
+                conversionCount[0] += 2;
+                return true;
+            } else {
+                return false;
+            }
+        case Category.Empty:
+            return false;
+        default:
+            throw Util.newInternal("unknown category " + from);
+        }
+    }
+
+    static <T> T neq(T t1, T t2) {
+        return t1 == null  ? t2
+            : t2 == null ? t1
+                : t1.equals(t2) ? t1
+                    : null;
     }
 }
 

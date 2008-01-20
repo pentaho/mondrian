@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -16,7 +16,6 @@ import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.fun.FunUtil;
 
 /**
  * Definition of the <code>CAST</code> MDX operator.
@@ -49,72 +48,62 @@ public class CastFunDef extends FunDefBase {
         final Type targetType = call.getType();
         final Exp arg = call.getArg(0);
         final Calc calc = compiler.compileScalar(arg, false);
-        return new GenericCalc(arg) {
-            public Calc[] getCalcs() {
-                return new Calc[] {calc};
-            }
+        return new CalcImpl(arg, calc, targetType);
+    }
 
-            public Object evaluate(Evaluator evaluator) {
-                return calc.evaluate(evaluator);
-            }
+    private static RuntimeException cannotConvert(
+        Object o,
+        final Type targetType)
+    {
+        return Util.newInternal(
+            "cannot convert value '" + o +
+            "' to targetType '" + targetType +
+            "'");
+    }
 
-            public String evaluateString(Evaluator evaluator) {
-                final Object o = evaluate(evaluator);
-                if (o == null) {
-                    return null;
-                }
-                return String.valueOf(o);
-            }
+    public static int toInt(
+        Object o,
+        final Type targetType)
+    {
+        if (o == null) {
+            return FunUtil.IntegerNull;
+        }
+        if (o instanceof String) {
+            return Integer.parseInt((String) o);
+        }
+        if (o instanceof Number) {
+            return ((Number) o).intValue();
+        }
+        throw cannotConvert(o, targetType);
+    }
 
-            public int evaluateInteger(Evaluator evaluator) {
-                final Object o = evaluate(evaluator);
-                if (o == null) {
-                    return FunUtil.IntegerNull;
-                }
-                if (o instanceof String) {
-                    return Integer.parseInt((String) o);
-                }
-                if (o instanceof Number) {
-                    return ((Number) o).intValue();
-                }
-                throw cannotConvert(o);
-            }
+    private static double toDouble(Object o, final Type targetType) {
+        if (o == null) {
+            return FunUtil.DoubleNull;
+        }
+        if (o instanceof String) {
+            return Double.valueOf((String) o);
+        }
+        if (o instanceof Number) {
+            return ((Number) o).doubleValue();
+        }
+        throw cannotConvert(o, targetType);
+    }
 
-            public double evaluateDouble(Evaluator evaluator) {
-                final Object o = evaluate(evaluator);
-                if (o == null) {
-                    return FunUtil.DoubleNull;
-                }
-                if (o instanceof String) {
-                    return Double.valueOf((String) o);
-                }
-                if (o instanceof Number) {
-                    return ((Number) o).doubleValue();
-                }
-                throw cannotConvert(o);
-            }
-
-            public boolean evaluateBoolean(Evaluator evaluator) {
-                final Object o = evaluate(evaluator);
-                if (o == null) {
-                    return FunUtil.BooleanNull;
-                }
-                if (o instanceof Boolean) {
-                    return (Boolean) o;
-                }
-                if (o instanceof String) {
-                    return Boolean.valueOf((String) o);
-                }
-                throw cannotConvert(o);
-            }
-
-            private RuntimeException cannotConvert(Object o) {
-                return Util.newInternal(
-                    "cannot convert value '" + o +
-                    "' to targetType '" + targetType +
-                    "'");
-            }
-        };
+    public static boolean toBoolean(Object o, final Type targetType) {
+        if (o == null) {
+            return FunUtil.BooleanNull;
+        }
+        if (o instanceof Boolean) {
+            return (Boolean) o;
+        }
+        if (o instanceof String) {
+            return Boolean.valueOf((String) o);
+        }
+        if (o instanceof Number) {
+            return ((Number) o).doubleValue() > 0;
+        }
+        throw cannotConvert(o, targetType);
     }
 
     /**
@@ -152,6 +141,48 @@ public class CastFunDef extends FunDefBase {
             final FunDef dummyFunDef =
                 createDummyFunDef(this, returnCategory, args);
             return new CastFunDef(dummyFunDef);
+        }
+    }
+
+    private static class CalcImpl extends GenericCalc {
+        private final Calc calc;
+        private final Type targetType;
+
+        public CalcImpl(Exp arg, Calc calc, Type targetType) {
+            super(arg);
+            this.calc = calc;
+            this.targetType = targetType;
+        }
+
+        public Calc[] getCalcs() {
+            return new Calc[] {calc};
+        }
+
+        public Object evaluate(Evaluator evaluator) {
+            return calc.evaluate(evaluator);
+        }
+
+        public String evaluateString(Evaluator evaluator) {
+            final Object o = evaluate(evaluator);
+            if (o == null) {
+                return null;
+            }
+            return String.valueOf(o);
+        }
+
+        public int evaluateInteger(Evaluator evaluator) {
+            final Object o = evaluate(evaluator);
+            return toInt(o, targetType);
+        }
+
+        public double evaluateDouble(Evaluator evaluator) {
+            final Object o = evaluate(evaluator);
+            return toDouble(o, targetType);
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final Object o = evaluate(evaluator);
+            return toBoolean(o, targetType);
         }
     }
 }

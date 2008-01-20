@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde and others
+// Copyright (C) 2003-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -18,7 +18,6 @@ import mondrian.udf.CurrentDateMemberExactUdf;
 import mondrian.udf.CurrentDateMemberUdf;
 import mondrian.udf.CurrentDateStringUdf;
 import mondrian.util.Bug;
-import mondrian.rolap.RolapSchema;
 
 import org.eigenbase.xom.StringEscaper;
 
@@ -2442,6 +2441,20 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #2: 2,169.48\n"));
     }
 
+    public void testPercentile() {
+        // same result as median
+        assertExprReturns("Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 50)", "159,167.84");
+        // same result as min
+        assertExprReturns("Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 0)", "142,277.07");
+        // same result as max
+        assertExprReturns("Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 100)", "263,793.22");
+        // varying points between value #0 (0th percentile) and value #1 (50th
+        // percentile) of the 3 values 
+        assertExprReturns("Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 20)", "152,411.53");
+        assertExprReturns("Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 25)", "154,945.15");
+        assertExprReturns("Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 30)", "157,478.76");
+    }
+
     public void testMin() {
         assertExprReturns("MIN({[Store].[All Stores].[USA].children},[Measures].[Store Sales])", "142,277.07");
     }
@@ -3570,16 +3583,51 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testIIfWithStringAndNull()
     {
-        assertExprThrows("IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, null,\"foo\")",
-                "Failed to parse");
-        assertExprThrows("IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, \"foo\",null)",
-                "Failed to parse");
+        assertExprReturns(
+            "IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, null,\"foo\")",
+            "");
+        assertExprReturns(
+            "IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, \"foo\",null)",
+            "foo");
     }
 
     public void testIsEmptyWithNull()
     {
         assertExprReturns("iif (isempty(null), \"is empty\", \"not is empty\")", "is empty");
         assertExprReturns("iif (isempty(null), 1, 2)", "1");
+    }
+
+    public void testIIfMember() {
+        assertAxisReturns("IIf(1 > 2,[Store].[USA],[Store].[Canada].[BC])",
+            "[Store].[All Stores].[Canada].[BC]");
+    }
+
+    public void testIIfLevel() {
+        assertExprReturns("IIf(1 > 2, [Store].[Store Country],[Store].[Store City]).Name",
+            "Store City");
+    }
+
+    public void testIIfHierarchy() {
+        assertExprReturns("IIf(1 > 2, [Time], [Store]).Name",
+            "Store");
+
+        // Call Iif(<Logical>, <Dimension>, <Hierarchy>). Argument #3, the
+        // hierarchy [Time.Weekly] is implicitly converted to
+        // the dimension [Time] to match argument #2 which is a dimension.
+        assertExprReturns("IIf(1 > 2, [Time], [Time.Weekly]).Name",
+            "Time");
+    }
+
+    public void testIIfDimension() {
+        assertExprReturns("IIf(1 > 2, [Store], [Time]).Name",
+            "Time");
+    }
+
+    public void testIIfSet() {
+        assertAxisReturns("IIf(1 > 2, {[Store].[USA], [Store].[USA].[CA]}, {[Store].[Mexico], [Store].[USA].[OR]})",
+            fold("[Store].[All Stores].[Mexico]\n" +
+                "[Store].[All Stores].[USA].[OR]")
+        );
     }
 
     public void testDimensionCaption() {
@@ -6427,6 +6475,9 @@ public class FunctionTest extends FoodMartTestCase {
 
         try {
             double actual = ((Number) value).doubleValue();
+            if (Double.isNaN(expected) && Double.isNaN(actual)) {
+                return;
+            }
             Assert.assertEquals(
                 null,
                 expected,
@@ -7408,9 +7459,9 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         assertExprReturns("0 + Cast(1 + 2 AS Integer)", "3");
         // To String
         assertExprReturns("'' || Cast(1 + 2 AS String)", "3.0");
-        // To Boolean (not possible)
-        assertExprThrows("1=1 AND Cast(1 + 2 AS Boolean)",
-            "cannot convert value '3.0' to targetType 'BOOLEAN'");
+        // To Boolean
+        assertExprReturns("1=1 AND Cast(1 + 2 AS Boolean)", "true");
+        assertExprReturns("1=1 AND Cast(1 - 1 AS Boolean)", "false");
 
         // From boolean
         // To String
@@ -7877,6 +7928,16 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         assertExprReturns("Format(DateSerial(2006, 4, 29), \"Long Date\")", "Saturday, April 29, 2006");
         // function with date parameter
         assertExprReturns("Year(DateSerial(2006, 4, 29))", "2,006");
+    }
+
+    public void testExcelPi() {
+        // The PI function is defined in the Excel class.
+        assertExprReturns("Pi()", "3");
+    }
+
+    public void testExcelPower() {
+        assertExprReturns("Power(8, 0.333333)", 2.0, 0.01);
+        assertExprReturns("Power(-2, 0.5)", Double.NaN, 0.001);
     }
 }
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -26,6 +26,8 @@ public class LevelType implements Type {
     private final Hierarchy hierarchy;
     private final Level level;
     private final String digest;
+
+    public static final LevelType Unknown = new LevelType(null, null, null);
 
     /**
      * Creates a type representing a level.
@@ -64,17 +66,16 @@ public class LevelType implements Type {
 
     public static LevelType forType(Type type) {
         return new LevelType(
-                type.getDimension(),
-                type.getHierarchy(),
-                type.getLevel());
-
+            type.getDimension(),
+            type.getHierarchy(),
+            type.getLevel());
     }
 
     public static LevelType forLevel(Level level) {
         return new LevelType(
-                level.getDimension(),
-                level.getHierarchy(),
-                level);
+            level.getDimension(),
+            level.getHierarchy(),
+            level);
     }
 
     public boolean usesDimension(Dimension dimension, boolean definitely) {
@@ -96,6 +97,46 @@ public class LevelType implements Type {
 
     public String toString() {
         return digest;
+    }
+
+    public int hashCode() {
+        return digest.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        if (obj instanceof LevelType) {
+            LevelType that = (LevelType) obj;
+            return Util.equals(this.level, that.level)
+                && Util.equals(this.hierarchy, that.hierarchy)
+                && Util.equals(this.dimension, that.dimension);
+        }
+        return false;
+    }
+
+    public Type computeCommonType(Type type, int[] conversionCount) {
+        if (!(type instanceof LevelType)) {
+            return null;
+        }
+        LevelType that = (LevelType) type;
+        if (this.getLevel() != null
+            && this.getLevel().equals(that.getLevel())) {
+            return this;
+        }
+        if (this.getHierarchy() != null
+            && this.getHierarchy().equals(that.getHierarchy())) {
+            return new LevelType(
+                this.getDimension(),
+                this.getHierarchy(),
+                null);
+        }
+        if (this.getDimension() != null
+            && this.getDimension().equals(that.getDimension())) {
+            return new LevelType(
+                this.getDimension(),
+                null,
+                null);
+        }
+        return LevelType.Unknown;
     }
 }
 
