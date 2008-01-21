@@ -217,7 +217,7 @@ public abstract class Excel {
     // Todo: ImSub   Returns the difference of two complex numbers in x + yi or x + yj text format.
     // Todo: ImSum   Returns the sum of two or more complex numbers in x + yi or x + yj text format.
     // Todo: Index   Returns a value or the reference to a value from within a table or range. There are two forms of the INDEX function: the array form and the reference form.
-    // Todo: Intercept   Calculates the point at which a line will intersect the y-axis by using existing x-values and y-values. The intercept point is based on a best-fit regression line plotted through the known x-values and known y-values. Use the INTERCEPT function when you want to determine the value of the dependent variable when the independent variable is 0 (zero). For example, you can use the INTERCEPT function to predict a metal's electrical resistance at 0°C when your data points were taken at room temperature and higher.
+    // Todo: Intercept   Calculates the point at which a line will intersect the y-axis by using existing x-values and y-values. The intercept point is based on a best-fit regression line plotted through the known x-values and known y-values. Use the INTERCEPT function when you want to determine the value of the dependent variable when the independent variable is 0 (zero). For example, you can use the INTERCEPT function to predict a metal's electrical resistance at 0C when your data points were taken at room temperature and higher.
     // Todo: IntRate   Returns the interest rate for a fully invested security.
     // Todo: Ipmt   Returns the interest payment for a given period for an investment based on periodic, constant payments and a constant interest rate.
     // Todo: Irr   Returns the internal rate of return for a series of cash flows represented by the numbers in values. These cash flows do not have to be even, as they would be for an annuity. However, the cash flows must occur at regular intervals, such as monthly or annually. The internal rate of return is the interest rate received for an investment consisting of payments (negative values) and income (positive values) that occur at regular periods.
@@ -404,7 +404,7 @@ public abstract class Excel {
     // Todo: YearFrac   Calculates the fraction of the year represented by the number of whole days between two dates (the start_date and the end_date). Use the YEARFRAC worksheet function to identify the proportion of a whole year's benefits or obligations to assign to a specific term.
     // Todo: YieldDisc   Returns the annual yield for a discounted security.
     // Todo: YieldMat   Returns the annual yield of a security that pays interest at maturity.
-    // Todo: ZTest   Returns the one-tailed probability-value of a z-test. For a given hypothesized population mean, ZTEST returns the probability that the sample mean would be greater than the average of observations in the data set (array) — that is, the observed sample mean.}
+    // Todo: ZTest   Returns the one-tailed probability-value of a z-test. For a given hypothesized population mean, ZTEST returns the probability that the sample mean would be greater than the average of observations in the data set (array) -- that is, the observed sample mean.
 }
 
 // End Excel.java
