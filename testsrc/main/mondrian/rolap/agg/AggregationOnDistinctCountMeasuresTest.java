@@ -11,6 +11,7 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.rolap.BatchTestCase;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
@@ -265,6 +266,11 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testDistinctCountOnTuplesWithLargeNumberOfDimensionMembers() {
+        int origMaxConstraint = MondrianProperties.instance().MaxConstraints.get();
+        if (origMaxConstraint > 500) {
+            MondrianProperties.instance().MaxConstraints.set(500);
+        }
+        
         assertQueryReturns(
             "WITH MEMBER PRODUCT.X as 'Aggregate({[PRODUCT].[BRAND NAME].MEMBERS})' " +
             "SELECT PRODUCT.X  ON ROWS, " +
@@ -279,6 +285,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "{[Product].[X]}\n" +
                 "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: " +
                 "Distinct Count aggregation is not supported over a large list\n"));
+        MondrianProperties.instance().MaxConstraints.set(origMaxConstraint);
     }
 
     public void testMultiLevelMembersNullParents() {

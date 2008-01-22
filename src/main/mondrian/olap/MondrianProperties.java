@@ -909,7 +909,7 @@ public class MondrianProperties extends TriggerableProperties {
      * <li>Other: 10,000</ul>
      */
     public transient final IntegerProperty MaxConstraints = new IntegerProperty(
-            this, "mondrian.rolap.maxConstraints", 500);
+            this, "mondrian.rolap.maxConstraints", 1000);
 
     /**
      * Boolean property which determines whether Mondrian optimizes predicates.
