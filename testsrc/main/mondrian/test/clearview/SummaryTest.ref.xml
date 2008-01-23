@@ -2223,4 +2223,226 @@ Row #5: 266,773
 ]]>
         </Resource>
     </TestCase>
+    <TestCase name="testRankExpandNonNative">
+        <Resource name="description">
+            <![CDATA[
+Originally from LER-6711 (context should be ignored for dimensions
+which appear as inputs to NECJ).
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 
+'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Store Size in SQFT])'
+Set [*BASE_MEMBERS_Product] as 
+'{[Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[American].[American Corned Beef],[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American].[American Low Fat Bologna]}'
+Set [*BASE_MEMBERS_Store Size in SQFT] as 
+'{[Store Size in SQFT].[All Store Size in SQFTs].[21215], [Store Size in SQFT].[All Store Size in SQFTs].[22478], [Store Size in SQFT].[All Store Size in SQFTs].[23112], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}'
+Set [*BASE_MEMBERS_Measures] as 
+'{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*SUMMARY_MEASURE_1]}'
+Member [Measures].[*FORMATTED_MEASURE_0] as 
+'[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+Member [Measures].[*SUMMARY_MEASURE_1] as 
+'Rank(([Product].CurrentMember,[Store Size in SQFT].CurrentMember),NonEmptyCrossJoin({[Product].CurrentMember},[*BASE_MEMBERS_Store Size in SQFT]),[Measures].[Unit Sales])', SOLVE_ORDER=50
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Store Size in SQFT].CurrentMember)}) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+{[Measures].[*SUMMARY_MEASURE_1]}
+Axis #2:
+{[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American].[American Low Fat Bologna], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
+{[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American].[American Low Fat Bologna], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
+{[Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[American].[American Corned Beef], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
+{[Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[American].[American Corned Beef], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
+{[Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[American].[American Corned Beef], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
+Row #0: 27
+Row #0: 1
+Row #1: 19
+Row #1: 2
+Row #2: 12
+Row #2: 1
+Row #3: 1
+Row #3: 3
+Row #4: 12
+Row #4: 1
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testCountExpandNonNative">
+        <Resource name="description">
+            <![CDATA[
+Also from LER-6711.  This verifies that in the case where a dimension (Time)
+is not an input to the NECJ, then the context is preserved rather than
+being ignored.  The report itself is fairly meaningless.
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 
+'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Store Size in SQFT])'
+Set [*BASE_MEMBERS_Product] as 
+'{[Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[American].[American Corned Beef],[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American].[American Low Fat Bologna]}'
+Set [*BASE_MEMBERS_Store Size in SQFT] as 
+'{[Store Size in SQFT].[All Store Size in SQFTs].[21215], [Store Size in SQFT].[All Store Size in SQFTs].[22478], [Store Size in SQFT].[All Store Size in SQFTs].[23112], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}'
+Set [*BASE_MEMBERS_Measures] as 
+'{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*SUMMARY_MEASURE_1]}'
+Member [Measures].[*FORMATTED_MEASURE_0] as 
+'[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+Member [Measures].[*SUMMARY_MEASURE_1] as 
+'Count(NonEmptyCrossJoin({[Product].CurrentMember},[*BASE_MEMBERS_Store Size in SQFT]))', SOLVE_ORDER=50
+Select
+[*BASE_MEMBERS_Measures] on columns,
+NonEmptyCrossJoin({[Time].[1997].[Q1],[Time].[1997].[Q2]},[*BASE_MEMBERS_Product]) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+{[Measures].[*SUMMARY_MEASURE_1]}
+Axis #2:
+{[Time].[1997].[Q1], [Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American].[American Low Fat Bologna]}
+{[Time].[1997].[Q1], [Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[American].[American Corned Beef]}
+{[Time].[1997].[Q2], [Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American].[American Low Fat Bologna]}
+{[Time].[1997].[Q2], [Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[American].[American Corned Beef]}
+Row #0: 46
+Row #0: 2
+Row #1: 24
+Row #1: 1
+Row #2: 45
+Row #2: 1
+Row #3: 39
+Row #3: 1
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testCountOverTimeExpandNonNative">
+        <Resource name="description">
+            <![CDATA[
+Also from LER-6711.  This covers the case where a dimension (Time) which is
+referenced by the NECJ does not have an ALL member defined.
+The implementation uses the dummy ALL member, which seems to work fine.
+The report itself is fairly meaningless.
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 
+'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Store Size in SQFT])'
+Set [*BASE_MEMBERS_Product] as 
+'{[Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[American].[American Corned Beef],[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American].[American Low Fat Bologna]}'
+Set [*BASE_MEMBERS_Store Size in SQFT] as 
+'{[Store Size in SQFT].[All Store Size in SQFTs].[21215], [Store Size in SQFT].[All Store Size in SQFTs].[22478], [Store Size in SQFT].[All Store Size in SQFTs].[23112], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}'
+Set [*BASE_MEMBERS_Measures] as 
+'{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*SUMMARY_MEASURE_1]}'
+Member [Measures].[*FORMATTED_MEASURE_0] as 
+'[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+Member [Measures].[*SUMMARY_MEASURE_1] as 
+'Count(NonEmptyCrossJoin({[Time].[1997].[Q1]},NonEmptyCrossJoin({[Product].CurrentMember},[*BASE_MEMBERS_Store Size in SQFT])))', SOLVE_ORDER=50
+Select
+[*BASE_MEMBERS_Measures] on columns,
+NonEmptyCrossJoin({[Time].[1997].[Q1],[Time].[1997].[Q2]},[*BASE_MEMBERS_Product]) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+{[Measures].[*SUMMARY_MEASURE_1]}
+Axis #2:
+{[Time].[1997].[Q1], [Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American].[American Low Fat Bologna]}
+{[Time].[1997].[Q1], [Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[American].[American Corned Beef]}
+{[Time].[1997].[Q2], [Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American].[American Low Fat Bologna]}
+{[Time].[1997].[Q2], [Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[American].[American Corned Beef]}
+Row #0: 46
+Row #0: 2
+Row #1: 24
+Row #1: 1
+Row #2: 45
+Row #2: 2
+Row #3: 39
+Row #3: 1
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testCountDifferentLevelsExpandNonNative">
+        <Resource name="description">
+            <![CDATA[
+Also from LER-6711.  This covers the case where a dimension (Store)
+appears as different levels in context vs as input to NECJ.
+(Level should not matter in deciding whether to ignore the context, 
+nor should hierarchy within dimension for that matter.)
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*BASE_MEMBERS_Customer] as '[Customers].[Name].members'
+Set [*BASE_MEMBERS_StoreCountry] as '[Store].[Store Country].members'
+Set [*BASE_MEMBERS_StoreState] as '[Store].[Store State].members'
+Set [NECJ] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customer],[*BASE_MEMBERS_StoreCountry])'
+Member [Measures].[m1] as 'Count(NonEmptyCrossJoin([*BASE_MEMBERS_Customer],[*BASE_MEMBERS_StoreCountry]))'
+Member [Measures].[m3] as 'Count([NECJ])'
+select [*BASE_MEMBERS_StoreState] on rows, {[Measures].[m1], [Measures].[m3]} on columns
+from Sales
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[m1]}
+{[Measures].[m3]}
+Axis #2:
+{[Store].[All Stores].[Canada].[BC]}
+{[Store].[All Stores].[Mexico].[DF]}
+{[Store].[All Stores].[Mexico].[Guerrero]}
+{[Store].[All Stores].[Mexico].[Jalisco]}
+{[Store].[All Stores].[Mexico].[Veracruz]}
+{[Store].[All Stores].[Mexico].[Yucatan]}
+{[Store].[All Stores].[Mexico].[Zacatecas]}
+{[Store].[All Stores].[USA].[CA]}
+{[Store].[All Stores].[USA].[OR]}
+{[Store].[All Stores].[USA].[WA]}
+Row #0: 5,581
+Row #0: 5,581
+Row #1: 5,581
+Row #1: 5,581
+Row #2: 5,581
+Row #2: 5,581
+Row #3: 5,581
+Row #3: 5,581
+Row #4: 5,581
+Row #4: 5,581
+Row #5: 5,581
+Row #5: 5,581
+Row #6: 5,581
+Row #6: 5,581
+Row #7: 5,581
+Row #7: 5,581
+Row #8: 5,581
+Row #8: 5,581
+Row #9: 5,581
+Row #9: 5,581
+]]>
+        </Resource>
+    </TestCase>
 </Root>

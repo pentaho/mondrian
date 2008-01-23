@@ -2933,7 +2933,19 @@ public class NonEmptyTest extends BatchTestCase {
         );
     }
 
+    // next two verify that when NECJ references dimension from slicer,
+    // slicer is correctly ignored for purposes of evaluating NECJ emptiness,
+    // regardless of whether evaluation is native or non-native
+
     public void testIndependentSlicerMemberNonNative() {
+        checkIndependentSlicerMemberNative(false);
+    }
+
+    public void testIndependentSlicerMemberNative() {
+        checkIndependentSlicerMemberNative(true);
+    }
+
+    private void checkIndependentSlicerMemberNative(boolean useNative) {
         String query =
             "with set [p] as '[Product].[Product Family].members' " +
             "set [s] as '[Store].[Store Country].members' " +
@@ -2942,7 +2954,7 @@ public class NonEmptyTest extends BatchTestCase {
             "select [nep] on columns from sales " +
             "where ([Store].[Store Country].[Mexico])";
 
-        String resultNonNative =
+        String expectedResult =
             "Axis #0:\n" +
             "{[Store].[All Stores].[Mexico]}\n" +
             "Axis #1:\n" +
@@ -2955,41 +2967,13 @@ public class NonEmptyTest extends BatchTestCase {
 
         boolean origNativeCJ =
             MondrianProperties.instance().EnableNativeCrossJoin.get();
-        MondrianProperties.instance().EnableNativeCrossJoin.set(false);
+        MondrianProperties.instance().EnableNativeCrossJoin.set(useNative);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);
-        context.assertQueryReturns(query, fold(resultNonNative));
-
-        MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
-    }
-
-    public void testIndependentSlicerMemberNative() {
-        // Currently this behaves differently from non-native evaluation.
-        String query =
-            "with set [p] as '[Product].[Product Family].members' " +
-            "set [s] as '[Store].[Store Country].members' " +
-            "set [ne] as 'nonemptycrossjoin([p],[s])' " +
-            "set [nep] as 'Generate([ne],{[Product].CurrentMember})' " +
-            "select [nep] on columns from sales " +
-            "where ([Store].[Store Country].[Mexico])";
-
-        String resultNative =
-            "Axis #0:\n" +
-            "{[Store].[All Stores].[Mexico]}\n" +
-            "Axis #1:\n";
-
-        boolean origNativeCJ =
-            MondrianProperties.instance().EnableNativeCrossJoin.get();
-        MondrianProperties.instance().EnableNativeCrossJoin.set(true);
-
-        // Get a fresh connection; Otherwise the mondrian property setting
-        // is not refreshed for this parameter.
-        Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);
-        context.assertQueryReturns(query, fold(resultNative));
+        context.assertQueryReturns(query, fold(expectedResult));
 
         MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
     }

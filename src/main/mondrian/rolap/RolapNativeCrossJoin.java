@@ -144,6 +144,25 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
 
         LOGGER.debug("using native crossjoin");
 
+        // Create a new evaluation context, eliminating any outer context for
+        // the dimensions referenced by the inputs to the NECJ
+        // (otherwise, that outer context would be incorrectly intersected
+        // with the constraints from the inputs).
+        evaluator = evaluator.push();
+        
+        Member[] evalMembers = (Member[]) evaluator.getMembers().clone();
+        for (RolapLevel level : levels) {
+            RolapHierarchy hierarchy = level.getHierarchy();
+            for (int i = 0; i < evalMembers.length; ++i) {
+                Dimension evalMemberDimension =
+                    evalMembers[i].getHierarchy().getDimension();
+                if (evalMemberDimension == hierarchy.getDimension()) {
+                    evalMembers[i] = hierarchy.getAllMember();
+                }
+            }
+        }
+        evaluator.setContext(evalMembers);
+
         TupleConstraint constraint = new NonEmptyCrossJoinConstraint(cargs, evaluator);
         SchemaReader schemaReader = evaluator.getSchemaReader();
         return new SetEvaluator(cargs, schemaReader, constraint);

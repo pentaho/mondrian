@@ -103,10 +103,21 @@ public abstract class ClearViewBase extends BatchTestCase {
                     calculatedMembers);    
             }
         }
-        String mdx = diffRepos.expand(null, "${mdx}");
-        String result = Util.nl + testContext.toString(
-            testContext.executeQuery(mdx));
-        diffRepos.assertEquals("result", "${result}", result);
+
+        // Set some properties to match the way we configure them
+        // for ClearView.
+        boolean origExpandNonNative =
+            MondrianProperties.instance().ExpandNonNative.get();
+        MondrianProperties.instance().ExpandNonNative.set(true);
+        
+        try {
+            String mdx = diffRepos.expand(null, "${mdx}");
+            String result = Util.nl + testContext.toString(
+                testContext.executeQuery(mdx));
+            diffRepos.assertEquals("result", "${result}", result);
+        } finally {
+            MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
+        }
     }
     
     protected void assertQuerySql(boolean flushCache) 
