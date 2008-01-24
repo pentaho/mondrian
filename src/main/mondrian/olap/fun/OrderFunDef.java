@@ -138,6 +138,12 @@ class OrderFunDef extends FunDefBase {
             this.brk = brk;
         }
 
+        public List evaluateDual(Evaluator rootEvaluator, Evaluator subEvaluator) {
+            List list = listCalc.evaluateList(rootEvaluator);
+            sortMembers(subEvaluator.push(), list, expCalc, desc, brk);
+            return list;
+        }
+        
         public List evaluateList(Evaluator evaluator) {
             List list = listCalc.evaluateList(evaluator);
             sortMembers(evaluator.push(), list, expCalc, desc, brk);
@@ -162,11 +168,11 @@ class OrderFunDef extends FunDefBase {
 
     private static class ContextCalc extends GenericCalc {
         private final MemberCalc[] memberCalcs;
-        private final Calc calc;
+        private final CalcImpl calc;
         private final Calc[] calcs;
         private final Member[] members; // workspace
 
-        protected ContextCalc(MemberCalc[] memberCalcs, Calc calc) {
+        protected ContextCalc(MemberCalc[] memberCalcs, CalcImpl calc) {
             super(new DummyExp(calc.getType()));
             this.memberCalcs = memberCalcs;
             this.calc = calc;
@@ -188,7 +194,7 @@ class OrderFunDef extends FunDefBase {
             }
             final Evaluator subEval = evaluator.push(members);
             // Evaluate the expression in the new context.
-            return calc.evaluate(subEval);
+            return calc.evaluateDual(evaluator, subEval);
         }
 
         public boolean dependsOn(Dimension dimension) {

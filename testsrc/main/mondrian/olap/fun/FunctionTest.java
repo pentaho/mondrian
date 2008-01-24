@@ -5420,6 +5420,38 @@ public class FunctionTest extends FoodMartTestCase {
                 "order(filter([Product].children, [Measures].[Unit Sales] > 1000), ([Gender].[M], [Measures].[Store Sales]))",
                 "{}(Sublist(ContextCalc([Measures].[Store Sales], Order(Filter(Children(CurrentMember([Product])), >(MemberValueCalc([Measures].[Unit Sales]), 1000.0)), MemberValueCalc([Gender].[All Gender].[M]), ASC))))");
     }
+    
+    /**
+     * test case for bug # 1797159, Potential MDX Order Non Empty Problem
+     *
+     */
+    public void testOrderNonEmpty() {
+        assertQueryReturns(
+                "select NON EMPTY [Gender].Members ON COLUMNS,\n" + 
+                "NON EMPTY Order([Product].[All Products].[Drink].Children,\n" + 
+                "[Gender].[All Gender].[F], ASC) ON ROWS\n" +
+                "from [Sales]\n" + 
+                "where ([Customers].[All Customers].[USA].[CA].[San Francisco],\n" + 
+                " [Time].[1997])",
+                
+            fold(
+            "Axis #0:\n" +
+            "{[Customers].[All Customers].[USA].[CA].[San Francisco], [Time].[1997]}\n" +
+            "Axis #1:\n" +
+            "{[Gender].[All Gender]}\n" +
+            "{[Gender].[All Gender].[F]}\n" +
+            "{[Gender].[All Gender].[M]}\n" +
+            "Axis #2:\n" +
+            "{[Product].[All Products].[Drink].[Beverages]}\n" +
+            "{[Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
+            "Row #0: 2\n" +
+            "Row #0: \n" +
+            "Row #0: 2\n" +
+            "Row #1: 4\n" +
+            "Row #1: 2\n" +
+            "Row #1: 2\n"
+            ));
+    }
 
     public void testOrder() {
         assertQueryReturns(
