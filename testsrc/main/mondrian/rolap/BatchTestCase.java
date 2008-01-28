@@ -220,7 +220,9 @@ public class BatchTestCase extends FoodMartTestCase {
             if (bomb == null) {
                 fail("expected query [" + sql + "] did not occur");
             }            
-            assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
+            TestContext.assertEqualsVerbose(
+                replaceQuotes(sql),
+                replaceQuotes(bomb.sql));
         }
         
         /*
@@ -627,7 +629,6 @@ public class BatchTestCase extends FoodMartTestCase {
         
         StarPredicate toPredicate(RolapStar star) {
             RolapStar.Column starColumn[] = new RolapStar.Column[tables.length];
-            
             for (int i = 0; i < tables.length; i++) {
                 String table = tables[i];
                 String column = columns[i];
@@ -639,13 +640,19 @@ public class BatchTestCase extends FoodMartTestCase {
                 assert (values.length == tables.length);
                 List<StarPredicate> andPredList = new ArrayList<StarPredicate>();
                 for (int i = 0; i < values.length; i++) {
-                    String value = values[i];
-                    andPredList.add(new ValueColumnPredicate(starColumn[i], value));
+                    andPredList.add(
+                        new ValueColumnPredicate(starColumn[i], values[i]));
                 }
-                orPredList.add(new AndPredicate(andPredList));
+                final StarPredicate predicate =
+                    andPredList.size() == 1
+                        ? andPredList.get(0) 
+                        : new AndPredicate(andPredList);
+                orPredList.add(predicate);
             }
-            
-            return (new OrPredicate(orPredList));
+
+            return orPredList.size() == 1
+                ? orPredList.get(0)
+                : new OrPredicate(orPredList);
         }
     }
 }

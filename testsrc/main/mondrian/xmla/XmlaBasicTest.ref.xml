@@ -18001,6 +18001,24 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>abs</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>acos</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>acos</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>acosh</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>acosh</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>AddCalculatedMembers</FUNCTION_NAME>
                         <DESCRIPTION>Adds calculated members to a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
@@ -18129,6 +18147,42 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>ascW</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>asin</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>asin</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>asinh</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>asinh</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>atan2</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>atan2</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>atanh</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>atanh</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>atn</FUNCTION_NAME>
@@ -18422,6 +18476,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>cos</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>cosh</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>cosh</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Count</FUNCTION_NAME>
                         <DESCRIPTION>Returns the number of tuples in a
                             set, empty cells included unless the
@@ -18685,6 +18748,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>DefaultMember</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>degrees</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>degrees</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
@@ -19218,11 +19290,51 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns one of two dimension values
+                            determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Dimension, Dimension</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IIf</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IIf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns one of two hierarchy values
+                            determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Hierarchy, Hierarchy</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IIf</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IIf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns one of two level values
+                            determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Level, Level</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IIf</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IIf</FUNCTION_NAME>
                         <DESCRIPTION>Returns boolean determined by a
                             logical test.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, Logical
-                            Expression, Numeric Expression</PARAMETER_LIST>
+                            Expression, Logical Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IIf</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IIf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns one of two member values
+                            determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Member, Member</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>IIf</CAPTION>
@@ -19234,6 +19346,16 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <PARAMETER_LIST>Logical Expression, Numeric
                             Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IIf</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IIf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns one of two set values
+                            determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Set, Set</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>IIf</CAPTION>
@@ -19703,6 +19825,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>log</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>log10</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>log10</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>lTrim</FUNCTION_NAME>
@@ -20177,6 +20308,16 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>Parent</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Percentile</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the value of the tuple that
+                            is at a given percentile of a set.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Percentile</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>PeriodsToDate</FUNCTION_NAME>
                         <DESCRIPTION>Returns a set of periods (members)
                             from a specified level starting with the
@@ -20210,6 +20351,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>PeriodsToDate</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>pi</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST/>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>pi</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>pmt</FUNCTION_NAME>
                         <DESCRIPTION/>
                         <PARAMETER_LIST>Numeric Expression, Numeric
@@ -20219,6 +20369,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>pmt</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>power</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>power</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>PrevMember</FUNCTION_NAME>
@@ -20271,6 +20430,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Qtd</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>radians</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>radians</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Rank</FUNCTION_NAME>
@@ -20432,6 +20600,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>sin</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>sinh</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>sinh</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>space</FUNCTION_NAME>
                         <DESCRIPTION/>
                         <PARAMETER_LIST>Integer</PARAMETER_LIST>
@@ -20448,6 +20625,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>sqr</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>sqrtPi</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>sqrtPi</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Stddev</FUNCTION_NAME>
@@ -20644,6 +20830,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>tan</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>tanh</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>tanh</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>ThirdQ</FUNCTION_NAME>
