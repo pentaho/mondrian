@@ -15,9 +15,18 @@ import junit.framework.TestCase;
 import mondrian.olap.*;
 import mondrian.test.TestContext;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.naming.spi.InitialContextFactory;
+import javax.naming.spi.InitialContextFactoryBuilder;
+import javax.naming.spi.NamingManager;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
 import java.io.PrintWriter;
 
 /**
@@ -192,7 +201,7 @@ public class RolapConnectionTest extends TestCase {
         PrintWriter trace = RolapUtil.checkTracing();
 
         if (trace != null) {
-            trace.print(this.getName() + "\n  [Connection Proerpties | " + properties + "]\n");
+            trace.print(this.getName() + "\n  [Connection Properties | " + properties + "]\n");
             trace.flush();            
         } else {
             System.out.println(properties);
@@ -208,6 +217,60 @@ public class RolapConnectionTest extends TestCase {
                 e.getMessage().indexOf(
                     "Connect string must contain property 'Catalog' or property 'CatalogContent'")
                     >= 0);
+        }
+    }
+    
+    public void testJNDIConnection() {
+        try {
+            // get a regular connection
+            Util.PropertyList props =
+                TestContext.instance().getFoodMartConnectionProperties();
+            final DataSource dataSource = 
+                    RolapConnection.createDataSource(props);
+            final List<String> lookupCalls = new ArrayList<String>();
+            // mock the JNDI naming manager to provide that datasource
+            try {
+                NamingManager.setInitialContextFactoryBuilder(
+                        new InitialContextFactoryBuilder() {
+                            public InitialContextFactory 
+                                createInitialContextFactory(
+                                        Hashtable<?, ?> environment) 
+                                            throws NamingException {
+                                return new InitialContextFactory() {
+                                    public Context 
+                                        getInitialContext(
+                                            Hashtable<?, ?> environment) 
+                                                throws NamingException {
+                                        return new InitialContext() {
+                                            public Object lookup(String str) {
+                                                lookupCalls.add("Called");
+                                                return dataSource;
+                                            }
+                                        };
+                                    }
+                                };
+                            }
+                        }
+                    );
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail();
+            }
+            
+            // use the datasource property to connect to the database
+            Util.PropertyList properties =
+                TestContext.instance().getFoodMartConnectionProperties();
+            properties.remove(RolapConnectionProperties.Jdbc.name());
+            properties.put(
+                    RolapConnectionProperties.DataSource.name(), "jnditest");
+            DriverManager.getConnection(properties, null);
+            
+            // if we've made it here with lookupCalls, 
+            // we've successfully used JNDI
+            assertTrue(lookupCalls.size() > 0);
+            
+        } catch (Exception e) {
+            fail();
         }
     }
 }
