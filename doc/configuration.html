@@ -386,6 +386,58 @@ suite of regression tests.</p>
       </td>
     </tr>
     <tr>
+        <td>
+            <code>
+                <a href="api/mondrian/olap/MondrianProperties.html#NeedDimensionPrefix">mondrian.olap.elements.NeedDimensionPrefix</a></code>
+        </td>
+        <td>boolean</td>
+        <td>false</td>
+        <td>
+            <p>Property determines if elements of dimension (levels, hierarchies,
+                members) need to be prefixed with dimension name in MDX query.
+                For example when the property is true, the following queries
+                will error out. The same queries will work when this property
+                is set to false.
+            <blockquote>
+            <p>
+            <ul>
+                <li><code>select {[M]} on 0 from sales</code></li>
+                <li><code>select {[USA]} on 0 from sales</code></li>
+                <li><code>select {[USA].[CA].[Santa Monica]} on 0 from sales</code></li>
+            </ul>
+            </blockquote>
+            <p>
+            When the property is set to true, any query where elements are
+            prefixed with dimension name as below will work
+            <blockquote>
+            <p>
+            <ul>
+                <li><code>select {[Gender].[F]} on 0 from sales</code></li>
+                <li><code>select {[Customers].[Santa Monica]} on 0 from sales</code></li>
+            </ul>
+            </blockquote>
+            <p>
+            Please note that this property does not govern the behaviour where in
+            <blockquote>
+            <p>
+                <li><code>[Gender].[M]</code></li>
+            </blockquote>
+            <p>
+            is resolved into a fully qualified
+            <blockquote>
+            <p>
+            <li><code>[Gender].[All Gender].[M]</code></li>
+            </blockquote>
+            <p>In a scenario where the schema is very large and dimensions have
+            large number of members a MDX query that has a invalid member in it
+            will cause mondrian to to go through all the dimensions, levels,
+            hierarchies, members and properties trying to resolve the element
+            name. This behaviour consumes considerable time and resources on the
+            server. Setting this property to true will make it fail fast in a 
+            scenario where it is desirable
+        </td>
+    </tr>
+    <tr>
       <td>
         <code>
         <a href="api/mondrian/olap/MondrianProperties.html#IgnoreMeasureForNonJoiningDimension">mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension</a></code></td>

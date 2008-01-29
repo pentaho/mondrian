@@ -27,8 +27,12 @@ import junit.framework.Assert;
  * @version $Id$
  */
 public class CompatibilityTest extends FoodMartTestCase {
+    private boolean originalNeedDimensionPrefix;
+    private final MondrianProperties props = MondrianProperties.instance();
+
     public CompatibilityTest(String name) {
         super(name);
+        originalNeedDimensionPrefix = props.NeedDimensionPrefix.get();
     }
 
     /**
@@ -247,7 +251,7 @@ public class CompatibilityTest extends FoodMartTestCase {
             null, null, null, null);
 
         // This test should work irrespective of the case-sensitivity setting.
-        Util.discard(MondrianProperties.instance().CaseSensitive.get());
+        Util.discard(props.CaseSensitive.get());
 
         testContext.assertQueryReturns(
             "select {[Measures].[Unit Sales]} ON COLUMNS,\n" +
@@ -401,7 +405,7 @@ public class CompatibilityTest extends FoodMartTestCase {
      * and once with mondrian.olap.case.sensitive=false.
      */
     public void testPropertyCaseSensitivity() {
-        boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
+        boolean caseSensitive = props.CaseSensitive.get();
 
         // A user-defined property of a member.
         assertExprReturns(
@@ -444,6 +448,34 @@ public class CompatibilityTest extends FoodMartTestCase {
         } else {
             assertEquals("135,215", cell.getPropertyValue("Formatted_Value"));
         }
+    }
+
+    public void testWithDimensionPrefix() {
+        assertAxisWithDimensionPrefix(true);
+        assertAxisWithDimensionPrefix(false);
+    }
+
+    private void assertAxisWithDimensionPrefix(boolean prefixNeeded) {
+        props.NeedDimensionPrefix.set(prefixNeeded);
+        assertAxisReturns("[Gender].[M]","[Gender].[All Gender].[M]");
+        assertAxisReturns("[Gender].[All Gender].[M]","[Gender].[All Gender].[M]");
+        assertAxisReturns("[Store].[USA]","[Store].[All Stores].[USA]");
+        assertAxisReturns("[Store].[All Stores].[USA]","[Store].[All Stores].[USA]");
+        props.NeedDimensionPrefix.set(originalNeedDimensionPrefix);
+    }
+
+    public void testWithNoDimensionPrefix() {
+        props.NeedDimensionPrefix.set(false);
+        assertAxisReturns("{[M]}","[Gender].[All Gender].[M]");
+        assertAxisReturns("{M}","[Gender].[All Gender].[M]");
+        assertAxisReturns("{[USA].[CA]}","[Store].[All Stores].[USA].[CA]");
+        assertAxisReturns("{USA.CA}","[Store].[All Stores].[USA].[CA]");
+        props.NeedDimensionPrefix.set(true);
+        assertAxisThrows("{[M]}","Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
+        assertAxisThrows("{M}","Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
+        assertAxisThrows("{[USA].[CA]}","Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
+        assertAxisThrows("{USA.CA}","Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
+        props.NeedDimensionPrefix.set(originalNeedDimensionPrefix);
     }
 }
 

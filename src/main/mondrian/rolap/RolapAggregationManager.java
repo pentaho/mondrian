@@ -525,6 +525,10 @@ public abstract class RolapAggregationManager {
                             new ValueColumnPredicate(column, member.getKey()));
                 }
             }
+            // Don't need to constrain USA if CA is unique
+            if (member.getLevel().isUnique()) {
+                break;
+            }
             member = member.getParentMember();
         }
         return memberPredicate;

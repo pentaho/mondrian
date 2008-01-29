@@ -9,15 +9,18 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
-import mondrian.calc.*;
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
+import mondrian.calc.ListCalc;
+import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.calc.impl.ValueCalc;
-import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 import mondrian.rolap.RolapAggregator;
-
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 /**
  * Definition of the <code>AGGREGATE</code> MDX function.
@@ -71,15 +74,15 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     null,
                     "Don't know how to rollup aggregator '" + aggregator + "'");
             }
-            final List list = evaluateCurrentList(listCalc, evaluator);
+            List list = evaluateCurrentList(listCalc, evaluator);
             if (aggregator == RolapAggregator.DistinctCount) {
                 // If the list is empty, it means the current context
                 // contains no qualifying cells. The result set is empty.
                 if (list.size() == 0) {
                     return DoubleNull;
                 }
-                
-                // TODO: Optimize the list
+
+                // Optimize the list
                 // E.g.
                 // List consists of:
                 //  (Gender.[All Gender], [Product].[All Products]),
@@ -90,6 +93,10 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 //
                 // Similar optimization can also be done for list of members.
 
+                if (list.get(0) instanceof Member) {
+                    list = makeTupleList(list);
+                }
+                list = removeOverlappingTupleEntries(list);
                 checkIfAggregationSizeIsTooLarge(list);
 
                 // Can't aggregate distinct-count values in the same way
@@ -108,12 +115,11 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         }
 
         /**
-         * In case of distinct count totals, the Sql generated would have at
-         * least, as many where conditions as the size of the list.
-         * Incase of a large list, the SQL generation would take too much time
-         * and memory. Also the generated SQL would be too large to execute.
+         * In case of distinct count aggregation if a tuple which is a super
+         * set of other tuples in the set exists then the child tuples can be
+         * ignored.
          *
-         * <p>TODO: Optimize the list
+         * <p>
          * E.g.
          * List consists of:
          *  (Gender.[All Gender], [Product].[All Products]),
@@ -122,10 +128,80 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          * Can be optimized to:
          *  (Gender.[All Gender], [Product].[All Products])
          *
-         * <p>Similar optimization can also be done for list of members.
-         *
          * @param list
          */
+
+        public static List removeOverlappingTupleEntries(List<Member[]> list) {
+            List<Member[]> trimmedList = new ArrayList<Member[]>();
+            for (Member[] tuple1 : list) {
+                if (trimmedList.isEmpty()) {
+                    trimmedList.add(tuple1);
+                } else {
+                    boolean ignore = false;
+                    final Iterator<Member[]> iterator = trimmedList.iterator();
+                    while (iterator.hasNext()) {
+                        Member[] tuple2 = iterator.next();
+                        if (isSuperSet(tuple1, tuple2)) {
+                            iterator.remove();
+                        } else if (isSuperSet(tuple2,  tuple1) ||
+                            isEqual(tuple1, tuple2)) {
+                            ignore = true;
+                            break;
+                        }
+                    }
+                    if (!ignore) {
+                        trimmedList.add(tuple1);
+                    }
+                }
+            }
+            return trimmedList;
+        }
+
+        private static boolean isEqual(Member[] tuple1, Member[] tuple2) {
+            for (int i = 0; i < tuple1.length; i++) {
+                if (!tuple1[i].getUniqueName().
+                    equals(tuple2[i].getUniqueName())) {
+                   return false;
+                }
+            }
+            return true; 
+        }
+
+        /**
+         * Forms a list tuples from a list of members
+         * @param list of members
+         * @return list of tuples
+         */
+        public static List<Member[]> makeTupleList(List<Member> list) {
+            List<Member[]> tupleList = new ArrayList<Member[]>(list.size());
+            for (Member member : list) {
+                tupleList.add(new Member[] {member});
+            }
+            return tupleList;
+        }
+
+        /**
+         * Returns whether tuple1 is a superset of tuple2
+         * @param tuple1
+         * @param tuple2
+         * @return boolean
+         */
+        public static boolean isSuperSet(Member[] tuple1, Member[] tuple2) {
+            int parentLevelCount = 0;
+            for (int i = 0; i < tuple1.length; i++) {
+                Member member1 = tuple1[i];
+                Member member2 = tuple2[i];
+
+                if (!member2.isChildOrEqualTo(member1)) {
+                    return false;
+                }
+                if (member1.getLevel().getDepth() < member2.getLevel().getDepth()) {
+                    parentLevelCount++;
+                }
+            }
+            return parentLevelCount > 0;
+        }
+
         private void checkIfAggregationSizeIsTooLarge(List list) {
             if (list.size() > MondrianProperties.instance().MaxConstraints.get()) {
                 throw newEvalException(

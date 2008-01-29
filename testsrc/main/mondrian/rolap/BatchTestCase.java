@@ -45,13 +45,13 @@ public class BatchTestCase extends FoodMartTestCase {
     protected final String[] fieldValuesProductFamily =
         {"Food", "Non-Consumable", "Drink"};
     protected final String[] fieldValueProductDepartment =
-        {"Periodicals", "Breakfast Foods", "Eggs", "Household",
-            "Alcoholic Beverages",
-            "Beverages", "Frozen Foods", "Dairy",
-            "Health and Hygiene", "Seafood", "Baked Goods",
-            "Checkout", "Canned Products", "Baking Goods", "Meat",
-            "Carousel", "Starchy Foods", "Deli", "Produce",
-            "Canned Foods", "Snacks", "Snack Foods"};
+        {"Alcoholic Beverages", "Baked Goods", "Baking Goods",
+         "Beverages", "Breakfast Foods", "Canned Foods",
+        "Canned Products","Carousel", "Checkout", "Dairy",
+        "Deli", "Eggs", "Frozen Foods", "Health and Hygiene",
+        "Household", "Meat", "Packaged Foods", "Periodicals",
+        "Produce", "Seafood", "Snack Foods", "Snacks",
+        "Starchy Foods"};
     protected final String[] fieldValuesGender = {"M", "F"};
     protected final String cubeNameSales = "Sales";
     protected final String measureUnitSales = "[Measures].[Unit Sales]";

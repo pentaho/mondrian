@@ -106,7 +106,8 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         SchemaReader schemaReader, Id.Segment s, MatchType matchType)
     {
         Dimension mdxDimension = (Dimension)lookupDimension(s);
-        if (mdxDimension != null) {
+        if (mdxDimension != null ||
+            MondrianProperties.instance().NeedDimensionPrefix.get()) {
             return mdxDimension;
         }
 

@@ -1098,6 +1098,53 @@ public class MondrianProperties extends TriggerableProperties {
                     this,
                     "mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension",
                     false);
+
+    /**
+     * Property determines if elements of dimension (levels, hierarchies, members)
+     * need to be prefixed with dimension name in MDX query.
+     * For example when the property is true, the following queries
+     * will error out. The same queries will work when this property
+     * is set to false.
+     * <blockquote>
+     * <p>
+     * select {[M]} on 0 from sales
+     * <p>
+     * select {[USA]} on 0 from sales
+     * <p>
+     * select {[USA].[CA].[Santa Monica]}  on 0 from sales
+     * </blockquote>
+     * <p>
+     * When the property is set to true, any query where elements are
+     * prefixed with dimension name as below will work
+     * <blockquote>
+     * <p>
+     * select {[Gender].[F]} on 0 from sales
+     * <p>
+     * select {[Customers].[Santa Monica]} on 0 from sales
+     * </blockquote>
+     * <p>
+     * Please note that this property does not govern the behaviour where in
+     * <blockquote>
+     * <p>
+     * [Gender].[M]
+     * </blockquote>
+     * <p>
+     * is resolved into a fully qualified
+     * <blockquote>
+     * <p>
+     * [Gender].[All Gender].[M]
+     * </blockquote>
+     * <p>
+     * In a scenario where the schema is very large and dimensions have large
+     * number of members a MDX query that has a invalid member in it will cause
+     * mondrian to to go through all the dimensions, levels, hierarchies, members
+     * and properties trying to resolve the element name. This behaviour consumes
+     * considerable time and resources on the server. Setting this property to
+     * true will make it fail fast in a scenario where it is desirable
+     */
+    public transient final BooleanProperty NeedDimensionPrefix =
+            new BooleanProperty(
+                    this, "mondrian.olap.elements.NeedDimensionPrefix", false);
 }
 
 // End MondrianProperties.java

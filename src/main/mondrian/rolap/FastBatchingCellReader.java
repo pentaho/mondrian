@@ -657,7 +657,6 @@ public class FastBatchingCellReader implements CellReader {
          * <p>This is possible if:
          * <li>columns list is super set of other batch's constraint columns;
          *     and
-         * <li>both the batch does not have distinct count measure in it; and
          * <li>both have same Fact Table; and
          * <li>matching columns of this and other batch has the same value; and
          * <li>non matching columns of this batch have ALL VALUES
@@ -665,11 +664,15 @@ public class FastBatchingCellReader implements CellReader {
          */
         boolean canBatch(Batch other) {
             return hasOverlappingBitKeys(other) &&
-                !hasDistinctCountMeasure() &&
-                !other.hasDistinctCountMeasure() &&
-                haveSameStarAndAggregation(other) &&
-                haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(
-                    other);
+                (hasSameCompoundPredicate(other) ||
+                haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other))
+                && hasSameMeasureList(other)
+                && haveSameStarAndAggregation(other);
+        }
+
+        private boolean hasSameMeasureList(Batch other) {
+            return (this.measuresList.size() == other.measuresList.size() &&
+                this.measuresList.containsAll(other.measuresList));
         }
 
         boolean hasOverlappingBitKeys(Batch other) {
@@ -681,19 +684,53 @@ public class FastBatchingCellReader implements CellReader {
             return getDistinctMeasureCount(measuresList) > 0;
         }
 
+        boolean hasSameCompoundPredicate(Batch other) {
+            final StarPredicate starPredicate = compoundPredicate();
+            final StarPredicate otherStarPredicate = other.compoundPredicate();
+            if (starPredicate == null && otherStarPredicate == null) {
+                return true;
+            } else if (starPredicate != null && otherStarPredicate != null) {
+                return starPredicate.equalConstraint(otherStarPredicate);
+            }
+            return false;
+        }
+
+        private StarPredicate compoundPredicate() {
+            StarPredicate predicate = null;
+            for (Set<StarColumnPredicate> valueSet : valueSets) {
+                StarPredicate orPredicate = null;
+                for (StarColumnPredicate starColumnPredicate : valueSet) {
+                    if (orPredicate == null) {
+                        orPredicate = starColumnPredicate;
+                    } else {
+                        orPredicate = orPredicate.or(starColumnPredicate);
+                    }
+                }
+                if (predicate == null) {
+                    predicate = orPredicate;
+                } else {
+                    predicate = predicate.and(orPredicate);
+                }
+            }
+            for (StarPredicate starPredicate : this.batchKey.getCompoundPredicateList()) {
+                if (predicate == null) {
+                    predicate = starPredicate;
+                } else {
+                    predicate = predicate.and(starPredicate);
+                }
+            }
+            return predicate;
+        }
+
         boolean haveSameStarAndAggregation(Batch other) {
             boolean rollup[] = {false};
             boolean otherRollup[] = {false};
-            boolean hasSameCompoundPredicates =
-                batchKey.hasSameCompoundPredicate(other.batchKey);
             
             boolean hasSameAggregation = getAgg(rollup) == other.getAgg(otherRollup);
             boolean hasSameRollupOption = rollup[0] == otherRollup[0];
 
             boolean hasSameStar = getStar().equals(other.getStar());
-            return 
-                hasSameCompoundPredicates && hasSameStar && 
-                hasSameAggregation && hasSameRollupOption;
+            return hasSameStar && hasSameAggregation && hasSameRollupOption;
         }
 
         /**
