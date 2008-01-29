@@ -7971,6 +7971,14 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         assertExprReturns("Power(8, 0.333333)", 2.0, 0.01);
         assertExprReturns("Power(-2, 0.5)", Double.NaN, 0.001);
     }
+
+    // Comment from the bug: the reason for this is that in AbstractExpCompiler
+    // in the compileInteger method we are casting an IntegerCalc into a
+    // DoubleCalc and there is no check for IntegerCalc in the NumericType
+    // conditional path.
+    public void testBug1881739() {
+        assertExprReturns("LEFT(\"TEST\", LEN(\"TEST\"))", "TEST");
+    }
 }
 
 // End FunctionTest.java

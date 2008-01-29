@@ -203,16 +203,16 @@ public class AbstractExpCompiler implements ExpCompiler {
                 return new ConstantCalc(
                     new DecimalType(Integer.MAX_VALUE, 0),
                     constantCalc.evaluateInteger(null));
+            } else if (calc instanceof DoubleCalc) {
+                final DoubleCalc doubleCalc = (DoubleCalc) calc;
+                return new AbstractIntegerCalc(exp, new Calc[] {doubleCalc}) {
+                    public int evaluateInteger(Evaluator evaluator) {
+                        return (int) doubleCalc.evaluateDouble(evaluator);
+                    }
+                };
             }
-            final DoubleCalc doubleCalc = (DoubleCalc) calc;
-            return new AbstractIntegerCalc(exp, new Calc[] {doubleCalc}) {
-                public int evaluateInteger(Evaluator evaluator) {
-                    return (int) doubleCalc.evaluateDouble(evaluator);
-                }
-            };
-        } else {
-            return (IntegerCalc) calc;
         }
+        return (IntegerCalc) calc;
     }
 
     public StringCalc compileString(Exp exp) {
