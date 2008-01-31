@@ -1044,6 +1044,95 @@ public class TestCalculatedMembers extends BatchTestCase {
                 "Row #2: 97,126\n" +
                 "Row #2: 135,215\n"));
     }
+    
+    /**
+     * Test that if a filter is associated with input to a cal member with lower solve order;
+     * the filter computation uses the context that contains the other cal members(those with
+     * higher solve order).
+     */
+    public void testNegativeSolveOrderForCalMemberWithFilter() {
+        String mdx =
+            "With " +
+            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Education Level],[*BASE_MEMBERS_Product])' " +
+            "Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Unit Sales_SEL~SUM] > 10000.0)' " +
+            "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' " +
+            "Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[Bachelors Degree],[Education Level].[All Education Levels].[Graduate Degree]}' " +
+            "Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})' " +
+            "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' " +
+            "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Food],[Product].[All Products].[Non-Consumable]}' " +
+            "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' " +
+            "Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})' " +
+            "Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],[Education Level].CurrentMember,[Product].CurrentMember)', SOLVE_ORDER=200 " +
+            "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 " +
+            "Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum([*METRIC_MEMBERS_Education Level])', SOLVE_ORDER=-100 " +
+            "Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product], [Measures].[*Unit Sales_SEL~SUM] > 10000.0))', SOLVE_ORDER=-200 " +
+            "Select " +
+            "[*BASE_MEMBERS_Measures] on columns, " +
+            "Non Empty Union(" +
+            "NonEmptyCrossJoin({[Education Level].[*CTX_MEMBER_SEL~SUM]},{[Product].[*CTX_MEMBER_SEL~SUM]})," +
+            "Generate([*METRIC_CJ_SET], {([Education Level].CurrentMember,[Product].CurrentMember)})) on rows " +
+            "From [Sales]";
+        String result = 
+            "Axis #0:\n" +
+            "{}\n" +        
+            "Axis #1:\n" +
+            "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
+            "Axis #2:\n" +
+            "{[Education Level].[*CTX_MEMBER_SEL~SUM], [Product].[*CTX_MEMBER_SEL~SUM]}\n" +
+            "{[Education Level].[All Education Levels].[Bachelors Degree], [Product].[All Products].[Food]}\n" +
+            "{[Education Level].[All Education Levels].[Bachelors Degree], [Product].[All Products].[Non-Consumable]}\n" +
+            "{[Education Level].[All Education Levels].[Graduate Degree], [Product].[All Products].[Food]}\n" +
+            "Row #0: 73,671\n" +
+            "Row #1: 49,365\n" +
+            "Row #2: 13,051\n" +
+            "Row #3: 11,255\n";
+        
+        assertQueryReturns(mdx, fold(result));
+    }
+    
+    /**
+     * Test that if a filter is associated with input to a cal member with higher solve order;
+     * the filter computation ignores the other cal members.
+     */
+    public void testNegativeSolveOrderForCalMemberWithFilters2() {
+        String mdx =
+            "With " +
+            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Education Level],[*BASE_MEMBERS_Product])' " +
+            "Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Unit Sales_SEL~SUM] > 10000.0)' " +
+            "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' " +
+            "Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[Bachelors Degree],[Education Level].[All Education Levels].[Graduate Degree]}' " +
+            "Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})' " +
+            "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' " +
+            "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Food],[Product].[All Products].[Non-Consumable]}' " +
+            "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' " +
+            "Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})' " +
+            "Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],[Education Level].CurrentMember,[Product].CurrentMember)', SOLVE_ORDER=200 " +
+            "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 " +
+            "Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum([*METRIC_MEMBERS_Education Level])', SOLVE_ORDER=-200 " +
+            "Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product], [Measures].[*Unit Sales_SEL~SUM] > 10000.0))', SOLVE_ORDER=-100 " +
+            "Select " +
+            "[*BASE_MEMBERS_Measures] on columns, " +
+            "Non Empty Union(" +
+            "NonEmptyCrossJoin({[Education Level].[*CTX_MEMBER_SEL~SUM]},{[Product].[*CTX_MEMBER_SEL~SUM]})," +
+            "Generate([*METRIC_CJ_SET], {([Education Level].CurrentMember,[Product].CurrentMember)})) on rows " +
+            "From [Sales]";
+        String result = 
+            "Axis #0:\n" +
+            "{}\n" +        
+            "Axis #1:\n" +
+            "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
+            "Axis #2:\n" +
+            "{[Education Level].[*CTX_MEMBER_SEL~SUM], [Product].[*CTX_MEMBER_SEL~SUM]}\n" +
+            "{[Education Level].[All Education Levels].[Bachelors Degree], [Product].[All Products].[Food]}\n" +
+            "{[Education Level].[All Education Levels].[Bachelors Degree], [Product].[All Products].[Non-Consumable]}\n" +
+            "{[Education Level].[All Education Levels].[Graduate Degree], [Product].[All Products].[Food]}\n" +
+            "Row #0: 76,661\n" +
+            "Row #1: 49,365\n" +
+            "Row #2: 13,051\n" +
+            "Row #3: 11,255\n";
+        
+        assertQueryReturns(mdx, fold(result));
+    }    
 }
 
 // End TestCalculatedMembers.java

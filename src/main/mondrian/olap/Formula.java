@@ -391,7 +391,7 @@ public class Formula extends QueryPart {
         }
         if (exp instanceof FunCall) {
             FunCall call = (FunCall) exp;
-            if (call.getFunName().equals("=") &&
+            if (call.getFunName().equals("-") &&
                 call.getSyntax() == Syntax.Prefix) {
                 final Number number = quickEval(call.getArg(0));
                 if (number == null) {
