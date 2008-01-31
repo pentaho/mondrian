@@ -3847,6 +3847,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>CByte</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>CDate</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression that has been
+                            converted to a Variant of subtype Date.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>7</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>CDate</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>CDbl</FUNCTION_NAME>
                         <DESCRIPTION>Returns an expression that has been
                             converted to a Variant of subtype Double.</DESCRIPTION>
@@ -4257,6 +4267,33 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Day</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>DDB</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            depreciation of an asset for a specific time
+                            period using the double-declining balance
+                            method or some other method you specify.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DDB</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>DDB</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            depreciation of an asset for a specific time
+                            period using the double-declining balance
+                            method or some other method you specify.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>DDB</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>DefaultMember</FUNCTION_NAME>
                         <DESCRIPTION>Returns the default member of a dimension.</DESCRIPTION>
                         <PARAMETER_LIST>Dimension</PARAMETER_LIST>
@@ -4650,6 +4687,17 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>FirstSibling</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Fix</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the integer portion of a
+                            number. If negative, returns the negative
+                            number greater than or equal to the number.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Fix</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Format</FUNCTION_NAME>
                         <DESCRIPTION>Formats a number or date to a string.</DESCRIPTION>
                         <PARAMETER_LIST>Member, String</PARAMETER_LIST>
@@ -4675,6 +4723,189 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Format</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatCurrency</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a currency value using the currency symbol
+                            defined in the system control panel.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Integer, Integer,
+                            Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatCurrency</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatCurrency</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a currency value using the currency symbol
+                            defined in the system control panel.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Integer, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatCurrency</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatCurrency</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a currency value using the currency symbol
+                            defined in the system control panel.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatCurrency</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatCurrency</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a currency value using the currency symbol
+                            defined in the system control panel.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatCurrency</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatCurrency</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a currency value using the currency symbol
+                            defined in the system control panel.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatCurrency</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatDateTime</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a date or time.</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatDateTime</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatDateTime</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a date or time.</DESCRIPTION>
+                        <PARAMETER_LIST>DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatDateTime</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatNumber</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Integer, Integer,
+                            Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatNumber</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatNumber</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Integer, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatNumber</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatNumber</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatNumber</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatNumber</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatNumber</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatNumber</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatNumber</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatPercent</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a percentage (multipled by 100) with a
+                            trailing % character.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Integer, Integer,
+                            Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatPercent</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatPercent</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a percentage (multipled by 100) with a
+                            trailing % character.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Integer, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatPercent</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatPercent</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a percentage (multipled by 100) with a
+                            trailing % character.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatPercent</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatPercent</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a percentage (multipled by 100) with a
+                            trailing % character.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatPercent</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>FormatPercent</FUNCTION_NAME>
+                        <DESCRIPTION>Returns an expression formatted as
+                            a percentage (multipled by 100) with a
+                            trailing % character.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>FormatPercent</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>FV</FUNCTION_NAME>
@@ -4777,6 +5008,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Head</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Hex</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a String representing the
+                            hexadecimal value of a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Hex</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Hierarchize</FUNCTION_NAME>
@@ -4927,6 +5168,50 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>InStr</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>InStrRev</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the position of an
+                            occurrence of one string within another,
+                            from the end of string.</DESCRIPTION>
+                        <PARAMETER_LIST>String, String, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>InStrRev</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>InStrRev</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the position of an
+                            occurrence of one string within another,
+                            from the end of string.</DESCRIPTION>
+                        <PARAMETER_LIST>String, String, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>InStrRev</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>InStrRev</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the position of an
+                            occurrence of one string within another,
+                            from the end of string.</DESCRIPTION>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>InStrRev</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Int</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the integer portion of a
+                            number. If negative, returns the negative
+                            number less than or equal to the number.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Int</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Intersect</FUNCTION_NAME>
                         <DESCRIPTION>Returns the intersection of two
                             input sets, optionally retaining duplicates.</DESCRIPTION>
@@ -4953,6 +5238,69 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>InverseNormal</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IPmt</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            interest payment for a given period of an
+                            annuity based on periodic, fixed payments
+                            and a fixed interest rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IPmt</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IPmt</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            interest payment for a given period of an
+                            annuity based on periodic, fixed payments
+                            and a fixed interest rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IPmt</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IPmt</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            interest payment for a given period of an
+                            annuity based on periodic, fixed payments
+                            and a fixed interest rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IPmt</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IRR</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            internal rate of return for a series of
+                            periodic cash flows (payments and receipts).</DESCRIPTION>
+                        <PARAMETER_LIST>Array, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IRR</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IRR</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            internal rate of return for a series of
+                            periodic cash flows (payments and receipts).</DESCRIPTION>
+                        <PARAMETER_LIST>Array</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IRR</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>IS</FUNCTION_NAME>
@@ -5054,6 +5402,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>IS NULL</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IsDate</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Boolean value indicating
+                            whether an expression can be converted to a date..</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IsDate</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>IsEmpty</FUNCTION_NAME>
@@ -5523,6 +5881,18 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Minute</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>MIRR</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            modified internal rate of return for a
+                            series of periodic cash flows (payments and receipts).</DESCRIPTION>
+                        <PARAMETER_LIST>Array, Numeric Expression,
+                            Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>MIRR</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Month</FUNCTION_NAME>
                         <DESCRIPTION>Returns a Variant (Integer)
                             specifying a whole number between 1 and 12,
@@ -5675,6 +6045,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>NullValue</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Oct</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (String)
+                            representing the octal value of a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Oct</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>OpeningPeriod</FUNCTION_NAME>
@@ -5942,6 +6322,47 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Power</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>PPmt</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            principal payment for a given period of an
+                            annuity based on periodic, fixed payments
+                            and a fixed interest rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>PPmt</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>PPmt</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            principal payment for a given period of an
+                            annuity based on periodic, fixed payments
+                            and a fixed interest rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>PPmt</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>PPmt</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            principal payment for a given period of an
+                            annuity based on periodic, fixed payments
+                            and a fixed interest rate.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>PPmt</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>PrevMember</FUNCTION_NAME>
                         <DESCRIPTION>Returns the previous member in the
                             level that contains a specified member.</DESCRIPTION>
@@ -6044,6 +6465,52 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Rank</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Rate</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            interest rate per period for an annuity.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Logical Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Rate</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Rate</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            interest rate per period for an annuity.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Logical Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Rate</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Rate</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            interest rate per period for an annuity.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Rate</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Rate</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            interest rate per period for an annuity.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Rate</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Replace</FUNCTION_NAME>
@@ -6190,6 +6657,18 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Sinh</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>SLN</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            straight-line depreciation of an asset for a
+                            single period.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>SLN</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Space</FUNCTION_NAME>
                         <DESCRIPTION>Returns a Variant (String)
                             consisting of the specified number of spaces.</DESCRIPTION>
@@ -6296,6 +6775,36 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>StdevP</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Str</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (String)
+                            representation of a number.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Str</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>StrComp</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            indicating the result of a string comparison.</DESCRIPTION>
+                        <PARAMETER_LIST>String, String, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>StrComp</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>StrComp</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Variant (Integer)
+                            indicating the result of a string comparison.</DESCRIPTION>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>StrComp</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>String</FUNCTION_NAME>
                         <DESCRIPTION/>
                         <PARAMETER_LIST>Integer, Integer</PARAMETER_LIST>
@@ -6388,6 +6897,18 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Sum</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>SYD</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a Double specifying the
+                            sum-of-years' digits depreciation of an
+                            asset for a specified period.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>SYD</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Tail</FUNCTION_NAME>
@@ -6573,6 +7094,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>TupleToStr</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>TypeName</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a String that provides
+                            information about a variable.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>TypeName</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>UCase</FUNCTION_NAME>
                         <DESCRIPTION>Returns a string that has been
                             converted to uppercase</DESCRIPTION>
@@ -6641,6 +7172,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <FUNCTION_NAME>Val</FUNCTION_NAME>
                         <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Val</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Val</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the numbers contained in a
+                            string as a numeric value of appropriate type.</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20979,6 +21520,16 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>TupleToStr</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>TypeName</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a String that provides
+                            information about a variable.</DESCRIPTION>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>TypeName</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>UCase</FUNCTION_NAME>
