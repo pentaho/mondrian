@@ -32,6 +32,40 @@
        <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
      </layout>	    
    </appender>
+   
+   <!-- ================================================ -->
+   <!-- Special Log File specifically for MDX Statements -->
+   <!-- ================================================ -->
+   
+   <!-- the only output logged to this appender below are MDX statements -->
+
+   <appender name="MDXLOG" class="org.apache.log4j.RollingFileAppender">
+     <param name="File" value="mdx.log"/>
+     <param name="Append" value="false"/>
+     <param name="MaxFileSize" value="500KB"/>
+     <param name="MaxBackupIndex" value="1"/>
+
+     <layout class="org.apache.log4j.PatternLayout">
+       <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+     </layout>	    
+   </appender>
+   
+      <!-- ================================================ -->
+   <!-- Special Log File specifically for SQL Statements -->
+   <!-- ================================================ -->
+   
+   <!-- the only output logged to this appender below are MDX statements -->
+
+   <appender name="SQLLOG" class="org.apache.log4j.RollingFileAppender">
+     <param name="File" value="sql.log"/>
+     <param name="Append" value="false"/>
+     <param name="MaxFileSize" value="500KB"/>
+     <param name="MaxBackupIndex" value="1"/>
+
+     <layout class="org.apache.log4j.PatternLayout">
+       <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+     </layout>	    
+   </appender>
 
    <!-- ============================== -->
    <!-- Append messages to the console -->
@@ -58,6 +92,23 @@
 
    <category name="mondrian">
       <priority value="INFO"/>
+   </category>
+
+   <!-- this category overrides the root appenders -->
+   <!-- and logs only to the MDXLOG                -->
+
+   <category name="mondrian.mdx">
+      <priority value="DEBUG"/>
+      <appender-ref ref="MDXLOG"/>
+   </category>
+   
+   
+   <!-- this category overrides the root appenders -->
+   <!-- and logs only to the SQLLOG                -->
+    
+   <category name="mondrian.sql">
+      <priority value="DEBUG"/>
+      <appender-ref ref="SQLLOG"/>
    </category>
 
    <!-- ======================= -->

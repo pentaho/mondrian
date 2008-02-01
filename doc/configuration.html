@@ -42,6 +42,11 @@
 			<li><a href="#Out_of_memory">Out of memory</a></li>
     	</ol>
     </li>
+    <li><a href="#Logging">Logging</a><ol>
+			<li><a href="#Test_Logging">Configuring log4j within Mondrian's test environment</a></li>
+			<li><a href="#Statement_Logging">MDX and SQL Statement Logging</a></li>			
+    	</ol>
+    </li>
 </ol>
 <!--
 ########################
@@ -469,41 +474,7 @@ suite of regression tests.</p>
          situation.
       </td>
     </tr>
-    <tr>
-      <td colspan="4">
 
-      <b><br>
-      Tracing</b>
-      </td>
-  </tr>
-    <tr>
-
-      <td><code><a href="api/mondrian/olap/MondrianProperties.html#TraceLevel">
-      mondrian.trace.level</a></code></td>
-      <td>int</td>
-      <td>-</td>
-      <td>The amount of tracing displayed.<p>If trace level is above 0, SQL
-      tracing will be enabled and logged as per the out.file below. This is
-      separate from Log4j logging.</td>
-    </tr>
-
-    <tr>
-      <td><code><a href="api/mondrian/olap/MondrianProperties.html#DebugOutFile">
-      mondrian.debug.out.file</a></code></td>
-      <td>string</td>
-      <td>System.out</td>
-      <td>The name of the file to which tracing is to be written.</td>
-    </tr>
-
-    <tr>
-      <td><code>
-      <a href="api/mondrian/olap/MondrianProperties.html#PrintCacheablesAfterQuery">
-      mondrian.rolap.RolapResult.printCacheables</a></code></td>
-      <td>boolean</td>
-      <td>false</td>
-      <td>Obsolete.</td>
-
-    </tr>
     <tr>
       <td colspan="4">
 
@@ -1414,6 +1385,39 @@ web-servers or application-servers are a problem with the current
 Java5 memory threshold notification approach.
 At the current time, I do not know a way around this problem.
 
+
+<h2>Logging<a name="Logging"></a></h2>
+<p>
+	Mondrian uses log4j for all information and debug logging.  When running
+within an application server, Mondrian's log4j configuration is determined by
+the server's or web application's log4j configuration. Please see 
+<a href="http://logging.apache.org/log4j/1.2/manual.html">log4j's documentation</a>
+for a additional details.
+</p>
+
+<h3>Configuring log4j within Mondrian's test environment<a name="Test_Logging"></a></h3>
+<p>
+	When running outside an application server, log4j determines the location
+of the log4j.xml file via the log4j.configuration java system property.   log4j
+treats this string as a URL, so to have it detect the log4j file on the file 
+system, you must use the syntax "file:DIR/log4j.xml". Relative paths are 
+acceptible, so if you have your log4j.xml file in the root directory of 
+mondrian, "file:log4j.xml" will load the correct file.  You may specify the 
+log4j.configuration property in mondrian.properties, because Mondrian's ant 
+build file explicitly sets the property as a JVM system property when running 
+JUnit tests.
+</p>
+
+<h3>MDX and SQL Statement Logging<a name="Statement_Logging"></a></h3>
+<p>
+	The default log4j.xml file is configured so that a separate log file is
+created for both MDX and SQL statement logging.  In the code, the MDX and SQL
+strings are logged at the debug level, so to disable them you can set the log 
+level to INFO or any other level above debug.  Statement logging occurs within
+the log4j categories "mondrian.mdx" and "mondrian.sql".  These categories log 
+the statements and how long they took to execute.  The SQL log also records the
+number of results returned in the result set.
+</p>
 
 <hr noshade size="1"/>
 <p>

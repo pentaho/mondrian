@@ -130,7 +130,6 @@ public class Main extends TestSuite {
      * @throws Exception on error
      */
     private static Test suite() throws Exception {
-        RolapUtil.checkTracing();
         MondrianProperties properties = MondrianProperties.instance();
         String testName = properties.TestName.get();
         String testClass = properties.TestClass.get();

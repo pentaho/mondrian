@@ -36,12 +36,10 @@ import javax.sql.DataSource;
  * @version $Id$
  */
 public class RolapUtil {
-
+    public static final Logger MDX_LOGGER = Logger.getLogger("mondrian.mdx");
+    public static final Logger SQL_LOGGER = Logger.getLogger("mondrian.sql");
     static final Logger LOGGER = Logger.getLogger(RolapUtil.class);
     static final RolapMember[] emptyMemberArray = new RolapMember[0];
-    private static PrintWriter traceOut = null;
-    private static boolean checkedTracing = false;
-    private static boolean traceEnabled;
     private static Semaphore querySemaphore;
 
     /**
@@ -177,52 +175,6 @@ public class RolapUtil {
         System.arraycopy(a, 0, c, 0, a.length);
         System.arraycopy(b, 0, c, a.length, b.length);
         return c;
-    }
-
-    /**
-     * Checks whether tracing is enabled, and returns a PrintWriter if so.
-     *
-     * <p>Tracing is enabled if the {@link MondrianProperties#TraceLevel}
-     * property is greater than 0 and a debug output file
-     * ({@link MondrianProperties#DebugOutFile}) is configured.
-     *
-     * <p>These properties are only checked the first time this method is
-     * called; subsequent invocations return the cached result.
-     *
-     * @return A PrintWriter if tracing is enabled, otherwise null
-     */
-    public static synchronized PrintWriter checkTracing() {
-        if (!checkedTracing) {
-            int trace = MondrianProperties.instance().TraceLevel.get();
-            if (trace > 0) {
-                String debugOutFile =
-                        MondrianProperties.instance().DebugOutFile.get();
-                if (debugOutFile != null) {
-                    File f;
-                    try {
-                        f = new File(debugOutFile);
-                        setDebugOut(new PrintWriter(new FileOutputStream(f), true));
-                    } catch (Exception e) {
-                        setDebugOut(new PrintWriter(System.out, true));
-                    }
-                } else {
-                    setDebugOut(new PrintWriter(System.out, true));
-                }
-                traceEnabled = true;
-            } else {
-                traceEnabled = false;
-            }
-            checkedTracing = true;
-        }
-        return traceEnabled ? traceOut : null;
-    }
-
-    /**
-     * Redirects debug output to another PrintWriter.
-     * @param pw A PrintWriter
-     */
-    static public void setDebugOut(PrintWriter pw) {
-        traceOut = pw;
     }
 
     /**
@@ -537,21 +489,6 @@ public class RolapUtil {
 
         public void close() throws IOException {
         }
-    }
-
-    /**
-     * Creates a {@link TeeWriter} which captures everything which goes through
-     * {@link #traceOut} from now on.
-     */
-    public static synchronized TeeWriter startTracing() {
-        TeeWriter tw;
-        if (traceOut == null) {
-            tw = new TeeWriter(new NullWriter());
-        } else {
-            tw = new TeeWriter(RolapUtil.traceOut);
-        }
-        traceOut = new PrintWriter(tw);
-        return tw;
     }
 
     /**

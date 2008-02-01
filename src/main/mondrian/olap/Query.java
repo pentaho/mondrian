@@ -381,6 +381,14 @@ public class Query extends QueryPart {
         startTime = System.currentTimeMillis();
         isExecuting = true;
     }
+    
+    /**
+     * Gets the query start time
+     * @return start time
+     */
+    public long getQueryStartTime() {
+        return startTime;
+    }
 
     /**
      * Called when query execution has completed.  Once query execution has

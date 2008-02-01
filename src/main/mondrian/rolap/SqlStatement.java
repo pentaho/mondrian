@@ -12,11 +12,11 @@ package mondrian.rolap;
 import mondrian.olap.Util;
 
 import javax.sql.DataSource;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.io.PrintWriter;
 
 /**
  * SqlStatement contains a SQL statement and associated resources throughout
@@ -49,6 +49,7 @@ import java.io.PrintWriter;
  * @since 2.3
  */
 public class SqlStatement {
+    
     private final DataSource dataSource;
     private Connection jdbcConnection;
     private ResultSet resultSet;
@@ -63,7 +64,9 @@ public class SqlStatement {
     private boolean haveSemaphore;
     public int rowCount;
     private long startTime;
-    private final PrintWriter trace;
+    
+    // used for SQL logging, allows for a SQL Statement UID
+    private static long executeCount = 0;
 
     SqlStatement(
         DataSource dataSource,
@@ -81,7 +84,6 @@ public class SqlStatement {
         this.message = message;
         this.resultSetType = resultSetType;
         this.resultSetConcurrency = resultSetConcurrency;
-        this.trace = RolapUtil.checkTracing();
     }
 
     public void execute() throws SQLException {
@@ -90,18 +92,20 @@ public class SqlStatement {
         haveSemaphore = true;
         Statement statement = null;
         String status = "failed";
-
+        long currId = 0;
         // Trace start of execution.
-        if (trace != null) {
-            trace.print(component + ": executing sql [");
+        if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
+            currId = executeCount++;
+            StringBuffer sqllog = new StringBuffer();
+            sqllog.append(currId + ": " + component + ": executing sql [");
             if (sql.indexOf('\n') >= 0) {
                 // SQL appears to be formatted as multiple lines. Make it
                 // start on its own line.
-                trace.println();
+                sqllog.append("\n");
             }
-            trace.print(sql);
-            trace.print(']');
-            trace.flush();
+            sqllog.append(sql);
+            sqllog.append(']');
+            RolapUtil.SQL_LOGGER.debug(sqllog.toString());
         }
 
         // Execute hook.
@@ -137,9 +141,8 @@ public class SqlStatement {
             }
             throw handle(e);
         } finally {
-            if (trace != null) {
-                trace.print(status);
-            }
+            RolapUtil.SQL_LOGGER.debug(currId + ": " + status);
+
             if (RolapUtil.LOGGER.isDebugEnabled()) {
                 RolapUtil.LOGGER.debug(component + ": executing sql [" +
                     sql + "]" + status);
@@ -183,9 +186,9 @@ public class SqlStatement {
         long time = System.currentTimeMillis();
         long totalMs = time - startTime;
         String status = ", exec+fetch " + totalMs + " ms, " + rowCount + " rows";
-        if (trace != null) {
-            trace.println(status);
-        }
+
+        RolapUtil.SQL_LOGGER.debug(status);
+        
         if (RolapUtil.LOGGER.isDebugEnabled()) {
             RolapUtil.LOGGER.debug(component + ": done executing sql [" +
                 sql + "]" + status);

@@ -10,7 +10,7 @@
   -->
 <project name="mondrian" default="all">
   <property environment="env"/>
-  <property name="project.location" location="."/>
+  <property name="project.location" location="${basedir}"/>
   <property name="lib.location" location="${project.location}/lib"/>
   <property file="${project.location}/build.properties"/>
   <property file="${project.location}/mondrian.properties"/>
@@ -25,26 +25,26 @@
     Set the properties related to paths
     ===================================================================
   -->
-  <property name="src.dir" value="src"/>
-  <property name="testsrc.dir" value="testsrc"/>
+  <property name="src.dir" value="${project.location}/src"/>
+  <property name="testsrc.dir" value="${project.location}/testsrc"/>
   <property name="java.dir" value="${src.dir}/main"/>
   <property name="javatest.dir" value="${testsrc.dir}/main"/>
   <property name="etc.dir" value="${src.dir}/etc"/>
-  <property name="lib.dir" value="lib"/>
-  <property name="testlib.dir" value="testlib"/>
-  <property name="doc.dir" value="doc"/>
-  <property name="resource.location" location="resource"/>
+  <property name="lib.dir" value="${project.location}/lib"/>
+  <property name="testlib.dir" value="${project.location}/testlib"/>
+  <property name="doc.dir" value="${project.location}/doc"/>
+  <property name="resource.location" location="${project.location}/resource"/>
   <property name="javadoc.dir" value="${doc.dir}/api"/>
-  <property name="classes.dir" value="classes"/>
-  <property name="testclasses.dir" value="testclasses"/>
-  <property name="testclasses-jdk14.dir" value="testclasses-jdk14"/>
-  <property name="build.dir" value="build"/>
+  <property name="classes.dir" value="${project.location}/classes"/>
+  <property name="testclasses.dir" value="${project.location}/testclasses"/>
+  <property name="testclasses-jdk14.dir" value="${project.location}/testclasses-jdk14"/>
+  <property name="build.dir" value="${project.location}/build"/>
   <property name="dist.name" value="${name}-${version}"/>
   <property name="embedded.dist.name" value="${name}-${version}-embedded"/>
   <property name="dist.base" value="distribution"/>
-  <property name="dist.dir" value="dist"/>
-  <property name="demo.dir" value="demo"/>
-  <property name="webapp.dir" value="webapp"/>
+  <property name="dist.dir" value="${project.location}/dist"/>
+  <property name="demo.dir" value="${project.location}/demo"/>
+  <property name="webapp.dir" value="${project.location}/webapp"/>
   <property name="dist.src.file" value="${dist.dir}/${dist.name}-src.zip"/>
   <property name="dist.bin.file" value="${dist.dir}/${dist.name}.zip"/>
   <property name="dist.bin.derby.file" value="${dist.dir}/${dist.name}-derby.zip"/>
@@ -192,7 +192,7 @@ demo/access/MondrianFoodMart.mdb"/>
 
   <!-- URL of the catalog definition. -->
   <property name="mondrian.foodmart.catalogURL"
-      value="file:${project.location}/${demo.dir}/FoodMart.xml"/>
+      value="file:${demo.dir}/FoodMart.xml"/>
 
   <!-- Test class name. -->
   <property name="mondrian.test.Class" value=""/>
@@ -228,6 +228,7 @@ demo/access/MondrianFoodMart.mdb"/>
   <echo>jdk.home              = ${env.JAVA_HOME}</echo>
   <echo>catalina.home         = ${env.CATALINA_HOME}</echo>
   <echo>junit.home            = ${env.JUNIT_HOME}</echo>
+  <echo>log4j.configuration   = ${log4j.configuration}</echo>
   <echo>mondrian.foodmart.catalogURL = ${mondrian.foodmart.catalogURL}</echo>
   <echo>mondrian.foodmart.jdbcURL    = ${mondrian.foodmart.jdbcURL}</echo>
   <echo>mondrian.jdbcDrivers         = ${mondrian.jdbcDrivers}</echo>

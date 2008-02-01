@@ -198,11 +198,9 @@ public class RolapConnectionTest extends TestCase {
             TestContext.instance().getFoodMartConnectionProperties();
         properties.remove(RolapConnectionProperties.Catalog.name());
         properties.remove(RolapConnectionProperties.CatalogContent.name());
-        PrintWriter trace = RolapUtil.checkTracing();
 
-        if (trace != null) {
-            trace.print(this.getName() + "\n  [Connection Properties | " + properties + "]\n");
-            trace.flush();            
+        if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
+            RolapUtil.SQL_LOGGER.debug(this.getName() + "\n  [Connection Properties | " + properties + "]\n");
         } else {
             System.out.println(properties);
         }

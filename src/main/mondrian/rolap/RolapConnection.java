@@ -46,9 +46,12 @@ import java.util.*;
  */
 public class RolapConnection extends ConnectionBase {
     private static final Logger LOGGER = Logger.getLogger(RolapConnection.class);
-
+    
     private final Util.PropertyList connectInfo;
 
+    // used for MDX logging, allows for a MDX Statement UID 
+    private static long executeCount = 0;
+    
     /**
      * Factory for JDBC connections to talk to the RDBMS. This factory will
      * usually use a connection pool.
@@ -421,6 +424,7 @@ public class RolapConnection extends ConnectionBase {
         }
         Listener listener = new Listener(query);
         MemoryMonitor mm = MemoryMonitorFactory.getMemoryMonitor();
+        long currId = -1;
         try {
             mm.addListener(listener);
             // Check to see if we must punt
@@ -429,6 +433,12 @@ public class RolapConnection extends ConnectionBase {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(Util.unparse(query));
             }
+
+            if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {
+                currId = executeCount++;
+                RolapUtil.MDX_LOGGER.debug( currId + ": " + Util.unparse(query));
+            }
+            
             query.setQueryStartTime();
             Result result = new RolapResult(query, true);
             for (int i = 0; i < query.axes.length; i++) {
@@ -462,6 +472,11 @@ public class RolapConnection extends ConnectionBase {
                     queryString + "]");
         } finally {
             mm.removeListener(listener);
+            if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {
+                RolapUtil.MDX_LOGGER.debug( currId + ": exec: " + 
+                    (System.currentTimeMillis() - query.getQueryStartTime()) +
+                    " ms");
+            }
         }
     }
 
