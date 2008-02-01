@@ -9,6 +9,7 @@
 */
 package mondrian.rolap;
 
+import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
@@ -60,7 +61,7 @@ class RolapCell implements Cell {
      */
     public String getDrillThroughSQL(boolean extendedContext) {
         RolapAggregationManager aggMan = AggregationManager.instance();
-        final Member[] currentMembers = getMembers();
+        final Member[] currentMembers = getMembersForDrillThrough();
         CellRequest cellRequest =
             RolapAggregationManager.makeDrillThroughRequest(
                 currentMembers, extendedContext);
@@ -72,7 +73,7 @@ class RolapCell implements Cell {
 
     public int getDrillThroughCount() {
         RolapAggregationManager aggMan = AggregationManager.instance();
-        final Member[] currentMembers = getMembers();
+        final Member[] currentMembers = getMembersForDrillThrough();
         CellRequest cellRequest =
             RolapAggregationManager.makeDrillThroughRequest(
                 currentMembers, false);
@@ -109,7 +110,7 @@ class RolapCell implements Cell {
      */
     public boolean canDrillThrough() {
         // get current members
-        final Member[] currentMembers = getMembers();
+        final Member[] currentMembers = getMembersForDrillThrough();
         // First member is the measure, test if it is stored measure, return
         // true if it is, false if not.
         return (currentMembers[0] instanceof RolapStoredMeasure);
@@ -118,8 +119,20 @@ class RolapCell implements Cell {
     private RolapEvaluator getEvaluator() {
         return result.getCellEvaluator(pos);
     }
-    private Member[] getMembers() {
-        return result.getCellMembers(pos);
+
+    private Member[] getMembersForDrillThrough() {
+        final Member[] currentMembers = result.getCellMembers(pos);
+
+        // replace member if we're dealing with a trivial formula
+        if (currentMembers[0] instanceof RolapHierarchy.RolapCalculatedMeasure) {
+            RolapHierarchy.RolapCalculatedMeasure measure = 
+                (RolapHierarchy.RolapCalculatedMeasure)currentMembers[0];
+            if (measure.getFormula().getExpression() instanceof MemberExpr) {
+                currentMembers[0] = 
+                    ((MemberExpr)measure.getFormula().getExpression()).getMember();
+            }
+        }
+        return currentMembers;
     }
 
     public Object getPropertyValue(String propertyName) {

@@ -35,6 +35,63 @@ public class DrillThroughTest extends FoodMartTestCase {
     }
 
     // ~ Tests ================================================================
+    
+    public void testTrivalCalcMemberDrillThrough() throws Exception {
+        Result result = executeQuery(
+                "WITH MEMBER [Measures].[Formatted Unit Sales] AS '[Measures].[Unit Sales]', FORMAT_STRING='$#,###.000'" + nl +
+                "SELECT {[Measures].[Unit Sales], [Measures].[Formatted Unit Sales]} on columns," + nl +
+                " {[Product].Children} on rows" + nl +
+                "from Sales");
+        
+        final Cell cell = result.getCell(new int[]{0, 0});
+        assertTrue(cell.canDrillThrough());
+        String sql = cell.getDrillThroughSQL(false);
+
+        String expectedSql =
+                "select `time_by_day`.`the_year` as `Year`," +
+                " `product_class`.`product_family` as `Product Family`," +
+                " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
+                "from `time_by_day` =as= `time_by_day`," +
+                " `sales_fact_1997` =as= `sales_fact_1997`," +
+                " `product_class` =as= `product_class`," +
+                " `product` =as= `product` " +
+                "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
+                " and `time_by_day`.`the_year` = 1997" +
+                " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
+                " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
+                " and `product_class`.`product_family` = 'Drink' " +
+                "order by `time_by_day`.`the_year` ASC," +
+                " `product_class`.`product_family` ASC";
+
+        getTestContext().assertSqlEquals(expectedSql, sql, 7978);
+
+        // Can drill through a trivial calc member.
+        final Cell calcCell = result.getCell(new int[]{1, 0});
+        assertTrue(calcCell.canDrillThrough());
+        sql = calcCell.getDrillThroughSQL(false);
+        assertNotNull(sql);
+        expectedSql =
+            "select `time_by_day`.`the_year` as `Year`," +
+            " `product_class`.`product_family` as `Product Family`," +
+            " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
+            "from `time_by_day` =as= `time_by_day`," +
+            " `sales_fact_1997` =as= `sales_fact_1997`," +
+            " `product_class` =as= `product_class`," +
+            " `product` =as= `product` " +
+            "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
+            " and `time_by_day`.`the_year` = 1997" +
+            " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
+            " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
+            " and `product_class`.`product_family` = 'Drink' " +
+            "order by `time_by_day`.`the_year` ASC," +
+            " `product_class`.`product_family` ASC";
+
+        getTestContext().assertSqlEquals(expectedSql, sql, 7978);
+
+        assertEquals(calcCell.getDrillThroughCount(), 7978);
+        
+    }
+    
 
     public void testDrillThrough() throws Exception {
         Result result = executeQuery(
