@@ -49,18 +49,18 @@ public class RolapMember extends MemberBase {
      *
      * @param schemaReader Schema reader
      * @param hierarchy  Hierarchy
-     * @return Array of arrays of members
+     * @return List of arrays of members
      */
-    public static Member[][] getAllMembers(SchemaReader schemaReader,
-            Hierarchy hierarchy) {
-
+    public static List<Member[]> getAllMembers(
+        SchemaReader schemaReader,
+        Hierarchy hierarchy)
+    {
         long start = System.currentTimeMillis();
 
         try {
-            List<Member[]> list = new ArrayList<Member[]>(500);
-
             // Getting the members by Level is the fastest way that I could
             // find for getting all of a hierarchy's members.
+            List<Member[]> list = new ArrayList<Member[]>();
             Level[] levels = hierarchy.getLevels();
             for (Level level : levels) {
                 Member[] members = schemaReader.getLevelMembers(level, true);
@@ -68,7 +68,7 @@ public class RolapMember extends MemberBase {
                     list.add(members);
                 }
             }
-            return list.toArray(new Member[list.size()][]);
+            return list;
         } finally {
             if (LOGGER.isDebugEnabled()) {
                 long end = System.currentTimeMillis();
@@ -90,76 +90,69 @@ public class RolapMember extends MemberBase {
     }
 
     /**
-     * This is a Bottom-up/Top-down algorithm for setting member ordinal
-     * values. An array of members for each level is gotten and the
-     * array for the lowest level is traversed setting each member's
+     * Sets member ordinal values using a Bottom-up/Top-down algorithm.
+     *
+     * <p>Gets an array of members for each level and traverses
+     * array for the lowest level, setting each member's
      * parent's parent's etc. member's ordinal if not set working back
      * down to the leaf member and then going to the next leaf member
      * and traversing up again.
-     * <p>
-     * The above algorithm only works for hierarchies that have all of its
-     * leaf members in the same level, which is the norm. After all
-     * member ordinal values have been set, the array of members are
-     * traversed making sure that all member's ordinals have been set.
-     * If one is found that is not set, then one must to a full Top-down
+     *
+     * <p>The above algorithm only works for a hierarchy that has all of its
+     * leaf members in the same level (that is, a non-ragged hierarchy), which
+     * is the norm. After all member ordinal values have been set, traverses
+     * the array of members, making sure that all members' ordinals have been
+     * set. If one is found that is not set, then one must to a full Top-down
      * setting of the ordinals.
-     * <p>
-     * The Bottom-up/Top-down algorithm is MUCH faster than the Top-down
+     *
+     * <p>The Bottom-up/Top-down algorithm is MUCH faster than the Top-down
      * algorithm.
-     * <p>
-     * The following are times for executing different set ordinals
-     * algorithms for both the FoodMart Sales cube/Store dimension
-     * and a Large Data set with a dimension with about 250,000 members.
-     * <p>
-     * Times:
-     *    Original setOrdinals Top-down
-     *       Foodmart: 63ms
-     *       Large Data set: 651865ms
-     *    Calling getAllMembers before calling original setOrdinals Top-down
-     *       Foodmart: 32ms
-     *       Large Data set: 73880ms
-     *    Bottom-up/Top-down
-     *       Foodmart: 17ms
-     *       Large Data set: 4241ms
      *
-     *
-     * @param schemaReader
-     * @param seedMember
+     * @param schemaReader Schema reader
+     * @param seedMember Member
      */
-    public static void setOrdinals(SchemaReader schemaReader, Member seedMember) {
+    public static void setOrdinals(
+        SchemaReader schemaReader,
+        Member seedMember)
+    {
+        /*
+         * The following are times for executing different set ordinals
+         * algorithms for both the FoodMart Sales cube/Store dimension
+         * and a Large Data set with a dimension with about 250,000 members.
+         *
+         * Times:
+         *    Original setOrdinals Top-down
+         *       Foodmart: 63ms
+         *       Large Data set: 651865ms
+         *    Calling getAllMembers before calling original setOrdinals Top-down
+         *       Foodmart: 32ms
+         *       Large Data set: 73880ms
+         *    Bottom-up/Top-down
+         *       Foodmart: 17ms
+         *       Large Data set: 4241ms
+         */
         long start = System.currentTimeMillis();
 
         try {
             Hierarchy hierarchy = seedMember.getHierarchy();
-            //int ordinal = 1;
             int ordinal = hierarchy.hasAll() ? 1 : 0;
-            Member[][] membersArray = getAllMembers(schemaReader, hierarchy);
-            Member[] leafMembers = membersArray[membersArray.length-1];
+            List<Member[]> levelMembers =
+                getAllMembers(schemaReader, hierarchy);
+            Member[] leafMembers = levelMembers.get(levelMembers.size() - 1);
+            levelMembers = levelMembers.subList(0, levelMembers.size() - 1);
 
-            // Set all ordinals,
+            // Set all ordinals
             for (Member child : leafMembers) {
                 ordinal = bottomUpSetParentOrdinals(ordinal, child);
                 ordinal = setOrdinal(child, ordinal);
             }
 
-            // Now check to see if all ordinals have been set. If the hierarchy
-            // is 'uneven', not all leaf members are at the same level, then
-            // the above setting of ordinals will have missed some.
-            boolean needsFullTopDown = false;
-            for (int i = 0; i < membersArray.length-1; i++) {
-                Member[] members = membersArray[i];
-                for (Member member : members) {
-                    if (member.getOrdinal() == -1) {
-                        needsFullTopDown = true;
-                        break;
-                    }
-                }
-            }
+            boolean needsFullTopDown = needsFullTopDown(levelMembers);
+
             // If we must to a full Top-down, then first reset all ordinal
             // values to -1, and then call the Top-down
             if (needsFullTopDown) {
-                for (int i = 0; i < membersArray.length-1; i++) {
-                    Member[] members = membersArray[i];
+                for (Member[] members : levelMembers) {
                     for (Member member : members) {
                         if (member instanceof RolapMember) {
                             ((RolapMember) member).resetOrdinal();
@@ -177,6 +170,40 @@ public class RolapMember extends MemberBase {
             }
         }
     }
+
+    /**
+     * Returns whether the ordinal assignment algorithm needs to perform
+     * the more expensive top-down algorithm. If the hierarchy is 'uneven', not
+     * all leaf members are at the same level, then bottom-up setting of
+     * ordinals will have missed some.
+     *
+     * @param levelMembers Array containing the list of members in each level
+     * except the leaf level
+     * @return whether we need to apply the top-down ordinal assignment
+     */
+    private static boolean needsFullTopDown(List<Member[]> levelMembers) {
+        for (Member[] members : levelMembers) {
+            for (Member member : members) {
+                if (member.getOrdinal() == -1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Walks up the hierarchy, setting the ordinals of ancestors until it
+     * reaches the root or hits an ancestor whose ordinal has already been
+     * assigned.
+     *
+     * <p>Assigns the given ordinal to the ancestor nearest the root which has
+     * not been assigned an ordinal, and increments by one for each descendant.
+     *
+     * @param ordinal Ordinal to assign to deepest ancestor
+     * @param child Member whose ancestors ordinals to set
+     * @return Ordinal, incremented for each time it was used
+     */
     private static int bottomUpSetParentOrdinals(int ordinal, Member child) {
         Member parent = child.getParentMember();
         if ((parent != null) && parent.getOrdinal() == -1) {
@@ -191,27 +218,30 @@ public class RolapMember extends MemberBase {
             ((RolapMember) member).setOrdinal(ordinal++);
         } else {
             // TODO
-            LOGGER.warn("RolapMember.setAllChildren: NOT RolapMember "+
-                "member.name=" +member.getName()+
-                ", member.class=" +member.getClass().getName()+
-                ", ordinal=" +ordinal
-                );
+            LOGGER.warn("RolapMember.setAllChildren: NOT RolapMember " +
+                "member.name=" + member.getName() +
+                ", member.class=" + member.getClass().getName() +
+                ", ordinal=" + ordinal);
             ordinal++;
         }
         return ordinal;
     }
 
     /**
-     * This does a depth first setting of the complete member hierarchy as
-     * required by the MEMBER_ORDINAL XMLA element.
-     * For big hierarchies it takes a bunch of time. SQL Server is
+     * Sets ordinals of a complete member hierarchy as required by the
+     * MEMBER_ORDINAL XMLA element using a depth-first algorithm.
+     *
+     * <p>For big hierarchies it takes a bunch of time. SQL Server is
      * relatively fast in comparison so it might be storing such
      * information in the DB.
      *
-     * @param schemaReader
-     * @param member
+     * @param schemaReader Schema reader
+     * @param member Member
      */
-    public static void setOrdinalsTopDown(SchemaReader schemaReader, Member member) {
+    private static void setOrdinalsTopDown(
+        SchemaReader schemaReader, 
+        Member member)
+    {
         long start = System.currentTimeMillis();
 
         try {
@@ -266,7 +296,7 @@ public class RolapMember extends MemberBase {
         if (key == null || RolapUtil.sqlNullValue.equals(key)) {
             name = RolapUtil.mdxNullLiteral;
         } else if (key instanceof Id.Segment) {
-            name = ((Id.Segment)key).name;      //MARIN CHANGE: To get the correct key when segments are parsed.
+            name = ((Id.Segment) key).name;
         } else {
             name = key.toString();
         }

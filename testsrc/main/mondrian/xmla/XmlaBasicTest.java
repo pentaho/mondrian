@@ -393,6 +393,37 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
+    public void testMDMembersMulti() throws Exception {
+        String requestType = "MDSCHEMA_MEMBERS";
+
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CATALOG_NAME_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+
+        doTest(requestType, props, TestContext.instance());
+    }
+
+    public void testMDMembersTreeop() throws Exception {
+        String requestType = "MDSCHEMA_MEMBERS";
+
+        // Treeop 34 = Ancestors | Siblings
+        // MEMBER_UNIQUE_NAME = [USA].[OR]
+        // Hence should return {[All], [USA], [USA].[CA], [USA].[WA]}
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CATALOG_NAME_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+
+        doTest(requestType, props, TestContext.instance());
+    }
+
     public void testMDProperties() throws Exception {
         String requestType = "MDSCHEMA_PROPERTIES";
 

@@ -8605,6 +8605,355 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 ]]>
         </Resource>
     </TestCase>
+    <TestCase name="testMDMembersMulti">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0"
+                                    name="CATALOG_NAME"
+                                    sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="SCHEMA_NAME"
+                                    sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME"
+                                    sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element
+                                    name="DIMENSION_UNIQUE_NAME"
+                                    sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element
+                                    name="HIERARCHY_UNIQUE_NAME"
+                                    sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="LEVEL_UNIQUE_NAME"
+                                    sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="LEVEL_NUMBER"
+                                    sql:field="LEVEL_NUMBER" type="xsd:unsignedInt"/>
+                                <xsd:element name="MEMBER_ORDINAL"
+                                    sql:field="MEMBER_ORDINAL" type="xsd:unsignedInt"/>
+                                <xsd:element name="MEMBER_NAME"
+                                    sql:field="MEMBER_NAME" type="xsd:string"/>
+                                <xsd:element name="MEMBER_UNIQUE_NAME"
+                                    sql:field="MEMBER_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="MEMBER_TYPE"
+                                    sql:field="MEMBER_TYPE" type="xsd:int"/>
+                                <xsd:element minOccurs="0"
+                                    name="MEMBER_GUID"
+                                    sql:field="MEMBER_GUID" type="uuid"/>
+                                <xsd:element name="MEMBER_CAPTION"
+                                    sql:field="MEMBER_CAPTION" type="xsd:string"/>
+                                <xsd:element name="CHILDREN_CARDINALITY"
+                                    sql:field="CHILDREN_CARDINALITY" type="xsd:unsignedInt"/>
+                                <xsd:element name="PARENT_LEVEL"
+                                    sql:field="PARENT_LEVEL" type="xsd:unsignedInt"/>
+                                <xsd:element minOccurs="0"
+                                    name="PARENT_UNIQUE_NAME"
+                                    sql:field="PARENT_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="PARENT_COUNT"
+                                    sql:field="PARENT_COUNT" type="xsd:unsignedInt"/>
+                                <xsd:element minOccurs="0"
+                                    name="TREE_OP" sql:field="TREE_OP" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DEPTH"
+                                    sql:field="DEPTH" type="xsd:int"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[City]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_NUMBER>3</LEVEL_NUMBER>
+                        <MEMBER_ORDINAL>7930</MEMBER_ORDINAL>
+                        <MEMBER_NAME>Portland</MEMBER_NAME>
+                        <MEMBER_UNIQUE_NAME>[Customers].[All Customers].[USA].[OR].[Portland]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_TYPE>1</MEMBER_TYPE>
+                        <MEMBER_CAPTION>Portland</MEMBER_CAPTION>
+                        <CHILDREN_CARDINALITY>90</CHILDREN_CARDINALITY>
+                        <PARENT_LEVEL>2</PARENT_LEVEL>
+                        <PARENT_UNIQUE_NAME>[Customers].[All Customers].[USA].[OR]</PARENT_UNIQUE_NAME>
+                        <PARENT_COUNT>1</PARENT_COUNT>
+                        <DEPTH>3</DEPTH>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[State Province]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_NUMBER>2</LEVEL_NUMBER>
+                        <MEMBER_ORDINAL>2967</MEMBER_ORDINAL>
+                        <MEMBER_NAME>CA</MEMBER_NAME>
+                        <MEMBER_UNIQUE_NAME>[Customers].[All Customers].[USA].[CA]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_TYPE>1</MEMBER_TYPE>
+                        <MEMBER_CAPTION>CA</MEMBER_CAPTION>
+                        <CHILDREN_CARDINALITY>45</CHILDREN_CARDINALITY>
+                        <PARENT_LEVEL>1</PARENT_LEVEL>
+                        <PARENT_UNIQUE_NAME>[Customers].[All Customers].[USA]</PARENT_UNIQUE_NAME>
+                        <PARENT_COUNT>1</PARENT_COUNT>
+                        <DEPTH>2</DEPTH>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<SOAP-ENV:Envelope
+xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+        <CUBE_NAME>${cube.name}</CUBE_NAME>
+        <MEMBER_UNIQUE_NAME>[Customers].[USA].[CA]</MEMBER_UNIQUE_NAME>
+        <MEMBER_UNIQUE_NAME>[Customers].[USA].[OR].[Portland]</MEMBER_UNIQUE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>${format}</Format>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testMDMembersTreeop">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0"
+                                    name="CATALOG_NAME"
+                                    sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="SCHEMA_NAME"
+                                    sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME"
+                                    sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element
+                                    name="DIMENSION_UNIQUE_NAME"
+                                    sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element
+                                    name="HIERARCHY_UNIQUE_NAME"
+                                    sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="LEVEL_UNIQUE_NAME"
+                                    sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="LEVEL_NUMBER"
+                                    sql:field="LEVEL_NUMBER" type="xsd:unsignedInt"/>
+                                <xsd:element name="MEMBER_ORDINAL"
+                                    sql:field="MEMBER_ORDINAL" type="xsd:unsignedInt"/>
+                                <xsd:element name="MEMBER_NAME"
+                                    sql:field="MEMBER_NAME" type="xsd:string"/>
+                                <xsd:element name="MEMBER_UNIQUE_NAME"
+                                    sql:field="MEMBER_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="MEMBER_TYPE"
+                                    sql:field="MEMBER_TYPE" type="xsd:int"/>
+                                <xsd:element minOccurs="0"
+                                    name="MEMBER_GUID"
+                                    sql:field="MEMBER_GUID" type="uuid"/>
+                                <xsd:element name="MEMBER_CAPTION"
+                                    sql:field="MEMBER_CAPTION" type="xsd:string"/>
+                                <xsd:element name="CHILDREN_CARDINALITY"
+                                    sql:field="CHILDREN_CARDINALITY" type="xsd:unsignedInt"/>
+                                <xsd:element name="PARENT_LEVEL"
+                                    sql:field="PARENT_LEVEL" type="xsd:unsignedInt"/>
+                                <xsd:element minOccurs="0"
+                                    name="PARENT_UNIQUE_NAME"
+                                    sql:field="PARENT_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="PARENT_COUNT"
+                                    sql:field="PARENT_COUNT" type="xsd:unsignedInt"/>
+                                <xsd:element minOccurs="0"
+                                    name="TREE_OP" sql:field="TREE_OP" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DEPTH"
+                                    sql:field="DEPTH" type="xsd:int"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[(All)]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+                        <MEMBER_ORDINAL>0</MEMBER_ORDINAL>
+                        <MEMBER_NAME>All Customers</MEMBER_NAME>
+                        <MEMBER_UNIQUE_NAME>[Customers].[All Customers]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_TYPE>2</MEMBER_TYPE>
+                        <MEMBER_CAPTION>All Customers</MEMBER_CAPTION>
+                        <CHILDREN_CARDINALITY>3</CHILDREN_CARDINALITY>
+                        <PARENT_LEVEL>0</PARENT_LEVEL>
+                        <PARENT_COUNT>0</PARENT_COUNT>
+                        <DEPTH>0</DEPTH>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Country]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_NUMBER>1</LEVEL_NUMBER>
+                        <MEMBER_ORDINAL>2966</MEMBER_ORDINAL>
+                        <MEMBER_NAME>USA</MEMBER_NAME>
+                        <MEMBER_UNIQUE_NAME>[Customers].[All Customers].[USA]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_TYPE>1</MEMBER_TYPE>
+                        <MEMBER_CAPTION>USA</MEMBER_CAPTION>
+                        <CHILDREN_CARDINALITY>3</CHILDREN_CARDINALITY>
+                        <PARENT_LEVEL>0</PARENT_LEVEL>
+                        <PARENT_UNIQUE_NAME>[Customers].[All Customers]</PARENT_UNIQUE_NAME>
+                        <PARENT_COUNT>1</PARENT_COUNT>
+                        <DEPTH>1</DEPTH>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[State Province]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_NUMBER>2</LEVEL_NUMBER>
+                        <MEMBER_ORDINAL>2967</MEMBER_ORDINAL>
+                        <MEMBER_NAME>CA</MEMBER_NAME>
+                        <MEMBER_UNIQUE_NAME>[Customers].[All Customers].[USA].[CA]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_TYPE>1</MEMBER_TYPE>
+                        <MEMBER_CAPTION>CA</MEMBER_CAPTION>
+                        <CHILDREN_CARDINALITY>45</CHILDREN_CARDINALITY>
+                        <PARENT_LEVEL>1</PARENT_LEVEL>
+                        <PARENT_UNIQUE_NAME>[Customers].[All Customers].[USA]</PARENT_UNIQUE_NAME>
+                        <PARENT_COUNT>1</PARENT_COUNT>
+                        <DEPTH>2</DEPTH>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[State Province]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_NUMBER>2</LEVEL_NUMBER>
+                        <MEMBER_ORDINAL>8298</MEMBER_ORDINAL>
+                        <MEMBER_NAME>WA</MEMBER_NAME>
+                        <MEMBER_UNIQUE_NAME>[Customers].[All Customers].[USA].[WA]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_TYPE>1</MEMBER_TYPE>
+                        <MEMBER_CAPTION>WA</MEMBER_CAPTION>
+                        <CHILDREN_CARDINALITY>22</CHILDREN_CARDINALITY>
+                        <PARENT_LEVEL>1</PARENT_LEVEL>
+                        <PARENT_UNIQUE_NAME>[Customers].[All Customers].[USA]</PARENT_UNIQUE_NAME>
+                        <PARENT_COUNT>1</PARENT_COUNT>
+                        <DEPTH>2</DEPTH>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<SOAP-ENV:Envelope
+xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+        <CUBE_NAME>${cube.name}</CUBE_NAME>
+        <TREE_OP>34</TREE_OP>
+        <MEMBER_UNIQUE_NAME>[Customers].[USA].[OR]</MEMBER_UNIQUE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>${format}</Format>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
     <TestCase name="testMDProperties">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
@@ -18883,6 +19232,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>cByte</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>cDate</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>7</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>cDate</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>cDbl</FUNCTION_NAME>
                         <DESCRIPTION/>
                         <PARAMETER_LIST>Value</PARAMETER_LIST>
@@ -19271,6 +19629,27 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>day</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>dDB</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>dDB</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>dDB</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>dDB</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>DefaultMember</FUNCTION_NAME>
@@ -19665,6 +20044,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>FirstSibling</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>fix</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>fix</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Format</FUNCTION_NAME>
                         <DESCRIPTION>Formats a number or date to a string.</DESCRIPTION>
                         <PARAMETER_LIST>Member, String</PARAMETER_LIST>
@@ -19690,6 +20078,162 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Format</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatCurrency</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Integer, Integer,
+                            Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatCurrency</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatCurrency</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Integer, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatCurrency</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatCurrency</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatCurrency</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatCurrency</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatCurrency</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatCurrency</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatCurrency</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatDateTime</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>DateTime, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatDateTime</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatDateTime</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>DateTime</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatDateTime</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatNumber</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Integer, Integer,
+                            Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatNumber</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatNumber</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Integer, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatNumber</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatNumber</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatNumber</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatNumber</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatNumber</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatNumber</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatNumber</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatPercent</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Integer, Integer,
+                            Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatPercent</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatPercent</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Integer, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatPercent</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatPercent</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatPercent</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatPercent</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatPercent</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>formatPercent</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>formatPercent</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>fV</FUNCTION_NAME>
@@ -19783,6 +20327,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Head</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>hex</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>hex</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Hierarchize</FUNCTION_NAME>
@@ -19931,6 +20484,42 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>InStr</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>inStrRev</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>String, String, Integer, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>inStrRev</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>inStrRev</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>String, String, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>inStrRev</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>inStrRev</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>inStrRev</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>int_</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>int_</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Intersect</FUNCTION_NAME>
                         <DESCRIPTION>Returns the intersection of two
                             input sets, optionally retaining duplicates.</DESCRIPTION>
@@ -19957,6 +20546,56 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>InverseNormal</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>iPmt</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>iPmt</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>iPmt</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>iPmt</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>iPmt</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>iPmt</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IRR</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Array, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IRR</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IRR</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Array</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IRR</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>IS</FUNCTION_NAME>
@@ -20058,6 +20697,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>IS NULL</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>isDate</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>isDate</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>IsEmpty</FUNCTION_NAME>
@@ -20518,6 +21166,16 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>minute</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>MIRR</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Array, Numeric Expression,
+                            Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>MIRR</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>month</FUNCTION_NAME>
                         <DESCRIPTION/>
                         <PARAMETER_LIST>DateTime</PARAMETER_LIST>
@@ -20659,6 +21317,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>NullValue</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>oct</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>oct</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>OpeningPeriod</FUNCTION_NAME>
@@ -20921,6 +21588,38 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>power</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>pPmt</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>pPmt</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>pPmt</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>pPmt</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>pPmt</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>pPmt</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>PrevMember</FUNCTION_NAME>
                         <DESCRIPTION>Returns the previous member in the
                             level that contains a specified member.</DESCRIPTION>
@@ -21020,6 +21719,48 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Rank</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>rate</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Logical Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>rate</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>rate</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric
+                            Expression, Logical Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>rate</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>rate</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>rate</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>rate</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>rate</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>replace</FUNCTION_NAME>
@@ -21150,6 +21891,16 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>sinh</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>sLN</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>sLN</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>space</FUNCTION_NAME>
                         <DESCRIPTION/>
                         <PARAMETER_LIST>Integer</PARAMETER_LIST>
@@ -21253,6 +22004,33 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>StdevP</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>str</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>str</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>strComp</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>String, String, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>strComp</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>strComp</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>strComp</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>string</FUNCTION_NAME>
                         <DESCRIPTION/>
                         <PARAMETER_LIST>Integer, Integer</PARAMETER_LIST>
@@ -21344,6 +22122,16 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Sum</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>sYD</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Numeric Expression, Numeric
+                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>sYD</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Tail</FUNCTION_NAME>
@@ -21522,14 +22310,13 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>TupleToStr</CAPTION>
                     </row>
                     <row>
-                        <FUNCTION_NAME>TypeName</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a String that provides
-                            information about a variable.</DESCRIPTION>
+                        <FUNCTION_NAME>typeName</FUNCTION_NAME>
+                        <DESCRIPTION/>
                         <PARAMETER_LIST>Value</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
-                        <CAPTION>TypeName</CAPTION>
+                        <CAPTION>typeName</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>UCase</FUNCTION_NAME>
@@ -21604,6 +22391,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Val</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>val</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>val</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>ValidMeasure</FUNCTION_NAME>

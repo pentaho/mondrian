@@ -5347,7 +5347,7 @@ TODO: see above
         private static final Column MemberUniqueName =
             new Column(
                 "MEMBER_UNIQUE_NAME",
-                Type.String,
+                Type.StringSometimesArray,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5592,7 +5592,7 @@ TODO: see above
                 // the Hierarchy (rather than getting them one at a time).
                 // The value returned is not used at this point but they are
                 // now cached in the SchemaReader.
-                Member[][] membersArray =
+                List<Member[]> membersArray =
                     RolapMember.getAllMembers(schemaReader, hierarchy);
                 for (Member[] members : membersArray) {
                     outputMembers(
@@ -5715,32 +5715,36 @@ TODO: see above
             final String catalogName,
             Cube cube, List<Row> rows)
         {
-            String memberUniqueName =
-                getRestrictionValueAsString(MemberUniqueName);
-            if (memberUniqueName == null) {
-                // The query specified two or more unique names
-                // which means that nothing will match.
-                return;
+            final Object unameRestrictions =
+                restrictions.get(MemberUniqueName.name);
+            List<String> list;
+            if (unameRestrictions instanceof String) {
+                list = Collections.singletonList((String) unameRestrictions);
+            } else {
+                list = (List<String>) unameRestrictions;
             }
-            final List<Id.Segment> nameParts =
-                Util.parseIdentifier(memberUniqueName);
+            for (String memberUniqueName : list) {
+                final List<Id.Segment> nameParts =
+                    Util.parseIdentifier(memberUniqueName);
 
-            Member member = schemaReader.getMemberByUniqueName(
-                nameParts, false);
+                Member member = schemaReader.getMemberByUniqueName(
+                    nameParts, false);
 
-            if (member == null) {
-                return;
-            }
-            if (isRestricted(TreeOp)) {
-                int treeOp = getRestrictionValueAsInt(TreeOp);
-                if (treeOp == -1) {
+                if (member == null) {
                     return;
                 }
-                populateMember(
-                    schemaReader, catalogName,
-                    cube, member, treeOp, rows);
-            } else {
-                outputMember(schemaReader, member, catalogName, cube, rows);
+                if (isRestricted(TreeOp)) {
+                    int treeOp = getRestrictionValueAsInt(TreeOp);
+                    if (treeOp == -1) {
+                        return;
+                    }
+                    populateMember(
+                        schemaReader, catalogName,
+                        cube, member, treeOp, rows);
+                } else {
+                    outputMember(
+                        schemaReader, member, catalogName, cube, rows);
+                }
             }
         }
 
@@ -5793,7 +5797,7 @@ TODO: see above
             row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
             row.set(LevelUniqueName.name, level.getUniqueName());
             row.set(LevelNumber.name, adjustedLevelDepth);
-            row.set(MemberOrdinal.name, member.getOrdinal());
+            row.set(MemberOrdinal.name, false ? 0 : member.getOrdinal());
             row.set(MemberName.name, member.getName());
             row.set(MemberUniqueName.name, member.getUniqueName());
             row.set(MemberType.name, member.getMemberType().ordinal());

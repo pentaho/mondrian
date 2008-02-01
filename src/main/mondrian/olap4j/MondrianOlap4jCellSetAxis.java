@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -85,7 +85,8 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
             for (Hierarchy hierarchy : hierarchyList) {
                 ++k;
                 if (members[k] == null) {
-                    members[k] = hierarchy.getDefaultMember();
+                    members[k] =
+                        ((MondrianOlap4jHierarchy) hierarchy).getDefaultMember();
                 }
             }
             final Position position = new Position() {
