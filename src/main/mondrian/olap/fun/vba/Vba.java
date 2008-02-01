@@ -1006,7 +1006,12 @@ public class Vba {
         if (varName == null) {
             return "NULL";
         } else {
-            return varName.getClass().getSimpleName();
+            // strip off the package information
+            String name = varName.getClass().getName();
+            if (name.lastIndexOf(".") >= 0) {
+                name = name.substring(name.lastIndexOf(".") + 1);
+            }
+            return name;
         }
     }
 

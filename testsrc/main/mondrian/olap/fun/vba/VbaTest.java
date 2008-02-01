@@ -387,7 +387,11 @@ public class VbaTest extends TestCase {
             assertEquals("Oct 19, 1962 4:35:47 PM", Vba.formatDateTime(date, 0));
             assertEquals("October 19, 1962", Vba.formatDateTime(date, 1));
             assertEquals("10/19/62", Vba.formatDateTime(date, 2));
-            assertEquals("4:35:47 PM EDT", Vba.formatDateTime(date, 3));
+            String datestr = Vba.formatDateTime(date, 3);
+            assertNotNull(datestr);
+            // skip the timezone so this test runs everywhere
+            // in EST, this string is "4:35:47 PM EST"
+            assertTrue(datestr.startsWith("4:35:47 PM"));
             assertEquals("4:35 PM", Vba.formatDateTime(date, 4));
         
         } catch (ParseException e) {
