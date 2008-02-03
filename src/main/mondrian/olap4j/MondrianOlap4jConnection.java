@@ -15,6 +15,7 @@ import mondrian.rolap.RolapStoredMeasure;
 import org.olap4j.Axis;
 import org.olap4j.Cell;
 import org.olap4j.*;
+import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.mdx.*;
 import org.olap4j.mdx.parser.*;
 import org.olap4j.mdx.parser.impl.DefaultMdxParserImpl;
@@ -461,7 +462,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     public static Map<String, String> toMap(final Properties properties) {
         return new AbstractMap<String, String>() {
             public Set<Entry<String, String>> entrySet() {
-                return (Set) properties.entrySet();
+                return Olap4jUtil.cast(properties.entrySet());
             }
         };
     }
@@ -631,9 +632,9 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
             return new AxisNode(
                 null,
                 axis.isNonEmpty(),
-                toOlap4j(axis.getSet()),
                 MondrianOlap4jConnection.toOlap4j(axis.getAxisName()),
-                toOlap4j(axis.getDimensionProperties()));
+                toOlap4j(axis.getDimensionProperties()),
+                toOlap4j(axis.getSet()));
         }
 
         private List<IdentifierNode> toOlap4j(Id[] dimensionProperties) {

@@ -191,7 +191,7 @@ public class HierarchyUsage {
 
             // Virtual Hierarchy attributes
             MondrianDef.VirtualCubeDimension vd =
-                        (MondrianDef.VirtualCubeDimension) cubeDim;
+                (MondrianDef.VirtualCubeDimension) cubeDim;
 
             this.hierarchyName = cubeDim.name;
             this.fullName = this.name;
@@ -328,10 +328,8 @@ public class HierarchyUsage {
                     Util.lookupHierarchyLevel(hierarchy, cubeDim.level);
             if (joinLevel == null) {
                 throw MondrianResource.instance()
-                        .DimensionUsageHasUnknownLevel.ex(
-                                hierarchy.getUniqueName(),
-                                cube.getUniqueName(),
-                                cubeDim.level);
+                    .DimensionUsageHasUnknownLevel.ex(
+                    hierarchy.getUniqueName(), cube.getName(), cubeDim.level);
             }
             this.joinTable =
                 findJoinTable(hierarchy, joinLevel.getKeyExp().getTableAlias());
@@ -361,15 +359,15 @@ public class HierarchyUsage {
         if (!inFactTable) {
             if (this.joinExp == null) {
                 throw MondrianResource.instance()
-                        .MustSpecifyPrimaryKeyForHierarchy.ex(
-                                hierarchy.getUniqueName(),
-                                cube.getUniqueName());
+                    .MustSpecifyPrimaryKeyForHierarchy.ex(
+                    hierarchy.getUniqueName(),
+                    cube.getName());
             }
             if (foreignKey == null) {
                 throw MondrianResource.instance()
-                        .MustSpecifyForeignKeyForHierarchy.ex(
-                                hierarchy.getUniqueName(),
-                                cube.getUniqueName());
+                    .MustSpecifyForeignKeyForHierarchy.ex(
+                    hierarchy.getUniqueName(),
+                    cube.getName());
             }
         }
     }

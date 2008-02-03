@@ -60,7 +60,8 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     }
 
     public String getUniqueName() {
-        return name;
+        // return e.g. '[Sales Ragged]'
+        return Util.quoteMdxIdentifier(name);
     }
 
     public String getQualifiedName() {

@@ -178,8 +178,8 @@ public class RolapCube extends CubeBase {
 
         if (fact.getAlias() == null) {
             throw Util.newError(
-                    "Must specify alias for fact table of cube " +
-                    getUniqueName());
+                "Must specify alias for fact table of cube '" +
+                    getName() + "'");
         }
 
 
@@ -567,7 +567,7 @@ public class RolapCube extends CubeBase {
             } else {
                 if (!joinPath.equals(joinPath2)) {
                     throw MondrianResource.instance().DuplicateAliasInCube.ex(
-                        alias, this.getUniqueName());
+                        alias, this.getName());
                 }
             }
             joinPath.remove(joinPath.size() - 1);
@@ -787,8 +787,7 @@ public class RolapCube extends CubeBase {
             preNamedSet(xmlNamedSet, nameSet, buf);
         }
 
-        buf.append("SELECT FROM ")
-            .append(Util.quoteMdxIdentifier(cube.getUniqueName()));
+        buf.append("SELECT FROM ").append(cube.getUniqueName());
 
         // Parse and validate this huge MDX query we've created.
         final String queryString = buf.toString();
@@ -798,7 +797,7 @@ public class RolapCube extends CubeBase {
             queryExp = conn.parseQuery(queryString, load);
         } catch (Exception e) {
             throw MondrianResource.instance().UnknownNamedSetHasBadFormula.ex(
-                getUniqueName(), e);
+                getName(), e);
         }
         queryExp.resolve();
         return queryExp;
@@ -822,7 +821,7 @@ public class RolapCube extends CubeBase {
             StringBuilder buf) {
         if (!nameSet.add(xmlNamedSet.name)) {
             throw MondrianResource.instance().NamedSetNotUnique.ex(
-                    xmlNamedSet.name, getUniqueName());
+                xmlNamedSet.name, getName());
         }
 
         buf.append("SET ")
@@ -878,8 +877,7 @@ public class RolapCube extends CubeBase {
                         Id.Quoting.UNQUOTED));
         if (dimension == null) {
             throw MondrianResource.instance().CalcMemberHasBadDimension.ex(
-                    xmlCalcMember.dimension, xmlCalcMember.name,
-                    getUniqueName());
+                xmlCalcMember.dimension, xmlCalcMember.name, getName());
         }
 
         // If we're processing a virtual cube, it's possible that we've
@@ -895,7 +893,7 @@ public class RolapCube extends CubeBase {
                 if (errOnDup) {
                     throw MondrianResource.instance().CalcMemberNotUnique.ex(
                         Util.makeFqName(dimension, xmlCalcMember.name),
-                        getUniqueName());
+                        getName());
                 }
                 continue;
             } else {
@@ -912,8 +910,8 @@ public class RolapCube extends CubeBase {
             if (xmlCalcMember2.name.equals(xmlCalcMember.name) &&
                     xmlCalcMember2.dimension.equals(xmlCalcMember.dimension)) {
                 throw MondrianResource.instance().CalcMemberNotUnique.ex(
-                        Util.makeFqName(dimension, xmlCalcMember.name),
-                        getUniqueName());
+                    Util.makeFqName(dimension, xmlCalcMember.name),
+                    getName());
             }
         }
 
@@ -923,8 +921,8 @@ public class RolapCube extends CubeBase {
                 xmlCalcMember.memberProperties;
         List<String> propNames = new ArrayList<String>();
         List<String> propExprs = new ArrayList<String>();
-        validateMemberProps(xmlProperties, propNames, propExprs,
-                xmlCalcMember.name);
+        validateMemberProps(
+            xmlProperties, propNames, propExprs, xmlCalcMember.name);
 
         final int measureCount =
                 cube.measuresHierarchy.getMemberReader().getMemberCount();
@@ -1002,22 +1000,22 @@ public class RolapCube extends CubeBase {
             final MondrianDef.CalculatedMemberProperty xmlProperty =
                     xmlProperties[i];
             if (xmlProperty.expression == null &&
-                xmlProperty.value == null) {
-
+                xmlProperty.value == null)
+            {
                 throw MondrianResource.instance()
                     .NeitherExprNorValueForCalcMemberProperty.ex(
                         xmlProperty.name,
                         memberName,
-                        getUniqueName());
+                        getName());
             }
             if (xmlProperty.expression != null &&
-                xmlProperty.value != null) {
-
+                xmlProperty.value != null)
+            {
                 throw MondrianResource.instance()
                     .ExprAndValueForMemberProperty.ex(
                         xmlProperty.name,
                         memberName,
-                        getUniqueName());
+                        getName());
             }
             propNames.add(xmlProperty.name);
             if (xmlProperty.expression != null) {
@@ -1027,7 +1025,6 @@ public class RolapCube extends CubeBase {
             }
         }
     }
-
 
     public RolapSchema getSchema() {
         return schema;
