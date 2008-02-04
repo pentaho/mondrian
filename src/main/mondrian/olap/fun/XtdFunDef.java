@@ -68,9 +68,13 @@ class XtdFunDef extends FunDefBase {
         if (args.length == 0) {
             // With no args, the default implementation cannot
             // guess the hierarchy.
-            Hierarchy hierarchy = validator.getQuery()
-                    .getCube().getTimeDimension()
-                    .getHierarchy();
+            Dimension defaultTimeDimension = 
+                validator.getQuery().getCube().getTimeDimension();
+            if (defaultTimeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
+            Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
             return new SetType(MemberType.forHierarchy(hierarchy));
         }
         final Type type = args[0].getType();

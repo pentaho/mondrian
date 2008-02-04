@@ -43,9 +43,13 @@ class ParallelPeriodFunDef extends FunDefBase {
             // With no args, the default implementation cannot
             // guess the hierarchy, so we supply the Time
             // dimension.
-            Hierarchy hierarchy = validator.getQuery()
-                    .getCube().getTimeDimension()
-                    .getHierarchy();
+            Dimension defaultTimeDimension = 
+                validator.getQuery().getCube().getTimeDimension();
+            if (defaultTimeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
+            Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
             return MemberType.forHierarchy(hierarchy);
         }
         return super.getResultType(validator, args);
@@ -68,6 +72,10 @@ class ParallelPeriodFunDef extends FunDefBase {
             final Dimension timeDimension =
                     compiler.getEvaluator().getCube()
                     .getTimeDimension();
+            if (timeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
             memberCalc = new DimensionCurrentMemberCalc(
                     timeDimension);
             break;

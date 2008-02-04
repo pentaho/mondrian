@@ -46,9 +46,13 @@ class PeriodsToDateFunDef extends FunDefBase {
         if (args.length == 0) {
             // With no args, the default implementation cannot
             // guess the hierarchy.
-            Hierarchy hierarchy = validator.getQuery()
-                    .getCube().getTimeDimension()
-                    .getHierarchy();
+            Dimension defaultTimeDimension = 
+                validator.getQuery().getCube().getTimeDimension();
+            if (defaultTimeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
+            Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
             return new SetType(
                     MemberType.forHierarchy(hierarchy));
         }
@@ -72,11 +76,16 @@ class PeriodsToDateFunDef extends FunDefBase {
                 null;
         final Dimension timeDimension = compiler
                 .getEvaluator().getCube().getTimeDimension();
+        
         return new AbstractListCalc(call, new Calc[] {levelCalc, memberCalc}) {
             public List evaluateList(Evaluator evaluator) {
                 final Member member;
                 final Level level;
                 if (levelCalc == null) {
+                    if (timeDimension == null) {
+                        throw MondrianResource.instance().
+                                    NoTimeDimensionInCube.ex(getName());
+                    }
                     member = evaluator.getContext(timeDimension);
                     level = member.getLevel().getParentLevel();
                 } else {
@@ -100,6 +109,10 @@ class PeriodsToDateFunDef extends FunDefBase {
                 } else if (levelCalc != null) {
                     return levelCalc.getType().usesDimension(dimension, true) ;
                 } else {
+                    if (timeDimension == null) {
+                        throw MondrianResource.instance().
+                                    NoTimeDimensionInCube.ex(getName());
+                    }
                     return dimension == timeDimension;
                 }
             }

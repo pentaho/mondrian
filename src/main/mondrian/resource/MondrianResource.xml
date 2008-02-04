@@ -256,6 +256,10 @@
     <text>Function does not support two NULL member parameters</text>
 </exception>
 
+<exception id="350600" name="NoTimeDimensionInCube">
+    <text>Cannot use the function ''{0}'', no time dimension is available for this cube.</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Connectivity errors -->
 

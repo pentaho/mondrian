@@ -68,8 +68,13 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
             // With no args, the default implementation cannot
             // guess the hierarchy, so we supply the Time
             // dimension.
-            Hierarchy hierarchy = validator.getQuery()
-                    .getCube().getTimeDimension()
+            Dimension defaultTimeDimension = 
+                validator.getQuery().getCube().getTimeDimension();
+            if (defaultTimeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
+            Hierarchy hierarchy = defaultTimeDimension
                     .getHierarchy();
             return MemberType.forHierarchy(hierarchy);
         }
@@ -80,16 +85,27 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
         final Exp[] args = call.getArgs();
         final LevelCalc levelCalc;
         final MemberCalc memberCalc;
+        Dimension defaultTimeDimension = null;
         switch (args.length) {
         case 0:
-            memberCalc = new DimensionCurrentMemberCalc(
-                    compiler.getEvaluator().getCube().getTimeDimension());
+            defaultTimeDimension = 
+                compiler.getEvaluator().getCube().getTimeDimension();
+            if (defaultTimeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
+            memberCalc = new DimensionCurrentMemberCalc(defaultTimeDimension);
             levelCalc = null;
             break;
         case 1:
+            defaultTimeDimension = 
+                compiler.getEvaluator().getCube().getTimeDimension();
+            if (defaultTimeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
             levelCalc = compiler.compileLevel(call.getArg(0));
-            memberCalc = new DimensionCurrentMemberCalc(
-                    compiler.getEvaluator().getCube().getTimeDimension());
+            memberCalc = new DimensionCurrentMemberCalc(defaultTimeDimension);
             break;
         default:
             levelCalc = compiler.compileLevel(call.getArg(0));

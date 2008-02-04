@@ -14,6 +14,7 @@ import mondrian.olap.type.Type;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.TypeUtil;
+import mondrian.resource.MondrianResource;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.MemberCalc;
@@ -49,9 +50,13 @@ class LastPeriodsFunDef extends FunDefBase {
         if (args.length == 1) {
             // If Member is not specified,
             // it is Time.CurrentMember.
-            Hierarchy hierarchy = validator.getQuery()
-                    .getCube().getTimeDimension()
-                    .getHierarchy();
+            Dimension defaultTimeDimension = 
+                validator.getQuery().getCube().getTimeDimension();
+            if (defaultTimeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
+            Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
             return new SetType(MemberType.forHierarchy(hierarchy));
         } else {
             Type type = args[1].getType();
@@ -69,6 +74,10 @@ class LastPeriodsFunDef extends FunDefBase {
             Dimension timeDimension =
                     compiler.getEvaluator().getCube()
                     .getTimeDimension();
+            if (timeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
             memberCalc = new DimensionCurrentMemberCalc(
                     timeDimension);
         } else {

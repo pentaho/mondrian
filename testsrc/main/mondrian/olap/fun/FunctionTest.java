@@ -5421,6 +5421,32 @@ public class FunctionTest extends FoodMartTestCase {
                 "{}(Sublist(ContextCalc([Measures].[Store Sales], Order(Filter(Children(CurrentMember([Product])), >(MemberValueCalc([Measures].[Unit Sales]), 1000.0)), MemberValueCalc([Gender].[All Gender].[M]), ASC))))");
     }
     
+    
+    /**
+     * This test case verifies that the order function works with a defined member.
+     * See this forum post for additional information:
+     * http://forums.pentaho.org/showthread.php?p=179473#post179473 
+     */
+    public void testOrderWithMember() {
+        assertQueryReturns("with member [Measures].[Product Name Length] as 'LEN([Product].CurrentMember.Name)'\n" + 
+                           "select {[Measures].[Product Name Length]} ON COLUMNS,\n" +
+                           "Order([Product].[All Products].Children, [Measures].[Product Name Length], BASC) ON ROWS\n" +
+                           "from [Sales]",
+                           fold(
+                                   "Axis #0:\n" +
+                                   "{}\n" +
+                                   "Axis #1:\n" +
+                                   "{[Measures].[Product Name Length]}\n" +
+                                   "Axis #2:\n" +
+                                   "{[Product].[All Products].[Food]}\n" +
+                                   "{[Product].[All Products].[Drink]}\n" +
+                                   "{[Product].[All Products].[Non-Consumable]}\n" +
+                                   "Row #0: 4\n" +
+                                   "Row #1: 5\n" +
+                                   "Row #2: 14\n"));
+
+    }
+    
     /**
      * test case for bug # 1797159, Potential MDX Order Non Empty Problem
      *
@@ -7978,6 +8004,20 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
     // conditional path.
     public void testBug1881739() {
         assertExprReturns("LEFT(\"TEST\", LEN(\"TEST\"))", "TEST");
+    }
+    
+    /**
+     * Test for Bug #1732824, Cube getTimeDimension use when Cube has no Time dimension
+     */
+    public void testCubeTimeDimensionFails() {
+        assertThrows("select LastPeriods(1) on columns from [Store]", "'LastPeriods', no time dimension");
+        assertThrows("select OpeningPeriod() on columns from [Store]", "'OpeningPeriod', no time dimension");
+        assertThrows("select OpeningPeriod([Store Type]) on columns from [Store]", "'OpeningPeriod', no time dimension");
+        assertThrows("select ClosingPeriod() on columns from [Store]", "'ClosingPeriod', no time dimension");
+        assertThrows("select ClosingPeriod([Store Type]) on columns from [Store]", "'ClosingPeriod', no time dimension");
+        assertThrows("select ParallelPeriod() on columns from [Store]", "'ParallelPeriod', no time dimension");
+        assertThrows("select PeriodsToDate() on columns from [Store]", "'PeriodsToDate', no time dimension");
+        assertThrows("select Mtd() on columns from [Store]", "'Mtd', no time dimension");
     }
 }
 
