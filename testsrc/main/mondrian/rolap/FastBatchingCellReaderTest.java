@@ -123,9 +123,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         List<String[]> compoundMembers = new ArrayList<String[]>();
         compoundMembers.add(new String[] {"USA", "CA"});
         compoundMembers.add(new String[] {"Canada", "BC"});
-        CellRequestConstraint constraint = 
+        CellRequestConstraint constraint =
             makeConstraintCountryState(compoundMembers);
-        
+
         FastBatchingCellReader.Batch genderBatch = fbcr.new Batch(
             createRequest(cubeNameSales, measureUnitSales,
                 "customer", "gender", "F", constraint));
@@ -142,7 +142,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         assertEquals(genderBatch, groupedBatches.get(0).detailedBatch);
         assertEquals(maritalStatusBatch, groupedBatches.get(1).detailedBatch);
     }
-    
+
     public void testGroupBatchesForGroupableBatches() {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch genderBatch = fbcr.new Batch(
@@ -194,7 +194,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 return batch.equals(group1Agg1);
             }
         };
-        
+
         final FastBatchingCellReader.Batch group2Agg1 = fbcr.new Batch(
             createRequest(cubeNameSales, measureUnitSales,
                 "customer", "education", "F")) {
@@ -485,11 +485,11 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
     public void testCanBatchForBatchWithConstraint() {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
-        
+
         List<String[]> compoundMembers = new ArrayList<String[]>();
         compoundMembers.add(new String[] {"USA", "CA"});
         compoundMembers.add(new String[] {"Canada", "BC"});
-        CellRequestConstraint constraint = 
+        CellRequestConstraint constraint =
             makeConstraintCountryState(compoundMembers);
 
         FastBatchingCellReader.Batch aggregationBatch =
@@ -520,18 +520,18 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
     public void testCanBatchForBatchWithConstraint2() {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
-        
+
         List<String[]> compoundMembers1 = new ArrayList<String[]>();
         compoundMembers1.add(new String[] {"USA", "CA"});
         compoundMembers1.add(new String[] {"Canada", "BC"});
-        CellRequestConstraint constraint1 = 
+        CellRequestConstraint constraint1 =
             makeConstraintCountryState(compoundMembers1);
 
         // Different constraint will cause the Batch not to match.
         List<String[]> compoundMembers2 = new ArrayList<String[]>();
         compoundMembers2.add(new String[] {"USA", "CA"});
         compoundMembers2.add(new String[] {"USA", "OR"});
-        CellRequestConstraint constraint2 = 
+        CellRequestConstraint constraint2 =
             makeConstraintCountryState(compoundMembers2);
 
         FastBatchingCellReader.Batch aggregationBatch =
@@ -556,67 +556,101 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 cubeNameSales,
                 measureUnitSales, constraint2);
 
-        assertFalse(detailedBatch.canBatch(aggregationBatch));
+        assertTrue(detailedBatch.canBatch(aggregationBatch));
         assertFalse(aggregationBatch.canBatch(detailedBatch));
     }
 
     public void testCanBatchForBatchWithDistinctCountInDetailedBatch() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
+        if (MondrianProperties.instance().UseAggregates.get() &&
+            MondrianProperties.instance().ReadAggregates.get()) {
+            FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 
-        FastBatchingCellReader.Batch aggregationBatch =
-            createBatch(fbcr,
-                new String[]{tableTime, tableProductClass,
-                    tableProductClass},
-                new String[]{fieldYear, fieldProductFamily,
-                    fieldProductDepartment},
-                new String[][]{fieldValuesYear,
-                    fieldValuesProductFamily,
-                    fieldValueProductDepartment},
-                cubeNameSales, measureUnitSales);
+            FastBatchingCellReader.Batch aggregationBatch =
+                createBatch(fbcr,
+                    new String[]{tableTime, tableProductClass,
+                        tableProductClass},
+                    new String[]{fieldYear, fieldProductFamily,
+                        fieldProductDepartment},
+                    new String[][]{fieldValuesYear,
+                        fieldValuesProductFamily,
+                        fieldValueProductDepartment},
+                    cubeNameSales, measureUnitSales);
 
-        FastBatchingCellReader.Batch detailedBatch =
-            createBatch(fbcr,
-                new String[]{tableTime, tableProductClass,
-                    tableProductClass},
-                new String[]{fieldYear, fieldProductFamily,
-                    fieldProductDepartment},
-                new String[][]{fieldValuesYear,
-                    fieldValuesProductFamily,
-                    fieldValueProductDepartment},
-                cubeNameSales,
-                "[Measures].[Customer Count]");
+            FastBatchingCellReader.Batch detailedBatch =
+                createBatch(fbcr,
+                    new String[]{tableTime, tableProductClass,
+                        tableProductClass},
+                    new String[]{fieldYear, fieldProductFamily,
+                        fieldProductDepartment},
+                    new String[][]{fieldValuesYear,
+                        fieldValuesProductFamily,
+                        fieldValueProductDepartment},
+                    cubeNameSales,
+                    "[Measures].[Customer Count]");
 
-        assertFalse(detailedBatch.canBatch(aggregationBatch));
-        assertFalse(aggregationBatch.canBatch(detailedBatch));
+            assertFalse(detailedBatch.canBatch(aggregationBatch));
+            assertFalse(aggregationBatch.canBatch(detailedBatch));
+        }
     }
 
     public void testCanBatchForBatchWithDistinctCountInAggregateBatch() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
+        if (MondrianProperties.instance().UseAggregates.get() &&
+            MondrianProperties.instance().ReadAggregates.get()) {
+            FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 
-        FastBatchingCellReader.Batch aggregationBatch =
-            createBatch(fbcr,
-                new String[]{tableTime, tableProductClass,
-                    tableProductClass}, new String[]{fieldYear,
-                fieldProductFamily, fieldProductDepartment},
-                new String[][]{fieldValuesYear,
-                    fieldValuesProductFamily,
-                    fieldValueProductDepartment}, cubeNameSales,
-                "[Measures].[Customer Count]");
+            FastBatchingCellReader.Batch aggregationBatch =
+                createBatch(fbcr,
+                    new String[]{tableTime, tableProductClass,
+                        tableProductClass}, new String[]{fieldYear,
+                    fieldProductFamily, fieldProductDepartment},
+                    new String[][]{fieldValuesYear,
+                        fieldValuesProductFamily,
+                        fieldValueProductDepartment}, cubeNameSales,
+                    "[Measures].[Customer Count]");
 
-        FastBatchingCellReader.Batch detailedBatch =
-            createBatch(fbcr,
-                new String[]{tableTime, tableProductClass,
-                    tableProductClass},
-                new String[]{fieldYear, fieldProductFamily,
-                    fieldProductDepartment},
-                new String[][]{fieldValuesYear,
-                    fieldValuesProductFamily,
-                    fieldValueProductDepartment},
-                cubeNameSales, measureUnitSales);
+            FastBatchingCellReader.Batch detailedBatch =
+                createBatch(fbcr,
+                    new String[]{tableTime, tableProductClass,
+                        tableProductClass},
+                    new String[]{fieldYear, fieldProductFamily,
+                        fieldProductDepartment},
+                    new String[][]{fieldValuesYear,
+                        fieldValuesProductFamily,
+                        fieldValueProductDepartment},
+                    cubeNameSales, measureUnitSales);
 
-        assertFalse(detailedBatch.canBatch(aggregationBatch));
-        assertFalse(aggregationBatch.canBatch(detailedBatch));
+            assertFalse(detailedBatch.canBatch(aggregationBatch));
+            assertFalse(aggregationBatch.canBatch(detailedBatch));
+        }
     }
+
+    public void testCanBatchSummaryBatchWithDetailedBatchWithDistinctCount() {
+        if (!MondrianProperties.instance().UseAggregates.get() &&
+            !MondrianProperties.instance().ReadAggregates.get()) {
+            FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
+
+            FastBatchingCellReader.Batch aggregationBatch =
+                createBatch(fbcr,
+                    new String[]{tableTime}, new String[]{fieldYear},
+                    new String[][]{fieldValuesYear}, cubeNameSales,
+                    "[Measures].[Customer Count]");
+
+            FastBatchingCellReader.Batch detailedBatch =
+                createBatch(fbcr,
+                    new String[]{tableTime, tableProductClass,
+                        tableProductClass},
+                    new String[]{fieldYear, fieldProductFamily,
+                        fieldProductDepartment},
+                    new String[][]{fieldValuesYear,
+                        fieldValuesProductFamily,
+                        fieldValueProductDepartment},
+                    cubeNameSales, measureUnitSales);
+
+            assertFalse(detailedBatch.canBatch(aggregationBatch));
+            assertFalse(aggregationBatch.canBatch(detailedBatch));
+        }
+    }
+
 
     public void testCanBatchForBatchWithNonSuperSetOfContraintColumnBitKeyAndAllValuesForAdditionalCondition() {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
@@ -814,7 +848,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                     };
                 }
             };
-            
+
         compositeBatch.add(summaryBatch);
 
         compositeBatch.loadAggregation();
@@ -1117,7 +1151,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 "Row #2: 139\n" +
                 "Row #2: 99\n" +
                 "Row #2: 40\n"));
-        
+
         // There are 9 cells in the result. 6 sql statements have to be issued to fetch all
         // of them, with each loading these cells:
         // (1) ([1997], [TV Plus radio])
@@ -1133,7 +1167,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         // (5) ([1997 Q1 plus July], [TV Plus radio])
         //
         // (6) ([1997 Q1 Plus July], [TV])
-        //     ([1997 Q1 Plus July], [radio])      
+        //     ([1997 Q1 Plus July], [radio])
         final String accessSql = "select count(`m0`) as `c0` " +
             "from (" +
             "select distinct `sales_fact_1997`.`customer_id` as `m0` " +
@@ -1178,7 +1212,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "`promotion`.`media_type` in ('Radio', 'TV') " +
             "group by " +
             "`time_by_day`.`the_year`, `time_by_day`.`quarter`, `promotion`.`media_type`";
-        
+
         final String derbySql =
             "select " +
             "\"time_by_day\".\"the_year\" as \"c0\", \"time_by_day\".\"quarter\" as \"c1\", " +
@@ -1195,7 +1229,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "group by " +
             "\"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", " +
             "\"promotion\".\"media_type\"";
-        
+
         assertQuerySql(mdxQuery, new SqlPattern[] {
             new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
             new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql),
@@ -1219,47 +1253,40 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "      {[Store].[CA plus USA]} * {[Time].[Q1 plus July]} ON ROWS\n" +
             "FROM Sales";
 
-        String accessSql = "select count(`m0`) as `c0` from ("
-            + "select distinct `sales_fact_1997`.`customer_id` as `m0` "
-            + "from `store` as `store`,"
-            + " `sales_fact_1997` as `sales_fact_1997`,"
-            + " `time_by_day` as `time_by_day` "
-            + "where `sales_fact_1997`.`store_id` = `store`.`store_id` "
-            + "and ((`store`.`store_state` = 'CA' and `store`.`store_country` = 'USA')"
-            + " or `store`.`store_country` = 'USA') "
-            + "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
-            + "and ((`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997)"
-            + " or (`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997))"
-            + ") as `dummyname`";
+        String accessSql = "select count(`m0`) as `c0` from (" +
+            "select distinct `sales_fact_1997`.`customer_id` as `m0` " +
+            "from `store` as `store`," +
+            " `sales_fact_1997` as `sales_fact_1997`," +
+            " `time_by_day` as `time_by_day` " +
+            "where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
+            "and `store`.`store_country` = 'USA' " +
+            "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
+            "and ((`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997)" +
+            " or (`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997))" +
+            ") as `dummyname`";
 
-        String derbySql = "select "
-            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
-            + "from \"store\" as \"store\","
-            + " \"sales_fact_1997\" as \"sales_fact_1997\","
-            + " \"time_by_day\" as \"time_by_day\" "
-            + "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
-            + "and ((\"store\".\"store_state\" = 'CA' and \"store\".\"store_country\" = 'USA')"
-            + " or \"store\".\"store_country\" = 'USA') "
-            + "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-            + "and ((\"time_by_day\".\"quarter\" = 'Q1' and \"time_by_day\".\"the_year\" = 1997)"
-            + " or (\"time_by_day\".\"month_of_year\" = 7 and \"time_by_day\".\"quarter\" = 'Q3' and \"time_by_day\".\"the_year\" = 1997))";
+        String derbySql = "select count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
+            "from \"store\" as \"store\"," +
+            " \"sales_fact_1997\" as \"sales_fact_1997\"," +
+            " \"time_by_day\" as \"time_by_day\" " +
+            "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+            "and \"store\".\"store_country\" = 'USA' " +
+            "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
+            "and ((\"time_by_day\".\"quarter\" = 'Q1' and \"time_by_day\".\"the_year\" = 1997)" +
+            " or (\"time_by_day\".\"month_of_year\" = 7 " +
+            "and \"time_by_day\".\"quarter\" = 'Q3' and \"time_by_day\".\"the_year\" = 1997))"; 
 
-        final String mysqlSql = "select"
-            + " count(distinct `sales_fact_1997`.`customer_id`) as `m0` "
-            + "from `store` as `store`,"
-            + " `sales_fact_1997` as `sales_fact_1997`,"
-            + " `time_by_day` as `time_by_day` "
-            + "where `sales_fact_1997`.`store_id` = `store`.`store_id` "
-            + "and ((`store`.`store_state` = 'CA' and `store`.`store_country` = 'USA')"
-            + " or `store`.`store_country` = 'USA') "
-            + "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
-            + "and ((`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997) "
-            + "or (`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997))";
+        final String mysqlSql = "select count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
+            "from `store` as `store`, `sales_fact_1997` as `sales_fact_1997`, `time_by_day` as `time_by_day` " +
+            "where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
+            "and `store`.`store_country` = 'USA' and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
+            "and ((`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997) " +
+            "or (`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997))";
 
         assertQuerySql(mdxQuery, new SqlPattern[] {
             new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)            
+            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)
         });
 
         assertQueryReturns(
@@ -1274,9 +1301,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 "Row #0: 3,505\n" +
                 "Row #0: 112,347\n"));
     }
-    
+
     /**
-     * Fix a problem when genergating predicates for distinct count aggregate loading 
+     * Fix a problem when genergating predicates for distinct count aggregate loading
      * and using the aggregate function in the slicer.
      */
     public void testAggregateDistinctCount5() {
@@ -1293,7 +1320,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             " {[Measures].[Customer Count]} on columns " +
             "From [Sales] " +
             "Where ([Product].[Selected Products])";
-        
+
         String derbySql =
             "select " +
             "\"store\".\"store_state\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", " +
@@ -1310,7 +1337,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and " +
             "\"product_class\".\"product_family\" in ('Drink', 'Food', 'Non-Consumable') " +
             "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
-        
+
         String mysqlSql =
             "select " +
             "`store`.`store_state` as `c0`, `time_by_day`.`the_year` as `c1`, " +
@@ -1325,7 +1352,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "`product`.`product_class_id` = `product_class`.`product_class_id` and " +
             "`product_class`.`product_family` in ('Drink', 'Food', 'Non-Consumable') " +
             "group by `store`.`store_state`, `time_by_day`.`the_year`";
-            
+
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
             new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
@@ -1338,7 +1365,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
      */
     public void testAggregateDistinctCount6() {
         // CA and USA are overlapping members
-        final String mdxQuery = 
+        final String mdxQuery =
             "WITH " +
             " MEMBER [Store].[Select Region] AS " +
             " 'AGGREGATE({[Store].[USA].[CA], [Store].[Mexico], [Store].[Canada], [Store].[USA].[OR]})', solve_order=1\n" +
@@ -1348,36 +1375,25 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "      {[Store].[Select Region]} * {[Time].[Select Time Period]} ON ROWS\n" +
             "FROM Sales";
 
-        String derbySql = 
-            "select "
-            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
-            + "from \"store\" as \"store\","
-            + " \"sales_fact_1997\" as \"sales_fact_1997\","
-            + " \"time_by_day\" as \"time_by_day\" "
-            + "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
-            + "and (((\"store\".\"store_state\" = 'CA' and \"store\".\"store_country\" = 'USA')"
-            + " or (\"store\".\"store_state\" = 'OR' and \"store\".\"store_country\" = 'USA'))"
-            + " or \"store\".\"store_country\" in ('Mexico', 'Canada')) "
-            + "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-            + "and (((\"time_by_day\".\"quarter\" = 'Q1' and \"time_by_day\".\"the_year\" = 1997)"
-            + " or (\"time_by_day\".\"quarter\" = 'Q4' and \"time_by_day\".\"the_year\" = 1997))"
-            + " or (\"time_by_day\".\"month_of_year\" = 7 and \"time_by_day\".\"quarter\" = 'Q3' and \"time_by_day\".\"the_year\" = 1997)"
-            + " or \"time_by_day\".\"the_year\" = 1997)";
+        String derbySql = "select count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
+            "from \"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
+            "\"time_by_day\" as \"time_by_day\" where " +
+            "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+            "and (\"store\".\"store_state\" in ('CA', 'OR') or " +
+            "\"store\".\"store_country\" in ('Mexico', 'Canada')) " +
+            "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
+            "and \"time_by_day\".\"the_year\" = 1997";
 
-        final String mysqlSql = 
-            "select count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
+        final String mysqlSql = "select count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
             "from `store` as `store`, `sales_fact_1997` as `sales_fact_1997`, `time_by_day` as `time_by_day` " +
-            "where `sales_fact_1997`.`store_id` = `store`.`store_id` and " +
-            "((((`store`.`store_country`, `store`.`store_state`) in (('USA', 'CA'), ('USA', 'OR')))) " +
-            "or `store`.`store_country` in ('Mexico', 'Canada')) " +
-            "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and " +
-            "((`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997) " +
-            "or (((`time_by_day`.`the_year`, `time_by_day`.`quarter`) in ((1997, 'Q1'), (1997, 'Q4')))) " +
-            "or `time_by_day`.`the_year` = 1997)";
+            "where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
+            "and (`store`.`store_state` in ('CA', 'OR') " +
+            "or `store`.`store_country` in ('Mexico', 'Canada')) and " +
+            "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997";
 
         assertQuerySql(mdxQuery, new SqlPattern[] {
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)            
+            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)
         });
 
         assertQueryReturns(
@@ -1392,10 +1408,10 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 "Row #0: 3,753\n" +
                 "Row #0: 229,496\n"));
     }
-    
+
     /*
      * Test case for bug 1785406 to fix "query already contains alias" exception.
-     * 
+     *
      * Note: 1785406 is a regression from checkin 9710. Code changes made in 9710 is no longer
      * in use(and removed). So this bug will not occur; however, keeping the test case here to
      * get some coverage for a query with a slicer.
@@ -1411,7 +1427,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 "on rows\n" +
                 "From [Sales]\n" +
                 "where ([Time].[1997])";
-        
+
         String expectedResult = "Axis #0:\n" +
                 "{[Time].[1997]}\n" +
                 "Axis #1:\n" +
@@ -1419,10 +1435,10 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 "Axis #2:\n" +
                 "{[Store].[All Stores].[USA].[WA], [Product].[*CTX_MEMBER_SEL~SUM]}\n" +
                 "Row #0: 889\n";
-        
+
         assertQueryReturns(query, fold(expectedResult));
-        
-        String mysqlSql = 
+
+        String mysqlSql =
             "select " +
             "`store`.`store_state` as `c0`, `time_by_day`.`the_year` as `c1`, " +
             "count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
@@ -1462,7 +1478,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 "and `product_class`.`product_family` = 'Food')) as `dummyname` " +
                 "group by `d0`, `d1`";
 
-        String derbySql = 
+        String derbySql =
             "select " +
             "\"store\".\"store_state\" as \"c0\", " +
             "\"time_by_day\".\"the_year\" as \"c1\", " +
@@ -1483,7 +1499,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "and (\"product_class\".\"product_department\" = 'Deli' " +
             "and \"product_class\".\"product_family\" = 'Food') " +
             "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
-            
+
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
@@ -1493,7 +1509,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testDistinctCountBug1785406_2() {
-        String query = 
+        String query =
             "With " +
             "Member [Product].[x] as 'Aggregate({Gender.CurrentMember})'\n" +
             "member [Measures].[foo] as '([Product].[x],[Measures].[Customer Count])'\n" +
@@ -1509,10 +1525,10 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 "Row #0: 266,773\n" +
                 "Row #0: 131,558\n" +
                 "Row #0: 135,215\n";
-        
+
         assertQueryReturns(query, fold(expectedResult));
-        
-        String mysqlSql = 
+
+        String mysqlSql =
             "select " +
             "`time_by_day`.`the_year` as `c0`, " +
             "count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
@@ -1522,7 +1538,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
             "and `time_by_day`.`the_year` = 1997 " +
             "group by `time_by_day`.`the_year`";
-        
+
         String accessSql = "select `d0` as `c0`," +
              " count(`m0`) as `c1` " +
              "from (select distinct `time_by_day`.`the_year` as `d0`," +
@@ -1532,7 +1548,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
              "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
              "and `time_by_day`.`the_year` = 1997) as `dummyname` group by `d0`";
 
-        String derbySql = 
+        String derbySql =
             "select " +
             "\"time_by_day\".\"the_year\" as \"c0\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
@@ -1543,7 +1559,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and \"time_by_day\".\"the_year\" = 1997 " +
             "group by \"time_by_day\".\"the_year\"";
-            
+
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
@@ -1551,7 +1567,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
         assertQuerySql(query, patterns);
     }
-    
+
     public void testAggregateDistinctCountInDimensionFilter() {
         String query =
             "With " +
@@ -1563,7 +1579,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "{[Measures].[Customer Count]} on columns " +
             "From [Sales] " +
             "Where ([Product].[Selected Products])";
-        
+
         String result =
             "Axis #0:\n" +
             "{[Product].[Selected Products]}\n" +
@@ -1574,10 +1590,10 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "{[Store].[All Stores].[USA].[OR]}\n" +
             "Row #0: 2,692\n" +
             "Row #1: 1,036\n";
-        
+
         assertQueryReturns(query, fold(result));
 
-        String mysqlSql = 
+        String mysqlSql =
             "select " +
             "`store`.`store_state` as `c0`, `time_by_day`.`the_year` as `c1`, " +
             "count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
@@ -1618,7 +1634,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
             new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
-        
+
         assertQuerySql(query, patterns);
     }
 }

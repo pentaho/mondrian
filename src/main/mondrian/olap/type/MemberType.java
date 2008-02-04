@@ -167,7 +167,7 @@ public class MemberType implements Type {
                 return new TupleType(new Type[] {type}).computeCommonType(tupleType,
                     conversionCount);
             } else {
-                return null;
+                return computeCommonType(tupleType.getValueType(), conversionCount);
             }
         }
         if (!(type instanceof MemberType)) {

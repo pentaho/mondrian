@@ -101,6 +101,9 @@ public class TupleType implements Type {
         if (type instanceof ScalarType) {
             return getValueType().computeCommonType(type, conversionCount);
         }
+        if (type instanceof MemberType) {
+            return getValueType().computeCommonType(type, conversionCount);
+        }
         if (!(type instanceof TupleType)) {
             return null;
         }

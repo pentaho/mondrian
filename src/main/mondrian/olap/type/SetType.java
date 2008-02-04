@@ -32,7 +32,8 @@ public class SetType implements Type {
     public SetType(Type elementType) {
         if (elementType != null) {
             assert elementType instanceof MemberType ||
-                    elementType instanceof TupleType;
+                    elementType instanceof TupleType ||
+                    elementType instanceof ScalarType;
         }
         this.elementType = elementType;
         this.digest = "SetType<" + elementType + ">";
@@ -65,7 +66,7 @@ public class SetType implements Type {
     }
 
     public boolean usesDimension(Dimension dimension, boolean definitely) {
-        if (elementType == null) {
+        if (elementType == null || elementType instanceof ScalarType) {
             return definitely;
         }
         return elementType.usesDimension(dimension, definitely);

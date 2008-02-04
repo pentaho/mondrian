@@ -6091,6 +6091,89 @@ public class BasicQueryTest extends FoodMartTestCase {
             expected);
     }
 
+    public void testIifWithTupleFirstAndMemberNextWithMeasure() {
+        assertQueryReturns(
+            "WITH\n" +
+            "MEMBER [Gender].agg " +
+            "AS 'IIF(1=1, ([Gender].[All Gender],measures.[unit sales])," +
+            "([Gender].[All Gender]) )', SOLVE_ORDER = 4 " +
+            "SELECT {[Measures].[unit sales]} ON 0, " +
+            "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[All Gender].[M]}\n" +
+                "{[Gender].[agg]}\n" +
+                "Row #0: 131,558\n" +
+                "Row #1: 135,215\n" +
+                "Row #2: 266,773\n"));
+    }
+
+    public void testIifWithMemberFirstAndTupleNextWithMeasure() {
+        assertQueryReturns("WITH\n" +
+            "MEMBER [Gender].agg " +
+            "AS 'IIF(1=1, ([Gender].[All Gender])," +
+            "([Gender].[All Gender],measures.[unit sales]) )', SOLVE_ORDER = 4 " +
+            "SELECT {[Measures].[unit sales]} ON 0, " +
+            "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[All Gender].[M]}\n" +
+                "{[Gender].[agg]}\n" +
+                "Row #0: 131,558\n" +
+                "Row #1: 135,215\n" +
+                "Row #2: 266,773\n"));
+    }
+
+    public void testIifWithMemberFirstAndTupleNextWithoutMeasure() {
+        assertQueryReturns("WITH\n" +
+            "MEMBER [Gender].agg " +
+            "AS 'IIF(1=1, ([Gender].[All Gender])," +
+            "([Gender].[All Gender],[Time].[1997]) )', SOLVE_ORDER = 4 " +
+            "SELECT {[Measures].[unit sales]} ON 0, " +
+            "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[All Gender].[M]}\n" +
+                "{[Gender].[agg]}\n" +
+                "Row #0: 131,558\n" +
+                "Row #1: 135,215\n" +
+                "Row #2: 266,773\n"));
+    }
+
+     public void testIifWithTupleFirstAndMemberNextWithoutMeasure() {
+        assertQueryReturns("WITH\n" +
+            "MEMBER [Gender].agg " +
+            "AS 'IIF(1=1, " +
+            "([Store].[All Stores].[USA], [Gender].[All Gender]), " +
+            "([Gender].[All Gender]) )', " +
+            "SOLVE_ORDER = 4 " +
+            "SELECT {[Measures].[unit sales]} ON 0, " +
+            "{([Gender].agg)} on 1 FROM sales",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[agg]}\n" +
+                "Row #0: 266,773\n"));
+    }
+
     /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.
