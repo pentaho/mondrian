@@ -442,7 +442,7 @@ public class RolapCube extends CubeBase {
             calculatedMemberList.toArray(
                 new MondrianDef.CalculatedMember[
                     calculatedMemberList.size()]),
-                new MondrianDef.NamedSet[0],
+                xmlVirtualCube.namedSets,
                 new ArrayList<Member>(),
                 new ArrayList<Formula>(),
                 this,

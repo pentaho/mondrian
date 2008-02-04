@@ -380,7 +380,19 @@ public class TestContext {
     public String getFoodMartSchemaSubstitutingCube(
         String cubeName,
         String dimensionDefs,
-        String memberDefs)
+        String memberDefs) {
+        return getFoodMartSchemaSubstitutingCube(cubeName, dimensionDefs, memberDefs, null);
+    }
+    
+    /**
+     * Returns a the XML of the foodmart schema, adding dimension definitions
+     * to the definition of a given cube.
+     */
+    public String getFoodMartSchemaSubstitutingCube(
+        String cubeName,
+        String dimensionDefs,
+        String memberDefs,
+        String namedSetDefs)
     {
         // First, get the unadulterated schema.
         String s = getRawFoodMartSchema();
@@ -415,6 +427,16 @@ public class TestContext {
             }
             s = s.substring(0, i) +
                 memberDefs +
+                s.substring(i);
+        }
+        
+        if(namedSetDefs !=null) {
+            int i = s.indexOf("<NamedSet", h);
+            if (i < 0 || i > end) {
+                i = end;
+            }
+            s = s.substring(0, i) +
+                namedSetDefs +
                 s.substring(i);
         }
 
@@ -1022,7 +1044,28 @@ public class TestContext {
                 connectProperties.get(RolapConnectionProperties.JdbcUser.name()),
                 connectProperties.get(RolapConnectionProperties.JdbcPassword.name()));
             stmt = jdbcConn.createStatement();
+            
+            if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
+                StringBuffer sqllog = new StringBuffer();
+                sqllog.append("mondrian.test.TestContext: executing sql [");
+                if (actualSql.indexOf('\n') >= 0) {
+                    // SQL appears to be formatted as multiple lines. Make it
+                    // start on its own line.
+                    sqllog.append("\n");
+                }
+                sqllog.append(actualSql);
+                sqllog.append(']');
+                RolapUtil.SQL_LOGGER.debug(sqllog.toString());
+            }
+
+            long startTime = System.currentTimeMillis();
             rs = stmt.executeQuery(actualSql);
+            long time = System.currentTimeMillis();
+            final long execMs = time - startTime;
+            Util.addDatabaseTime(execMs);
+            String status = ", exec " + execMs + " ms";
+            
+            RolapUtil.SQL_LOGGER.debug(status);
 
             int rows = 0;
             while (rs.next()) {
@@ -1223,11 +1266,31 @@ public class TestContext {
         final String dimensionDefs,
         final String memberDefs)
     {
+        return createSubstitutingCube(cubeName, dimensionDefs, memberDefs, null);
+    }
+        
+    
+    /**
+     * Creates a TestContext, adding hierarchy and calculated member definitions
+     * to a cube definition.
+     *
+     * @param cubeName Name of a cube in the schema (cube must exist)
+     * @param dimensionDefs String defining dimensions, or null
+     * @param memberDefs String defining calculated members, or null
+     * @param namedSetDefs String defining named set definitions, or null
+     * @return TestContext with modified cube defn
+     */
+    public static TestContext createSubstitutingCube(
+        final String cubeName,
+        final String dimensionDefs,
+        final String memberDefs,
+        final String namedSetDefs)
+    {
         return new TestContext() {
             public Util.PropertyList getFoodMartConnectionProperties() {
                 final String schema =
                     getFoodMartSchemaSubstitutingCube(
-                        cubeName, dimensionDefs, memberDefs);
+                        cubeName, dimensionDefs, memberDefs, namedSetDefs);
                 Util.PropertyList properties =
                     super.getFoodMartConnectionProperties();
                 properties.put(

@@ -248,6 +248,11 @@ Revision is $Id$
                 in this list.)
             </Doc>
         </Array>
+        <Array name="namedSets" type="NamedSet">
+            <Doc>
+                Named sets in this cube.
+            </Doc>
+        </Array>
         <Code><![CDATA[
             public boolean isEnabled() {
                 return enabled.booleanValue();

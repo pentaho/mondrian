@@ -16,6 +16,7 @@ import mondrian.rolap.RolapCube;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.util.Bug;
 import mondrian.olap.Cube;
+import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Result;
 
@@ -1655,6 +1656,82 @@ public class SchemaTest extends FoodMartTestCase {
                 + "</Role>").withRole("Role1Plus2");
         testContext.assertThrows(
             "select from [Sales]", "Unknown role 'Role2'");
+    }
+    
+    public void testVirtualCubeNamedSetSupportInSchema(){
+
+        final TestContext testContext = TestContext.createSubstitutingCube(
+                "Warehouse and Sales", null,null, "<NamedSet name=\"Non CA State Stores\" " +
+                "formula=\"EXCEPT({[Store].[Store Country].[USA].children},{[Store].[Store Country].[USA].[CA]})\"/>");
+        testContext.assertQueryReturns(
+                "WITH " +
+                "SET [Non CA State Stores] AS 'EXCEPT({[Store].[Store Country].[USA].children}," +
+                "{[Store].[Store Country].[USA].[CA]})'\n" +
+                "MEMBER " +
+                "[Store].[Total Non CA State] AS \n" +
+                "'SUM({[Non CA State Stores]})'\n" +
+
+                "SELECT {[Store].[Store Country].[USA],[Store].[Total Non CA State]} ON 0," +
+                "{[Measures].[Unit Sales]} ON 1 FROM [Sales]",
+                fold(
+                        "Axis #0:\n" +
+                                "{}\n" +
+                                "Axis #1:\n" +
+                                "{[Store].[All Stores].[USA]}\n" +
+                                "{[Store].[Total Non CA State]}\n" +
+                                "Axis #2:\n" +
+                                "{[Measures].[Unit Sales]}\n" +
+                                "Row #0: 266,773\n" +
+                                "Row #0: 192,025\n"));
+
+        testContext.assertQueryReturns(
+                "WITH " +
+                "MEMBER " +
+                "[Store].[Total Non CA State] AS \n" +
+                "'SUM({[Non CA State Stores]})'\n" +
+                "SELECT {[Store].[Store Country].[USA],[Store].[Total Non CA State]} ON 0," +
+                "{[Measures].[Unit Sales]} ON 1 FROM [Warehouse and Sales]",
+                fold(
+                        "Axis #0:\n" +
+                                "{}\n" +
+                                "Axis #1:\n" +
+                                "{[Store].[All Stores].[USA]}\n" +
+                                "{[Store].[Total Non CA State]}\n" +
+                                "Axis #2:\n" +
+                                "{[Measures].[Unit Sales]}\n" +
+                                "Row #0: 266,773\n" +
+                                "Row #0: 192,025\n"));
+    }
+    public void testVirtualCubeNamedSetSupportInSchemaError(){
+
+        final TestContext testContext = TestContext.createSubstitutingCube(
+                "Warehouse and Sales", null,null, "<NamedSet name=\"Non CA State Stores\" " +
+                "formula=\"EXCEPT({[Store].[Store State].[USA].children},{[Store].[Store Country].[USA].[CA]})\"/>");
+        try {
+            testContext.assertQueryReturns(
+                "WITH " +
+                "SET [Non CA State Stores] AS 'EXCEPT({[Store].[Store Country].[USA].children}," +
+                "{[Store].[Store Country].[USA].[CA]})'\n" +
+                "MEMBER " +
+                "[Store].[Total Non CA State] AS \n" +
+                "'SUM({[Non CA State Stores]})'\n" +
+
+                "SELECT {[Store].[Store Country].[USA],[Store].[Total Non CA State]} ON 0," +
+                "{[Measures].[Unit Sales]} ON 1 FROM [Sales]",
+                fold(
+                        "Axis #0:\n" +
+                                "{}\n" +
+                                "Axis #1:\n" +
+                                "{[Store].[All Stores].[USA]}\n" +
+                                "{[Store].[Total Non CA State]}\n" +
+                                "Axis #2:\n" +
+                                "{[Measures].[Unit Sales]}\n" +
+                                "Row #0: 266,773\n" +
+                                "Row #0: 192,025\n"));
+            fail();
+        } catch (MondrianException e) {
+            assertTrue(e.getMessage().indexOf("bad formula") >= 0);
+        }
     }
 }
 
