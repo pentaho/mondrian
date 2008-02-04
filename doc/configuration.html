@@ -781,6 +781,21 @@ suite of regression tests.</p>
       collapsed dimension create and insert sql code is printed. This is for use
       in the CmdRunner allowing one to create aggregate table generation sql.</td>
     </tr>
+    
+    <tr>
+      <td>
+        <code>
+        <a href="api/mondrian/olap/MondrianProperties.html#JdbcFactoryClass">mondrian.rolap.aggregates.jdbcFactoryClass</a></code></td>
+      <td>string</td>
+      <td>null</td>
+      <td>
+      	 If specified, overrides the default StdFactory factory class which 
+      	 specifies the JdbcSchema class to use for determining the tables 
+      	 and columns of a data source.  The JdbcSchema class is used as part 
+      	 aggregate table matcher algorithm.
+      </td>
+    </tr>
+    
     <tr>
 
       <td colspan="4">

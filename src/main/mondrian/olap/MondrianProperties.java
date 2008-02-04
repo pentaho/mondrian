@@ -907,6 +907,11 @@ public class MondrianProperties extends TriggerableProperties {
                     this, "mondrian.rolap.evaluate.MaxEvalDepth", 10);
 
 
+    /**
+     * Property which defines the JdbcSchema factory class which
+     * determines the list of tables and columns of a specific datasource.
+     * @see mondrian.rolap.aggmatcher.JdbcSchema
+     */
     public transient final StringProperty JdbcFactoryClass =
             new StringProperty(
                     this, "mondrian.rolap.aggregates.jdbcFactoryClass", null);
