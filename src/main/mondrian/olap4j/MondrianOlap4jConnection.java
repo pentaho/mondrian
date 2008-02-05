@@ -632,9 +632,9 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
             return new AxisNode(
                 null,
                 axis.isNonEmpty(),
-                toOlap4j(axis.getSet()),
                 MondrianOlap4jConnection.toOlap4j(axis.getAxisName()),
-                toOlap4j(axis.getDimensionProperties()));
+                toOlap4j(axis.getDimensionProperties()),
+                toOlap4j(axis.getSet()));
         }
 
         private List<IdentifierNode> toOlap4j(Id[] dimensionProperties) {

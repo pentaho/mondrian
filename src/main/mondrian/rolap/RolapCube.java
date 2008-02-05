@@ -252,13 +252,30 @@ public class RolapCube extends CubeBase {
 
             List<String> propNames = new ArrayList<String>();
             List<String> propExprs = new ArrayList<String>();
-            validateMemberProps(xmlMeasure.memberProperties, propNames,
-                    propExprs, xmlMeasure.name);
+            validateMemberProps(
+                xmlMeasure.memberProperties, propNames, propExprs,
+                xmlMeasure.name);
+            int ordinal = i;
             for (int j = 0; j < propNames.size(); j++) {
                 String propName = propNames.get(j);
                 final Object propExpr = propExprs.get(j);
                 measure.setProperty(propName, propExpr);
+                if (propName.equals(Property.MEMBER_ORDINAL.name)
+                    && propExpr instanceof String) {
+                    final String expr = (String) propExpr;
+                    if (expr.startsWith("\"")
+                        && expr.endsWith("\"")) {
+                        try {
+                            ordinal =
+                                Integer.valueOf(
+                                    expr.substring(1, expr.length() - 1));
+                        } catch (NumberFormatException e) {
+                            Util.discard(e);
+                        }
+                    }
+                }
             }
+            measure.setOrdinal(ordinal);
         }
 
         this.measuresHierarchy.setMemberReader(new CacheMemberReader(

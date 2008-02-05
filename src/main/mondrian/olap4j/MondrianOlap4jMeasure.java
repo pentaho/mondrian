@@ -38,7 +38,21 @@ public class MondrianOlap4jMeasure
     public Aggregator getAggregator() {
         final RolapAggregator aggregator =
             ((RolapStoredMeasure) member).getAggregator();
-        return Aggregator.valueOf(aggregator.getName().toUpperCase());
+        if (aggregator == RolapAggregator.Avg) {
+            return Aggregator.AVG;
+        } else if (aggregator == RolapAggregator.Count) {
+            return Aggregator.COUNT;
+        } else if (aggregator == RolapAggregator.DistinctCount) {
+            return Aggregator.UNKNOWN;
+        } else if (aggregator == RolapAggregator.Max) {
+            return Aggregator.MAX;
+        } else if (aggregator == RolapAggregator.Min) {
+            return Aggregator.MIN;
+        } else if (aggregator == RolapAggregator.Sum) {
+            return Aggregator.SUM;
+        } else {
+            return Aggregator.UNKNOWN;
+        }
     }
 
     public Datatype getDatatype() {
