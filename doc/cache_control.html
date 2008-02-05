@@ -27,7 +27,7 @@
   	<ol>
 		<li><a href="#Introduction">Introduction</a></li>
         <li><a href="#How_mondrians_cache_works">How mondrian's cache works</a></li>
-        <li><a href="#New_CacheControl_API">New CacheControl API</a><ol>
+        <li><a href="#CacheControl_API">CacheControl API</a><ol>
 		<li><a href="#A_simple_example">A simple example</a></li>
         <li><a href="#More_about_cell_regions">More about cell regions</a></li>
         <li><a href="#Merging_and_truncating_segments">Merging and truncating segments</a></li>
@@ -73,9 +73,9 @@
 
 <p>The final problem with the <code>clearCache()</code> method is that it affects only new connections. Existing connections will continue to use the same metadata and stale data, and will compete for scarce memory with new connections.</p>
 
-<h3>3. New CacheControl API<a name="New_CacheControl_API">&nbsp;</a></h3>
+<h3>3. CacheControl API<a name="CacheControl_API">&nbsp;</a></h3>
 
-<p>The new <a href="api/mondrian/olap/CacheControl.html">CacheControl</a> API solves all of the problems described above. It provides fine-grained control over data in the cache, and the changes take place as soon as possible while retaining a consistent view of the data.</p> 
+<p>The <a href="api/mondrian/olap/CacheControl.html">CacheControl</a> API solves all of the problems described above. It provides fine-grained control over data in the cache, and the changes take place as soon as possible while retaining a consistent view of the data.</p> 
 
 <p>When a connection uses the API to notify Mondrian that the database has changed, subsequent queries will see the new state of the database. Queries in other connections which are in progress when the notification is received will see the database state either before or after the notification, but in any case, will see a consistent view of the world.</p>
 
@@ -161,7 +161,11 @@ Member memberTimeQ2 =<br/>
 Member memberCustomerOR =<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;schemaReader.getMemberByUniqueName(<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new String[]{"Customer", "USA", "OR"},<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;true);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;true);<br>
+	<br>
+	// Create an object for managing the cache<br>
+	CacheControl cacheControl =<br>
+&nbsp;&nbsp;&nbsp; connection.getCacheControl(null);<br/>
 <br/>
 // Create a cache region defined by<br/>
 // [Time].[1997].[Q2] cross join<br/>
@@ -280,6 +284,17 @@ year > 2007
             && (month > 2
                 || (month = 2
                     && day >= 15)))))</pre></code></blockquote>
+
+<p>The region returned by <code>createMeasuresRegion(Cube)</code> effectively 
+encompasses the whole cube. To flush all cubes in the schema, use a loop:</p>
+
+<blockquote><code>Connection connection;<br>
+	CacheControl cacheControl = connection.getCacheControl(null);<br>
+	for (Cube cube : connection.getSchema().getCubes()) {<br>
+&nbsp;&nbsp;&nbsp; cacheControl.flush(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	cacheControl.createMeasuresRegion(cube));<br>
+	}&nbsp; </code></blockquote>
 
 <h4>3.3. Merging and truncating segments<a name="Merging_and_truncating_segments">&nbsp;</a></h4>
 
@@ -404,10 +419,10 @@ are all deprecated and are superseded by the CacheControl methods
 
 <hr noshade size="1"/>
 <p>
-    Author: Julian Hyde; last modified by Julian Hyde, March 2007.<br/>
+    Author: Julian Hyde; last modified by Julian Hyde, February 2008.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/cache_control.html?ac=22">log</a>)<br/>
-    Copyright (C) 2006-2007 Julian Hyde
+    Copyright (C) 2006-2008 Julian Hyde
 </p>
 
 <br />
