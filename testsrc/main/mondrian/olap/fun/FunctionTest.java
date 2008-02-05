@@ -8019,6 +8019,63 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         assertThrows("select PeriodsToDate() on columns from [Store]", "'PeriodsToDate', no time dimension");
         assertThrows("select Mtd() on columns from [Store]", "'Mtd', no time dimension");
     }
+
+    public void testFilterCalcSlicer() {
+        assertQueryReturns(
+                "with member [Time].[Date Range] as \n" + 
+                "'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q3]})'\n" + 
+                "select\n" + 
+                "{[Measures].[Unit Sales],[Measures].[Store Cost],\n" + 
+                "[Measures].[Store Sales]} ON columns,\n" + 
+                "NON EMPTY Filter ([Store].[Store State].members,\n" + 
+                "[Measures].[Store Cost] > 75000) ON rows\n" +
+                "from [Sales] where [Time].[Date Range]",
+                fold(
+                        "Axis #0:\n" +
+                        "{[Time].[Date Range]}\n" +
+                        "Axis #1:\n" +
+                        "{[Measures].[Unit Sales]}\n" +
+                        "{[Measures].[Store Cost]}\n" +
+                        "{[Measures].[Store Sales]}\n" +
+                        "Axis #2:\n" +
+                        "{[Store].[All Stores].[USA].[WA]}\n" +
+                        "Row #0: 90,131\n" +
+                        "Row #0: 76,151.59\n" +
+                        "Row #0: 190,776.88\n")
+
+        );
+        assertQueryReturns(
+                "with member [Time].[Date Range] as \n" + 
+                "'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q3]})'\n" + 
+                "select\n" + 
+                "{[Measures].[Unit Sales],[Measures].[Store Cost],\n" + 
+                "[Measures].[Store Sales]} ON columns,\n" + 
+                "NON EMPTY Order ( Filter ([Store].[Store State].members,\n" + 
+                "[Measures].[Store Cost] > 100),[Measures].[Store Cost], DESC) ON rows\n" +
+                "from [Sales] where [Time].[Date Range]",
+                fold(
+                        "Axis #0:\n" +
+                        "{[Time].[Date Range]}\n" +
+                        "Axis #1:\n" +
+                        "{[Measures].[Unit Sales]}\n" +
+                        "{[Measures].[Store Cost]}\n" +
+                        "{[Measures].[Store Sales]}\n" +
+                        "Axis #2:\n" +
+                        "{[Store].[All Stores].[USA].[WA]}\n" +
+                        "{[Store].[All Stores].[USA].[CA]}\n" +
+                        "{[Store].[All Stores].[USA].[OR]}\n" +
+                        "Row #0: 90,131\n" +
+                        "Row #0: 76,151.59\n" +
+                        "Row #0: 190,776.88\n" +
+                        "Row #1: 53,312\n" +
+                        "Row #1: 45,435.93\n" +
+                        "Row #1: 113,966.00\n" +
+                        "Row #2: 51,306\n" +
+                        "Row #2: 43,033.82\n" +
+                        "Row #2: 107,823.63\n")
+
+        );
+    }
 }
 
 // End FunctionTest.java
