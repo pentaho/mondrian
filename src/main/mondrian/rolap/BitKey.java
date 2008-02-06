@@ -267,7 +267,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                 long x) {
             while (x != 0) {
                 copyFromByte(bitSet, pos, (byte) (x & 0xff));
-                x >>= 8;
+                x >>>= 8;
                 pos += 8;
             }
         }
@@ -436,7 +436,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             int pos = 0;
             while (x != 0) {
                 copyFromByte(bitSet, pos, (byte) (x & 0xff));
-                x >>= 8;
+                x >>>= 8;
                 pos += 8;
             }
             return bitSet;
