@@ -500,6 +500,11 @@ public class BitKeyTest extends TestCase {
         int[] positions13 = { 1, 2, 10, 165, 366 };
         checker.check(size2, positions12, size2, positions13);
         checker.check(size2, positions13, size2, positions12);
+
+        int[] positions14 = {63};
+        int[] positions15 = {63,127,191};
+        checker.check(size1, positions14, size1, positions14);
+        checker.check(size2, positions15, size2, positions15);
     }
 
     private interface Checker {
