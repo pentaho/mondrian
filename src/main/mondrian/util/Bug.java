@@ -81,6 +81,15 @@ public class Bug {
      * 
      */
     public static final boolean Bug1867953Fixed = false;
+
+    /**
+     * Whether
+     * <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1888821&group_id=35302&atid=414613">bug 1888821, "Non Empty Crossjoin fails to enforce role access"</a>
+     * is fixed.
+     */
+    public static final boolean Bug1888821Fixed = false;
+
+    
     /**
      * Returns whether to avoid a test because the memory monitor may cause it
      * to fail.

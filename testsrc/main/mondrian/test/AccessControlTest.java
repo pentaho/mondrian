@@ -13,6 +13,7 @@ package mondrian.test;
 
 import junit.framework.Assert;
 import mondrian.olap.*;
+import mondrian.util.Bug;
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
@@ -789,6 +790,61 @@ public class AccessControlTest extends FoodMartTestCase {
                 "Row #0: 3,583\n" +
                 "Row #0: 3,583\n" +
                 "Row #0: 124,366\n"));
+    }
+
+    /**
+     * Test to verify that non empty crossjoins enforce role access 
+     */
+    public void testNonEmptyAccess() {
+        if (Bug.Bug1888821Fixed) {
+            TestContext testContext =
+                TestContext.create(
+                    null, null, null, null, null,
+                    "<Role name=\"Role1\">\n"
+                        + "  <SchemaGrant access=\"none\">\n"
+                        + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                        + "      <HierarchyGrant hierarchy=\"[Product]\" access=\"custom\">\n"
+                        + "        <MemberGrant member=\"[Product].[Drink]\" access=\"all\"/>\n"
+                        + "      </HierarchyGrant>\n"
+                        + "    </CubeGrant>\n"
+                        + "  </SchemaGrant>\n"
+                        + "</Role>")
+                    .withRole("Role1");
+
+            // regular crossjoin returns the correct list of product children
+            testContext.assertQueryReturns(
+                    
+                    "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                    " Crossjoin({[Gender].[All Gender]}, " +
+                    "[Product].[All Products].Children) ON ROWS " + 
+                    "from [Sales]",
+
+                    fold(
+                        "Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Measures].[Unit Sales]}\n" +
+                        "Axis #2:\n" +
+                        "{[Gender].[All Gender], [Product].[All Products].[Drink]}\n" +
+                        "Row #0: 24,597\n"));
+
+            // non empty crossjoin does not
+            testContext.assertQueryReturns(
+
+                    "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                    "NON EMPTY Crossjoin({[Gender].[All Gender]}, " +
+                    "[Product].[All Products].Children) ON ROWS " + 
+                    "from [Sales]",
+
+                    fold(
+                        "Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Measures].[Unit Sales]}\n" +
+                        "Axis #2:\n" +
+                        "{[Gender].[All Gender], [Product].[All Products].[Drink]}\n" +
+                        "Row #0: 24,597\n"));
+        }
     }
 }
 
