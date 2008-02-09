@@ -2997,6 +2997,39 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #14: 67\n"));
     }
 
+    /**
+     * Testcase for bug 1889745, "StackOverflowError while resolving
+     * crossjoin". The problem occurs when a calculated member that references
+     * itself is referenced in a crossjoin.
+     */
+    public void testCrossjoinResolve() {
+        assertQueryReturns(
+            "with\n"
+                + "member [Measures].[Filtered Unit Sales] as\n"
+                + " 'IIf((([Measures].[Unit Sales] > 50000.0)\n"
+                + "      OR ([Product].CurrentMember.Level.UniqueName <>\n"
+                + "          \"[Product].[Product Family]\")),\n"
+                + "      IIf(((Count([Product].CurrentMember.Children) = 0.0)),\n"
+                + "          [Measures].[Unit Sales],\n"
+                + "          Sum([Product].CurrentMember.Children,\n"
+                + "              [Measures].[Filtered Unit Sales])),\n"
+                + "      NULL)'\n"
+                + "select NON EMPTY {crossjoin({[Measures].[Filtered Unit Sales]},\n"
+                + "{[Gender].[M], [Gender].[F]})} ON COLUMNS,\n"
+                + "NON EMPTY {[Product].[All Products]} ON ROWS\n"
+                + "from [Sales]\n"
+                + "where [Time].[1997]",
+            fold("Axis #0:\n" +
+                "{[Time].[1997]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Filtered Unit Sales], [Gender].[All Gender].[M]}\n" +
+                "{[Measures].[Filtered Unit Sales], [Gender].[All Gender].[F]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products]}\n" +
+                "Row #0: 97,126\n" +
+                "Row #0: 94,814\n"));
+    }
+
     public void testDescendantsM() {
         assertAxisReturns("Descendants([Time].[1997].[Q1])",
                 fold(

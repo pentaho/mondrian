@@ -3,6 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde and others
 // Copyright (C) 2004-2005 SAS Institute, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -61,7 +62,7 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
                 // evaluate the arguments in non empty mode
                 evaluator = evaluator.push();
                 evaluator.setNonEmpty(true);
-                List result = crossJoin(list1, list2, evaluator, call);
+                List result = crossJoin(list1, list2);
 
                 // remove any remaining empty crossings from the result
                 result = nonEmptyList(evaluator, result, call);

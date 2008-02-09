@@ -13,8 +13,7 @@ package mondrian.olap.fun;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractIterCalc;
 import mondrian.calc.impl.AbstractListCalc;
-import mondrian.mdx.MdxVisitorImpl;
-import mondrian.mdx.ResolvedFunCall;
+import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.TupleType;
@@ -74,6 +73,9 @@ class CrossJoinFunDef extends FunDefBase {
     /**
      * Adds a type to a list of types. If type is a {@link TupleType}, does so
      * recursively.
+     *
+     * @param type Type to add to list
+     * @param list List of types to add to
      */
     private static void addTypes(final Type type, List<Type> list) {
         if (type instanceof SetType) {
@@ -303,7 +305,8 @@ class CrossJoinFunDef extends FunDefBase {
             // are or how many null members they might have, so all
             // one can do is iterate across them:
             // iterate across it1 and for each member iterate across it2
-            Iterable<Member[]> iterable = new Iterable<Member[]>() {
+
+            return new Iterable<Member[]>() {
                 public Iterator<Member[]> iterator() {
                     return new Iterator<Member[]>() {
                         Iterator i1 = it1.iterator();
@@ -364,15 +367,13 @@ class CrossJoinFunDef extends FunDefBase {
                     };
                 }
             };
-
-            return iterable;
         }
 
         protected Iterable<Member[]> makeIterableList(
             final Iterable it1,
             final List l2)
         {
-            Iterable<Member[]> iterable = new Iterable<Member[]>() {
+            return new Iterable<Member[]>() {
                 public Iterator<Member[]> iterator() {
                     return new Iterator<Member[]>() {
                         Iterator i1 = it1.iterator();
@@ -433,14 +434,13 @@ class CrossJoinFunDef extends FunDefBase {
                     };
                 }
             };
-            return iterable;
         }
 
         protected Iterable<Member[]> makeListIterable(
             final List l1,
             final Iterable it2)
         {
-            Iterable<Member[]> iterable = new Iterable<Member[]>() {
+            return new Iterable<Member[]>() {
                 public Iterator<Member[]> iterator() {
                     return new Iterator<Member[]>() {
                         int index1 = 0;
@@ -501,15 +501,13 @@ class CrossJoinFunDef extends FunDefBase {
                     };
                 }
             };
-
-            return iterable;
         }
 
         protected Iterable<Member[]> makeListList(
             final List l1,
             final List l2)
         {
-            Iterable<Member[]> iterable = new Iterable<Member[]>() {
+            return new Iterable<Member[]>() {
                 public Iterator<Member[]> iterator() {
                     return new Iterator<Member[]>() {
                         int index1 = 0;
@@ -570,7 +568,6 @@ class CrossJoinFunDef extends FunDefBase {
                     };
                 }
             };
-            return iterable;
         }
     }
 
@@ -643,6 +640,8 @@ class CrossJoinFunDef extends FunDefBase {
         IterMemberIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             Iterable<Member> it1 = (Iterable<Member>) o1;
             Iterable<Member> it2 = (Iterable<Member>) o2;
@@ -656,6 +655,8 @@ class CrossJoinFunDef extends FunDefBase {
         IterMemberListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             Iterable<Member> it1 = (Iterable<Member>) o1;
             List<Member> l2 = (List<Member>) o2;
@@ -669,12 +670,15 @@ class CrossJoinFunDef extends FunDefBase {
             }
         }
     }
+
     // LIST Member ITERABLE Member
     class ListMemberIterMemberIterCalc
             extends BaseMemberMemberIterCalc {
         ListMemberIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             List<Member> l1 = (List<Member>) o1;
             Iterable<Member> it2 = (Iterable<Member>) o2;
@@ -695,6 +699,8 @@ class CrossJoinFunDef extends FunDefBase {
         ListMemberListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             List<Member> l1 = (List<Member>) o1;
             List<Member> l2 = (List<Member>) o2;
@@ -729,6 +735,8 @@ class CrossJoinFunDef extends FunDefBase {
         IterMemberIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             Iterable<Member> it1 = (Iterable<Member>) o1;
             Iterable<Member[]> it2 = (Iterable<Member[]>) o2;
@@ -742,6 +750,8 @@ class CrossJoinFunDef extends FunDefBase {
         IterMemberListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             Iterable<Member> it1 = (Iterable<Member>) o1;
             List<Member[]> l2 = (List<Member[]>) o2;
@@ -762,6 +772,8 @@ class CrossJoinFunDef extends FunDefBase {
         ListMemberIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             List<Member> l1 = (List<Member>) o1;
             Iterable<Member[]> it2 = (Iterable<Member[]>) o2;
@@ -782,6 +794,8 @@ class CrossJoinFunDef extends FunDefBase {
         ListMemberListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             List<Member> l1 = (List<Member>) o1;
             List<Member[]> l2 = (List<Member[]>) o2;
@@ -816,6 +830,8 @@ class CrossJoinFunDef extends FunDefBase {
         IterMemberArrayIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             Iterable<Member[]> it1 = (Iterable<Member[]>) o1;
             Iterable<Member> it2 = (Iterable<Member>) o2;
@@ -829,6 +845,8 @@ class CrossJoinFunDef extends FunDefBase {
         IterMemberArrayListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             Iterable<Member[]> it1 = (Iterable<Member[]>) o1;
             List<Member> l2 = (List<Member>) o2;
@@ -849,6 +867,8 @@ class CrossJoinFunDef extends FunDefBase {
         ListMemberArrayIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             List<Member[]> l1 = (List<Member[]>) o1;
             Iterable<Member> it2 = (Iterable<Member>) o2;
@@ -869,6 +889,8 @@ class CrossJoinFunDef extends FunDefBase {
         ListMemberArrayListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             List<Member[]> l1 = (List<Member[]>) o1;
             List<Member> l2 = (List<Member>) o2;
@@ -903,6 +925,8 @@ class CrossJoinFunDef extends FunDefBase {
         IterMemberArrayIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             Iterable<Member[]> it1 = (Iterable<Member[]>) o1;
             Iterable<Member[]> it2 = (Iterable<Member[]>) o2;
@@ -916,6 +940,8 @@ class CrossJoinFunDef extends FunDefBase {
         IterMemberArrayListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             Iterable<Member[]> it1 = (Iterable<Member[]>) o1;
             List<Member[]> l2 = (List<Member[]>) o2;
@@ -936,6 +962,8 @@ class CrossJoinFunDef extends FunDefBase {
         ListMemberArrayIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             List<Member[]> l1 = (List<Member[]>) o1;
             Iterable<Member[]> it2 = (Iterable<Member[]>) o2;
@@ -956,6 +984,8 @@ class CrossJoinFunDef extends FunDefBase {
         ListMemberArrayListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
+
+        @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             List<Member[]> l1 = (List<Member[]>) o1;
             List<Member[]> l2 = (List<Member[]>) o2;
@@ -1049,6 +1079,7 @@ class CrossJoinFunDef extends FunDefBase {
                     boolean mutable) {
             super(call, calcs, mutable);
         }
+
         public List<Member[]> evaluateList(Evaluator evaluator) {
             ResolvedFunCall call = (ResolvedFunCall) exp;
             // Use a native evaluator, if more efficient.
@@ -1078,12 +1109,12 @@ class CrossJoinFunDef extends FunDefBase {
             //l1 = checkList(evaluator, l1);
             l1 = nonEmptyOptimizeList(evaluator, l1, call);
             if (l1.isEmpty()) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
             //l2 = checkList(evaluator, l2);
             l2 = nonEmptyOptimizeList(evaluator, l2, call);
             if (l2.isEmpty()) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
 
             return makeList(l1, l2);
@@ -1182,7 +1213,7 @@ class CrossJoinFunDef extends FunDefBase {
                     }
                     return new Inner(fromIndex, toIndex);
                 }
-            };
+            }
             return new Outer();
         }
     }
@@ -1231,7 +1262,7 @@ class CrossJoinFunDef extends FunDefBase {
                     }
                     return new Inner(fromIndex, toIndex);
                 }
-            };
+            }
             return new Outer();
         }
     }
@@ -1443,13 +1474,16 @@ class CrossJoinFunDef extends FunDefBase {
                 }
             }
         }
+
         private class LocalListItr extends ListItr {
             public LocalListItr(int index) {
                 super(index);
             }
+
             public void set(Member[] o) {
-                if (lastRet == -1)
+                if (lastRet == -1) {
                     throw new IllegalStateException();
+                }
                 try {
                     CrossJoinFunDef.BaseMutableList.this.set(lastRet, o);
                 } catch(IndexOutOfBoundsException e) {
@@ -1457,7 +1491,6 @@ class CrossJoinFunDef extends FunDefBase {
                 }
             }
         }
-
     }
 
     // LIST Member LIST Member
@@ -1494,7 +1527,7 @@ class CrossJoinFunDef extends FunDefBase {
             //
             // but internally is:
             //  [a][A][a][B] ... [m][M][m][N]
-            List<Member[]> list = new BaseMutableList(members) {
+            return new BaseMutableList(members) {
                 int size = members.length/2;
                 public int size() {
                     return size;
@@ -1532,7 +1565,6 @@ class CrossJoinFunDef extends FunDefBase {
                     return makeList(sublist);
                 }
             };
-            return list;
         }
     }
 
@@ -1558,8 +1590,8 @@ class CrossJoinFunDef extends FunDefBase {
                     Member[] ma2 = (Member[]) l2.get(j);
                     members[totalLen*(ii + j)] = m1;
                     for (int k = 0; k < len2; k++) {
-                        Member m2 = (Member) ma2[k];
-                        members[totalLen*(ii + j)+k+1] = m2;
+                        Member m2 = ma2[k];
+                        members[totalLen * (ii + j) + k + 1] = m2;
                     }
                 }
             }
@@ -1578,7 +1610,7 @@ class CrossJoinFunDef extends FunDefBase {
             //
             // but internally is:
             // a,A,B,C,a,D,E,F,b,A,B,C,b,D,E,F
-            List<Member[]> list = new BaseMutableList(members) {
+            return new BaseMutableList(members) {
                 int size = members.length/totalLen;
                 public int size() {
                     return size;
@@ -1618,7 +1650,6 @@ class CrossJoinFunDef extends FunDefBase {
                     return makeList(sublist, totalLen);
                 }
             };
-            return list;
         }
     }
     // LIST Member[] LIST Member
@@ -1627,9 +1658,13 @@ class CrossJoinFunDef extends FunDefBase {
         MutableListMemberArrayListMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs, true);
         }
-        protected List<Member[]> makeList(final List l1, final List l2) {
+
+        @SuppressWarnings({"unchecked"})
+        protected List<Member[]> makeList(final List _l1, final List _l2) {
+            List<Member[]> l1 = (List<Member[]>) _l1;
+            List<Member> l2 = (List<Member>) _l2;
             int size1 = l1.size();
-            int len1 = ((Member[])l1.get(0)).length;
+            int len1 = l1.get(0).length;
             int size2 = l2.size();
             // len2 == 1
             int totalLen = 1+len1;
@@ -1637,15 +1672,15 @@ class CrossJoinFunDef extends FunDefBase {
 
             Member[] members = new Member[arraySize];
             for (int i = 0; i < size1; i++) {
-                Member[] ma1 = (Member[]) l1.get(i);
+                Member[] ma1 = l1.get(i);
                 int ii = i*size2;
                 for (int j = 0; j < size2; j++) {
                     for (int k = 0; k < len1; k++) {
-                        Member m1 = (Member) ma1[k];
-                        members[totalLen*(ii + j)+k] = m1;
+                        Member m1 = ma1[k];
+                        members[totalLen * (ii + j) +k] = m1;
                     }
-                    Member m2 = (Member) l2.get(j);
-                    members[totalLen*(ii + j)+len1] = m2;
+                    Member m2 = l2.get(j);
+                    members[totalLen * (ii + j) + len1] = m2;
                 }
             }
 
@@ -1663,7 +1698,7 @@ class CrossJoinFunDef extends FunDefBase {
             //
             // but internally is:
             //  A,B,C,a,A,B,C,b,D,E,F,a,D,E,F,b
-            List<Member[]> list = new BaseMutableList(members) {
+            return new BaseMutableList(members) {
                 int size = members.length/totalLen;
                 public int size() {
                     return size;
@@ -1703,7 +1738,6 @@ class CrossJoinFunDef extends FunDefBase {
                     return makeList(sublist, totalLen);
                 }
             };
-            return list;
         }
     }
     // LIST Member[] LIST Member[]
@@ -1726,18 +1760,19 @@ class CrossJoinFunDef extends FunDefBase {
                 int ii = i*size2;
                 for (int j = 0; j < size2; j++) {
                     for (int k = 0; k < len1; k++) {
-                        Member m1 = (Member) ma1[k];
+                        Member m1 = ma1[k];
                         members[totalLen*(ii + j)+k] = m1;
                     }
                     Member[] ma2 = (Member[]) l2.get(j);
                     for (int k = 0; k < len2; k++) {
-                        Member m2 = (Member) ma2[k];
-                        members[totalLen*(ii + j)+len1+k] = m2;
+                        Member m2 = ma2[k];
+                        members[totalLen * (ii + j) + len1 + k] = m2;
                     }
                 }
             }
             return makeList(members, totalLen);
         }
+
         protected List<Member[]> makeList(Member[] members, final int totalLen) {
 
             // l1: {A,B,C},{D,E,F}
@@ -1754,7 +1789,7 @@ class CrossJoinFunDef extends FunDefBase {
             // but internally is:
             //  A,B,C,a,b,A,B,C,c,d,A,B,C,e,f,D,E,F,a,b,D,E,F,c,d,D,E,F,e,d
             //
-            List<Member[]> list = new BaseMutableList(members) {
+            return new BaseMutableList(members) {
                 int size = members.length/totalLen;
                 public int size() {
                     return size;
@@ -1795,7 +1830,6 @@ class CrossJoinFunDef extends FunDefBase {
                     return makeList(sublist, totalLen);
                 }
             };
-            return list;
         }
     }
 
@@ -1835,11 +1869,11 @@ class CrossJoinFunDef extends FunDefBase {
         }
         return list;
     }
-    List crossJoin(
+
+    @SuppressWarnings({"unchecked"})
+    static List crossJoin(
         List list1,
-        List list2,
-        Evaluator evaluator,
-        ResolvedFunCall call)
+        List list2)
     {
         if (list1.isEmpty() || list2.isEmpty()) {
             return Collections.EMPTY_LIST;
@@ -1927,113 +1961,15 @@ class CrossJoinFunDef extends FunDefBase {
     }
 
     /**
-     * Visitor which builds a list of all measures referenced in a query,
-     * provided the measures don't reference the function call we're trying
-     * to evaluate for non-emptiness.
-     */
-    private static class MeasureVisitor extends MdxVisitorImpl {
-
-        // This set is null unless a measure is found.
-        Set<Member> measureSet;
-        Set<Member> queryMeasureSet;
-        // measures referencing this call should be excluded from the list
-        // of measures found
-        ResolvedFunCall crossJoinCall;
-
-        MeasureVisitor(
-            Set<Member> queryMeasureSet,
-            ResolvedFunCall crossJoinCall)
-        {
-            this.queryMeasureSet = queryMeasureSet;
-            this.crossJoinCall = crossJoinCall;
-        }
-
-        public Object visit(mondrian.mdx.ParameterExpr parameterExpr) {
-            final Parameter parameter = parameterExpr.getParameter();
-            final Type type = parameter.getType();
-            if (type instanceof mondrian.olap.type.MemberType) {
-                final Object value = parameter.getValue();
-                if (value instanceof Member) {
-                    final Member member = (Member) value;
-                    process(member);
-                }
-            }
-
-            return null;
-        }
-        public Object visit(mondrian.mdx.MemberExpr memberExpr) {
-            Member member = memberExpr.getMember();
-            process(member);
-            return null;
-        }
-        private void process(final Member member) {
-            for (Member measure : queryMeasureSet) {
-                if (measure.equals(member)) {
-                    if (validMeasure(measure)) {
-                        if (measureSet == null) {
-                            measureSet = new HashSet<Member>();
-                        }
-                        measureSet.add(measure);
-                        break;
-                    }
-                }
-            }
-        }
-
-        /**
-         * Determines if a measure should be added to the set of measures
-         * that make up the evaluation context for the nonempty cross join.
-         * It should not be if it is a calculated measure that references
-         * the cross join, unless the cross join itself also references
-         * that calculated measure, in which case, we have a recursive call,
-         * and an exception is thrown.
-         *
-         * @param measure measure being examined
-         *
-         * @return true if the measure should be added
-         */
-        private boolean validMeasure(Member measure)
-        {
-            if (measure.isCalculated()) {
-                // check if the measure references the crossjoin
-                Exp measureExp = measure.getExpression();
-                ResolvedFunCallFinder finder =
-                    new ResolvedFunCallFinder(crossJoinCall);
-                measureExp.accept(finder);
-                if (finder.found) {
-                    // check if the arguments to the cross join reference
-                    // the measure
-                    Exp [] args = crossJoinCall.getArgs();
-                    for (int i = 0; i < args.length; i++) {
-                        Set<Member> measureSet = new HashSet<Member>();
-                        measureSet.add(measure);
-                        MeasureVisitor measureFinder =
-                            new MeasureVisitor(measureSet, null);
-                        args[i].accept(measureFinder);
-                        measureSet = measureFinder.measureSet;
-                        if (measureSet != null && measureSet.size() > 0) {
-                            // recursive condition
-                            throw FunUtil.newEvalException(null,
-                                "Infinite loop detected in " +
-                                crossJoinCall.toString());
-                        }
-                    }
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-
-    /**
      * Visitor class used to locate a resolved function call within an
      * expression
      */
     private static class ResolvedFunCallFinder
         extends MdxVisitorImpl
     {
-        private ResolvedFunCall call;
+        private final ResolvedFunCall call;
         public boolean found;
+        private final Set<Member> activeMembers = new HashSet<Member>();
 
         public ResolvedFunCallFinder(ResolvedFunCall call)
         {
@@ -2049,230 +1985,47 @@ class CrossJoinFunDef extends FunDefBase {
             return null;
         }
 
-        public Object visit(mondrian.mdx.MemberExpr memberExpr) {
+        public Object visit(MemberExpr memberExpr) {
             Member member = memberExpr.getMember();
             if (member.isCalculated()) {
-                Exp memberExp = member.getExpression();
-                memberExp.accept(this);
+                if (activeMembers.add(member)) {
+                    Exp memberExp = member.getExpression();
+                    memberExp.accept(this);
+                    activeMembers.remove(member);
+                }
             }
             return null;
         }
     }
 
     /**
-     * This is the entry point to the crossjoin non-empty optimizer code.
-     * <p>
-     * What one wants to determine is for each individual Member of the input
-     * parameter list, a 'List-Member', whether across a slice there is any 
-     * data. 
-     * <p>
-     * But what data?
-     * <p>
-     * For Members other than those in the list, the 'non-List-Members', 
-     * one wants to consider 
-     * all data across the scope of these other Members. For instance, if
-     * Time is not a List-Member, then one wants to consider data
-     * across All Time. Or, if Customer is not a List-Member, then
-     * look at data across All Customers. The theory here, is if there
-     * is no data for a particular Member of the list where all other
-     * Members not part of the list are span their complete hierarchy, then
-     * there is certainly no data for Members of that Hierarchy at a
-     * more specific Level (more on this below).
-     * <p>
-     * When a Member that is a non-List-Member is part of a Hierarchy
-     * that has an
-     * All Member (hasAll="true"), then its very easy to make sure that
-     * the All Member is used during the optimization. 
-     * If a non-List-Member is part of a Hierarchy that does not have
-     * an All Member, then one must, in fact, iterate over all top-level
-     * Members of the Hierarchy!!! - otherwise a List-Member might 
-     * be excluded because the optimization code was not looking everywhere.
-     * <p>
-     * Concerning default Members for those Hierarchies for the 
-     * non-List-Members, ignore them. What is wanted is either the
-     * All Member or one must iterate across all top-level Members, what
-     * happens to be the default Member of the Hierarchy is of no relevant.
-     * <p>
-     * The Measures Hierarchy has special considerations. First, there is
-     * no All Measure. But, certainly one need only involve Measures
-     * that are actually in the query... yes and no. For Calculated Measures
-     * one must also get all of the non-Calculated Measures that make up
-     * each Calculated Measure. Thus, one ends up iterating across all
-     * Calculated and non-Calculated Measures that are explicitly 
-     * mentioned in the query as well as all Calculated and non-Calculated
-     * Measures that are used to define the Calculated Measures in 
-     * the query. Why all of these? because this represents the total
-     * scope of possible Measures that might yield a non-null value
-     * for the List-Members and that is what we what to find. It might
-     * be a super set, but thats ok; we just do not want to miss anything.
-     *
-     *
-     * For other Members, the default Member is used, but for Measures one
-     * should look for that data for all Measures associated with the query, not
-     * just one Measure. For a dense dataset this may not be a problem or even
-     * apparent, but for a sparse dataset, the first Measure may, in fact, have
-     * not data but other Measures associated with the query might.
-     * Hence, the solution here is to identify all Measures associated with the
-     * query and then for each Member of the list, determine if there is any
-     * data iterating across all Measures until non-null data is found or the
-     * end of the Measures is reached.
-     *
-     * @param evaluator evaluator
-     * @param list list of members being checked for non-emptiness
-     * @param call the cross join function call
-     */
-    protected List nonEmptyList(
-        Evaluator evaluator,
-        List list,
-        ResolvedFunCall call)
-    {
-        return nonEmptyListNEW(evaluator, list, call);
-        //return nonEmptyListOLD(evaluator, list, call);
-    }
-
-    /////////////////////////////////////////////////////////////////////////
-    //
-    // OLD optimizer
-    //
-    /////////////////////////////////////////////////////////////////////////
-    protected static List nonEmptyListOLD(
-        Evaluator evaluator,
-        List list,
-        ResolvedFunCall call)
-    {
-        if (list.isEmpty()) {
-            return list;
-        }
-
-        // A compromise between allocating too much and having lots of allocations.
-        // If everything is null, then this is too big, but if nothing is null
-        // then this results in TWO calls to ArrayList's ensureCapacity method
-        // and its associated System.arraycopy method.
-        // What is best?
-        // Note that an ArrayList does not have an adjustable "growth factor"
-        // but rather grows by 1.5.
-        List result = new ArrayList((list.size() + 2) >> 1);
-
-        // Get all Measures
-        // RME: The only mechanism I could find for getting all Measures
-        // associated with the query was to use a the MdxVisitor to get all
-        // MemberExprs and test if its Member was one of the Measures.  First,
-        // it might be expected that at query parse-time one could determine
-        // what Measures were associated with which axes saving the use of the
-        // visitor and, many times, this might be true but 2) if the Measures
-        // are dynamically generated, for instance using a function such as
-        // StrToSet, then one can not count on visiting the axes' Exp and determining
-        // all Measures - they can only be known at execution-time.
-        // So, here it is assumed that all Measures are known statically by
-        // this stage of the processing.
-        Query query = evaluator.getQuery();
-        Set<Member> measureSet = null;
-        Set<Member> queryMeasureSet = query.getMeasuresMembers();
-        // if the slicer contains a Measure, then the other axes can not
-        // contain a Measure, so look at slicer axis first
-        if (queryMeasureSet.size() > 0) {
-            MeasureVisitor visitor =
-                new MeasureVisitor(queryMeasureSet, call);
-            QueryAxis[] axes = query.getAxes();
-            QueryAxis slicerAxis = query.getSlicerAxis();
-            if (slicerAxis != null) {
-                slicerAxis.accept(visitor);
-            }
-            if (visitor.measureSet != null) {
-                // Slicer had a Measure, 1) use it and 2) do not need to look at
-                // the other axes.
-                measureSet = visitor.measureSet;
-
-            } else if (axes.length > 0) {
-                for (int i = 0; i < axes.length; i++) {
-                    if (axes[i] != null) {
-                        axes[i].accept(visitor);
-                    }
-                }
-                // It maybe null, but thats ok here
-                measureSet = visitor.measureSet;
-            }
-        }
-
-        // Determine if there is any data.
-        evaluator = evaluator.push();
-        if (list.get(0) instanceof Member[]) {
-            for (Member[] ms : ((List<Member[]>) list)) {
-                evaluator.setContext(ms);
-                // no measures found, use standard algorithm
-                if (measureSet == null) {
-                    Object value = evaluator.evaluateCurrent();
-                    if (value != null && !(value instanceof Throwable)) {
-                        result.add(ms);
-                    }
-                } else {
-                    Iterator<Member> measureIter = measureSet.iterator();
-                    MEASURES_LOOP:
-                    while (measureIter.hasNext()) {
-                        Member measure = measureIter.next();
-                        evaluator.setContext(measure);
-                        Object value = evaluator.evaluateCurrent();
-                        if (value != null && !(value instanceof Throwable)) {
-                            result.add(ms);
-                            break MEASURES_LOOP;
-                        }
-                    }
-                }
-            }
-        } else {
-            for (Iterator listItr = list.iterator(); listItr.hasNext();) {
-                Member m = (Member) listItr.next();
-                evaluator.setContext(m);
-                // no measures found, use standard algorithm
-                if (measureSet == null) {
-                    Object value = evaluator.evaluateCurrent();
-                    if (value != null && !(value instanceof Throwable)) {
-                        result.add(m);
-                    }
-                } else {
-                    Iterator<Member> measureIter = measureSet.iterator();
-                    measuresLoop:
-                    while (measureIter.hasNext()) {
-                        Member measure = measureIter.next();
-                        evaluator.setContext(measure);
-                        Object value = evaluator.evaluateCurrent();
-                        if (value != null && !(value instanceof Throwable)) {
-                            result.add(m);
-                            break measuresLoop;
-                        }
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    /////////////////////////////////////////////////////////////////////////
-    //
-    // NEW optimizer
-    //
-    /////////////////////////////////////////////////////////////////////////
-
-    /**
-     * The MeasureVisitorNEW class traverses the function call tree of
+     * Traverses the function call tree of
      * the non empty crossjoin function and populates the queryMeasureSet 
      * with base measures
      */
-    private static class MeasureVisitorNEW extends MdxVisitorImpl {
+    private static class MeasureVisitor extends MdxVisitorImpl {
 
-        Set<Member> queryMeasureSet;
-        //
-        // measures referencing this call should be excluded from the list
-        // of measures found
-        ResolvedFunCall crossJoinCall;
+        private final Set<Member> queryMeasureSet;
+        private final ResolvedFunCallFinder finder;
+        private final Set<Member> activeMeasures = new HashSet<Member>();
 
-        MeasureVisitorNEW(Set<Member> queryMeasureSet, 
-                ResolvedFunCall crossJoinCall) {
+        /**
+         * Creates a MeasureVisitor.
+         *
+         * @param queryMeasureSet Set of measures in query
+         *
+         * @param crossJoinCall Measures referencing this call should be
+         * excluded from the list of measures found
+         */
+        MeasureVisitor(
+            Set<Member> queryMeasureSet,
+            ResolvedFunCall crossJoinCall)
+        {
             this.queryMeasureSet = queryMeasureSet;
-            this.crossJoinCall = crossJoinCall;
+            finder = new ResolvedFunCallFinder(crossJoinCall);
         }
 
-        public Object visit(mondrian.mdx.ResolvedFunCall funcall) {
+        public Object visit(ResolvedFunCall funcall) {
             Exp[] exps = funcall.getArgs();
             if (exps != null) {
                 for (Exp exp: exps) {
@@ -2281,7 +2034,8 @@ class CrossJoinFunDef extends FunDefBase {
             }
             return null;
         }
-        public Object visit(mondrian.mdx.ParameterExpr parameterExpr) {
+
+        public Object visit(ParameterExpr parameterExpr) {
             final Parameter parameter = parameterExpr.getParameter();
             final Type type = parameter.getType();
             if (type instanceof mondrian.olap.type.MemberType) {
@@ -2294,22 +2048,26 @@ class CrossJoinFunDef extends FunDefBase {
 
             return null;
         }
-        public Object visit(mondrian.mdx.MemberExpr memberExpr) {
+
+        public Object visit(MemberExpr memberExpr) {
             Member member = memberExpr.getMember();
             process(member);
             return null;
         }
+
         private void process(final Member member) {
             if (member.isMeasure()) {
                 if (member.isCalculated()) {
-                    Exp exp = member.getExpression();
-                    ResolvedFunCallFinder finder =
-                        new ResolvedFunCallFinder(crossJoinCall);
-                    exp.accept(finder);
-                    if (! finder.found) {
-                        exp.accept(this);
-                        // commented line out to fix bug #1696772
-                        // queryMeasureSet.add(member);
+                    if (activeMeasures.add(member)) {
+                        Exp exp = member.getExpression();
+                        finder.found = false;
+                        exp.accept(finder);
+                        if (! finder.found) {
+                            exp.accept(this);
+                            // commented line out to fix bug #1696772
+                            // queryMeasureSet.add(member);
+                        }
+                        activeMeasures.remove(member);
                     }
                 } else {
                     queryMeasureSet.add(member);
@@ -2318,22 +2076,81 @@ class CrossJoinFunDef extends FunDefBase {
         }
     }
     
-    /** 
-     * This is a non-optimistic optimizer. What this means is that an
+    /**
+     * This is the entry point to the crossjoin non-empty optimizer code.
+     *
+     * <p>What one wants to determine is for each individual Member of the input
+     * parameter list, a 'List-Member', whether across a slice there is any
+     * data.
+     *
+     * <p>But what data?
+     *
+     * <p>For Members other than those in the list, the 'non-List-Members',
+     * one wants to consider
+     * all data across the scope of these other Members. For instance, if
+     * Time is not a List-Member, then one wants to consider data
+     * across All Time. Or, if Customer is not a List-Member, then
+     * look at data across All Customers. The theory here, is if there
+     * is no data for a particular Member of the list where all other
+     * Members not part of the list are span their complete hierarchy, then
+     * there is certainly no data for Members of that Hierarchy at a
+     * more specific Level (more on this below).
+     *
+     * <p>When a Member that is a non-List-Member is part of a Hierarchy
+     * that has an
+     * All Member (hasAll="true"), then its very easy to make sure that
+     * the All Member is used during the optimization.
+     * If a non-List-Member is part of a Hierarchy that does not have
+     * an All Member, then one must, in fact, iterate over all top-level
+     * Members of the Hierarchy!!! - otherwise a List-Member might
+     * be excluded because the optimization code was not looking everywhere.
+     *
+     * <p>Concerning default Members for those Hierarchies for the
+     * non-List-Members, ignore them. What is wanted is either the
+     * All Member or one must iterate across all top-level Members, what
+     * happens to be the default Member of the Hierarchy is of no relevant.
+     *
+     * <p>The Measures Hierarchy has special considerations. First, there is
+     * no All Measure. But, certainly one need only involve Measures
+     * that are actually in the query... yes and no. For Calculated Measures
+     * one must also get all of the non-Calculated Measures that make up
+     * each Calculated Measure. Thus, one ends up iterating across all
+     * Calculated and non-Calculated Measures that are explicitly
+     * mentioned in the query as well as all Calculated and non-Calculated
+     * Measures that are used to define the Calculated Measures in
+     * the query. Why all of these? because this represents the total
+     * scope of possible Measures that might yield a non-null value
+     * for the List-Members and that is what we what to find. It might
+     * be a super set, but thats ok; we just do not want to miss anything.
+     *
+     * <p>For other Members, the default Member is used, but for Measures one
+     * should look for that data for all Measures associated with the query, not
+     * just one Measure. For a dense dataset this may not be a problem or even
+     * apparent, but for a sparse dataset, the first Measure may, in fact, have
+     * not data but other Measures associated with the query might.
+     * Hence, the solution here is to identify all Measures associated with the
+     * query and then for each Member of the list, determine if there is any
+     * data iterating across all Measures until non-null data is found or the
+     * end of the Measures is reached.
+     *
+     * <p>This is a non-optimistic implementation. This means that an
      * element of the input parameter List is only not included in the
      * returned result List if for no combination of Measures, non-All
      * Members (for Hierarchies that have no All Members) and evaluator
      * default Members did the element evaluate to non-null.
-     * 
-     * @param evaluator The Evaluator
-     * @param list The List of elements that are to be determined if there are
-     * any non-null.
-     * @param call The calling ResolvedFunCall used to determine what Measures
-     * to use.
+     *
+     * @param evaluator Evaluator
+     *
+     * @param list      List of members being checked for non-emptiness
+     *
+     * @param call      Calling ResolvedFunCall used to determine what Measures
+     *                  to use
+     *
      * @return List of elements from the input parameter list that have
      * evaluated to non-null.
      */
-    protected List nonEmptyListNEW(
+    @SuppressWarnings({"unchecked"})
+    protected List nonEmptyList(
         Evaluator evaluator,
         List list,
         ResolvedFunCall call)
@@ -2344,9 +2161,7 @@ class CrossJoinFunDef extends FunDefBase {
 
         List result = new ArrayList((list.size() + 2) >> 1);
 
-        //
         // Get all of the Measures
-        //
         final Query query = evaluator.getQuery();
 
         final String measureSetKey = "MEASURE_SET-"+ctag;
@@ -2358,7 +2173,7 @@ class CrossJoinFunDef extends FunDefBase {
         if (measureSet == null) {
             measureSet = new HashSet<Member>();
             Set<Member> queryMeasureSet = query.getMeasuresMembers();
-            MeasureVisitorNEW visitor = new MeasureVisitorNEW(measureSet, call);
+            MeasureVisitor visitor = new MeasureVisitor(measureSet, call);
             for (Member m : queryMeasureSet) {
                 if (m.isCalculated()) {
                     Exp exp = m.getExpression();
@@ -2390,7 +2205,7 @@ class CrossJoinFunDef extends FunDefBase {
             // Get all of the All Members and those Hierarchies that
             // do not have All Members.
             //
-            Member[] evalMembers = (Member[]) evaluator.getMembers().clone();
+            Member[] evalMembers = evaluator.getMembers().clone();
 
             Member[] listMembers = (list.get(0) instanceof Member[])
                 ? (Member[]) list.get(0) 
@@ -2424,16 +2239,14 @@ class CrossJoinFunDef extends FunDefBase {
             List<Member[]> nonAllMemberList = new ArrayList<Member[]>();
             
             Member em;
-            boolean isSlicerMember = false;
-            for (int i = 0; i < evalMembers.length; i++) {
-                em = evalMembers[i];
-                
-                if (slicerMembers == null) {
-                    isSlicerMember = false;
-                } else {
-                    isSlicerMember = slicerMembers.contains(em);
-                }
-                
+            boolean isSlicerMember;
+            for (Member evalMember : evalMembers) {
+                em = evalMember;
+
+                isSlicerMember =
+                    slicerMembers != null
+                        && slicerMembers.contains(em);
+
                 if (em == null) {
                     // Above we might have removed some by setting them
                     // to null. These are the CrossJoin axes.
@@ -2442,7 +2255,7 @@ class CrossJoinFunDef extends FunDefBase {
                 if (em.isMeasure()) {
                     continue;
                 }
-                
+
                 //
                 // The unconstrained members need to be replaced by the "All"
                 // member based on its usage and property. This is currently
@@ -2457,17 +2270,18 @@ class CrossJoinFunDef extends FunDefBase {
                 //     N      |      N      |      Y if not "All"
                 // -----------------------------------------------
                 //
-                if (( isSlicerMember && !em.isCalculated()) ||
-                    (!isSlicerMember &&  em.isCalculated())) {
+                if ((isSlicerMember && !em.isCalculated()) ||
+                    (!isSlicerMember && em.isCalculated())) {
                     continue;
                 }
-                
+
                 // If the member is not the All member;
                 // or if it is a slicer member,
                 // replace with the "all" member.
                 if (isSlicerMember || !em.isAll()) {
                     Hierarchy h = em.getHierarchy();
-                    Member[] rootMembers = schemaReader.getHierarchyRootMembers(h);
+                    Member[] rootMembers =
+                        schemaReader.getHierarchyRootMembers(h);
                     if (h.hasAll()) {
                         // The Hierarchy has an All member
                         boolean found = false;
@@ -2478,8 +2292,10 @@ class CrossJoinFunDef extends FunDefBase {
                                 break;
                             }
                         }
-                        if (! found) {
-System.out.println("CrossJoinFunDef.nonEmptyListNEW: ERROR");
+                        if (!found) {
+                            System.out
+                                .println(
+                                    "CrossJoinFunDef.nonEmptyListNEW: ERROR");
                         }
                     } else {
                         // The Hierarchy does NOT have an All member
@@ -2487,8 +2303,9 @@ System.out.println("CrossJoinFunDef.nonEmptyListNEW: ERROR");
                     }
                 }
             }
-            nonAllMembers = 
-                (Member[][]) nonAllMemberList.toArray(new Member[0][]);
+            nonAllMembers =
+                nonAllMemberList.toArray(
+                    new Member[nonAllMemberList.size()][]);
 
             query.putEvalCache(allMemberListKey, allMemberList);
             query.putEvalCache(nonAllMembersKey, nonAllMembers);
