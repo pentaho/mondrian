@@ -32,13 +32,10 @@ import mondrian.calc.*;
  */
 public class TupleValueCalc extends GenericCalc {
     private final TupleCalc tupleCalc;
-    private final Member[] savedMembers;
 
     public TupleValueCalc(Exp exp, TupleCalc tupleCalc) {
         super(exp);
         this.tupleCalc = tupleCalc;
-        final TupleType tupleType = (TupleType) this.tupleCalc.getType();
-        this.savedMembers = new Member[tupleType.elementTypes.length];
     }
 
     public Object evaluate(Evaluator evaluator) {
@@ -46,6 +43,7 @@ public class TupleValueCalc extends GenericCalc {
         if (members == null) {
             return null;
         }
+        Member [] savedMembers = new Member[members.length];
         for (int i = 0; i < members.length; i++) {
             savedMembers[i] = evaluator.setContext(members[i]);
         }

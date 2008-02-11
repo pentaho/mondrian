@@ -5068,6 +5068,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns one of two tuples
+                            determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Tuple, Tuple</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IIf</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IIf</FUNCTION_NAME>
                         <DESCRIPTION>Returns one of two dimension values
                             determined by a logical test.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, Dimension, Dimension</PARAMETER_LIST>

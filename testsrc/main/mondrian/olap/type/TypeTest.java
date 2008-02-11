@@ -292,41 +292,6 @@ public class TypeTest extends TestCase {
 
     }
 
-    public void testSetType(){
-        MemberType measureMemberType =
-            getMemberTypeHavingMeasureInIt(getUnitSalesMeasure());
-
-        Member maleChild = getMaleChild();
-        MemberType genderMemberType =
-            getMemberTypeHavingMaleChild(maleChild);
-
-        MemberType storeMemberType =
-            getStoreMemberType(getStoreChild());
-
-        TupleType tupleType = new TupleType(
-            new Type[] {storeMemberType, genderMemberType});
-
-        SetType setTypeWithMember = new SetType(measureMemberType);
-        SetType setTypeWithTuple = new SetType(tupleType);
-
-        SetType type1 =
-            (SetType) setTypeWithMember.computeCommonType(setTypeWithTuple, null);
-        SetType type2 =
-            (SetType) setTypeWithTuple.computeCommonType(setTypeWithMember, null);
-        assertNull(type1.getDimension());
-        assertNull(type1.getHierarchy());
-        assertNull(type1.getLevel());
-        assertEquals(1, type1.getArity());
-        assertTrue(type1.usesDimension(maleChild.getDimension(),true));
-        assertFalse(type1.usesDimension(maleChild.getDimension(),false));
-        assertNull(type2.getDimension());
-        assertNull(type2.getHierarchy());
-        assertNull(type2.getLevel());
-        assertEquals(1, type2.getArity());
-        assertTrue(type2.usesDimension(maleChild.getDimension(),true));
-        assertFalse(type2.usesDimension(maleChild.getDimension(),false));
-    }
-
     public void testCommonTypeWhenSetTypeHavingMemberTypeAndTupleType() {
         MemberType measureMemberType =
             getMemberTypeHavingMeasureInIt(getUnitSalesMeasure());
@@ -344,15 +309,16 @@ public class TypeTest extends TestCase {
         SetType setTypeWithTuple = new SetType(tupleType);
 
         Type type1 = setTypeWithMember.computeCommonType(setTypeWithTuple, null);
-        Type type2 = setTypeWithTuple.computeCommonType(setTypeWithMember, null);
         assertNotNull(type1);
+        assertTrue(((SetType) type1).getElementType() instanceof TupleType);
+
+        Type type2 = setTypeWithTuple.computeCommonType(setTypeWithMember, null);
         assertNotNull(type2);
-        assertTrue(((SetType) type1).getElementType() instanceof ScalarType);
-        assertTrue(((SetType) type2).getElementType() instanceof ScalarType);
+        assertTrue(((SetType) type2).getElementType() instanceof TupleType);
         assertEquals(type1, type2);
     }
 
-    public void testCommonTypeOfMemberandTupleTypeIsScalarType() {
+    public void testCommonTypeOfMemberandTupleTypeIsTupleType() {
         MemberType measureMemberType =
             getMemberTypeHavingMeasureInIt(getUnitSalesMeasure());
 
@@ -366,12 +332,44 @@ public class TypeTest extends TestCase {
             new Type[] {storeMemberType, genderMemberType});
 
         Type type1 = measureMemberType.computeCommonType(tupleType, null);
-        Type type2 = tupleType.computeCommonType(measureMemberType, null);
-
         assertNotNull(type1);
+        assertTrue(type1 instanceof TupleType);
+
+        Type type2 = tupleType.computeCommonType(measureMemberType, null);
         assertNotNull(type2);
-        assertTrue(type1 instanceof ScalarType);
-        assertTrue(type2 instanceof ScalarType);
+        assertTrue(type2 instanceof TupleType);
+        assertEquals(type1, type2);
+    }
+
+    public void testCommonTypeBetweenTuplesOfDifferentSizesIsATupleType(){
+        MemberType measureMemberType =
+            getMemberTypeHavingMeasureInIt(getUnitSalesMeasure());
+
+        MemberType genderMemberType =
+            getMemberTypeHavingMaleChild(getMaleChild());
+
+        MemberType storeMemberType =
+            getStoreMemberType(getStoreChild());
+
+        TupleType tupleTypeLarger = new TupleType(
+            new Type[] {storeMemberType, genderMemberType, measureMemberType});
+
+        TupleType tupleTypeSmaller = new TupleType(
+            new Type[] {storeMemberType, genderMemberType});
+
+        Type type1 = tupleTypeSmaller.computeCommonType(tupleTypeLarger, null);
+        assertNotNull(type1);
+        assertTrue(type1 instanceof TupleType);
+        assertTrue(((TupleType) type1).elementTypes[0] instanceof MemberType);
+        assertTrue(((TupleType) type1).elementTypes[1] instanceof MemberType);
+        assertTrue(((TupleType) type1).elementTypes[2] instanceof ScalarType);
+
+        Type type2 = tupleTypeLarger.computeCommonType(tupleTypeSmaller, null);
+        assertNotNull(type2);
+        assertTrue(type2 instanceof TupleType);
+        assertTrue(((TupleType) type2).elementTypes[0] instanceof MemberType);
+        assertTrue(((TupleType) type2).elementTypes[1] instanceof MemberType);
+        assertTrue(((TupleType) type2).elementTypes[2] instanceof ScalarType);
         assertEquals(type1, type2);
     }
 

@@ -6174,6 +6174,50 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #0: 266,773\n"));
     }
 
+    public void testIifWithTuplesOfUnequalSizes() {
+        assertQueryReturns("WITH\n" +
+            "MEMBER [Gender].agg " +
+            "AS 'IIF(Measures.currentMember is [Measures].[Unit Sales], " +
+            "([Store].[All Stores],[Gender].[All Gender],measures.[unit sales])," +
+            "([Store].[All Stores],[Gender].[All Gender]) )', SOLVE_ORDER = 4 " +
+            "SELECT {[Measures].[unit sales]} ON 0, " +
+            "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[All Gender].[M]}\n" +
+                "{[Gender].[agg]}\n" +
+                "Row #0: 131,558\n" +
+                "Row #1: 135,215\n" +
+                "Row #2: 266,773\n"));
+    }
+
+    public void testIifWithTuplesOfUnequalSizesAndOrder() {
+        assertQueryReturns("WITH\n" +
+            "MEMBER [Gender].agg " +
+            "AS 'IIF(Measures.currentMember is [Measures].[Unit Sales], " +
+            "([Store].[All Stores],[Gender].[M],measures.[unit sales])," +
+            "([Gender].[M],[Store].[All Stores]) )', SOLVE_ORDER = 4 " +
+            "SELECT {[Measures].[unit sales]} ON 0, " +
+            "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[All Gender].[M]}\n" +
+                "{[Gender].[agg]}\n" +
+                "Row #0: 131,558\n" +
+                "Row #1: 135,215\n" +
+                "Row #2: 135,215\n"));
+    }
+
     /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.

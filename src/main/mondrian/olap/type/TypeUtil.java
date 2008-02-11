@@ -378,8 +378,14 @@ public class TypeUtil {
             return to == Category.Value ||
                 to == (Category.DateTime | Category.Constant);
         case Category.Tuple:
-            return to == Category.Value ||
-                to == Category.Numeric;
+            switch (to) {
+                case Category.Value:
+                case Category.Numeric:
+                    conversionCount[0]++;
+                    return true;
+                default:
+                    return false;
+            }
         case Category.Value:
             return false;
         case Category.Symbol:

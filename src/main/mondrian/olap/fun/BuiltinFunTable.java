@@ -740,6 +740,7 @@ public class BuiltinFunTable extends FunTableImpl {
 
         define(IifFunDef.STRING_INSTANCE);
         define(IifFunDef.NUMERIC_INSTANCE);
+        define(IifFunDef.TUPLE_INSTANCE);
         define(IifFunDef.BOOLEAN_INSTANCE);
         define(IifFunDef.MEMBER_INSTANCE);
         define(IifFunDef.LEVEL_INSTANCE);

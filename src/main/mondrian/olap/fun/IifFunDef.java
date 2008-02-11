@@ -109,6 +109,33 @@ public class IifFunDef extends FunDefBase {
             }
         };
 
+    // IIf(<Logical Expression>, <Tuple Expression>, <Tuple Expression>)
+    static final FunDefBase TUPLE_INSTANCE =
+        new IifFunDef(
+            "IIf",
+            "Returns one of two tuples determined by a logical test.",
+            "ftbtt")
+        {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final BooleanCalc booleanCalc =
+                    compiler.compileBoolean(call.getArg(0));
+                final Calc calc1 = compiler.compileTuple(call.getArg(1));
+                final Calc calc2 = compiler.compileTuple(call.getArg(2));
+                return new GenericCalc(call) {
+                    public Object evaluate(Evaluator evaluator) {
+                        final boolean b =
+                            booleanCalc.evaluateBoolean(evaluator);
+                        Calc calc = b ? calc1 : calc2;
+                        return calc.evaluate(evaluator);
+                    }
+
+                    public Calc[] getCalcs() {
+                        return new Calc[] {booleanCalc, calc1, calc2};
+                    }
+                };
+            }
+        };
+
     // IIf(<Logical Expression>, <Boolean Expression>, <Boolean Expression>)
     static final FunDefBase BOOLEAN_INSTANCE = new FunDefBase(
         "IIf",

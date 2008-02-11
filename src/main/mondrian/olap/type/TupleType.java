@@ -12,6 +12,8 @@ package mondrian.olap.type;
 import mondrian.olap.*;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tuple type.
@@ -102,27 +104,42 @@ public class TupleType implements Type {
             return getValueType().computeCommonType(type, conversionCount);
         }
         if (type instanceof MemberType) {
-            return getValueType().computeCommonType(type, conversionCount);
+            return commonTupleType(
+                new TupleType(new Type[]{type}),
+                conversionCount);
         }
         if (!(type instanceof TupleType)) {
             return null;
         }
+        return commonTupleType(type, conversionCount);
+    }
+
+    private Type commonTupleType(Type type, int[] conversionCount) {
         TupleType that = (TupleType) type;
-        if (this.elementTypes.length !=
-            that.elementTypes.length) {
-            return null;
+
+        if(this.elementTypes.length < that.elementTypes.length){
+            return createCommonTupleType(that, conversionCount);
         }
-        final Type[] elementTypes =
-            new Type[this.elementTypes.length];
-        for (int i = 0; i < elementTypes.length; i++) {
-            elementTypes[i] =
-                this.elementTypes[i].computeCommonType(
+        return that.createCommonTupleType(this, conversionCount);
+    }
+
+    private Type createCommonTupleType(TupleType that, int[] conversionCount) {
+        final List<Type> elementTypes = new ArrayList<Type>();
+        for (int i = 0; i < this.elementTypes.length; i++) {
+            Type commonType = this.elementTypes[i].computeCommonType(
                     that.elementTypes[i], conversionCount);
-            if (elementTypes[i] == null) {
+            elementTypes.add(commonType);
+            if (commonType == null) {
                 return null;
             }
         }
-        return new TupleType(elementTypes);
+        if(elementTypes.size() < that.elementTypes.length){
+            for(int i=elementTypes.size();i< that.elementTypes.length;i++){
+                elementTypes.add(new ScalarType());
+            }
+        }
+        return new TupleType(
+            elementTypes.toArray(new Type[elementTypes.size()]));
     }
 }
 
