@@ -1,11 +1,20 @@
-Mondrian 2.4.2.9831 release notes
-=================================
+Mondrian 3.0.0.10550 release notes
+==================================
 
 Introduction
 ------------
 
-mondrian-2.4.2.9831 is first production release of
-mondrian-2.4 release.
+mondrian-3.0.0.10550 is first milestone of the mondrian-3.0
+release.
+
+This release is beta quality code; major functionality is
+complete, but there are significant known bugs and this
+release should not be used for production applications.
+
+This release will be followed by one or more 'release
+candidate' releases, then a production release.
+
+
 
 Contents
 --------
@@ -13,8 +22,14 @@ Contents
 As usual, there are two distributions for this release:
  * mondrian-<version>.zip contains the FoodMart dataset in
    SQL and Access format
- * mondrian-<version>.derby.zip contains the FoodMart
+ * mondrian-<version>-derby.zip contains the FoodMart
    dataset as an Apache Derby database
+
+Each distribution contains the full mondrian source code, as
+mondrian-<version>-src.zip, documentation including
+generated API documentation, and a web archive mondrian.war.
+This web archive contains all classes and libraries (jars)
+necessary to run mondrian.
 
 This release runs on Java version 1.5 and higher. For
 backwards compatibility on Java 1.4, substitute
@@ -28,41 +43,74 @@ or the included file doc/installation.html.
 Main functionality in this release
 ----------------------------------
 
-* Aggregate distinct-count measures. This allows aggregations
-  of distinct count measures to compute properly over a range
-  of selections (for example, show me a count of all new
-  customers from January through July).
+* Improved dimension sharing. Allow a shared dimension to be
+  use used more than once within the same cube.
 
-* Generate SQL with the GROUPING SETS SQL construct, for
-  databases which support it. By leveraging Grouping Sets,
-  Mondrian can reduce the number of SQL queries necessary to
-  full an MDX request, and databases can often execute the
-  combined queries more efficiently than the individual
-  queries. Grouping Sets are currently supported in Oracle,
-  DB2, Teradata and Microsoft SQL Server.
+* Virtual cube enhancements. When a cube that uses the same
+  dimension twice is involved in a virtual cube,
+  disambiguate which usage of the dimension is involved.
+  Allow the virtual cube to use the same cube more than
+  once.
 
-* New MDX functions Extract, Generate, Iif(bool,bool,bool),
-  Len, Left, Mid, UCase. 
+* olap4j API. olap4j is the Open Java API for OLAP
+  (http://www.olap4j.org). From mondrian-3.0 onwards, olap4j
+  is the main API for connecting to mondrian, browsing
+  metadata and executing queries.
 
-* Support for Apache Virtual File System (VFS) URLs.
+  Mondrian's previous API (classes in the mondrian.olap
+  package) still exists but is deprecated; from mondrian-3.1
+  onwards, classes and methods in this API may not exist,
+  may not work, or may change.
+
+* Scalar functions. Many scalar functions have been added in
+  mondrian-3.0, to the the specification of the Visual Basic
+  for Applications (VBA) and Excel libraries that are
+  available by default in Microsoft SQL Server Analysis
+  Services (SSAS) and that many MDX users assume are part of
+  the core MDX language.
+
+  Function list: Abs, Acosh, Asc, AscB, AscW, Asin, Asinh,
+  Atan2, Atanh, Atn, Cache, CBool, CByte, CDate, CDbl, Chr,
+  ChrB, ChrW, CInt, Cos, Cosh, Date, DateAdd, DateDiff,
+  DatePart, DateSerial, DateValue, Day, DDB, Degrees,
+  DrilldownLevel, DrilldownLevelBottom, DrilldownLevelTop,
+  Exp, Fix, FormatCurrency, FormatDateTime, FormatNumber,
+  FormatPercent, FV, Hex, Hour, InStrRev, Int, IPmt, IRR,
+  IsDate, LCase, Log, Log10, LTrim, Minute, MIRR, Month,
+  MonthName, Now, NPer, NPV, Oct, Percentile, Pi, Pmt,
+  Power, PPmt, PV, Radians, Rate, Replace, Right, Round,
+  RTrim, Second, Sgn, Sin, Sinh, SLN, Space, Sqr, SqrtPi,
+  Str, StrComp, String, StrReverse, SYD, Tan, Tanh, Time,
+  Timer, TimeSerial, TimeValue, Trim, TypeName, Val,
+  Weekday, WeekdayName, Year.
+
+  We have added additional forms to existing functions:
+  Descendants(<Member>, , LEAVES); Format can now be applied
+  to DateTime values; Iif can be applied to member, level,
+  hierarchy, dimension and tuple and set values; Levels can
+  be applied to a string expression.
+
+* Aggregate roles. You can now define a role in the schema
+  that has the sum of the privileges of two or more roles;
+  and you can connect to mondrian with one or more roles.
+  This facility enables closer integration with Pentaho
+  access-control, where a user can already exist in multiple
+  roles.
+
+* Cell-level access-control. In mondrian-2.4, if access to a
+  hierarchy is restricted, the value of a member is equal to
+  the sum of its children; in mondrian-3.0, the
+  HierarchyGrant element has a rollupPolicy attribute whose
+  values are 'full', 'partial' or 'hidden'.
+
+* JNDI in connect string. JDBC data sources can be specified
+  by their JNDI name.
 
 API changes in this release
 ---------------------------
 
-* DynamicSchemaProcessor. Moved the
-  mondrian.rolap.DynamicSchemaProcessor interface to package
-  mondrian.spi. The processSchema(URL, PropertyList) method
-  now has signature processSchema(String, PropertyList), and
-  the URL is intended to be interpreted as an Apache VFS
-  URL. Class mondrian.spi.impl.FilterDynamicSchemaProcessor
-  is a partial implementation.
-
-* Various methods which used String or String[] to lookup
-  multi-part identifiers such as '[Store].[USA].[CA]'
-  now take Id.Segment or List<Id.Segment>. The previous
-  methods are deprecated and will be removed in mondrian-2.5.
-
-  Methods:
+* Removed various deprecated methods which used String or
+  String[] to lookup multi-part identifiers. Methods:
    * Formula.Formula(String[], exp)
    * Formula.Formula(String[], Exp, MemberProperty[])
    * QueryPart.addFormula(String[], Exp, MemberProperty[])
@@ -76,7 +124,7 @@ API changes in this release
      boolean, int)
    * Util.lookup(Query, String[])
 
-* Also scheduled for removal in mondrian-2.5:
+* Removed other deprecated methods:
    * Query.getQueryString()
    * QueryPart.toMdx()
    * RolapSchema.flushSchema(String, String, String, String)
@@ -85,73 +133,84 @@ API changes in this release
    * RolapSchema.flushRolapStarCaches(boolean)
    * RolapSchema.flushAllRolapStarCachedAggregations()
    * CachePool.flush()
+   * MondrianServer.flushSchemaCache()
+   * MondrianServer.flushDataCache()
+   * DriverManager.getConnection(String, CatalogLocator,
+     boolean)
+   * DriverManager.getConnection(Util.PropertyList, boolean)
+   * DriverManager.getConnection(Util.PropertyList,
+     CatalogLocator, boolean)
+   * DriverManager.getConnection(Util.PropertyList,
+     CatalogLocator, DataSource, boolean)
+   * RolapMember.getSqlKey()
+   * MondrianProperties.CachePoolCostLimit (property
+     "mondrian.rolap.CachePool.costLimit")
+   * MondrianProperties.FlushAfterQuery (property
+     "mondrian.rolap.RolapResult.flushAfterEachQuery")
 
-Bugs and feature requests fixed since mondrian-2.3
+
+Bugs and feature requests fixed since mondrian-2.4
 --------------------------------------------------
 
 Bugs:
- * Bug 1630754  max constraints sql exception    
- * Bug 1771928  Max() works incorrectly in with negative
-                values 
- * Bug 1773996  mondrian.rolap.CellKey.Zero does not equal
-                itself 
- * Bug 1466221  Aggregate - Performance improvement 
- * Bug 1689525  mondrian.olap.Query.canRemoveFormula() always
-                returns true 
- * Bug 1578545  ClassCastException in AggQuerySpec 
- * Bug 1719828  Dimension Property Member_Key not supported 
- * Bug 1755569  Incorrect return type resolution if UDF
-                returns a member 
- * Bug 1733107  NAME property should be Internal when created
-                in RolapLevel 
- * Bug 1767798  Hang waiting for segment to load 
- * Bug 1768410  UnsupportedOperationException 
- * Bug 1760319  Exception in loading segment data 
- * Bug 1751352  Parser should not require braces around range
-                op in WITH SET 
- * Bug 1735821  Null pointer exception in TupleFunDef and
-                TupleType 
- * Bug 1735839  Shared Tables with Two Separate Aliases Fail 
- * Bug 1721468  "unknown usage" messages 
- * Bug 1721514  "unknown usage" messages 
- * Bug 1651936  stack overflow for slicer on
-                NonEmptyCrossJoin named set 
- * Bug 1714525  Return <fmtValue> only if FORMATTED_VALUE
-                requested 
- * Bug 1711865  NullPointerException for certain mdx using
-                [Sales 2] 
- * Bug 1710913  Query with Filter(..., Count ...) corrupts
-                cache 
- * Bug 1708327  Parent child hierarchies without closures are
-                broken 
- * Bug 1706434  Implicit MDX Conversion from Numeric to
-                boolean 
- * Bug 1696772  MetricFilterTest.testMetricFiltersWithNoSubtotals
-                fails 
- * Bug 1694994  Members.properties("CAPTION") is not working 
- * Bug 1522440  Parent/Child-Hierarchy: wrong sql-queries /
-                wrong calculatio 
- * Bug 1675125  Closure tables do not work in a Snowflake
-                Dimension 
- * Bug 1603653  Avg - cast problem in Mondrian 2.1.1 
- * Bug 1688968  Query.java clone() method wrong type in req.
-                constructor 
- * Bug 1691231  xmlaTest.jsp compilation error 
- * Bug 1690406  XmlaBasicTest.testDrillThrough fails - Sql
-                Error 
- * Bug 1690245  Role "No HR Cube" can select against HR cube 
- * Bug 1614438  CalculatedMember.formatString attribute
-                ignored 
- * Bug 1238582  Overflowing of numeric literal in MDX 
- * Bug 1661288  NullPointerException in
-                CellRequest.getSingleValues 
- * Bug 1688645  High precision number in MDX causes overflow 
- * Bug 1688139  BasicQueryTest.testNonEmptyCrossJoin hangs 
- * Bug 1778358  NPE aggregating distinct-count measure in
-                virtual cube
- * Bug 1438285  nameColumn cannot be column in level definition
+ * Bug 1889745  StackOverflowError while resolving crossjoin
+ * Bug 1883611  exception when Iif has a tuple and a member
+                as its arguments
+ * Bug 1681255  RolapNativeFilter:can not restrict SQL to
+                calculated Members
+ * Bug 1728980  Query generated by Excel 2007 gives
+                incorrect results
+ * Bug 1732824  Cube getTimeDimension use when Cube has no
+                Time dimension
+ * Bug 1743819  document MondrianProperties.JdbcFactoryClass
+ * Bug 1791524  Virtual Cubes dont support Named sets in the
+                Schema
+ * Bug 1838148  Allow drill-through from trivial calc
+                members
+ * Bug 1852359  Error when we use hierarchy name on the
+                “HierarchyGrant” for
+ * Bug 1881739  ClassCastException while compiling an
+                Integer Expression
+ * Bug 1797159  Potential MDX Order Non Empty Problem
+ * Bug 1689592  max constraints sql exception
+ * Bug 1862024  com.tonbeller.jpivot.olap.model.OlapException:
+                mondrian.olap
+ * Bug 1735827  Shared Tables and native NonEmptyCrossJoin
+ * Bug 1833532  mondrian.rolap.star.disableCaching out of
+                memory errors
+ * Bug 1833526  Member Cache Not Clearing As Expected
+ * Bug 1833528  Dimensions with re-aliased table names in
+                virtual cubes fail
+ * Bug 1835125  Caption is not set on RolapVirtualCubeMesure
+ * Bug 1785406  "Query already contains alias" exception
+ * Bug 1746362  property column shifting when use
+                captionColumn
+ * Bug 1801945  DrillDownMemberTop / DrillDownMemberBottom
+                are not supported
+ * Bug 1816112  MSAS Compatibility issue, Empty Params in
+                Functions
+ * Bug 1812123  Incorrect XmlaResponse from XmlaHandler
+ * Bug 1796732  RolapMember keyToString not returning name
+                for Id.Segment
+ * Bug 1801218  XMLA execute + tabular format
+ * Bug 1784617  Using StrToTuple() in schema errors out
+ * Bug 1799050  XMLA Failure
+ * Bug 1799391  Case Test function throws class cast
+                exception
 
 Features:
- * RFE 1611239  Support SOLVE_ORDER in Schema file
+ * RFE xxxxxxx  desc
+ * RFE 1756302  Add more arithmetic functions (power, log,
+                sqrt)
+ * RFE 1239106  Add string functions (substring etc.)
+ * RFE 1863097  Log For Mdx
+ * RFE  692482  Graphical schema editor
+ * RFE  778424  getDrillThroughSQL() fix/mod
+ * RFE 1111052  Exploit sql rollup and cube group-by options
+ * RFE 1824609  Support for Aggregating Distinct Count
+                Measures over list of
+ * RFE 1604972  Retrieve list of named sets by xmla request
+ * RFE 1863108  Log For Mdx
+ * RFE 1407747  Formatters for calculated members
 
 ------------------------------------------------------------

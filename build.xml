@@ -4,7 +4,7 @@
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
   == Copyright (C) 2001-2003 Kana Software, Inc.
-  == Copyright (C) 2001-2007 Julian Hyde and others.
+  == Copyright (C) 2001-2008 Julian Hyde and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="2.4.2.9831"/>
+  <property name="version" value="3.0.0.10550"/>
   <property name="vendor" value="Pentaho"/>
 
   <!--
@@ -25,26 +25,26 @@
     Set the properties related to paths
     ===================================================================
   -->
-  <property name="src.dir" value="${project.location}/src"/>
-  <property name="testsrc.dir" value="${project.location}/testsrc"/>
+  <property name="src.dir" value="src"/>
+  <property name="testsrc.dir" value="testsrc"/>
   <property name="java.dir" value="${src.dir}/main"/>
   <property name="javatest.dir" value="${testsrc.dir}/main"/>
   <property name="etc.dir" value="${src.dir}/etc"/>
-  <property name="lib.dir" value="${project.location}/lib"/>
-  <property name="testlib.dir" value="${project.location}/testlib"/>
-  <property name="doc.dir" value="${project.location}/doc"/>
-  <property name="resource.location" location="${project.location}/resource"/>
+  <property name="lib.dir" value="lib"/>
+  <property name="testlib.dir" value="testlib"/>
+  <property name="doc.dir" value="doc"/>
+  <property name="resource.location" location="resource"/>
   <property name="javadoc.dir" value="${doc.dir}/api"/>
-  <property name="classes.dir" value="${project.location}/classes"/>
-  <property name="testclasses.dir" value="${project.location}/testclasses"/>
-  <property name="testclasses-jdk14.dir" value="${project.location}/testclasses-jdk14"/>
-  <property name="build.dir" value="${project.location}/build"/>
+  <property name="classes.dir" value="classes"/>
+  <property name="testclasses.dir" value="testclasses"/>
+  <property name="testclasses-jdk14.dir" value="testclasses-jdk14"/>
+  <property name="build.dir" value="build"/>
   <property name="dist.name" value="${name}-${version}"/>
   <property name="embedded.dist.name" value="${name}-${version}-embedded"/>
   <property name="dist.base" value="distribution"/>
-  <property name="dist.dir" value="${project.location}/dist"/>
-  <property name="demo.dir" value="${project.location}/demo"/>
-  <property name="webapp.dir" value="${project.location}/webapp"/>
+  <property name="dist.dir" value="dist"/>
+  <property name="demo.dir" value="demo"/>
+  <property name="webapp.dir" value="webapp"/>
   <property name="dist.src.file" value="${dist.dir}/${dist.name}-src.zip"/>
   <property name="dist.bin.file" value="${dist.dir}/${dist.name}.zip"/>
   <property name="dist.bin.derby.file" value="${dist.dir}/${dist.name}-derby.zip"/>
@@ -77,6 +77,7 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
 ${lib.dir}/mondrian.jar,
 ${lib.dir}/workbench.jar,
 ${jar-jdk14.file},
+${lib.dir}/olap4j-jdk14.jar,
 ${lib.dir}/mondrian.war,
 ${lib.dir}/mondrian.xml,
 ${lib.dir}/mondrian-embedded.war,
@@ -128,6 +129,7 @@ demo/access/MondrianFoodMart.mdb"/>
 
   <path id="project.test.classpath-jdk14">
     <pathelement location="${jar-jdk14.file}"/>
+    <pathelement location="${lib.dir}/olap4j-jdk14.jar"/>
     <path refid="project.classpath"/>
     <pathelement location="${testclasses-jdk14.dir}"/>
     <fileset dir="${testlib.dir}">
@@ -241,6 +243,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <fileset dir="${testclasses.dir}" includes="**/*.class,**/*.properties"/>
       <fileset dir="." includes="${generated.java.files},${generated.lib.files},VERSION.txt"/>
       <fileset dir="demo/derby/foodmart"/>
+      <fileset dir="${javadoc.dir}" />
       <fileset dir="${build.dir}" />
       <fileset dir="${testclasses-jdk14.dir}" />
       <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
@@ -364,6 +367,16 @@ compile.java"/>
     </resgen>
 
   </target>
+
+  <condition property="jdk16.present">
+    <equals arg1="${ant.java.version}" arg2="1.6"/>
+  </condition>
+
+  <condition property="jdk16.not.present">
+    <not>
+      <equals arg1="${ant.java.version}" arg2="1.6"/>
+    </not>
+  </condition>
 
   <target name="compile.java">
     <javac
@@ -762,10 +775,10 @@ ${webapp.dir}/WEB-INF/*.xml,
 ${webapp.dir}/**/*.jsp,
 ${webapp.dir}/WEB-INF/*.xsl,
 ${webapp.dir}/WEB-INF/*.tld,
-doc/**/*.css,
-doc/**/*.gif,
-doc/**/*.jpeg,
-doc/**/*.html,
+${doc.dir}/**/*.css,
+${doc.dir}/**/*.gif,
+${doc.dir}/**/*.jpeg,
+${doc.dir}/**/*.html,
 misc/**/*.mf,
 misc/Meta.xsl,
 build.xml,
@@ -784,6 +797,13 @@ ${javadoc.dir}/**,
 **/junit-results/**,
 ${generated.java.files},
 doc/deployDoc.sh" />
+      <zipfileset
+          dir="."
+          prefix="${dist.name}"
+          filemode="755"
+          includes="
+buildJdk16.bat,
+buildJdk16.sh" />
     </zip>
   </target>
 
@@ -885,6 +905,7 @@ ${doc.dir}/api/**/*.xml,
 ${war.file},
 ${jar.file},
 ${jar-jdk14.file},
+${lib.dir}/olap4j-jdk14.jar,
 ${lib.dir}/retroweaver-rt-1.2.4.jar,
 lib/*.dtd,
 demo/FoodMart.xml,
@@ -922,6 +943,7 @@ ${doc.dir}/api/**/*.xml,
 ${war.embeddedDb.file},
 ${jar.file},
 ${jar-jdk14.file},
+${lib.dir}/olap4j-jdk14.jar,
 ${lib.dir}/retroweaver-rt-1.2.4.jar,
 lib/*.dtd,
 demo/FoodMart.xml,
@@ -966,43 +988,53 @@ doc/**/*.xml"
     </tar>
   </target>
 
-    <target name="jar" depends="version,compile,compile.tests">
-      <mkdir dir="${lib.dir}" />
-      <jar
-          destfile="${jar.file}"
-          update="true">
-        <zipfileset
-            dir="${classes.dir}"
-            includes="
-  **/*.class,
-  **/*.properties,
-  **/*.xml,
-  META-INF/**"
-  			excludes="mondrian/gui/**/*.*"/>
-        <zipfileset
-            dir="${testclasses.dir}"
-            includes="
-  mondrian/test/loader/**/*.class"/>
-        <zipfileset
-            dir="${javatest.dir}"
-            includes="
-  mondrian/test/loader/insert.sql"/>
-        <zipfileset
-            dir="."
-            includes="
-  LICENSE.html,
-  README.txt,
-  VERSION.txt"/>
-        <manifest>
-          <attribute name="Built-By" value="${user.name}"/>
-          <section name="mondrian.olap">
-            <attribute name="Implementation-Title" value="${name}"/>
-            <attribute name="Implementation-Version" value="${version}"/>
-            <attribute name="Implementation-Vendor" value="${vendor}"/>
-          </section>
-        </manifest>
-      </jar>
-    </target>
+  <target name="checkIsNotJdk16" if="jdk16.present">
+    <fail message="The 'jar' target (and dependent targets 'release', 'binzip')
+must be run under JDK 1.5." />
+  </target>
+
+  <target name="compileJdk16">
+    <exec osfamily="unix" executable="buildJdk16.sh"/>
+    <exec osfamily="windows" executable="buildJdk16.bat"/>
+  </target>
+
+  <target name="jar" depends="version,checkIsNotJdk16,compile,compile.tests,compileJdk16">
+    <mkdir dir="${lib.dir}" />
+    <jar
+        destfile="${jar.file}"
+        update="true">
+      <zipfileset
+          dir="${classes.dir}"
+          includes="
+**/*.class,
+**/*.properties,
+**/*.xml,
+META-INF/**"
+          excludes="mondrian/gui/**/*.*"/>
+      <zipfileset
+          dir="${testclasses.dir}"
+          includes="
+mondrian/test/loader/**/*.class"/>
+      <zipfileset
+          dir="${javatest.dir}"
+          includes="
+mondrian/test/loader/insert.sql"/>
+      <zipfileset
+          dir="."
+          includes="
+LICENSE.html,
+README.txt,
+VERSION.txt"/>
+      <manifest>
+        <attribute name="Built-By" value="${user.name}"/>
+        <section name="mondrian.olap">
+          <attribute name="Implementation-Title" value="${name}"/>
+          <attribute name="Implementation-Version" value="${version}"/>
+          <attribute name="Implementation-Vendor" value="${vendor}"/>
+        </section>
+      </manifest>
+    </jar>
+  </target>
 
   <target name="xml_schema"
       description="Generates xml_schema.html from Mondrian.xml">
@@ -1023,9 +1055,9 @@ clean against JDK 1.6.">
     </antcall>
   </target>
 
-  <target name="javadoc" description="Generates javadoc for public site">
+  <target name="javadoc" description="Generates javadoc for release">
     <antcall target="javadoc-internal">
-      <param name="additionalparam" value="-linksource"/>
+      <param name="additionalparam" value=""/>
       <param name="access" value="package"/>
     </antcall>
   </target>
@@ -1073,7 +1105,9 @@ clean against JDK 1.6.">
        yWorks.com. Set ydoc.home in build.properties, then replace
        ${ydoc.home}/resources/ydoc.license with a full license (free for open
        source use). -->
-  <target name="javadoc-with-ydoc">
+  <target name="javadoc-with-ydoc"
+      description="Generates javadoc for public site; verbose: includes
+diagrams and hyperlinks to source code">
     <mkdir dir="${javadoc.dir}" />
     <delete quiet="true" file="${javadoc.dir}/index.html"/>
     <!-- remove stray package.html files under classes to avoid 'multiple
@@ -1213,7 +1247,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <webinf dir="${build.dir}/mondrian/WEB-INF" excludes="web.xml"/>
       <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
       <fileset dir="${webapp.dir}" includes="*.*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,eigenbase-*.jar,xalan.jar,*.dtd"/>
+      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,eigenbase-*.jar,xalan.jar,*.dtd"/>
       <lib dir="${testlib.dir}" includes="xmlunit*.jar"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
@@ -1412,12 +1446,14 @@ ${doc.dir}/api/src-html/**/*"/>
     <delete quiet="true">
       <fileset dir="." includes="${jar-jdk14.file}" />
       <fileset dir="${testclasses-jdk14.dir}" />
+      <fileset dir="." includes="${lib.dir}/olap4j-jdk14.jar" />
     </delete>
 
     <mkdir dir="${testclasses-jdk14.dir}"/>
 
     <retroweaver inputjar="${jar.file}" outputjar="${jar-jdk14.file}" />
     <retroweaver srcdir="${testclasses.dir}" destdir="${testclasses-jdk14.dir}" />
+    <retroweaver inputjar="${lib.dir}/olap4j.jar" outputjar="${lib.dir}/olap4j-jdk14.jar" />
   </target>
 
 </project>
