@@ -1682,19 +1682,6 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     }
 
     /**
-     * @deprecated Use {@link mondrian.olap.CacheControl#flush(mondrian.olap.CacheControl.CellRegion)}.
-     * This method will be removed in mondrian-2.5.
-     */
-    public void flushRolapStarCaches(boolean forced) {
-        for (RolapStar star : getStars()) {
-            // this will only flush the star's aggregate cache if
-            // 1) DisableCaching is true or 2) the star's cube has
-            // cacheAggregations set to false in the schema.
-            star.clearCachedAggregations(forced);
-        }
-    }
-
-    /**
      * Checks whether there are modifications in the aggregations cache.
      */
     public void checkAggregateModifications() {
@@ -1710,19 +1697,6 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     public void pushAggregateModificationsToGlobalCache() {
         for (RolapStar star : getStars()) {
             star.pushAggregateModificationsToGlobalCache();
-        }
-    }
-
-    /**
-     * @deprecated Use {@link mondrian.olap.CacheControl#flush(mondrian.olap.CacheControl.CellRegion)}.
-     * This method will be removed in mondrian-2.5.
-     */
-    public static void flushAllRolapStarCachedAggregations() {
-        for (Iterator<RolapSchema> itSchemas = RolapSchema.getRolapSchemas();
-                itSchemas.hasNext(); ) {
-
-            RolapSchema schema = itSchemas.next();
-            schema.flushRolapStarCaches(true);
         }
     }
 

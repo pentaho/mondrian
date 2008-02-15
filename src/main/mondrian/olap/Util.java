@@ -362,36 +362,6 @@ public class Util extends XOMUtil {
         return buf;
     }
 
-
-    /**
-     * @deprecated Use {@link #parseIdentifier(String)}.
-     * This method will be removed in mondrian-2.5.
-     */
-    public static String[] explode(String s) {
-        if (!s.startsWith("[")) {
-            return new String[]{s};
-        }
-
-        List<String> list = new ArrayList<String>();
-        int i = 0;
-
-        while (i < s.length()) {
-            if (s.charAt(i) != '[') {
-                throw MondrianResource.instance().MdxInvalidMember.ex(s);
-            }
-
-            int j = getEndIndex(s, i + 1);
-            if (j == -1) {
-                throw MondrianResource.instance().MdxInvalidMember.ex(s);
-            }
-
-            list.add(replace(s.substring(i + 1, j), "]]", "]"));
-            i = j + 2;
-        }
-        return list.toArray(new String[list.size()]);
-
-    }
-
     public static List<Id.Segment> parseIdentifier(String s)  {
         if (!s.startsWith("[")) {
             return Collections.singletonList(
@@ -506,20 +476,6 @@ public class Util extends XOMUtil {
             MatchType.EXACT);
     }
 
-
-    /**
-     * @deprecated Use {@link #lookupCompound(SchemaReader, OlapElement, java.util.List, boolean, int)}.
-     * This method will be removed in mondrian-2.5
-     */
-    public static OlapElement lookupCompound(
-        SchemaReader schemaReader, OlapElement parent, String[] names,
-        boolean failIfNotFound, int category)
-    {
-        return lookupCompound(
-            schemaReader, parent, Id.Segment.toList(names), failIfNotFound,
-            category, MatchType.EXACT);
-    }
-
     /**
      * Resolves a name such as
      * '[Products]&#46;[Product Department]&#46;[Produce]' by resolving the
@@ -533,9 +489,11 @@ public class Util extends XOMUtil {
      *   to return null or throw an error
      * @param category Type of returned element, a {@link Category} value;
      *   {@link Category#Unknown} if it doesn't matter.
+     *
      * @pre parent != null
      * @post !(failIfNotFound && return == null)
-     * @see #explode
+     *
+     * @see #parseIdentifier(String)
      */
     public static OlapElement lookupCompound(
         SchemaReader schemaReader,
@@ -685,14 +643,6 @@ public class Util extends XOMUtil {
         default:
             throw newInternal("Bad switch " + category);
         }
-    }
-
-    /**
-     * @deprecated Use {@link #lookup(Query,java.util.List)}.
-     * This method will be removed in mondrian-2.5.
-     */
-    public static OlapElement lookup(Query q, String[] nameParts) {
-        return lookup(q, Id.Segment.toList(nameParts));
     }
 
     public static OlapElement lookup(Query q, List<Id.Segment> nameParts) {

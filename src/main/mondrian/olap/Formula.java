@@ -36,9 +36,10 @@ public class Formula extends QueryPart {
     private Exp exp;
     // properties/solve order of member
     private final MemberProperty[] memberProperties;
+
     /**
-     * <code>true</code> is this is a member, <code>false</code> if it is a
-     * set.
+     * <code>true</code> is this is a member,
+     * <code>false</code> if it is a set.
      */
     private final boolean isMember;
 
@@ -47,30 +48,10 @@ public class Formula extends QueryPart {
 
     /**
      * Constructs formula specifying a set.
-     *
-     * @deprecated Use {@link #Formula(Id, Exp)}.
-     * This method will be removed in mondrian-2.5.
-     */
-    public Formula(String[] names, Exp exp) {
-        this(new Id(Id.Segment.toList(names)), exp);
-    }
-
-    /**
-     * Constructs formula specifying a set.
      */
     public Formula(Id id, Exp exp) {
         this(false, id, exp, new MemberProperty[0], null, null);
         createElement(null);
-    }
-
-    /**
-     * Constructs a formula specifying a member.
-     *
-     * @deprecated Use {@link #Formula(Id, Exp, MemberProperty[])}.
-     * This method will be removed in mondrian-2.5.
-     */
-    public Formula(String[] names, Exp exp, MemberProperty[] memberProperties) {
-        this(new Id(Id.Segment.toList(names)), exp, memberProperties);
     }
 
     /**

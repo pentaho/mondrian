@@ -378,20 +378,6 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final IntegerProperty ResultLimit = new IntegerProperty(
             this, "mondrian.result.limit", 0);
 
-    /**
-     * @deprecated obsolete
-     */
-    public transient final IntegerProperty CachePoolCostLimit =
-            new IntegerProperty(
-                    this, "mondrian.rolap.CachePool.costLimit", 10000);
-
-    /**
-     * @deprecated obsolete
-     */
-    public transient final BooleanProperty FlushAfterQuery =
-            new BooleanProperty(
-                    this, "mondrian.rolap.RolapResult.flushAfterEachQuery");
-
     // mondrian.test properties
 
     /**

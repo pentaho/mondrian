@@ -64,7 +64,17 @@ public class RolapStar {
                     disableCaching = property.booleanValue();
                     // must flush all caches
                     if (disableCaching) {
-                        RolapSchema.flushAllRolapStarCachedAggregations();
+                        // REVIEW: could replace following code with call to
+                        // CacheControl.flush(CellRegion)
+                        for (Iterator<RolapSchema> itSchemas =
+                            RolapSchema.getRolapSchemas();
+                             itSchemas.hasNext(); )
+                        {
+                            RolapSchema schema1 = itSchemas.next();
+                            for (RolapStar star : schema1.getStars()) {
+                                star.clearCachedAggregations(true);
+                            }
+                        }
                     }
                 }
             }

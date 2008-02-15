@@ -10,8 +10,6 @@
 package mondrian.olap;
 
 import java.util.List;
-import java.util.Collections;
-import java.util.Arrays;
 
 /**
  * Interface by which to control an instance of Mondrian.
@@ -37,30 +35,6 @@ public abstract class MondrianServer {
         Util.discard(connection);
         return instance;
     }
-
-    /**
-     * Flushes the cache which maps schema URLs to metadata.
-     *
-     * <p>This cache is referenced only when creating a new connection, so
-     * existing connections will continue to use the same schema definition.
-     *
-     * @deprecated Use {@link CacheControl#flushSchemaCache()}.
-     */
-    public abstract void flushSchemaCache();
-
-    /**
-     * Flushes the cache which contains cached aggregate values.
-     *
-     * <p>Typically, you would do this when records in the fact table have been
-     * modified.
-     *
-     * <p>Note that flushing the data cache may have serious performance
-     * implications for all connections to this Mondrian server. Aggregate data
-     * for all cubes in all schemas will be flushed.
-     *
-     * @deprecated Use {@link CacheControl#flush(CacheControl.CellRegion)}.
-     */
-    public abstract void flushDataCache();
 
     /**
      * Returns the version of this MondrianServer.

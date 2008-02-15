@@ -1166,8 +1166,14 @@ public class RolapCube extends CubeBase {
             // TODO:
             // Currently a virtual cube does not keep a list of all of its
             // base cubes, so we need to iterate through each and flush
-            // the ones that should be flushed
-            schema.flushRolapStarCaches(forced);
+            // the ones that should be flushed. Could use a CacheControl
+            // method here.
+            for (RolapStar star1 : schema.getStars()) {
+                // this will only flush the star's aggregate cache if
+                // 1) DisableCaching is true or 2) the star's cube has
+                // cacheAggregations set to false in the schema.
+                star1.clearCachedAggregations(forced);
+            }
         } else {
             star.clearCachedAggregations(forced);
         }

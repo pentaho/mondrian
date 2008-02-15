@@ -74,7 +74,9 @@ public class ParallelTest extends FoodMartTestCase {
 
                     // 20% of the time, flush the schema cache.
                     if (random.nextInt(flushInverseFrequency) == 0) {
-                        MondrianServer.forConnection(connection).flushSchemaCache();
+                        final CacheControl cacheControl =
+                            connection.getCacheControl(null);
+                        cacheControl.flushSchemaCache();
                     }
                 }
             };

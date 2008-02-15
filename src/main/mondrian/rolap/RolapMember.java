@@ -727,15 +727,6 @@ public class RolapMember extends MemberBase {
         return getLevel().getDepth();
     }
 
-    /**
-     * @deprecated Use {@link #getKey()}
-     *
-     * This method will be removed in mondrian 3.1.
-     */
-    public Object getSqlKey() {
-        return getKey();
-    }
-
     public String getPropertyFormattedValue(String propertyName) {
         // do we have a formatter ? if yes, use it
         Property[] props = getLevel().getProperties();

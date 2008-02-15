@@ -335,17 +335,6 @@ public abstract class RolapSchemaReader
             parent, names, failIfNotFound, category, MatchType.EXACT);
     }
 
-    public final OlapElement lookupCompound(
-        OlapElement parent,
-        String[] names,
-        boolean failIfNotFound,
-        int category)
-    {
-        return lookupCompound(
-            parent, Id.Segment.toList(names), failIfNotFound, category,
-            MatchType.EXACT);
-    }
-
     public OlapElement lookupCompound(
         OlapElement parent,
         List<Id.Segment> names,

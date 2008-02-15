@@ -259,20 +259,6 @@ public class Query extends QueryPart {
      * Adds a new formula specifying a member
      * to an existing query.
      *
-     * @deprecated Use {@link #addFormula(Id, Exp, MemberProperty[])}.
-     * This method will be removed in mondrian-2.5.
-     */
-    public void addFormula(
-            String[] names,
-            Exp exp,
-            MemberProperty[] memberProperties) {
-        addFormula(new Id(Id.Segment.toList(names)), exp, memberProperties);
-    }
-
-    /**
-     * Adds a new formula specifying a member
-     * to an existing query.
-     *
      * @param id Name of member
      * @param exp Expression for member
      * @param memberProperties Properties of member
@@ -316,20 +302,6 @@ public class Query extends QueryPart {
 
     public Connection getConnection() {
         return connection;
-    }
-
-    /**
-     * Returns the MDX query string. If the query was created by parsing an
-     * MDX string, the string returned by this method may not be identical, but
-     * it will have the same meaning. If the query's parse tree has been
-     * manipulated (for instance, the rows and columns axes have been
-     * interchanged) the returned string represents the current parse tree.
-     *
-     * @deprecated Use {@link Util#unparse(Query)}.
-     * This method will be removed in mondrian-2.5.
-     */
-    public String getQueryString() {
-        return toMdx();
     }
 
     /**
@@ -652,13 +624,6 @@ public class Query extends QueryPart {
             slicerAxis.unparse(pw);
             pw.println();
         }
-    }
-
-    public String toMdx() {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new QueryPrintWriter(sw);
-        unparse(pw);
-        return sw.toString();
     }
 
     /** Returns the MDX query string. */

@@ -9,8 +9,6 @@
 */
 package mondrian.olap;
 
-import mondrian.rolap.agg.AggregationManager;
-
 import java.net.URL;
 import java.io.*;
 import java.util.regex.Pattern;
@@ -88,16 +86,6 @@ class MondrianServerImpl extends MondrianServer {
         "Value", "Var", "Variance", "VarP", "VarianceP", "VisualTotals",
         "When", "Where", "With", "WTD", "Xor",
     };
-
-    public void flushSchemaCache() {
-        final CacheControl cacheControl =
-            AggregationManager.instance().getCacheControl(null);
-        cacheControl.flushSchemaCache();
-    }
-
-    public void flushDataCache() {
-        // not implemented
-    }
 
     public MondrianVersion getVersion() {
         return getVersionStatic();

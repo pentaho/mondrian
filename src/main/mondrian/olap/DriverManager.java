@@ -56,63 +56,6 @@ public class DriverManager {
     }
 
     /**
-     * Creates a connection to a Mondrian OLAP Engine
-     * using a connect string,
-     * a catalog locator,
-     * and the deprecated <code>fresh</code> parameter.
-     *
-     * @deprecated The <code>fresh</code> parameter is no longer used;
-     * use the {@link #getConnection(String, mondrian.spi.CatalogLocator)}
-     * method, and if you want a connection with a non-shared schema, specify
-     * "{@link mondrian.rolap.RolapConnectionProperties#UseSchemaPool UseSchemaPool}=false"
-     * among your connection properties.
-     */
-    public static Connection getConnection(
-        String connectString,
-        CatalogLocator locator,
-        boolean fresh)
-    {
-        Util.discard(fresh); // no longer used
-        return getConnection(connectString, locator);
-    }
-
-    /**
-     * Creates a connection to a Mondrian OLAP Engine
-     * using a list of connection properties
-     * and the deprecated <code>fresh</code> parameter.
-     *
-     * @deprecated Use {@link #getConnection(mondrian.olap.Util.PropertyList, mondrian.spi.CatalogLocator)}
-     */
-    public static Connection getConnection(
-        Util.PropertyList properties,
-        boolean fresh)
-    {
-        Util.discard(fresh); // no longer used
-        return getConnection(properties, CatalogLocatorImpl.INSTANCE);
-    }
-
-    /**
-     * Creates a connection to a Mondrian OLAP Engine
-     * using a list of connection properties,
-     * a catalog locator,
-     * and the deprecated <code>fresh</code> parameter.
-     *
-     * @deprecated The <code>fresh</code> parameter is no longer used;
-     * use the {@link #getConnection(mondrian.olap.Util.PropertyList, mondrian.spi.CatalogLocator)}
-     * method, and if you want a connection with a non-shared schema, specify
-     * "{@link mondrian.rolap.RolapConnectionProperties#UseSchemaPool UseSchemaPool}=false"
-     * among your connection properties.
-     */
-    public static Connection getConnection(
-        Util.PropertyList properties,
-        CatalogLocator locator,
-        boolean fresh)
-    {
-        Util.discard(fresh); // no longer used
-        return getConnection(properties, locator);
-    }
-
-    /**
      * Creates a connection to a Mondrian OLAP Engine.
      *
      * @param properties Collection of properties which define the location
@@ -129,29 +72,6 @@ public class DriverManager {
         CatalogLocator locator)
     {
         return getConnection(properties, locator, null);
-    }
-
-    /**
-     * Creates a connection to a Mondrian OLAP Engine
-     * using a list of connection properties,
-     * a catalog locator,
-     * a JDBC data source,
-     * and the deprecated <code>fresh</code> parameter.
-     *
-     * @deprecated The <code>fresh</code> parameter is no longer used;
-     * use the {@link #getConnection(mondrian.olap.Util.PropertyList, mondrian.spi.CatalogLocator, javax.sql.DataSource)}
-     * method, and if you want a connection with a non-shared schema, specify
-     * "{@link mondrian.rolap.RolapConnectionProperties#UseSchemaPool UseSchemaPool}=false"
-     * among your connection properties.
-     */
-    public static Connection getConnection(
-        Util.PropertyList properties,
-        CatalogLocator locator,
-        DataSource dataSource,
-        boolean fresh)
-    {
-        Util.discard(fresh); // no longer used
-        return getConnection(properties, locator, dataSource);
     }
 
     /**

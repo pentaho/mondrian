@@ -177,7 +177,8 @@ public interface SchemaReader {
         boolean failIfNotFound);
 
     /**
-     * Looks up an MDX object by name.
+     * Looks up an MDX object by name, specifying how to
+     * match if no object exactly matches the name.
      *
      * <p>Resolves a name such as
      * '[Products]&#46;[Product Department]&#46;[Produce]' by resolving the
@@ -203,15 +204,23 @@ public interface SchemaReader {
         MatchType matchType);
 
     /**
-     * @deprecated Use {@link #lookupCompound(OlapElement, java.util.List, boolean, int)}.
-     * This method will be removed in mondrian-2.5.
+     * Looks up an MDX object by name.
+     *
+     * <p>Resolves a name such as
+     * '[Products]&#46;[Product Department]&#46;[Produce]' by resolving the
+     * components ('Products', and so forth) one at a time.
+     *
+     * @param parent Parent element to search in
+     * @param names Exploded compound name, such as {"Products",
+     *     "Product Department", "Produce"}
+     * @param failIfNotFound If the element is not found, determines whether
+     *      to return null or throw an error
+     * @param category Type of returned element, a {@link Category} value;
+     *      {@link Category#Unknown} if it doesn't matter.
+     *
+     * @pre parent != null
+     * @post !(failIfNotFound && return == null)
      */
-    OlapElement lookupCompound(
-        OlapElement parent,
-        String[] names,
-        boolean failIfNotFound,
-        int category);
-
     OlapElement lookupCompound(
         OlapElement parent,
         List<Id.Segment> names,
