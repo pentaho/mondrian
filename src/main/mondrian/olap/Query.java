@@ -798,17 +798,33 @@ public class Query extends QueryPart {
     }
 
     /**
-     * Looks up a member whose unique name is <code>memberUniqueName</code> from
-     * cache. If the member is not in cache, returns null.
+     * Looks up a member whose unique name is <code>memberUniqueName</code> 
+     * from cache. If the member is not in cache, returns null.
      */
     public Member lookupMemberFromCache(String memberUniqueName) {
         // first look in defined members
         for (Member member : getDefinedMembers()) {
-            if (Util.equalName(member.getUniqueName(), memberUniqueName)) {
+            if (Util.equalName(member.getUniqueName(), memberUniqueName) ||
+                Util.equalName(
+                        getUniqueNameWithoutAll(member), 
+                        memberUniqueName)
+            ) {
                 return member;
             }
         }
         return null;
+    }
+    
+    private String getUniqueNameWithoutAll(Member member) {
+        // build unique string
+        Member parentMember = member.getParentMember(); 
+        if ((parentMember != null) && !parentMember.isAll()) {
+            return Util.makeFqName(
+                            getUniqueNameWithoutAll(parentMember), 
+                            member.getName());
+        } else {
+            return Util.makeFqName(member.getHierarchy(), member.getName());
+        }
     }
 
     /**

@@ -1132,7 +1132,80 @@ public class TestCalculatedMembers extends BatchTestCase {
             "Row #3: 11,255\n";
         
         assertQueryReturns(mdx, fold(result));
-    }    
+    }
+
+
+    /**
+     * test case for bug #1801069, Issues with calculated members
+     * verify that the calculated member [Product].[Food].[Test]
+     * definition does not throw errors and returns expected
+     * results.
+     */
+    public void testNonTopLevelCalculatedMember() {
+        assertQueryReturns(
+            "with member [Product].[Test] as '[Product].[Food]' " +
+            "select {[Measures].[Unit Sales]} on columns, " +
+            "{[Product].[Test]} on rows " +
+            "from Sales",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[Test]}\n" +
+                "Row #0: 191,940\n")
+        );
+        
+        assertQueryReturns(
+            "with member [Product].[Food].[Test] as '[Product].[Food]' " +
+            "select {[Measures].[Unit Sales]} on columns, " +
+            "{[Product].[Food].[Test]} on rows " +
+            "from Sales",
+            fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Product].[All Products].[Food].[Test]}\n" +
+                    "Row #0: 191,940\n")
+        );
+    }
+    
+    /**
+     * test case for bug #1801069, Issues with calculated members
+     * verify that the calculated member [Product].[Test]
+     * returns an empty children list vs. invalid behavior
+     * of returning [All Products].Children
+     */
+    public void testCalculatedMemberChildren() {
+        assertQueryReturns(
+            "with member [Product].[Test] as '[Product].[Food]' " +
+            "select {[Measures].[Unit Sales]} on columns, " +
+            "[Product].[Test].children on rows " +
+            "from Sales",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n")
+        );
+        assertQueryReturns(
+                "with member [Product].[Food].[Test] as '[Product].[Food]' " +
+                "select {[Measures].[Unit Sales]} on columns, " +
+                "[Product].[Food].[Test].children on rows " +
+                "from Sales",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n")
+            );
+
+    }
 }
 
 // End TestCalculatedMembers.java

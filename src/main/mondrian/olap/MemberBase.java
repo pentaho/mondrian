@@ -83,7 +83,7 @@ public abstract class MemberBase
             ? null
             : parentMember.getUniqueName();
         this.flags = memberType.ordinal()
-            | (level.isAll() ? FLAG_ALL : 0)
+            | (memberType == MemberType.ALL ? FLAG_ALL : 0)
             | (memberType == MemberType.NULL ? FLAG_NULL : 0)
             | (computeCalculated() ? FLAG_CALCULATED : 0)
             | (level.getHierarchy().getDimension().isMeasures() ? FLAG_MEASURE : 0);
