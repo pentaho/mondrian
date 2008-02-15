@@ -194,7 +194,7 @@ demo/access/MondrianFoodMart.mdb"/>
 
   <!-- URL of the catalog definition. -->
   <property name="mondrian.foodmart.catalogURL"
-      value="file:${demo.dir}/FoodMart.xml"/>
+      value="file:${project.location}/${demo.dir}/FoodMart.xml"/>
 
   <!-- Test class name. -->
   <property name="mondrian.test.Class" value=""/>
