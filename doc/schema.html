@@ -69,7 +69,7 @@
 			<li><a href="#Named_sets">Named sets</a></li>
 		</ol>
 	</li>
-  	<li><a href="#Plugins">Plugins</a>
+  	<li><a href="#Plugins">Plug-ins</a>
 		<ol>
 			<li><a href="#User-defined_function">User-defined function</a></li>
 			<li><a href="#Member_reader">Member reader</a></li>
@@ -87,6 +87,7 @@
   	<li><a href="#Access_control">Access-control</a>
 		<ol>
 			<li><a href="#Defining_roles">Defining a role</a></li>
+			<li><a href="#Rollup_policy">Rollup policy</a></li>
 			<li><a href="#Union_roles">Union roles</a></li>
 			<li><a href="#Setting_a_connections_role">Setting a connection's role</a></li>
 		</ol>
@@ -2382,7 +2383,6 @@ the fact table.</p>
 
 <blockquote>
   <code>&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;<br>
-
 &nbsp; &lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggName">AggName</a>
 name="agg_c_special_sales_fact_1997"&gt;<br>
@@ -2598,10 +2598,159 @@ Stores
 (because it is above the top level, <code>Store Country</code>).</p>
 
 <!--
+###########################
+##  9.2 Rollup policy #####
+########################### -->
+<h1>9.2 Rollup policy<a name="Rollup_policy">&nbsp;</a></h1>
+
+<p>A <dfn>rollup policy</dfn> determines how mondrian computes a member's total 
+if the current role cannot see all of that member's children. Under the default 
+rollup policy, called 'full', the total for that member includes contributions 
+from the children that are not visible. For example, suppose that Fred belongs to a role 
+that can see <code>[USA].[CA]</code> and <code>[USA].[OR]</code> but not <code>[USA].[WA]</code>. 
+If Fred runs the query</p>
+
+<blockquote><code>SELECT {[Measures].[Unit Sales]} ON COLUMNS,<br>
+&nbsp;&nbsp;&nbsp; {[[Store].[USA], Store].[USA].Children} ON ROWS<br>
+	FROM [Sales]</code></blockquote>
+
+<p>the query returns</p>
+
+<blockquote>
+  	<table class="grayTable" id="table8"  >
+      	<tr>
+			<td align="left"><code>[Customer]</code></td>
+			<td><code>[Measures].[Unit Sales]</code></td>
+		</tr>
+		<tr>
+			<td align="left"><code>[USA]</code></td>
+			<td align="right">266,773</td>
+      	</tr>
+      	<tr>
+        	<td align="left"><code>[USA].[CA]</code></td>
+        	<td align="right">74,748</td>
+      	</tr>
+      	<tr>
+        	<td align="left"><code>[USA].[OR]</code></td>
+        	<td align="right">67,659</td>
+      	</tr>
+    </table>
+</blockquote>
+
+<p>Note that <code>[USA].[WA]</code> is not returned, per the access-control
+policy, but the total includes the total from Washington (124,366) that
+Fred cannot see. For some applications, this is not appropriate.
+In particular, if the dimension has a small number of members,
+the end-user may be able to deduce the values of the members
+which they do not have access to.</p>
+
+<p>To remedy this, a role can apply a different rollup policy to a hierarchy.
+The policy describes how a total is calculated for a particular member if
+the current role can only see some of that 
+member's children:</p>
+
+<ul>
+<li><b>Full</b>. The total for that member includes all children. This is the 
+default policy if you don't specify the <code>rollupPolicy</code> attribute.</li>
+<li><b>Partial</b>. The total for that member includes only accessible children.</li>
+<li><b>Hidden</b>. If any of the children are inaccessible, the total is hidden.</li>
+</ul>
+
+<p>Under the 'partial' policy, the <code>[USA]</code> total is the sum of the 
+accessible children <code>[CA]</code> 
+and <code>[OR]</code>:</p>
+
+<blockquote>
+  	<table class="grayTable" id="table9"  >
+      	<tr>
+			<td align="left"><code>[Customer]</code></td>
+			<td><code>[Measures].[Unit Sales]</code></td>
+		</tr>
+		<tr>
+			<td align="left"><code>[USA]</code></td>
+			<td align="right">142,407</td>
+      	</tr>
+      	<tr>
+        	<td align="left"><code>[USA].[CA]</code></td>
+        	<td align="right">74,748</td>
+      	</tr>
+      	<tr>
+        	<td align="left"><code>[USA].[OR]</code></td>
+        	<td align="right">67,659</td>
+      	</tr>
+      	</table>
+</blockquote>
+
+<p>Under 'hidden' policy, the [USA] total is hidden because one of its children 
+is not accessible:</p>
+
+<blockquote>
+  	<table class="grayTable" id="table10">
+      	<tr>
+			<td align="left"><code>[Customer]</code></td>
+			<td><code>[Measures].[Unit Sales]</code></td>
+		</tr>
+		<tr>
+			<td align="left"><code>[USA]</code></td>
+			<td align="right">-</td>
+      	</tr>
+      	<tr>
+        	<td align="left"><code>[USA].[CA]</code></td>
+        	<td align="right">74,748</td>
+      	</tr>
+      	<tr>
+        	<td align="left"><code>[USA].[OR]</code></td>
+        	<td align="right">67,659</td>
+      	</tr>
+      	</table>
+</blockquote>
+
+<p>The policy is specified per role and hierarchy. In the following example, the role sees partial totals for the 
+<code>[Store]</code> hierarchy but full totals for <code>[Product]</code>.</p>
+
+<blockquote>
+<p><code>&lt;<a href="#XML_Role">Role</a> name=&quot;South Pacific manager&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;
+&lt;<a href="#XML_SchemaGrant">SchemaGrant</a> access=&quot;none&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;<a href="#XML_CubeGrant">CubeGrant</a> cube=&quot;Sales&quot; access=&quot;all&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Store]&quot; access=&quot;custom&quot; 
+<i><b>rollupPolicy=&quot;partial&quot; </b></i>topLevel=&quot;[Store].[Store Country]&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Store].[USA].[CA]&quot; access=&quot;all&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Store].[USA].[CA].[Los Angeles]&quot; access=&quot;none&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Customers]&quot; access=&quot;custom&quot; 
+<i><b>rollupPolicy=&quot;full&quot;</b></i>
+topLevel=&quot;[Customers].[State Province]&quot; bottomLevel=&quot;[Customers].[City]&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;MemberGrant member=&quot;[Customers].[USA].[CA]&quot; access=&quot;all&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;MemberGrant member=&quot;[Customers].[USA].[CA].[Los Angeles]&quot; access=&quot;none&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Gender]&quot; access=&quot;none&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/<a href="#XML_CubeGrant">CubeGrant</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;
+&lt;/<a href="#XML_SchemaGrant">SchemaGrant</a>&gt;<br>
+&lt;/<a href="#XML_Role">Role</a>&gt;</code></p>
+</blockquote>
+
+<p>This example also shows existing features, such as how hierarchy grants can be restricted using 
+<code>topLevel</code> and/or <code>bottomLevel</code> attributes, and how a role 
+can be prevented from seeing a hierarchy using access=&quot;none&quot;.</p>
+
+<!--
 #########################
-##  9.2 Union roles #####
+##  9.3 Union roles #####
 ######################### -->
-<h1>9.2. Union roles<a name="Union_roles">&nbsp;</a></h1>
+<h1>9.3 Union roles<a name="Union_roles">&nbsp;</a></h1>
 <p>A union role combines several roles, and has the sum of their privileges.</p>
 <p>A union role can see a particular schema object if one or more of its
 constituent roles can see it. Similarly, the rollup policy of a union role with
@@ -2629,7 +2778,7 @@ manager&quot; can see <code>[USA].[CA].[Fresno]</code>, and only &quot;Eastern s
 manager&quot; see the <code>[Sales Target]</code> measure, then &quot;Coastal manager&quot;
 will be able to see the sales target for Fresno, which neither of the
 constituent roles have access to.</p>
-<h1>9.3 Setting a connection's role<a name="Setting_a_connections_role">&nbsp;</a></h1>
+<h1>9.4 Setting a connection's role<a name="Setting_a_connections_role">&nbsp;</a></h1>
 
 <p>A role only has effect when it is associated with a connection. By
 default,
@@ -2866,11 +3015,11 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_Row" href="xml_schema.html#Row">Row</a>&gt;</code></td>
-      	<td>Row in an &lt;InlineTable&gt; dataset.</td>
+      	<td>Row in an <code>&lt;InlineTable&gt;</code> dataset.</td>
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_Value" href="xml_schema.html#Value">Value</a>&gt;</code></td>
-      	<td>Value of a column in an &lt;InlineTable&gt; dataset.</td>
+      	<td>Value of a column in an <code>&lt;InlineTable&gt;</code> dataset.</td>
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_MeasureExpression" href="xml_schema.html#MeasureExpression">MeasureExpression</a>&gt;</code></td>
@@ -2884,11 +3033,11 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
 <br />
 <br />
 
-<p>Author: Julian Hyde; last modified December 2007.<br/>
+<p>Author: Julian Hyde; last modified Februrary 2008.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">log</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc..<br/>
-    Copyright (C) 2002-2007 Julian Hyde and others
+    Copyright (C) 2002-2008 Julian Hyde and others
 </p>
 
 <br />
