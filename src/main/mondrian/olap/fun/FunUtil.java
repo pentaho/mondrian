@@ -2140,8 +2140,13 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
                     return c;
                 }
                 // compareHierarchically imposes a total order
-                //Util.assertTrue(m1 == m2);
-                Util.assertTrue(m1.equals(m2));
+                if (!FunUtil.equals(m1, m2)) {
+                    // throw an assert exception
+                    throw Util.newInternal(
+                        "assertion failed in HierarchizeArrayComparator: Members " 
+                        + m1 + ", " + m2 + " are not equal."
+                      );
+                }
             }
             return 0;
         }

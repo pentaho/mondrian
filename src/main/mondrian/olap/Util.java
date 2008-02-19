@@ -252,6 +252,26 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Compares two names.  if case sensitive flag is false,
+     * apply finer grain difference with case sensitive
+     * Takes into account the {@link MondrianProperties#CaseSensitive case
+     * sensitive option}.
+     * Names must not be null.
+     */
+    public static int caseSensitiveCompareName(String s, String t) {
+        boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
+        if (caseSensitive) {
+            return s.compareTo(t);
+        } else {
+            int v = s.compareToIgnoreCase(t);
+            // if ignore case returns 0 compare in a case sensitive manner
+            // this was introduced to solve an issue with Member.equals()
+            // and Member.compareTo() not agreeing with each other
+            return v == 0 ? s.compareTo(t) : v;
+        }
+    }
+    
+    /**
      * Compares two names.
      * Takes into account the {@link MondrianProperties#CaseSensitive case
      * sensitive option}.

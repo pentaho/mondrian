@@ -682,7 +682,10 @@ public class RolapMember extends MemberBase {
         // anyway - keys should be of the same class
         if (this.key.getClass().equals(other.key.getClass())) {
             if (this.key instanceof String) {
-                return Util.compareName((String) this.key, (String) other.key);
+                // use a special case sensitive compare name which
+                // first compares w/o case, and if 0 compares with case
+                return Util.caseSensitiveCompareName(
+                        (String) this.key, (String) other.key);
             } else {
                 return Util.compareKey(this.key, other.key);
             }
