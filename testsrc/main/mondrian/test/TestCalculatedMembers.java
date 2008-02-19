@@ -1206,6 +1206,47 @@ public class TestCalculatedMembers extends BatchTestCase {
             );
 
     }
+
+    public void testCalculatedMemberMSASCompatibility() {
+        assertQueryReturns(
+                "with " + 
+                "member gender.calculated as 'gender.m' " + 
+                "member  gender.[All Gender].calculated as 'gender.m' " +
+                "member measures.countChildren as 'gender.calculated.children.Count' " +
+                "member measures.parentIsAll as 'gender.calculated.Parent IS gender.[All Gender]' " +
+                "member measures.levelOrdinal as 'gender.calculated.Level.Ordinal' " +
+                "member measures.definedOnAllLevelOrdinal as 'gender.[all gender].calculated.Level.Ordinal' " +
+                "member measures.definedOnAllLevelParentIsAll as 'gender.[all gender].calculated.Parent IS gender.[All Gender]' " +
+                "member measures.definedOnAllLevelChildren as 'gender.[all gender].calculated.Children.Count' " +
+                "member measures.definedOnAllLevelSiblings as 'gender.[all gender].calculated.Siblings.Count' " +
+                "select { " +
+                "  measures.[countChildren], " + //   -- returns 0
+                "  measures.parentIsAll, " + //   -- returns 0
+                "  measures.levelOrdinal, " + //  -- returns 0
+                "  measures.definedOnAllLevelOrdinal, " + //  -- returns 1
+                "  measures.definedOnAllLevelParentIsAll, " + //   -- returns 1
+                "  measures.definedOnAllLevelChildren, " + //   -- returns 0
+                "  measures.definedOnAllLevelSiblings " + //   -- returns 2
+                "} on 0 from sales",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[countChildren]}\n" +
+                    "{[Measures].[parentIsAll]}\n" +
+                    "{[Measures].[levelOrdinal]}\n" +
+                    "{[Measures].[definedOnAllLevelOrdinal]}\n" +
+                    "{[Measures].[definedOnAllLevelParentIsAll]}\n" +
+                    "{[Measures].[definedOnAllLevelChildren]}\n" +
+                    "{[Measures].[definedOnAllLevelSiblings]}\n" +
+                    "Row #0: 0\n" +
+                    "Row #0: false\n" +
+                    "Row #0: 0\n" +
+                    "Row #0: 1\n" +
+                    "Row #0: true\n" +
+                    "Row #0: 0\n" +
+                    "Row #0: 2\n"));
+    }
 }
 
 // End TestCalculatedMembers.java
