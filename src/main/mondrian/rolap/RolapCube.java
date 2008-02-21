@@ -2171,6 +2171,43 @@ public class RolapCube extends CubeBase {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Useful for finding out non joining dimensions for a stored measure from
+     * a base cube
+     * @param tuple array of members
+     * @return Set of dimensions that do not exist (non joining) in this cube
+     */
+    public Set<Dimension> nonJoiningDimensions(Member[] tuple) {
+        Set<Dimension> otherDims = new HashSet<Dimension>();
+        for (Member member : tuple) {
+            if (!member.isCalculated()) {
+                otherDims.add(member.getDimension());
+            }
+        }
+        return nonJoiningDimensions(otherDims);
+    }
+
+    /**
+     * Equality test for dimensions is done based on the unique name. Object
+     * equality can't be used
+     * @param otherDims Set of dimensions to be tested for existance in this cube
+     * @return Set of dimensions that do not exist (non joining) in this cube
+     */
+    public Set<Dimension> nonJoiningDimensions(Set<Dimension> otherDims) {
+        Dimension[] baseCubeDimensions = getDimensions();
+        Set<String>  baseCubeDimNames = new HashSet<String>();
+        for (Dimension baseCubeDimension : baseCubeDimensions) {
+            baseCubeDimNames.add(baseCubeDimension.getUniqueName());
+        }
+        Set<Dimension> nonJoiningDimensions = new HashSet<Dimension>();
+        for (Dimension otherDim : otherDims) {
+            if (!baseCubeDimNames.contains(otherDim.getUniqueName())) {
+                nonJoiningDimensions.add(otherDim);
+            }
+        }
+        return nonJoiningDimensions;
+    }
+
     Member[] getMeasures() {
         Level measuresLevel = dimensions[0].getHierarchies()[0].getLevels()[0];
         return getSchemaReader().getLevelMembers(measuresLevel, true);

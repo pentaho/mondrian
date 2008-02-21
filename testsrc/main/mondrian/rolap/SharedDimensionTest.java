@@ -313,14 +313,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
     public void testA() {
         // Schema has two cubes sharing a dimension.
         // Query from the first cube.
-        TestContext testContext =
-            TestContext.create(
-                sharedDimension,
-                cubeA + "\n" + cubeB,
-                null,
-                null,
-                null,
-                null);
+        TestContext testContext = getTestContextForSharedDimCubeACubeB();
 
         testContext.assertQueryReturns(queryCubeA, fold(resultCubeA));
     }
@@ -328,14 +321,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
     public void testB() {
         // Schema has two cubes sharing a dimension.
         // Query from the second cube.
-        TestContext testContext =
-            TestContext.create(
-                sharedDimension,
-                cubeA + "\n" + cubeB,
-                null,
-                null,
-                null,
-                null);
+        TestContext testContext = getTestContextForSharedDimCubeACubeB();
 
         testContext.assertQueryReturns(queryCubeB, fold(resultCubeB));
     }
@@ -360,14 +346,7 @@ public class SharedDimensionTest  extends FoodMartTestCase {
     public void testNECJMemberList() {
         // Schema has two cubes sharing a dimension.
         // Query from the second cube.
-        TestContext testContext =
-            TestContext.create(
-                sharedDimension,
-                cubeA + "\n" + cubeB,
-                null,
-                null,
-                null,
-                null);
+        TestContext testContext = getTestContextForSharedDimCubeACubeB();
 
         testContext.assertQueryReturns(queryNECJMemberList,
             fold(resultNECJMemberList));
@@ -378,47 +357,32 @@ public class SharedDimensionTest  extends FoodMartTestCase {
         // Query from the first cube.
         // This is a case where not using alias not only affects performance,
         // but also produces incorrect result.
-        TestContext testContext =
-            TestContext.create(
-                sharedDimension,
-                cubeA + "\n" + cubeB,
-                null,
-                null,
-                null,
-                null);
+        TestContext testContext = getTestContextForSharedDimCubeACubeB();
 
         testContext.assertQueryReturns(queryNECJMultiLevelMemberList,
             fold(resultNECJMultiLevelMemberList));
     }
 
-
     public void testSF1711865() {
         // Test for sourceforge.net bug 1711865
         // Use the default FoodMart schema
-        TestContext testContext =
-            TestContext.create(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
-
-        testContext.assertQueryReturns(querySF1711865, fold(resultSF1711865));
+        getTestContext().assertQueryReturns(querySF1711865, fold(resultSF1711865));
     }
+
 
     public void testStoreCube() {
         // Use the default FoodMart schema
-        TestContext testContext =
-            TestContext.create(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        getTestContext().assertQueryReturns(queryStoreCube, fold(resultStoreCube));
+    }
 
-        testContext.assertQueryReturns(queryStoreCube, fold(resultStoreCube));
+    private TestContext getTestContextForSharedDimCubeACubeB() {
+        return TestContext.create(
+            sharedDimension,
+            cubeA + "\n" + cubeB,
+            null,
+            null,
+            null,
+            null);
     }
 
 }

@@ -74,7 +74,7 @@ public class RolapCubeDimension extends RolapDimension {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof RolapCubeHierarchy)) {
+        if (!(o instanceof RolapCubeDimension)) {
             return false;
         }
 

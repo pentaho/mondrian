@@ -19,8 +19,7 @@ import mondrian.olap.type.TypeUtil;
 import mondrian.olap.*;
 import mondrian.rolap.RolapCube;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Definition of the <code>ValidMeasure</code> MDX function.
@@ -162,22 +161,15 @@ public class ValidMeasureFunDef extends FunDefBase
             Member[] memberArray)
         {
             List<Dimension> vMinusBDimensions = new ArrayList<Dimension>();
-            boolean foundDim;
-            for (int i = 0; i < virtualCube.getDimensions().length; i++) {
-                foundDim = false;
-                for (int j = 0; j < baseCube.getDimensions().length; j++) {
-                    // if we find a match
-                    if (virtualCube.getDimensions()[i].getName().equals(
-                            baseCube.getDimensions()[j].getName())) {
-                        foundDim = true;
-                        break;
-                    }
-                }
-                // we didn't find the dim in the base cube so we need to
-                // add the all member to the tuple
-                if (!foundDim && !isDimInMembersArray(
-                        memberArray, virtualCube.getDimensions()[i])) {
-                    vMinusBDimensions.add(virtualCube.getDimensions()[i]);
+            Set<Dimension> virtualCubeDims = new HashSet<Dimension>();
+            virtualCubeDims.addAll(Arrays.asList(virtualCube.getDimensions()));
+
+            Set<Dimension> nonJoiningDims =
+                baseCube.nonJoiningDimensions(virtualCubeDims);
+
+            for (Dimension nonJoiningDim : nonJoiningDims) {
+                if (!isDimInMembersArray(memberArray, nonJoiningDim)) {
+                    vMinusBDimensions.add(nonJoiningDim);
                 }
             }
             return vMinusBDimensions;

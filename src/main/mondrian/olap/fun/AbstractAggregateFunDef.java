@@ -138,7 +138,8 @@ public class AbstractAggregateFunDef extends FunDefBase {
 
         if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName())) {
             return ignoreUnrelatedDimensions(tuplesForAggregation, baseCube);
-        } else if (shouldIgnoreMeasureForNonJoiningDimension()) {
+        } else if (MondrianProperties.instance()
+            .IgnoreMeasureForNonJoiningDimension.get()) {
             return ignoreMeasureForNonJoiningDimension(
                     tuplesForAggregation, baseCube);
         }
@@ -158,7 +159,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
         List tuplesForAggregation,
         RolapCube baseCube)
     {
-        Set nonJoiningDimensions =
+        Set<Dimension> nonJoiningDimensions =
             nonJoiningDimensions(baseCube, tuplesForAggregation);
         if (nonJoiningDimensions.size() > 0) {
             return new ArrayList();
@@ -179,14 +180,14 @@ public class AbstractAggregateFunDef extends FunDefBase {
         List tuplesForAggregation,
         RolapCube baseCube)
     {
-        Set nonJoiningDimensions =
+        Set<Dimension> nonJoiningDimensions =
             nonJoiningDimensions(baseCube, tuplesForAggregation);
         Set processedTuples = new LinkedHashSet(tuplesForAggregation.size());
         for (int i = 0; i < tuplesForAggregation.size(); i++) {
             Member[] tuples = copy(tupleAsArray(tuplesForAggregation.get(i)));
             for (int j = 0; j < tuples.length; j++) {
                 if (nonJoiningDimensions.contains(
-                    tuples[j].getDimension().getUniqueName())) {
+                    tuples[j].getDimension())) {
                     final Hierarchy hierarchy =
                         tuples[j].getDimension().getHierarchy();
                     if(hierarchy.hasAll()){
@@ -206,29 +207,12 @@ public class AbstractAggregateFunDef extends FunDefBase {
         return tuplesAsList(processedTuples);
     }
 
-    private static Set nonJoiningDimensions(
+    private static Set<Dimension> nonJoiningDimensions(
         RolapCube baseCube,
         List tuplesForAggregation)
     {
-        Set nonJoiningDimensions = new HashSet();
-        Dimension[] baseCubeDimensions = baseCube.getDimensions();
         Member[] tuple = tupleAsArray(tuplesForAggregation.get(0));
-        for (Member member : tuple) {
-            nonJoiningDimensions.add(member.getHierarchy().getDimension()
-                .getUniqueName());
-        }
-        for (Dimension dimension : baseCubeDimensions) {
-            nonJoiningDimensions.remove(dimension.getUniqueName());
-            if (nonJoiningDimensions.size() == 0) {
-                break;
-            }
-        }
-        return nonJoiningDimensions;
-    }
-
-    private static boolean shouldIgnoreMeasureForNonJoiningDimension() {
-        return MondrianProperties.instance()
-            .IgnoreMeasureForNonJoiningDimension.get();
+        return baseCube.nonJoiningDimensions(tuple);
     }
 
     private static List tuplesAsList(Set tuples) {
