@@ -47,8 +47,7 @@ div.Section1
   </ol>
   </li>
   <li><a href="#Upcoming_releases">Upcoming releases</a><ol>
-        <li><a href="#olap4j_0.9">olap4j release 0.9</a></li>
-		<li><a href="#Release_3.0">Mondrian release 3.0</a></li>
+        <li><a href="#olap4j_1.0">olap4j release 1.0</a></li>
 		<li><a href="#Release_3.1">Mondrian release 3.1</a></li>
         <li><a href="#Aggregation_designer">Aggregation designer release x.x</a></li>
         <li><a href="#Schema_workbench">Schema workbench release x.x</a></li>
@@ -57,9 +56,6 @@ div.Section1
   <li><a href="#3_Feature_list">Feature list</a>
 	<ol>
 		<li><a href="#Feature_Partitioned_cubes">Partitioned cubes</a></li>
-		<li><a href="#Feature_Improve_dimension_sharing">Improve dimension sharing</a></li>
-		<li><a href="#Feature_Virtual_cube_enhancements">Virtual cube enhancements</a></li>
-		<li><a href="#Feature_Scalar_functions">Scalar functions</a></li>
 		<li><a href="#Feature_Cold_start">Cold start</a></li>
 		<li><a href="#Feature_Rollup_in_cache">Rollup in cache</a></li>
 		<li><a href="#Feature_Compound_slicer">Compound slicer</a></li>
@@ -67,12 +63,11 @@ div.Section1
 		<li><a href="#Feature_Name-resolution">Name-resolution</a></li>
 		<li><a href="#Feature_Standard_functions">Standard functions</a></li>
 		<li><a href="#Feature_Bridge_to_CWM">Bridge to CWM</a></li>
-		<li><a href="#Feature_Mondrian_XMLA_server">Mondrian XML/A server</a></li>
 		<li><a href="#Feature_User_defined_aggregate_functions">User-defined aggregate functions</a></li>
 		<li><a href="#Feature_Further_work_on_aggregate_tables">Further work on aggregate tables</a></li>
-		<li><a href="#Feature_olap4j_API">olap4j API</a></li>
 	</ol>
 	<li><a href="#3_Release_history">Release history</a><ol>
+		<li><a href="#Mondrian_3.0">Release 3.0</a></li>
 		<li><a href="#Mondrian_2.4">Release 2.4</a></li>
 		<li><a href="#Release_2.3">Release 2.3</a></li>
 		<li><a href="#Release_2.2">Release 2.2</a></li>
@@ -187,75 +182,18 @@ contact Julian Hyde.</p>
 
 2. Upcoming releases<a name="Upcoming_releases">&nbsp;</a></h3>
 
-<h4>2.1 olap4j release 0.9<a name="olap4j_0.9">&nbsp;</a></h4>
-<p>Targeted release timeframe: Q4 2007.</p>
+<h4>2.1 olap4j release 1.0<a name="olap4j_1.0">&nbsp;</a></h4>
+<p>Targeted release timeframe: Q3 2008.</p>
 <p>olap4j is a proposed standard API for access to any OLAP data source from 
 Java. See <a href="http://www.olap4j.org">www.olap4j.org</a>.</p>
-<p>Pentaho supports olap4j because open standards are good for the open source 
-community. Mondrian's architect Julian Hyde is leading the olap4j initiative, 
-and the reference implementation of olap4j will be an olap4j provider for 
-mondrian.</p>
+<p>As of mondrian-3.0 olap4j is the primary API to mondrian; mondrian's driver 
+is based on olap4j-0.9.4 (beta). olap4j release 1.0 will be the first production 
+release of the olap4j specification. It will include a full Test Compatibility 
+Kit (TCK) and incorporate bug fixes &amp; feedback from the drivers and applications 
+built using olap4j beta.</p>
 
-<h4>2.2 Mondrian Release 3.0<a name="Release_3.0">&nbsp;</a></h4>
-<p>Targeted release timeframe: Q4 2007</p>
-<table border="1" id="table2" style="border-collapse: collapse">
-    <tr>
-        <th>Feature</th>
-        <th>Effort</th>
-        <th>Importance</th>
-    </tr>
-    <tr>
-        <td><a href="#Feature_Improve_dimension_sharing">3.2 Improved dimension 
-        sharing</a>: Provide the ability to use the same dimension more than 
-        once within the same cube</td>
-        <td>high</td>
-        <td>high</td>
-    </tr>
-    <tr>
-        <td><a href="#Feature_Virtual_cube_enhancements">
-        3.3 Virtual cube enhancements</a>. When a cube uses the same dimension twice is involved in a virtual cube, disambiguate which usage of the dimension is involved. Allow the virtual cube to use the same cube more than once.</td>
-        <td>medium</td>
-        <td>high</td>
-    </tr>
-    <tr>
-        <td><a href="#Feature_olap4j_API">3.18 olap4j API</a>. Open Java API for OLAP - <a href="http://www.olap4j.org">
-        http://www.olap4j.org</a> . Produce release 0.9 of the olap4j 
-		specification, then a month or two afterwards, a mondrian provider for 
-		olap4j as part of mondrian release 3.0.</td>
-        <td>high</td>
-        <td>high</td>
-    </tr>
-    <tr>
-        <td><a href="#Feature_Scalar_functions">3.4 Scalar functions</a>. Mondrian's set of functions for operating on numeric and string expressions is limited. This feature would add string manipulation functions (substring, trim, regular expressions) and arithmetic expressions (power, log, sqrt) and conversion functions (string to numeric, numeric to string).</td>
-        <td>medium</td>
-        <td>high</td>
-    </tr>
-    <tr>
-        <td>Aggregate roles. Ability to execute a query in two or more roles 
-		simultaneously, and receive the sum of the roles' privileges. This will 
-		enable closer integration with Pentaho access-control.</td>
-        <td>medium</td>
-        <td>medium</td>
-    </tr>
-    <tr>
-        <td>Cell-level access-control. If access to a hierarchy is restricted, 
-		currently the value of a member is equal to the sum of its children; 
-		with cell-level access-control, there would be an option to see the sum 
-		of only the accessible children.</td>
-        <td>medium</td>
-        <td>medium</td>
-    </tr>
-    <tr>
-        <td>JNDI in connect string. Allow JDBC data sources to be specified by 
-		their JNDI name.</td>
-        <td>low</td>
-        <td>medium</td>
-    </tr>
-</table>
-
-<h4>&nbsp;</h4>
 	<h4>2.2 Mondrian Release 3.1<a name="Release_3.1">&nbsp;</a></h4>
-<p>Targeted release timeframe: Q1 2008</p>
+<p>Targeted release timeframe: Q3 2008</p>
 <table border="2" id="table1" style="border-collapse: collapse">
     <tr>
         <th>Feature</th>
@@ -273,11 +211,25 @@ mondrian.</p>
         <td>high</td>
         <td>high</td>
     </tr>
+    <tr>
+        <td><a href="#Feature_Further_work_on_aggregate_tables">3.10 Further 
+		work on Aggregate Tables</a>. To support the aggregation designer, 
+		mondrian release 3.1 will probably include utilities (2) <i>DDL 
+		generation</i> and (3) <i>Utility (maybe graphical, maybe text-based) to 
+		recommend a set of aggregate tables</i>.</td>
+        <td>high</td>
+        <td>high</td>
+    </tr>
+    <tr>
+        <td>TBD</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    </tr>
 </table>
 
 &nbsp;<h4>2.3 Aggregation Designer Release x.x<a name="Aggregation_designer">&nbsp;</a></h4>
 
-<p>Targeted release timeframe – not specified</p>
+<p>Targeted release timeframe: Q2 2008</p>
 <p>Effort: high, Importance: high, Priority: high</p>
 <p>Release Highlights:</p>
 <ul>
@@ -381,39 +333,7 @@ performance.</p>
 #######################################
 ##  3.4 Improve dimension sharing #####
 ####################################### -->
-<h1>3.2 Improve dimension sharing<a name="Feature_Improve_dimension_sharing">&nbsp;</a></h1>
-
-<p><i>Effort: high; importance: high; priority: medium.</i></p>
-
-<p>Use the same dimension twice in the same cube.</p>
-<!--
-#######################################
-##  3.5 Virtual cube enhancements #####
-####################################### -->
-<h1>3.3 Virtual cube enhancements<a name="Feature_Virtual_cube_enhancements">&nbsp;</a></h1>
-
-<p><i>Effort: medium; importance: medium; priority: medium.</i></p>
-
-<p>When a cube uses the same dimension twice is involved in a virtual cube, 
-disambiguate which usage of the dimension is involved. Allow the virtual cube to 
-use the same cube more than once.</p>
-<!--
-#################################################
-##  3.6 Calculated members in virtual cubes #####
-################################################# -->
-<h1>3.4 Scalar functions<a name="Feature_Scalar_functions">&nbsp;</a></h1>
-
-<p><i>Effort: medium; importance: high; priority: medium.</i></p>
-
-<p>Mondrian's set of functions for operating on numeric and string expressions
-is limited. This feature would add string manipulation functions (substring,
-trim, lcase, regular expressions) and arithmetic expressions (power, log, sqrt) and
-conversion functions (string to numeric, numeric to string).</p>
-<!--
-########################
-##  3.9 Cold start #####
-######################## -->
-<h1>3.5 Cold start<a name="Feature_Cold_start">&nbsp;</a></h1>
+<h1>3.2 Cold start<a name="Feature_Cold_start">&nbsp;</a></h1>
 
 <p><i>Effort: medium; importance: medium; priority: low.</i></p>
 
@@ -451,7 +371,7 @@ Start a discussion forum or feature request on SourceForge.</p>
 ########################
 ##  3.10 Rollups   #####
 ######################## -->
-<h1>3.6 Rollup in cache<a name="Feature_Rollup_in_cache">&nbsp;</a></h1>
+<h1>3.3 Rollup in cache<a name="Feature_Rollup_in_cache">&nbsp;</a></h1>
 
 <p><i>Effort: medium; importance: medium; priority: low.</i></p>
 
@@ -465,14 +385,14 @@ email thread &quot;grouper in Mondrian&quot;</a>.</p>
 ##############################
 ##  3.11 Compound slicer #####
 ############################## -->
-<h1>3.7 Compound slicer<a name="Feature_Compound_slicer">&nbsp;</a></h1>
+<h1>3.4 Compound slicer<a name="Feature_Compound_slicer">&nbsp;</a></h1>
 
 <p><i>Effort: medium; importance: low; priority: low.</i></p>
 <!--
 ###########################################
 ##  3.12 Enhancements to schema cache #####
 ########################################### -->
-<h1>3.8 Schema and query validation<a name="Feature_Schema_and_query_validation">&nbsp;</a></h1>
+<h1>3.5 Schema and query validation<a name="Feature_Schema_and_query_validation">&nbsp;</a></h1>
 
 <p>Process to validate a schema.</p>
 
@@ -484,24 +404,26 @@ specific members not existing because the data hasn't been loaded yet.</p>
 ############################
 ##  3.15 Documentation #####
 ############################ -->
-<h1>3.9 Name-resolution<a name="Feature_Name-resolution">&nbsp;</a></h1>
+<h1>3.6 Name-resolution<a name="Feature_Name-resolution">&nbsp;</a></h1>
 
 <p>Mondrian's name resolution is not always compatible with other MDX
 implementations such as MSAS and SAS.</p>
 <ol>
 	<li>Support abbreviated member names. For example, e.g. <code>[Products].[Boston Lager]</code> seems to be valid in MSAS if product names are unique, whereas Mondrian
 	currently requires <code>[Products].[Beverages].[Beer].[Samual Adams].[Boston Lager]</code>.</li>
+	<li>Change scheme for generating unique names, omitting the 'all' member 
+	name; current <code>[Customers].[(All customers)].[USA]</code> would become
+	<code>[Customers].[USA]</code>. Mondrian would still understand names of the 
+	previous form.</li>
 </ol>
 
 <!--
 #####################################
 ##  3.17 XML/A interoperability #####
 ##################################### -->
-<h1>3.10 Standard functions<a name="Feature_Standard_functions">&nbsp;</a></h1>
+<h1>3.7 Standard functions<a name="Feature_Standard_functions">&nbsp;</a></h1>
 
 <p>Implement standard MDX functions:<ul>
-<li>DrilldownLevelBottom(&lt;Set&gt;, &lt;Count&gt;[, [&lt;Level&gt;][, &lt;Numeric Expression&gt;]])</li>
-<li>DrilldownLevelTop(&lt;Set&gt;, &lt;Count&gt;[, [&lt;Level&gt;][, &lt;Numeric Expression&gt;]])</li>
 <li>DrilldownMemberBottom(&lt;Set1&gt;, &lt;Set2&gt;, &lt;Count&gt;[, [&lt;Numeric Expression&gt;][,
 RECURSIVE]])</li>
 <li>DrilldownMemberTop(&lt;Set1&gt;, &lt;Set2&gt;, &lt;Count&gt;[, [&lt;Numeric Expression&gt;][,
@@ -519,7 +441,7 @@ keyword.)</li>
 ############################
 ##  3.19 Bridge to CWM #####
 ############################ -->
-<h1>3.11 Bridge to CWM<a name="Feature_Bridge_to_CWM">&nbsp;</a></h1>
+<h1>3.8 Bridge to CWM<a name="Feature_Bridge_to_CWM">&nbsp;</a></h1>
 
 <p>CWM (Common Warehouse Model) is a standard model for defining data warehouse
 and multidimensional schemas. It allows interoperability with tools such as UML
@@ -538,17 +460,7 @@ diagrams, relational report design tools, and ETL tools.</p>
 ####################################
 ##  3.21 Mondrian XML/A server #####
 #################################### -->
-<h1>3.12 Mondrian XML/A server<a name="Feature_Mondrian_XMLA_server">&nbsp;</a></h1>
-
-<p>The standard installation will include a script to start and stop a Mondrian
-instance running XML/A. This will invoke a lightweight servlet engine running
-Mondrian's XML/A adapter. (You will still be able to include Mondrian's XML/A
-servlet in your web server of choice.)</p>
-<!--
-###############################################
-##  3.22 User-defined aggregate functions #####
-############################################### -->
-<h1>3.13 User-defined aggregate functions<a name="Feature_User_defined_aggregate_functions">&nbsp;</a></h1>
+<h1>3.9 User-defined aggregate functions<a name="Feature_User_defined_aggregate_functions">&nbsp;</a></h1>
 
 <p>The standard aggregate functions are sum, count, distinct-count, min, max and
 avg. This feature will provide an SPI by which application developers can write
@@ -587,7 +499,7 @@ tables.</p>
 #################################################
 ##  3.23 Time function and scalar functions #####
 ################################################# -->
-<h1>3.14 Further work on aggregate tables<a name="Feature_Further_work_on_aggregate_tables">&nbsp;</a></h1>
+<h1>3.10 Further work on aggregate tables<a name="Feature_Further_work_on_aggregate_tables">&nbsp;</a></h1>
 
 <h5>1. Data population</h5>
 <p>Utility to populate (or generate INSERT statements to populate) the  agg
@@ -617,16 +529,73 @@ running</h5>
 <p>I'm thinking of these being utilities, not part of the core runtime engine.
 There's plenty of room to wrap these utilities in nice graphical interfaces,
 make them smarter.</p>
-<h1>3.15 olap4j API<a name="Feature_olap4j_API">&nbsp;</a></h1>
-<p>Add support for the olap4j API.&nbsp; See <a href="http://www.olap4j.org">
-www.olap4j.org</a>. 
-</p>
 <h3>4. Release history<a name="3_Release_history">&nbsp;</a></h3>
-<!--
-#########################
-##  2.1 Release 2.1 #####
-######################### -->
-<h1>4.1 Release 2.4 (2007/08/31)<a name="Mondrian_2.4">&nbsp;</a></h1>
+<h1>4.1 Release 3.0 (2008/3)<a name="Mondrian_3.0">&nbsp;</a></h1>
+<ul>
+	<li><b>Improved dimension sharing</b>. Allow a shared dimension to be used 
+	more than once within the same cube.</li>
+	<li><b>Virtual cube enhancements</b>. When a cube that uses the same 
+	dimension twice is involved in a virtual cube, disambiguate which usage of 
+	the dimension is involved. Allow the virtual cube to use the same cube more 
+	than once.</li>
+	<li><b>olap4j API</b>. olap4j (<a href="http://www.olap4j.org">http://www.olap4j.org</a>) 
+	is the Open Java API for OLAP. From mondrian-3.0 onwards, olap4j is the main 
+	API for connecting to mondrian, browsing metadata and executing queries.<br>
+	<br>
+	Mondrian's previous API (classes in the <code>mondrian.olap</code> package) 
+	still exists but is deprecated; from mondrian-3.1 onwards, classes and 
+	methods in this API may not exist, may not work, or may change.</li>
+	<li><b>Scalar functions</b>. Many scalar functions have been added in 
+	mondrian-3.0, to the the specification of the Visual Basic for Applications 
+	(VBA) and Excel libraries that are available by default in Microsoft SQL 
+	Server Analysis<br>
+	Services (SSAS) and that many MDX users assume are part of the core MDX 
+	language.<br>
+	<br>
+	New functions: Abs, Acosh, Asc, AscB, AscW, Asin, Asinh, Atan2, Atanh, Atn, 
+	Cache, CBool, CByte, CDate, CDbl, Chr, ChrB, ChrW, CInt, Cos, Cosh, Date, 
+	DateAdd, DateDiff, DatePart, DateSerial, DateValue, Day, DDB, Degrees, 
+	DrilldownLevel, DrilldownLevelBottom, DrilldownLevelTop, Exp, Fix, 
+	FormatCurrency, FormatDateTime, FormatNumber, FormatPercent, FV, Hex, Hour, 
+	InStrRev, Int, IPmt, IRR, IsDate, LCase, Log, Log10, LTrim, Minute, MIRR, 
+	Month, MonthName, Now, NPer, NPV, Oct, Percentile, Pi, Pmt, Power, PPmt, PV, 
+	Radians, Rate, Replace, Right, Round, RTrim, Second, Sgn, Sin, Sinh, SLN, 
+	Space, Sqr, SqrtPi, Str, StrComp, String, StrReverse, SYD, Tan, Tanh, Time, 
+	Timer, TimeSerial, TimeValue, Trim, TypeName, Val, Weekday, WeekdayName, 
+	Year.<br><br>We have added additional forms to existing functions: <code>Descendants(&lt;Member&gt;, , LEAVES)</code>; 
+	<code>Format</code> can now be 
+	applied to DateTime values; <code>Iif</code> can be applied to member, 
+	level, hierarchy, dimension and tuple and set values; <code>Levels</code> 
+	can be applied to a string expression.</li>
+	<li><b>Aggregate roles</b>. You can now define a role in the schema that has 
+	the sum of the privileges of two or more roles; and you can connect to 
+	mondrian with one or more roles. This facility enables closer integration 
+	with Pentaho<br>
+	access-control, where a user can already exist in multiple roles.</li>
+	<li><b>Cell-level access-control</b>. In mondrian-2.4, if access to a 
+	hierarchy is restricted, the value of a member is equal to the sum of its 
+	children; in mondrian-3.0, the <code>&lt;HierarchyGrant&gt;</code> element has a
+	<code>rollupPolicy</code> attribute whose<br>
+	values are 'full', 'partial' or 'hidden'.</li>
+	<li><b>JNDI in connect string</b>. JDBC data sources can be specified by 
+	their JNDI name.</li>
+</ul>
+<h4>API changes in release 3.0</h4>
+<p>Removed methods that were <a href="#Mondrian_2.4">deprecated in 2.4</a>, 
+plus:</p>
+<ul>
+	<li>MondrianServer.flushSchemaCache()</li>
+	<li>MondrianServer.flushDataCache()</li>
+	<li>DriverManager.getConnection(String, CatalogLocator, boolean)</li>
+	<li>DriverManager.getConnection(Util.PropertyList, boolean)</li>
+	<li>DriverManager.getConnection(Util.PropertyList, CatalogLocator, boolean)</li>
+	<li>DriverManager.getConnection(Util.PropertyList, CatalogLocator, 
+	DataSource, boolean)</li>
+	<li>RolapMember.getSqlKey()</li>
+	<li>MondrianProperties.CachePoolCostLimit (property &quot;mondrian.rolap.CachePool.costLimit&quot;)</li>
+	<li>MondrianProperties.FlushAfterQuery (property &quot;mondrian.rolap.RolapResult.flushAfterEachQuery&quot;)</li>
+</ul>
+<h1>4.2 Release 2.4 (2007/08/31)<a name="Mondrian_2.4">&nbsp;</a></h1>
 <ul>
 	<li>Aggregate distinct-count measures. Mondrian now computes distinct-count measures properly over a range of selections (for 
 	example, show me a count of all new Customers from January through July).</li>
@@ -685,7 +654,7 @@ www.olap4j.org</a>.
 		<li><code>RolapSchema.flushAllRolapStarCachedAggregations()</code></li>
 		<li><code>CachePool.flush()</code></li>
 	</ul>
-<h1>4.2 Release 2.3 (2007/03/12)<a name="Release_2.3">&nbsp;</a></h1>
+<h1>4.3 Release 2.3 (2007/03/12)<a name="Release_2.3">&nbsp;</a></h1>
 <ul>
     <li><a href="cache_control.html">Cache control</a> API.</li>
 <li>More efficient evaluation of queries which return large results. To achieve 
@@ -715,7 +684,7 @@ methods 'Member get(int ordinal)' and 'int size()' (both inherited from
 List&lt;Member&gt;).</li>
 </ul>
 
-<h1>4.3 Release 2.2 (2006/10/??)<a name="Release_2.2">&nbsp;</a></h1>
+<h1>4.4 Release 2.2 (2006/10/??)<a name="Release_2.2">&nbsp;</a></h1>
 <ul>
     <li>Mondrian-2.2 implements a host of <b>new functions and operators</b>: 
     In, Matches, Cast, ValidMeasure, CurrentDateMember, CurrentDateString. Also 
@@ -744,7 +713,7 @@ List&lt;Member&gt;).</li>
     of the Pentaho family of projects.</li>
 </ul>
 
-<h1>4.4 Release 2.1 (2006/04/01)<a name="Release_2.1">&nbsp;</a></h1>
+<h1>4.5 Release 2.1 (2006/04/01)<a name="Release_2.1">&nbsp;</a></h1>
 
 <ol>
   <li>Finally, a separate distribution <code>mondrian-*-embedded.zip</code>,
@@ -784,7 +753,7 @@ List&lt;Member&gt;).</li>
 ##################################
 ##  2.1.1 API changes in 2.1 #####
 ################################## -->
-<h1>4.4.1 API changes in release 2.1<a name="API_changes_in_2.1">&nbsp;</a></h1>
+<h1>4.5.1 API changes in release 2.1<a name="API_changes_in_2.1">&nbsp;</a></h1>
 <ol>
 
   <li>FunCall and UnresolvedFunCall. It used to be possible to create a
@@ -824,7 +793,7 @@ List&lt;Member&gt;).</li>
 #########################
 ##  2.2 Release 2.0 #####
 ######################### -->
-<h1>4.5 Release 2.0 (2005/12/19)<a name="Release_2.0">&nbsp;</a></h1>
+<h1>4.6 Release 2.0 (2005/12/19)<a name="Release_2.0">&nbsp;</a></h1>
 
 <ul>
   <li><a href="aggregate_tables.html">Aggregate tables</a>.</li>
@@ -852,7 +821,7 @@ be evaluated many times within the course of a single MDX statement. The set-exp
 #########################
 ##  2.3 Release 1.1 #####
 ######################### -->
-<h1>4.6 Release 1.1 (2005/04/06)<a name="Release_1.1">&nbsp;</a></h1>
+<h1>4.7 Release 1.1 (2005/04/06)<a name="Release_1.1">&nbsp;</a></h1>
 <ul>
   <li>Numerous improvements in functionality, performance, and stability.</li>
 </ul>
@@ -860,7 +829,7 @@ be evaluated many times within the course of a single MDX statement. The set-exp
 #########################
 ##  2.4 Release 1.0 #####
 ######################### -->
-<h1>4.7 Release 1.0 (2003/08/18)<a name="Release_1.0">&nbsp;</a></h1>
+<h1>4.8 Release 1.0 (2003/08/18)<a name="Release_1.0">&nbsp;</a></h1>
 
 <ul>
   <li>First production release.</li>
@@ -873,7 +842,7 @@ be evaluated many times within the course of a single MDX statement. The set-exp
 #########################
 ##  2.5 Release 0.6 #####
 ######################### -->
-<h1>4.8 Release 0.6 (2003/05/24)<a name="Release_0.6">&nbsp;</a></h1>
+<h1>4.9 Release 0.6 (2003/05/24)<a name="Release_0.6">&nbsp;</a></h1>
 
 <ul>
   <li>Parent-child hierarchies.</li>
@@ -883,7 +852,7 @@ be evaluated many times within the course of a single MDX statement. The set-exp
 #########################
 ##  2.6 Release 0.5 #####
 ######################### -->
-<h1>4.9 Release 0.5 (2003/02/20)<a name="Release_0.5">&nbsp;</a></h1>
+<h1>4.10 Release 0.5 (2003/02/20)<a name="Release_0.5">&nbsp;</a></h1>
 <ul>
   <li>Partial support for JOLAP.</li>
   <li>Implement <code>Hierarchize</code>, &quot;:&quot;, <code>Aggregate</code>, and
@@ -894,7 +863,7 @@ be evaluated many times within the course of a single MDX statement. The set-exp
 ########################
 ## 2.7 Release 0.4 #####
 ######################## -->
-<h1>4.10 Release 0.4 (2002/11/10)<a name="Release_0.4">&nbsp;</a></h1>
+<h1>4.11 Release 0.4 (2002/11/10)<a name="Release_0.4">&nbsp;</a></h1>
 <ul>
   <li>Integration with JPivot.</li>
   <li>Improved thread-safety.</li>
@@ -903,7 +872,7 @@ be evaluated many times within the course of a single MDX statement. The set-exp
 ########################
 ## 2.8 Release 0.3 #####
 ######################## -->
-<h1>4.11 Release 0.3 (2002/08/09)<a name="Release_0.3">&nbsp;</a></h1>
+<h1>4.12 Release 0.3 (2002/08/09)<a name="Release_0.3">&nbsp;</a></h1>
 <ul>
   <li>First public release.</li>
 
@@ -913,10 +882,10 @@ be evaluated many times within the course of a single MDX statement. The set-exp
 <p><br /></p>
 
 <p>
-    Author: Julian Hyde; last modified August 2007.<br/>
+    Author: Julian Hyde; last modified February 2008.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/roadmap.html?ac=22">log</a>)<br/>
-    Copyright (C) 2002-2007 Julian Hyde and others
+    Copyright (C) 2002-2008 Julian Hyde and others
 </p>
 
 <br />
