@@ -31,7 +31,7 @@ import java.util.*;
  * @version $Id$
  * @since Mar 23, 2006
  */
-class CrossJoinFunDef extends FunDefBase {
+public class CrossJoinFunDef extends FunDefBase {
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
             "Crossjoin",
             "Crossjoin(<Set1>, <Set2>)",
@@ -1871,7 +1871,7 @@ class CrossJoinFunDef extends FunDefBase {
     }
 
     @SuppressWarnings({"unchecked"})
-    static List crossJoin(
+    public static List crossJoin(
         List list1,
         List list2)
     {

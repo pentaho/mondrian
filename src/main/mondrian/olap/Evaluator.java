@@ -255,6 +255,20 @@ public interface Evaluator {
      *   context
      */
     Evaluator pushAggregation(List<Member> list);
+
+    /**
+     * Checks if unrelated dimensions to the measure in the current context
+     * should be ignored
+     * @return boolean
+     */
+    boolean shouldIgnoreUnrelatedDimensions();
+
+    /**
+     * Returns the base (non-virtual) cube that the current measure in the
+     * context belongs to.
+     * @return Cube
+     */
+    Cube getMeasureCube();
 }
 
 // End Evaluator.java

@@ -13,11 +13,16 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
+import mondrian.olap.fun.CrossJoinFunDef;
 import mondrian.rolap.BatchTestCase;
+import mondrian.rolap.RolapCube;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
-import java.util.List;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <code>AggregationOnDistinctCountMeasureTest</code> tests the
@@ -30,16 +35,39 @@ import java.util.ArrayList;
 public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     private final MondrianProperties props = MondrianProperties.instance();
 
+    private SchemaReader salesCubeSchemaReader = null;
+    private SchemaReader schemaReader = null;
+    private RolapCube salesCube;
+
+    protected void setUp() throws Exception {
+        schemaReader = getTestContext().getConnection().getSchemaReader();
+        salesCube = (RolapCube) cubeByName(getTestContext().getConnection(),
+            cubeNameSales);
+        salesCubeSchemaReader = salesCube.
+            getSchemaReader(getTestContext().getConnection().getRole());
+    }
+
     public TestContext getTestContext() {
+
         final TestContext testContext =
             TestContext.create(null, null,
                 "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n" +
-                "<VirtualCubeDimension cubeName=\"Sales\" name=\"Gender\"/>\n" +
-                "<VirtualCubeDimension name=\"Store\"/>\n" +
-                "<VirtualCubeDimension name=\"Product\"/>\n" +
-                "<VirtualCubeDimension cubeName=\"Warehouse\" name=\"Warehouse\"/>\n" +
-                "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n" +
-                "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Customer Count]\"/>\n" +
+                "   <VirtualCubeDimension cubeName=\"Sales\" name=\"Gender\"/>\n" +
+                "   <VirtualCubeDimension name=\"Store\"/>\n" +
+                "   <VirtualCubeDimension name=\"Product\"/>\n" +
+                "   <VirtualCubeDimension cubeName=\"Warehouse\" name=\"Warehouse\"/>\n" +
+                "   <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n" +
+                "   <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Customer Count]\"/>\n" +
+                "</VirtualCube>" +
+                "<VirtualCube name=\"Warehouse and Sales3\" defaultMeasure=\"Store Invoice\">\n" +
+                "  <CubeUsages>\n" +
+                "       <CubeUsage cubeName=\"Sales\" ignoreUnrelatedDimensions=\"true\"/>" +
+                "   </CubeUsages>\n" +                    
+                "   <VirtualCubeDimension cubeName=\"Sales\" name=\"Gender\"/>\n" +
+                "   <VirtualCubeDimension name=\"Store\"/>\n" +
+                "   <VirtualCubeDimension name=\"Product\"/>\n" +
+                "   <VirtualCubeDimension cubeName=\"Warehouse\" name=\"Warehouse\"/>\n" +
+                "   <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Customer Count]\"/>\n" +
                 "</VirtualCube>",
                 null, null, null);
         return testContext;
@@ -81,7 +109,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         String query =
             "WITH MEMBER GENDER.X AS 'AGGREGATE({[GENDER].[GENDER].members} * " +
             "{[STORE].[ALL STORES].[USA].[CA]})', solve_order=100 " +
-            "SELECT GENDER.X ON 0, [MEASURES].[CUSTOMER COUNT] ON 1 FROM SALES";        
+            "SELECT GENDER.X ON 0, [MEASURES].[CUSTOMER COUNT] ON 1 FROM SALES";
         String result =
             "Axis #0:\n" +
             "{}\n" +
@@ -90,50 +118,34 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #2:\n" +
             "{[Measures].[Customer Count]}\n" +
             "Row #0: 2,716\n";
-        
-        assertQueryReturns(query, fold(result)); 
-        
+
+        assertQueryReturns(query, fold(result));
+
         // Check aggregate loading sql pattern
-        String derbySql = 
+        String derbySql =
             "select \"time_by_day\".\"the_year\" as \"c0\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
-            "\"customer\" as \"customer\", " +
-            "\"store\" as \"store\" " +
+            "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", \"store\" as \"store\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and \"time_by_day\".\"the_year\" = 1997 " +
-            "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-            "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-            "and ((\"customer\".\"gender\" = 'F' and \"store\".\"store_state\" = 'CA') " +
-            "or (\"customer\".\"gender\" = 'M' and \"store\".\"store_state\" = 'CA')) " +
+            "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"store\".\"store_state\" = 'CA' " +
             "group by \"time_by_day\".\"the_year\"";
-        
+
         String mysqlSql =
             "select `time_by_day`.`the_year` as `c0`, " +
             "count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
-            "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, " +
-            "`customer` as `customer`, `store` as `store` " +
+            "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `store` as `store` " +
             "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
             "and `time_by_day`.`the_year` = 1997 " +
-            "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
-            "and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
-            "and (((`store`.`store_state`, `customer`.`gender`) " +
-            "in (('CA', 'F'), ('CA', 'M')))) group by `time_by_day`.`the_year`";
-        
+            "and `sales_fact_1997`.`store_id` = `store`.`store_id` and `store`.`store_state` = 'CA' " +
+            "group by `time_by_day`.`the_year`";
+
         String oracleSql =
             "select \"time_by_day\".\"the_year\" as \"c0\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"time_by_day\" \"time_by_day\", " +
-            "\"sales_fact_1997\" \"sales_fact_1997\", " +
-            "\"customer\" \"customer\", \"store\" \"store\" " +
-            "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-            "and \"time_by_day\".\"the_year\" = 1997 " +
-            "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-            "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-            "and ((\"customer\".\"gender\" = 'F' " +
-            "and \"store\".\"store_state\" = 'CA') " +
-            "or (\"customer\".\"gender\" = 'M' " +
-            "and \"store\".\"store_state\" = 'CA')) " +
+            "from \"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", \"store\" \"store\" " +
+            "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 " +
+            "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"store\".\"store_state\" = 'CA' " +
             "group by \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
@@ -142,7 +154,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql)};
 
         assertQuerySql(query, patterns);
-        
+
     }
 
     public void testCrossJoinMembersWithSetOfMembers() {
@@ -150,7 +162,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "WITH MEMBER GENDER.X AS 'AGGREGATE({[GENDER].[GENDER].members} * " +
             "{[STORE].[ALL STORES].[USA].[CA], [Store].[All Stores].[Canada]})', solve_order=100 " +
             "SELECT GENDER.X ON 0, [MEASURES].[CUSTOMER COUNT] ON 1 FROM SALES";
-        
+
         String result =
             "Axis #0:\n" +
             "{}\n" +
@@ -159,54 +171,37 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #2:\n" +
             "{[Measures].[Customer Count]}\n" +
             "Row #0: 2,716\n";
-        
-        assertQueryReturns(query, fold(result)); 
-        
+
+        assertQueryReturns(query, fold(result));
+
         // Check aggregate loading sql pattern
         // Note Derby does not support multicolumn IN list, so the predicates remain in AND/OR form.
-        String derbySql = 
+        String derbySql =
             "select \"time_by_day\".\"the_year\" as \"c0\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
-            "\"customer\" as \"customer\", \"store\" as \"store\" " +
+            "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", \"store\" as \"store\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-            "and \"time_by_day\".\"the_year\" = 1997 and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
+            "and \"time_by_day\".\"the_year\" = 1997 " +
             "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-            "and (((\"customer\".\"gender\" = 'F' and \"store\".\"store_state\" = 'CA') " +
-            "or (\"customer\".\"gender\" = 'M' and \"store\".\"store_state\" = 'CA')) " +
-            "or ((\"customer\".\"gender\" = 'F' and \"store\".\"store_country\" = 'Canada') " +
-            "or (\"customer\".\"gender\" = 'M' and \"store\".\"store_country\" = 'Canada'))) " +
+            "and (\"store\".\"store_country\" = 'Canada' or \"store\".\"store_state\" = 'CA') " +
             "group by \"time_by_day\".\"the_year\"";
-        
+
         String mysqlSql =
             "select `time_by_day`.`the_year` as `c0`, " +
             "count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
-            "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, " +
-            "`customer` as `customer`, `store` as `store` " +
-            "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-            "and `time_by_day`.`the_year` = 1997 " +
-            "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
+            "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `store` as `store` " +
+            "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 " +
             "and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
-            "and ((((`store`.`store_state`, `customer`.`gender`) " +
-            "in (('CA', 'F'), ('CA', 'M')))) or " +
-            "(((`store`.`store_country`, `customer`.`gender`) " +
-            "in (('Canada', 'F'), ('Canada', 'M'))))) " +
+            "and (`store`.`store_country` = 'Canada' or `store`.`store_state` = 'CA') " +
             "group by `time_by_day`.`the_year`";
-        
-        String oracleSql="select \"time_by_day\".\"the_year\" as \"c0\", " +
+
+        String oracleSql=
+            "select \"time_by_day\".\"the_year\" as \"c0\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"time_by_day\" \"time_by_day\", " +
-            "\"sales_fact_1997\" \"sales_fact_1997\", " +
-            "\"customer\" \"customer\", " +
-            "\"store\" \"store\" " +
-            "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-            "and \"time_by_day\".\"the_year\" = 1997 " +
-            "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
+            "from \"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", \"store\" \"store\" " +
+            "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 " +
             "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-            "and (((\"customer\".\"gender\" = 'F' and \"store\".\"store_state\" = 'CA') or " +
-            "(\"customer\".\"gender\" = 'M' and \"store\".\"store_state\" = 'CA')) or " +
-            "((\"customer\".\"gender\" = 'F' and \"store\".\"store_country\" = 'Canada') or " +
-            "(\"customer\".\"gender\" = 'M' and \"store\".\"store_country\" = 'Canada'))) " +
+            "and (\"store\".\"store_country\" = 'Canada' or \"store\".\"store_state\" = 'CA') " +
             "group by \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
@@ -215,7 +210,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql)};
 
         assertQuerySql(query, patterns);
-        
+
     }
 
     public void testCrossJoinParticularMembersFromTwoDimensions() {
@@ -280,9 +275,118 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testDistinctCountOnTuplesWithSomeNonJoiningDimensions() {
-        assertQueryReturns(
-            "WITH MEMBER WAREHOUSE.X as 'Aggregate({WAREHOUSE.[STATE PROVINCE].MEMBERS}*" +
+
+        boolean orginalPropertyValue = props.IgnoreMeasureForNonJoiningDimension.get();
+        props.IgnoreMeasureForNonJoiningDimension.set(false);
+        String mdx = "WITH MEMBER WAREHOUSE.X as 'Aggregate({WAREHOUSE.[STATE PROVINCE].MEMBERS}*" +
             "{[Gender].Members})'" +
+            "SELECT WAREHOUSE.X  ON ROWS, " +
+            "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n" +
+            "FROM [WAREHOUSE AND SALES2]";
+        String expectedResult = fold(
+            "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Axis #2:\n" +
+                "{[Warehouse].[X]}\n" +
+                "Row #0: \n");
+        assertQueryReturns(mdx, expectedResult);
+        props.IgnoreMeasureForNonJoiningDimension.set(true);
+        assertQueryReturns(mdx, expectedResult);
+        props.IgnoreMeasureForNonJoiningDimension.set(orginalPropertyValue);
+    }
+
+    public void testAggregationListOptimizationForChildren() {
+        String query =
+            "WITH MEMBER GENDER.X AS 'AGGREGATE({[GENDER].[GENDER].members} * " +
+            "{[STORE].[ALL STORES].[USA].[CA], [STORE].[ALL STORES].[USA].[OR], " +
+            "[STORE].[ALL STORES].[USA].[WA], [Store].[All Stores].[Canada]})' " +
+            "SELECT GENDER.X ON 0, [MEASURES].[CUSTOMER COUNT] ON 1 FROM SALES";
+
+        String result =
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Gender].[X]}\n" +
+            "Axis #2:\n" +
+            "{[Measures].[Customer Count]}\n" +
+            "Row #0: 5,581\n";
+
+        assertQueryReturns(query, fold(result));
+    }
+   
+
+    public void testDistinctCountOnMembersWithNonJoiningDimensionNotAtAllLevel() {
+        assertQueryReturns(
+            "WITH MEMBER WAREHOUSE.X as " +
+            "'Aggregate({WAREHOUSE.[STATE PROVINCE].MEMBERS})'" +
+            "SELECT WAREHOUSE.X  ON ROWS, " +
+            "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n" +
+            "FROM [WAREHOUSE AND SALES2]",
+            fold(
+                "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Customer Count]}\n" +
+                    "Axis #2:\n" +
+                    "{[Warehouse].[X]}\n" +
+                    "Row #0: \n"));
+
+    }
+
+    public void testNonJoiningDimensionWithAllMember() {
+        assertQueryReturns(
+            "WITH MEMBER WAREHOUSE.X as 'Aggregate({WAREHOUSE.MEMBERS})'" +
+            "SELECT WAREHOUSE.X  ON ROWS, " +
+            "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n" +
+            "FROM [WAREHOUSE AND SALES2]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Axis #2:\n" +
+                "{[Warehouse].[X]}\n" +
+                "Row #0: 5,581\n"));
+    }
+
+    public void testCrossJoinOfJoiningAndNonJoiningDimensionWithAllMember() {
+        assertQueryReturns(
+            "WITH MEMBER WAREHOUSE.X AS " +
+            "'AGGREGATE({GENDER.GENDER.MEMBERS} * {WAREHOUSE.MEMBERS})'" +
+            "SELECT WAREHOUSE.X  ON ROWS, " +
+            "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n" +
+            "FROM [WAREHOUSE AND SALES2]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Axis #2:\n" +
+                "{[Warehouse].[X]}\n" +
+                "Row #0: 5,581\n"));
+
+        assertQueryReturns(
+            "WITH MEMBER WAREHOUSE.X AS " +
+            "'AGGREGATE({GENDER.GENDER.MEMBERS} * {WAREHOUSE.MEMBERS})'" +
+            "SELECT WAREHOUSE.X  ON ROWS, " +
+            "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n" +
+            "FROM [WAREHOUSE AND SALES3]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Axis #2:\n" +
+                "{[Warehouse].[X]}\n" +
+                "Row #0: 5,581\n"));
+    }
+
+    public void testCrossJoinOfJoiningAndNonJoiningDimension() {
+        assertQueryReturns(
+            "WITH MEMBER WAREHOUSE.X AS " +
+            "'AGGREGATE({GENDER.GENDER.MEMBERS} * {WAREHOUSE.[STATE PROVINCE].MEMBERS})'" +
             "SELECT WAREHOUSE.X  ON ROWS, " +
             "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n" +
             "FROM [WAREHOUSE AND SALES2]",
@@ -295,33 +399,37 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "{[Warehouse].[X]}\n" +
                 "Row #0: \n"));
 
-    }
-
-    public void testDistinctCountOnMembersWithNonJoiningDimension() {
         assertQueryReturns(
-            "WITH MEMBER WAREHOUSE.X as 'Aggregate({WAREHOUSE.[STATE PROVINCE].MEMBERS})'" +
-                "SELECT WAREHOUSE.X  ON ROWS, " +
-                "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n" +
-                "FROM [WAREHOUSE AND SALES2]",
+            "WITH MEMBER WAREHOUSE.X AS " +
+            "'AGGREGATE({GENDER.GENDER.MEMBERS} * {WAREHOUSE.[STATE PROVINCE].MEMBERS})'" +
+            "SELECT WAREHOUSE.X  ON ROWS, " +
+            "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n" +
+            "FROM [WAREHOUSE AND SALES3]",
             fold(
                 "Axis #0:\n" +
-                    "{}\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Customer Count]}\n" +
-                    "Axis #2:\n" +
-                    "{[Warehouse].[X]}\n" +
-                    "Row #0: \n"));
-
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Axis #2:\n" +
+                "{[Warehouse].[X]}\n" +
+                "Row #0: 5,581\n"));
     }
 
-    public void testDistinctCountOnTuplesWithLargeNumberOfDimensionMembers() {
+    public void testAggregationOverLargeListGeneratesError() {
+//        assertQueryReturns("select {[PRODUCT].[BRAND NAME].MEMBERS} on 0 from sales", "");
         int origMaxConstraint = props.MaxConstraints.get();
-        if (origMaxConstraint > 500) {
-            props.MaxConstraints.set(500);
-        }
-        
+        props.MaxConstraints.set(7);
+
         assertQueryReturns(
-            "WITH MEMBER PRODUCT.X as 'Aggregate({[PRODUCT].[BRAND NAME].MEMBERS})' " +
+            "WITH MEMBER PRODUCT.X as 'Aggregate({" +
+                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good],\n" +
+                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth],\n" +
+                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure],\n" +
+                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus],\n" +
+                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl],\n" +
+                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth],\n" +
+                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure],\n" +
+                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus]})' " +
             "SELECT PRODUCT.X  ON ROWS, " +
             "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n" +
             "FROM [WAREHOUSE AND SALES2]",
@@ -379,7 +487,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "or (\"warehouse\".\"warehouse_name\" = 'Jones International' " +
             "and \"warehouse\".\"wa_address1\" = '3377 Coachman Place' " +
             "and \"warehouse\".\"wa_address2\" is null))";
-        
+
         String necjSqlMySql =
             "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` " +
             "from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` " +
@@ -388,7 +496,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "and (`warehouse`.`wa_address1`, `warehouse`.`warehouse_name`) " +
             "in (('5617 Saclan Terrace', 'Arnold and Sons'), " +
             "('3377 Coachman Place', 'Jones International'))))";
-        
+
         TestContext testContext =
             TestContext.create(
                 dimension,
@@ -406,7 +514,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
         assertQuerySql(testContext, query, patterns);
     }
-    
+
     public void testMultiLevelMembersMixedNullNonNullParent() {
         if (!isDefaultNullMemberRepresentation()) {
             return;
@@ -448,14 +556,14 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "or (\"warehouse\".\"warehouse_name\" = 'Jones International' " +
             "and \"warehouse\".\"wa_address1\" = '3377 Coachman Place' " +
             "and \"warehouse\".\"warehouse_fax\" = '971-555-6213'))";
-        
+
         String necjSqlMySql =
             "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` " +
             "from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` " +
             "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and " +
             "((`warehouse`.`warehouse_name` = 'Jones International' and `warehouse`.`wa_address1` = '3377 Coachman Place' and `warehouse`.`warehouse_fax` = '971-555-6213') " +
             "or (`warehouse`.`warehouse_name` = 'Freeman And Co' and `warehouse`.`wa_address1` = '234 West Covina Pkwy' and `warehouse`.`warehouse_fax` is null))";
-                    
+
         TestContext testContext =
             TestContext.create(
                 dimension,
@@ -487,7 +595,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "    <Level name=\"fax\" column=\"warehouse_fax\" uniqueMembers=\"false\"/>\n" +
             "  </Hierarchy>\n" +
             "</Dimension>\n";
-        
+
         String cube =
             "<Cube name=\"Warehouse2\">\n" +
             "  <Table name=\"inventory_fact_1997\"/>\n" +
@@ -504,21 +612,21 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "member [Warehouse2].[TwoMembers] as 'AGGREGATE([Filtered Warehouse Set])' " +
             "select {[Measures].[Cost Count]} on columns, {[Warehouse2].[TwoMembers]} on rows " +
             "from [Warehouse2]";
-        
+
         String necjSqlDerby =
             "select count(distinct \"inventory_fact_1997\".\"warehouse_cost\") as \"m0\" " +
             "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\" " +
             "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and " +
             "((\"warehouse\".\"warehouse_fax\" is null and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"wa_address3\" is null) " +
             "or (\"warehouse\".\"warehouse_fax\" = '971-555-6213' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"wa_address3\" is null))";
-        
+
         String necjSqlMySql =
             "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` " +
             "from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` " +
             "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and " +
             "((`warehouse`.`warehouse_fax` = '971-555-6213' and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null) " +
-            "or (`warehouse`.`warehouse_fax` is null and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null))"; 
-                
+            "or (`warehouse`.`warehouse_fax` is null and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null))";
+
         TestContext testContext =
             TestContext.create(
                 dimension,
@@ -535,7 +643,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             };
 
         assertQuerySql(testContext, query, patterns);
-    }    
+    }
 
     public void testAggregationOnCJofMembersGeneratesOptimalQuery() {
 
@@ -559,15 +667,13 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "IIF(COUNT([COG_OQP_INT_s1], INCLUDEEMPTY) > 0, 1, 0))} ON AXIS(1) \n" +
             "FROM [sales]";
 
-        String oracleSql = "select \"time_by_day\".\"the_year\" as \"c0\", " +
+        String oracleSql =
+            "select \"store\".\"store_state\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"time_by_day\" \"time_by_day\", " +
-            "\"sales_fact_1997\" \"sales_fact_1997\", \"customer\" \"customer\" " +
-            "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-            "and \"time_by_day\".\"the_year\" = 1997 " +
-            "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-            "and \"customer\".\"gender\" " +
-            "in ('F', 'M') group by \"time_by_day\".\"the_year\"";
+            "from \"store\" \"store\", \"sales_fact_1997\" \"sales_fact_1997\", \"time_by_day\" \"time_by_day\" " +
+            "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+            "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 " +
+            "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
         SqlPattern[] patterns = {new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql)};
         assertQuerySql(mdxQuery,patterns);
     }
@@ -601,12 +707,11 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "select \"time_by_day\".\"the_year\" as \"c0\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
             "from \"time_by_day\" \"time_by_day\", " +
-            "\"sales_fact_1997\" \"sales_fact_1997\", " +
-            "\"store\" \"store\" " +
+            "\"sales_fact_1997\" \"sales_fact_1997\", \"store\" \"store\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-            "and \"time_by_day\".\"the_year\" = 1997 " +
-            "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-            "and \"store\".\"store_state\" in ('CA', 'OR', 'WA') " +
+            "and \"time_by_day\".\"the_year\" = 1997 and " +
+            "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+            "and \"store\".\"store_country\" = 'USA' " +
             "group by \"time_by_day\".\"the_year\"";
 
         String  oracleSqlForDetail =
@@ -796,205 +901,416 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         props.EnableGroupingSets.set(originalGroupingSetsPropertyValue);
     }
 
-    public void testRemoveOverlappingTuplesForSameDimension() {
-        SchemaReader schemaReader = getSalesCubeSchemaReader();
-
-        Member allMember = allMember("Gender");
-        Member firstChildMember = child(schemaReader, allMember, "M");
-        Member secondChildMember = child(schemaReader, allMember, "F");
-        Member[] members = new Member[]{allMember, firstChildMember, secondChildMember};
-        List<Member[]> memberList = new ArrayList();
-        memberList.add(members);
-
-        List filteredList =
-            AggregateFunDef.AggregateCalc.removeOverlappingTupleEntries(memberList);
-        assertEquals(1, filteredList.size());
-        assertEquals(allMember.getUniqueName(), ((Member[]) filteredList.get(0))[0].getUniqueName());
-    }
-
     public void testShouldConvertListOfMembersToTuples() {
-        SchemaReader schemaReader = getSalesCubeSchemaReader();
-        Member allMember = allMember("Gender");
-        Member firstChildMember = child(schemaReader, allMember, "M");
-        Member secondChildMember = child(schemaReader, allMember, "F");
-
-        List<Member> memberList = new ArrayList<Member>();
-        memberList.add(allMember);
-        memberList.add(firstChildMember);
-        memberList.add(secondChildMember);
-        List<Member[]> tuples =
-            AggregateFunDef.AggregateCalc.makeTupleList(memberList);
-
+        List <Member[]> tuples = tupleList(
+            genderMembersIncludingAll(true, salesCubeSchemaReader, salesCube));
         assertEquals(3, tuples.size());
-        assertEquals(allMember.getUniqueName(), tuples.get(0)[0].getUniqueName());
+        assertEquals(allMember("Gender", salesCube).getUniqueName(),
+                tuples.get(0)[0].getUniqueName());
     }
 
     public void testMemberIsSuperSetOfAnotherMember() {
-        SchemaReader schemaReader = getSalesCubeSchemaReader();
-        Member allMember = allMember("Gender");
-        Member firstChildMember = child(schemaReader, allMember, "M");
-        Member secondChildMember = child(schemaReader, allMember, "F");
+        List <Member[]> tuples = tupleList(
+            genderMembersIncludingAll(true, salesCubeSchemaReader, salesCube));
+        assertTrue(AggregateFunDef.AggregateCalc.
+            isSuperSet(tuples.get(0), tuples.get(1)));
+        assertFalse(AggregateFunDef.AggregateCalc.
+            isSuperSet(tuples.get(1), tuples.get(2)));
+    }
 
-        List<Member> memberList = new ArrayList<Member>();
-        memberList.add(allMember);
-        memberList.add(firstChildMember);
-        memberList.add(secondChildMember);
-        List<Member[]> tuples =
-            AggregateFunDef.AggregateCalc.makeTupleList(memberList);
-
-        assertTrue(AggregateFunDef.AggregateCalc.isSuperSet(tuples.get(0), tuples.get(1)));
-        assertFalse(AggregateFunDef.AggregateCalc.isSuperSet(tuples.get(1), tuples.get(2)));
+    public void testRemoveOverlappingTuplesForSameDimension() {
+        List <Member[]> tuples = tupleList(
+            genderMembersIncludingAll(true, salesCubeSchemaReader, salesCube));
+        tuples = removeOverlappingTuples(tuples);
+        assertEquals(1, tuples.size());
+        assertEquals(allMember("Gender", salesCube), tuples.get(0)[0]);
     }
 
     public void testShouldRemoveOverlappingTuplesFromDifferentDimensions() {
-        SchemaReader schemaReader = getSalesCubeSchemaReader();
-
-        Member genderAllMember = allMember("Gender");
-        Member genderMaleChild = child(schemaReader, genderAllMember, "M");
-        Member genderFemaleChild = child(schemaReader, genderAllMember, "F");
-        Member storeAllMember = allMember("Store");
-        Member storeUsaChild = child(schemaReader, storeAllMember, "USA");
-        Member storeCanadaChild = child(schemaReader, storeAllMember, "CANADA");
-        Member[] genders = new Member[]{genderAllMember, genderMaleChild, genderFemaleChild};
-        Member[] stores = new Member[]{storeAllMember, storeUsaChild, storeCanadaChild};
-        List<Member[]> memberList = crossProduct(genders, stores);
-        List filteredList =
-            AggregateFunDef.AggregateCalc.removeOverlappingTupleEntries(memberList);
-        assertEquals(1, filteredList.size());
-        assertEquals(genderAllMember, ((Member[]) filteredList.get(0))[0]);
-        assertEquals(storeAllMember, ((Member[]) filteredList.get(0))[1]);
+        List<Member[]> memberList = CrossJoinFunDef.crossJoin(
+            genderMembersIncludingAll(true, salesCubeSchemaReader, salesCube),
+            storeMembersUsaAndCanada(true, salesCubeSchemaReader, salesCube));
+        List <Member[]>tuples = removeOverlappingTuples(memberList);
+        assertEquals(1, tuples.size());
+        assertEquals(allMember("Gender", salesCube), tuples.get(0)[0]);
+        assertEquals(allMember("Store", salesCube), tuples.get(0)[1]);
     }
 
     public void testShouldRemoveOverlappingTuplesWithoutAllLevelTuple() {
-        SchemaReader schemaReader = getSalesCubeSchemaReader();
+        List<Member[]> memberList =
+            CrossJoinFunDef.crossJoin(
+                genderMembersIncludingAll(true, salesCubeSchemaReader, salesCube),
+                storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
 
-        Member genderAllMember = allMember("Gender");
-        Member genderMaleChild = child(schemaReader, genderAllMember, "M");
-        Member genderFemaleChild = child(schemaReader, genderAllMember, "F");
-        Member storeAllMember = allMember("Store");
-        Member storeUsaChild = child(schemaReader, storeAllMember, "USA");
-        Member storeCanadaChild = child(schemaReader, storeAllMember, "CANADA");
-        Member[] genders = new Member[]{genderAllMember, genderMaleChild, genderFemaleChild};
-        Member[] stores = new Member[]{storeUsaChild, storeCanadaChild};
-        List<Member[]> memberList = crossProduct(genders, stores);
-        memberList.add(new Member[]{genderMaleChild, storeAllMember});
-        memberList.add(new Member[]{genderFemaleChild, storeAllMember});
-        List filteredList =
-            AggregateFunDef.AggregateCalc.removeOverlappingTupleEntries(memberList);
-        assertEquals(4, filteredList.size());
+        Member maleChild =
+            member(Id.Segment.toList("Gender","All Gender","M"), salesCubeSchemaReader);
+        Member femaleChild =
+            member(Id.Segment.toList("Gender","All Gender","F"), salesCubeSchemaReader);
+        Member storeAllMember = allMember("Store", salesCube);
+
+        memberList.add(new Member[]{maleChild, storeAllMember});
+        memberList.add(new Member[]{femaleChild, storeAllMember});
+
+        List tuples = removeOverlappingTuples(memberList);
+        assertEquals(4, tuples.size());
     }
 
 
     public void testShouldNotRemoveNonOverlappingTuplesAtSameLevels() {
-        SchemaReader schemaReader = getSalesCubeSchemaReader();
-
-        Member genderAllMember = allMember("Gender");
-        Member genderMaleChild = child(schemaReader, genderAllMember, "M");
-        Member genderFemaleChild = child(schemaReader, genderAllMember, "F");
-        Member storeAllMember = allMember("Store");
-        Member storeUsaChild = child(schemaReader, storeAllMember, "USA");
-        Member storeCanadaChild = child(schemaReader, storeAllMember, "CANADA");
-        Member[] genders = new Member[]{genderMaleChild, genderFemaleChild};
-        Member[] stores = new Member[]{storeUsaChild, storeCanadaChild};
-        List<Member[]> memberList = crossProduct(genders, stores);
-        List filteredList =
-            AggregateFunDef.AggregateCalc.removeOverlappingTupleEntries(memberList);
-        assertEquals(4, filteredList.size());
+        List<Member[]> memberList =
+            CrossJoinFunDef.crossJoin(
+                genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
+                storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
+        List tuples = removeOverlappingTuples(memberList);
+        assertEquals(4, tuples.size());
     }
 
-    public void testShouldNotRemoveNonOverlappingTuplesAtDifferentLevels() {
-        SchemaReader schemaReader = getSalesCubeSchemaReader();
+    public void testOptimizeChildren() {
+        String query =
+            "with member gender.x as " +
+            "'aggregate(" +
+            "{gender.gender.members * Store.[all stores].[usa].children})' " +
+            "select {gender.x} on 0, measures.[customer count] on 1 from sales";
+        String expected = fold(
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Gender].[x]}\n" +
+            "Axis #2:\n" +
+            "{[Measures].[Customer Count]}\n" +
+            "Row #0: 5,581\n");
+        assertQueryReturns(query, expected);
 
-        Member genderAllMember = allMember("Gender");
-        Member genderMaleChild = child(schemaReader, genderAllMember, "M");
-        Member storeAllMember = allMember("Store");
-        Member storeUsaChild = child(schemaReader, storeAllMember, "USA");
-        List<Member[]> memberList = new ArrayList<Member[]>();
-        memberList.add(new Member[]{genderMaleChild, storeAllMember});
-        memberList.add(new Member[]{genderAllMember,storeUsaChild});
-        List filteredList =
-            AggregateFunDef.AggregateCalc.removeOverlappingTupleEntries(memberList);
-        assertEquals(2, filteredList.size());
+        String derbySql =
+            "select \"time_by_day\".\"the_year\" as \"c0\", " +
+            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
+            "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", \"store\" as \"store\" " +
+            "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 " +
+            "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+            "and \"store\".\"store_country\" = 'USA' group by \"time_by_day\".\"the_year\"";
+
+        String accessSql =
+            "select `d0` as `c0`, count(`m0`) as `c1` " +
+            "from (select distinct `time_by_day`.`the_year` as `d0`, `sales_fact_1997`.`customer_id` as `m0` " +
+            "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `store` as `store` " +
+            "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 " +
+            "and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
+            "and `store`.`store_country` = 'USA') as `dummyname` group by `d0`";
+
+        SqlPattern[] patterns = {
+            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
+            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql)};
+
+        assertQuerySql(query, patterns);
+
+    }
+
+    public void testOptimizeListWhenTuplesAreFormedWithDifferentLevels() {
+        String query =
+            "WITH\n" +
+            "MEMBER Product.Agg AS \n" +
+            "'Aggregate({[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[Cormorant],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[Denny],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[High Quality],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[Red Wing],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Cormorant],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Denny],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[High Quality],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Red Wing],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Sunset]} *\n" +
+            "{[Gender].[Gender].Members})'\n" +
+            "SELECT {Product.Agg} on 0, {[Measures].[Customer Count]} on 1 from Sales";
+        String expected = fold(
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Product].[Agg]}\n" +
+            "Axis #2:\n" +
+            "{[Measures].[Customer Count]}\n" +
+            "Row #0: 421\n");
+        assertQueryReturns(query, expected);
+        String derbySql =
+            "select \"time_by_day\".\"the_year\" as \"c0\", " +
+            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
+            "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
+            "\"product\" as \"product\", \"product_class\" as \"product_class\" " +
+            "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
+            "and \"time_by_day\".\"the_year\" = 1997 and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" " +
+            "and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
+            "and (((\"product\".\"brand_name\" = 'Red Wing' and \"product_class\".\"product_subcategory\" = 'Pot Scrubbers' " +
+            "and \"product_class\".\"product_category\" = 'Kitchen Products' " +
+            "and \"product_class\".\"product_department\" = 'Household' " +
+            "and \"product_class\".\"product_family\" = 'Non-Consumable') " +
+            "or (\"product\".\"brand_name\" = 'Cormorant' and \"product_class\".\"product_subcategory\" = 'Pot Scrubbers' " +
+            "and \"product_class\".\"product_category\" = 'Kitchen Products' " +
+            "and \"product_class\".\"product_department\" = 'Household' " +
+            "and \"product_class\".\"product_family\" = 'Non-Consumable') " +
+            "or (\"product\".\"brand_name\" = 'Denny' and \"product_class\".\"product_subcategory\" = 'Pot Scrubbers' " +
+            "and \"product_class\".\"product_category\" = 'Kitchen Products' " +
+            "and \"product_class\".\"product_department\" = 'Household' " +
+            "and \"product_class\".\"product_family\" = 'Non-Consumable') or (\"product\".\"brand_name\" = 'High Quality' " +
+            "and \"product_class\".\"product_subcategory\" = 'Pot Scrubbers' " +
+            "and \"product_class\".\"product_category\" = 'Kitchen Products' " +
+            "and \"product_class\".\"product_department\" = 'Household' and \"product_class\".\"product_family\" = 'Non-Consumable')) " +
+            "or (\"product_class\".\"product_subcategory\" = 'Pots and Pans' " +
+            "and \"product_class\".\"product_category\" = 'Kitchen Products' and \"product_class\".\"product_department\" = 'Household' " +
+            "and \"product_class\".\"product_family\" = 'Non-Consumable')) " +
+            "group by \"time_by_day\".\"the_year\"";
+
+        String accessSql =
+            "select `d0` as `c0`, count(`m0`) as `c1` from (select distinct `time_by_day`.`the_year` as `d0`, `sales_fact_1997`.`customer_id` as `m0` " +
+            "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `product` as `product`, `product_class` as `product_class` " +
+            "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 " +
+            "and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` " +
+            "and (((`product`.`brand_name` = 'Red Wing' and `product_class`.`product_subcategory` = 'Pot Scrubbers' " +
+            "and `product_class`.`product_category` = 'Kitchen Products' and `product_class`.`product_department` = 'Household' " +
+            "and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'Cormorant' " +
+            "and `product_class`.`product_subcategory` = 'Pot Scrubbers' and `product_class`.`product_category` = 'Kitchen Products' " +
+            "and `product_class`.`product_department` = 'Household' and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'Denny' " +
+            "and `product_class`.`product_subcategory` = 'Pot Scrubbers' and `product_class`.`product_category` = 'Kitchen Products' " +
+            "and `product_class`.`product_department` = 'Household' " +
+            "and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'High Quality' " +
+            "and `product_class`.`product_subcategory` = 'Pot Scrubbers' and `product_class`.`product_category` = 'Kitchen Products' " +
+            "and `product_class`.`product_department` = 'Household' " +
+            "and `product_class`.`product_family` = 'Non-Consumable')) or (`product_class`.`product_subcategory` = 'Pots and Pans' " +
+            "and `product_class`.`product_category` = 'Kitchen Products' and `product_class`.`product_department` = 'Household' " +
+            "and `product_class`.`product_family` = 'Non-Consumable'))) as `dummyname` group by `d0`";
+        
+        SqlPattern[] patterns = {
+            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
+            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql)};
+
+        assertQuerySql(query, patterns);
+
+    }
+
+    public void testOptimizeListWithTuplesOfLength3() {
+
+        String query =
+            "WITH\n" +
+            "MEMBER Product.Agg AS \n" +
+            "'Aggregate" +
+            "({[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[Cormorant],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[Denny],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[High Quality],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[Red Wing],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Cormorant],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Denny],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[High Quality],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Red Wing],\n" +
+            "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Sunset]} *\n" +
+            "{[Gender].[Gender].Members}*" +
+            "{[Store].[All Stores].[USA].[CA].[Alameda],\n" +
+            "[Store].[All Stores].[USA].[CA].[Alameda].[HQ],\n" +
+            "[Store].[All Stores].[USA].[CA].[Beverly Hills],\n" +
+            "[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6],\n" +
+            "[Store].[All Stores].[USA].[CA].[Los Angeles],\n" +
+            "[Store].[All Stores].[USA].[OR].[Portland],\n" +
+            "[Store].[All Stores].[USA].[OR].[Portland].[Store 11],\n" +
+            "[Store].[All Stores].[USA].[OR].[Salem],\n" +
+            "[Store].[All Stores].[USA].[OR].[Salem].[Store 13]})'\n" +
+            "SELECT {Product.Agg} on 0, {[Measures].[Customer Count]} on 1 from Sales";
+        String expected = fold(
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Product].[Agg]}\n" +
+            "Axis #2:\n" +
+            "{[Measures].[Customer Count]}\n" +
+            "Row #0: 189\n");
+        assertQueryReturns(query, expected);
+    }
+
+    public void testOptimizeChildrenForTuplesWithLength1() {
+        List<Member[]> memberList =
+            AggregateFunDef.AggregateCalc
+                .makeTupleList(
+                    productMembersPotScrubbersPotsAndPans(salesCubeSchemaReader));
+
+        List tuples = removeOverlappingTuples(memberList);
+        assertEquals(8, tuples.size());
+        tuples = optimizeChildren(memberList);
+        assertTrue(tuppleListContains(tuples,
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pot Scrubbers", "Cormorant"),
+                salesCubeSchemaReader)));
+        assertFalse(tuppleListContains(tuples,
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pot Scrubbers"),
+                salesCubeSchemaReader)));
+        assertFalse(tuppleListContains(tuples,
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pots and Pans", "Cormorant"),
+                salesCubeSchemaReader)));
+        assertTrue(tuppleListContains(tuples,
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pots and Pans"),
+                salesCubeSchemaReader)));
+        assertEquals(4, tuples.size());
+    }
+
+    public void testOptimizeChildrenForTuplesWithLength3() {
+        List<Member[]> memberList =
+            CrossJoinFunDef.crossJoin(
+                genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
+                productMembersPotScrubbersPotsAndPans(salesCubeSchemaReader));
+        memberList =
+            CrossJoinFunDef.crossJoin(memberList, storeMembersCAAndOR(salesCubeSchemaReader));
+        List tuples = removeOverlappingTuples(memberList);
+        assertEquals(80, tuples.size());
+        tuples = optimizeChildren(memberList);
+        assertFalse(tuppleListContains(tuples,
+            member(
+                Id.Segment.toList("Store","All Stores","USA","OR","Portland"),
+                salesCubeSchemaReader)));
+        assertTrue(tuppleListContains(tuples,
+            member(
+                Id.Segment.toList("Store","All Stores","USA","OR"),
+                salesCubeSchemaReader)));
+        assertEquals(16, tuples.size());
+    }
+
+    public void testOptimizeChildrenWhenTuplesAreFormedWithDifferentLevels() {
+        List<Member[]> memberList =
+            CrossJoinFunDef.crossJoin(
+                genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
+                productMembersPotScrubbersPotsAndPans(salesCubeSchemaReader));
+        List tuples = removeOverlappingTuples(memberList);
+        assertEquals(16, tuples.size());
+
+        tuples = optimizeChildren(memberList);
+        assertEquals(4, tuples.size());
+
+        assertFalse(tuppleListContains(tuples,
+            member(
+                Id.Segment.toList("Product","All Products","Non-Consumable",
+                    "Household","Kitchen Products","Pots and Pans","Cormorant"),
+                salesCubeSchemaReader)));
+        assertTrue(tuppleListContains(tuples,
+            member(
+                Id.Segment.toList("Product","All Products","Non-Consumable",
+                    "Household","Kitchen Products","Pots and Pans"),
+                salesCubeSchemaReader)));
+        assertTrue(tuppleListContains(tuples,
+            member(
+                Id.Segment.toList("Product","All Products","Non-Consumable",
+                    "Household","Kitchen Products","Pot Scrubbers","Cormorant"),
+                salesCubeSchemaReader)));
+    }
+
+    public void testWhetherCJOfChildren() {
+        List<Member[]> memberList =
+            CrossJoinFunDef.crossJoin(
+                genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
+                storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
+
+        List tuples = removeOverlappingTuples(memberList);
+        assertEquals(4, tuples.size());
+
+        tuples = optimizeChildren(memberList);
+        assertEquals(2, tuples.size());
     }
 
     public void testShouldRemoveDuplicateTuples() {
-        SchemaReader schemaReader = getSalesCubeSchemaReader();
-        Member allMember = allMember("Gender");
-        Member firstChildMember = child(schemaReader, allMember, "M");
-        Member secondChildMember = child(schemaReader, allMember, "F");
+
+        Member maleChildMember = member(
+            Id.Segment.toList("Gender","All Gender","M"), salesCubeSchemaReader);
+        Member femaleChildMember = member(
+            Id.Segment.toList("Gender","All Gender","F"), salesCubeSchemaReader);
 
         List<Member> memberList = new ArrayList<Member>();
-        memberList.add(firstChildMember);
-        memberList.add(firstChildMember);
-        memberList.add(secondChildMember);
-        List<Member[]> tuples =
-            AggregateFunDef.AggregateCalc.makeTupleList(memberList);
-
-       List filteredList =
-            AggregateFunDef.AggregateCalc.removeOverlappingTupleEntries(tuples);
-        assertEquals(2, filteredList.size());
+        memberList.add(maleChildMember);
+        memberList.add(maleChildMember);
+        memberList.add(femaleChildMember);
+        List<Member[]> tuples = tupleList(memberList);
+        tuples = removeOverlappingTuples(tuples);
+        assertEquals(2, tuples.size());
     }
 
-    private List<Member[]> crossProduct(Member[] genders, Member[] stores) {
-        List<Member[]> tuples = new ArrayList<Member[]>();
-        for (Member gender : genders) {
-            for (Member store : stores) {
-                tuples.add(new Member[]{gender, store});
+    public void testShouldNotRemoveNonOverlappingTuplesAtDifferentLevels() {
+
+        Member genderMaleChild =
+            member(Id.Segment.toList("Gender","All Gender","M"),
+                salesCubeSchemaReader);
+        Member storeUsaChild =
+            member(Id.Segment.toList("Store","All Stores","USA"),
+                salesCubeSchemaReader);
+
+        List<Member[]> memberList = new ArrayList<Member[]>();
+        memberList.add(new Member[]{genderMaleChild, allMember("Store", salesCube)});
+        memberList.add(new Member[]{allMember("Gender", salesCube),storeUsaChild});
+        List tuples = removeOverlappingTuples(memberList);
+        assertEquals(2, tuples.size());
+    }
+    
+    public void testMemberCountIsSameForAllMembersInTuple() {
+
+        List <Member[]>memberList =
+            CrossJoinFunDef.crossJoin(
+                genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
+                storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
+        Map[] memberCounterMap =
+            AggregateFunDef.AggregateCalc.
+                membersVersusOccurancesInTuple(memberList);
+
+        assertTrue(AggregateFunDef.AggregateCalc.
+            areOccurancesEqual(memberCounterMap[0].values()));
+        assertTrue(AggregateFunDef.AggregateCalc.
+            areOccurancesEqual(memberCounterMap[1].values()));
+    }
+
+    public void testMemberCountIsNotSameForAllMembersInTuple() {
+
+        Member maleChild = member(
+            Id.Segment.toList("Gender","All Gender","M"), salesCubeSchemaReader);
+        Member femaleChild = member(
+            Id.Segment.toList("Gender","All Gender","F"), salesCubeSchemaReader);
+        Member mexicoMember = member(
+            Id.Segment.toList("Store","All Stores","Mexico"), salesCubeSchemaReader);
+
+        List<Member[]> memberList = new ArrayList<Member[]>();
+        memberList.add(new Member[]{maleChild});
+
+        memberList = CrossJoinFunDef.crossJoin(memberList,
+            storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
+
+        memberList.add(new Member[]{femaleChild, mexicoMember});
+
+        Map[] memberCounterMap = AggregateFunDef.AggregateCalc.
+            membersVersusOccurancesInTuple(memberList);
+
+        assertFalse(AggregateFunDef.AggregateCalc.
+            areOccurancesEqual(memberCounterMap[0].values()));
+        assertTrue(AggregateFunDef.AggregateCalc.
+            areOccurancesEqual(memberCounterMap[1].values()));
+    }
+
+    private boolean tuppleListContains(
+        List tuples,
+        Member memberByUniqueName)
+    {
+        if (tuples.get(0) instanceof Member) {
+            return tuples.contains(memberByUniqueName);
+        }
+        for (Object o : tuples) {
+            Member[] members = (Member[]) o;
+            if (Arrays.asList(members).contains(memberByUniqueName)) {
+                return true;
             }
         }
-        return tuples;
+        return false;
+    }
+    
+    private List removeOverlappingTuples(List<Member[]> tuples) {
+        return AggregateFunDef.AggregateCalc.removeOverlappingTupleEntries(tuples);
     }
 
-    private Member allMember(String dimensionName) {
-        Dimension genderDimension = getDimension(dimensionName);
-        Member allMember = genderDimension.getHierarchy().getAllMember();
-        return allMember;
+    private List<Member[]> optimizeChildren(List<Member[]> memberList) {
+        return AggregateFunDef.AggregateCalc.
+            optimizeChildren(memberList, schemaReader,salesCube);
     }
 
-    private Member child(SchemaReader schemaReader, Member allMember, String name) {
-        Member secondChildMember =
-            schemaReader.lookupMemberChildByName(
-                allMember,
-                new Id.Segment(name, Id.Quoting.UNQUOTED));
-        return secondChildMember;
-    }
-
-    private Dimension getDimension(String dimensionName) {
-        return getDimensionWithName(dimensionName, getCubeWithName(
-            "Sales", getSchemaReader().getCubes()).getDimensions());
-    }
-
-    private SchemaReader getSalesCubeSchemaReader() {
-        SchemaReader schemaReader =
-            getCubeWithName("Sales", getSchemaReader().getCubes()).
-                getSchemaReader(getTestContext().getConnection().getRole());
-        return schemaReader;
-    }
-
-    private SchemaReader getSchemaReader() {
-        SchemaReader reader = getTestContext().getConnection().getSchemaReader();
-        return reader;
-    }
-
-    private Cube getCubeWithName(String cubeName, Cube[] cubes) {
-        Cube resultCube = null;
-        for (Cube cube : cubes) {
-            if (cubeName.equals(cube.getName())) {
-                resultCube = cube;
-                break;
-            }
-        }
-        return resultCube;
-    }
-
-    private Dimension getDimensionWithName(String name, Dimension[] dimensions) {
-        Dimension resultDimension = null;
-        for (Dimension dimension : dimensions) {
-            if (dimension.getName().equals(name)) {
-                resultDimension = dimension;
-                break;
-            }
-        }
-        return resultDimension;
+    private List<Member[]> tupleList(List<Member> members) {
+        return AggregateFunDef.AggregateCalc.makeTupleList(members);        
     }
 }

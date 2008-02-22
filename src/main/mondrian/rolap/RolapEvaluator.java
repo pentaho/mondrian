@@ -169,11 +169,11 @@ public class RolapEvaluator implements Evaluator {
     }
 
     /**
-     * Returns the (non-virtual) cube that the current measure belongs to.
-     *
-     * @return cube
+     * Returns the base (non-virtual) cube that the current measure in the
+     * context belongs to.
+     * @return Cube
      */
-    public RolapCube getMeasureCube() {
+    public Cube getMeasureCube() {
         return ((RolapStoredMeasure) currentMembers[0]).getCube();
     }
 
@@ -885,6 +885,16 @@ public class RolapEvaluator implements Evaluator {
 
     public final void setEvalAxes(boolean evalAxes) {
         this.evalAxes = evalAxes;
+    }
+
+    /**
+     * Checks if unrelated dimensions to the measure in the current context
+     * should be ignored.
+     * @return boolean
+     */
+    public boolean shouldIgnoreUnrelatedDimensions() {
+        return getCube().
+            shouldIgnoreUnrelatedDimensions(getMeasureCube().getName());
     }
 }
 

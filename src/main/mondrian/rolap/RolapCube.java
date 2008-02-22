@@ -2172,8 +2172,10 @@ public class RolapCube extends CubeBase {
     }
 
     /**
+     * Finds out non joining dimensions for this cube.
      * Useful for finding out non joining dimensions for a stored measure from
-     * a base cube
+     * a base cube.
+     *
      * @param tuple array of members
      * @return Set of dimensions that do not exist (non joining) in this cube
      */
@@ -2188,8 +2190,10 @@ public class RolapCube extends CubeBase {
     }
 
     /**
+     * Finds out non joining dimensions for this cube.
      * Equality test for dimensions is done based on the unique name. Object
-     * equality can't be used
+     * equality can't be used.
+     *
      * @param otherDims Set of dimensions to be tested for existance in this cube
      * @return Set of dimensions that do not exist (non joining) in this cube
      */

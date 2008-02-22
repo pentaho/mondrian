@@ -216,20 +216,20 @@ public class RolapCubeTest extends FoodMartTestCase {
         Connection connection = testContext.getConnection();
 
         try {
-            RolapCube salesCube = cubeByName(connection, "Sales");
+            RolapCube salesCube = (RolapCube) cubeByName(connection, "Sales");
 
             RolapCube warehouseAndSalesCube =
-                cubeByName(connection, "Warehouse and Sales");
+                (RolapCube) cubeByName(connection, "Warehouse and Sales");
             SchemaReader readerWarehouseAndSales =
                 warehouseAndSalesCube.
                     getSchemaReader();
 
             List<Member> members = new ArrayList<Member>();
-            List<Member> warehouseMembers = warehouseMembers(readerWarehouseAndSales);
+            List<Member> warehouseMembers = warehouseMembersCanadaMexicoUsa(readerWarehouseAndSales);
             Dimension warehouseDim = warehouseMembers.get(0).getDimension();
             members.addAll(warehouseMembers);
 
-            List<Member> storeMembers = storeMembers(readerWarehouseAndSales);
+            List<Member> storeMembers = storeMembersCAAndOR(readerWarehouseAndSales);
             Dimension storeDim = storeMembers.get(0).getDimension();
             members.addAll(storeMembers);
 
@@ -251,35 +251,35 @@ public class RolapCubeTest extends FoodMartTestCase {
             TestContext.create(null).getConnection();
 
         try {
-            RolapCube salesCube1 = cubeByName(connection1, "Sales");
+            RolapCube salesCube1 = (RolapCube) cubeByName(connection1, "Sales");
             SchemaReader readerSales1 =
                 salesCube1.getSchemaReader();
-            List<Member> storeMembersSales = storeMembers(readerSales1);
+            List<Member> storeMembersSales = storeMembersCAAndOR(readerSales1);
             Dimension storeDim1 = storeMembersSales.get(0).getDimension();
             assertEquals(storeDim1, storeDim1);
 
-            RolapCube salesCube2 = cubeByName(connection2, "Sales");
+            RolapCube salesCube2 = (RolapCube) cubeByName(connection2, "Sales");
             SchemaReader readerSales2 =
                 salesCube2.
                     getSchemaReader();
-            List<Member> storeMembersSales2 = storeMembers(readerSales2);
+            List<Member> storeMembersSales2 = storeMembersCAAndOR(readerSales2);
             Dimension storeDim2 = storeMembersSales2.get(0).getDimension();
             assertEquals(storeDim1, storeDim2);
 
 
             RolapCube warehouseAndSalesCube =
-                cubeByName(connection1, "Warehouse and Sales");
+                (RolapCube) cubeByName(connection1, "Warehouse and Sales");
             SchemaReader readerWarehouseAndSales =
                 warehouseAndSalesCube.
                     getSchemaReader();
             List<Member> storeMembersWarehouseAndSales =
-                storeMembers(readerWarehouseAndSales);
+                storeMembersCAAndOR(readerWarehouseAndSales);
             Dimension storeDim3 =
                 storeMembersWarehouseAndSales.get(0).getDimension();
             assertFalse(storeDim1.equals(storeDim3));
 
             List<Member> warehouseMembers =
-                warehouseMembers(readerWarehouseAndSales);
+                warehouseMembersCanadaMexicoUsa(readerWarehouseAndSales);
             Dimension warehouseDim = warehouseMembers.get(0).getDimension();
             assertFalse(storeDim3.equals(warehouseDim));
         }
@@ -289,7 +289,6 @@ public class RolapCubeTest extends FoodMartTestCase {
         }
 
     }
-
 
     private TestContext createTestContextWithAdditionalMembersAndARole() {
         String nonAccessibleMember =
@@ -309,27 +308,6 @@ public class RolapCubeTest extends FoodMartTestCase {
         return testContext.withRole("California manager");
     }
 
-
-    private RolapCube cubeByName(Connection connection, String cubeName) {
-        SchemaReader reader = connection.getSchemaReader();
-
-        Cube[] cubes = reader.getCubes();
-        Cube cube =
-            cubeByName(cubeName, cubes);
-        return (RolapCube) cube;
-    }
-
-    private Dimension getDimensionWithName(String name, Dimension[] dimensions) {
-        Dimension resultDimension = null;
-        for (Dimension dimension : dimensions) {
-            if (dimension.getName().equals(name)) {
-                resultDimension = dimension;
-                break;
-            }
-        }
-        return resultDimension;
-    }
-
     private void assertCalculatedMemberExists(
         String[] expectedCalculatedMembers,
         List<Member> calculatedMembers)
@@ -341,66 +319,6 @@ public class RolapCubeTest extends FoodMartTestCase {
                 expectedCalculatedMemberNames.contains(calculatedMemberName));
         }
     }
-
-    private Cube cubeByName(String cubeName, Cube[] cubes) {
-        Cube resultCube = null;
-        for (Cube cube : cubes) {
-            if (cubeName.equals(cube.getName()))
-            {
-                resultCube = cube;
-                break;
-            }
-        }
-        return resultCube;
-    }
-
-    /**
-     * todo: move this to appropriate parent. is also duplicated in AggregationOnDistinctCountMeasuresTest
-     */
-    private List<Member> storeMembers(SchemaReader reader) {
-        return Arrays.asList(new Member[]{
-            member(Id.Segment.toList(
-                "Store", "All Stores", "USA", "CA", "Alameda"), reader),
-            member(Id.Segment.toList(
-                "Store", "All Stores", "USA", "CA", "Alameda", "HQ"), reader),
-            member(Id.Segment.toList(
-                "Store", "All Stores", "USA", "CA", "Beverly Hills"), reader),
-            member(Id.Segment.toList(
-                "Store", "All Stores", "USA", "CA", "Beverly Hills", "Store 6"), reader),
-            member(Id.Segment.toList(
-                "Store", "All Stores", "USA", "CA", "Los Angeles"), reader),
-            member(Id.Segment.toList(
-                "Store", "All Stores", "USA", "OR", "Portland"), reader),
-            member(Id.Segment.toList(
-                "Store", "All Stores", "USA", "OR", "Portland", "Store 11"), reader),
-            member(Id.Segment.toList(
-                "Store", "All Stores", "USA", "OR", "Salem"), reader),
-            member(Id.Segment.toList(
-                "Store", "All Stores", "USA", "OR", "Salem", "Store 13"), reader)
-        });
-    }
-
-    /**
-     * todo: move to appropriate parent.
-     */
-    private List<Member> warehouseMembers(SchemaReader reader) {
-        return Arrays.asList(new Member[]{
-            member(Id.Segment.toList(
-                "Warehouse", "All Warehouses", "Canada"), reader),
-            member(Id.Segment.toList(
-                "Warehouse", "All Warehouses", "Mexico"), reader),
-            member(Id.Segment.toList(
-                "Warehouse", "All Warehouses", "USA"), reader)
-        });
-    }
-
-    /**
-     * todo: move to appropriate parent.
-     */
-    private static Member member(List<Id.Segment> segmentList, SchemaReader reader) {
-        return reader.getMemberByUniqueName(segmentList, true);
-    }
-    
 
 }
 

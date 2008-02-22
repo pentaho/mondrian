@@ -14,6 +14,7 @@
 package mondrian.olap;
 
 import java.util.List;
+import java.util.Set;
 
 public interface Cube extends OlapElement {
 
@@ -97,6 +98,22 @@ public interface Cube extends OlapElement {
      * @param xml XML string
      */
     Member createCalculatedMember(String xml);
+
+    /**
+     * Finds out non joining dimensions for this cube.
+     *
+     * @param tuple array of members
+     * @return Set of dimensions that do not exist (non joining) in this cube
+     */
+    Set<Dimension> nonJoiningDimensions(Member[] tuple);
+
+    /**
+     * Finds out non joining dimensions for this cube.
+     *
+     * @param otherDims Set of dimensions to be tested for existance in this cube
+     * @return Set of dimensions that do not exist (non joining) in this cube
+     */
+    Set<Dimension> nonJoiningDimensions(Set<Dimension> otherDims);
 }
 
 // End Cube.java

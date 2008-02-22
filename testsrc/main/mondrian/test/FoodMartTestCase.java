@@ -18,6 +18,7 @@ import mondrian.olap.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 /**
  * <code>FoodMartTestCase</code> is a unit test which runs against the FoodMart
@@ -194,7 +195,11 @@ public class FoodMartTestCase extends TestCase {
     /**
      * Executes query1 and query2 and Compares the obtained measure values.
      */
-    protected void assertQueriesReturnSimilarResults(String query1, String query2, TestContext testContext) {
+    protected void assertQueriesReturnSimilarResults(
+        String query1,
+        String query2,
+        TestContext testContext)
+    {
 
         String resultString1 =
                 TestContext.toString(testContext.executeQuery(query1));
@@ -220,6 +225,158 @@ public class FoodMartTestCase extends TestCase {
     protected boolean isDefaultNullMemberRepresentation() {
         return MondrianProperties.instance().NullMemberRepresentation.get()
                 .equals("#null");
+    }
+
+    protected Member member(
+        List<Id.Segment> segmentList,
+        SchemaReader salesCubeSchemaReader)
+    {
+        return salesCubeSchemaReader.getMemberByUniqueName(segmentList, true);
+    }
+
+    protected List<Member> storeMembersCAAndOR(SchemaReader salesCubeSchemaReader) {
+        return Arrays.asList(new Member[]{
+            member(Id.Segment.toList("Store", "All Stores", "USA", "CA",
+                "Alameda"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "CA",
+                "Alameda", "HQ"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "CA",
+                "Beverly Hills"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "CA",
+                "Beverly Hills", "Store 6"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "CA",
+                "Los Angeles"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "OR",
+                "Portland"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "OR",
+                "Portland", "Store 11"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "OR",
+                "Salem"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "OR",
+                "Salem", "Store 13"), salesCubeSchemaReader)
+        });
+    }
+
+    protected List<Member> productMembersPotScrubbersPotsAndPans(
+        SchemaReader salesCubeSchemaReader)
+    {
+        return Arrays.asList(new Member[]{
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pot Scrubbers", "Cormorant"),
+                salesCubeSchemaReader),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pot Scrubbers", "Denny"),
+                salesCubeSchemaReader),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pot Scrubbers", "Red Wing"),
+                salesCubeSchemaReader),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pots and Pans", "Cormorant"),
+                salesCubeSchemaReader),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pots and Pans", "Denny"),
+                salesCubeSchemaReader),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pots and Pans", "High Quality"),
+                salesCubeSchemaReader),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pots and Pans", "Red Wing"),
+                salesCubeSchemaReader),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pots and Pans", "Sunset"),
+                salesCubeSchemaReader)
+        });
+    }
+
+    protected List<Member> genderMembersIncludingAll(
+        boolean includeAllMember,
+        SchemaReader salesCubeSchemaReader,
+        Cube salesCube)
+    {
+        Member maleMember = member(
+            Id.Segment.toList("Gender","All Gender","M"), salesCubeSchemaReader);
+        Member femaleMember = member(
+            Id.Segment.toList("Gender","All Gender","F"), salesCubeSchemaReader);
+        Member [] members;
+        if (includeAllMember) {
+            members = new Member[] {allMember("Gender", salesCube), maleMember,
+                femaleMember};
+        } else  {
+            members = new Member[] {maleMember, femaleMember};
+        }
+        return Arrays.asList(members);
+    }
+
+    protected Member allMember(String dimensionName, Cube salesCube) {
+        Dimension genderDimension = getDimension(dimensionName, salesCube);
+        return genderDimension.getHierarchy().getAllMember();
+    }
+
+    private Dimension getDimension(String dimensionName, Cube salesCube) {
+        return getDimensionWithName(dimensionName, salesCube.getDimensions());
+    }
+
+    protected Dimension getDimensionWithName(
+        String name,
+        Dimension[] dimensions)
+    {
+        Dimension resultDimension = null;
+        for (Dimension dimension : dimensions) {
+            if (dimension.getName().equals(name)) {
+                resultDimension = dimension;
+                break;
+            }
+        }
+        return resultDimension;
+    }
+
+    protected List<Member> warehouseMembersCanadaMexicoUsa(SchemaReader reader) {
+        return Arrays.asList(new Member[]{
+            member(Id.Segment.toList(
+                "Warehouse", "All Warehouses", "Canada"), reader),
+            member(Id.Segment.toList(
+                "Warehouse", "All Warehouses", "Mexico"), reader),
+            member(Id.Segment.toList(
+                "Warehouse", "All Warehouses", "USA"), reader)
+        });
+    }
+
+    protected Cube cubeByName(Connection connection, String cubeName) {
+        SchemaReader reader = connection.getSchemaReader();
+
+        Cube[] cubes = reader.getCubes();
+        Cube cube =
+            cubeByName(cubeName, cubes);
+        return cube;
+    }
+
+    private Cube cubeByName(String cubeName, Cube[] cubes) {
+        Cube resultCube = null;
+        for (Cube cube : cubes) {
+            if (cubeName.equals(cube.getName()))
+            {
+                resultCube = cube;
+                break;
+            }
+        }
+        return resultCube;
+    }
+
+    protected List<Member> storeMembersUsaAndCanada(
+        boolean includeAllMember, SchemaReader salesCubeSchemaReader, Cube salesCube)
+    {
+        Member usaMember = member(Id.Segment.toList("Store", "All Stores", "USA"),
+            salesCubeSchemaReader);
+        Member canadaMember = member(Id.Segment.toList("Store", "All Stores",
+            "CANADA"), salesCubeSchemaReader);
+        Member [] members;
+        if (includeAllMember) {
+            members = new Member[]{
+                allMember("Store", salesCube), usaMember, canadaMember};
+        } else {
+            members = new Member[] {usaMember, canadaMember};
+        }
+        return Arrays.asList(members);
     }
 
     static class QueryAndResult {

@@ -17,10 +17,9 @@ import mondrian.calc.impl.GenericCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.rolap.RolapAggregator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
+import mondrian.rolap.*;
+
+import java.util.*;
 
 /**
  * Definition of the <code>AGGREGATE</code> MDX function.
@@ -96,7 +95,11 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 if (list.get(0) instanceof Member) {
                     list = makeTupleList(list);
                 }
+
                 list = removeOverlappingTupleEntries(list);
+
+                list = optimizeChildren(list,
+                    evaluator.getSchemaReader(),evaluator.getMeasureCube());
                 checkIfAggregationSizeIsTooLarge(list);
 
                 // Can't aggregate distinct-count values in the same way
@@ -131,7 +134,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          * @param list
          */
 
-        public static List removeOverlappingTupleEntries(List<Member[]> list) {
+        public static List<Member[]> removeOverlappingTupleEntries(List<Member[]> list) {
             List<Member[]> trimmedList = new ArrayList<Member[]>();
             for (Member[] tuple1 : list) {
                 if (trimmedList.isEmpty()) {
@@ -155,16 +158,6 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 }
             }
             return trimmedList;
-        }
-
-        private static boolean isEqual(Member[] tuple1, Member[] tuple2) {
-            for (int i = 0; i < tuple1.length; i++) {
-                if (!tuple1[i].getUniqueName().
-                    equals(tuple2[i].getUniqueName())) {
-                   return false;
-                }
-            }
-            return true; 
         }
 
         /**
@@ -220,6 +213,205 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             }
             return anyDependsButFirst(getCalcs(), dimension);
         }
+
+        /**
+         * In distinct Count aggregation, if tuple list is a result
+         * m.children * n.children then it can be optimized to m * n
+         *
+         * <p>
+         * E.g.
+         * List consist of:
+         *  (Gender.[All Gender].[F], [Store].[All Stores].[USA]),
+         *  (Gender.[All Gender].[F], [Store].[All Stores].[USA].[OR]),
+         *  (Gender.[All Gender].[F], [Store].[All Stores].[USA].[CA]),
+         *  (Gender.[All Gender].[F], [Store].[All Stores].[USA].[WA]),
+         *  (Gender.[All Gender].[F], [Store].[All Stores].[CANADA])
+         *  (Gender.[All Gender].[M], [Store].[All Stores].[USA]),
+         *  (Gender.[All Gender].[M], [Store].[All Stores].[USA].[OR]),
+         *  (Gender.[All Gender].[M], [Store].[All Stores].[USA].[CA]),
+         *  (Gender.[All Gender].[M], [Store].[All Stores].[USA].[WA]),
+         *  (Gender.[All Gender].[M], [Store].[All Stores].[CANADA])
+         * Can be optimized to:
+         *  (Gender.[All Gender], [Store].[All Stores].[USA])
+         *  (Gender.[All Gender], [Store].[All Stores].[CANADA])
+         *
+         * @param tuples
+         * @param reader
+         * @param baseCubeForMeasure
+         */
+        public static List optimizeChildren(
+            List<Member[]> tuples,
+            SchemaReader reader,
+            Cube baseCubeForMeasure)
+        {
+
+            Map[] membersOccurancesInTuple =
+                membersVersusOccurancesInTuple(tuples);
+            int tupleLength = tuples.get(0).length;
+
+            Set[] sets = new HashSet[tupleLength];
+            boolean optimized = false;
+            for (int i = 0; i < tupleLength; i++) {
+
+                if (areOccurancesEqual(membersOccurancesInTuple[i].values())) {
+                    Set members = membersOccurancesInTuple[i].keySet();
+                    int originalSize = members.size();
+                    sets[i] = optimizeMemberSet(new HashSet<Member>(members),
+                        reader, baseCubeForMeasure);
+                    if (sets[i].size() != originalSize) {
+                        optimized = true;
+                    }
+                }
+            }
+            if (optimized) {
+                if (sets.length == 1) {
+                    return new ArrayList(sets[0]);
+                }
+                return crossProd(sets);
+            }
+            return tuples;
+        }
+
+        /**
+         * Finds member occurrences in tuple and generates a map of Members
+         * versus their occurrences in tuples.
+         *
+         * @param tuples
+         */
+        public static Map[] membersVersusOccurancesInTuple(List<Member[]> tuples)
+        {
+
+            int tupleLength = tuples.get(0).length;
+            Map[] counters = new Map[tupleLength];
+            for (int i = 0; i < counters.length; i++) {
+                counters[i] = new HashMap<Member, Integer>();
+            }
+            for (Member[] tuple : tuples) {
+                for (int i = 0; i < tuple.length; i++) {
+                    Member member = tuple[i];
+                    Map<Member, Integer> map = counters[i];
+                    if (map.containsKey(member)) {
+                        Integer count = map.get(member);
+                        map.put(member, ++count);
+                    } else {
+                        map.put(member, 1);
+                    }
+                }
+            }
+            return counters;
+        }
+
+        /**
+         * Checks Whether all occurrences of dimension members are same
+         * @param collection
+         * @return boolean true if all values are same
+         */
+        public static boolean areOccurancesEqual(Collection<Integer> collection) {
+            return (new HashSet<Integer>(collection).size() == 1);
+        }
+
+        private static Set optimizeMemberSet(
+            Set<Member> members,
+            SchemaReader reader,
+            Cube baseCubeForMeasure)
+        {
+
+            boolean didOptimize;
+            Set<Member> membersToBeOptimized = new HashSet<Member>();
+            Set<Member> optimizedMembers = new HashSet<Member>();
+            while (members.size() > 0) {
+                Iterator<Member> iterator = members.iterator();
+                Member first = iterator.next();
+                membersToBeOptimized.add(first);
+                iterator.remove();
+
+                Member firstParentMember = first.getParentMember();
+                while (iterator.hasNext()) {
+                    Member current =  iterator.next();
+                    Member currentParentMember = current.getParentMember();
+                    if (firstParentMember == null && currentParentMember == null ||
+                        firstParentMember.equals(currentParentMember)) {
+                        membersToBeOptimized.add(current);
+                        iterator.remove();
+                    }
+                }
+
+                int childCountOfParent = -1;
+                if (firstParentMember != null) {
+                    childCountOfParent = getChildCount(firstParentMember, reader);
+                }
+                if (childCountOfParent != -1 &&
+                    membersToBeOptimized.size() == childCountOfParent &&
+                    canOptimize(firstParentMember,baseCubeForMeasure)) {
+                    optimizedMembers.add(firstParentMember);
+                    didOptimize = true;
+                } else {
+
+                    optimizedMembers.addAll(membersToBeOptimized);
+                    didOptimize = false;
+                }
+                membersToBeOptimized.clear();
+
+                if (members.size() == 0 && didOptimize) {
+                    Set temp = members;
+                    members = optimizedMembers;
+                    optimizedMembers = temp;
+                }
+            }
+            return optimizedMembers;
+        }
+
+        private static boolean isEqual(Member[] tuple1, Member[] tuple2) {
+            for (int i = 0; i < tuple1.length; i++) {
+                if (!tuple1[i].getUniqueName().
+                    equals(tuple2[i].getUniqueName())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static boolean canOptimize(
+            Member parentMember,
+            Cube baseCube)
+        {
+            return dimensionJoinsToBaseCube(parentMember.getDimension(),
+                baseCube) || !parentMember.isAll();
+        }
+
+        private static List<Member[]> crossProd(Set[] sets) {
+            List firstList = new ArrayList(sets[0]);
+            List secondList = new ArrayList(sets[1]);
+            List tupleList = CrossJoinFunDef.crossJoin(firstList, secondList);
+            for (int i = 2; i < sets.length; i++) {
+                Set set = sets[i];
+                tupleList = CrossJoinFunDef.
+                    crossJoin(tupleList, new ArrayList(set));
+            }
+            return tupleList;
+        }
+
+        private static boolean dimensionJoinsToBaseCube(
+            Dimension dimension,
+            Cube baseCube)
+        {
+            HashSet<Dimension> dimensions = new HashSet<Dimension>();
+            dimensions.add(dimension);
+            return baseCube.nonJoiningDimensions(dimensions).size() == 0;
+        }
+
+        private static int getChildCount(
+            Member parentMember,
+            SchemaReader reader)
+        {
+            int childrenCountFromCache =
+                reader.getChildrenCountFromCache(parentMember);
+            if (childrenCountFromCache != -1) {
+                return childrenCountFromCache;
+            }
+            return reader.getMemberChildren(parentMember).length;
+        }
+
     }
 }
 
