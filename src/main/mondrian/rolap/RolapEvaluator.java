@@ -16,6 +16,7 @@ import mondrian.calc.Calc;
 import mondrian.calc.ParameterSlot;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
 import mondrian.util.Format;
 
@@ -188,7 +189,8 @@ public class RolapEvaluator implements Evaluator {
         final Map<Exp, Calc> compiledExps = new HashMap<Exp, Calc>();
         private final Query query;
         private final Date queryStartTime;
-
+        final SqlQuery.Dialect currentDialect;
+        
         /**
          * Default members of each hierarchy, from the schema reader's
          * perspective. Finding the default member is moderately expensive, but
@@ -209,6 +211,7 @@ public class RolapEvaluator implements Evaluator {
                         dimension.getHierarchy()));
             }
             this.defaultMembers = list.toArray(new RolapMember[list.size()]);
+            this.currentDialect = SqlQuery.Dialect.create(schemaReader.getDataSource());
         }
 
         /**
@@ -346,6 +349,10 @@ public class RolapEvaluator implements Evaluator {
 
     public Date getQueryStartTime() {
         return root.getQueryStartTime();
+    }
+    
+    public SqlQuery.Dialect getDialect() {
+        return root.currentDialect;
     }
     
     public final RolapEvaluator push(Member[] members) {

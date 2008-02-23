@@ -18,6 +18,7 @@ import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.rolap.*;
+import mondrian.rolap.sql.*;
 
 import java.util.*;
 
@@ -100,7 +101,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
 
                 list = optimizeChildren(list,
                     evaluator.getSchemaReader(),evaluator.getMeasureCube());
-                checkIfAggregationSizeIsTooLarge(list);
+                checkIfAggregationSizeIsTooLarge(evaluator, list);
 
                 // Can't aggregate distinct-count values in the same way
                 // which is used for other types of aggregations. To evaluate a
@@ -195,7 +196,13 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             return parentLevelCount > 0;
         }
 
-        private void checkIfAggregationSizeIsTooLarge(List list) {
+        private void checkIfAggregationSizeIsTooLarge(Evaluator evaluator, List list) {
+            if (evaluator instanceof RolapEvaluator &&
+                ((RolapEvaluator)evaluator).getDialect().isLucidDB()) {
+                // LucidDB does not have upper limit on IN list predicate size.
+                return;
+            }
+
             if (list.size() > MondrianProperties.instance().MaxConstraints.get()) {
                 throw newEvalException(
                     null,"Distinct Count aggregation is not supported over a " +

@@ -420,20 +420,33 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         int origMaxConstraint = props.MaxConstraints.get();
         props.MaxConstraints.set(7);
 
-        assertQueryReturns(
+        String query =
             "WITH MEMBER PRODUCT.X as 'Aggregate({" +
-                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good],\n" +
-                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth],\n" +
-                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure],\n" +
-                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus],\n" +
-                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl],\n" +
-                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth],\n" +
-                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure],\n" +
-                "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus]})' " +
+            "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good],\n" +
+            "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth],\n" +
+            "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure],\n" +
+            "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus],\n" +
+            "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl],\n" +
+            "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth],\n" +
+            "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure],\n" +
+            "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus]})' " +
             "SELECT PRODUCT.X  ON ROWS, " +
             "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n" +
-            "FROM [WAREHOUSE AND SALES2]",
-            fold(
+            "FROM [WAREHOUSE AND SALES2]";
+        
+        String result;
+        if (getTestContext().getDialect().isLucidDB()) {
+            // LucidDB has no limit on the size of IN list
+            result =
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[X]}\n" +
+                "Row #0: 1,360\n";            
+        } else {
+            result =
                 "Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
@@ -441,7 +454,11 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "Axis #2:\n" +
                 "{[Product].[X]}\n" +
                 "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: " +
-                "Distinct Count aggregation is not supported over a large list\n"));
+                "Distinct Count aggregation is not supported over a large list\n";
+        }
+        
+        assertQueryReturns(query, fold(result));
+        
         props.MaxConstraints.set(origMaxConstraint);
     }
 
