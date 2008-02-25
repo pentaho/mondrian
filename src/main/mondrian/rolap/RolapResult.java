@@ -834,6 +834,7 @@ class RolapResult extends ResultBase {
                 try {
                     o = revaluator.evaluateCurrent();
                 } catch (MondrianEvaluationException e) {
+                    LOGGER.warn("Mondrian: exception in executeStripe.", e);                    
                     o = e;
                 }
 
