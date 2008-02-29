@@ -269,6 +269,17 @@ public interface Evaluator {
      * @return Cube
      */
     Cube getMeasureCube();
+
+    /**
+     * If IgnoreMeasureForNonJoiningDimension is set to true and one or more
+     * members are on unrelated dimension for the measure in current context
+     * then returns true.
+     * @param members
+     * dimensions for the members need to be checked whether
+     * related or unrelated
+     * @return boolean
+     */
+    boolean needToReturnNullForUnrelatedDimension(Member[] members);
 }
 
 // End Evaluator.java

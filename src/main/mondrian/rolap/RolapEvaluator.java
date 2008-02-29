@@ -174,8 +174,40 @@ public class RolapEvaluator implements Evaluator {
      * context belongs to.
      * @return Cube
      */
-    public Cube getMeasureCube() {
-        return ((RolapStoredMeasure) currentMembers[0]).getCube();
+    public RolapCube getMeasureCube() {
+        RolapCube measureCube = null;
+        if (currentMembers[0] instanceof RolapStoredMeasure) {
+            measureCube = ((RolapStoredMeasure) currentMembers[0]).getCube();
+        }
+        return measureCube;
+    }
+
+    /**
+     * If IgnoreMeasureForNonJoiningDimension is set to true and one or more
+     * members are on unrelated dimension for the measure in current context
+     * then returns true.
+     * @param members
+     * dimensions for the members need to be checked whether
+     * related or unrelated
+     * @return boolean
+     */
+    public boolean needToReturnNullForUnrelatedDimension(Member[] members) {
+        RolapCube virtualCube = getCube();
+        RolapCube baseCube = getMeasureCube();
+        if (virtualCube.isVirtual() && baseCube != null) {
+            if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName())) {
+                return false;
+            } else if (MondrianProperties.instance()
+                .IgnoreMeasureForNonJoiningDimension.get()) {
+                Set<Dimension> nonJoiningDimensions =
+                    baseCube.nonJoiningDimensions(members);
+                if (!nonJoiningDimensions.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     protected static class RolapEvaluatorRoot {

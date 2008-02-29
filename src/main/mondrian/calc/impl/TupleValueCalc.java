@@ -13,14 +13,9 @@ import mondrian.olap.*;
 import mondrian.olap.fun.TupleFunDef;
 import mondrian.olap.type.TupleType;
 import mondrian.olap.type.Type;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapStoredMeasure;
 import mondrian.calc.TupleCalc;
 import mondrian.calc.Calc;
 import mondrian.calc.DummyExp;
-
-import java.util.Set;
-import java.util.List;
 
 /**
  * Expression which evaluates a tuple expression,
@@ -52,7 +47,7 @@ public class TupleValueCalc extends GenericCalc {
         }
 
         final boolean needToReturnNull =
-            handleUnrelatedDimension(evaluator, members);
+            evaluator.needToReturnNullForUnrelatedDimension(members);
         if (needToReturnNull) {
             return null;
         }
@@ -61,23 +56,9 @@ public class TupleValueCalc extends GenericCalc {
         for (int i = 0; i < members.length; i++) {
             savedMembers[i] = evaluator.setContext(members[i]);
         }
-        final Object o = evaluator.evaluateCurrent();
+        Object result = evaluator.evaluateCurrent();
         evaluator.setContext(savedMembers);
-        return o;
-    }
-
-    private boolean handleUnrelatedDimension(Evaluator evaluator, Member[] members) {
-        if (MondrianProperties.instance()
-            .IgnoreMeasureForNonJoiningDimension.get()) {
-            RolapCube cube =
-                ((RolapStoredMeasure)evaluator.getMembers()[0]).getCube();
-            Set<Dimension> nonJoiningDimensions =
-                cube.nonJoiningDimensions(members);
-            if (!nonJoiningDimensions.isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+        return result;
     }
 
     public Calc[] getCalcs() {

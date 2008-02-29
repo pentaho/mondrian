@@ -9,10 +9,14 @@
 */
 package mondrian.calc.impl;
 
-import mondrian.olap.*;
-import mondrian.olap.type.Type;
+import mondrian.calc.Calc;
+import mondrian.calc.MemberCalc;
+import mondrian.olap.Dimension;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
+import mondrian.olap.Member;
 import mondrian.olap.type.ScalarType;
-import mondrian.calc.*;
+import mondrian.olap.type.Type;
 
 /**
  * Expression which evaluates a few member expressions,
@@ -42,6 +46,7 @@ public class MemberValueCalc extends GenericCalc {
     }
 
     public Object evaluate(Evaluator evaluator) {
+        Member[] members = new Member[memberCalcs.length];
         for (int i = 0; i < memberCalcs.length; i++) {
             MemberCalc memberCalc = memberCalcs[i];
             final Member member = memberCalc.evaluateMember(evaluator);
@@ -55,10 +60,18 @@ public class MemberValueCalc extends GenericCalc {
                 return null;
             }
             savedMembers[i] = evaluator.setContext(member);
+            members[i] = member;
         }
-        final Object o = evaluator.evaluateCurrent();
+        final boolean needToReturnNull =
+            evaluator.needToReturnNullForUnrelatedDimension(members);
+        if (needToReturnNull) {
+            evaluator.setContext(savedMembers);
+            return null;
+        }
+
+        final Object result = evaluator.evaluateCurrent();
         evaluator.setContext(savedMembers);
-        return o;
+        return result;
     }
 
     public Calc[] getCalcs() {

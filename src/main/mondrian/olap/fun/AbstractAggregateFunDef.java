@@ -134,14 +134,15 @@ public class AbstractAggregateFunDef extends FunDefBase {
         }
 
         RolapCube virtualCube = (RolapCube) evaluator.getCube();
-        RolapCube baseCube = ((RolapStoredMeasure) measure).getCube();
-
-        if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName())) {
-            return ignoreUnrelatedDimensions(tuplesForAggregation, baseCube);
-        } else if (MondrianProperties.instance()
-            .IgnoreMeasureForNonJoiningDimension.get()) {
-            return ignoreMeasureForNonJoiningDimension(
-                    tuplesForAggregation, baseCube);
+        RolapCube baseCube = (RolapCube) evaluator.getMeasureCube();
+        if (virtualCube.isVirtual() && baseCube != null) {
+            if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName())) {
+                return ignoreUnrelatedDimensions(tuplesForAggregation, baseCube);
+            } else if (MondrianProperties.instance()
+                .IgnoreMeasureForNonJoiningDimension.get()) {
+                return ignoreMeasureForNonJoiningDimension(
+                        tuplesForAggregation, baseCube);
+            }
         }
         return tuplesForAggregation;
     }

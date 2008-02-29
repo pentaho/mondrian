@@ -24,9 +24,11 @@ import mondrian.olap.MondrianProperties;
 public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
 
     boolean originalNonEmptyFlag;
-    protected void setUp() throws Exception {        
-        originalNonEmptyFlag = MondrianProperties.instance().EnableNonEmptyOnAllAxis.get();
-        MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(true);
+    private final MondrianProperties prop = MondrianProperties.instance();
+
+    protected void setUp() throws Exception {
+        originalNonEmptyFlag = prop.EnableNonEmptyOnAllAxis.get();
+        prop.EnableNonEmptyOnAllAxis.set(true);
     }
 
     private String cubeSales3 =
@@ -60,7 +62,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             "</VirtualCube>";
 
     protected void tearDown() throws Exception {
-        MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(originalNonEmptyFlag);
+        prop.EnableNonEmptyOnAllAxis.set(originalNonEmptyFlag);
     }
     
     public TestContext getTestContext() {
@@ -324,4 +326,38 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
                 "Row #6: 216,537\n" +
                 "Row #6: 0.27\n"));
     }
+
+    public void testUnrelatedDimPropOverridesIgnoreMeasure() {
+        boolean origIgnoreMeasure = prop.IgnoreMeasureForNonJoiningDimension.get();
+        prop.IgnoreMeasureForNonJoiningDimension.set(true);
+        assertQueryReturns("WITH\n" +
+            "MEMBER [Measures].[Total Sales] AS '[Measures].[Store Sales] + " +
+            "[Measures].[Warehouse Sales]'\n" +
+            "MEMBER [Product].[AggSP1_1] AS\n" +
+            "'IIF([Measures].CURRENTMEMBER IS [Measures].[Total Sales],\n" +
+            "[Warehouse].[All Warehouses],\n" +
+            "[Warehouse].[All Warehouses])'\n" +
+            "MEMBER [Product].[AggSP1_2] AS\n" + 
+            "'IIF([Measures].CURRENTMEMBER IS [Measures].[Total Sales],\n" +
+            "([Warehouse].[All Warehouses]),\n" +
+            "([Warehouse].[All Warehouses]))'\n" +
+            "\n" +
+            "SELECT\n" +
+            "{[Measures].[Total Sales]} ON AXIS(0),\n" +
+            "{[Product].[AggSP1_1], [Product].[AggSP1_2]} ON AXIS(1)\n" +
+            "FROM\n" +
+            "[Warehouse and Sales2]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Total Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[AggSP1_1]}\n" +
+                "{[Product].[AggSP1_2]}\n" +
+                "Row #0: 762,009.02\n" +
+                "Row #1: 762,009.02\n"));
+        prop.IgnoreMeasureForNonJoiningDimension.set(origIgnoreMeasure);
+    }
+
 }
