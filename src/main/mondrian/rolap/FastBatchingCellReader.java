@@ -663,12 +663,35 @@ public class FastBatchingCellReader implements CellReader {
          * </ul>
          */
         boolean canBatch(Batch other) {
-            return hasOverlappingBitKeys(other) &&
-                (hasSameCompoundPredicate(other) ||
-                haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other))
+            return hasOverlappingBitKeys(other)
+                && constraintsMatch(other)
                 && hasSameMeasureList(other)
                 && haveSameStarAndAggregation(other);
         }
+
+        private boolean constraintsMatch(Batch other) {
+            if(areBothDistinctCountBatches(other)){
+                if(getConstrainedColumnsBitKey().equals(
+                    other.getConstrainedColumnsBitKey())) {
+                        return hasSameCompoundPredicate(other)
+                            && haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other);
+                }
+                return hasSameCompoundPredicate(other)
+                    || haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other);
+            }
+            return haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other);
+        }
+
+        private boolean areBothDistinctCountBatches(Batch other) {
+            return this.hasDistinctCountMeasure()
+                && !this.hasNormalMeasures()
+                && other.hasDistinctCountMeasure()
+                && !other.hasNormalMeasures();
+        }
+
+        private boolean hasNormalMeasures() {
+            return getDistinctMeasureCount(measuresList) !=  measuresList.size();
+        }        
 
         private boolean hasSameMeasureList(Batch other) {
             return (this.measuresList.size() == other.measuresList.size() &&

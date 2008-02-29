@@ -804,6 +804,33 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         MondrianProperties.instance().ReadAggregates.set(readAggregates);
     }
 
+    public void testCannotBatchTwoBatchesAtTheSameLevel() {
+        FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
+
+        FastBatchingCellReader.Batch firstBatch =
+            createBatch(fbcr,
+                new String[]{tableTime, tableProductClass,
+                    tableProductClass}, new String[]{fieldYear,
+                fieldProductFamily, fieldProductDepartment},
+                new String[][]{fieldValuesYear,
+                    {"Food"},
+                    fieldValueProductDepartment}, cubeNameSales,
+                "[Measures].[Customer Count]");
+
+        FastBatchingCellReader.Batch secondBatch =
+            createBatch(fbcr,
+                new String[]{tableTime, tableProductClass,
+                    tableProductClass}, new String[]{fieldYear,
+                fieldProductFamily, fieldProductDepartment},
+                new String[][]{fieldValuesYear,
+                    {"Drink"},
+                    fieldValueProductDepartment}, cubeNameSales,
+                "[Measures].[Customer Count]");
+
+        assertFalse(firstBatch.canBatch(secondBatch));
+        assertFalse(secondBatch.canBatch(firstBatch));
+    }
+
     public void testCompositeBatchLoadAggregation() {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 

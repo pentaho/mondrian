@@ -1302,6 +1302,58 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             areOccurancesEqual(memberCounterMap[1].values()));
     }
 
+    public void testAggregatesAtTheSameLevelForNormalAndDistinctCountMeasure() {
+        boolean useGroupingSets = props.EnableGroupingSets.get();
+        props.EnableGroupingSets.set(true);
+        try {
+            assertQueryReturns("WITH " +
+            "MEMBER GENDER.AGG AS 'AGGREGATE( { GENDER.[F] } )' " +
+            "MEMBER GENDER.AGG2 AS 'AGGREGATE( { GENDER.[M] } )' " +
+            "SELECT " +
+            "{ MEASURES.[CUSTOMER COUNT], MEASURES.[UNIT SALES] } ON 0, " +
+            "{ GENDER.AGG, GENDER.AGG2 } ON 1 \n" +
+            "FROM SALES",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Customer Count]}\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Gender].[AGG]}\n" +
+                    "{[Gender].[AGG2]}\n" +
+                    "Row #0: 2,755\n" +
+                    "Row #0: 131,558\n" +
+                    "Row #1: 2,826\n" +
+                    "Row #1: 135,215\n"));
+        } finally {
+            props.EnableGroupingSets.set(useGroupingSets);
+        }
+    }
+
+    public void testDistinctCountForAggregatesAtTheSameLevel() {
+        boolean useGroupingSets = props.EnableGroupingSets.get();
+        props.EnableGroupingSets.set(true);
+        try {
+            assertQueryReturns("WITH " +
+            "MEMBER GENDER.AGG AS 'AGGREGATE( { GENDER.[F], GENDER.[M] } )' " +
+            "SELECT " +
+            "{MEASURES.[CUSTOMER COUNT]} ON 0, " +
+            "{GENDER.AGG } ON 1 " +
+            "FROM SALES",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Customer Count]}\n" +
+                    "Axis #2:\n" +
+                    "{[Gender].[AGG]}\n" +
+                    "Row #0: 5,581\n"));
+        } finally {
+            props.EnableGroupingSets.set(useGroupingSets);
+        }
+    }
+
     private boolean tuppleListContains(
         List tuples,
         Member memberByUniqueName)
