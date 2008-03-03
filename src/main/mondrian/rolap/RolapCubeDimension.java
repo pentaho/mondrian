@@ -39,7 +39,8 @@ public class RolapCubeDimension extends RolapDimension {
         this.rolapDimension = rolapDim;
         this.cubeOrdinal = cubeOrdinal;
         this.parent = parent;
-        
+        this.caption = cubeDim.caption;
+
         // create new hierarchies
         hierarchies = new RolapCubeHierarchy[rolapDim.getHierarchies().length];
         
@@ -81,9 +82,8 @@ public class RolapCubeDimension extends RolapDimension {
         RolapCubeDimension that = (RolapCubeDimension)o;
         if (!parent.equals(that.parent)) {
             return false;
-        } else {
-            return getUniqueName().equals(that.getUniqueName());
         }
+        return getUniqueName().equals(that.getUniqueName());
     }
 
     RolapCubeHierarchy newHierarchy(String subName, boolean hasAll) {
@@ -91,6 +91,9 @@ public class RolapCubeDimension extends RolapDimension {
     }
     
     public String getCaption() {
+        if (caption != null) {
+            return caption;
+        }
         return rolapDimension.getCaption();
     }
 
@@ -100,7 +103,7 @@ public class RolapCubeDimension extends RolapDimension {
         }
         rolapDimension.setCaption(caption);
     }
-    
+
     public DimensionType getDimensionType() {
         return rolapDimension.getDimensionType();
     }

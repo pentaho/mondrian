@@ -3,24 +3,23 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.test;
 
 import org.apache.log4j.*;
+import org.apache.log4j.Level;
 import org.apache.log4j.varia.LevelRangeFilter;
 
-import mondrian.rolap.RolapCube;
 import mondrian.rolap.aggmatcher.AggTableManager;
+import mondrian.olap.*;
 import mondrian.util.Bug;
-import mondrian.olap.Cube;
-import mondrian.olap.MondrianException;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Result;
 
 import java.io.StringWriter;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Unit tests for various schema features.
@@ -837,35 +836,45 @@ public class SchemaTest extends FoodMartTestCase {
      * dimension usage name is different then source name
      */
     public void testAllMemberMultipleDimensionUsages() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext =
+            TestContext.create(
                 null,
-
                 "<Cube name=\"Sales Two Sales Dimensions\">\n" +
                     "  <Table name=\"sales_fact_1997\"/>\n" +
-                    "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n" +
-                    "  <DimensionUsage name=\"Store2\" source=\"Store\" foreignKey=\"product_id\"/>\n" +
+                    "  <DimensionUsage name=\"Store\" caption=\"First Store\" source=\"Store\" foreignKey=\"store_id\"/>\n" +
+                    "  <DimensionUsage name=\"Store2\" caption=\"Second Store\" source=\"Store\" foreignKey=\"product_id\"/>\n" +
                     "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" "+
                     "   formatString=\"Standard\"/>\n" +
                     "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"" +
                     "   formatString=\"#,###.00\"/>\n" +
                     "</Cube>",
                 null, null, null, null);
-        
-       testContext.assertQueryReturns(
-                "select\n" +
-                    " {[Store].[All Stores]} on columns,\n" +
-                    " {[Store2].[All Store2s]} on rows\n" +
-                    "From [Sales Two Sales Dimensions]",
-                    fold(
-                            "Axis #0:\n" +
-                            "{}\n" +
-                            "Axis #1:\n" +
-                            "{[Store].[All Stores]}\n" +
-                            "Axis #2:\n" +
-                            "{[Store2].[All Store2s]}\n" +
-                            "Row #0: 266,773\n"));
+
+        testContext.assertQueryReturns(
+            "select\n" +
+                " {[Store].[All Stores]} on columns,\n" +
+                " {[Store2].[All Store2s]} on rows\n" +
+                "From [Sales Two Sales Dimensions]",
+            fold(
+                "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Store].[All Stores]}\n" +
+                    "Axis #2:\n" +
+                    "{[Store2].[All Store2s]}\n" +
+                    "Row #0: 266,773\n"));
+
+        final Result result = testContext.executeQuery(
+            "select ([Store].[All Stores], [Store2].[All Store2s]) on 0\n"
+                + "from [Sales Two Sales Dimensions]");
+        final Axis axis = result.getAxes()[0];
+        final Position position = axis.getPositions().get(0);
+        assertEquals(
+            "First Store", position.get(0).getDimension().getCaption());
+        assertEquals(
+            "Second Store", position.get(1).getDimension().getCaption());
     }
-    
+
     /**
      * This test displays an informative error message if someone uses
      * an unaliased name instead of an aliased name
@@ -1658,8 +1667,7 @@ public class SchemaTest extends FoodMartTestCase {
             "select from [Sales]", "Unknown role 'Role2'");
     }
     
-    public void testVirtualCubeNamedSetSupportInSchema(){
-
+    public void testVirtualCubeNamedSetSupportInSchema() {
         final TestContext testContext = TestContext.createSubstitutingCube(
                 "Warehouse and Sales", null,null, "<NamedSet name=\"Non CA State Stores\" " +
                 "formula=\"EXCEPT({[Store].[Store Country].[USA].children},{[Store].[Store Country].[USA].[CA]})\"/>");
@@ -1702,7 +1710,8 @@ public class SchemaTest extends FoodMartTestCase {
                                 "Row #0: 266,773\n" +
                                 "Row #0: 192,025\n"));
     }
-    public void testVirtualCubeNamedSetSupportInSchemaError(){
+
+    public void testVirtualCubeNamedSetSupportInSchemaError() {
 
         final TestContext testContext = TestContext.createSubstitutingCube(
                 "Warehouse and Sales", null,null, "<NamedSet name=\"Non CA State Stores\" " +
@@ -1732,6 +1741,22 @@ public class SchemaTest extends FoodMartTestCase {
         } catch (MondrianException e) {
             assertTrue(e.getMessage().indexOf("bad formula") >= 0);
         }
+    }
+
+    public void _testValidatorFindsNumericLevel() {
+        // In the real foodmart, the level has type="Numeric"
+        final TestContext testContext =
+            TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name=\"Store Size in SQFT\">\n"
+                + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+                + "      <Table name=\"store\"/>\n"
+                + "      <Level name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>");
+        final List<Throwable> list = new ArrayList<Throwable>();
+//        testContext.getConnection().getSchema().validate(list);
+        throw new RuntimeException("todo ");
     }
 }
 
