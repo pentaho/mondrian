@@ -30,7 +30,8 @@ import java.util.Set;
  */
 class DrillThroughQuerySpec extends AbstractQuerySpec {
     private final CellRequest request;
-    private final String[] columnNames;
+    private final List<String> columnNames;
+    private final int maxColumnNameLength;
 
     public DrillThroughQuerySpec(
         CellRequest request,
@@ -38,10 +39,12 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     {
         super(request.getMeasure().getStar(), countOnly);
         this.request = request;
+        this.maxColumnNameLength =
+            getStar().getSqlQueryDialect().getMaxColumnNameLength();
         this.columnNames = computeDistinctColumnNames();
     }
 
-    private String[] computeDistinctColumnNames() {
+    private List<String> computeDistinctColumnNames() {
         final List<String> columnNames = new ArrayList<String>();
         final Set<String> columnNameSet = new HashSet<String>();
 
@@ -52,7 +55,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
 
         addColumnName(request.getMeasure(), columnNames, columnNameSet);
 
-        return columnNames.toArray(new String[columnNames.size()]);
+        return columnNames;
     }
 
     private void addColumnName(
@@ -68,12 +71,23 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         } else {
             columnName = "c" + Integer.toString(columnNames.size());
         }
-        // Register the column name, and if it's not unique,
-        // generate names until it is.
-        // Instead of having mysterious column name like x0, x1 ..
-        // rename columns as ColumnName_0, ColumnName_1 ..
+        // Register the column name, and if it's not unique, append numeric
+        // suffixes until it is. Also make sure that it is within the
+        // range allowed by this SQL dialect.
+        String originalColumnName = columnName;
+        if (columnName.length() > maxColumnNameLength) {
+            columnName = columnName.substring(0, maxColumnNameLength);
+        }
         for (int j = 0; !columnNameSet.add(columnName); j++) {
-            columnName = columnName + "_" + Integer.toString(j);
+            final String suffix = "_" + Integer.toString(j);
+            columnName = originalColumnName;
+            if (originalColumnName.length() + suffix.length()
+                > maxColumnNameLength) {
+                columnName =
+                    originalColumnName.substring(
+                        0, maxColumnNameLength - suffix.length());
+            }
+            columnName += suffix;
         }
         columnNames.add(columnName);
     }
@@ -89,7 +103,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
 
     public String getMeasureAlias(final int i) {
         Util.assertTrue(i == 0);
-        return columnNames[columnNames.length - 1];
+        return columnNames.get(columnNames.size() - 1);
     }
 
     public RolapStar.Column[] getColumns() {
@@ -97,7 +111,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     }
 
     public String getColumnAlias(final int i) {
-        return columnNames[i];
+        return columnNames.get(i);
     }
 
     public StarColumnPredicate getColumnPredicate(final int i) {

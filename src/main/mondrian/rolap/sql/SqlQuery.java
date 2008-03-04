@@ -679,6 +679,7 @@ public class SqlQuery {
         private final String productVersion;
         private final Set<List<Integer>> supportedResultSetTypes;
         private final boolean readOnly;
+        private final int maxColumnNameLength;
 
         private static final int[] RESULT_SET_TYPE_VALUES = {
             ResultSet.TYPE_FORWARD_ONLY,
@@ -693,13 +694,15 @@ public class SqlQuery {
             String productName,
             String productVersion,
             Set<List<Integer>> supportedResultSetTypes,
-            boolean readOnly)
+            boolean readOnly,
+            int maxColumnNameLength)
         {
             this.quoteIdentifierString = quoteIdentifierString;
             this.productName = productName;
             this.productVersion = productVersion;
             this.supportedResultSetTypes = supportedResultSetTypes;
             this.readOnly = readOnly;
+            this.maxColumnNameLength = maxColumnNameLength;
         }
 
         /**
@@ -779,12 +782,22 @@ public class SqlQuery {
                     "while detecting isReadOnly");
             }
 
+            final int maxColumnNameLength;
+            try {
+                maxColumnNameLength =
+                    databaseMetaData.getMaxColumnNameLength();
+            } catch (SQLException e) {
+                throw Util.newInternal(e,
+                    "while detecting maxColumnNameLength");
+            }
+
             return new Dialect(
                 quoteIdentifierString,
                 productName,
                 productVersion,
                 supports,
-                readOnly);
+                readOnly,
+                maxColumnNameLength);
         }
 
         /**
@@ -1678,6 +1691,18 @@ public class SqlQuery {
 
         public String toString() {
             return productName;
+        }
+
+        /**
+         * Returns the maximum length of the name of a database column or query
+         * alias allowed by this dialect.
+         *
+         * @see java.sql.DatabaseMetaData#getMaxColumnNameLength()
+         *
+         * @return maximum number of characters in a column name
+         */
+        public int getMaxColumnNameLength() {
+            return maxColumnNameLength;
         }
     }
 

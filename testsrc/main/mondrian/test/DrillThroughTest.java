@@ -18,6 +18,10 @@ import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.sql.SqlQuery;
 
+import javax.sql.DataSource;
+import java.sql.Statement;
+import java.sql.ResultSet;
+
 /**
  * Test generation of SQL to access the fact table data underlying an MDX
  * result set.
@@ -626,6 +630,59 @@ public class DrillThroughTest extends FoodMartTestCase {
             " `customer`.`yearly_income` ASC";
 
         getTestContext().assertSqlEquals(expectedSql, sql, 86837);
+    }
+
+    /**
+     * Tests that long levels do not result in column aliases larger than the
+     * database can handle. For example, Access allows maximum of 64; Oracle
+     * allows 30.
+     *
+     * <p>Testcase for bug 1893959, "Generated drill-through columns too long
+     * for DBMS".
+     *
+     * @throws Exception on error
+     */
+    public void testTruncateLevelName() throws Exception {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name=\"Education Level2\" foreignKey=\"customer_id\">\n"
+                + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
+                + "      <Table name=\"customer\"/>\n"
+                + "      <Level name=\"Education Level but with a very long name that will be too long if converted directly into a column\" column=\"education\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>",
+            null);
+
+        Result result = testContext.executeQuery(
+            "SELECT {[Measures].[Unit Sales]} on columns,\n" +
+                "{[Education Level2].Children} on rows\n"
+                + "FROM [Sales]\n"
+                + "WHERE ([Time].[1997].[Q1].[1], [Product].[Non-Consumable].[Carousel].[Specialty].[Sunglasses].[ADJ].[ADJ Rosy Sunglasses]) ");
+
+        String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
+
+        // Check that SQL is valid.
+        java.sql.Connection connection = null;
+        try {
+            DataSource dataSource = getConnection().getDataSource();
+            connection = dataSource.getConnection();
+            final Statement statement = connection.createStatement();
+            final ResultSet resultSet = statement.executeQuery(sql);
+            assertEquals(6, resultSet.getMetaData().getColumnCount());
+            final String columnName = resultSet.getMetaData().getColumnName(5);
+            assertTrue(
+                columnName,
+                columnName.startsWith("Education Level but with a very long"));
+            int n = 0;
+            while (resultSet.next()) {
+                ++n;
+            }
+            assertEquals(2, n);
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
     }
 }
 
