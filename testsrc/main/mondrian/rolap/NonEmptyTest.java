@@ -3132,6 +3132,38 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
+     * Test that executes &lt;Level&gt;.Members and applies a non-empty
+     * constraint. Must work regardless of whether
+     * {@link MondrianProperties#EnableNativeNonEmpty native} is enabled.
+     * Testcase for bug
+     * 1722959, "NON EMPTY Level.MEMBERS fails if nonempty.enable=false"
+     */
+    public void testNonEmptyLevelMembers() {
+        assertQueryReturns(
+            "WITH MEMBER [Measures].[One] AS '1' " +
+                "SELECT " +
+                "NON EMPTY {[Measures].[One], [Measures].[Store Sales]} ON rows, " +
+                "NON EMPTY [Store].[Store State].MEMBERS on columns "+
+                "FROM sales",
+            fold(
+                "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Store].[All Stores].[USA].[CA]}\n" +
+                    "{[Store].[All Stores].[USA].[OR]}\n" +
+                    "{[Store].[All Stores].[USA].[WA]}\n" +
+                    "Axis #2:\n" +
+                    "{[Measures].[One]}\n" +
+                    "{[Measures].[Store Sales]}\n" +
+                    "Row #0: 1\n" +
+                    "Row #0: 1\n" +
+                    "Row #0: 1\n" +
+                    "Row #1: 159,167.84\n" +
+                    "Row #1: 142,277.07\n" +
+                    "Row #1: 263,793.22\n"));
+    }
+
+    /**
      * Make sure the mdx runs correctly and not in native mode.
      *
      * @param rowCount number of rows returned

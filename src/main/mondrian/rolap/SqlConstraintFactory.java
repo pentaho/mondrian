@@ -44,15 +44,38 @@ public class SqlConstraintFactory {
     }
 
     public TupleConstraint getLevelMembersConstraint(Evaluator context) {
-        return getLevelMembersConstraint(context, null);
+        boolean[] satisfied = {false};
+        return getLevelMembersConstraint(context, null, satisfied);
     }
 
+    /**
+     * Returns a constraint that restricts the members of a level to those that
+     * are non-empty in the given context. If the constraint cannot be
+     * implemented (say if native constraints are disabled) returns null.
+     *
+     * @param context Context within which members must be non-empty
+     * @param levels levels being referenced in the current context
+     * @param satisfied Set to false if constraint does not satisfy non-empty
+     * context and caller still has to do it
+     * @return Constraint
+     */
     public TupleConstraint getLevelMembersConstraint(
         Evaluator context,
-        Level [] levels) {
-        if (!enabled ||
-            !SqlContextConstraint.isValidContext(context, false, levels))
-        {
+        Level [] levels,
+        boolean[] satisfied)
+    {
+        if (context == null) {
+            satisfied[0] = true;
+            return DefaultTupleConstraint.instance();
+        }
+        if (!enabled) {
+            // Cannot implement constraint in SQL; caller must still implement
+            // it
+            satisfied[0] = false;
+            return DefaultTupleConstraint.instance();
+        }
+        satisfied[0] = true;
+        if (!SqlContextConstraint.isValidContext(context, false, levels)) {
             return DefaultTupleConstraint.instance();
         }
         return new SqlContextConstraint((RolapEvaluator) context, false);
@@ -62,7 +85,8 @@ public class SqlConstraintFactory {
         RolapMember parent,
         Id.Segment childName)
     {
-        // ragged hierarchies span multiple levels, so SQL WHERE does not work there
+        // Ragged hierarchies span multiple levels, so SQL WHERE does not work
+        // there
         if (!enabled || parent.getHierarchy().isRagged()) {
             return DefaultMemberChildrenConstraint.instance();
         }
@@ -73,6 +97,11 @@ public class SqlConstraintFactory {
      * Returns a constraint that allows to read all children of multiple parents
      * at once using a LevelMember query style. This does not work
      * for parent/child hierarchies.
+     *
+     * @param parentMembers List of parents (all must belong to same level)
+     * @param mcc           The constraint that would return the children for
+     *                      each single parent
+     * @return constraint
      */
     public TupleConstraint getDescendantsConstraint(
         List<RolapMember> parentMembers,

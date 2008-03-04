@@ -48,13 +48,6 @@ public class Bug {
 
     /**
      * Whether
-     * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1722959&group_id=35302&atid=414613">bug 1722959, "NON EMPTY &lt;Level&gt;.MEMBERS fails if nonempty.enable=false"</a>
-     * is fixed.
-     */
-    public static final boolean Bug1722959Fixed = false;
-
-    /**
-     * Whether
      * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1767775&group_id=35302&atid=414613">bug 1767775, "Predicate references RolapStar.Column when used in AggStar"</a>
      * is fixed.
      */
@@ -96,6 +89,9 @@ public class Bug {
      *
      * <p>Some tests fail if memory monitor is switched on, and Access and
      * Derby tend to use a lot of memory because they are embedded.
+     *
+     * @param dialect Dialect
+     * @return Whether to avoid a test
      */
     public static boolean avoidMemoryOverflow(SqlQuery.Dialect dialect) {
         return dialect.isAccess() &&

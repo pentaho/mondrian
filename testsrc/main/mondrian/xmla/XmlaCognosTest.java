@@ -41,11 +41,6 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
     }
 
     public void testNonEmptyWithCognosCalcOneLiteral() throws Exception {
-        // Disable testcase until bug 1722959 is fixed.
-        if (!Bug.Bug1722959Fixed &&
-            !MondrianProperties.instance().EnableNativeNonEmpty.get()) {
-            return;
-        }
         final BooleanProperty property =
             MondrianProperties.instance().EnableNonEmptyOnAllAxis;
         boolean currentState = property.get();

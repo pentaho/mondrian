@@ -420,14 +420,30 @@ public abstract class RolapSchemaReader
     }
 
     public Member[] getLevelMembers(Level level, Evaluator context) {
+        boolean[] satisfied = {false};
         TupleConstraint constraint =
-                sqlConstraintFactory.getLevelMembersConstraint(
-                    context,
-                    new Level [] { level });
-        final MemberReader memberReader = getMemberReader(level.getHierarchy());
-        final List<RolapMember> membersInLevel =
+            sqlConstraintFactory.getLevelMembersConstraint(
+                context,
+                new Level [] { level },
+                satisfied);
+        final MemberReader memberReader =
+            getMemberReader(level.getHierarchy());
+        List<RolapMember> membersInLevel =
             memberReader.getMembersInLevel(
                 (RolapLevel) level, 0, Integer.MAX_VALUE, constraint);
+        if (!satisfied[0]) {
+            // Could not satisfy the constraint by generating SQL. Apply the
+            // non-empty constraint manually.
+            final Evaluator evaluator = context.push();
+            List<RolapMember> allMembersInLevel = membersInLevel;
+            membersInLevel = new ArrayList<RolapMember>();
+            for (RolapMember member : allMembersInLevel) {
+                evaluator.setContext(member);
+                if (evaluator.evaluateCurrent() != null) {
+                    membersInLevel.add(member);
+                }
+            }
+        }
         return RolapUtil.toArray(membersInLevel);
     }
 
