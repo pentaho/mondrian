@@ -672,7 +672,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             final String columnName = resultSet.getMetaData().getColumnName(5);
             assertTrue(
                 columnName,
-                columnName.startsWith("Education Level but with a very long"));
+                columnName.startsWith("Education Level but with a"));
             int n = 0;
             while (resultSet.next()) {
                 ++n;
