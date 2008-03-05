@@ -72,6 +72,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     final Factory factory;
     private Locale locale;
+    private String roleName;
 
     /**
      * Creates an Olap4j connection to Mondrian.
@@ -499,6 +500,26 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
             return Locale.getDefault();
         }
         return locale;
+    }
+
+    public void setRoleName(String roleName) throws OlapException {
+        final Role role;
+        if (roleName == null) {
+            role = null;
+        } else {
+            role = this.connection.getSchema().lookupRole(roleName);
+            if (role == null) {
+                throw helper.createException("Unknown role '" + roleName + "'");
+            }
+        }
+        // Remember the name of the role, because mondrian roles don't know
+        // their own name.
+        this.roleName = roleName;
+        this.connection.setRole(role);
+    }
+
+    public String getRoleName() {
+        return roleName;
     }
 
     // inner classes
