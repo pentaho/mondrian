@@ -577,20 +577,19 @@ public class RolapSchema implements Schema {
                                 "You may only specify <MemberGrant> if <Hierarchy> has access='custom'");
                         }
                         Member member = schemaReader.getMemberByUniqueName(
-                            Util.parseIdentifier(memberGrant.member), false);
-                        if (member != null) {
-                            if (member.getHierarchy() != hierarchy) {
-                                throw Util.newError(
-                                    "Member '" +
-                                        member +
-                                        "' is not in hierarchy '" +
-                                        hierarchy +
-                                        "'");
-                            }
-                            role.grant(
+                            Util.parseIdentifier(memberGrant.member), true);
+                        assert member != null;
+                        if (member.getHierarchy() != hierarchy) {
+                            throw Util.newError(
+                                "Member '" +
+                                    member +
+                                    "' is not in hierarchy '" +
+                                    hierarchy +
+                                    "'");
+                        }
+                        role.grant(
                                 member,
                                 getAccess(memberGrant.access, memberAllowed));
-                        }
                     }
                 }
             }

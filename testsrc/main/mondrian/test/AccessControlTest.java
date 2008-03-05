@@ -48,6 +48,24 @@ public class AccessControlTest extends FoodMartTestCase {
             "[Gender].children", "MDX object '[Gender]' not found in cube 'Sales'");
     }
 
+    public void testRoleMemberAccessNonExistentMemberFails() {
+        final TestContext testContext = TestContext.create(
+            null, null, null, null, null,
+            "<Role name=\"Role1\">\n"
+                + "  <SchemaGrant access=\"none\">\n"
+                + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+                + "        <MemberGrant member=\"[Store].[USA].[Non Existent]\" access=\"all\"/>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>")
+            .withRole("Role1");
+        testContext.assertThrows(
+            "select {[Store].Children} on 0 from [Sales]",
+            "Member '[Store].[USA].[Non Existent]' not found");
+    }
+
     public void testRoleMemberAccess() {
         final Connection connection = getRestrictedConnection();
         assertMemberAccess(connection, Access.CUSTOM, "[Store].[USA]"); // because CA has access

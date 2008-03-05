@@ -44,6 +44,10 @@
     <text>MDX object ''{0}'' not found in {1}</text>
 </exception>
 
+<exception id="321020" name="MemberNotFound">
+    <text>Member ''{0}'' not found</text>
+</exception>
+
 <message id="322000" name="MdxCubeName">
     <text>cube ''{0}''</text>
 </message>

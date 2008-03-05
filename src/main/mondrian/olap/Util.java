@@ -601,11 +601,14 @@ public class Util extends XOMUtil {
                     LOGGER.debug(buf.toString());
                 }
 
-                if (failIfNotFound) {
-                    throw MondrianResource.instance().MdxChildObjectNotFound.ex(
-                        name.name, parent.getQualifiedName());
-                } else {
+                if (!failIfNotFound) {
                     return null;
+                } else if (category == Category.Member) {
+                    throw MondrianResource.instance().MemberNotFound.ex(
+                        quoteMdxIdentifier(names));
+                } else {
+                    throw MondrianResource.instance().MdxChildObjectNotFound
+                        .ex(name.name, parent.getQualifiedName());
                 }
             }
             parent = child;
