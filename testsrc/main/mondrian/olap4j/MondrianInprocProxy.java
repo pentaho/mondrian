@@ -82,6 +82,10 @@ public class MondrianInprocProxy
             }
         );
     }
+
+    public String getEncodingCharsetName() {
+        return "UTF-8";
+    }
 }
 
 // End MondrianInprocProxy.java
