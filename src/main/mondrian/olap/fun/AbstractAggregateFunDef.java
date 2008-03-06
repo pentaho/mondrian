@@ -127,6 +127,10 @@ public class AbstractAggregateFunDef extends FunDefBase {
         Evaluator evaluator)
     {
 
+        if (tuplesForAggregation.size() == 0) {
+            return tuplesForAggregation;
+        }
+
         RolapMember measure = (RolapMember) evaluator.getMembers()[0];
 
         if (measure.isCalculated()) {
