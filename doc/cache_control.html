@@ -4,7 +4,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == Copyright (C) 2006-2007 Julian Hyde
+  == Copyright (C) 2006-2008 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -49,7 +49,7 @@
 
 <p>The problem is that mondrian's cache gets in the way. Usually the cache is a great help, because it ensures that mondrian only goes to the DBMS once for a given piece of data, but the cache becomes out of date if the underlying database is changing.</p>
 
-<p>This is solved with a new set of APIs for cache control in mondrian-2.3. Before I explain the API, let's understand how mondrian caches data.</p>
+<p>This is solved with a set of APIs for cache control. Before I explain the API, let's understand how mondrian caches data.</p>
 
 <h3>2. How mondrian's cache works<a name="How_mondrians_cache_works">&nbsp;</a></h3>
 
@@ -128,7 +128,7 @@ Predicates: Year=1997, Nation=USA, State={OR, WA}</pre></td>
 1997 Q1      USA    xxx
 1997 Q2      USA    xxx
 
-Predicates: Year=1997, Quarter=any, Nation=USA</td>
+Predicates: Year=1997, Quarter=any, Nation=USA</pre></td>
 </tr>
 
 <tr>
@@ -143,9 +143,8 @@ Predicates: Year=1997, Quarter=any, Nation=USA, State={OR, WA}</pre></td>
 </tr>
 </table>
 </blockquote>
-</p>
 
-<p>Now suppose that the application knows that batch of rows from Oregon, Q2 have been updated in the fact table. The application notifies Mondrian of the fact by defining a cache region:
+<p>Now suppose that the application knows that batch of rows from Oregon, Q2 have been updated in the fact table. The application notifies Mondrian of the fact by defining a cache region:</p>
 
 <blockquote><code>
 // Lookup members<br/>
@@ -156,11 +155,11 @@ SchemaReader schemaReader =<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;salesCube.getSchemaReader(null);<br/>
 Member memberTimeQ2 =<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;schemaReader.getMemberByUniqueName(<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new String[]{"Time", "1997", "Q2"},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Id.Segment.toList("Time", "1997", "Q2"),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;true);<br/>
 Member memberCustomerOR =<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;schemaReader.getMemberByUniqueName(<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new String[]{"Customer", "USA", "OR"},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Id.Segment.toList("Customer", "USA", "OR"),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;true);<br>
 	<br>
 	// Create an object for managing the cache<br>
@@ -186,12 +185,12 @@ CacheControl.CellRegion regionOregonQ2 =<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;regionTimeQ2);</code>
 </blockquote>
 
-and flushing that region:
+<p>and flushing that region:</p>
 
 <blockquote><code>
 cacheControl.flush(regionOregonQ2);
 </code>
-</blockquote></p>
+</blockquote>
 
 <p>Now let's look at what segments are left in memory after the flush.</p>
 
@@ -261,7 +260,7 @@ SchemaReader schemaReader =<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;salesCube.getSchemaReader(null);<br/>
 Member memberTimeOct15 =<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;schemaReader.getMemberByUniqueName(<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new String[]{"Time", "2006", "Q1"", "2" ,"15},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Id.Segment.toList("Time", "2006", "Q1", "2" ,"15"),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;true);<br/>
 <br/>
 // Create a cache region defined by<br/>
@@ -406,20 +405,14 @@ are all deprecated and are superseded by the CacheControl methods
  
 <ul>
 <li><code>void flushSchemaCache();</code></li>
-<li><code>void flushSchema(
-    String catalogUrl,
-    String connectionKey,
-    String jdbcUser,
-    String dataSourceStr);</code></li>
-<li><code>void flushSchema(
-    String catalogUrl,
-    DataSource dataSource);</code></li>
+<li><code>void flushSchema(String catalogUrl, String connectionKey, String jdbcUser, String dataSourceStr);</code></li>
+<li><code>void flushSchema(String catalogUrl, DataSource dataSource);</code></li>
 </ul>
 
 
 <hr noshade size="1"/>
 <p>
-    Author: Julian Hyde; last modified by Julian Hyde, February 2008.<br/>
+    Author: Julian Hyde; last modified by Julian Hyde, March 2008.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/cache_control.html?ac=22">log</a>)<br/>
     Copyright (C) 2006-2008 Julian Hyde
