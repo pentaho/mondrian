@@ -480,6 +480,22 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
+    public void testDrillThrough2() throws Exception {
+        if (!MondrianProperties.instance().EnableTotalCount.booleanValue()) {
+            return;
+        }
+        String requestType = "EXECUTE";
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CATALOG_NAME_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+
+        doTest(requestType, props, TestContext.instance());
+    }
+
     public void testExecuteSlicer() throws Exception {
         String requestType = "EXECUTE";
         Properties props = getDefaultRequestProperties(requestType);

@@ -12800,227 +12800,95 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
                         xmlns:sql="urn:schemas-microsoft-com:xml-sql"
                         xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-                        <xsd:complexType name="MemberType">
-                            <xsd:sequence>
-                                <xsd:element name="UName" type="xsd:string"/>
-                                <xsd:element name="Caption" type="xsd:string"/>
-                                <xsd:element name="LName" type="xsd:string"/>
-                                <xsd:element name="LNum" type="xsd:unsignedInt"/>
-                                <xsd:element name="DisplayInfo" type="xsd:unsignedInt"/>
-                                <xsd:sequence maxOccurs="unbounded" minOccurs="0">
-                                    <xsd:any maxOccurs="unbounded" processContents="lax"/>
-                                </xsd:sequence>
-                            </xsd:sequence>
-                            <xsd:attribute name="Hierarchy" type="xsd:string"/>
-                        </xsd:complexType>
-                        <xsd:complexType name="PropType">
-                            <xsd:attribute name="name" type="xsd:string"/>
-                        </xsd:complexType>
-                        <xsd:complexType name="TupleType">
-                            <xsd:sequence maxOccurs="unbounded">
-                                <xsd:element name="Member" type="MemberType"/>
-                            </xsd:sequence>
-                        </xsd:complexType>
-                        <xsd:complexType name="MembersType">
-                            <xsd:sequence maxOccurs="unbounded">
-                                <xsd:element name="Member" type="MemberType"/>
-                            </xsd:sequence>
-                            <xsd:attribute name="Hierarchy" type="xsd:string"/>
-                        </xsd:complexType>
-                        <xsd:complexType name="TuplesType">
-                            <xsd:sequence maxOccurs="unbounded">
-                                <xsd:element name="Tuple" type="TupleType"/>
-                            </xsd:sequence>
-                        </xsd:complexType>
-                        <xsd:complexType name="CrossProductType">
-                            <xsd:sequence>
-                                <xsd:choice maxOccurs="unbounded" minOccurs="0">
-                                    <xsd:element name="Members" type="MembersType"/>
-                                    <xsd:element name="Tuples" type="TuplesType"/>
-                                </xsd:choice>
-                            </xsd:sequence>
-                            <xsd:attribute name="Size" type="xsd:unsignedInt"/>
-                        </xsd:complexType>
-                        <xsd:complexType name="OlapInfo">
-                            <xsd:sequence>
-                                <xsd:element name="CubeInfo">
-                                    <xsd:complexType>
-                                    <xsd:sequence>
-                                    <xsd:element
-                                    maxOccurs="unbounded" name="Cube">
-                                    <xsd:complexType>
-                                    <xsd:sequence>
-                                    <xsd:element
-                                    name="CubeName" type="xsd:string"/>
-                                    </xsd:sequence>
-                                    </xsd:complexType>
-                                    </xsd:element>
-                                    </xsd:sequence>
-                                    </xsd:complexType>
-                                </xsd:element>
-                                <xsd:element name="AxesInfo">
-                                    <xsd:complexType>
-                                    <xsd:sequence>
-                                    <xsd:element
-                                    maxOccurs="unbounded" name="AxisInfo">
-                                    <xsd:complexType>
-                                    <xsd:sequence>
-                                    <xsd:element
-                                    maxOccurs="unbounded"
-                                    minOccurs="0" name="HierarchyInfo">
-                                    <xsd:complexType>
-                                    <xsd:sequence>
-
-                                    <xsd:sequence maxOccurs="unbounded">
-
-                                    <xsd:element
-                                    name="UName" type="PropType"/>
-
-                                    <xsd:element
-                                    name="Caption" type="PropType"/>
-
-                                    <xsd:element
-                                    name="LName" type="PropType"/>
-
-                                    <xsd:element
-                                    name="LNum" type="PropType"/>
-
-                                    <xsd:element
-                                    maxOccurs="unbounded"
-                                    minOccurs="0"
-                                    name="DisplayInfo" type="PropType"/>
-                                    </xsd:sequence>
-                                    <xsd:sequence>
-
-                                    <xsd:any
-                                    maxOccurs="unbounded"
-                                    minOccurs="0" processContents="lax"/>
-                                    </xsd:sequence>
-                                    </xsd:sequence>
-
-                                    <xsd:attribute
-                                    name="name"
-                                    type="xsd:string" use="required"/>
-                                    </xsd:complexType>
-                                    </xsd:element>
-                                    </xsd:sequence>
-                                    <xsd:attribute
-                                    name="name" type="xsd:string"/>
-                                    </xsd:complexType>
-                                    </xsd:element>
-                                    </xsd:sequence>
-                                    </xsd:complexType>
-                                </xsd:element>
-                                <xsd:element name="CellInfo">
-                                    <xsd:complexType>
-                                    <xsd:sequence>
-                                    <xsd:sequence
-                                    maxOccurs="unbounded" minOccurs="0">
-                                    <xsd:choice>
-                                    <xsd:element
-                                    name="Value" type="PropType"/>
-                                    <xsd:element
-                                    name="FmtValue" type="PropType"/>
-                                    <xsd:element
-                                    name="BackColor" type="PropType"/>
-                                    <xsd:element
-                                    name="ForeColor" type="PropType"/>
-                                    <xsd:element
-                                    name="FontName" type="PropType"/>
-                                    <xsd:element
-                                    name="FontSize" type="PropType"/>
-                                    <xsd:element
-                                    name="FontFlags" type="PropType"/>
-                                    <xsd:element
-                                    name="FormatString" type="PropType"/>
-                                    <xsd:element
-                                    name="NonEmptyBehavior" type="PropType"/>
-                                    <xsd:element
-                                    name="SolveOrder" type="PropType"/>
-                                    <xsd:element
-                                    name="Updateable" type="PropType"/>
-                                    <xsd:element
-                                    name="Visible" type="PropType"/>
-                                    <xsd:element
-                                    name="Expression" type="PropType"/>
-                                    </xsd:choice>
-                                    </xsd:sequence>
-                                    <xsd:sequence
-                                    maxOccurs="unbounded" minOccurs="0">
-                                    <xsd:any
-                                    maxOccurs="unbounded" processContents="lax"/>
-                                    </xsd:sequence>
-                                    </xsd:sequence>
-                                    </xsd:complexType>
-                                </xsd:element>
-                            </xsd:sequence>
-                        </xsd:complexType>
-                        <xsd:complexType name="Axes">
-                            <xsd:sequence maxOccurs="unbounded">
-                                <xsd:element name="Axis">
-                                    <xsd:complexType>
-                                    <xsd:choice
-                                    maxOccurs="unbounded" minOccurs="0">
-                                    <xsd:element
-                                    name="CrossProduct" type="CrossProductType"/>
-                                    <xsd:element name="Tuples" type="TuplesType"/>
-                                    <xsd:element name="Members" type="MembersType"/>
-                                    </xsd:choice>
-                                    <xsd:attribute name="name" type="xsd:string"/>
-                                    </xsd:complexType>
-                                </xsd:element>
-                            </xsd:sequence>
-                        </xsd:complexType>
-                        <xsd:complexType name="CellData">
-                            <xsd:sequence>
-                                <xsd:element maxOccurs="unbounded"
-                                    minOccurs="0" name="Cell">
-                                    <xsd:complexType>
-                                    <xsd:sequence maxOccurs="unbounded">
-                                    <xsd:choice>
-                                    <xsd:element name="Value"/>
-                                    <xsd:element
-                                    name="FmtValue" type="xsd:string"/>
-                                    <xsd:element
-                                    name="BackColor" type="xsd:unsignedInt"/>
-                                    <xsd:element
-                                    name="ForeColor" type="xsd:unsignedInt"/>
-                                    <xsd:element
-                                    name="FontName" type="xsd:string"/>
-                                    <xsd:element
-                                    name="FontSize" type="xsd:unsignedShort"/>
-                                    <xsd:element
-                                    name="FontFlags" type="xsd:unsignedInt"/>
-                                    <xsd:element
-                                    name="FormatString" type="xsd:string"/>
-                                    <xsd:element
-                                    name="NonEmptyBehavior" type="xsd:unsignedShort"/>
-                                    <xsd:element
-                                    name="SolveOrder" type="xsd:unsignedInt"/>
-                                    <xsd:element
-                                    name="Updateable" type="xsd:unsignedInt"/>
-                                    <xsd:element
-                                    name="Visible" type="xsd:unsignedInt"/>
-                                    <xsd:element
-                                    name="Expression" type="xsd:string"/>
-                                    </xsd:choice>
-                                    </xsd:sequence>
-                                    <xsd:attribute
-                                    name="CellOrdinal"
-                                    type="xsd:unsignedInt" use="required"/>
-                                    </xsd:complexType>
-                                </xsd:element>
-                            </xsd:sequence>
-                        </xsd:complexType>
                         <xsd:element name="root">
                             <xsd:complexType>
-                                <xsd:sequence maxOccurs="unbounded">
-                                    <xsd:element name="OlapInfo" type="OlapInfo"/>
-                                    <xsd:element name="Axes" type="Axes"/>
-                                    <xsd:element name="CellData" type="CellData"/>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
                                 </xsd:sequence>
                             </xsd:complexType>
                         </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0"
+                                    name="Store_x0020_Country"
+                                    sql:field="Store Country" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Store_x0020_State"
+                                    sql:field="Store State" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Store_x0020_City"
+                                    sql:field="Store City" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Store_x0020_Name"
+                                    sql:field="Store Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Store_x0020_Sqft"
+                                    sql:field="Store Sqft" type="xsd:double"/>
+                                <xsd:element minOccurs="0"
+                                    name="Store_x0020_Type"
+                                    sql:field="Store Type" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Year"
+                                    sql:field="Year" type="xsd:integer"/>
+                                <xsd:element minOccurs="0"
+                                    name="Quarter" sql:field="Quarter" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Month"
+                                    sql:field="Month" type="xsd:integer"/>
+                                <xsd:element minOccurs="0"
+                                    name="Product_x0020_Family"
+                                    sql:field="Product Family" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Product_x0020_Department"
+                                    sql:field="Product Department" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Product_x0020_Category"
+                                    sql:field="Product Category" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Product_x0020_Subcategory"
+                                    sql:field="Product Subcategory" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Brand_x0020_Name"
+                                    sql:field="Brand Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Product_x0020_Name"
+                                    sql:field="Product Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Media_x0020_Type"
+                                    sql:field="Media Type" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Promotion_x0020_Name"
+                                    sql:field="Promotion Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="State_x0020_Province"
+                                    sql:field="State Province" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="City"
+                                    sql:field="City" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Name"
+                                    sql:field="Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Name_x0020__x0028_Key_x0029_"
+                                    sql:field="Name (Key)" type="xsd:integer"/>
+                                <xsd:element minOccurs="0"
+                                    name="Education_x0020_Level"
+                                    sql:field="Education Level" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Gender"
+                                    sql:field="Gender" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Marital_x0020_Status"
+                                    sql:field="Marital Status" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Yearly_x0020_Income"
+                                    sql:field="Yearly Income" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Unit_x0020_Sales"
+                                    sql:field="Unit Sales" type="xsd:double"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
                     </xsd:schema>
                     <row>
                         <Store_x0020_Country>86</Store_x0020_Country>
@@ -13165,6 +13033,238 @@ FROM Sales
             <AxisFormat>TupleFormat</AxisFormat>
           </PropertyList>
         </Properties>
+</Execute>
+</soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testDrillThrough2">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0"
+                                    name="Store_x0020_Country"
+                                    sql:field="Store Country" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Store_x0020_State"
+                                    sql:field="Store State" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Store_x0020_City"
+                                    sql:field="Store City" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Store_x0020_Name"
+                                    sql:field="Store Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Store_x0020_Sqft"
+                                    sql:field="Store Sqft" type="xsd:double"/>
+                                <xsd:element minOccurs="0"
+                                    name="Store_x0020_Type"
+                                    sql:field="Store Type" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Year"
+                                    sql:field="Year" type="xsd:integer"/>
+                                <xsd:element minOccurs="0"
+                                    name="Quarter" sql:field="Quarter" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Month"
+                                    sql:field="Month" type="xsd:integer"/>
+                                <xsd:element minOccurs="0"
+                                    name="Product_x0020_Family"
+                                    sql:field="Product Family" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Product_x0020_Department"
+                                    sql:field="Product Department" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Product_x0020_Category"
+                                    sql:field="Product Category" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Product_x0020_Subcategory"
+                                    sql:field="Product Subcategory" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Brand_x0020_Name"
+                                    sql:field="Brand Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Product_x0020_Name"
+                                    sql:field="Product Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Media_x0020_Type"
+                                    sql:field="Media Type" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Promotion_x0020_Name"
+                                    sql:field="Promotion Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="State_x0020_Province"
+                                    sql:field="State Province" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="City"
+                                    sql:field="City" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Name"
+                                    sql:field="Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Name_x0020__x0028_Key_x0029_"
+                                    sql:field="Name (Key)" type="xsd:integer"/>
+                                <xsd:element minOccurs="0"
+                                    name="Education_x0020_Level"
+                                    sql:field="Education Level" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Gender"
+                                    sql:field="Gender" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Marital_x0020_Status"
+                                    sql:field="Marital Status" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Yearly_x0020_Income"
+                                    sql:field="Yearly Income" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="Sales_x0020_Count"
+                                    sql:field="Sales Count" type="xsd:integer"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <Store_x0020_Country>2</Store_x0020_Country>
+                        <Store_x0020_State>2</Store_x0020_State>
+                        <Store_x0020_City>2</Store_x0020_City>
+                        <Store_x0020_Name>2</Store_x0020_Name>
+                        <Store_x0020_Sqft>2</Store_x0020_Sqft>
+                        <Store_x0020_Type>2</Store_x0020_Type>
+                        <Year>2</Year>
+                        <Quarter>2</Quarter>
+                        <Month>2</Month>
+                        <Product_x0020_Family>2</Product_x0020_Family>
+                        <Product_x0020_Department>2</Product_x0020_Department>
+                        <Product_x0020_Category>2</Product_x0020_Category>
+                        <Product_x0020_Subcategory>2</Product_x0020_Subcategory>
+                        <Brand_x0020_Name>2</Brand_x0020_Name>
+                        <Product_x0020_Name>2</Product_x0020_Name>
+                        <Media_x0020_Type>2</Media_x0020_Type>
+                        <Promotion_x0020_Name>2</Promotion_x0020_Name>
+                        <State_x0020_Province>2</State_x0020_Province>
+                        <City>2</City>
+                        <Name>2</Name>
+                        <Name_x0020__x0028_Key_x0029_>2</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level>2</Education_x0020_Level>
+                        <Gender>2</Gender>
+                        <Marital_x0020_Status>2</Marital_x0020_Status>
+                        <Yearly_x0020_Income>2</Yearly_x0020_Income>
+                        <Sales_x0020_Count>2</Sales_x0020_Count>
+                    </row>
+                    <row>
+                        <Store_x0020_Country>USA</Store_x0020_Country>
+                        <Store_x0020_State>CA</Store_x0020_State>
+                        <Store_x0020_City>San Francisco</Store_x0020_City>
+                        <Store_x0020_Name>Store 14</Store_x0020_Name>
+                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
+                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
+                        <Year>1997</Year>
+                        <Quarter>Q1</Quarter>
+                        <Month>2</Month>
+                        <Product_x0020_Family>Drink</Product_x0020_Family>
+                        <Product_x0020_Department>Beverages</Product_x0020_Department>
+                        <Product_x0020_Category>Pure Juice Beverages</Product_x0020_Category>
+                        <Product_x0020_Subcategory>Juice</Product_x0020_Subcategory>
+                        <Brand_x0020_Name>Skinner</Brand_x0020_Name>
+                        <Product_x0020_Name>Skinner Apple Juice</Product_x0020_Name>
+                        <Media_x0020_Type>No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
+                        <State_x0020_Province>CA</State_x0020_Province>
+                        <City>Concord</City>
+                        <Name>Nina Medina</Name>
+                        <Name_x0020__x0028_Key_x0029_>2948</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level>High School Degree</Education_x0020_Level>
+                        <Gender>M</Gender>
+                        <Marital_x0020_Status>S</Marital_x0020_Status>
+                        <Yearly_x0020_Income>$30K - $50K</Yearly_x0020_Income>
+                        <Sales_x0020_Count>1259</Sales_x0020_Count>
+                    </row>
+                    <row>
+                        <Store_x0020_Country>USA</Store_x0020_Country>
+                        <Store_x0020_State>CA</Store_x0020_State>
+                        <Store_x0020_City>San Francisco</Store_x0020_City>
+                        <Store_x0020_Name>Store 14</Store_x0020_Name>
+                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
+                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
+                        <Year>1997</Year>
+                        <Quarter>Q3</Quarter>
+                        <Month>9</Month>
+                        <Product_x0020_Family>Drink</Product_x0020_Family>
+                        <Product_x0020_Department>Beverages</Product_x0020_Department>
+                        <Product_x0020_Category>Pure Juice Beverages</Product_x0020_Category>
+                        <Product_x0020_Subcategory>Juice</Product_x0020_Subcategory>
+                        <Brand_x0020_Name>Excellent</Brand_x0020_Name>
+                        <Product_x0020_Name>Excellent Orange Juice</Product_x0020_Name>
+                        <Media_x0020_Type>No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
+                        <State_x0020_Province>CA</State_x0020_Province>
+                        <City>Concord</City>
+                        <Name>Linda Macias</Name>
+                        <Name_x0020__x0028_Key_x0029_>3956</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level>Bachelors Degree</Education_x0020_Level>
+                        <Gender>F</Gender>
+                        <Marital_x0020_Status>S</Marital_x0020_Status>
+                        <Yearly_x0020_Income>$50K - $70K</Yearly_x0020_Income>
+                        <Sales_x0020_Count>319</Sales_x0020_Count>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <Command>
+    <Statement>
+                    drillthrough
+                                select
+                                non empty{[Customers].[All Customers].[USA].[CA].[Concord]} on 0,
+                                non empty {[Product].[All Products].[Drink].[Beverages].[Pure Juice Beverages].[Juice]} on 1
+                                from
+                                [Sales]
+                                where([Measures].[Sales Count])
+  </Statement>
+  </Command>
+  <Properties>
+    <PropertyList>
+      <Catalog>${catalog}</Catalog>
+      <DataSourceInfo>${data.source.info}</DataSourceInfo>
+      <Format>Tabular</Format>
+      <AxisFormat>TupleFormat</AxisFormat>
+    </PropertyList>
+  </Properties>
 </Execute>
 </soapenv:Body>
 </soapenv:Envelope>

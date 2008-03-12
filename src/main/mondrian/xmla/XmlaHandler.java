@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -45,16 +45,16 @@ public class XmlaHandler implements XmlaConstants {
     private final CatalogLocator catalogLocator;
     private final String prefix;
 
-    private static final int ROW_SET     = 1;
-    private static final int MD_DATA_SET = 2;
+    private enum SetType { ROW_SET, MD_DATA_SET }
 
-    private static final String ROW_SET_XML_SCHEMA = computeXsd(ROW_SET);
     private static final String EMPTY_ROW_SET_XML_SCHEMA =
-                                    computeEmptyXsd(ROW_SET);
+        computeEmptyXsd(SetType.ROW_SET);
 
-    private static final String MD_DATA_SET_XML_SCHEMA = computeXsd(MD_DATA_SET);
+    private static final String MD_DATA_SET_XML_SCHEMA =
+        computeXsd(SetType.MD_DATA_SET);
+
     private static final String EMPTY_MD_DATA_SET_XML_SCHEMA =
-                                    computeEmptyXsd(MD_DATA_SET);
+        computeEmptyXsd(SetType.MD_DATA_SET);
 
     private static final String NS_XML_SQL = "urn:schemas-microsoft-com:xml-sql";
 
@@ -468,18 +468,18 @@ public class XmlaHandler implements XmlaConstants {
 
 
 
-    private static String computeXsd(int settype) {
+    private static String computeXsd(SetType setType) {
         final StringWriter sw = new StringWriter();
         SaxWriter writer = new DefaultSaxWriter(new PrintWriter(sw), 3);
-        writeDatasetXmlSchema(writer, settype);
+        writeDatasetXmlSchema(writer, setType);
         writer.flush();
         return sw.toString();
     }
 
-    private static String computeEmptyXsd(int settype) {
+    private static String computeEmptyXsd(SetType setType) {
         final StringWriter sw = new StringWriter();
         SaxWriter writer = new DefaultSaxWriter(new PrintWriter(sw), 3);
-        writeEmptyDatasetXmlSchema(writer, settype);
+        writeEmptyDatasetXmlSchema(writer, setType);
         writer.flush();
         return sw.toString();
     }
@@ -661,7 +661,7 @@ public class XmlaHandler implements XmlaConstants {
                     MDDataSet_Tabular tabResult = (MDDataSet_Tabular) result;
                     tabResult.metadata(writer);
                 } else if (rowset) {
-                    writer.verbatim(ROW_SET_XML_SCHEMA);
+                	((TabularRowSet) result).metadata(writer);
                 } else {
                     writer.verbatim(MD_DATA_SET_XML_SCHEMA);
                 }
@@ -705,8 +705,8 @@ public class XmlaHandler implements XmlaConstants {
      * @param settype rowset or dataset?
      * @see RowsetDefinition#writeRowsetXmlSchema(SaxWriter)
      */
-    static void writeDatasetXmlSchema(SaxWriter writer, int settype) {
-        String setNsXmla = (settype == ROW_SET)
+    static void writeDatasetXmlSchema(SaxWriter writer, SetType settype) {
+        String setNsXmla = (settype == SetType.ROW_SET)
                 ? XmlaConstants.NS_XMLA_ROWSET
                 : XmlaConstants.NS_XMLA_MDDATASET;
 
@@ -1202,7 +1202,7 @@ public class XmlaHandler implements XmlaConstants {
         writer.endElement(); // xsd:schema
     }
 
-    static void writeEmptyDatasetXmlSchema(SaxWriter writer, int settype) {
+    static void writeEmptyDatasetXmlSchema(SaxWriter writer, SetType setType) {
         String setNsXmla = XmlaConstants.NS_XMLA_ROWSET;
         writer.startElement("xsd:schema", new String[] {
             "xmlns:xsd", XmlaConstants.NS_XSD,
@@ -1367,8 +1367,24 @@ public class XmlaHandler implements XmlaConstants {
         }
     }
 
+    static class Column {
+        private final String name;
+        private final String encodedName;
+        private final String xsdType;
+
+        Column(String name, int type) {
+            this.name = name;
+
+            // replace invalid XML element name, like " ", with "_x0020_" in
+            // column headers, otherwise will generate a badly-formatted xml
+            // doc.
+            this.encodedName = XmlaUtil.encodeElementName(name);
+            this.xsdType = sqlToXsdType(type);
+        }
+    }
+
     static class TabularRowSet implements QueryResult {
-        private final String[] headers;
+        private final List<Column> columns = new ArrayList<Column>();
         private final List<Object[]> rows;
         private int totalCount;
 
@@ -1399,10 +1415,12 @@ public class XmlaHandler implements XmlaConstants {
                 ResultSetMetaData md = rs.getMetaData();
                 int columnCount = md.getColumnCount();
 
-                // populate header
-                headers = new String[columnCount];
+                // populate column defs
                 for (int i = 0; i < columnCount; i++) {
-                    headers[i] = md.getColumnLabel(i + 1);
+                    columns.add(
+                        new Column(
+                            md.getColumnLabel(i + 1),
+                            md.getColumnType(i + 1)));
                 }
 
                 // skip to first rowset specified in request
@@ -1444,16 +1462,18 @@ public class XmlaHandler implements XmlaConstants {
         public TabularRowSet(
             Map<String, List<String>> tableFieldMap, List<String> tableList)
         {
-            List<String> headerList = new ArrayList<String>();
             for (String tableName : tableList) {
                 List<String> fieldNames = tableFieldMap.get(tableName);
                 for (String fieldName : fieldNames) {
-                    headerList.add(tableName + "." + fieldName);
+                    columns.add(
+                        new Column(
+                            tableName + "." + fieldName,
+                            Types.VARCHAR)); // don't know the real type
                 }
             }
-            headers = headerList.toArray(new String[headerList.size()]);
+
             rows = new ArrayList<Object[]>();
-            Object[] row = new Object[headers.length];
+            Object[] row = new Object[columns.size()];
             for (int k = 0; k < row.length; k++) {
                 row[k] = k;
             }
@@ -1461,20 +1481,12 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         public void unparse(SaxWriter writer) throws SAXException {
-            String[] encodedHeader = new String[headers.length];
-            for (int i = 0; i < headers.length; i++) {
-                // replace invalid XML element name, like " ", with "_x0020_" in
-                // column headers, otherwise will generate a badly-formatted xml
-                // doc.
-                encodedHeader[i] = XmlaUtil.encodeElementName(headers[i]);
-            }
-
             // write total count row if enabled
             if (totalCount >= 0) {
                 String countStr = Integer.toString(totalCount);
                 writer.startElement("row");
-                for (String anEncodedHeader : encodedHeader) {
-                    writer.startElement(anEncodedHeader);
+                for (Column column : columns) {
+                    writer.startElement(column.encodedName);
                     writer.characters(countStr);
                     writer.endElement();
                 }
@@ -1484,7 +1496,7 @@ public class XmlaHandler implements XmlaConstants {
             for (Object[] row : rows) {
                 writer.startElement("row");
                 for (int i = 0; i < row.length; i++) {
-                    writer.startElement(encodedHeader[i]);
+                    writer.startElement(columns.get(i).encodedName);
                     Object value = row[i];
                     if (value == null) {
                         writer.characters("null");
@@ -1506,10 +1518,12 @@ public class XmlaHandler implements XmlaConstants {
             ResultSetMetaData md = rs.getMetaData();
             int columnCount = md.getColumnCount();
 
-            // populate header
-            headers = new String[columnCount];
+            // populate column definitions
             for (int i = 0; i < columnCount; i++) {
-                headers[i] = md.getColumnName(i + 1);
+                columns.add(
+                    new Column(
+                        md.getColumnName(i + 1),
+                        md.getColumnType(i + 1)));
             }
 
             // populate data
@@ -1521,6 +1535,104 @@ public class XmlaHandler implements XmlaConstants {
                 }
                 rows.add(row);
             }
+        }
+    
+        /**
+         * Writes the tabular drillthrough schema
+         *
+         * @param writer Writer
+         */
+        public void metadata(SaxWriter writer) {
+            writer.startElement("xsd:schema", new String[] {
+                "xmlns:xsd", XmlaConstants.NS_XSD,
+                "targetNamespace", NS_XMLA_ROWSET,
+                "xmlns", NS_XMLA_ROWSET,
+                "xmlns:xsi", XmlaConstants.NS_XSI,
+                "xmlns:sql", NS_XML_SQL,
+                "elementFormDefault", "qualified"
+            });
+
+            { // <root>
+                writer.startElement("xsd:element", new String[] {
+                    "name", "root"
+                });
+                writer.startElement("xsd:complexType");
+                writer.startElement("xsd:sequence");
+                writer.element("xsd:element", new String[] {
+                    "maxOccurs", "unbounded",
+                    "minOccurs", "0",
+                    "name", "row",
+                    "type", "row"
+                });
+                writer.endElement(); // xsd:sequence
+                writer.endElement(); // xsd:complexType
+                writer.endElement(); // xsd:element name=root
+            }
+
+            { // xsd:simpleType name="uuid"
+                writer.startElement("xsd:simpleType", new String[] {
+                    "name", "uuid"
+                });
+                writer.startElement("xsd:restriction", new String[] {
+                    "base", XSD_STRING
+                });
+                writer.element("xsd:pattern", new String[] {
+                    "value", "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+                });
+                writer.endElement(); // xsd:restriction
+                writer.endElement(); // xsd:simpleType
+            }
+
+            { // xsd:complexType name="row"
+                writer.startElement("xsd:complexType", new String[] {
+                    "name", "row"
+                });
+                writer.startElement("xsd:sequence");
+                for (Column column : columns) {
+                    writer.element(
+                        "xsd:element", new String[] {
+                        "minOccurs", "0",
+                        "name", column.encodedName,
+                        "sql:field", column.name,
+                        "type", column.xsdType
+                    });
+                }
+
+                writer.endElement(); // xsd:sequence
+                writer.endElement(); // xsd:complexType
+            }
+            writer.endElement(); // xsd:schema
+        }
+    }
+
+    /**
+     * Converts a SQL type to XSD type.
+     *
+     * @param sqlType SQL type
+     * @return XSD type
+     */
+    private static String sqlToXsdType(int sqlType) {
+        switch (sqlType) {
+        // Integer
+        case Types.INTEGER:
+        case Types.BIGINT:
+        case Types.SMALLINT:
+        case Types.TINYINT:
+            return XSD_INTEGER;
+        case Types.NUMERIC:
+            return XSD_DECIMAL;
+            // Real
+        case Types.DOUBLE:
+        case Types.FLOAT:
+            return XSD_DOUBLE;
+            // Date and time
+        case Types.TIME:
+        case Types.TIMESTAMP:
+        case Types.DATE:
+            return XSD_STRING;
+            // Other
+        default:
+            return XSD_STRING;
         }
     }
 

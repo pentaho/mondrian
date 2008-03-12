@@ -1111,7 +1111,7 @@ enum RowsetDefinition {
      * for example, SchemaRowsets has a element with child elements.
      *
      * @param writer SAX writer
-     * @see XmlaHandler#writeDatasetXmlSchema(SaxWriter, int)
+     * @see XmlaHandler#writeDatasetXmlSchema(SaxWriter, mondrian.xmla.XmlaHandler.SetType)
      */
     void writeRowsetXmlSchema(SaxWriter writer) {
         writeRowsetXmlSchemaTop(writer);
