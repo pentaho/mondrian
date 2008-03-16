@@ -10,9 +10,9 @@
 package mondrian.xmla;
 
 import mondrian.olap.*;
-import mondrian.test.DiffRepository;
-import mondrian.test.TestContext;
+import mondrian.test.*;
 import mondrian.tui.XmlUtil;
+import mondrian.rolap.sql.SqlQuery;
 
 import org.w3c.dom.Document;
 
@@ -464,7 +464,14 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void testDrillThrough() throws Exception {
+    /**
+     * Tests an 'DRILLTHROUGH SELECT' statement with a 'MAXROWS' clause.
+     *
+     * @throws Exception on error
+     */
+    public void testDrillThroughMaxRows() throws Exception {
+        // NOTE: this test uses the filter method to adjust the expected result
+        // for different databases
         if (!MondrianProperties.instance().EnableTotalCount.booleanValue()) {
             return;
         }
@@ -480,7 +487,14 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void testDrillThrough2() throws Exception {
+    /**
+     * Tests an 'DRILLTHROUGH SELECT' statement with no 'MAXROWS' clause.
+     *
+     * @throws Exception on error
+     */
+    public void testDrillThrough() throws Exception {
+        // NOTE: this test uses the filter method to adjust the expected result
+        // for different databases
         if (!MondrianProperties.instance().EnableTotalCount.booleanValue()) {
             return;
         }
@@ -494,61 +508,104 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
         doTest(requestType, props, TestContext.instance());
+    }
+
+    protected String filter(
+        String testCaseName,
+        String filename,
+        String content)
+    {
+        if (testCaseName.startsWith("testDrillThrough")
+            && filename.equals("${response}")) {
+            // Different databases have slightly different column types, which
+            // results in slightly different inferred xml schema for the drill-
+            // through result.
+            SqlQuery.Dialect dialect = TestContext.instance().getDialect();
+            switch (SqlPattern.Dialect.get(dialect)) {
+            case ORACLE:
+            case MYSQL:
+                content = content.replace(
+                    " type=\"xsd:double\"",
+                    " type=\"xsd:decimal\"");
+                content = content.replace(
+                    " type=\"xsd:integer\"",
+                    " type=\"xsd:decimal\"");
+                break;
+            case DERBY:
+                content = content.replace(
+                    " sql:field=\"Store Sqft\" type=\"xsd:double\"",
+                    " sql:field=\"Store Sqft\" type=\"xsd:integer\"");
+                content = content.replace(
+                    " sql:field=\"Unit Sales\" type=\"xsd:double\"",
+                    " sql:field=\"Unit Sales\" type=\"xsd:string\"");
+                break;
+            case ACCESS:
+                break;
+            }
+        }
+        return content;
     }
 
     public void testExecuteSlicer() throws Exception {
         String requestType = "EXECUTE";
         Properties props = getDefaultRequestProperties(requestType);
-
         doTest(requestType, props, TestContext.instance());
     }
-    public void testExecuteWithoutCellProperties() throws Exception {
-        String requestType = "EXECUTE";
 
-        doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+    public void testExecuteWithoutCellProperties() throws Exception
+    {
+        String requestType = "EXECUTE";
+        Properties props = getDefaultRequestProperties(requestType);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testExecuteWithCellProperties()
-            throws Exception {
+            throws Exception
+    {
         String requestType = "EXECUTE";
-
-        doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+        Properties props = getDefaultRequestProperties(requestType);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testExecuteWithMemberKeyDimensionPropertyForMemberWithoutKey()
-                throws Exception {
-            String requestType = "EXECUTE";
-
-            doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+        throws Exception
+    {
+        String requestType = "EXECUTE";
+        Properties props = getDefaultRequestProperties(requestType);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testExecuteWithMemberKeyDimensionPropertyForMemberWithKey()
-            throws Exception {
+        throws Exception
+    {
         String requestType = "EXECUTE";
-
-        doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+        Properties props = getDefaultRequestProperties(requestType);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testExecuteWithMemberKeyDimensionPropertyForAllMember()
-            throws Exception {
+        throws Exception
+    {
         String requestType = "EXECUTE";
-
-        doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+        final Properties props = getDefaultRequestProperties(requestType);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testExecuteWithKeyDimensionProperty()
-            throws Exception {
+        throws Exception
+    {
         String requestType = "EXECUTE";
-
-        doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+        Properties props = getDefaultRequestProperties(requestType);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testExecuteWithDimensionProperties()
-                throws Exception {
-            String requestType = "EXECUTE";
-
-            doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
-        }
+        throws Exception
+    {
+        String requestType = "EXECUTE";
+        Properties props = getDefaultRequestProperties(requestType);
+        doTest(requestType, props, TestContext.instance());
+    }
 
     // Testcase for bug 1653587.
     public void testExecuteCrossjoin() throws Exception {
@@ -578,17 +635,17 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
            "</soapenv:Body>\n" +
            "</soapenv:Envelope>";
         Properties props = getDefaultRequestProperties(requestType);
-       doTestInline(
-           requestType, request, "${response}", props, TestContext.instance());
-   }
-    
+        doTestInline(
+            requestType, request, "${response}", props, TestContext.instance());
+    }
+
     /** 
      * This test returns the same result as testExecuteCrossjoin above
      * except that the Role used disables accessing 
      * [Customers].[All Customers].[Mexico].
      */
     public void testExecuteCrossjoinRole() throws Exception {
-       String requestType = "EXECUTE";
+        String requestType = "EXECUTE";
         String query = "SELECT CrossJoin({[Product].[All Products].children}, {[Customers].[All Customers].children}) ON columns FROM Sales";
         String request = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
            "<soapenv:Envelope\n" +

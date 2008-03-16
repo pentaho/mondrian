@@ -140,11 +140,6 @@ public class DiffRepository
         new HashMap<Class, DiffRepository>();
 
     /**
-     * Directories to look for log file in.
-     */
-    private final String[] prefixes;
-
-    /**
      * Default prefix directories.
      */
     private static final String[] DefaultPrefixes = {"testsrc", "main"};
@@ -200,9 +195,9 @@ public class DiffRepository
         File refFile, File logFile, DiffRepository baseRepos,
         String[] prefixes)
     {
-        this.prefixes =
-            prefixes == null ? new String[] {"testsrc", "main"} :
-                prefixes;
+        if (prefixes == null) {
+            prefixes = DefaultPrefixes;
+        }
         this.baseRepos = baseRepos;
         if (refFile == null) {
             throw new IllegalArgumentException("url must not be null");
@@ -249,7 +244,6 @@ public class DiffRepository
      */
     public DiffRepository(URL refUrl)
     {
-        this.prefixes = null;
         this.refFile = null;
         this.logFile = null;
         this.baseRepos = null;
@@ -467,7 +461,7 @@ public class DiffRepository
      * @param fail Whether to fail if no method is found
      * @return Name of current testcase, or null if not found
      */
-    private String getCurrentTestCaseName(boolean fail)
+    public String getCurrentTestCaseName(boolean fail)
     {
         // check thread-local first
         String testCaseName = CurrentTestCaseName.get();
@@ -478,6 +472,7 @@ public class DiffRepository
         // Clever, this. Dump the stack and look up it for a method which
         // looks like a testcase name, e.g. "testFoo".
         final StackTraceElement[] stackTrace;
+        //noinspection ThrowableInstanceNeverThrown
         Throwable runtimeException = new Throwable();
         runtimeException.fillInStackTrace();
         stackTrace = runtimeException.getStackTrace();
@@ -529,9 +524,9 @@ public class DiffRepository
      * <p>This method is synchronized, in case two threads are running
      * test cases of this test at the same time.
      *
-     * @param testCaseName
-     * @param resourceName
-     * @param value
+     * @param testCaseName Test case name
+     * @param resourceName Resource name
+     * @param value New value of resource
      */
     private synchronized void update(
         String testCaseName,
@@ -706,6 +701,12 @@ public class DiffRepository
         }
     }
 
+    /**
+     * Returns whether a given piece of text is solely whitespace.
+     *
+     * @param text Text
+     * @return Whether text is whitespace
+     */
     private static boolean isWhitespace(String text)
     {
         for (int i = 0, count = text.length(); i < count; ++i) {

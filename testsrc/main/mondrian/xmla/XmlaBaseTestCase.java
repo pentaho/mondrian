@@ -40,7 +40,6 @@ import java.util.*;
  * @author mkambol
  * @version $Id$
  */
-
 public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     protected static final String LAST_SCHEMA_UPDATE_DATE_PROP = "last.schema.update.date";
     protected static final String LAST_SCHEMA_UPDATE_DATE = "somedate";
@@ -72,8 +71,10 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     static class CallBack implements XmlaRequestCallback {
         public CallBack() {
         }
+
         public void init(ServletConfig servletConfig) throws ServletException {
         }
+
         public boolean processHttpHeader(
                 HttpServletRequest request,
                 HttpServletResponse response,
@@ -90,18 +91,22 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
             }
             return true;
         }
+
         public void preAction(
             HttpServletRequest request,
             Element[] requestSoapParts,
             Map<String, Object> context) throws Exception {
         }
+
         public String generateSessionId(Map<String, Object> context) {
             return null;
         }
-        public void postAction(HttpServletRequest request,
-                    HttpServletResponse response,
-                    byte[][] responseSoapParts,
-                    Map<String, Object> context) throws Exception {
+
+        public void postAction(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            byte[][] responseSoapParts,
+            Map<String, Object> context) throws Exception {
         }
     }
 
@@ -168,7 +173,8 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
         servlet = null;
     }
 
-    protected abstract Class<? extends XmlaRequestCallback> getServletCallbackClass();
+    protected abstract Class<? extends XmlaRequestCallback>
+    getServletCallbackClass();
 
     protected Properties getDefaultRequestProperties(String requestType) {
         Properties props = new Properties();
@@ -187,8 +193,30 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
         if (s.equals(filename)) {
             s = "<?xml version='1.0'?><Empty/>";
         }
-        Document doc = XmlUtil.parse(new ByteArrayInputStream(s.getBytes()));
-        return doc;
+        // Give derived class a chance to change the content.
+        s = filter(getDiffRepos().getCurrentTestCaseName(true), filename, s);
+
+        return XmlUtil.parse(new ByteArrayInputStream(s.getBytes()));
+    }
+
+    /**
+     * Filters the content of a test resource. The default implementation
+     * returns the content unchanged, but a derived class might override this
+     * method to change the content.
+     *
+     * @param testCaseName Name of current test case, e.g. "testFoo"
+     * @param filename Name of requested content, e.g.  "${request}"
+     * @param content Content
+     * @return Modified content
+     */
+    protected String filter(
+        String testCaseName,
+        String filename,
+        String content)
+    {
+        Util.discard(testCaseName); // might be used by derived class
+        Util.discard(filename); // might be used by derived class
+        return content;
     }
 
     /**
@@ -202,19 +230,23 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
     public void doTest(
         String requestType,
         Properties props,
-        TestContext testContext) throws Exception {
+        TestContext testContext) throws Exception
+    {
         doTest(requestType, props, testContext, null);
     }
+
     public void doTest(
         String requestType,
         Properties props,
         TestContext testContext,
-        Role role) throws Exception {
-
+        Role role) throws Exception
+    {
         String requestText = fileToString("request");
-        doTestInline(requestType, requestText, "${response}", 
-                    props, testContext, role);
+        doTestInline(
+            requestType, requestText, "${response}",
+            props, testContext, role);
     }
+
     public void doTestInline(
         String requestType,
         String requestText,
@@ -223,8 +255,9 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
         TestContext testContext)
         throws Exception
     {
-        doTestInline(requestType, requestText, respFileName, 
-                    props, testContext, null);
+        doTestInline(
+            requestType, requestText, respFileName,
+            props, testContext, null);
     }
 
     public void doTestInline(
@@ -290,12 +323,13 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
             String connectString,
             Map<String, String> catalogNameUrls,
             Document expectedDoc,
-            String content) throws Exception {
-        doTests(soapRequestText, props, soapResponseText,
-                connectString, catalogNameUrls, expectedDoc,
+            String content) throws Exception
+    {
+        doTests(
+            soapRequestText, props, soapResponseText,
+            connectString, catalogNameUrls, expectedDoc,
                 content, null);
     }
-
 
     protected void doTests(
             String soapRequestText,
@@ -305,8 +339,8 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
             Map<String, String> catalogNameUrls,
             Document expectedDoc,
             String content,
-            Role role) throws Exception {
-
+            Role role) throws Exception
+    {
         if (content != null) {
             props.setProperty(XmlaBasicTest.CONTENT_PROP, content);
         }
@@ -341,10 +375,11 @@ if (DEBUG) {
             if (role != null) {
                 roles.set(role);
             }
-            bytes = XmlaSupport.processSoapXmla(soapReqDoc, 
-                                                connectString, 
-                                                catalogNameUrls, 
-                                                callBackClassName);
+            bytes = XmlaSupport.processSoapXmla(
+                soapReqDoc,
+                connectString,
+                catalogNameUrls,
+                callBackClassName);
         } finally {
             if (role != null) {
                 // Java4 does not support the ThreadLocal remove() method

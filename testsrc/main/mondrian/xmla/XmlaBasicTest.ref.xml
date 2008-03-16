@@ -12782,7 +12782,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="testDrillThrough">
+    <TestCase name="testDrillThroughMaxRows">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope
@@ -13039,7 +13039,7 @@ FROM Sales
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="testDrillThrough2">
+    <TestCase name="testDrillThrough">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope
