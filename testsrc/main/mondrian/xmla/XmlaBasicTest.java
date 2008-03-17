@@ -523,7 +523,6 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
             SqlQuery.Dialect dialect = TestContext.instance().getDialect();
             switch (SqlPattern.Dialect.get(dialect)) {
             case ORACLE:
-            case MYSQL:
                 content = content.replace(
                     " type=\"xsd:double\"",
                     " type=\"xsd:decimal\"");
@@ -531,6 +530,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                     " type=\"xsd:integer\"",
                     " type=\"xsd:decimal\"");
                 break;
+            case MYSQL:
             case DERBY:
                 content = content.replace(
                     " sql:field=\"Store Sqft\" type=\"xsd:double\"",
