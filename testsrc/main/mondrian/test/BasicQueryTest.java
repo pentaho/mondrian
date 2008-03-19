@@ -4507,6 +4507,71 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * Testcase for bug 1755778, "CrossJoin / Filter query returns null row in
+     * result set"
+     *
+     * @throws Exception on error
+     */
+    public void testFilterWithCrossJoin() throws Exception {    	
+    	String queryWithFilter =
+    		"WITH SET [#DataSet#] AS 'Filter(Crossjoin({[Store].[All Stores]}, {[Customers].[All Customers]}), " +
+    		"[Measures].[Unit Sales] > 5)' " +
+    		"MEMBER [Customers].[#GT#] as 'Aggregate({[#DataSet#]})' " +
+    		"MEMBER [Store].[#GT#] as 'Aggregate({[#DataSet#]})' " +
+    		"SET [#GrandTotalSet#] as 'Crossjoin({[Store].[#GT#]}, {[Customers].[#GT#]})' " +
+    		"SELECT {[Measures].[Unit Sales]} " +
+    		"on columns, Union([#GrandTotalSet#], Hierarchize({[#DataSet#]})) on rows FROM [Sales]";
+
+    	String queryWithoutFilter =
+    		"WITH SET [#DataSet#] AS 'Crossjoin({[Store].[All Stores]}, {[Customers].[All Customers]})' " +
+    		"SET [#GrandTotalSet#] as 'Crossjoin({[Store].[All Stores]}, {[Customers].[All Customers]})' " +
+    		"SELECT {[Measures].[Unit Sales]} on columns, Union([#GrandTotalSet#], Hierarchize({[#DataSet#]})) " +
+    		"on rows FROM [Sales]";
+
+
+    	String wrongResultWithFilter = "Axis #0:\n" +
+    		"{}\n" +
+    		"Axis #1:\n" +
+    		"{[Measures].[Unit Sales]}\n" +
+    		"Axis #2:\n" +
+    		"{[Store].[#GT#], [Customers].[#GT#]}\n" +
+    		"Row #0: \n";
+
+    	String expectedResultWithFilter = "Axis #0:\n" +
+	    	"{}\n" +
+	    	"Axis #1:\n" +
+	    	"{[Measures].[Unit Sales]}\n" +
+	    	"Axis #2:\n" +
+	    	"{[Store].[#GT#], [Customers].[#GT#]}\n" +
+	    	"{[Store].[All Stores], [Customers].[All Customers]}\n" +
+	    	"Row #0: 266,773\n" +
+	    	"Row #1: 266,773\n";
+
+    	String expectedResultWithoutFilter = "Axis #0:\n" +
+	    	"{}\n" +
+	    	"Axis #1:\n" +
+	    	"{[Measures].[Unit Sales]}\n" +
+	    	"Axis #2:\n" +
+	    	"{[Store].[All Stores], [Customers].[All Customers]}\n" +
+	    	"Row #0: 266,773\n";
+
+    	// With bug 1755778, the following test below fails because it returns
+        // only row that have a null value (see "wrongResultWithFilter").
+    	// It should return the "expectedResultWithFilter" value.
+    	assertQueryReturns(queryWithFilter, fold(expectedResultWithFilter));
+
+    	// To see the test case return the correct result comment out the line
+        // above and uncomment out the lines below following. If a similar
+        // query without the filter is executed (queryWithoutFilter) prior to
+        // running the query with the filter then the correct result set is
+        // returned
+        assertQueryReturns(
+            queryWithoutFilter, fold(expectedResultWithoutFilter));
+        assertQueryReturns(
+            queryWithFilter, fold(expectedResultWithFilter));
+    }
+
+    /**
      * This resulted in {@link OutOfMemoryError} when the
      * BatchingCellReader did not know the values for the tuples that
      * were used in filters.

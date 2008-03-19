@@ -12,8 +12,7 @@
 */
 
 package mondrian.rolap;
-import mondrian.calc.Calc;
-import mondrian.calc.ParameterSlot;
+import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.rolap.sql.SqlQuery;
@@ -218,7 +217,8 @@ public class RolapEvaluator implements Evaluator {
         final RolapCube cube;
         final RolapConnection connection;
         final SchemaReader schemaReader;
-        final Map<Exp, Calc> compiledExps = new HashMap<Exp, Calc>();
+        final Map<List<Object>, Calc> compiledExps =
+            new HashMap<List<Object>, Calc>();
         private final Query query;
         private final Date queryStartTime;
         final SqlQuery.Dialect currentDialect;
@@ -251,12 +251,23 @@ public class RolapEvaluator implements Evaluator {
          * expressions.
          *
          * <p>TODO: Save compiled expressions somewhere better.
+         *
+         * @param exp Expression
+         * @param scalar Whether expression is scalar
+         * @param resultStyle Preferred result style; if null, use query's default
+         *     result style; ignored if expression is scalar
+         * @return compiled expression
          */
-        final Calc getCompiled(Exp exp, boolean scalar) {
-            Calc calc = compiledExps.get(exp);
+        final Calc getCompiled(
+            Exp exp,
+            boolean scalar,
+            ResultStyle resultStyle)
+        {
+            List<Object> key = Arrays.asList(exp, scalar, resultStyle);
+            Calc calc = compiledExps.get(key);
             if (calc == null) {
-                calc = query.compileExpression(exp, scalar);
-                compiledExps.put(exp, calc);
+                calc = query.compileExpression(exp, scalar, resultStyle);
+                compiledExps.put(key, calc);
             }
             return calc;
         }
@@ -564,7 +575,7 @@ public class RolapEvaluator implements Evaluator {
         final RolapEvaluator evaluator = push(defaultMember);
         evaluator.setExpanding(maxSolveMember);
         final Exp exp = maxSolveMember.getExpression();
-        final Calc calc = root.getCompiled(exp, true);
+        final Calc calc = root.getCompiled(exp, true, null);
         final Object o = calc.evaluate(evaluator);
         if (o == Util.nullValue) {
             return null;
@@ -722,7 +733,7 @@ public class RolapEvaluator implements Evaluator {
         if (formatExp == null) {
             return "Standard";
         }
-        final Calc formatCalc = root.getCompiled(formatExp, true);
+        final Calc formatCalc = root.getCompiled(formatExp, true, null);
         final Object o = formatCalc.evaluate(this);
         if (o == null) {
             return "Standard";

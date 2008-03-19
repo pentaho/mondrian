@@ -413,7 +413,7 @@ public class Query extends QueryPart {
         resolve(validator); // resolve self and children
         // Create a dummy result so we can use its evaluator
         final Evaluator evaluator = RolapUtil.createEvaluator(this);
-        ExpCompiler compiler = createCompiler(evaluator, validator);
+        ExpCompiler compiler = createCompiler(evaluator, validator, Collections.singletonList(resultStyle));
         compile(compiler);
     }
 
@@ -1025,28 +1025,55 @@ public class Query extends QueryPart {
         return collectHierarchies(queryAxis.getSet());
     }
 
-    public Calc compileExpression(Exp exp, boolean scalar) {
+    /**
+     * Compiles an expression, using a cached compiled expression if available.
+     * 
+     * @param exp Expression
+     * @param scalar Whether expression is scalar
+     * @param resultStyle Preferred result style; if null, use query's default
+     *     result style; ignored if expression is scalar
+     * @return compiled expression
+     */
+    public Calc compileExpression(
+        Exp exp,
+        boolean scalar,
+        ResultStyle resultStyle)
+    {
         Evaluator evaluator = RolapEvaluator.create(this);
         final Validator validator = createValidator();
-        final ExpCompiler compiler = createCompiler(evaluator, validator);
-        Calc calc = (scalar)
-            ? compiler.compileScalar(exp, false)
-            : compiler.compile(exp);
-        return calc;
+        List<ResultStyle> resultStyleList;
+        resultStyleList =
+             Collections.singletonList(
+                resultStyle != null ? resultStyle : this.resultStyle);
+        final ExpCompiler compiler =
+            createCompiler(
+                evaluator, validator, resultStyleList);
+        if (scalar) {
+            return compiler.compileScalar(exp, false);
+        } else {
+            return compiler.compile(exp);
+        }
     }
 
     public ExpCompiler createCompiler() {
-        return createCompiler(RolapEvaluator.create(this), createValidator());
+        Evaluator evaluator = RolapEvaluator.create(this);
+        Validator validator = createValidator();
+        return createCompiler(
+            evaluator,
+            validator,
+            Collections.singletonList(resultStyle));
     }
 
     private ExpCompiler createCompiler(
-            final Evaluator evaluator, final Validator validator) {
-
+        final Evaluator evaluator,
+        final Validator validator,
+        List<ResultStyle> resultStyleList)
+    {
         ExpCompiler compiler =
             ExpCompiler.Factory.getExpCompiler(
                 evaluator,
                 validator,
-                Collections.singletonList(resultStyle));
+                resultStyleList);
 
         final int expDeps =
             MondrianProperties.instance().TestExpDependencies.get();

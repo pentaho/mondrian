@@ -590,7 +590,7 @@ public class TestContext {
         } else {
             exp = query.axes[0].getSet();
         }
-        final Calc calc = query.compileExpression(exp, scalar);
+        final Calc calc = query.compileExpression(exp, scalar, null);
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw);
         final CalcWriter calcWriter = new CalcWriter(pw);
@@ -1157,7 +1157,7 @@ public class TestContext {
         String expectedDimList,
         final boolean scalar)
     {
-        final Calc calc = query.compileExpression(expression, scalar);
+        final Calc calc = query.compileExpression(expression, scalar, null);
         final Dimension[] dimensions = query.getCube().getDimensions();
         StringBuilder buf = new StringBuilder("{");
         int dependCount = 0;

@@ -12,8 +12,6 @@
 */
 
 package mondrian.rolap;
-import mondrian.calc.Calc;
-import mondrian.calc.ParameterSlot;
 import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.resource.MondrianResource;
@@ -23,7 +21,7 @@ import mondrian.util.ObjectPool;
 
 import mondrian.olap.fun.FunUtil;
 import mondrian.olap.type.ScalarType;
-import mondrian.calc.DummyExp;
+import mondrian.calc.*;
 import mondrian.calc.impl.ValueCalc;
 
 import org.apache.log4j.Logger;
@@ -1192,7 +1190,7 @@ class RolapResult extends ResultBase {
             if (value == null) {
                 final RolapEvaluator.RolapEvaluatorRoot root =
                     slicerEvaluator.root;
-                final Calc calc = root.getCompiled(exp, false);
+                final Calc calc = root.getCompiled(exp, false, ResultStyle.LIST);
                 Object o = result.evaluateExp(calc, slicerEvaluator.push());
                 List list;
                 if (o instanceof List) {
