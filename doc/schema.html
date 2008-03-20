@@ -1976,8 +1976,7 @@ name="expression" value="not used"/&gt;<br>
 <p>Not implemented yet. Syntax would be something like</p>
 
 <blockquote>
-  <code>&lt;<a href="#XML_Measure">Measure</a> name="name" cellReaderClass=
-  "com.acme.MyCellReader"/&gt;</code>
+  <code>&lt;<a href="#XML_Measure">Measure</a> name="name" cellReaderClass=&quot;com.acme.MyCellReader"/&gt;</code>
 </blockquote>
 
 <p>and the class "com.acme.MyCellReader" would have to implement the <code>
@@ -1996,18 +1995,23 @@ Cell.getFormattedValue()</a></code>. The class must implement the <code>
 mondrian.olap.CellFormatter</a></code> interface, and is specified like this:</p>
 
 <blockquote>
-  <code>&lt;<a href="#XML_Measure">Measure</a> name="name" formatter="com.acme.MyCellFormatter"/&gt;</code>
-</blockquote>
+  <code>&lt;<a href="#XML_Measure">Measure</a> name="name" formatter="com.acme.MyCellFormatter"&gt;</code>
+	<br>
+&nbsp;&nbsp;&nbsp; &lt;CalculatedMemberProperty /&gt;<br>
+	&lt;/Measure&gt;</blockquote>
 
-<p>You can define a formatter for a calculated member defined as part of a cube:</p>
+<p>For a calculated member that belongs to a cube 
+or virtual cube, you can define a formatter by setting the <code>CELL_FORMATTER</code> 
+property of the member to the name of the formatter class:</p>
 
 <blockquote>
-  <code>&lt;<a href="#XML_Measure">CalculatedMember</a> name="name" formatter="com.acme.MyCellFormatter"/&gt;</code>
-</blockquote>
-
-<p>For a calculated measure defined in the <code>WITH MEMBER</code> clause of an MDX query, 
-set the <code>CELL_FORMATTER</code> property of the member to the name of the 
-formatter class:</p>
+  <code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="name" formatter="com.acme.MyCellFormatter"&gt;
+	<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;CELL_FORMATTER&quot; value=&quot;<code>com.acme.MyCellFormatter&quot; 
+	/&gt;</code><br>
+	&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></blockquote>
+<p>For a calculated measure defined in the <code>WITH MEMBER</code> clause of an 
+MDX query, you can set the same property in the MDX to achieve the same effect:</p>
 <blockquote>
   <code>WITH MEMBER [Measures].[Foo]<br>
 &nbsp; AS '[Measures].[Unit Sales] * 2',<br>
@@ -3033,7 +3037,7 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
 <br />
 <br />
 
-<p>Author: Julian Hyde; last modified Februrary 2008.<br/>
+<p>Author: Julian Hyde; last modified March 2008.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">log</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc..<br/>
