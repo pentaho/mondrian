@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="3.0.0.10550"/>
+  <property name="version" value="3.0.1.10736"/>
   <property name="vendor" value="Pentaho"/>
 
   <!--
@@ -1118,6 +1118,7 @@ diagrams and hyperlinks to source code">
     </delete>
     <property name="ps" value="${path.separator}"/>
     <javadoc sourcepath="${java.dir}"
+        maxmemory="1024m"
         classpathref="project.test.classpath"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*"
@@ -1135,7 +1136,8 @@ diagrams and hyperlinks to source code">
            scope="constructors,methods"/>
       <tag name="testcase" description="Test-case:"
            scope="constructors,methods,types"/>
-      <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
+      <link href="http://java.sun.com/javase/6/docs/api/"/>
+      <link href="http://www.olap4j.org/api/"/>
       <link href="http://junit.sourceforge.net/javadoc"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
       <link href="http://eigenbase.sourceforge.net/resgen/api/"/>

@@ -530,25 +530,49 @@ running</h5>
 There's plenty of room to wrap these utilities in nice graphical interfaces,
 make them smarter.</p>
 <h3>4. Release history<a name="3_Release_history">&nbsp;</a></h3>
-<h1>4.1 Release 3.0 (2008/3)<a name="Mondrian_3.0">&nbsp;</a></h1>
+<h1>4.1 Release 3.0 (2008/3/22)<a name="Mondrian_3.0">&nbsp;</a></h1>
 <ul>
-	<li><b>Improved dimension sharing</b>. Allow a shared dimension to be used 
-	more than once within the same cube.</li>
-	<li><b>Virtual cube enhancements</b>. When a cube that uses the same 
-	dimension twice is involved in a virtual cube, disambiguate which usage of 
-	the dimension is involved. Allow the virtual cube to use the same cube more 
-	than once.</li>
 	<li><b>olap4j API</b>. olap4j (<a href="http://www.olap4j.org">http://www.olap4j.org</a>) 
 	is the Open Java API for OLAP. From mondrian-3.0 onwards, olap4j is the main 
 	API for connecting to mondrian, browsing metadata and executing queries.<br>
 	<br>
 	Mondrian's previous API (classes in the <code>mondrian.olap</code> package) 
 	still exists but is deprecated; from mondrian-3.1 onwards, classes and 
-	methods in this API may not exist, may not work, or may change.</li>
+	methods in this API may not exist, may not work, or may change.<br>
+&nbsp;</li>
+	<li><b>Rollup policy</b> controls how a cell's value is calculated if some 
+	of its children are hidden by access-control.&nbsp; Before mondrian-3.0 the 
+	only policy was 'full': if access to a 
+	hierarchy was restricted, the value of a member would be equal to the sum of its 
+	children; from mondrian-3.0, we also allow 'partial' (the sum is the sum of 
+	the visible children) or 'hidden' (the cell's value is unknown if any of the 
+	children are hidden). The policy is expressed by the
+	<code>rollupPolicy</code> attribute of the <code>&lt;HierarchyGrant&gt;</code> 
+	element.<br>
+&nbsp;</li>
+	<li><b>Aggregate roles</b>. You can now define a role in the schema that has 
+	the sum of the privileges of two or more roles; and you can connect to 
+	mondrian with one or more roles. This facility enables closer integration 
+	with Pentaho
+	access-control, where a user can already exist in multiple roles.<br>
+&nbsp;</li>
+	<li><b>Allow distinct-count measures to be aggregated</b>. For example, 
+	mondrian can now compute the number of distinct customers who bought beer or 
+	diapers in Q2 or Q3. For efficiency, cell values are loaded in batches and a 
+	special cache allows aggregate cell values to be reused between queries.<br>
+&nbsp;</li>
+	<li><b>Improved dimension sharing</b>. Allow a shared dimension to be used 
+	more than once within the same cube.<br>
+&nbsp;</li>
+	<li><b>Virtual cube enhancements</b>. When a cube that uses the same 
+	dimension twice is involved in a virtual cube, disambiguate which usage of 
+	the dimension is involved. Allow the virtual cube to use the same cube more 
+	than once.<br>
+&nbsp;</li>
 	<li><b>Scalar functions</b>. Many scalar functions have been added in 
 	mondrian-3.0, to the the specification of the Visual Basic for Applications 
 	(VBA) and Excel libraries that are available by default in Microsoft SQL 
-	Server Analysis<br>
+	Server Analysis
 	Services (SSAS) and that many MDX users assume are part of the core MDX 
 	language.<br>
 	<br>
@@ -566,17 +590,8 @@ make them smarter.</p>
 	<code>Format</code> can now be 
 	applied to DateTime values; <code>Iif</code> can be applied to member, 
 	level, hierarchy, dimension and tuple and set values; <code>Levels</code> 
-	can be applied to a string expression.</li>
-	<li><b>Aggregate roles</b>. You can now define a role in the schema that has 
-	the sum of the privileges of two or more roles; and you can connect to 
-	mondrian with one or more roles. This facility enables closer integration 
-	with Pentaho<br>
-	access-control, where a user can already exist in multiple roles.</li>
-	<li><b>Cell-level access-control</b>. In mondrian-2.4, if access to a 
-	hierarchy is restricted, the value of a member is equal to the sum of its 
-	children; in mondrian-3.0, the <code>&lt;HierarchyGrant&gt;</code> element has a
-	<code>rollupPolicy</code> attribute whose<br>
-	values are 'full', 'partial' or 'hidden'.</li>
+	can be applied to a string expression.<br>
+&nbsp;</li>
 	<li><b>JNDI in connect string</b>. JDBC data sources can be specified by 
 	their JNDI name.</li>
 </ul>

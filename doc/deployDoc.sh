@@ -24,7 +24,7 @@ prefix="$1"
 # Directory at sf.net
 docdir=
 case "$prefix" in
-2.1.1) export docdir=htdocs;;
+3.0|release) export docdir=htdocs;;
 head) export docdir=head;;
 *) echo "Bad prefix '$prefix'"; exit 1;;
 esac
