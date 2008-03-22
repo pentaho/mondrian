@@ -73,6 +73,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     final Factory factory;
     private Locale locale;
     private String roleName;
+    private boolean autoCommit;
 
     /**
      * Creates an Olap4j connection to Mondrian.
@@ -134,11 +135,11 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public void setAutoCommit(boolean autoCommit) throws SQLException {
-        throw new UnsupportedOperationException();
+        this.autoCommit = autoCommit;
     }
 
     public boolean getAutoCommit() throws SQLException {
-        throw new UnsupportedOperationException();
+        return autoCommit;
     }
 
     public void commit() throws SQLException {
