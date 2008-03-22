@@ -13,7 +13,6 @@ package mondrian.test;
 
 import junit.framework.Assert;
 import mondrian.olap.*;
-import mondrian.util.Bug;
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
@@ -811,58 +810,93 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     /**
-     * Test to verify that non empty crossjoins enforce role access 
+     * Test to verify that non empty crossjoins enforce role access.
+     * Testcase for bug 1888821, "Non Empty Crossjoin fails to enforce role
+     * access".
      */
     public void testNonEmptyAccess() {
-        if (Bug.Bug1888821Fixed) {
-            TestContext testContext =
-                TestContext.create(
-                    null, null, null, null, null,
-                    "<Role name=\"Role1\">\n"
-                        + "  <SchemaGrant access=\"none\">\n"
-                        + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
-                        + "      <HierarchyGrant hierarchy=\"[Product]\" access=\"custom\">\n"
-                        + "        <MemberGrant member=\"[Product].[Drink]\" access=\"all\"/>\n"
-                        + "      </HierarchyGrant>\n"
-                        + "    </CubeGrant>\n"
-                        + "  </SchemaGrant>\n"
-                        + "</Role>")
-                    .withRole("Role1");
+        TestContext testContext =
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name=\"Role1\">\n"
+                    + "  <SchemaGrant access=\"none\">\n"
+                    + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                    + "      <HierarchyGrant hierarchy=\"[Product]\" access=\"custom\">\n"
+                    + "        <MemberGrant member=\"[Product].[Drink]\" access=\"all\"/>\n"
+                    + "      </HierarchyGrant>\n"
+                    + "    </CubeGrant>\n"
+                    + "  </SchemaGrant>\n"
+                    + "</Role>")
+                .withRole("Role1");
 
-            // regular crossjoin returns the correct list of product children
-            testContext.assertQueryReturns(
-                    
-                    "select {[Measures].[Unit Sales]} ON COLUMNS, " +
-                    " Crossjoin({[Gender].[All Gender]}, " +
-                    "[Product].[All Products].Children) ON ROWS " + 
-                    "from [Sales]",
+        // regular crossjoin returns the correct list of product children
+        final String expected =
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender], [Product].[All Products].[Drink]}\n" +
+                "Row #0: 24,597\n");
 
-                    fold(
-                        "Axis #0:\n" +
-                        "{}\n" +
-                        "Axis #1:\n" +
-                        "{[Measures].[Unit Sales]}\n" +
-                        "Axis #2:\n" +
-                        "{[Gender].[All Gender], [Product].[All Products].[Drink]}\n" +
-                        "Row #0: 24,597\n"));
+        testContext.assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                " Crossjoin({[Gender].[All Gender]}, " +
+                "[Product].[All Products].Children) ON ROWS " +
+                "from [Sales]",
+            expected);
 
-            // non empty crossjoin does not
-            testContext.assertQueryReturns(
+        // with bug 1888821, non empty crossjoin did not return the correct
+        // list
+        testContext.assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                "NON EMPTY Crossjoin({[Gender].[All Gender]}, " +
+                "[Product].[All Products].Children) ON ROWS " +
+                "from [Sales]",
+            expected);
+    }
 
-                    "select {[Measures].[Unit Sales]} ON COLUMNS, " +
-                    "NON EMPTY Crossjoin({[Gender].[All Gender]}, " +
-                    "[Product].[All Products].Children) ON ROWS " + 
-                    "from [Sales]",
+    public void testNonEmptyAccessLevelMembers() {
+        TestContext testContext =
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name=\"Role1\">\n"
+                    + "  <SchemaGrant access=\"none\">\n"
+                    + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                    + "      <HierarchyGrant hierarchy=\"[Product]\" access=\"custom\">\n"
+                    + "        <MemberGrant member=\"[Product].[Drink]\" access=\"all\"/>\n"
+                    + "      </HierarchyGrant>\n"
+                    + "    </CubeGrant>\n"
+                    + "  </SchemaGrant>\n"
+                    + "</Role>")
+                .withRole("Role1");
 
-                    fold(
-                        "Axis #0:\n" +
-                        "{}\n" +
-                        "Axis #1:\n" +
-                        "{[Measures].[Unit Sales]}\n" +
-                        "Axis #2:\n" +
-                        "{[Gender].[All Gender], [Product].[All Products].[Drink]}\n" +
-                        "Row #0: 24,597\n"));
-        }
+        // <Level>.members inside regular crossjoin returns the correct list of
+        // product members
+        final String expected =
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender], [Product].[All Products].[Drink]}\n" +
+                "Row #0: 24,597\n");
+
+        testContext.assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                " Crossjoin({[Gender].[All Gender]}, " +
+                "[Product].[Product Family].Members) ON ROWS " +
+                "from [Sales]",
+            expected);
+
+        // with bug 1888821, <Level>.members inside non empty crossjoin did not
+        // return the correct list
+        testContext.assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                "NON EMPTY Crossjoin({[Gender].[All Gender]}, " +
+                "[Product].[Product Family].Members) ON ROWS " +
+                "from [Sales]",
+            expected);
     }
 }
 

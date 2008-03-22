@@ -92,11 +92,13 @@ public abstract class RolapNativeSet extends RolapNative {
         }
 
         /**
-         * returns null to prevent the member/childern from being cached. There exists
-         * no valid MemberChildrenConstraint that would fetch those children that were
-         * extracted as a side effect from evaluating a non empty crossjoin
+         * Returns null to prevent the member/childern from being cached. There
+         * exists no valid MemberChildrenConstraint that would fetch those
+         * children that were extracted as a side effect from evaluating a non
+         * empty crossjoin
          */
-        public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {
+        public MemberChildrenConstraint getMemberChildrenConstraint(
+            RolapMember parent) {
             return null;
         }
 
@@ -614,7 +616,11 @@ public abstract class RolapNativeSet extends RolapNative {
      * @return an {@link CrossJoinArg} instance describing the Descendants
      *   function, or null if <code>fun</code> represents something else.
      */
-    protected CrossJoinArg checkDescendants(FunDef fun, Exp[] args) {
+    protected CrossJoinArg checkDescendants(
+        Role role,
+        FunDef fun,
+        Exp[] args)
+    {
         if (!"Descendants".equalsIgnoreCase(fun.getName())) {
             return null;
         }
@@ -635,6 +641,17 @@ public abstract class RolapNativeSet extends RolapNative {
         if (!isSimpleLevel(level)) {
             return null;
         }
+        // Descendants of a member in an access-controlled hierarchy cannot be
+        // converted to SQL. (We could be smarter; we don't currently notice
+        // when the member is in a part of the hierarchy that is not
+        // access-controlled.)
+        final Access access = role.getAccess(level.getHierarchy());
+        switch (access) {
+        case ALL:
+            break;
+        default:
+            return null;
+        }
         return new DescendantsCrossJoinArg(level, member);
     }
 
@@ -644,7 +661,11 @@ public abstract class RolapNativeSet extends RolapNative {
      * @return an {@link CrossJoinArg} instance describing the Level.members
      *   function, or null if <code>fun</code> represents something else.
      */
-    protected CrossJoinArg checkLevelMembers(FunDef fun, Exp[] args) {
+    protected CrossJoinArg checkLevelMembers(
+        Role role,
+        FunDef fun,
+        Exp[] args)
+    {
         if (!"Members".equalsIgnoreCase(fun.getName())) {
             return null;
         }
@@ -658,6 +679,17 @@ public abstract class RolapNativeSet extends RolapNative {
         if (!isSimpleLevel(level)) {
             return null;
         }
+        // Members of a level in an access-controlled hierarchy cannot be
+        // converted to SQL. (We could be smarter; we don't currently notice
+        // when the level is in a part of the hierarchy that is not
+        // access-controlled.)
+        final Access access = role.getAccess(level.getHierarchy());
+        switch (access) {
+        case ALL:
+            break;
+        default:
+            return null;
+        }
         return new DescendantsCrossJoinArg(level, null);
     }
 
@@ -667,17 +699,19 @@ public abstract class RolapNativeSet extends RolapNative {
      * @return an {@link CrossJoinArg} instance describing the member.children
      *   function, or null if <code>fun</code> represents something else.
      */
-    protected CrossJoinArg checkMemberChildren(FunDef fun, Exp[] args) {
+    protected CrossJoinArg checkMemberChildren(
+        Role role,
+        FunDef fun,
+        Exp[] args)
+    {
         if (!"Children".equalsIgnoreCase(fun.getName())) {
             return null;
         }
         if (args.length != 1) {
             return null;
         }
-        
-        /*
-         * Note: <Dimension>.Children is not recognized as a native expression.
-         */
+
+        // Note: <Dimension>.Children is not recognized as a native expression.
         if (!(args[0] instanceof MemberExpr)) {
             return null;
         }
@@ -689,6 +723,17 @@ public abstract class RolapNativeSet extends RolapNative {
         level = (RolapLevel) level.getChildLevel();
         if (level == null || !isSimpleLevel(level)) {
             // no child level
+            return null;
+        }
+        // Children of a member in an access-controlled hierarchy cannot be
+        // converted to SQL. (We could be smarter; we don't currently notice
+        // when the member is in a part of the hierarchy that is not
+        // access-controlled.)
+        final Access access = role.getAccess(level.getHierarchy());
+        switch (access) {
+        case ALL:
+            break;
+        default:
             return null;
         }
         return new DescendantsCrossJoinArg(level, member);
@@ -796,16 +841,17 @@ public abstract class RolapNativeSet extends RolapNative {
         FunDef fun = funCall.getFunDef();
         Exp[] args = funCall.getArgs();
 
+        final Role role = evaluator.getSchemaReader().getRole();
         CrossJoinArg arg;
-        arg = checkMemberChildren(fun, args);
+        arg = checkMemberChildren(role, fun, args);
         if (arg != null) {
             return new CrossJoinArg[] {arg};
         }
-        arg = checkLevelMembers(fun, args);
+        arg = checkLevelMembers(role, fun, args);
         if (arg != null) {
             return new CrossJoinArg[] {arg};
         }
-        arg = checkDescendants(fun, args);
+        arg = checkDescendants(role, fun, args);
         if (arg != null) {
             return new CrossJoinArg[] {arg};
         }
