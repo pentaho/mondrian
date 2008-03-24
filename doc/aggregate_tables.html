@@ -56,7 +56,7 @@
       			<li><a href="#Recommender">Recommender</a></li>
       			<li><a href="#Online_offline_control">Online/offline control</a></li>
 			</ol>
-    	<li><a href="#Aggregate_properties">Properties which affect aggregates</a></li>
+    	<li><a href="#Aggregate_properties">Properties that affect aggregates</a></li>
 		<li><a href="#References">References</a></li>
 	</ol>
 <!-- 
@@ -133,10 +133,13 @@ and <code>Customer</code>).</p>
 	Methods]</code>, <code>[Payment Method]</code></li>
 </ul>
 
-<p>Note that the <code>[Product]</code> dimension is a 'snowflake dimension' 
-(that is, it is spread across two tables <code>Product</code> and <code>Mfr</code>) 
-and the <code>[Payment Method]</code> dimension is contained within the <code>
-payment</code> column in the fact table.</p>
+<p>Most of the dimensions have a corresponding dimension table, but there are 
+two exceptions. The <code>[Product]</code> dimension is a <dfn>snowflake 
+dimension</dfn>, which means that it is spread across more than one table (in 
+this case <code>Product</code> and <code>Mfr</code>). The <code>[Payment Method]</code> dimension 
+is a <dfn>degenerate dimension</dfn>; its sole attribute is the <code>
+payment</code> column in the fact table, and so it does not need a dimension 
+table.</p>
 
 <!-- 
 ######################################
@@ -447,7 +450,7 @@ dimension aggregating from
 the lowest level to the next lowest generally gives greater
 bang for the buck than aggregating from the N to the N+1 (N&gt;1) level.
 This is because 1) a first level aggregation can be used for all
-queries at that level and above and 2) dimension fanout tends to 
+queries at that level and above and 2) dimension fan-out tends to 
 increase for the lower levels.
 Of course, your mileage may vary.</p>
 
@@ -1904,7 +1907,7 @@ running.</p>
 ###############################################
 ##  9. Properties which affect aggregates #####
 ############################################### -->
-<h3>9. Properties which affect aggregates<a name="Aggregate_properties">&nbsp;</a></h3>
+<h3>9. Properties that affect aggregates<a name="Aggregate_properties">&nbsp;</a></h3>
 <p>
 Mondrian has properties that control the behavior of its aggregate
 table sub-system. (You can find the full set of properties in the
@@ -2045,19 +2048,15 @@ table sub-system. (You can find the full set of properties in the
 		Presence of Hierarchies. VLDB 1996, pp. 522–531. [<a href="http://www.acm.org/sigmod/vldb/conf/1996/P522.PDF">pdf</a>]</td>
 
 	</tr>
-	<tr>
-		<td>&nbsp;</td>
-		<td>&nbsp;</td>
-	</tr>
-</table>
+	</table>
 <br />
 
 <hr noshade size="1"/>
 <p>
-    Author: Richard Emberson; last modified by Julian Hyde, March 2006.<br/>
+    Author: Richard Emberson; last modified by Julian Hyde, March 2008.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/aggregate_tables.html?ac=22">log</a>)<br/>
-    Copyright (C) 2005-2006 Julian Hyde and others
+    Copyright (C) 2005-2008 Julian Hyde and others
 </p>
 
 <br />
