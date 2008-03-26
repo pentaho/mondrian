@@ -1014,9 +1014,21 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
             "and `store`.`store_country` = 'USA') as `dummyname` group by `d0`";
 
+        // For LucidDB, we don't optimize since it supports
+        // unlimited IN list.
+        String luciddbSql =
+            "select \"time_by_day\".\"the_year\" as \"c0\", " +
+            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
+            "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", \"customer\" as \"customer\", \"store\" as \"store\" " +
+            "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
+            "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+            "and (((\"store\".\"store_state\", \"customer\".\"gender\") in (('CA', 'F'), ('OR', 'F'), ('WA', 'F'), ('CA', 'M'), ('OR', 'M'), ('WA', 'M')))) group by \"time_by_day\".\"the_year\"";
+
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql)};
+            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
+            new SqlPattern(SqlPattern.Dialect.LUCIDDB, luciddbSql, luciddbSql),
+        };
 
         assertQuerySql(query, patterns);
 

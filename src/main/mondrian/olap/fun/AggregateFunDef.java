@@ -97,11 +97,24 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     list = makeTupleList(list);
                 }
 
-                list = removeOverlappingTupleEntries(list);
+                RolapEvaluator rolapEvaluator = null;
+                if (evaluator instanceof RolapEvaluator) {
+                    rolapEvaluator = (RolapEvaluator) evaluator;
+                }
 
-                list = optimizeChildren(list,
-                    evaluator.getSchemaReader(),evaluator.getMeasureCube());
-                checkIfAggregationSizeIsTooLarge(evaluator, list);
+                if ((rolapEvaluator != null) &&
+                    rolapEvaluator.getDialect().supportsUnlimitedValueList()) {
+                    // If the DBMS does not have an upper limit on IN list
+                    // predicate size, then don't attempt any list
+                    // optimization, since the current algorithm is
+                    // very slow.  May want to revisit this if someone
+                    // improves the algorithm.
+                } else {
+                    list = removeOverlappingTupleEntries(list);
+                    list = optimizeChildren(list,
+                        evaluator.getSchemaReader(),evaluator.getMeasureCube());
+                    checkIfAggregationSizeIsTooLarge(list);
+                }
 
                 // Can't aggregate distinct-count values in the same way
                 // which is used for other types of aggregations. To evaluate a
@@ -196,13 +209,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             return parentLevelCount > 0;
         }
 
-        private void checkIfAggregationSizeIsTooLarge(Evaluator evaluator, List list) {
-            if (evaluator instanceof RolapEvaluator &&
-                ((RolapEvaluator)evaluator).getDialect().isLucidDB()) {
-                // LucidDB does not have upper limit on IN list predicate size.
-                return;
-            }
-
+        private void checkIfAggregationSizeIsTooLarge(List list) {
             if (list.size() > MondrianProperties.instance().MaxConstraints.get()) {
                 throw newEvalException(
                     null,"Distinct Count aggregation is not supported over a " +

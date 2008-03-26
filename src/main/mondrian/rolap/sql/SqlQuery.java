@@ -1609,6 +1609,17 @@ public class SqlQuery {
         }
 
         /**
+         * Returns whether this Dialect places no limit on the number
+         * of rows which can appear as elements of an IN or VALUES
+         * expression.
+         *
+         * @return whether value list length is unlimited
+         */
+        public boolean supportsUnlimitedValueList() {
+            return isLucidDB();
+        }
+
+        /**
          * Returns true if this Dialect can include expressions in the ORDER BY
          * clause only by adding an expression to the SELECT clause and using
          * its alias.
