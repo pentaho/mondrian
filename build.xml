@@ -889,7 +889,7 @@ buildJdk16.sh" />
   </target>
 
   <target name="binzip"
-      depends="version,war,srczip,javadoc,xml_schema,retroweave,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
+      depends="version,checkIsNotJdk16,war,srczip,javadoc,xml_schema,retroweave,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -998,7 +998,7 @@ must be run under JDK 1.5." />
     <exec osfamily="windows" executable="buildJdk16.bat"/>
   </target>
 
-  <target name="jar" depends="version,checkIsNotJdk16,compile,compile.tests,compileJdk16">
+  <target name="jar" depends="version,compile,compile.tests,compileJdk16">
     <mkdir dir="${lib.dir}" />
     <jar
         destfile="${jar.file}"
