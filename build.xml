@@ -25,7 +25,9 @@
     Set the properties related to paths
     ===================================================================
   -->
-  <property name="src.dir" value="src"/>
+  <condition property="src.dir" value="${basedir}/src" else="src">
+	<isset property="cruisecontrol" />
+  </condition>
   <property name="testsrc.dir" value="testsrc"/>
   <property name="java.dir" value="${src.dir}/main"/>
   <property name="javatest.dir" value="${testsrc.dir}/main"/>
