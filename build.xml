@@ -19,14 +19,18 @@
   <property name="name" value="mondrian"/>
   <property name="version" value="3.0.1.10736"/>
   <property name="vendor" value="Pentaho"/>
-
   <!--
     ===================================================================
     Set the properties related to paths
     ===================================================================
   -->
-  <condition property="src.dir" value="${basedir}/src" else="src">
-	<isset property="cruisecontrol" />
+  <condition property="src.dir" value="${basedir}/src">
+    <isset property="cruisecontrol" />
+  </condition>
+  <condition property="src.dir" value="src">
+    <not>
+      <isset property="cruisecontrol" />
+    </not>
   </condition>
   <property name="testsrc.dir" value="testsrc"/>
   <property name="java.dir" value="${src.dir}/main"/>
