@@ -563,7 +563,7 @@ public class CacheControlImpl implements CacheControl {
         }
 
         public String toString() {
-            final StringBuilder sb = new StringBuilder("Crosssjoin(");
+            final StringBuilder sb = new StringBuilder("Crossjoin(");
             for (int i = 0; i < components.size(); i++) {
                 if (i > 0) {
                     sb.append(", ");

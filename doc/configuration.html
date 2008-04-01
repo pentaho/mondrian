@@ -156,8 +156,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td>
-      <code><a href="api/mondrian/olap/MondrianProperties.html#MaxEvalDepth">mondrian.rolap.
-      evaluate.MaxEvalDepth</a></code></td>
+      <code><a href="api/mondrian/olap/MondrianProperties.html#MaxEvalDepth">mondrian.rolap.evaluate.MaxEvalDepth</a></code></td>
       <td>int</td>
       <td>10</td>
       <td>Maximum number of passes allowable while evaluating an MDX expression.
@@ -832,6 +831,19 @@ suite of regression tests.</p>
       <td>boolean</td>
       <td>false</td>
       <td>Obsolete.</td>
+    </tr>
+    <tr>
+      <td><code><a href="api/mondrian/olap/MondrianProperties.html#EnableRolapCubeMemberCache">
+      mondrian.rolap.EnableRolapCubeMemberCache</a></code></td>
+
+      <td>boolean</td>
+      <td>true</td>
+      <td>Determines whether to cache RolapCubeMember objects, each of which 
+		associates a member of a shared hierarchy with a particular cube in 
+		which it is being used.<p>The default is <code>true</code>, that is, use 
+		a cache. If you wish to use the member cache control aspects of 
+		<a href="api/mondrian/olap/CacheControl.html">mondrian.olap.CacheControl</a>
+		you must set this property to <code>false</code>.</td>
     </tr>
     <tr>
       <td style="vertical-align: top;" colspan="4">

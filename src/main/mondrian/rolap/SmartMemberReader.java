@@ -339,27 +339,28 @@ public class SmartMemberReader implements MemberReader {
         }
     }
 
-    public void getMemberRange(RolapLevel level,
-                               RolapMember startMember,
-                               RolapMember endMember,
-                               List<RolapMember> list) {
-        Util.assertPrecondition(startMember != null, "startMember != null");
-        Util.assertPrecondition(endMember != null, "endMember != null");
-        Util.assertPrecondition(startMember.getLevel() == endMember.getLevel(),
-                "startMember.getLevel() == endMember.getLevel()");
+    public void getMemberRange(
+        RolapLevel level,
+        RolapMember startMember,
+        RolapMember endMember,
+        List<RolapMember> list)
+    {
+        assert startMember != null;
+        assert endMember != null;
+        assert startMember.getLevel() == endMember.getLevel();
 
         if (compare(startMember, endMember, false) > 0) {
             return;
         }
         list.add(startMember);
-        if (startMember == endMember) {
+        if (startMember.equals(endMember)) {
             return;
         }
         SiblingIterator siblings = new SiblingIterator(this, startMember);
         while (siblings.hasNext()) {
             final RolapMember member = siblings.nextMember();
             list.add(member);
-            if (member == endMember) {
+            if (member.equals(endMember)) {
                 return;
             }
         }
@@ -373,26 +374,28 @@ public class SmartMemberReader implements MemberReader {
         return source.getMemberCount();
     }
 
-    public int compare(RolapMember m1,
-                       RolapMember m2,
-                       boolean siblingsAreEqual) {
-        if (m1 == m2) {
+    public int compare(
+        RolapMember m1,
+        RolapMember m2,
+        boolean siblingsAreEqual)
+    {
+        if (m1.equals(m2)) {
             return 0;
         }
-        if (m1.getParentMember() == m2.getParentMember()) {
+        if (Util.equals(m1.getParentMember(), m2.getParentMember())) {
             // including case where both parents are null
             if (siblingsAreEqual) {
                 return 0;
             } else if (m1.getParentMember() == null) {
                 // at this point we know that both parent members are null.
                 int pos1 = -1, pos2 = -1;
-                List siblingList = getRootMembers();
+                List<RolapMember> siblingList = getRootMembers();
                 for (int i = 0, n = siblingList.size(); i < n; i++) {
-                    RolapMember child = (RolapMember) siblingList.get(i);
-                    if (child == m1) {
+                    RolapMember child = siblingList.get(i);
+                    if (child.equals(m1)) {
                         pos1 = i;
                     }
-                    if (child == m2) {
+                    if (child.equals(m2)) {
                         pos2 = i;
                     }
                 }
@@ -410,10 +413,10 @@ public class SmartMemberReader implements MemberReader {
                 int pos1 = -1, pos2 = -1;
                 for (int i = 0, n = children.size(); i < n; i++) {
                     RolapMember child = children.get(i);
-                    if (child == m1) {
+                    if (child.equals(m1)) {
                         pos1 = i;
                     }
-                    if (child == m2) {
+                    if (child.equals(m2)) {
                         pos2 = i;
                     }
                 }
@@ -469,7 +472,7 @@ public class SmartMemberReader implements MemberReader {
             this.siblings = RolapUtil.toArray(siblingList);
             this.position = -1;
             for (int i = 0; i < this.siblings.length; i++) {
-                if (siblings[i] == member) {
+                if (siblings[i].equals(member)) {
                     this.position = i;
                     break;
                 }

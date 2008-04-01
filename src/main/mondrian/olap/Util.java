@@ -931,15 +931,17 @@ public class Util extends XOMUtil {
     /**
      * Finds the zero based ordinal of a Member among its siblings.
      */
-    public static int getMemberOrdinalInParent(SchemaReader reader,
-                                               Member member) {
+    public static int getMemberOrdinalInParent(
+        SchemaReader reader,
+        Member member)
+    {
         Member parent = member.getParentMember();
         Member[] siblings =  (parent == null)
             ? reader.getHierarchyRootMembers(member.getHierarchy())
             : reader.getMemberChildren(parent);
 
         for (int i = 0; i < siblings.length; i++) {
-            if (siblings[i] == member) {
+            if (siblings[i].equals(member)) {
                 return i;
             }
         }
@@ -1270,6 +1272,34 @@ public class Util extends XOMUtil {
     {
         return compatible.getAnnotation(
             method, annotationClassName, defaultValue);
+    }
+
+    /**
+         * Converts a list of a string.
+     *
+     * For example,
+     * <code>commaList("foo", Arrays.asList({"a", "b"}))</code>
+     * returns "foo(a, b)".
+     *
+     * @param s Prefix
+     * @param list List
+     * @return String representation of string
+     */
+    public static <T> String commaList(
+        String s,
+        List<T> list)
+    {
+        final StringBuilder buf = new StringBuilder(s);
+        buf.append("(");
+        int k = -1;
+        for (T t : list) {
+            if (++k > 0) {
+                buf.append(", ");
+            }
+            buf.append(t);
+        }
+        buf.append(")");
+        return buf.toString();
     }
 
     public static class ErrorCellValue {
@@ -2028,6 +2058,28 @@ public class Util extends XOMUtil {
         buf.append('%');
 
         return buf.toString();
+    }
+
+    /**
+     * Casts a Set to a Set with a different element type.
+     *
+     * @param set Set
+     * @return Set of desired type
+     */
+    @SuppressWarnings({"unchecked"})
+    public static <T> Set<T> cast(Set<?> set) {
+        return (Set<T>) set;
+    }
+
+    /**
+     * Casts a List to a List with a different element type.
+     *
+     * @param list List
+     * @return List of desired type
+     */
+    @SuppressWarnings({"unchecked"})
+    public static <T> List<T> cast(List<?> list) {
+        return (List<T>) list;
     }
 
     /**

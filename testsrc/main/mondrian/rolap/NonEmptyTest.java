@@ -1812,9 +1812,12 @@ public class NonEmptyTest extends BatchTestCase {
         // make sure that NON EMPTY [Customers].[Name].Members IS in cache
         lmc = scf.getLevelMembersConstraint(context);
         List list = smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
-        assertNotNull(list);
-        assertEquals(20, list.size());
-
+        if (MondrianProperties.instance().EnableRolapCubeMemberCache
+            .booleanValue())
+        {
+            assertNotNull(list);
+            assertEquals(20, list.size());
+        }
         // make sure that the parent/child for the context are cached
 
         // [Customers].[All Customers].[USA].[CA].[Burlingame].[Peggy Justice]
@@ -1862,8 +1865,12 @@ public class NonEmptyTest extends BatchTestCase {
         // make sure that [Customers].[Name].Members IS in cache
         TupleConstraint lmc = scf.getLevelMembersConstraint(null);
         List list = smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
-        assertNotNull(list);
-        assertEquals(10281, list.size());
+        if (MondrianProperties.instance().EnableRolapCubeMemberCache
+            .booleanValue())
+        {
+            assertNotNull(list);
+            assertEquals(10281, list.size());
+        }
         // make sure that NON EMPTY [Customers].[Name].Members is NOT in cache
         lmc = scf.getLevelMembersConstraint(context);
         assertNull(smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc));
@@ -3279,11 +3286,16 @@ public class NonEmptyTest extends BatchTestCase {
             if (!listener.isExcecuteSql()) {
                 fail("cache is empty: expected SQL query to be executed");
             }
-            // run once more to make sure that the result comes from cache now
-            listener.setExcecuteSql(false);
-            c.run();
-            if (listener.isExcecuteSql()) {
-                fail("expected result from cache when query runs twice");
+            if (MondrianProperties.instance().EnableRolapCubeMemberCache
+                .booleanValue())
+            {
+                // run once more to make sure that the result comes from cache
+                // now
+                listener.setExcecuteSql(false);
+                c.run();
+                if (listener.isExcecuteSql()) {
+                    fail("expected result from cache when query runs twice");
+                }
             }
             con.close();
 

@@ -297,7 +297,7 @@ public class FunUtil extends Util {
             m1 = m1.getParentMember();
         }
         while (m1 != null) {
-            if (m1 == m0) {
+            if (m1.equals(m0)) {
                 return true;
             }
             m1 = m1.getParentMember();

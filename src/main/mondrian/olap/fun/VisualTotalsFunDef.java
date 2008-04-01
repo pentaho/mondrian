@@ -124,7 +124,7 @@ public class VisualTotalsFunDef extends FunDefBase {
             List<Member> childMemberList = new ArrayList<Member>();
             while (i < list.size()) {
                 Member descendant = list.get(i);
-                if (descendant == member) {
+                if (descendant.equals(member)) {
                     // strict descendants only
                     break;
                 }
@@ -153,7 +153,7 @@ public class VisualTotalsFunDef extends FunDefBase {
                     break;
                 }
                 Member descendant = (Member) list.get(i);
-                if (descendant == member) {
+                if (descendant.equals(member)) {
                     // strict descendants only
                     break;
                 }
@@ -264,7 +264,8 @@ public class VisualTotalsFunDef extends FunDefBase {
         while (true) {
             int endIndex = namePattern.indexOf('*', startIndex);
 
-            if (endIndex == -1) { // No '*' left
+            if (endIndex == -1) {
+                // No '*' left
                 // append the rest of namePattern from startIndex onwards
                 buf.append(namePattern.substring(startIndex));
                 break;
@@ -272,11 +273,18 @@ public class VisualTotalsFunDef extends FunDefBase {
 
             // endIndex now points to the '*'; check for '**'
             ++endIndex;
-            if (endIndex < namePatternLen && namePattern.charAt(endIndex) == '*') { // Found '**', replace with '*'
-                buf.append(namePattern.substring(startIndex, endIndex)); // Include first '*'
-                ++endIndex; // Skip over 2nd '*'
-            } else { // Found single '*' - substitute (omitting the '*')
-                buf.append(namePattern.substring(startIndex, endIndex - 1)); // Exclude '*'
+            if (endIndex < namePatternLen
+                && namePattern.charAt(endIndex) == '*')
+            {
+                // Found '**', replace with '*'
+                 // Include first '*'.
+                buf.append(namePattern.substring(startIndex, endIndex));
+                // Skip over 2nd '*'
+                ++endIndex;
+            } else {
+                // Found single '*' - substitute (omitting the '*')
+                // Exclude '*'
+                buf.append(namePattern.substring(startIndex, endIndex - 1));
                 buf.append(name);
             }
 

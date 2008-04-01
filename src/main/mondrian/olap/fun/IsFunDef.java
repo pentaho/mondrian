@@ -57,7 +57,7 @@ class IsFunDef extends FunDefBase {
                 public boolean evaluateBoolean(Evaluator evaluator) {
                     Object o0 = calc0.evaluate(evaluator);
                     Object o1 = calc1.evaluate(evaluator);
-                    return o0 == o1;
+                    return o0.equals(o1);
                 }
             };
         }

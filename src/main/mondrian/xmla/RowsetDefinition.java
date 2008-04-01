@@ -5636,7 +5636,7 @@ TODO: see above
                     : schemaReader.getMemberChildren(parent);
 
                 for (Member sibling : siblings) {
-                    if (sibling == member) {
+                    if (sibling.equals(member)) {
                         continue;
                     }
                     populateMember(

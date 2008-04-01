@@ -185,6 +185,11 @@ public class RolapCubeLevel extends RolapLevel {
         return (RolapCubeLevel) super.getChildLevel();
     }
 
+    // override with stricter return type
+    public RolapCubeLevel getParentLevel() {
+        return (RolapCubeLevel) super.getParentLevel();
+    }
+
     public RolapLevel getRolapLevel() {
         return rolapLevel;
     }

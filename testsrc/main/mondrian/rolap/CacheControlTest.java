@@ -271,11 +271,11 @@ public class CacheControlTest extends FoodMartTestCase {
                 (CacheControlImpl.CellRegionImpl) region);
         assertEquals(
             "Union(" +
-                "Crosssjoin(" +
+                "Crossjoin(" +
                 "Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), " +
                 "Member([Time].[1997].[Q1]), " +
                 "Member([Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Sales Count], [Measures].[Customer Count], [Measures].[Promotion Sales])), " +
-                "Crosssjoin(" +
+                "Crossjoin(" +
                 "Member([Product].[All Products].[Drink].[Dairy]), " +
                 "Member([Time].[1997].[Q1]), " +
                 "Member([Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Sales Count], [Measures].[Customer Count], [Measures].[Promotion Sales])))",
@@ -489,7 +489,7 @@ public class CacheControlTest extends FoodMartTestCase {
 
         final CacheControl.CellRegion regionProductXTime =
             cacheControl.createCrossjoinRegion(regionProductUnion, regionTimeQ1);
-        assertEquals("Crosssjoin(Union(Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), Member([Product].[All Products].[Drink].[Dairy])), Member([Time].[1997].[Q1]))", regionProductXTime.toString());
+        assertEquals("Crossjoin(Union(Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), Member([Product].[All Products].[Drink].[Dairy])), Member([Time].[1997].[Q1]))", regionProductXTime.toString());
 
         try {
             cacheControl.flush(regionProductXTime);
@@ -698,7 +698,7 @@ public class CacheControlTest extends FoodMartTestCase {
         assertNotNull(regionTimeXProduct);
         assertEquals(2, regionTimeXProduct.getDimensionality().size());
         assertEquals(
-            "Crosssjoin(Member([Time].[1997].[Q1]), Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine]))",
+            "Crossjoin(Member([Time].[1997].[Q1]), Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine]))",
             regionTimeXProduct.toString());
 
         // Try to combine ([Time], [Product]) region with ([Time]) region.
@@ -804,13 +804,13 @@ public class CacheControlTest extends FoodMartTestCase {
                 regionTimeQ1,
                 regionProductBeer);
 
-        // Compose a crosssjoin with a non crossjoin
+        // Compose a crossjoin with a non crossjoin
         final CacheControl.CellRegion regionTimeXProductXGender =
             cacheControl.createCrossjoinRegion(
                 regionTimeXProduct,
                 regionGenderFemale);
         assertEquals(
-            "Crosssjoin(Member([Time].[1997].[Q1]), Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), Member([Gender].[All Gender].[F]))",
+            "Crossjoin(Member([Time].[1997].[Q1]), Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), Member([Gender].[All Gender].[F]))",
             regionTimeXProductXGender.toString());
         assertEquals(
             "[[Time], [Product], [Gender]]",
@@ -823,19 +823,19 @@ public class CacheControlTest extends FoodMartTestCase {
                 regionProductBeer,
                 regionGenderFemale);
         assertEquals(
-            "Crosssjoin(Member([Time].[1997].[Q1]), Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), Member([Gender].[All Gender].[F]))",
+            "Crossjoin(Member([Time].[1997].[Q1]), Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), Member([Gender].[All Gender].[F]))",
             regionTimeXProductXGender2.toString());
         assertEquals(
             "[[Time], [Product], [Gender]]",
             regionTimeXProductXGender2.getDimensionality().toString());
 
-        // Compose a non crosssjoin with a crossjoin
+        // Compose a non crossjoin with a crossjoin
         final CacheControl.CellRegion regionGenderXTimeXProduct =
             cacheControl.createCrossjoinRegion(
                 regionGenderFemale,
                 regionTimeXProduct);
         assertEquals(
-            "Crosssjoin(Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1]), Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]))",
+            "Crossjoin(Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1]), Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]))",
             regionGenderXTimeXProduct.toString());
         assertEquals(
             "[[Gender], [Time], [Product]]",
@@ -905,16 +905,16 @@ public class CacheControlTest extends FoodMartTestCase {
                         memberRegion("[Gender].[F]")),
                     memberRegion("[Time].[1997].[Q1]")));
         assertEquals(
-            "Union(Crosssjoin(Member([Marital Status].[All Marital Status].[S]), Union(Crosssjoin(Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])), Crosssjoin(Member([Gender].[All Gender].[M]), Member([Time].[1997].[Q2])))), Crosssjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])))",
+            "Union(Crossjoin(Member([Marital Status].[All Marital Status].[S]), Union(Crossjoin(Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])), Crossjoin(Member([Gender].[All Gender].[M]), Member([Time].[1997].[Q2])))), Crossjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])))",
             region.toString());
 
         final CacheControl.CellRegion normalizedRegion =
             ((CacheControlImpl) cacheControl).normalize((CacheControlImpl.CellRegionImpl) region);
         assertEquals(
             "Union(" +
-                "Crosssjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])), " +
-                "Crosssjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[M]), Member([Time].[1997].[Q2])), " +
-                "Crosssjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])))",
+                "Crossjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])), " +
+                "Crossjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[M]), Member([Time].[1997].[Q2])), " +
+                "Crossjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])))",
             normalizedRegion.toString());
     }
 
