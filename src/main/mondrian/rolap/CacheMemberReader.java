@@ -25,7 +25,6 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 /**
  * <code>CacheMemberReader</code> implements {@link MemberReader} by reading
  * from a pre-populated array of {@link mondrian.olap.Member}s.
- *
  * <p>Note: CacheMemberReader can not handle ragged hierarchies. (HR
  * Tests fail if {@link SmartMemberReader} is replaced with
  * CacheMemberReader).
@@ -101,6 +100,22 @@ class CacheMemberReader implements MemberReader, MemberCache {
         RolapMember member,
         MemberChildrenConstraint constraint,
         List<RolapMember> children)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    // this cache is immutable
+    public boolean isMutable()
+    {
+        return false;
+    }
+
+    public RolapMember removeMember(Object key)
+    {
+        throw new UnsupportedOperationException();
+    }
+    
+    public RolapMember removeMemberAndDescendants(Object key)
     {
         throw new UnsupportedOperationException();
     }

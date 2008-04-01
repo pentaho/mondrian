@@ -10,8 +10,7 @@ package mondrian.rolap.cache;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A map with soft references that is cleaned up in regular intervals.
@@ -25,10 +24,12 @@ import java.util.Map;
  * @since Nov 3, 2005
  * @version $Id$
  */
-public class SoftSmartCache <K, V> implements SmartCache <K, V> {
+public class SoftSmartCache<K, V> implements SmartCache<K, V> {
 
-    Map<K, CacheReference> cache = new HashMap<K, CacheReference>();
-    ReferenceQueue<V> queue = new ReferenceQueue<V>();
+    private final Map<K, CacheReference> cache =
+        new HashMap<K, CacheReference>();
+
+    private final ReferenceQueue<V> queue = new ReferenceQueue<V>();
 
     /**
      * an entry in the cache that contains the key for
@@ -99,6 +100,41 @@ public class SoftSmartCache <K, V> implements SmartCache <K, V> {
         return cache.size();
     }
 
+    public Iterator<Map.Entry<K, V>> iterator() {
+        final Iterator<Map.Entry<K, CacheReference>> cacheIterator =
+            cache.entrySet().iterator();
+        return new Iterator<Map.Entry<K, V>>() {
+            private Map.Entry<K,V> entry;
+
+            public boolean hasNext() {
+                if (entry != null) {
+                    return true;
+                }
+                while (cacheIterator.hasNext()) {
+                    Map.Entry<K,CacheReference> cacheEntry =
+                        cacheIterator.next();
+                    // skip over entries that have been garbage collected
+                    final V value = cacheEntry.getValue().get();
+                    if (value != null) {
+                        entry = new AbstractMap.SimpleEntry<K,V>(
+                            cacheEntry.getKey(), value);
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            public Map.Entry<K, V> next() {
+                Map.Entry<K, V> entry = this.entry;
+                this.entry = null;
+                return entry;
+            }
+
+            public void remove() {
+                cacheIterator.remove();
+            }
+        };
+    }
 }
 
 // End SoftSmartCache.java

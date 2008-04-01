@@ -282,6 +282,29 @@ public class RolapMember extends MemberBase {
     }
 
     /**
+     * Sets a member's parent.
+     *
+     * <p>Can screw up the caching structure. Only to be called by
+     * {@link mondrian.olap.CacheControl#createMoveCommand}.
+     *
+     * <p>New parent must be in same level as old parent.
+     *
+     * @param parentMember New parent member
+     *
+     * @see #getParentMember()
+     * @see #getParentUniqueName()
+     */
+    void setParentMember(RolapMember parentMember) {
+        final RolapMember previousParentMember = getParentMember();
+        if (previousParentMember.getLevel() != parentMember.getLevel()) {
+            throw new IllegalArgumentException(
+                "new parent belongs to different level than old");
+        }
+        this.parentMember = parentMember;
+        this.parentUniqueName = parentMember.getUniqueName();
+    }
+
+    /**
      * Converts a key to a string to be used as part of the member's name
      * and unique name.
      *

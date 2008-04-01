@@ -8,8 +8,7 @@
 */
 package mondrian.rolap.cache;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * An implementation of {@link SmartCache} that uses hard
@@ -36,6 +35,9 @@ public class HardSmartCache <K, V> implements SmartCache <K, V> {
         return cache.size();
     }
 
+    public Iterator<Map.Entry<K, V>> iterator() {
+        return cache.entrySet().iterator();
+    }
 }
 
 // End HardSmartCache.java

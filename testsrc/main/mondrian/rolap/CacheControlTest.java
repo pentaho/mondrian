@@ -337,6 +337,9 @@ public class CacheControlTest extends FoodMartTestCase {
         if (MondrianProperties.instance().DisableCaching.get()) {
             return;
         }
+        if (!MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
+            return;
+        }
 
         flushCache();
 
@@ -400,6 +403,9 @@ public class CacheControlTest extends FoodMartTestCase {
      */
     public void testPartialFlushRange() {
         if (MondrianProperties.instance().DisableCaching.get()) {
+            return;
+        }
+        if (!MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
             return;
         }
 

@@ -1812,9 +1812,7 @@ public class NonEmptyTest extends BatchTestCase {
         // make sure that NON EMPTY [Customers].[Name].Members IS in cache
         lmc = scf.getLevelMembersConstraint(context);
         List list = smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
-        if (MondrianProperties.instance().EnableRolapCubeMemberCache
-            .booleanValue())
-        {
+        if (MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
             assertNotNull(list);
             assertEquals(20, list.size());
         }
@@ -1865,9 +1863,7 @@ public class NonEmptyTest extends BatchTestCase {
         // make sure that [Customers].[Name].Members IS in cache
         TupleConstraint lmc = scf.getLevelMembersConstraint(null);
         List list = smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
-        if (MondrianProperties.instance().EnableRolapCubeMemberCache
-            .booleanValue())
-        {
+        if (MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
             assertNotNull(list);
             assertEquals(10281, list.size());
         }
@@ -3286,9 +3282,7 @@ public class NonEmptyTest extends BatchTestCase {
             if (!listener.isExcecuteSql()) {
                 fail("cache is empty: expected SQL query to be executed");
             }
-            if (MondrianProperties.instance().EnableRolapCubeMemberCache
-                .booleanValue())
-            {
+            if (MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
                 // run once more to make sure that the result comes from cache
                 // now
                 listener.setExcecuteSql(false);

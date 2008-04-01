@@ -108,7 +108,7 @@ public class SmartMemberListCache <K, V> {
         cache.clear();
     }
 
-    SmartCache getCache() {
+    SmartCache<Key2<K, Object>, V> getCache() {
         return cache;
     }
 

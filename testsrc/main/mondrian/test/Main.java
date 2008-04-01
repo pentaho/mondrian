@@ -194,6 +194,7 @@ public class Main extends TestSuite {
             addTest(suite, SummaryTest.class, "suite");
             addTest(suite, TopBottomTest.class, "suite");
             addTest(suite, CacheControlTest.class);
+            addTest(suite, MemberCacheControlTest.class);
             addTest(suite, FunctionTest.class);
             addTest(suite, VbaTest.class);
             addTest(suite, HierarchyBugTest.class);
