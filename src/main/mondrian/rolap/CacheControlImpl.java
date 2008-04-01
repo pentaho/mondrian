@@ -66,8 +66,8 @@ public class CacheControlImpl implements CacheControl {
             upperInclusive = false;
         }
         return new MemberRangeCellRegion(
-            stripMember((RolapMember) lowerMember), lowerInclusive,
-            stripMember((RolapMember) upperMember), upperInclusive,
+            (RolapMember) lowerMember, lowerInclusive,
+            (RolapMember) upperMember, upperInclusive,
             descendants);
     }
 

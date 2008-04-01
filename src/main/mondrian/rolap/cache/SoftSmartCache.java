@@ -8,6 +8,8 @@
 */
 package mondrian.rolap.cache;
 
+import mondrian.util.Pair;
+
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.util.*;
@@ -116,8 +118,9 @@ public class SoftSmartCache<K, V> implements SmartCache<K, V> {
                     // skip over entries that have been garbage collected
                     final V value = cacheEntry.getValue().get();
                     if (value != null) {
-                        entry = new AbstractMap.SimpleEntry<K,V>(
-                            cacheEntry.getKey(), value);
+                        // Would use AbstractMap.SimpleEntry but it's not public
+                        // until JDK 1.6.
+                        entry = new Pair<K,V>(cacheEntry.getKey(), value);
                         return true;
                     }
                 }

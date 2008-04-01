@@ -13,10 +13,10 @@
             <![CDATA[[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Strehlo],
-  [Store Sqft]=[22478.0],
-  [Grocery Sqft]=[15320.950534854783],
-  [Frozen Sqft]=[4294.2296790871305],
-  [Meat Sqft]=[2862.819786058087],
+  [Store Sqft]=[22478],
+  [Grocery Sqft]=[15321],
+  [Frozen Sqft]=[4294],
+  [Meat Sqft]=[2863],
   [Has coffee bar]=[true],
   [Street address]=[4365 Indigo Ct]}
 
@@ -37,9 +37,9 @@ Row #0: 2,117
   [Store Type]=[Small Grocery],
   [Store Manager]=[Higgins],
   [Store Sqft]=[6000],
-  [Grocery Sqft]=[15320.950534854783],
-  [Frozen Sqft]=[4294.2296790871305],
-  [Meat Sqft]=[2862.819786058087],
+  [Grocery Sqft]=[15321],
+  [Frozen Sqft]=[4294],
+  [Meat Sqft]=[2863],
   [Has coffee bar]=[false],
   [Street address]=[770 Mission St]}
 
@@ -59,7 +59,7 @@ Row #0: 2,117
 [Retail].[All Retails].[BC].[Vancouver].[Store 19] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Ruth],
-  [Store Sqft]=[23112.0],
+  [Store Sqft]=[23112],
   [Has coffee bar]=[true],
   [Street address]=[6644 Sudance Drive]}
 
@@ -69,7 +69,7 @@ Row #0: 2,117
 [Retail].[All Retails].[BC].[Victoria].[Store 20] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Cobb],
-  [Store Sqft]=[34452.0],
+  [Store Sqft]=[34452],
   [Has coffee bar]=[true],
   [Street address]=[3706 Marvelle Ln]}
 
@@ -92,7 +92,7 @@ Row #0: 2,117
 [Retail].[All Retails].[CA].[Beverly Hills].[Store 6] {
   [Store Type]=[Gourmet Supermarket],
   [Store Manager]=[Maris],
-  [Store Sqft]=[23688.0],
+  [Store Sqft]=[23688],
   [Has coffee bar]=[true],
   [Street address]=[5495 Mitchell Canyon Road]}
 
@@ -102,7 +102,7 @@ Row #0: 2,117
 [Retail].[All Retails].[CA].[Los Angeles].[Store 7] {
   [Store Type]=[Supermarket],
   [Store Manager]=[White],
-  [Store Sqft]=[23598.0],
+  [Store Sqft]=[23598],
   [Has coffee bar]=[false],
   [Street address]=[1077 Wharf Drive]}
 
@@ -122,7 +122,7 @@ Row #0: 2,117
 [Retail].[All Retails].[CA].[San Francisco].[Store 14] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Strehlo],
-  [Store Sqft]=[22478.0],
+  [Store Sqft]=[22478],
   [Has coffee bar]=[true],
   [Street address]=[4365 Indigo Ct]}
 
@@ -135,7 +135,7 @@ Row #0: 2,117
 [Retail].[All Retails].[DF].[Mexico City].[Store 9] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Stuber],
-  [Store Sqft]=[36509.0],
+  [Store Sqft]=[36509],
   [Has coffee bar]=[false],
   [Street address]=[1872 El Pintado Road]}
 
@@ -158,7 +158,7 @@ Row #0: 2,117
 [Retail].[All Retails].[Guerrero].[Acapulco].[Store 1] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Jones],
-  [Store Sqft]=[23593.0],
+  [Store Sqft]=[23593],
   [Has coffee bar]=[false],
   [Street address]=[2853 Bailey Rd]}
 
@@ -171,7 +171,7 @@ Row #0: 2,117
 [Retail].[All Retails].[Jalisco].[Guadalajara].[Store 5] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Green],
-  [Store Sqft]=[24597.0],
+  [Store Sqft]=[24597],
   [Has coffee bar]=[true],
   [Street address]=[1250 Coggins Drive]}
 
@@ -184,7 +184,7 @@ Row #0: 2,117
 [Retail].[All Retails].[OR].[Portland].[Store 11] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Erickson],
-  [Store Sqft]=[20319.0],
+  [Store Sqft]=[20319],
   [Has coffee bar]=[false],
   [Street address]=[5371 Holland Circle]}
 
@@ -194,7 +194,7 @@ Row #0: 2,117
 [Retail].[All Retails].[OR].[Salem].[Store 13] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Inmon],
-  [Store Sqft]=[27694.0],
+  [Store Sqft]=[27694],
   [Has coffee bar]=[true],
   [Street address]=[5179 Valley Ave]}
 
@@ -207,7 +207,7 @@ Row #0: 2,117
 [Retail].[All Retails].[Veracruz].[Orizaba].[Store 10] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Merz],
-  [Store Sqft]=[34791.0],
+  [Store Sqft]=[34791],
   [Has coffee bar]=[false],
   [Street address]=[7894 Rotherham Dr]}
 
@@ -220,7 +220,7 @@ Row #0: 2,117
 [Retail].[All Retails].[WA].[Bellingham].[Store 2] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Smith],
-  [Store Sqft]=[28206.0],
+  [Store Sqft]=[28206],
   [Has coffee bar]=[true],
   [Street address]=[5203 Catanzaro Way]}
 
@@ -230,7 +230,7 @@ Row #0: 2,117
 [Retail].[All Retails].[WA].[Bremerton].[Store 3] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Davis],
-  [Store Sqft]=[39696.0],
+  [Store Sqft]=[39696],
   [Has coffee bar]=[false],
   [Street address]=[1501 Ramsey Circle]}
 
@@ -240,7 +240,7 @@ Row #0: 2,117
 [Retail].[All Retails].[WA].[Seattle].[Store 15] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Ollom],
-  [Store Sqft]=[21215.0],
+  [Store Sqft]=[21215],
   [Has coffee bar]=[true],
   [Street address]=[5006 Highland Drive]}
 
@@ -250,7 +250,7 @@ Row #0: 2,117
 [Retail].[All Retails].[WA].[Spokane].[Store 16] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Mantle],
-  [Store Sqft]=[30268.0],
+  [Store Sqft]=[30268],
   [Has coffee bar]=[false],
   [Street address]=[5922 La Salle Ct]}
 
@@ -260,7 +260,7 @@ Row #0: 2,117
 [Retail].[All Retails].[WA].[Tacoma].[Store 17] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Mays],
-  [Store Sqft]=[33858.0],
+  [Store Sqft]=[33858],
   [Has coffee bar]=[true],
   [Street address]=[490 Risdon Road]}
 
@@ -293,7 +293,7 @@ Row #0: 2,117
 [Retail].[All Retails].[Yucatan].[Merida].[Store 8] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Williams],
-  [Store Sqft]=[30797.0],
+  [Store Sqft]=[30797],
   [Has coffee bar]=[true],
   [Street address]=[3173 Buena Vista Ave]}
 
@@ -306,7 +306,7 @@ Row #0: 2,117
 [Retail].[All Retails].[Zacatecas].[Camacho].[Store 4] {
   [Store Type]=[Gourmet Supermarket],
   [Store Manager]=[Johnson],
-  [Store Sqft]=[23759.0],
+  [Store Sqft]=[23759],
   [Has coffee bar]=[true],
   [Street address]=[433 St George Dr]}
 
@@ -316,14 +316,14 @@ Row #0: 2,117
 [Retail].[All Retails].[Zacatecas].[Hidalgo].[Store 12] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Kalman],
-  [Store Sqft]=[30584.0],
+  [Store Sqft]=[30584],
   [Has coffee bar]=[true],
   [Street address]=[1120 Westchester Pl]}
 
 [Retail].[All Retails].[Zacatecas].[Hidalgo].[Store 18] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Brown],
-  [Store Sqft]=[38382.0],
+  [Store Sqft]=[38382],
   [Has coffee bar]=[false],
   [Street address]=[6764 Glen Road]}
 
@@ -469,7 +469,7 @@ Row #59:
 [Retail].[All Retails].[BC].[Vancouver].[Store 19] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Ruth],
-  [Store Sqft]=[23112.0],
+  [Store Sqft]=[23112],
   [Has coffee bar]=[true],
   [Street address]=[6644 Sudance Drive]}
 
@@ -479,7 +479,7 @@ Row #59:
 [Retail].[All Retails].[BC].[Victoria].[Store 20] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Cobb],
-  [Store Sqft]=[34452.0],
+  [Store Sqft]=[34452],
   [Has coffee bar]=[true],
   [Street address]=[3706 Marvelle Ln]}
 
@@ -502,7 +502,7 @@ Row #59:
 [Retail].[All Retails].[CA].[Beverly Hills].[Store 6] {
   [Store Type]=[Gourmet Supermarket],
   [Store Manager]=[Maris],
-  [Store Sqft]=[23688.0],
+  [Store Sqft]=[23688],
   [Has coffee bar]=[true],
   [Street address]=[5495 Mitchell Canyon Road]}
 
@@ -512,7 +512,7 @@ Row #59:
 [Retail].[All Retails].[CA].[Los Angeles].[Store 7] {
   [Store Type]=[Supermarket],
   [Store Manager]=[White],
-  [Store Sqft]=[23598.0],
+  [Store Sqft]=[23598],
   [Has coffee bar]=[false],
   [Street address]=[1077 Wharf Drive]}
 
@@ -532,7 +532,7 @@ Row #59:
 [Retail].[All Retails].[CA].[San Francisco].[Store 14] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Strehlo],
-  [Store Sqft]=[22478.0],
+  [Store Sqft]=[22478],
   [Has coffee bar]=[true],
   [Street address]=[4365 Indigo Ct]}
 
@@ -594,7 +594,7 @@ Row #59:
 [Retail].[All Retails].[OR].[Portland].[Store 11] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Erickson],
-  [Store Sqft]=[20319.0],
+  [Store Sqft]=[20319],
   [Has coffee bar]=[false],
   [Street address]=[5371 Holland Circle]}
 
@@ -604,7 +604,7 @@ Row #59:
 [Retail].[All Retails].[OR].[Salem].[Store 13] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Inmon],
-  [Store Sqft]=[27694.0],
+  [Store Sqft]=[27694],
   [Has coffee bar]=[true],
   [Street address]=[5179 Valley Ave]}
 
@@ -617,7 +617,7 @@ Row #59:
 [Retail].[All Retails].[Veracruz].[Orizaba].[Store 10] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Merz],
-  [Store Sqft]=[34791.0],
+  [Store Sqft]=[34791],
   [Has coffee bar]=[false],
   [Street address]=[7894 Rotherham Dr]}
 
@@ -630,7 +630,7 @@ Row #59:
 [Retail].[All Retails].[WA].[Bellingham].[Store 2] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Smith],
-  [Store Sqft]=[28206.0],
+  [Store Sqft]=[28206],
   [Has coffee bar]=[true],
   [Street address]=[5203 Catanzaro Way]}
 
@@ -640,7 +640,7 @@ Row #59:
 [Retail].[All Retails].[WA].[Bremerton].[Store 3] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Davis],
-  [Store Sqft]=[39696.0],
+  [Store Sqft]=[39696],
   [Has coffee bar]=[false],
   [Street address]=[1501 Ramsey Circle]}
 
@@ -650,7 +650,7 @@ Row #59:
 [Retail].[All Retails].[WA].[Seattle].[Store 15] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Ollom],
-  [Store Sqft]=[21215.0],
+  [Store Sqft]=[21215],
   [Has coffee bar]=[true],
   [Street address]=[5006 Highland Drive]}
 
@@ -660,7 +660,7 @@ Row #59:
 [Retail].[All Retails].[WA].[Spokane].[Store 16] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Mantle],
-  [Store Sqft]=[30268.0],
+  [Store Sqft]=[30268],
   [Has coffee bar]=[false],
   [Street address]=[5922 La Salle Ct]}
 
@@ -670,7 +670,7 @@ Row #59:
 [Retail].[All Retails].[WA].[Tacoma].[Store 17] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Mays],
-  [Store Sqft]=[33858.0],
+  [Store Sqft]=[33858],
   [Has coffee bar]=[true],
   [Street address]=[490 Risdon Road]}
 
@@ -703,7 +703,7 @@ Row #59:
 [Retail].[All Retails].[Yucatan].[Merida].[Store 8] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Williams],
-  [Store Sqft]=[30797.0],
+  [Store Sqft]=[30797],
   [Has coffee bar]=[true],
   [Street address]=[3173 Buena Vista Ave]}
 
@@ -716,7 +716,7 @@ Row #59:
 [Retail].[All Retails].[Zacatecas].[Camacho].[Store 4] {
   [Store Type]=[Gourmet Supermarket],
   [Store Manager]=[Johnson],
-  [Store Sqft]=[23759.0],
+  [Store Sqft]=[23759],
   [Has coffee bar]=[true],
   [Street address]=[433 St George Dr]}
 
@@ -726,14 +726,14 @@ Row #59:
 [Retail].[All Retails].[Zacatecas].[Hidalgo].[Store 12] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Kalman],
-  [Store Sqft]=[30584.0],
+  [Store Sqft]=[30584],
   [Has coffee bar]=[true],
   [Street address]=[1120 Westchester Pl]}
 
 [Retail].[All Retails].[Zacatecas].[Hidalgo].[Store 18] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Brown],
-  [Store Sqft]=[38382.0],
+  [Store Sqft]=[38382],
   [Has coffee bar]=[false],
   [Street address]=[6764 Glen Road]}
 

@@ -134,7 +134,24 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             }
             pw.println();
             String name = p.getName();
-            pw.printf("  [%s]=[%s]", name, member.getPropertyValue(name));
+            Object value = member.getPropertyValue(name);
+
+            // Fixup value for different database representations of boolean and
+            // numeric values.
+            if (value == null) {
+                // no fixup needed
+            } else if (name.equals("Has coffee bar")) {
+                if (value instanceof Number) {
+                    value = ((Number) value).intValue() != 0;
+                }
+            } else if (name.endsWith(" Sqft")) {
+                Number number = (Number) value;
+                value =
+                    number.equals(number.intValue())
+                        ? number.intValue()
+                        : Math.round(number.floatValue());
+            }
+            pw.printf("  [%s]=[%s]", name, value);
         }
         pw.println("}");
         return pw;
@@ -287,7 +304,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             cc.createCompoundCommand(
                 Arrays.asList(
                     cc.createSetPropertyCommand(m, "Street address", "770 Mission St"),
-                    cc.createSetPropertyCommand(m, "Store Sqft", "6000"),
+                    cc.createSetPropertyCommand(m, "Store Sqft", 6000),
                     cc.createSetPropertyCommand(m, "Has coffee bar", "false"))));
 
         // Repeat same query; verify properties are changed.
@@ -340,7 +357,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         final Map<String, Object> propertyValues =
             createMap(
                 Arrays.asList("Has coffee bar", "Store Sqft"),
-                Arrays.asList((Object) "true", "123"));
+                Arrays.asList((Object) "true", 123));
         CacheControl.MemberEditCommand command;
 
         // first, the member set contains members of various levels

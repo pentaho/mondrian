@@ -16,7 +16,6 @@ import mondrian.test.DiffRepository;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -28,11 +27,19 @@ import java.util.ArrayList;
  * @since Sep 27, 2006
  */
 public class CacheControlTest extends FoodMartTestCase {
+    /**
+     * Creates a CacheControlTest.
+     */
     public CacheControlTest() {
     }
+
+    /**
+     * Creates a CacheControlTest with the given name.
+     */
     public CacheControlTest(String name) {
         super(name);
     }
+
     /**
      * Returns the repository of result strings.
      * @return repository of result strings
@@ -337,9 +344,6 @@ public class CacheControlTest extends FoodMartTestCase {
         if (MondrianProperties.instance().DisableCaching.get()) {
             return;
         }
-        if (!MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
-            return;
-        }
 
         flushCache();
 
@@ -403,9 +407,6 @@ public class CacheControlTest extends FoodMartTestCase {
      */
     public void testPartialFlushRange() {
         if (MondrianProperties.instance().DisableCaching.get()) {
-            return;
-        }
-        if (!MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
             return;
         }
 
@@ -508,11 +509,9 @@ public class CacheControlTest extends FoodMartTestCase {
 
         final CacheControl.CellRegion measuresRegion =
             cacheControl.createMeasuresRegion(salesCube);
-        final CacheControl.CellRegion region =
-            cacheControl.createCrossjoinRegion(
+        return cacheControl.createCrossjoinRegion(
                 regionProductXTime,
                 measuresRegion);
-        return region;
     }
 
     /**
@@ -540,11 +539,9 @@ public class CacheControlTest extends FoodMartTestCase {
 
         final CacheControl.CellRegion measuresRegion =
             cacheControl.createMeasuresRegion(salesCube);
-        final CacheControl.CellRegion region =
-            cacheControl.createCrossjoinRegion(
-                regionTimeQ1,
-                measuresRegion);
-        return region;
+        return cacheControl.createCrossjoinRegion(
+            regionTimeQ1,
+            measuresRegion);
     }
 
     /**
@@ -644,12 +641,10 @@ public class CacheControlTest extends FoodMartTestCase {
 
         final CacheControl.CellRegion measuresRegion =
             cacheControl.createMeasuresRegion(salesCube);
-        CacheControl.CellRegion region =
-            cacheControl.createCrossjoinRegion(
-                regionProductFoodDrink,
-                measuresRegion,
-                regionFemale);
-        return region;
+        return cacheControl.createCrossjoinRegion(
+            regionProductFoodDrink,
+            measuresRegion,
+            regionFemale);
     }
 
     /**
@@ -780,6 +775,9 @@ public class CacheControlTest extends FoodMartTestCase {
         }
     }
 
+    /**
+     * Tests crossjoin of regions, {@link CacheControl#createCrossjoinRegion}.
+     */
     public void testCrossjoin() {
         final TestContext testContext = getTestContext();
         final Connection connection = testContext.getConnection();

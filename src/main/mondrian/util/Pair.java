@@ -25,7 +25,8 @@ import java.util.Map;
  * @since Apr 19, 2007
  */
 public class Pair <L, R>
-    implements Comparable<Pair<L, R>>, Map.Entry<L, R> {
+    implements Comparable<Pair<L, R>>, Map.Entry<L, R>
+{
     public L left;
     public R right;
 
@@ -40,9 +41,21 @@ public class Pair <L, R>
         this.right = right;
     }
 
+    /**
+     * Creates a pair representing the same mapping as the
+     * specified entry.
+     *
+     * @param entry the entry to copy
+     */
+    public Pair(Map.Entry<? extends L, ? extends R> entry) {
+        this.left = entry.getKey();
+        this.right = entry.getValue();
+    }
+
     public boolean equals(Object obj) {
         if (obj instanceof Pair) {
-            Pair<L, R> pair = (Pair<L,R>) obj;
+            //noinspection unchecked
+            Pair<L, R> pair = (Pair) obj;
             return Util.equals(this.left, pair.left) &&
                 Util.equals(this.right, pair.right);
         }
@@ -65,7 +78,7 @@ public class Pair <L, R>
     }
 
     public String toString() {
-        return "<" + left + ", " + ">";
+        return "<" + left + ", " + right + ">";
     }
 
     // implement Map.Entry
@@ -85,6 +98,15 @@ public class Pair <L, R>
         return previous;
     }
 
+    /**
+     * Compares a pair of comparable values of the same type. Null collates
+     * less than everything else, but equal to itself.
+     *
+     * @param c1 First value
+     * @param c2 Second value
+     * @return  a negative integer, zero, or a positive integer if c1
+     *		is less than, equal to, or greater than c2.
+     */
     private static <C extends Comparable<C>> int compare(C c1, C c2) {
         if (c1 == null) {
             if (c2 == null) {
