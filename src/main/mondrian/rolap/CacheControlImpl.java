@@ -927,8 +927,8 @@ public class CacheControlImpl implements CacheControl {
     // ~ member cache control implementation ----------------------------------
 
     /**
-     * Implementation-specific extensions to the {@link MemberEditCommand}
-     * interface.
+     * Implementation-specific extensions to the
+     * {@link mondrian.olap.CacheControl.MemberEditCommand} interface.
      */
     interface MemberEditCommandPlus extends MemberEditCommand {
         /**
@@ -942,9 +942,26 @@ public class CacheControlImpl implements CacheControl {
         void execute(final List<CellRegion> cellRegionList);
     }
 
+    /**
+     * Implementation-specific extensions to the
+     * {@link mondrian.olap.CacheControl.MemberSet} interface.
+     */
     interface MemberSetPlus extends MemberSet {
+        /**
+         * Accepts a visitor.
+         *
+         * @param visitor Visitor
+         */
         void accept(MemberSetVisitor visitor);
 
+        /**
+         * Filters this member set, returning a member set containing all
+         * members at a given Level. When applicable, returns this member set
+         * unchanged.
+         *
+         * @param level Level
+         * @return Member set with members not at the given level removed
+         */
         MemberSetPlus filter(RolapLevel level);
     }
 

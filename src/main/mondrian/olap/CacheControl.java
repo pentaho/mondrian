@@ -15,8 +15,8 @@ import java.io.PrintWriter;
 
 /**
  * API for controlling the contents of the cell cache and the member cache.
- * A {@link#CellRegion} denotes a portion of the cell cache, and a
- * {@link#MemberSet} denotes a portion of the member cache. Both caches can be
+ * A {@link CellRegion} denotes a portion of the cell cache, and a
+ * {@link MemberSet} denotes a portion of the member cache. Both caches can be
  * flushed, and the member cache can be edited.
  *
  * <p>To create an instance of this interface, use
