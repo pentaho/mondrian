@@ -74,6 +74,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     private Locale locale;
     private String roleName;
     private boolean autoCommit;
+    private boolean readOnly;
 
     /**
      * Creates an Olap4j connection to Mondrian.
@@ -171,11 +172,11 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
-        throw new UnsupportedOperationException();
+        this.readOnly = readOnly;
     }
 
     public boolean isReadOnly() throws SQLException {
-        throw new UnsupportedOperationException();
+        return readOnly;
     }
 
     public void setCatalog(String catalog) throws SQLException {
@@ -201,7 +202,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public void clearWarnings() throws SQLException {
-        throw new UnsupportedOperationException();
     }
 
     public Statement createStatement(
