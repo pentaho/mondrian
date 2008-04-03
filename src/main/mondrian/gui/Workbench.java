@@ -114,7 +114,8 @@ public class Workbench extends javax.swing.JFrame {
         loadWorkbenchProperties();
         initDataSource();
         initComponents();
-
+        loadMenubarPlugins();
+        
         ImageIcon icon = new javax.swing.ImageIcon(myClassLoader.getResource(resourceConverter.getGUIReference("cube")));
 
         this.setIconImage(icon.getImage());
@@ -142,9 +143,30 @@ public class Workbench extends javax.swing.JFrame {
     }
 
     /**
+     * returns the value of a workbench property
+     * 
+     * @param key key to lookup
+     * @return the value
+     */
+    public String getWorkbenchProperty(String key) {
+        return workbenchProperties.getProperty(key);
+    }
+    
+    /**
+     * set a workbench property.  Note that this does not save the property,
+     * a call to storeWorkbenchProperties is required.
+     * 
+     * @param key property key 
+     * @param value property value
+     */
+    public void setWorkbenchProperty(String key, String value) {
+        workbenchProperties.setProperty(key, value);
+    }
+    
+    /**
      * save properties
      */
-    private void storeWorkbenchProperties() {
+    public void storeWorkbenchProperties() {
         //save properties to file
         File dir = new File(WORKBENCH_USER_HOME_DIR);
         try {
@@ -589,6 +611,42 @@ public class Workbench extends javax.swing.JFrame {
     }
 
     /**
+     * this method loads any available menubar plugins based on 
+     * 
+     */
+    private void loadMenubarPlugins() {
+        // render any plugins
+        InputStream pluginStream = null;
+        try {
+            Properties props = new Properties();
+            pluginStream = 
+                getClass().getResourceAsStream("/workbench_plugins.properties");
+            if (pluginStream != null) {
+                props.load(pluginStream);
+                for (Object key : props.keySet()) {
+                    String keystr = (String)key;
+                    if (keystr.startsWith("workbench.menu-plugin")) {
+                        String val = props.getProperty(keystr);
+                        WorkbenchMenubarPlugin plugin = 
+                            (WorkbenchMenubarPlugin)Class.forName(val).newInstance();
+                        plugin.setWorkbench(this);
+                        plugin.addItemsToMenubar(menuBar);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (pluginStream != null) {
+                    pluginStream.close();
+                }
+            } catch (Exception e) {}
+        }
+    }
+    
+    
+    /**
      * @return the workbenchResourceBundle
      */
     public ResourceBundle getWorkbenchResourceBundle() {
@@ -1018,7 +1076,21 @@ public class Workbench extends javax.swing.JFrame {
         }
     }
 
-
+    /**
+     * returns the currently selected schema explorer object
+     * 
+     * @return current schema explorer object
+     */
+    public SchemaExplorer getCurrentSchemaExplorer() {
+        JInternalFrame jf = desktopPane.getSelectedFrame();
+        if (jf != null &&
+            jf.getContentPane().getComponentCount() > 0 && 
+            jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
+            return (SchemaExplorer) jf.getContentPane().getComponent(0);
+        }
+        return null;
+    }
+    
     private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         JInternalFrame jf = desktopPane.getSelectedFrame();
         
@@ -1087,7 +1159,7 @@ public class Workbench extends javax.swing.JFrame {
         viewXMLMenuItem.setSelected(! oldValue);
     }
 
-    private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
+    public void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         JInternalFrame jf = desktopPane.getSelectedFrame();
         
         // Don't save if nothing there
