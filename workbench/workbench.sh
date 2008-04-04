@@ -37,11 +37,17 @@ CP=$CP:~/.schemaWorkbench
 
 # add all needed JDBC drivers to the classpath
 
-for i in `ls drivers/*.jar`; do
+for i in `ls drivers/*.jar 2> /dev/null`; do
+CP=$CP:$i
+done
+
+# add all needed plugins to the classpath
+
+for i in `ls plugins/*.jar 2> /dev/null`; do
 CP=$CP:$i
 done
 
 #echo $CP
 
-java -Xms100m -Xmx500m -cp "$CP" -Dlog4j.configuration=file:~/.schemaWorkbench/log4j.xml mondrian.gui.Workbench
+java -Xms100m -Xmx500m -cp "$CP" -Dlog4j.configuration=~/.schemaWorkbench/log4j.xml mondrian.gui.Workbench
 

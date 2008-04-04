@@ -35,4 +35,8 @@ rem add all needed JDBC drivers to the classpath
 
 for %%i in ("drivers\*.jar") do call cpappend %%i
 
+rem add all needed plugin jars to the classpath
+
+for %%i in ("plugins\*.jar") do call cpappend %%i
+
 java -Xms100m -Xmx500m -cp "%CP%" -Dlog4j.configuration=file:///%ROOT%\.schemaWorkbench\log4j.xml mondrian.gui.Workbench
