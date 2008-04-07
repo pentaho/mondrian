@@ -85,7 +85,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         // Use hard caching for testing. When using soft references, we can not
         // test caching because things may be garbage collected during the
         // tests.
-        SmartMemberReader smr = getSmartMemberReader("Store");
+        RolapCubeHierarchy.RolapCubeHierarchyMemberReader smr = getSmartMemberReader("Store");
         MemberCacheHelper smrch = (MemberCacheHelper)smr.getMemberCache();
         smrch.mapLevelToMembers.setCache(
             new HardSmartCache<
@@ -96,6 +96,19 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                 SmartMemberListCache.Key2<RolapMember, Object>,
                 List<RolapMember>>());
         smrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
+
+        MemberCacheHelper rcsmrch = (MemberCacheHelper)smr.getRolapCubeMemberCacheHelper();
+        rcsmrch.mapLevelToMembers.setCache(
+            new HardSmartCache<
+                SmartMemberListCache.Key2<RolapLevel, Object>,
+                List<RolapMember>>());
+        rcsmrch.mapMemberToChildren.setCache(
+            new HardSmartCache<
+                SmartMemberListCache.Key2<RolapMember, Object>,
+                List<RolapMember>>());
+        rcsmrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
+
+        
         
         SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
         MemberCacheHelper ssmrch = (MemberCacheHelper)ssmr.getMemberCache();
@@ -140,7 +153,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             // Attach dummy change listener that tells mondrian the datasource is never changed
             smrch.changeListener = new DataSourceChangeListenerImpl();
             ssmrch.changeListener = new DataSourceChangeListenerImpl();
-
+            rcsmrch.changeListener = new DataSourceChangeListenerImpl();
+                
             // Run query again, to make sure only cache is used
             Result r3 = executeQuery(
                 "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
@@ -158,6 +172,10 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             ssmrch.mapLevelToMembers.clear();
             ssmrch.mapMemberToChildren.clear();
             
+            rcsmrch.mapKeyToMember.clear();
+            rcsmrch.mapLevelToMembers.clear();
+            rcsmrch.mapMemberToChildren.clear();
+            
             // Run query again, to make sure only cache is used
             Result r4 = executeQuery(
                 "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
@@ -170,7 +188,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             // Attach dummy change listener that tells mondrian the datasource is always changed
             smrch.changeListener = new DataSourceChangeListenerImpl2();
             ssmrch.changeListener = new DataSourceChangeListenerImpl2();
-
+            rcsmrch.changeListener = new DataSourceChangeListenerImpl2();
             // Run query again, to make sure only cache is used
             Result r5 = executeQuery(
                 "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
@@ -183,6 +201,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             // and tells that aggregate cache is always cached
             smrch.changeListener = new DataSourceChangeListenerImpl3();
             ssmrch.changeListener = new DataSourceChangeListenerImpl3();
+            rcsmrch.changeListener = new DataSourceChangeListenerImpl3();
             
             RolapStar star = getStar("Sales");
             star.setChangeListener(smrch.changeListener);
@@ -196,6 +215,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         } finally {
             smrch.changeListener = null;
             ssmrch.changeListener = null;
+            rcsmrch.changeListener = null;
+            
             RolapStar star = getStar("Sales");
             star.setChangeListener(null);
 
@@ -500,18 +521,18 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         return connection.execute(query);
     }
 
-    SmartMemberReader getSmartMemberReader(String hierName) {
+    RolapCubeHierarchy.RolapCubeHierarchyMemberReader getSmartMemberReader(String hierName) {
         Connection con = getTestContext().getFoodMartConnection();
         return getSmartMemberReader(con, hierName);
     }
 
-    SmartMemberReader getSmartMemberReader(Connection con, String hierName) {
+    RolapCubeHierarchy.RolapCubeHierarchyMemberReader getSmartMemberReader(Connection con, String hierName) {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
         RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
         RolapHierarchy hierarchy = (RolapHierarchy) cube.lookupHierarchy(
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
-        return (SmartMemberReader) hierarchy.createMemberReader(schemaReader.getRole());
+        return (RolapCubeHierarchy.RolapCubeHierarchyMemberReader) hierarchy.createMemberReader(schemaReader.getRole());
     }
     
     SmartMemberReader getSharedSmartMemberReader(String hierName) {

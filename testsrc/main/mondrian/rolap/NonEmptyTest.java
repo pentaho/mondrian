@@ -1634,15 +1634,20 @@ public class NonEmptyTest extends BatchTestCase {
         
         // there currently isn't a cube member to children cache, only a shared cache
         // so use the shared smart member reader
-        
-        SmartMemberReader smr = getSharedSmartMemberReader("Store");
+        RolapCubeHierarchy.RolapCubeHierarchyMemberReader smr = 
+            getSmartMemberReader("Store");
         MemberCacheHelper smrch = smr.cacheHelper;
+        MemberCacheHelper rcsmrch = smr.getRolapCubeMemberCacheHelper();
+        SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
+        MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(smrch);
+        clearAndHardenCache(rcsmrch);
+        clearAndHardenCache(ssmrch);
 
         RolapResult result = (RolapResult) executeQuery(
                 "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
-        assertTrue("no additional members should be read:" + smrch.mapKeyToMember.size(),
-                smrch.mapKeyToMember.size() <= 5);
+        assertTrue("no additional members should be read:" + ssmrch.mapKeyToMember.size(),
+                ssmrch.mapKeyToMember.size() <= 5);
         RolapMember sf = (RolapMember) result.getAxes()[0].getPositions().get(0).get(0);
         RolapMember ca = sf.getParentMember();
         
@@ -1650,9 +1655,9 @@ public class NonEmptyTest extends BatchTestCase {
         ca = ((RolapCubeMember)ca).getRolapMember();
         sf = ((RolapCubeMember)sf).getRolapMember();
 
-        List list = smrch.mapMemberToChildren.get(ca, scf.getMemberChildrenConstraint(null));
+        List list = ssmrch.mapMemberToChildren.get(ca, scf.getMemberChildrenConstraint(null));
         assertNull("children of [CA] are not in cache", list);
-        list = smrch.mapMemberToChildren.get(ca, scf.getChildByNameConstraint(ca,
+        list = ssmrch.mapMemberToChildren.get(ca, scf.getChildByNameConstraint(ca,
                 new Id.Segment("San Francisco", Id.Quoting.QUOTED)));
         assertNotNull("child [San Francisco] of [CA] is in cache", list);
         assertEquals("[San Francisco] expected", sf, list.get(0));
@@ -3355,18 +3360,21 @@ public class NonEmptyTest extends BatchTestCase {
         helper.mapKeyToMember.clear();
     }
     
-    SmartMemberReader getSmartMemberReader(String hierName) {
+    RolapCubeHierarchy.RolapCubeHierarchyMemberReader 
+    getSmartMemberReader(String hierName) {
         Connection con = getTestContext().getFoodMartConnection();
         return getSmartMemberReader(con, hierName);
     }
 
-    SmartMemberReader getSmartMemberReader(Connection con, String hierName) {
+    RolapCubeHierarchy.RolapCubeHierarchyMemberReader 
+    getSmartMemberReader(Connection con, String hierName) {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
         RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
         RolapHierarchy hierarchy = (RolapHierarchy) cube.lookupHierarchy(
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
-        return (SmartMemberReader) hierarchy.createMemberReader(schemaReader.getRole());
+        return (RolapCubeHierarchy.RolapCubeHierarchyMemberReader) 
+                        hierarchy.createMemberReader(schemaReader.getRole());
     }
 
     SmartMemberReader getSharedSmartMemberReader(String hierName) {

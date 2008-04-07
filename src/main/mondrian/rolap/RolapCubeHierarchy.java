@@ -378,8 +378,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         protected final RolapCubeSqlMemberSource cubeSource;
         
         /**
-         * todo: describe how this cache is used
-         * also describe cacheHelper vs. this one
+         * this cache caches RolapCubeMembers that are light wrappers around
+         * shared and non-shared Hierarchy RolapMembers.  The inherited 
+         * cacheHelper object contains non-shared hierarchy RolapMembers.
+         * non-shared hierarchy RolapMembers are created when a member lookup
+         * involves the Cube's fact table.
          */
         protected MemberCacheHelper rolapCubeCacheHelper;
         private final boolean enableCache =
@@ -467,8 +470,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 && (((SqlContextConstraint)constraint).isJoinRequired() || 
                     ((SqlContextConstraint)constraint).getEvaluator().isNonEmpty());
             if (joinReq) {
-                source.getMemberChildren(
-                    parentMembers, rolapChildren, constraint);
+                super.readMemberChildren(parentMembers, rolapChildren, constraint);
             } else {
                 rolapHierarchy.getMemberReader().getMemberChildren(
                     rolapParents, rolapChildren, constraint);
@@ -542,6 +544,34 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             }
         }
         
+        public void getMemberChildren(
+                List<RolapMember> parentMembers,
+                List<RolapMember> children,
+                MemberChildrenConstraint constraint) {
+
+            synchronized(cacheHelper) {
+                checkCacheStatus();
+        
+                List<RolapMember> missed = new ArrayList<RolapMember>();
+                for (RolapMember parentMember : parentMembers) {
+                    List<RolapMember> list = 
+                        rolapCubeCacheHelper.getChildrenFromCache(parentMember, constraint);
+                    if (list == null) {
+                        // the null member has no children
+                        if (!parentMember.isNull()) {
+                            missed.add(parentMember);
+                        }
+                    } else {
+                        children.addAll(list);
+                    }
+                }
+                if (missed.size() > 0) {
+                    readMemberChildren(missed, children, constraint);
+                }
+            }
+        }
+        
+        
         public List<RolapMember> getMembersInLevel(
             RolapLevel level,
             int startOrdinal,
@@ -562,7 +592,9 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 // vs. the regular level
                 boolean joinReq =
                     (constraint instanceof SqlContextConstraint)
-                        && ((SqlContextConstraint)constraint).isJoinRequired();
+                        && (((SqlContextConstraint)constraint).isJoinRequired() || 
+                        ((SqlContextConstraint)constraint).getEvaluator().isNonEmpty());
+                        
                 List<RolapMember> list;
                 if (!joinReq) {
                     list = 
