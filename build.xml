@@ -17,12 +17,16 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="3.0.1.10736"/>
+  <property name="version" value="3.0.2.10775"/>
   <property name="vendor" value="Pentaho"/>
   <!--
     ===================================================================
     Set the properties related to paths
     ===================================================================
+  -->
+  <!--
+    Set src.dir to an absolute path when building with CruiseControl.
+    Otherwise, set it to a relative path.
   -->
   <condition property="src.dir" value="${basedir}/src">
     <isset property="cruisecontrol" />
@@ -70,6 +74,56 @@
   <property name="mondrian.webapp.deploy" value="${env.JBOSS_HOME}/server/default/deploy"/>
   <property name="mondrian.retroweave" value="false"
       description="Tells mondrian to use retroweaver even if the JDK is later than 1.4"/>
+  <!--
+    Set properties that are needed to execute the
+    buildJdk16.sh under CruiseControl.
+  -->
+  <condition property="unix.script" value="${basedir}/buildJdk16.sh">
+    <isset property="cruisecontrol" />
+  </condition>
+  <condition property="unix.script" value="buildJdk16.sh">
+    <not>
+      <isset property="cruisecontrol" />
+    </not>
+  </condition>
+  <!--
+    Set properties that are needed for the retroweaver tasks
+    to run correctly under CruiseControl.
+  -->
+  <property name="jar.file.location" location="${lib.dir}/${name}.jar"/>
+  <property name="jar-jdk14.file.location" location="${lib.dir}/${name}-jdk14.jar" />
+  <condition property="in.jar.file" value="${jar.file.location}">
+    <isset property="cruisecontrol" />
+  </condition>
+  <condition property="in.jar.file" value="${jar.file}">
+    <not>
+      <isset property="cruisecontrol" />
+    </not>
+  </condition>
+  <condition property="out.jar.file" value="${jar-jdk14.file.location}">
+    <isset property="cruisecontrol" />
+  </condition>
+  <condition property="out.jar.file" value="${jar-jdk14.file}">
+    <not>
+      <isset property="cruisecontrol" />
+    </not>
+  </condition>
+  <condition property="olap4j.in.jar.file" value="${lib.location}/olap4j.jar">
+    <isset property="cruisecontrol" />
+  </condition>
+  <condition property="olap4j.in.jar.file" value="${lib.dir}/olap4j.jar">
+    <not>
+      <isset property="cruisecontrol" />
+    </not>
+  </condition>
+  <condition property="olap4j.out.jar.file" value="${lib.location}/olap4j-jdk14.jar">
+    <isset property="cruisecontrol" />
+  </condition>
+  <condition property="olap4j.out.jar.file" value="${lib.dir}/olap4j-jdk14.jar">
+    <not>
+      <isset property="cruisecontrol" />
+    </not>
+  </condition>
 
   <property name="generated.java.files" value="
 ${java.dir}/mondrian/olap/Parser.java,
@@ -1000,7 +1054,7 @@ must be run under JDK 1.5." />
   </target>
 
   <target name="compileJdk16">
-    <exec osfamily="unix" executable="buildJdk16.sh"/>
+    <exec osfamily="unix" executable="${unix.script}"/>
     <exec osfamily="windows" executable="buildJdk16.bat"/>
   </target>
 
@@ -1459,9 +1513,9 @@ ${doc.dir}/api/src-html/**/*"/>
 
     <mkdir dir="${testclasses-jdk14.dir}"/>
 
-    <retroweaver inputjar="${jar.file}" outputjar="${jar-jdk14.file}" />
+    <retroweaver inputjar="${in.jar.file}" outputjar="${out.jar.file}" />
     <retroweaver srcdir="${testclasses.dir}" destdir="${testclasses-jdk14.dir}" />
-    <retroweaver inputjar="${lib.dir}/olap4j.jar" outputjar="${lib.dir}/olap4j-jdk14.jar" />
+    <retroweaver inputjar="${olap4j.in.jar.file}" outputjar="${olap4j.out.jar.file}" />
   </target>
 
 </project>
