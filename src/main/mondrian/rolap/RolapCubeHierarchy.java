@@ -537,8 +537,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                         member, constraint) == null)
                     {
                         final List<RolapMember> cacheList = entry.getValue();
-                        rolapCubeCacheHelper.putChildren(
-                            member, constraint, cacheList);
+                        if (enableCache) {
+                            rolapCubeCacheHelper.putChildren(
+                                member, constraint, cacheList);
+                        }
                     }
                 }
             }
