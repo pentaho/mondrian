@@ -1655,6 +1655,9 @@ public class Util extends XOMUtil {
          */
         void parsePair(PropertyList list) {
             String name = parseName();
+            if (name == null) {
+                return;
+            }
             String value;
             if (i >= n) {
                 value = "";
@@ -1666,9 +1669,10 @@ public class Util extends XOMUtil {
             }
             list.put(name, value);
         }
+
         /**
          * Reads "name=". Name can contain equals sign if equals sign is
-         * doubled.
+         * doubled. Returns null if there is no name to read.
          */
         String parseName() {
             nameBuf.setLength(0);
@@ -1690,6 +1694,11 @@ public class Util extends XOMUtil {
                     if (nameBuf.length() == 0) {
                         // ignore preceding spaces
                         i++;
+                        if (i >= n) {
+                            // there is no name, e.g. trailing spaces after
+                            // semicolon, 'x=1; y=2; '
+                            return null;
+                        }
                         break;
                     } else {
                         // fall through

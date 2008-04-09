@@ -79,6 +79,35 @@ public class UtilTestCase extends TestCase {
     }
 
     /**
+     * Testcase for bug 1938151, "StringIndexOutOfBoundsException instead of a
+     * meaningful error"
+     */
+    public void testBug1938151 () {
+        Util.PropertyList properties;
+
+        // ends in semi
+        properties = Util.parseConnectString("foo=true; bar=xxx;");
+        assertEquals(2, properties.list.size());
+
+        // ends in semi+space
+        properties = Util.parseConnectString("foo=true; bar=xxx; ");
+        assertEquals(2, properties.list.size());
+
+        // ends in space
+        properties = Util.parseConnectString("   ");
+        assertEquals(0, properties.list.size());
+
+        // actual testcase for bug
+        properties = Util.parseConnectString(
+            "provider=mondrian; JdbcDrivers=org.hsqldb.jdbcDriver;"
+                + "Jdbc=jdbc:hsqldb:./sql/sampledata;"
+                + "Catalog=C:\\cygwin\\home\\src\\jfreereport\\engines\\classic\\extensions-mondrian\\demo\\steelwheels.mondrian.xml;"
+                + "JdbcUser=sa; JdbcPassword=; ");
+        assertEquals(6, properties.list.size());
+        assertEquals("", properties.get("JdbcPassword"));
+    }
+
+    /**
      * Checks that <code>connectString</code> contains a property called
      * <code>name</code>, whose value is <code>value</code>.
      */
