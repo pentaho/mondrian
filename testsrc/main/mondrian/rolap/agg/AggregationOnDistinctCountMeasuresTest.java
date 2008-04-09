@@ -926,61 +926,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 tuples.get(0)[0].getUniqueName());
     }
 
-    public void testMemberIsSuperSetOfAnotherMember() {
-        List <Member[]> tuples = tupleList(
-            genderMembersIncludingAll(true, salesCubeSchemaReader, salesCube));
-        assertTrue(AggregateFunDef.AggregateCalc.
-            isSuperSet(tuples.get(0), tuples.get(1)));
-        assertFalse(AggregateFunDef.AggregateCalc.
-            isSuperSet(tuples.get(1), tuples.get(2)));
-    }
-
-    public void testRemoveOverlappingTuplesForSameDimension() {
-        List <Member[]> tuples = tupleList(
-            genderMembersIncludingAll(true, salesCubeSchemaReader, salesCube));
-        tuples = removeOverlappingTuples(tuples);
-        assertEquals(1, tuples.size());
-        assertEquals(allMember("Gender", salesCube), tuples.get(0)[0]);
-    }
-
-    public void testShouldRemoveOverlappingTuplesFromDifferentDimensions() {
-        List<Member[]> memberList = CrossJoinFunDef.crossJoin(
-            genderMembersIncludingAll(true, salesCubeSchemaReader, salesCube),
-            storeMembersUsaAndCanada(true, salesCubeSchemaReader, salesCube));
-        List <Member[]>tuples = removeOverlappingTuples(memberList);
-        assertEquals(1, tuples.size());
-        assertEquals(allMember("Gender", salesCube), tuples.get(0)[0]);
-        assertEquals(allMember("Store", salesCube), tuples.get(0)[1]);
-    }
-
-    public void testShouldRemoveOverlappingTuplesWithoutAllLevelTuple() {
-        List<Member[]> memberList =
-            CrossJoinFunDef.crossJoin(
-                genderMembersIncludingAll(true, salesCubeSchemaReader, salesCube),
-                storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
-
-        Member maleChild =
-            member(Id.Segment.toList("Gender","All Gender","M"), salesCubeSchemaReader);
-        Member femaleChild =
-            member(Id.Segment.toList("Gender","All Gender","F"), salesCubeSchemaReader);
-        Member storeAllMember = allMember("Store", salesCube);
-
-        memberList.add(new Member[]{maleChild, storeAllMember});
-        memberList.add(new Member[]{femaleChild, storeAllMember});
-
-        List tuples = removeOverlappingTuples(memberList);
-        assertEquals(4, tuples.size());
-    }
-
-
-    public void testShouldNotRemoveNonOverlappingTuplesAtSameLevels() {
-        List<Member[]> memberList =
-            CrossJoinFunDef.crossJoin(
-                genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
-                storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
-        List tuples = removeOverlappingTuples(memberList);
-        assertEquals(4, tuples.size());
-    }
 
     public void testOptimizeChildren() {
         String query =
@@ -1156,9 +1101,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 .makeTupleList(
                     productMembersPotScrubbersPotsAndPans(salesCubeSchemaReader));
 
-        List tuples = removeOverlappingTuples(memberList);
-        assertEquals(8, tuples.size());
-        tuples = optimizeChildren(memberList);
+        List tuples = optimizeChildren(memberList);
         assertTrue(tuppleListContains(tuples,
             member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
                 "Household", "Kitchen Products", "Pot Scrubbers", "Cormorant"),
@@ -1185,9 +1128,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 productMembersPotScrubbersPotsAndPans(salesCubeSchemaReader));
         memberList =
             CrossJoinFunDef.crossJoin(memberList, storeMembersCAAndOR(salesCubeSchemaReader));
-        List tuples = removeOverlappingTuples(memberList);
-        assertEquals(80, tuples.size());
-        tuples = optimizeChildren(memberList);
+        List tuples = optimizeChildren(memberList);
         assertFalse(tuppleListContains(tuples,
             member(
                 Id.Segment.toList("Store","All Stores","USA","OR","Portland"),
@@ -1204,10 +1145,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             CrossJoinFunDef.crossJoin(
                 genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
                 productMembersPotScrubbersPotsAndPans(salesCubeSchemaReader));
-        List tuples = removeOverlappingTuples(memberList);
-        assertEquals(16, tuples.size());
-
-        tuples = optimizeChildren(memberList);
+        List tuples = optimizeChildren(memberList);
         assertEquals(4, tuples.size());
 
         assertFalse(tuppleListContains(tuples,
@@ -1233,14 +1171,11 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
                 storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
 
-        List tuples = removeOverlappingTuples(memberList);
-        assertEquals(4, tuples.size());
-
-        tuples = optimizeChildren(memberList);
+        List tuples = optimizeChildren(memberList);
         assertEquals(2, tuples.size());
     }
 
-    public void testShouldRemoveDuplicateTuples() {
+    public void testShouldNotRemoveDuplicateTuples() {
 
         Member maleChildMember = member(
             Id.Segment.toList("Gender","All Gender","M"), salesCubeSchemaReader);
@@ -1252,26 +1187,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         memberList.add(maleChildMember);
         memberList.add(femaleChildMember);
         List<Member[]> tuples = tupleList(memberList);
-        tuples = removeOverlappingTuples(tuples);
-        assertEquals(2, tuples.size());
+        tuples = optimizeChildren(tuples);
+        assertEquals(3, tuples.size());
     }
 
-    public void testShouldNotRemoveNonOverlappingTuplesAtDifferentLevels() {
-
-        Member genderMaleChild =
-            member(Id.Segment.toList("Gender","All Gender","M"),
-                salesCubeSchemaReader);
-        Member storeUsaChild =
-            member(Id.Segment.toList("Store","All Stores","USA"),
-                salesCubeSchemaReader);
-
-        List<Member[]> memberList = new ArrayList<Member[]>();
-        memberList.add(new Member[]{genderMaleChild, allMember("Store", salesCube)});
-        memberList.add(new Member[]{allMember("Gender", salesCube),storeUsaChild});
-        List tuples = removeOverlappingTuples(memberList);
-        assertEquals(2, tuples.size());
-    }
-    
     public void testMemberCountIsSameForAllMembersInTuple() {
 
         List <Member[]>memberList =
@@ -1380,10 +1299,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             }
         }
         return false;
-    }
-    
-    private List removeOverlappingTuples(List<Member[]> tuples) {
-        return AggregateFunDef.AggregateCalc.removeOverlappingTupleEntries(tuples);
     }
 
     private List<Member[]> optimizeChildren(List<Member[]> memberList) {

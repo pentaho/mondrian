@@ -675,7 +675,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             } else {
                 assertEquals(6, columnCount);
             }
-            final String columnName = resultSet.getMetaData().getColumnName(5);
+            final String columnName = resultSet.getMetaData().getColumnLabel(5);
             assertTrue(
                 columnName,
                 columnName.startsWith("Education Level but with a"));

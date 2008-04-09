@@ -17,8 +17,8 @@ import mondrian.calc.impl.GenericCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.rolap.*;
-import mondrian.rolap.sql.*;
+import mondrian.rolap.RolapAggregator;
+import mondrian.rolap.RolapEvaluator;
 
 import java.util.*;
 
@@ -110,7 +110,6 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     // very slow.  May want to revisit this if someone
                     // improves the algorithm.
                 } else {
-                    list = removeOverlappingTupleEntries(list);
                     list = optimizeChildren(list,
                         evaluator.getSchemaReader(),evaluator.getMeasureCube());
                     checkIfAggregationSizeIsTooLarge(list);
@@ -132,49 +131,6 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         }
 
         /**
-         * In case of distinct count aggregation if a tuple which is a super
-         * set of other tuples in the set exists then the child tuples can be
-         * ignored.
-         *
-         * <p>
-         * E.g.
-         * List consists of:
-         *  (Gender.[All Gender], [Product].[All Products]),
-         *  (Gender.[All Gender].[F], [Product].[All Products].[Drink]),
-         *  (Gender.[All Gender].[M], [Product].[All Products].[Food])
-         * Can be optimized to:
-         *  (Gender.[All Gender], [Product].[All Products])
-         *
-         * @param list
-         */
-
-        public static List<Member[]> removeOverlappingTupleEntries(List<Member[]> list) {
-            List<Member[]> trimmedList = new ArrayList<Member[]>();
-            for (Member[] tuple1 : list) {
-                if (trimmedList.isEmpty()) {
-                    trimmedList.add(tuple1);
-                } else {
-                    boolean ignore = false;
-                    final Iterator<Member[]> iterator = trimmedList.iterator();
-                    while (iterator.hasNext()) {
-                        Member[] tuple2 = iterator.next();
-                        if (isSuperSet(tuple1, tuple2)) {
-                            iterator.remove();
-                        } else if (isSuperSet(tuple2,  tuple1) ||
-                            isEqual(tuple1, tuple2)) {
-                            ignore = true;
-                            break;
-                        }
-                    }
-                    if (!ignore) {
-                        trimmedList.add(tuple1);
-                    }
-                }
-            }
-            return trimmedList;
-        }
-
-        /**
          * Forms a list tuples from a list of members
          * @param list of members
          * @return list of tuples
@@ -185,28 +141,6 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 tupleList.add(new Member[] {member});
             }
             return tupleList;
-        }
-
-        /**
-         * Returns whether tuple1 is a superset of tuple2
-         * @param tuple1
-         * @param tuple2
-         * @return boolean
-         */
-        public static boolean isSuperSet(Member[] tuple1, Member[] tuple2) {
-            int parentLevelCount = 0;
-            for (int i = 0; i < tuple1.length; i++) {
-                Member member1 = tuple1[i];
-                Member member2 = tuple2[i];
-
-                if (!member2.isChildOrEqualTo(member1)) {
-                    return false;
-                }
-                if (member1.getLevel().getDepth() < member2.getLevel().getDepth()) {
-                    parentLevelCount++;
-                }
-            }
-            return parentLevelCount > 0;
         }
 
         private void checkIfAggregationSizeIsTooLarge(List list) {
@@ -343,8 +277,10 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 while (iterator.hasNext()) {
                     Member current =  iterator.next();
                     Member currentParentMember = current.getParentMember();
-                    if (firstParentMember == null && currentParentMember == null ||
-                        firstParentMember.equals(currentParentMember)) {
+                    if (firstParentMember == null &&
+                        currentParentMember == null ||
+                        (firstParentMember!= null &&
+                        firstParentMember.equals(currentParentMember))) {
                         membersToBeOptimized.add(current);
                         iterator.remove();
                     }
@@ -373,16 +309,6 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 }
             }
             return optimizedMembers;
-        }
-
-        private static boolean isEqual(Member[] tuple1, Member[] tuple2) {
-            for (int i = 0; i < tuple1.length; i++) {
-                if (!tuple1[i].getUniqueName().
-                    equals(tuple2[i].getUniqueName())) {
-                    return false;
-                }
-            }
-            return true;
         }
 
         private static boolean canOptimize(
