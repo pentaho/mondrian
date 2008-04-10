@@ -6,6 +6,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
+  == Copyright (C) 2008 Pentaho  
   == Copyright (C) 2007 JasperSoft
   == Copyright (C) 2007-2007 Julian Hyde and others
   == All Rights Reserved.
@@ -29,7 +30,12 @@
 
 <!-- end page title -->
 
-<p>The Mondrian Schema Workbench allows you to visually create and test Mondrian OLAP cube schemas.</p>
+<p>The Mondrian Schema Workbench is a designer interface that allows you to create and test Mondrian OLAP cube schemas visually.
+The Mondrian engine processes MDX requests with the ROLAP (Relational OLAP) schemas.
+These schema files are XML metadata models that are created in a specific structure used by the Mondrian engine.
+These XML models can be considered cube-like structures which utilize existing FACT and DIMENSION tables found in your RDBMS.
+It does not require that an actual physical cube is built or maintained; only that the metadata model is created.</p>
+        <p><b><i>Note</i></b>: For documentation on publishing Mondrian Schemas to Pentaho's BI Platform, see <a href="http://wiki.pentaho.org/display/PentahoDoc/Publishing+an+Analysis+Schema+Using+Schema+Workbench">Publishing an Analysis Schema Using the Schema Workbench</a>
 
 
  <img src="images/workbench_schema_editor.png">
@@ -255,7 +261,9 @@ Total time: 47 seconds<br>
 
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/workbench.html?ac=22">log</a>)<br>
-
+    
+    Copyright (C) 2008 Pentaho<br>
+    
     Copyright (C) 2007 JasperSoft<br>
 
     Copyright (C) 2007-2007 Julian Hyde and others</p>
