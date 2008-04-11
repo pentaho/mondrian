@@ -134,6 +134,13 @@ class ParallelPeriodFunDef extends FunDefBase {
             );
         }
 
+        if (lagValue == Integer.MIN_VALUE) {
+            // bump up lagValue by one 
+            // otherwise -lagValue(used in the getleadMember call below)is out of range
+            // because Integer.MAX_VALUE == -(Integer.MIN_VALUE + 1)
+            lagValue +=  1;
+        }
+
         int distance = member.getLevel().getDepth() -
                 ancestorLevel.getDepth();
         Member ancestor = FunUtil.ancestor(

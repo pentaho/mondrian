@@ -80,6 +80,38 @@ public class FunctionTest extends FoodMartTestCase {
             "   [Customers].[All Customers].[USA].[CA].[Bellflower], " +
             "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer])");
 
+    /**
+     * Tests that Integeer.MIN_VALUE(-2147483648) does not cause NPE.
+     */
+    public void testParallelPeriodMinValue() {
+        String query =
+            "with " +
+            "member [measures].[foo] as " +
+            "'([Measures].[unit sales],ParallelPeriod([Time].[Quarter], -2147483648))' " +
+            "select " +
+            "[measures].[foo] on columns, " +
+            "[time].[1997].children on rows " +
+            "from [sales]";
+
+        executeQuery(query);
+    }
+
+    /**
+     * Tests that Integeer.MIN_VALUE(-2147483648) in Lag is handled correctly.
+     */
+    public void testLagMinValue() {
+        String query =
+            "with " +
+            "member [measures].[foo] as " +
+            "'([Measures].[unit sales], [Time].[1997].[Q1].Lag(-2147483648))' " +
+            "select " +
+            "[measures].[foo] on columns, " +
+            "[time].[1997].children on rows " +
+            "from [sales]";
+
+        executeQuery(query);
+    }
+
     public void testNumericLiteral() {
         assertExprReturns("2", "2");
         if (false) {

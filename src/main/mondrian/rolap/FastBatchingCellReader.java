@@ -168,7 +168,6 @@ public class FastBatchingCellReader implements CellReader {
      */
     boolean loadAggregations(Query query) {
         final long t1 = System.currentTimeMillis();
-        requestCount = 0;
         if (!isDirty()) {
             return false;
         }

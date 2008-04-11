@@ -83,28 +83,33 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             return null;
         }
         
-        // check if all CrossJoinArgs are "All" members
-        // "All" members do not have relational representation.
-        boolean inputListsContainNonAllMember = false;
+        // check if all CrossJoinArgs are either "All" members or Calc members
+        // "All" members and calc members do not have relational expression.
+        // If NECJ only has these two types if inputs, then sql evaluation is
+        // not possible.
+        int countNonNativeInputArg = 0;
         
         for (CrossJoinArg arg : cargs) {
-            if (!(arg instanceof MemberListCrossJoinArg)  ||
-                !((MemberListCrossJoinArg)arg).hasAllMember()) {
-                inputListsContainNonAllMember = true;
-                break;
+            if (arg instanceof MemberListCrossJoinArg) {
+                MemberListCrossJoinArg cjArg = 
+                    (MemberListCrossJoinArg)arg;
+                if (cjArg.hasAllMember() ||
+                    cjArg.hasCalcMembers()) {
+                    countNonNativeInputArg ++;
+                }
             }
         }
 
-        if (!inputListsContainNonAllMember) {
+        if (countNonNativeInputArg == 2) {
             // All inputs contain "All" members.
             // Native evaluation is not feasible.
             alertCrossJoinNonNative(
                 evaluator,
                 fun,
-                "all arguments contain either the ALL member or a calculated member");
+            "all arguments contain either the ALL member or a calculated member");
             return null;
         }
-        
+
         if (isPreferInterpreter(cargs, true)) {
             // Native evaluation wouldn't buy us anything, so no
             // need to alert

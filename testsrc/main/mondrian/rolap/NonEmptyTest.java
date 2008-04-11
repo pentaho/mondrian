@@ -604,6 +604,101 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
+     * Check that if both inputs to NECJ are either 
+     * AllMember(currentMember, defaultMember are also AllMember) 
+     * or Calcculated member
+     * native CJ is not used.
+     */
+    public void testExpandCalcMemberInputNECJ() {
+        String query =
+            "With \n" +
+            "Member [Product].[All Products].[Food].[CalcSum] as \n" +
+            "'Sum({[Product].[All Products].[Food]})', SOLVE_ORDER=-100\n" +
+            "Select\n" +
+            "{[Measures].[Store Cost]} on columns,\n" +
+            "NonEmptyCrossJoin({[Product].[All Products].[Food].[CalcSum]},\n" +
+            "                  {[Education Level].DefaultMember}) on rows\n" +
+            "From [Sales]";
+
+        String result =
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Store Cost]}\n" +
+            "Axis #2:\n" +
+            "{[Product].[All Products].[Food].[CalcSum], [Education Level].[All Education Levels]}\n" +
+            "Row #0: 163,270.72\n";
+
+        boolean origExpandNonNative =
+            MondrianProperties.instance().ExpandNonNative.get();
+        MondrianProperties.instance().ExpandNonNative.set(true);
+        try {
+            checkNotNative(1, query, fold(result));
+        } finally {
+            MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
+        }
+    }
+
+    /**
+     * Verify that naitve evaluation is possible when calculated members are present
+     * expanded member list inputs to NECJ, as long as the other input to NECJ can be
+     * expressed in SQL.
+     *
+     */
+    public void testExpandCalcMembers() {
+        // Note there is a bug currently wrt Calc members in the inputs to native cross join.
+        // See testCjEnumCalcMembersBug() test.
+        // However, that bug doe snot affect this test as the empty cell is filtered out by
+        // the Filter, whose result is not affected by the calc members in its input.
+        String query =
+            "with " +
+            "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) " +
+            "set [Enum Store Types] as {" +
+            "    [Store Type].[All Store Types].[Small Grocery], " +
+            "    [Store Type].[All Store Types].[Supermarket], " +
+            "    [Store Type].[All Store Types].[HeadQuarters], " +
+            "    [Store Type].[All Store Types].[S]} " +
+            "set [Filtered Enum Store Types] as Filter([Enum Store Types], [Measures].[Unit Sales] > 0)" +
+            "select NonEmptyCrossJoin([Product].[All Products].Children, [Filtered Enum Store Types])  on rows from [Sales]";
+        
+        String result =
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Small Grocery]}\n" +
+            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Supermarket]}\n" +
+            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[S]}\n" +
+            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Small Grocery]}\n" +
+            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Supermarket]}\n" +
+            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[S]}\n" +
+            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Small Grocery]}\n" +
+            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Supermarket]}\n" +
+            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[S]}\n" +
+            "Row #0: 574\n" +
+            "Row #0: 14,092\n" +
+            "Row #0: 24,597\n" +
+            "Row #0: 4,764\n" +
+            "Row #0: 108,188\n" +
+            "Row #0: 191,940\n" +
+            "Row #0: 1,219\n" +
+            "Row #0: 28,275\n" +
+            "Row #0: 50,236\n";
+
+        boolean origExpandNonNative =
+            MondrianProperties.instance().ExpandNonNative.get();
+        MondrianProperties.instance().ExpandNonNative.set(true);
+
+        // Get a fresh connection; Otherwise the mondrian property setting
+        // is not refreshed for this parameter.
+        boolean requestFreshConnection = true;
+        try {
+            checkNative(0, 9, query, fold(result), requestFreshConnection);
+        } finally {
+            MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
+        }
+    }
+    
+    /**
      * Verify that evaluation is native for expressions with nested non native
      * inputs that preduce MemberList results.
      */
@@ -728,64 +823,6 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Verify that naitve evaluation is possible when calculated members are present
-     * expanded member list inputs to NECJ.
-     *
-     */
-    public void testExpandCalcMembers() {
-        // Note there is a bug currently wrt Calc members in the inputs to native cross join.
-        // See testCjEnumCalcMembersBug() test.
-        // However, that bug doe snot affect this test as the empty cell is filtered out by
-        // the Filter, whose result is not affected by the calc members in its input.
-        String query =
-            "with " +
-            "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) " +
-            "set [Enum Store Types] as {" +
-            "    [Store Type].[All Store Types].[Small Grocery], " +
-            "    [Store Type].[All Store Types].[Supermarket], " +
-            "    [Store Type].[All Store Types].[HeadQuarters], " +
-            "    [Store Type].[All Store Types].[S]} " +
-            "set [Filtered Enum Store Types] as Filter([Enum Store Types], [Measures].[Unit Sales] > 0)" +
-            "select NonEmptyCrossJoin([Product].[All Products].Children, [Filtered Enum Store Types])  on rows from [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Small Grocery]}\n" +
-            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Supermarket]}\n" +
-            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[S]}\n" +
-            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Small Grocery]}\n" +
-            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Supermarket]}\n" +
-            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[S]}\n" +
-            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Small Grocery]}\n" +
-            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Supermarket]}\n" +
-            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[S]}\n" +
-            "Row #0: 574\n" +
-            "Row #0: 14,092\n" +
-            "Row #0: 24,597\n" +
-            "Row #0: 4,764\n" +
-            "Row #0: 108,188\n" +
-            "Row #0: 191,940\n" +
-            "Row #0: 1,219\n" +
-            "Row #0: 28,275\n" +
-            "Row #0: 50,236\n";
-
-        boolean origExpandNonNative =
-            MondrianProperties.instance().ExpandNonNative.get();
-        MondrianProperties.instance().ExpandNonNative.set(true);
-
-        // Get a fresh connection; Otherwise the mondrian property setting
-        // is not refreshed for this parameter.
-        boolean requestFreshConnection = true;
-        try {
-            checkNative(0, 9, query, fold(result), requestFreshConnection);
-        } finally {
-            MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
-        }
-    }
-
-    /**
      * Verify that native evaluation is turned off for tuple inputs, even if
      * ExpandNonNative is set.
      */
@@ -814,7 +851,7 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         }
     }
-
+    
     /**
      * Verify that native MemberLists inputs are subject to SQL constriant
      * limitation. If mondrian.rolap.maxConstraints is set too low, native

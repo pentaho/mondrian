@@ -56,6 +56,13 @@ class LeadLagFunDef extends FunDefBase {
                 Member member = memberCalc.evaluateMember(evaluator);
                 int n = integerCalc.evaluateInteger(evaluator);
                 if (lag) {
+                    if (n == Integer.MIN_VALUE) {
+                        // bump up lagValue by one 
+                        // otherwise -n(used in the getLeadMember call below)is out of range
+                        // because Integer.MAX_VALUE == -(Integer.MIN_VALUE + 1)
+                        n += 1;
+                    }
+
                     n = -n;
                 }
                 return evaluator.getSchemaReader().getLeadMember(member, n);

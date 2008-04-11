@@ -34,6 +34,37 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         getTestContext().clearConnection();
     }
 
+    public void testMissingSubtotalBug() {
+        String query =
+            "With " +
+            "Set [*NATIVE_CJ_SET] as " +
+            "'NonEmptyCrossJoin({[Time].[Year].[1997]}," +
+            "                   NonEmptyCrossJoin({[Product].[All Products].[Drink]},{[Education Level].[All Education Levels].[Bachelors Degree]}))' " +
+            "Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Unit Sales_SEL~SUM] > 1000.0)' "+
+            "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' " +
+            "Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],[Time].CurrentMember,[Product].CurrentMember,[Education Level].CurrentMember)', SOLVE_ORDER=200 " +
+            "Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Education Level],[Measures].[*Unit Sales_SEL~SUM] > 1000.0))', SOLVE_ORDER=-102 " +
+            "Select " +
+            "{[Measures].[Unit Sales]} on columns, " +
+            "Non Empty Union(CrossJoin(Generate([*METRIC_CJ_SET], {([Time].CurrentMember,[Product].CurrentMember)}),{[Education Level].[*CTX_MEMBER_SEL~SUM]})," +
+            "                Generate([*METRIC_CJ_SET], {([Time].CurrentMember,[Product].CurrentMember,[Education Level].CurrentMember)})) on rows " +
+            "From [Sales]";
+
+        String result =
+            "Axis #0:\n" + 
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Unit Sales]}\n"+
+            "Axis #2:\n" +
+            "{[Time].[1997], [Product].[All Products].[Drink], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n" +
+            "{[Time].[1997], [Product].[All Products].[Drink], [Education Level].[All Education Levels].[Bachelors Degree]}\n" +
+            "Row #0: 6,423\n" +
+            "Row #1: 6,423\n";
+
+        assertQueryReturns(query, result);
+    }
+
+    
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnSupportedDB() {
         boolean oldValue = MondrianProperties.instance().EnableGroupingSets.get();
         MondrianProperties.instance().EnableGroupingSets.set(true);
