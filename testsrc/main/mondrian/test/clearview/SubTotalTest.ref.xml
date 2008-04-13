@@ -1,5 +1,181 @@
 <?xml version="1.0" ?>
 <Root>
+    <TestCase name="testSubtotalsWithExists">
+        <Resource name="description">
+            <![CDATA[
+test subtotals using exists instead of joining
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level]))'
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Store Cost_SEL~SUM] > 1000.0)'
+Set [*BASE_MEMBERS_Gender] as '[Gender].[Gender].Members'
+Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})'
+Set [*METRIC_MEMBERS_Gender] as 'Generate([*METRIC_CJ_SET], {[Gender].CurrentMember})'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink].[Alcoholic Beverages],[Product].[All Products].[Food].[Baked Goods]}'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})'
+Member [Gender].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Gender].[All Gender]})', SOLVE_ORDER=-102
+Member [Measures].[*Store Cost_SEL~SUM] as 
+'([Measures].[Store Cost],[Product].CurrentMember,[Education Level].CurrentMember,[Gender].[*CTX_METRIC_MEMBER_SEL~SUM])', SOLVE_ORDER=200
+Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+Member [Education Level].[*TOTAL_MEMBER_SEL~SUM] as 
+    'Sum(Generate(Exists([*METRIC_CJ_SET], {[Product].CurrentMember}),
+                  {([Product].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER=-101
+Member [Product].[All Products].[Drink].[*TOTAL_MEMBER_SEL~SUM] as 
+    'Sum(Generate(Exists([*METRIC_CJ_SET], {[Product].[All Products].[Drink]}), 
+                  {([Product].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER=-100
+Member [Product].[All Products].[Food].[*TOTAL_MEMBER_SEL~SUM] as 
+    'Sum(Generate(Exists([*METRIC_CJ_SET], {[Product].[All Products].[Food]}), 
+                  {([Product].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER=-100
+Select
+CrossJoin(Generate([*METRIC_CJ_SET], {([Gender].CurrentMember)}),[*BASE_MEMBERS_Measures]) on columns,
+Non Empty Union(
+    CrossJoin(Generate([*METRIC_CJ_SET], {([Product].CurrentMember)}),{[Education Level].[*TOTAL_MEMBER_SEL~SUM]}),
+    Union(NonEmptyCrossJoin({[Product].[All Products].[Drink].[*TOTAL_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*TOTAL_MEMBER_SEL~SUM]},
+                            {[Education Level].DefaultMember}),
+          Generate([*METRIC_CJ_SET], {([Product].CurrentMember,[Education Level].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Gender].[All Gender].[F], [Measures].[*FORMATTED_MEASURE_0]}
+{[Gender].[All Gender].[M], [Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Product].[All Products].[Drink].[Alcoholic Beverages], [Education Level].[*TOTAL_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[*TOTAL_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[*TOTAL_MEMBER_SEL~SUM], [Education Level].[All Education Levels]}
+{[Product].[All Products].[Food].[*TOTAL_MEMBER_SEL~SUM], [Education Level].[All Education Levels]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[All Education Levels].[Partial High School]}
+Row #0: 2,367
+Row #0: 2,419
+Row #1: 2,551
+Row #1: 2,873
+Row #2: 2,367
+Row #2: 2,419
+Row #3: 2,551
+Row #3: 2,873
+Row #4: 723
+Row #4: 685
+Row #5: 848
+Row #5: 872
+Row #6: 796
+Row #6: 861
+Row #7: 720
+Row #7: 843
+Row #8: 941
+Row #8: 1,040
+Row #9: 890
+Row #9: 990
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSubtotalsWithExistsWithSummaryMeasure">
+        <Resource name="description">
+            <![CDATA[
+test subtotals using exists instead of joining
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],NonEmptyCrossJoin([*BASE_MEMBERS_Product],NonEmptyCrossJoin([*BASE_MEMBERS_Education Level],[*BASE_MEMBERS_Time])))' 
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Store Cost_SEL~SUM] > 1000.0)' 
+Set [*BASE_MEMBERS_Gender] as '{[Gender].[All Gender].[M]}' 
+Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})' 
+Set [*METRIC_MEMBERS_Gender] as 'Generate([*METRIC_CJ_SET], {[Gender].CurrentMember})' 
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*SUMMARY_MEASURE_1]}' 
+Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink].[Beverages],[Product].[All Products].[Food].[Baked Goods]}' 
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' 
+Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})' 
+Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[High School Degree],[Education Level].[All Education Levels].[Partial High School]}' 
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})' 
+Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' 
+Set [*BASE_MEMBERS_Time] as '{[Time].[1997]}' 
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' 
+Set [*METRIC_MEMBERS_Time] as 'Generate([*METRIC_CJ_SET], {[Time].CurrentMember})' 
+Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 
+Member [Measures].[*SUMMARY_MEASURE_1] as
+    '[Measures].[Store Cost]/([Measures].[Store Cost],Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*TOTAL_MEMBER_SEL~SUM"))', FORMAT_STRING = '###0.00%', SOLVE_ORDER=50
+Member [Gender].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Gender])', SOLVE_ORDER=-102 
+Member [Time].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])', SOLVE_ORDER=-102 
+Member [Measures].[*Store Cost_SEL~SUM] as '([Measures].[Store Cost],[Product].CurrentMember,[Education Level].CurrentMember,[Gender].[*CTX_METRIC_MEMBER_SEL~SUM],[Time].[*CTX_METRIC_MEMBER_SEL~SUM])', SOLVE_ORDER=200 
+Member [Education Level].[*TOTAL_MEMBER_SEL~SUM] as 
+    'Sum(Generate(Exists([*METRIC_CJ_SET], {[Product].CurrentMember}),
+                  {([Product].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER=-101
+Member [Product].[All Products].[Drink].[*TOTAL_MEMBER_SEL~SUM] as 
+    'Sum(Generate(Exists([*METRIC_CJ_SET], {[Product].[All Products].[Drink]}), 
+                  {([Product].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER=-100
+Member [Product].[All Products].[Food].[*TOTAL_MEMBER_SEL~SUM] as 
+    'Sum(Generate(Exists([*METRIC_CJ_SET], {[Product].[All Products].[Food]}), 
+                  {([Product].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER=-100
+Member [Product].[*TOTAL_MEMBER_SEL~SUM] as
+    'Sum(Generate([*METRIC_CJ_SET],
+                  {([Product].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER=-100 
+Member [Time].[*FILTER_MEMBER] as 'Aggregate ([*METRIC_MEMBERS_Time])', SOLVE_ORDER=-200 
+Select
+CrossJoin(Generate([*METRIC_CJ_SET], {([Gender].CurrentMember)}),[*BASE_MEMBERS_Measures]) on columns,
+Non Empty Union(
+    NonEmptyCrossJoin({[Product].[*TOTAL_MEMBER_SEL~SUM]},{[Education Level].DefaultMember}),
+    Union(
+        CrossJoin(Generate([*METRIC_CJ_SET], {([Product].CurrentMember)}),{[Education Level].[*TOTAL_MEMBER_SEL~SUM]}),
+        Union(NonEmptyCrossJoin({[Product].[All Products].[Drink].[*TOTAL_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*TOTAL_MEMBER_SEL~SUM]},
+                                {[Education Level].DefaultMember}),
+              Generate([*METRIC_CJ_SET], {([Product].CurrentMember,[Education Level].CurrentMember)})))) on rows
+From [Sales]
+Where ([Time].[*FILTER_MEMBER])
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{[Time].[*FILTER_MEMBER]}
+Axis #1:
+{[Gender].[All Gender].[M], [Measures].[*FORMATTED_MEASURE_0]}
+{[Gender].[All Gender].[M], [Measures].[*SUMMARY_MEASURE_1]}
+Axis #2:
+{[Product].[*TOTAL_MEMBER_SEL~SUM], [Education Level].[All Education Levels]}
+{[Product].[All Products].[Drink].[Beverages], [Education Level].[*TOTAL_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[*TOTAL_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[*TOTAL_MEMBER_SEL~SUM], [Education Level].[All Education Levels]}
+{[Product].[All Products].[Food].[*TOTAL_MEMBER_SEL~SUM], [Education Level].[All Education Levels]}
+{[Product].[All Products].[Drink].[Beverages], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Drink].[Beverages], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[All Education Levels].[High School Degree]}
+Row #0: 4,356
+Row #0: Infinity%
+Row #1: 3,316
+Row #1: 100.00%
+Row #2: 1,040
+Row #2: 100.00%
+Row #3: 3,316
+Row #3: 100.00%
+Row #4: 1,040
+Row #4: 100.00%
+Row #5: 1,600
+Row #5: 48.25%
+Row #6: 1,716
+Row #6: 51.75%
+Row #7: 1,040
+Row #7: 100.00%
+]]>
+        </Resource>
+    </TestCase>
     <TestCase name="testSubtotals">
         <Resource name="description">
             <![CDATA[

@@ -4617,6 +4617,17 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Except</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Exists</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the the set of tuples of
+                            the first set that exist with one or more
+                            tuples of the second set.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Set</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Exists</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Exp</FUNCTION_NAME>
                         <DESCRIPTION>Returns a Double specifying e (the
                             base of natural logarithms) raised to a power.</DESCRIPTION>

@@ -8141,6 +8141,184 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
 
         );
     }
+    
+    public void testExistsMembersAll() {
+        assertQueryReturns(
+                "select exists(\n" +
+                "  {[Customers].[All Customers],\n" +
+                "   [Customers].[Country].Members,\n" +
+                "   [Customers].[State Province].[CA],\n" +
+                "   [Customers].[Canada].[BC].[Richmond]},\n" +
+                "  {[Customers].[All Customers]})\n" +
+                "on 0 from Sales",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Customers].[All Customers]}\n" +
+                    "{[Customers].[All Customers].[Canada]}\n" +
+                    "{[Customers].[All Customers].[Mexico]}\n" +
+                    "{[Customers].[All Customers].[USA]}\n" +
+                    "{[Customers].[All Customers].[USA].[CA]}\n" +
+                    "{[Customers].[All Customers].[Canada].[BC].[Richmond]}\n" +
+                    "Row #0: 266,773\n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: 266,773\n" +
+                    "Row #0: 74,748\n" +
+                    "Row #0: \n"));
+    }
+
+    public void testExistsMembersLevel2() {
+        assertQueryReturns(
+                "select exists(\n" +
+                "  {[Customers].[All Customers],\n" +
+                "   [Customers].[Country].Members,\n" +
+                "   [Customers].[State Province].[CA],\n" +
+                "   [Customers].[Canada].[BC].[Richmond]},\n" +
+                "  {[Customers].[Country].[USA]})\n" +
+                "on 0 from Sales",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Customers].[All Customers]}\n" +
+                    "{[Customers].[All Customers].[USA]}\n" +
+                    "{[Customers].[All Customers].[USA].[CA]}\n" +
+                    "Row #0: 266,773\n" +
+                    "Row #0: 266,773\n" +
+                    "Row #0: 74,748\n"));
+    }
+
+    public void testExistsMembersDiffDim() {
+        assertQueryReturns(
+                "select exists(\n" +
+                "  {[Customers].[All Customers],\n" +
+                "   [Customers].[All Customers].Children,\n" +
+                "   [Customers].[State Province].Members},\n" +
+                "  {[Product].Members})\n" +
+                "on 0 from Sales",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n"));
+    }
+
+    public void testExistsMembers2Hierarchies() {
+        assertQueryReturns(
+                "select exists(\n" +
+                "  {[Customers].[All Customers],\n" +
+                "   [Customers].[All Customers].Children,\n" +
+                "   [Customers].[State Province].Members,\n" +
+                "   [Customers].[Country].[Canada],\n" +
+                "   [Customers].[Country].[Mexico]},\n" +
+                "  {[Customers].[Country].[USA],\n" +
+                "   [Customers].[State Province].[Veracruz]})\n" +
+                "on 0 from Sales",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Customers].[All Customers]}\n" +
+                    "{[Customers].[All Customers].[Mexico]}\n" +
+                    "{[Customers].[All Customers].[USA]}\n" +
+                    "{[Customers].[All Customers].[Mexico].[Veracruz]}\n" +
+                    "{[Customers].[All Customers].[USA].[CA]}\n" +
+                    "{[Customers].[All Customers].[USA].[OR]}\n" +
+                    "{[Customers].[All Customers].[USA].[WA]}\n" +
+                    "{[Customers].[All Customers].[Mexico]}\n" +
+                    "Row #0: 266,773\n" +
+                    "Row #0: \n" +
+                    "Row #0: 266,773\n" +
+                    "Row #0: \n" +
+                    "Row #0: 74,748\n" +
+                    "Row #0: 67,659\n" +
+                    "Row #0: 124,366\n" +
+                    "Row #0: \n"));
+    }
+
+    public void testExistsTuplesAll() {
+        assertQueryReturns(
+                "select exists(\n" +
+                "  crossjoin({[Product].[All Products]},{[Customers].[All Customers]}),\n" +
+                "  {[Customers].[All Customers]})\n" +
+                "on 0 from Sales",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Product].[All Products], [Customers].[All Customers]}\n" +
+                    "Row #0: 266,773\n"));
+    }
+
+    public void testExistsTuplesLevel2() {
+        assertQueryReturns(
+                "select exists(\n" +
+                "  crossjoin({[Product].[All Products]},{[Customers].[All Customers].Children}),\n" +
+                "  {[Customers].[All Customers].[USA]})\n" +
+                "on 0 from Sales",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Product].[All Products], [Customers].[All Customers].[USA]}\n" +
+                    "Row #0: 266,773\n"));
+    }
+
+    public void testExistsTuplesLevel23() {
+        assertQueryReturns(
+                "select exists(\n" +
+                "  crossjoin({[Customers].[State Province].Members}, {[Product].[All Products]}),\n" +
+                "  {[Customers].[All Customers].[USA]})\n" +
+                "on 0 from Sales",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Customers].[All Customers].[USA].[CA], [Product].[All Products]}\n" +
+                    "{[Customers].[All Customers].[USA].[OR], [Product].[All Products]}\n" +
+                    "{[Customers].[All Customers].[USA].[WA], [Product].[All Products]}\n" +
+                    "Row #0: 74,748\n" +
+                    "Row #0: 67,659\n" +
+                    "Row #0: 124,366\n"));
+    }
+
+    public void testExistsTuples2Dim() {
+        assertQueryReturns(
+                "select exists(\n" +
+                "  crossjoin({[Customers].[State Province].Members}, {[Product].[Product Family].Members}),\n" +
+                "  {([Product].[Product Department].[Dairy],[Customers].[All Customers].[USA])})\n" +
+                "on 0 from Sales",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Drink]}\n" +
+                    "{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Drink]}\n" +
+                    "{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Drink]}\n" +
+                    "Row #0: 7,102\n" +
+                    "Row #0: 6,106\n" +
+                    "Row #0: 11,389\n"));
+    }
+
+    public void testExistsTuplesDiffDim() {
+        assertQueryReturns(
+                "select exists(\n" +
+                "  crossjoin(\n" +
+                "    crossjoin({[Customers].[State Province].Members},\n" +
+                "              {[Time].[Year].[1997]}), \n" +
+                "    {[Product].[Product Family].Members}),\n" +
+                "  {([Product].[Product Department].[Dairy],\n" +
+                "    [Promotions].[All Promotions], \n" +
+                "    [Customers].[All Customers].[USA])})\n" +
+                "on 0 from Sales",
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n"));
+    }
+
+
 }
 
 // End FunctionTest.java

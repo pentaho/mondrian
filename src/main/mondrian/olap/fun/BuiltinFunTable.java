@@ -963,6 +963,7 @@ public class BuiltinFunTable extends FunTableImpl {
         });
 
         define(ExceptFunDef.Resolver);
+        define(ExistsFunDef.resolver);
         define(ExtractFunDef.Resolver);
         define(FilterFunDef.instance);
 
