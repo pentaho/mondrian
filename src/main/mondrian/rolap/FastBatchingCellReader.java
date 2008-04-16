@@ -150,7 +150,7 @@ public class FastBatchingCellReader implements CellReader {
      * are pending batches to load or if {@link #setDirty(boolean)} has been
      * called.
      */
-    boolean isDirty() {
+    public boolean isDirty() {
         return dirty || !batches.isEmpty();
     }
 

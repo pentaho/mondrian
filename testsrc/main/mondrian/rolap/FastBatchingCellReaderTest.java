@@ -34,7 +34,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         getTestContext().clearConnection();
     }
 
-    public void testMissingSubtotalBug() {
+    public void testMissingSubtotalBugMetricFilter() {
         String query =
             "With " +
             "Set [*NATIVE_CJ_SET] as " +
@@ -64,7 +64,38 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         assertQueryReturns(query, result);
     }
 
-    
+    public void testMissingSubtotalBugMultiLevelMetricFilter() {
+        String query =
+            "With " + 
+            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])' " + 
+            "Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Store Cost_SEL~SUM] > 1000.0)' " +
+            "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink].[Beverages],[Product].[All Products].[Food].[Baked Goods]}' " + 
+            "Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})' " + 
+            "Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[High School Degree],[Education Level].[All Education Levels].[Partial High School]}' " + 
+            "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' " +
+            "Member [Measures].[*Store Cost_SEL~SUM] as '([Measures].[Store Cost],[Product].CurrentMember,[Education Level].CurrentMember)', SOLVE_ORDER=200 " + 
+            "Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Drink]))', SOLVE_ORDER=-100 " + 
+            "Member [Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Food]))', SOLVE_ORDER=-100 " +
+            "Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Education Level],[Measures].[*Store Cost_SEL~SUM] > 1000.0))', SOLVE_ORDER=-101 " +
+            "Select " +
+            "{[Measures].[Store Cost]} on columns, " + 
+            "NonEmptyCrossJoin({[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}) " +
+            "on rows From [Sales]";
+        
+        String result = 
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Store Cost]}\n" +
+            "Axis #2:\n" +
+            "{[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n" +
+            "{[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n" +
+            "Row #0: 6,535.30\n" +
+            "Row #1: 3,860.89\n";
+        
+        assertQueryReturns(query, fold(result));
+    }
+        
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnSupportedDB() {
         boolean oldValue = MondrianProperties.instance().EnableGroupingSets.get();
         MondrianProperties.instance().EnableGroupingSets.set(true);

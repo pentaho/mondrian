@@ -56,10 +56,16 @@ interface CellReader {
     Object get(RolapEvaluator evaluator);
 
     /**
-     * Returns the number of times this cell reader has told a lie because the
-     * required cell value is not in the cache.
+     * Returns the number of times this cell reader has told a lie (since creation), 
+     * because the required cell value is not in the cache.
      */
     int getMissCount();
+
+    /**
+     * @return whether thus cell reader has any pending cell requests that are
+     * not loaded yet.
+     */
+    boolean isDirty();
 }
 
 // End CellReader.java

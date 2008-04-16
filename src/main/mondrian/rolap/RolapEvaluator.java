@@ -815,18 +815,19 @@ public class RolapEvaluator implements Evaluator {
         final Object key = getExpResultCacheKey(cacheDescriptor);
         Object result = root.getCacheResult(key);
         if (result == null) {
+            boolean aggCacheDirty = cellReader.isDirty();
             int aggregateCacheMissCountBefore = cellReader.getMissCount();
             result = cacheDescriptor.evaluate(this);
             int aggregateCacheMissCountAfter = cellReader.getMissCount();
 
             boolean isValidResult;
 
-            if (aggregateCacheMissCountBefore ==
-                aggregateCacheMissCountAfter) {
-                // Cache the evaluation result as valid result  if the
-                // evaluation did not use any missing aggregates. If missing
-                // aggregates are seen, the aggregateCacheMissCount will
-                // increase.
+            if (!aggCacheDirty &&
+                (aggregateCacheMissCountBefore == aggregateCacheMissCountAfter)) {
+                // Cache the evaluation result as valid result if the
+                // evaluation did not use any missing aggregates. Missing aggregates
+                // could be used when aggregate cache is not fully loaded, or if 
+                // new missing aggregates are seen.
                 isValidResult = true;
             } else {
                 // Cache the evaluation result as invalid result if the

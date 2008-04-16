@@ -706,6 +706,10 @@ public abstract class RolapAggregationManager {
             public int getMissCount() {
                 return 0; // RolapAggregationManager never lies
             }
+            
+            public boolean isDirty() {
+                return false;
+            }
         };
     }
 
