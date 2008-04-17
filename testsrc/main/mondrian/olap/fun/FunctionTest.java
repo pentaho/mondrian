@@ -1124,9 +1124,9 @@ public class FunctionTest extends FoodMartTestCase {
         // <Dimension>.allmembers applied to a query with calc measures
         // Calc measures are returned
         assertQueryReturns("with member [Measures].[Xxx] AS ' [Measures].[Unit Sales] '" +
-                "select {[Measures].allmembers} on columns from [Sales]",
-                fold(
-                    "Axis #0:\n" +
+            "select {[Measures].allmembers} on columns from [Sales]",
+            fold(
+                "Axis #0:\n" +
                     "{}\n" +
                     "Axis #1:\n" +
                     "{[Measures].[Unit Sales]}\n" +
@@ -1136,8 +1136,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Measures].[Customer Count]}\n" +
                     "{[Measures].[Promotion Sales]}\n" +
                     "{[Measures].[Profit]}\n" +
-                    "{[Measures].[Profit last Period]}\n" +
                     "{[Measures].[Profit Growth]}\n" +
+                    "{[Measures].[Profit last Period]}\n" +
                     "{[Measures].[Xxx]}\n" +
                     "Row #0: 266,773\n" +
                     "Row #0: 225,627.23\n" +
@@ -1146,18 +1146,18 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 5,581\n" +
                     "Row #0: 151,211.21\n" +
                     "Row #0: $339,610.90\n" +
-                    "Row #0: $339,610.90\n" +
                     "Row #0: 0.0%\n" +
+                    "Row #0: $339,610.90\n" +
                     "Row #0: 266,773\n"));
 
         // Calc measure members from schema and from query
         assertQueryReturns("WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' " +
-                "SELECT {[Measures].AllMembers} ON COLUMNS," +
-                "non empty({[Store].[Store State].Members}) ON ROWS " +
-                "FROM Sales " +
-                "WHERE ([1997].[Q1])",
-                fold(
-                    "Axis #0:\n" +
+            "SELECT {[Measures].AllMembers} ON COLUMNS," +
+            "non empty({[Store].[Store State].Members}) ON ROWS " +
+            "FROM Sales " +
+            "WHERE ([1997].[Q1])",
+            fold(
+                "Axis #0:\n" +
                     "{[Time].[1997].[Q1]}\n" +
                     "Axis #1:\n" +
                     "{[Measures].[Unit Sales]}\n" +
@@ -1167,8 +1167,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Measures].[Customer Count]}\n" +
                     "{[Measures].[Promotion Sales]}\n" +
                     "{[Measures].[Profit]}\n" +
-                    "{[Measures].[Profit last Period]}\n" +
                     "{[Measures].[Profit Growth]}\n" +
+                    "{[Measures].[Profit last Period]}\n" +
                     "{[Measures].[Unit to Sales ratio]}\n" +
                     "Axis #2:\n" +
                     "{[Store].[All Stores].[USA].[CA]}\n" +
@@ -1181,8 +1181,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 1,110\n" +
                     "Row #0: 14,447.16\n" +
                     "Row #0: $21,744.11\n" +
-                    "Row #0: $21,744.11\n" +
                     "Row #0: 0.0%\n" +
+                    "Row #0: $21,744.11\n" +
                     "Row #0: 46.7%\n" +
                     "Row #1: 19,287\n" +
                     "Row #1: 16,081.07\n" +
@@ -1191,8 +1191,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #1: 767\n" +
                     "Row #1: 10,829.64\n" +
                     "Row #1: $24,089.22\n" +
-                    "Row #1: $24,089.22\n" +
                     "Row #1: 0.0%\n" +
+                    "Row #1: $24,089.22\n" +
                     "Row #1: 48.0%\n" +
                     "Row #2: 30,114\n" +
                     "Row #2: 25,240.08\n" +
@@ -1201,18 +1201,18 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #2: 1,104\n" +
                     "Row #2: 18,459.60\n" +
                     "Row #2: $38,042.78\n" +
-                    "Row #2: $38,042.78\n" +
                     "Row #2: 0.0%\n" +
+                    "Row #2: $38,042.78\n" +
                     "Row #2: 47.6%\n"));
 
         // Calc member in query and schema not seen
         assertQueryReturns("WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' " +
-                "SELECT {[Measures].AllMembers} ON COLUMNS," +
-                "non empty({[Store].[Store State].Members}) ON ROWS " +
-                "FROM Sales " +
-                "WHERE ([1997].[Q1])",
-                fold(
-                    "Axis #0:\n" +
+            "SELECT {[Measures].AllMembers} ON COLUMNS," +
+            "non empty({[Store].[Store State].Members}) ON ROWS " +
+            "FROM Sales " +
+            "WHERE ([1997].[Q1])",
+            fold(
+                "Axis #0:\n" +
                     "{[Time].[1997].[Q1]}\n" +
                     "Axis #1:\n" +
                     "{[Measures].[Unit Sales]}\n" +
@@ -1222,8 +1222,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Measures].[Customer Count]}\n" +
                     "{[Measures].[Promotion Sales]}\n" +
                     "{[Measures].[Profit]}\n" +
-                    "{[Measures].[Profit last Period]}\n" +
                     "{[Measures].[Profit Growth]}\n" +
+                    "{[Measures].[Profit last Period]}\n" +
                     "{[Measures].[Unit to Sales ratio]}\n" +
                     "Axis #2:\n" +
                     "{[Store].[All Stores].[USA].[CA]}\n" +
@@ -1236,8 +1236,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 1,110\n" +
                     "Row #0: 14,447.16\n" +
                     "Row #0: $21,744.11\n" +
-                    "Row #0: $21,744.11\n" +
                     "Row #0: 0.0%\n" +
+                    "Row #0: $21,744.11\n" +
                     "Row #0: 46.7%\n" +
                     "Row #1: 19,287\n" +
                     "Row #1: 16,081.07\n" +
@@ -1246,8 +1246,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #1: 767\n" +
                     "Row #1: 10,829.64\n" +
                     "Row #1: $24,089.22\n" +
-                    "Row #1: $24,089.22\n" +
                     "Row #1: 0.0%\n" +
+                    "Row #1: $24,089.22\n" +
                     "Row #1: 48.0%\n" +
                     "Row #2: 30,114\n" +
                     "Row #2: 25,240.08\n" +
@@ -1256,8 +1256,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #2: 1,104\n" +
                     "Row #2: 18,459.60\n" +
                     "Row #2: $38,042.78\n" +
-                    "Row #2: $38,042.78\n" +
                     "Row #2: 0.0%\n" +
+                    "Row #2: $38,042.78\n" +
                     "Row #2: 47.6%\n"));
 
         // Calc member in query and schema not seen
