@@ -22,10 +22,12 @@ import mondrian.olap.CellFormatter;
  * @since 10 August, 2001
  * @version $Id$
  */
-interface RolapMeasure extends Member {
+public interface RolapMeasure extends Member {
     /**
-     * Returns the object which formats cells of this measure, or null to use
+     * Returns the object that formats cells of this measure, or null to use
      * default formatting.
+     *
+     * @return formatter
      */
     CellFormatter getFormatter();
 }

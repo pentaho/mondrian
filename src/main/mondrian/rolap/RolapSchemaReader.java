@@ -95,8 +95,8 @@ public abstract class RolapSchemaReader
         Level level, Member startMember, Member endMember, List<Member> list)
     {
         getMemberReader(level.getHierarchy()).getMemberRange(
-                (RolapLevel) level, (RolapMember) startMember,
-                (RolapMember) endMember, (List) list);
+            (RolapLevel) level, (RolapMember) startMember,
+            (RolapMember) endMember, Util.<RolapMember>cast(list));
     }
 
     public int compareMembersHierarchically(Member m1, Member m2) {
@@ -288,7 +288,7 @@ public abstract class RolapSchemaReader
             final MemberReader memberReader = getMemberReader(hierarchy);
             List<RolapMember> children = new ArrayList<RolapMember>();
             memberReader.getMemberChildren(
-                (List) Arrays.asList(members),
+                Util.<RolapMember>cast(Arrays.asList(members)),
                 children,
                 constraint);
             return RolapUtil.toArray(children);
@@ -416,7 +416,11 @@ public abstract class RolapSchemaReader
     }
 
     public Member[] getLevelMembers(Level level, boolean includeCalculated) {
-        return getLevelMembers(level, null);
+        Member[] members = getLevelMembers(level, null);
+        if (!includeCalculated) {
+            members = SqlConstraintUtils.removeCalculatedMembers(members);
+        }
+        return members;
     }
 
     public Member[] getLevelMembers(Level level, Evaluator context) {

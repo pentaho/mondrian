@@ -9,8 +9,7 @@
 package mondrian.olap4j;
 
 import mondrian.olap.Property;
-import mondrian.rolap.RolapAggregator;
-import mondrian.rolap.RolapStoredMeasure;
+import mondrian.rolap.*;
 import org.olap4j.metadata.Datatype;
 import org.olap4j.metadata.Measure;
 
@@ -30,12 +29,19 @@ public class MondrianOlap4jMeasure
 {
     MondrianOlap4jMeasure(
         MondrianOlap4jSchema olap4jSchema,
-        RolapStoredMeasure measure)
+        RolapMeasure measure)
     {
         super(olap4jSchema, measure);
     }
 
+    public String toString() {
+        return getUniqueName();
+    }
+
     public Aggregator getAggregator() {
+        if (!(member instanceof RolapStoredMeasure)) {
+            return Aggregator.UNKNOWN;
+        }
         final RolapAggregator aggregator =
             ((RolapStoredMeasure) member).getAggregator();
         if (aggregator == RolapAggregator.Avg) {

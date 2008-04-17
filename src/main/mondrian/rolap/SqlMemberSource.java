@@ -1061,7 +1061,7 @@ RME is this right
             super(parentMember, childLevel, value, dataMember);
         }
 
-        protected boolean computeCalculated() {
+        protected boolean computeCalculated(final MemberType memberType) {
             return true;
         }
         

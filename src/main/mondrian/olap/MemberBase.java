@@ -85,7 +85,7 @@ public abstract class MemberBase
         this.flags = memberType.ordinal()
             | (memberType == MemberType.ALL ? FLAG_ALL : 0)
             | (memberType == MemberType.NULL ? FLAG_NULL : 0)
-            | (computeCalculated() ? FLAG_CALCULATED : 0)
+            | (computeCalculated(memberType) ? FLAG_CALCULATED : 0)
             | (level.getHierarchy().getDimension().isMeasures() ? FLAG_MEASURE : 0);
     }
 
@@ -229,13 +229,14 @@ public abstract class MemberBase
      * Computes the value to be returned by {@link #isCalculated()}, so it can
      * be cached in a variable.
      *
+     * @param memberType Member type
      * @return Whether this member is calculated
      */
-    protected boolean computeCalculated() {
+    protected boolean computeCalculated(final MemberType memberType) {
         // If the member is not created from the "with member ..." MDX, the
         // calculated will be null. But it may be still a calculated measure
         // stored in the cube.
-        return isCalculatedInQuery() || getMemberType() == MemberType.FORMULA;
+        return isCalculatedInQuery() || memberType == MemberType.FORMULA;
     }
 
     public int getSolveOrder() {

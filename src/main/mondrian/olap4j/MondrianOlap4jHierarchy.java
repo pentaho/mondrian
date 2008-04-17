@@ -12,7 +12,7 @@ package mondrian.olap4j;
 import org.olap4j.metadata.*;
 import org.olap4j.impl.*;
 
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Implementation of {@link org.olap4j.metadata.Hierarchy}
@@ -74,18 +74,21 @@ class MondrianOlap4jHierarchy implements Hierarchy, Named {
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
         final mondrian.olap.Member[] levelMembers =
             olap4jConnection.connection.getSchemaReader().getLevelMembers(
-                hierarchy.getLevels()[0], false);
+                hierarchy.getLevels()[0], true);
+
+        final List<mondrian.olap.Member> levelMemberList =
+            new ArrayList<mondrian.olap.Member>(Arrays.asList(levelMembers));
         return new AbstractNamedList<Member>() {
             protected String getName(Member member) {
                 return member.getName();
             }
 
             public Member get(int index) {
-                return olap4jConnection.toOlap4j(levelMembers[index]);
+                return olap4jConnection.toOlap4j(levelMemberList.get(index));
             }
 
             public int size() {
-                return levelMembers.length;
+                return levelMemberList.size();
             }
         };
     }

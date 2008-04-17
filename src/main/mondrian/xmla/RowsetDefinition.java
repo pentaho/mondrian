@@ -1017,6 +1017,8 @@ enum RowsetDefinition {
         }
     };
 
+    private static final boolean EMIT_INVISIBLE_MEMBERS = true;
+
     transient final Column[] columnDefinitions;
     transient final Column[] sortColumnDefinitions;
 
@@ -1118,6 +1120,7 @@ enum RowsetDefinition {
         writeRowsetXmlSchemaRowDef(writer);
         writeRowsetXmlSchemaBottom(writer);
     }
+
     protected void writeRowsetXmlSchemaTop(SaxWriter writer) {
         writer.startElement("xsd:schema", new String[] {
             "xmlns:xsd", XmlaConstants.NS_XSD,
@@ -1159,6 +1162,7 @@ enum RowsetDefinition {
         writer.endElement(); // xsd:simpleType
 
     }
+
     protected void writeRowsetXmlSchemaRowDef(SaxWriter writer) {
         writer.startElement("xsd:complexType", new String[] {
             "name", "row"
@@ -1207,6 +1211,7 @@ enum RowsetDefinition {
         writer.endElement(); // xsd:sequence
         writer.endElement(); // xsd:complexType
     }
+
     protected void writeRowsetXmlSchemaBottom(SaxWriter writer) {
         writer.endElement(); // xsd:schema
     }
@@ -1713,6 +1718,7 @@ enum RowsetDefinition {
 
     static class DiscoverPropertiesRowset extends Rowset {
         private final RestrictionTest propertyNameRT;
+
         DiscoverPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(DISCOVER_PROPERTIES, request, handler);
             propertyNameRT = getRestrictionTest(PropertyName);
@@ -1787,6 +1793,7 @@ enum RowsetDefinition {
                 addRow(row, rows);
             }
         }
+
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef) {
             case Content:
@@ -2037,6 +2044,7 @@ enum RowsetDefinition {
 
     static class DbschemaCatalogsRowset extends Rowset {
         private final RestrictionTest catalogNameRT;
+
         DbschemaCatalogsRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_CATALOGS, request, handler);
             catalogNameRT = getRestrictionTest(CatalogName);
@@ -2134,6 +2142,7 @@ enum RowsetDefinition {
         private final RestrictionTest tableCatalogRT;
         private final RestrictionTest tableNameRT;
         private final RestrictionTest columnNameRT;
+
         DbschemaColumnsRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_COLUMNS, request, handler);
             tableCatalogRT = getRestrictionTest(TableCatalog);
@@ -2310,9 +2319,12 @@ enum RowsetDefinition {
                         // null == true for regular cubes
                         // virtual cubes do not set the visible property
                         // on its measures so it might be null.
-                        Boolean isVisible = (Boolean)
+                        Boolean visible = (Boolean)
                             member.getPropertyValue(Property.VISIBLE.name);
-                        if (isVisible != null && !isVisible) {
+                        if (visible == null) {
+                            visible = true;
+                        }
+                        if (!EMIT_INVISIBLE_MEMBERS && !visible) {
                             continue;
                         }
 
@@ -2517,6 +2529,7 @@ TODO: see above
             }
             return ordinalPosition;
         }
+
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef) {
             case Content:
@@ -2529,6 +2542,7 @@ TODO: see above
 
     static class DbschemaProviderTypesRowset extends Rowset {
         private final RestrictionTest dataTypeRT;
+
         DbschemaProviderTypesRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_PROVIDER_TYPES, request, handler);
             dataTypeRT = getRestrictionTest(DataType);
@@ -2761,6 +2775,7 @@ TODO: see above
                 addRow(row, rows);
             }
         }
+
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef) {
             case Content:
@@ -2773,6 +2788,7 @@ TODO: see above
 
     static class DbschemaSchemataRowset extends Rowset {
         private final RestrictionTest catalogNameRT;
+
         DbschemaSchemataRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_SCHEMATA, request, handler);
             catalogNameRT = getRestrictionTest(CatalogName);
@@ -2851,6 +2867,7 @@ TODO: see above
         private final RestrictionTest tableCatalogRT;
         private final RestrictionTest tableNameRT;
         private final RestrictionTest tableTypeRT;
+
         DbschemaTablesRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_TABLES, request, handler);
             tableCatalogRT = getRestrictionTest(TableCatalog);
@@ -3284,6 +3301,7 @@ TODO: see above
                 }
             }
         }
+
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef) {
             case Content:
@@ -3584,6 +3602,7 @@ TODO: see above
         private final RestrictionTest cubeNameRT;
         private final RestrictionTest dimensionUniqueNameRT;
         private final RestrictionTest dimensionNameRT;
+
         MdschemaDimensionsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_DIMENSIONS, request, handler);
             catalogRT = getRestrictionTest(CatalogName);
@@ -3969,6 +3988,7 @@ TODO: see above
         }
 
         private final RestrictionTest functionNameRT;
+
         MdschemaFunctionsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_FUNCTIONS, request, handler);
             functionNameRT = getRestrictionTest(FunctionName);
@@ -4142,6 +4162,7 @@ TODO: see above
                 }
             }
         }
+
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef) {
             case Content:
@@ -4152,7 +4173,6 @@ TODO: see above
         }
     }
 
-
     static class MdschemaHierarchiesRowset extends Rowset {
         private final RestrictionTest catalogRT;
         private final RestrictionTest schemaNameRT;
@@ -4160,6 +4180,7 @@ TODO: see above
         private final RestrictionTest dimensionUniqueNameRT;
         private final RestrictionTest hierarchyUniqueNameRT;
         private final RestrictionTest hierarchyNameRT;
+
         MdschemaHierarchiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_HIERARCHIES, request, handler);
             catalogRT = getRestrictionTest(CatalogName);
@@ -4545,6 +4566,7 @@ TODO: see above
         private final RestrictionTest hierarchyUniqueNameRT;
         private final RestrictionTest levelUniqueNameRT;
         private final RestrictionTest levelNameRT;
+
         MdschemaLevelsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_LEVELS, request, handler);
             catalogRT = getRestrictionTest(CatalogName);
@@ -4925,6 +4947,7 @@ TODO: see above
 
             return ret;
         }
+
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef) {
             case Content:
@@ -4953,6 +4976,7 @@ TODO: see above
         private final RestrictionTest cubeNameRT;
         private final RestrictionTest measureUniqueNameRT;
         private final RestrictionTest measureNameRT;
+
         MdschemaMeasuresRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_MEASURES, request, handler);
             catalogRT = getRestrictionTest(CatalogName);
@@ -5168,13 +5192,13 @@ TODO: see above
                 return;
             }
 
-            if (member instanceof MemberBase) {
-                MemberBase mb = (MemberBase) member;
-                Boolean isVisible = (Boolean)
-                    mb.getPropertyValue(Property.VISIBLE.name);
-                if (isVisible != null && !isVisible) {
-                    return;
-                }
+            Boolean visible =
+                (Boolean) member.getPropertyValue(Property.VISIBLE.name);
+            if (visible == null) {
+                visible = true;
+            }
+            if (!EMIT_INVISIBLE_MEMBERS && !visible) {
+                return;
             }
 
             //TODO: currently this is always null
@@ -5231,7 +5255,7 @@ TODO: see above
                 }
             }
             row.set(DataType.name, dbType);
-            row.set(MeasureIsVisible.name, true);
+            row.set(MeasureIsVisible.name, visible);
 
             if (levelListStr != null) {
                 row.set(LevelsList.name, levelListStr);
@@ -5240,6 +5264,7 @@ TODO: see above
             row.set(Description.name, desc);
             addRow(row, rows);
         }
+
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef) {
             case Content:
@@ -5755,7 +5780,6 @@ TODO: see above
             Cube cube,
             List<Row> rows)
         {
-
             // Access control
             if (!canAccess(schemaReader, member)) {
                 return;
@@ -5771,10 +5795,13 @@ TODO: see above
                 RolapMember.setOrdinals(schemaReader, member);
             }
 
-            // Check whether the members is visible, otherwise do not dump.
-            Boolean isVisible = (Boolean)
-                member.getPropertyValue(Property.VISIBLE.name);
-            if (isVisible != null && !isVisible) {
+            // Check whether the member is visible, otherwise do not dump.
+            Boolean visible =
+                (Boolean) member.getPropertyValue(Property.VISIBLE.name);
+            if (visible == null) {
+                visible = true;
+            }
+            if (!EMIT_INVISIBLE_MEMBERS && !visible) {
                 return;
             }
 
@@ -6102,6 +6129,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private final RestrictionTest dimensionUniqueNameRT;
         private final RestrictionTest hierarchyUniqueNameRT;
         private final RestrictionTest propertyNameRT;
+
         MdschemaPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_PROPERTIES, request, handler);
             catalogRT = getRestrictionTest(CatalogName);
@@ -6434,7 +6462,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
     {
         Object[] a = collection.toArray(new Object[collection.size()]);
         Arrays.sort(a);
-        return (List<T>) (List) Arrays.asList(a);
+        return Util.cast(Arrays.asList(a));
     }
 
     private static <T> List<T> sortArray(

@@ -134,13 +134,11 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
 
         public List<Member> getMembers() {
             return new AbstractList<Member>() {
-
                 public Member get(int index) {
                     final mondrian.olap.Member mondrianMember =
                         mondrianPosition.get(index);
-                    return new MondrianOlap4jMember(
-                        olap4jCellSet.olap4jStatement.olap4jConnection.olap4jSchema,
-                        mondrianMember);
+                    return olap4jCellSet.olap4jStatement.olap4jConnection
+                        .toOlap4j(mondrianMember);
                 }
 
                 public int size() {

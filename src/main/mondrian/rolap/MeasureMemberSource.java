@@ -13,6 +13,8 @@
 
 package mondrian.rolap;
 
+import java.util.List;
+
 /**
  * A <code>MeasureMemberSource</code> implements the {@link MemberReader}
  * interface for the special Measures dimension.
@@ -26,8 +28,13 @@ package mondrian.rolap;
  * @version $Id$
  */
 class MeasureMemberSource extends ArrayMemberSource {
-    MeasureMemberSource(RolapHierarchy hierarchy, RolapMember[] members) {
-        super(hierarchy, members);
+    MeasureMemberSource(
+        RolapHierarchy hierarchy,
+        List<RolapMember> memberList)
+    {
+        super(
+            hierarchy,
+            memberList.toArray(new RolapMember[memberList.size()]));
     }
 }
 

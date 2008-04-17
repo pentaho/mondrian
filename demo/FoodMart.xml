@@ -315,6 +315,7 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
       formula="COALESCEEMPTY((Measures.[Profit], [Time].PREVMEMBER),    Measures.[Profit])"
       visible="false">
     <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
+    <CalculatedMemberProperty name="MEMBER_ORDINAL" value="18"/>
   </CalculatedMember>
   <CalculatedMember
       name="Profit Growth"

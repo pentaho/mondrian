@@ -61,7 +61,7 @@ class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeasure {
             MondrianDef.Expression expression,
             String aggregatorName,
             String datatype) {
-        super(parentMember, level, name);
+        super(parentMember, level, name, null, MemberType.MEASURE);
         this.cube = cube;
         this.expression = expression;
         if (formatString == null) {

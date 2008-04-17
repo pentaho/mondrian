@@ -61,7 +61,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "Row #0: 6,423\n" +
             "Row #1: 6,423\n";
 
-        assertQueryReturns(query, result);
+        assertQueryReturns(query, fold(result));
     }
 
     public void testMissingSubtotalBugMultiLevelMetricFilter() {

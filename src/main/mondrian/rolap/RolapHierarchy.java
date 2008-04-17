@@ -902,7 +902,7 @@ public class RolapHierarchy extends HierarchyBase {
             return exp;
         }
 
-        protected boolean computeCalculated() {
+        protected boolean computeCalculated(final MemberType memberType) {
             return true;
         }
         

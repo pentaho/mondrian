@@ -30,9 +30,12 @@ public class RolapCalculatedMember extends RolapMember {
     private final Formula formula;
 
     RolapCalculatedMember(
-            RolapMember parentMember, RolapLevel level, String name,
-            Formula formula) {
-        super(parentMember, level, name);
+        RolapMember parentMember, RolapLevel level, String name,
+        Formula formula)
+    {
+        // A calculated measure has MemberType.FORMULA because FORMULA
+        // overrides MEASURE.
+        super(parentMember, level, name, null, MemberType.FORMULA);
         this.formula = formula;
     }
 
@@ -54,7 +57,7 @@ public class RolapCalculatedMember extends RolapMember {
         }
     }
 
-    protected boolean computeCalculated() {
+    protected boolean computeCalculated(final MemberType memberType) {
         return true;
     }
 

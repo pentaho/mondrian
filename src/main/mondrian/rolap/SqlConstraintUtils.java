@@ -149,7 +149,7 @@ public class SqlConstraintUtils {
         return result.toArray(new Member[result.size()]);
     }
 
-    private static Member[] removeCalculatedMembers(Member[] members) {
+    static Member[] removeCalculatedMembers(Member[] members) {
         List<Member> result = new ArrayList<Member>();
         for (Member member : members) {
             if (!member.isCalculated()) {

@@ -1593,6 +1593,18 @@ The default value for this property is an empty string.</PropertyDescription>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
+                        <MEASURE_NAME>Profit last Period</MEASURE_NAME>
+                        <MEASURE_UNIQUE_NAME>[Measures].[Profit last Period]</MEASURE_UNIQUE_NAME>
+                        <MEASURE_CAPTION>Profit last Period</MEASURE_CAPTION>
+                        <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <MEASURE_IS_VISIBLE>false</MEASURE_IS_VISIBLE>
+                        <DESCRIPTION>Sales Cube - Profit last Period Member</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
                         <MEASURE_NAME>Promotion Sales</MEASURE_NAME>
                         <MEASURE_UNIQUE_NAME>[Measures].[Promotion Sales]</MEASURE_UNIQUE_NAME>
                         <MEASURE_CAPTION>Promotion Sales</MEASURE_CAPTION>
@@ -2002,7 +2014,7 @@ The default value for this property is an empty string.</PropertyDescription>
                         <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>7</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>10</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Sales Cube - Measures Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>

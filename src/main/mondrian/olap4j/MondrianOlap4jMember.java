@@ -18,6 +18,8 @@ import org.olap4j.mdx.ParseTreeNode;
 import java.util.List;
 import java.util.Locale;
 
+import mondrian.rolap.RolapMeasure;
+
 /**
  * Implementation of {@link Member}
  * for the Mondrian OLAP engine,
@@ -37,6 +39,8 @@ class MondrianOlap4jMember implements Member, Named {
         mondrian.olap.Member mondrianMember)
     {
         assert mondrianMember != null;
+        assert mondrianMember instanceof RolapMeasure
+            == this instanceof MondrianOlap4jMeasure;
         this.olap4jSchema = olap4jSchema;
         this.member = mondrianMember;
     }
@@ -108,7 +112,7 @@ class MondrianOlap4jMember implements Member, Named {
     }
 
     public boolean isCalculated() {
-        throw new UnsupportedOperationException();
+        return getMemberType() == Type.FORMULA;
     }
 
     public int getSolveOrder() {

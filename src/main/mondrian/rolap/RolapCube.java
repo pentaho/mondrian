@@ -188,7 +188,8 @@ public class RolapCube extends CubeBase {
         // done in a common constructor.
         RolapLevel measuresLevel = this.measuresHierarchy.newMeasuresLevel();
 
-        RolapMember measures[] = new RolapMember[xmlCube.measures.length];
+        List<RolapMember> measureList =
+            new ArrayList<RolapMember>(xmlCube.measures.length);
         Member defaultMeasure = null;
         for (int i = 0; i < xmlCube.measures.length; i++) {
             MondrianDef.Measure xmlMeasure = xmlCube.measures[i];
@@ -219,7 +220,7 @@ public class RolapCube extends CubeBase {
                     this, null, measuresLevel, xmlMeasure.name,
                     xmlMeasure.formatString, measureExp,
                 aggregator, xmlMeasure.datatype);
-            measures[i] = measure;
+            measureList.add(measure);
             if(Util.equalName(measure.getName(),xmlCube.defaultMeasure)){
                 defaultMeasure = measure;
             }
@@ -278,15 +279,20 @@ public class RolapCube extends CubeBase {
             measure.setOrdinal(ordinal);
         }
 
-        this.measuresHierarchy.setMemberReader(new CacheMemberReader(
-                new MeasureMemberSource(this.measuresHierarchy, measures)));
+
+        this.measuresHierarchy.setMemberReader(
+            new CacheMemberReader(
+                new MeasureMemberSource(this.measuresHierarchy, measureList)));
         // this invalidates any cached schema reader
         this.schemaReader = null;
         this.measuresHierarchy.setDefaultMember(defaultMeasure);
         init(xmlCube.dimensions);
-        init(xmlCube);
+        init(xmlCube, measureList);
+        this.measuresHierarchy.setMemberReader(
+            new CacheMemberReader(
+                new MeasureMemberSource(this.measuresHierarchy, measureList)));
 
-        checkOrdinals(xmlCube.name, measures, xmlCube.calculatedMembers);
+        checkOrdinals(xmlCube.name, measureList);
         loadAggGroup(xmlCube);
     }
 
@@ -305,6 +311,7 @@ public class RolapCube extends CubeBase {
         if (Util.isEmpty(cellFormatterClassName)) {
             return null;
         }
+        //noinspection unchecked
         Class<CellFormatter> clazz =
             (Class<CellFormatter>)
                 Class.forName(cellFormatterClassName);
@@ -315,10 +322,12 @@ public class RolapCube extends CubeBase {
     /**
      * Creates a <code>RolapCube</code> from a virtual cube.
      */
-    RolapCube(RolapSchema schema,
-              MondrianDef.Schema xmlSchema,
-              MondrianDef.VirtualCube xmlVirtualCube,
-              boolean load) {
+    RolapCube(
+        RolapSchema schema,
+        MondrianDef.Schema xmlSchema,
+        MondrianDef.VirtualCube xmlVirtualCube,
+        boolean load)
+    {
         this(schema, xmlSchema, xmlVirtualCube.name, true,
             null, xmlVirtualCube.dimensions, load);
 
@@ -417,7 +426,8 @@ public class RolapCube extends CubeBase {
         // referenced by this virtual cube.  Resolve those members relative
         // to their base cubes first, then resolve them relative to this
         // cube so the correct dimension ordinals are used
-        List<RolapVirtualCubeMeasure> modifiedMeasureList = new ArrayList<RolapVirtualCubeMeasure>(origMeasureList);
+        List<RolapVirtualCubeMeasure> modifiedMeasureList =
+            new ArrayList<RolapVirtualCubeMeasure>(origMeasureList);
         for (Object o : calculatedMembersMap.keySet()) {
             RolapCube baseCube = (RolapCube) o;
             List<MondrianDef.CalculatedMember> calculatedMemberList =
@@ -437,7 +447,8 @@ public class RolapCube extends CubeBase {
 
         // Add the original calculated members from the base cubes to our
         // list of calculated members
-        List<MondrianDef.CalculatedMember> calculatedMemberList = new ArrayList<MondrianDef.CalculatedMember>();
+        List<MondrianDef.CalculatedMember> calculatedMemberList =
+            new ArrayList<MondrianDef.CalculatedMember>();
         for (Object o : calculatedMembersMap.keySet()) {
             RolapCube baseCube = (RolapCube) o;
             calculatedMemberList.addAll(
@@ -449,30 +460,28 @@ public class RolapCube extends CubeBase {
         // Resolve all calculated members relative to this virtual cube,
         // whose measureHierarchy member reader now contains all base
         // measures referenced in those calculated members
-        RolapMember[] measures =
-            modifiedMeasureList.toArray(
-                new RolapMember[modifiedMeasureList.size()]);
         this.measuresHierarchy.setMemberReader(
             new CacheMemberReader(
-                new MeasureMemberSource(this.measuresHierarchy, measures)));
+                new MeasureMemberSource(
+                    this.measuresHierarchy,
+                    Util.<RolapMember>cast(modifiedMeasureList))));
         createCalcMembersAndNamedSets(
             calculatedMemberList.toArray(
                 new MondrianDef.CalculatedMember[
                     calculatedMemberList.size()]),
                 xmlVirtualCube.namedSets,
-                new ArrayList<Member>(),
+                new ArrayList<RolapMember>(),
                 new ArrayList<Formula>(),
                 this,
                 false);
 
         // reset the measureHierarchy member reader back to the list of
         // measures that are only defined on this virtual cube
-        measures =
-            origMeasureList.toArray(
-                new RolapMember[origMeasureList.size()]);
         this.measuresHierarchy.setMemberReader(
             new CacheMemberReader(
-                new MeasureMemberSource(this.measuresHierarchy, measures)));
+                new MeasureMemberSource(
+                    this.measuresHierarchy,
+                    Util.<RolapMember>cast(origMeasureList))));
         // this invalidates any cached schema reader
         this.schemaReader = null;
         
@@ -664,35 +673,32 @@ public class RolapCube extends CubeBase {
      * Post-initialization, doing things which cannot be done in the
      * constructor.
      */
-    private void init(MondrianDef.Cube xmlCube) {
+    private void init(
+        MondrianDef.Cube xmlCube,
+        final List<RolapMember> memberList)
+    {
         // Load calculated members and named sets.
         // (We cannot do this in the constructor, because
         // cannot parse the generated query, because the schema has not been
         // set in the cube at this point.)
-        List<Member> memberList = new ArrayList<Member>();
         List<Formula> formulaList = new ArrayList<Formula>();
         createCalcMembersAndNamedSets(
-                xmlCube.calculatedMembers, xmlCube.namedSets,
-                memberList, formulaList, this, true);
+            xmlCube.calculatedMembers, xmlCube.namedSets,
+            memberList, formulaList, this, true);
     }
 
-
     /**
-     * Checks whether the ordinals of Measures and calculated measures are
-     * unique.
+     * Checks that the ordinals of measures (including calculated measures)
+     * are unique.
      *
-     * @param cubeName        the name of the cube (required for error-messages only)
-     * @param measures        the stored measures
-     * @param xmlCalcMembers  the calculate members (only members of dimension Measures are checked)
+     * @param cubeName        name of the cube (required for error messages)
+     * @param measures        measure list
      */
     private void checkOrdinals(
-            String cubeName,
-            RolapMember measures[],
-            MondrianDef.CalculatedMember[] xmlCalcMembers)
+        String cubeName,
+        List<RolapMember> measures)
     {
         Map<Integer, String> ordinals = new HashMap<Integer, String>();
-
-        // step 1: check the stored measures
         for (RolapMember measure : measures) {
             Integer ordinal = measure.getOrdinal();
             if (!ordinals.containsKey(ordinal)) {
@@ -703,34 +709,6 @@ public class RolapCube extends CubeBase {
                     ordinal.toString(),
                     ordinals.get(ordinal),
                     measure.getUniqueName());
-            }
-        }
-
-        // step 2: check the calculated measures
-        for (MondrianDef.CalculatedMember xmlCalcMember : xmlCalcMembers) {
-            if (xmlCalcMember.dimension.equalsIgnoreCase("Measures")) {
-                MondrianDef.CalculatedMemberProperty[] properties =
-                    xmlCalcMember.memberProperties;
-
-                for (int j = 0; j < properties.length; j++) {
-                    if (properties[j].name.equals(
-                        Property.MEMBER_ORDINAL.getName())) {
-                        Integer ordinal = Integer.valueOf(properties[j].value);
-
-                        final String uname =
-                            "[Measures].[" + xmlCalcMember.name + "]";
-                        if (!ordinals.containsKey(ordinal)) {
-                            ordinals.put(ordinal, uname);
-                        } else {
-                            throw MondrianResource.instance().
-                                MeasureOrdinalsNotUnique.ex(
-                                cubeName,
-                                ordinal.toString(),
-                                ordinals.get(ordinal),
-                                uname);
-                        }
-                    }
-                }
             }
         }
     }
@@ -749,7 +727,7 @@ public class RolapCube extends CubeBase {
     private void createCalcMembersAndNamedSets(
             MondrianDef.CalculatedMember[] xmlCalcMembers,
             MondrianDef.NamedSet[] xmlNamedSets,
-            List<Member> memberList,
+            List<RolapMember> memberList,
             List<Formula> formulaList,
             RolapCube cube,
             boolean errOnDups) {
@@ -850,15 +828,15 @@ public class RolapCube extends CubeBase {
     }
 
     private void postCalcMember(
-            MondrianDef.CalculatedMember[] xmlCalcMembers,
-            int i,
-            final Query queryExp,
-            List<Member> memberList) {
+        MondrianDef.CalculatedMember[] xmlCalcMembers,
+        int i,
+        final Query queryExp,
+        List<RolapMember> memberList)
+    {
         MondrianDef.CalculatedMember xmlCalcMember = xmlCalcMembers[i];
         final Formula formula = queryExp.formulas[i];
 
-        calculatedMembers = (Formula[])
-                RolapUtil.addElement(calculatedMembers, formula);
+        calculatedMembers = RolapUtil.addElement(calculatedMembers, formula);
 
         Member member = formula.getMdxMember();
 
@@ -875,7 +853,7 @@ public class RolapCube extends CubeBase {
                     xmlCalcMember.caption);
         }
 
-        memberList.add(formula.getMdxMember());
+        memberList.add((RolapMember) formula.getMdxMember());
     }
 
     private void preCalcMember(
@@ -980,8 +958,7 @@ public class RolapCube extends CubeBase {
         Property prop = Property.lookup(name, false);
         if (prop != null && prop.getType() == Property.Datatype.TYPE_NUMERIC &&
                 isSurroundedWithQuotes(expr) && expr.length() > 2) {
-            String stringWithoutSurroundingQuotes = expr.substring(1, expr.length() - 1);
-            return stringWithoutSurroundingQuotes;
+            return expr.substring(1, expr.length() - 1);
         }
         return expr;
     }
@@ -1435,7 +1412,7 @@ public class RolapCube extends CubeBase {
     /**
      * Understand this and you are no longer a novice.
      *
-     * @param dimension
+     * @param dimension Dimension
      */
     void registerDimension(RolapCubeDimension dimension) {
         RolapStar star = getStar();
@@ -2413,7 +2390,7 @@ public class RolapCube extends CubeBase {
                 xml + "]");
         }
 
-        final ArrayList<Member> memberList = new ArrayList<Member>();
+        final List<RolapMember> memberList = new ArrayList<RolapMember>();
         createCalcMembersAndNamedSets(
                 new MondrianDef.CalculatedMember[] {xmlCalcMember},
                 new MondrianDef.NamedSet[0],
@@ -2612,13 +2589,11 @@ public class RolapCube extends CubeBase {
                 // now that we've located all measures referenced in the
                 // calculated member's formula, resolve the calculated
                 // member relative to the virtual cube
-                RolapMember[] measures = (RolapMember[])
-                    measuresFound.toArray(
-                        new RolapMember[measuresFound.size()]);
                 virtualCube.measuresHierarchy.setMemberReader(
                     new CacheMemberReader(
                         new MeasureMemberSource(
-                            virtualCube.measuresHierarchy, measures)));
+                            virtualCube.measuresHierarchy,
+                            Util.<RolapMember>cast(measuresFound))));
                 // this invalidates any cached schema reader
                 RolapCube.this.schemaReader = null;
                 MondrianDef.CalculatedMember xmlCalcMember =
@@ -2628,7 +2603,7 @@ public class RolapCube extends CubeBase {
                 createCalcMembersAndNamedSets(
                     new MondrianDef.CalculatedMember [] { xmlCalcMember },
                     new MondrianDef.NamedSet[0],
-                    new ArrayList<Member>(),
+                    new ArrayList<RolapMember>(),
                     new ArrayList<Formula>(),
                     virtualCube,
                     false);

@@ -1105,8 +1105,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Measures].[Customer Count]\n" +
                     "[Measures].[Promotion Sales]\n" +
                     "[Measures].[Profit]\n" +
-                    "[Measures].[Profit last Period]\n" +
-                    "[Measures].[Profit Growth]"));
+                    "[Measures].[Profit Growth]\n" +
+                    "[Measures].[Profit last Period]"));
 
         // <Dimension>.allmembers applied to Measures
         assertAxisReturns("{[Measures].allmembers}",
@@ -1118,8 +1118,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Measures].[Customer Count]\n" +
                     "[Measures].[Promotion Sales]\n" +
                     "[Measures].[Profit]\n" +
-                    "[Measures].[Profit last Period]\n" +
-                    "[Measures].[Profit Growth]"));
+                    "[Measures].[Profit Growth]\n" +
+                    "[Measures].[Profit last Period]"));
 
         // <Dimension>.allmembers applied to a query with calc measures
         // Calc measures are returned

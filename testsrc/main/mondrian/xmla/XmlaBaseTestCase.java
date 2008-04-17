@@ -61,6 +61,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     public static final String CATALOG          = "FoodMart";// cube
     public static final String CUBE_NAME_PROP   = "cube.name";
     public static final String SALES_CUBE       = "Sales";// format
+    public static final String HR_CUBE          = "HR";
     public static final String FORMAT_PROP     = "format";
     public static final String FORMAT_MULTI_DIMENSIONAL = "Multidimensional";
     private static final boolean DEBUG = false;

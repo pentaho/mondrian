@@ -2004,7 +2004,7 @@
                         <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>4</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>6</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>HR Cube - Measures Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
@@ -2174,7 +2174,7 @@
                         <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>7</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>10</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Sales Cube - Measures Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
@@ -2344,7 +2344,7 @@
                         <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>6</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>8</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Sales 2 Cube - Measures Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
@@ -2702,7 +2702,7 @@
                         <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>8</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>9</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Warehouse Cube - Measures Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
@@ -7658,7 +7658,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
                         <HIERARCHY_CAPTION>Measures</HIERARCHY_CAPTION>
                         <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                        <HIERARCHY_CARDINALITY>6</HIERARCHY_CARDINALITY>
+                        <HIERARCHY_CARDINALITY>9</HIERARCHY_CARDINALITY>
                         <DEFAULT_MEMBER>[Measures].[Unit Sales]</DEFAULT_MEMBER>
                         <DESCRIPTION>Sales Cube - Measures Hierarchy</DESCRIPTION>
                         <STRUCTURE>0</STRUCTURE>
@@ -8351,6 +8351,18 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <DATA_TYPE>130</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <DESCRIPTION>Sales Cube - Profit Growth Member</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <MEASURE_NAME>Profit last Period</MEASURE_NAME>
+                        <MEASURE_UNIQUE_NAME>[Measures].[Profit last Period]</MEASURE_UNIQUE_NAME>
+                        <MEASURE_CAPTION>Profit last Period</MEASURE_CAPTION>
+                        <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <MEASURE_IS_VISIBLE>false</MEASURE_IS_VISIBLE>
+                        <DESCRIPTION>Sales Cube - Profit last Period Member</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>

@@ -11,7 +11,7 @@ package mondrian.olap4j;
 
 import mondrian.mdx.*;
 import mondrian.olap.*;
-import mondrian.rolap.RolapStoredMeasure;
+import mondrian.rolap.RolapMeasure;
 import org.olap4j.Axis;
 import org.olap4j.Cell;
 import org.olap4j.*;
@@ -416,8 +416,8 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         if (member == null) {
             return null;
         }
-        if (member instanceof RolapStoredMeasure) {
-            RolapStoredMeasure measure = (RolapStoredMeasure) member;
+        if (member instanceof RolapMeasure) {
+            RolapMeasure measure = (RolapMeasure) member;
             return new MondrianOlap4jMeasure(
                 toOlap4j(member.getDimension().getSchema()),
                 measure);
@@ -426,8 +426,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
             toOlap4j(member.getDimension().getSchema()),
             member);
     }
-
-
 
     MondrianOlap4jLevel toOlap4j(mondrian.olap.Level level) {
         if (level == null) {
