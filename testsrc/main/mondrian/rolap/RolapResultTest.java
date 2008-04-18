@@ -133,7 +133,7 @@ Axis #2:
 {[D2].[y]}
 {[D2].[z]}
 */
-        assertTrue(resultString.equals(RESULTS));
+        assertEquals(resultString, RESULTS);
     }
 
     public void testD2() throws Exception {
