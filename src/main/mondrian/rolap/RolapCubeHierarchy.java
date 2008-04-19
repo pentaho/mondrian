@@ -397,7 +397,9 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 new RolapCubeSqlMemberSource(
                     this,
                     RolapCubeHierarchy.this,
-                    rolapCubeCacheHelper);
+                    rolapCubeCacheHelper,
+                    cacheHelper
+                    );
             
             cubeSource.setCache(getMemberCache());
         }
@@ -731,15 +733,18 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
         private final RolapCubeHierarchyMemberReader memberReader;
         private final MemberCacheHelper memberSourceCacheHelper;
-
+        private final Object memberCacheLock;
+        
         public RolapCubeSqlMemberSource(
             RolapCubeHierarchyMemberReader memberReader,
             RolapCubeHierarchy hierarchy,
-            MemberCacheHelper memberSourceCacheHelper)
+            MemberCacheHelper memberSourceCacheHelper,
+            Object memberCacheLock)
         {
             super(hierarchy);
             this.memberReader = memberReader;
             this.memberSourceCacheHelper = memberSourceCacheHelper;
+            this.memberCacheLock = memberCacheLock;
         }
 
         public RolapMember makeMember(
@@ -769,6 +774,14 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         public MemberCache getMemberCache() {
             // this is a special cache used solely for rolapcubemembers
             return memberSourceCacheHelper;
+        }
+        
+        /**
+         * use the same lock in the RolapCubeMemberSource as the 
+         * RolapCubeHiearchyMemberReader to avoid deadlocks
+         */
+        public Object getMemberCacheLock() {
+            return memberCacheLock;
         }
     }
 }

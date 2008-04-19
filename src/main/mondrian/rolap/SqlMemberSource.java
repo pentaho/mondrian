@@ -456,6 +456,10 @@ RME is this right
     public MemberCache getMemberCache() {
         return cache;
     }
+    
+    public Object getMemberCacheLock() {
+        return cache;
+    }
 
     // implement MemberSource
     public List<RolapMember> getRootMembers() {

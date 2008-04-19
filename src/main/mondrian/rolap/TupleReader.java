@@ -39,6 +39,13 @@ public interface TupleReader {
         MemberCache getMemberCache();
 
         /**
+         * Returns the object which acts as the member cache 
+         * synchronization lock.
+         */
+        Object getMemberCacheLock();
+        
+        
+        /**
          * Creates a new member (together with its properties).
          * @see SqlMemberSource#makeMember(RolapMember, RolapLevel, Object, Object, boolean, ResultSet, Object, int)
          */

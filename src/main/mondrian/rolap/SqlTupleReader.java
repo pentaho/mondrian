@@ -71,7 +71,8 @@ public class SqlTupleReader implements TupleReader {
     private class Target {
         final RolapLevel level;
         final MemberCache cache;
-
+        final Object cacheLock;
+        
         RolapLevel[] levels;
         List<RolapMember> list;
         int levelDepth;
@@ -91,6 +92,7 @@ public class SqlTupleReader implements TupleReader {
             RolapMember[] srcMembers) {
             this.level = level;
             this.cache = memberBuilder.getMemberCache();
+            this.cacheLock = memberBuilder.getMemberCacheLock();
             this.memberBuilder = memberBuilder;
             this.srcMembers = srcMembers;
         }
@@ -117,7 +119,7 @@ public class SqlTupleReader implements TupleReader {
          * @throws SQLException
          */
         public int addRow(ResultSet resultSet, int column) throws SQLException {
-            synchronized (cache) {
+            synchronized (cacheLock) {
                 return internalAddRow(resultSet, column);
             }
         }
@@ -208,7 +210,7 @@ public class SqlTupleReader implements TupleReader {
         }
 
         public List<RolapMember> close() {
-            synchronized (cache) {
+            synchronized (cacheLock) {
                 return internalClose();
             }
         }
