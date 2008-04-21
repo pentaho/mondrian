@@ -14,17 +14,12 @@ package mondrian.olap;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.*;
-import org.eigenbase.util.property.Property;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -299,53 +294,6 @@ public class MondrianProperties extends TriggerableProperties {
                     + e
                     + ")");
         }
-    }
-
-    /**
-     * Returns a list of every {@link org.eigenbase.util.property.Property}.
-     *
-     * <p>todo: Move to base class, {@link TriggerableProperties}, and rename
-     * base method {@link TriggerableProperties#getProperties()}}.
-     *
-     * @return List of properties
-     */
-    public List<Property> getPropertyList() {
-        Field[] fields = getClass().getFields();
-        List<Property> list = new ArrayList<Property>();
-        for (Field field : fields) {
-            if (!Modifier.isStatic(field.getModifiers()) &&
-                    Property.class.isAssignableFrom(
-                            field.getType())) {
-                try {
-                    list.add((Property) field.get(this));
-                } catch (IllegalAccessException e) {
-                    throw Util.newInternal(
-                            e,
-                            "While accessing property '" + field.getName() + "'");
-                }
-            }
-        }
-        return list;
-    }
-
-    /**
-     * Returns the definition of a named property, or null if there is no
-     * such property.
-     *
-     * <p>todo: Move to base class, {@link TriggerableProperties}.
-     *
-     * @param path Name of the property
-     * @return Definition of property, or null if there is no property with this
-     *         name
-     */
-    public Property getPropertyDefinition(String path) {
-        final List<Property> propertyList = getPropertyList();
-        for (Property property : propertyList) {
-            if (property.getPath().equals(path)) {
-                return property;
-            }
-        }
-        return null;
     }
 
     /**
