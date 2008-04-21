@@ -151,7 +151,11 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                         ? number.intValue()
                         : Math.round(number.floatValue());
             }
-            pw.printf("  [%s]=[%s]", name, value);
+            pw.print("  [");
+            pw.print(name);
+            pw.print("]=[");
+            pw.print(value);
+            pw.print("]");
         }
         pw.println("}");
         return pw;
