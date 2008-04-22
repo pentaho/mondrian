@@ -112,6 +112,41 @@ public class FunctionTest extends FoodMartTestCase {
         executeQuery(query);
     }
 
+    /*
+     * Tests that ParallelPeriod with Aggregate function works 
+     */
+    public void testParallelPeriodWithSlicer() {
+        String query =
+            "With " + 
+            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Product])' " +
+            "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0], [Measures].[*FORMATTED_MEASURE_1]}' " + 
+            "Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q2].[6]}' " + 
+            "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' " + 
+            "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink],[Product].[All Products].[Food]}' " + 
+            "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' " + 
+            "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Customer Count]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 " + 
+            "Member [Measures].[*FORMATTED_MEASURE_1] as " +
+            "'([Measures].[Customer Count], ParallelPeriod([Time].[Quarter], 1, [Time].currentMember))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200 " + 
+            "Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-300 " + 
+            "Select " +
+            "[*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Time].CurrentMember)}) on rows " + 
+            "From [Sales] " + 
+            "Where ([Product].[*FILTER_MEMBER])";
+        
+        String result =
+            "Axis #0:\n" +
+            "{[Product].[*FILTER_MEMBER]}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
+            "{[Measures].[*FORMATTED_MEASURE_1]}\n" +
+            "Axis #2:\n" +
+            "{[Time].[1997].[Q2].[6]}\n" +
+            "Row #0: 1,314\n" +
+            "Row #0: 1,447\n";
+        
+        assertQueryReturns(query, fold(result));
+    }
+    
     public void testNumericLiteral() {
         assertExprReturns("2", "2");
         if (false) {
