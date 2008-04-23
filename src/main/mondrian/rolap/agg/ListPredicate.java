@@ -15,6 +15,7 @@ import mondrian.rolap.BitKey;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.Util;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -30,13 +31,21 @@ public abstract class ListPredicate implements StarPredicate {
     protected final List<StarPredicate> children =
         new ArrayList<StarPredicate>();
 
+    /**
+     * Hash map of children predicates, keyed off of the hash code of each
+     * child.  Each entry in the map is a list of predicates matching that
+     * hash code.
+     */
+    private HashMap<Integer, List<StarPredicate>> childrenHashMap;
+    
     protected final List<RolapStar.Column> columns =
         new ArrayList<RolapStar.Column>();
 
     protected BitKey columnBitKey;
     
     protected ListPredicate(List<StarPredicate> predicateList) {
-        columnBitKey = null; 
+        columnBitKey = null;
+        childrenHashMap = null;
         for (StarPredicate predicate : predicateList) {
             if (columnBitKey == null) {
                 columnBitKey =
@@ -67,6 +76,10 @@ public abstract class ListPredicate implements StarPredicate {
         return children;
     }
     
+    public int hashCode() {
+        return children.hashCode();
+    }
+    
     public boolean equalConstraint(StarPredicate that) {
         boolean isEqual = 
             that instanceof ListPredicate &&
@@ -81,10 +94,35 @@ public abstract class ListPredicate implements StarPredicate {
             }
 
             if (isEqual) {
-                for (StarPredicate thisChild : getChildren()) {
+                // Create a hash map of the children predicates, if not
+                // already done
+                if (childrenHashMap == null) {
+                    childrenHashMap =
+                        new HashMap<Integer, List<StarPredicate>>();
+                    for (StarPredicate thisChild : getChildren()) {
+                        Integer key = new Integer(thisChild.hashCode());
+                        List<StarPredicate> predList = childrenHashMap.get(key);
+                        if (predList == null) {
+                            predList = new ArrayList<StarPredicate>();
+                        }
+                        predList.add(thisChild);
+                        childrenHashMap.put(key, predList);
+                    }
+                }
+                
+                // Loop through thatPred's children predicates.  There needs
+                // to be a matching entry in the hash map for each child
+                // predicate.
+                for (StarPredicate thatChild : thatPred.getChildren()) {
+                    List<StarPredicate> predList =
+                        childrenHashMap.get(thatChild.hashCode());
+                    if (predList == null) {
+                        isEqual = false;
+                        break;
+                    }
                     boolean foundMatch = false;
-                    for (StarPredicate thatChild: thatPred.getChildren()) {
-                        if (thisChild.equalConstraint(thatChild)) {
+                    for (StarPredicate pred : predList) {
+                        if (thatChild.equalConstraint(pred)) {
                             foundMatch = true;
                             break;
                         }

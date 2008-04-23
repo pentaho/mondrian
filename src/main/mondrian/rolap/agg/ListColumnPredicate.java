@@ -34,6 +34,13 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
      * List of column predicates.
      */
     private final List<StarColumnPredicate> children;
+    
+    /**
+     * Hash map of children predicates, keyed off of the hash code of each
+     * child.  Each entry in the map is a list of predicates matching that
+     * hash code.
+     */
+    private HashMap<Integer, List<StarColumnPredicate>> childrenHashMap;
 
     /**
      * Creates a ListColumnPredicate
@@ -45,6 +52,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
         RolapStar.Column column, List<StarColumnPredicate> list) {
         super(column);
         this.children = list;
+        childrenHashMap = null;
     }
 
     /**
@@ -99,10 +107,36 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
             if (getPredicates().size() != thatPred.getPredicates().size()) {
                 isEqual = false;
             } else {
-                for (StarColumnPredicate thisChild : getPredicates()) {
+                // Create a hash map of the children predicates, if not
+                // already done
+                if (childrenHashMap == null) {
+                    childrenHashMap =
+                        new HashMap<Integer, List<StarColumnPredicate>>();
+                    for (StarColumnPredicate thisChild : getPredicates()) {
+                        Integer key = new Integer(thisChild.hashCode());
+                        List<StarColumnPredicate> predList =
+                            childrenHashMap.get(key);
+                        if (predList == null) {
+                            predList = new ArrayList<StarColumnPredicate>();
+                        }
+                        predList.add(thisChild);
+                        childrenHashMap.put(key, predList);
+                    }
+                }
+                
+                // Loop through thatPred's children predicates.  There needs
+                // to be a matching entry in the hash map for each child
+                // predicate.
+                for (StarColumnPredicate thatChild : thatPred.getPredicates()) {
+                    List<StarColumnPredicate> predList =
+                        childrenHashMap.get(thatChild.hashCode());
+                    if (predList == null) {
+                        isEqual = false;
+                        break;
+                    }
                     boolean foundMatch = false;
-                    for (StarColumnPredicate thatChild: thatPred.getPredicates()) {
-                        if (thisChild.equalConstraint(thatChild)) {
+                    for (StarColumnPredicate pred : predList) {
+                        if (thatChild.equalConstraint(pred)) {
                             foundMatch = true;
                             break;
                         }
