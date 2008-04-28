@@ -397,6 +397,36 @@ public class UtilTestCase extends TestCase {
         assertEquals(Arrays.asList("x", "y"), Util.parseCommaList("x,y,"));
         assertEquals(Arrays.asList("x", "y,"), Util.parseCommaList("x,y,,"));
     }
+
+    public void testUnionIterator() {
+        final List<String> xyList = Arrays.asList("x", "y");
+        final List<String> abcList = Arrays.asList("a", "b", "c");
+        final List<String> emptyList = Collections.emptyList();
+
+        String total = "";
+        for (String s : Util.union(xyList, abcList)) {
+            total += s + ";";
+        }
+        assertEquals("x;y;a;b;c;", total);
+
+        total = "";
+        for (String s : Util.union(xyList, emptyList)) {
+            total += s + ";";
+        }
+        assertEquals("x;y;", total);
+
+        total = "";
+        for (String s : Util.union(emptyList, xyList, emptyList)) {
+            total += s + ";";
+        }
+        assertEquals("x;y;", total);
+
+        total = "";
+        for (String s : Util.<String>union()) {
+            total += s + ";";
+        }
+        assertEquals("", total);
+    }
 }
 
 // End UtilTestCase.java

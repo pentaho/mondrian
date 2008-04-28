@@ -889,6 +889,45 @@ public class RolapStar {
         return schema;
     }
 
+    /**
+     * Generates a SQL statement to read all instances of the given attributes.
+     *
+     * <p>The SQL statement is of the form {@code SELECT ... FROM ... JOIN ...
+     * GROUP BY ...}. It is useful for populating an aggregate table.
+     *
+     * @param columnList List of columns (attributes and measures)
+     * @param columnNameList List of column names (must have same cardinality
+     *     as {@code columnList})
+     * @return SQL SELECT statement
+     */
+    public String generateSql(
+        List<Column> columnList,
+        List<String> columnNameList)
+    {
+        final SqlQuery query = new SqlQuery(sqlQueryDialect, true);
+        query.addFrom(
+            factTable.relation,
+            factTable.relation.getAlias(),
+            false);
+        int k = -1;
+        for (Column column : columnList) {
+            ++k;
+            column.table.addToFrom(query,  false, true);
+            String columnExpr = column.generateExprString(query);
+            if (column instanceof Measure) {
+                Measure measure = (Measure) column;
+                columnExpr = measure.getAggregator().getExpression(columnExpr);
+            }
+            final String columnName = columnNameList.get(k);
+            query.addSelect(columnExpr, columnName);
+            if (!(column instanceof Measure)) {
+                query.addGroupBy(columnExpr);
+            }
+        }
+        // remove whitespace from query - in particular, the trailing newline
+        return query.toString().trim();
+    }
+
     public String toString() {
         StringWriter sw = new StringWriter(256);
         PrintWriter pw = new PrintWriter(sw);
@@ -1252,7 +1291,10 @@ public class RolapStar {
         }
 
         /**
-         * Prints this table and its children.
+         * Prints this column.
+         *
+         * @param pw Print writer
+         * @param prefix Prefix to print first, such as spaces for indentation
          */
         public void print(PrintWriter pw, String prefix) {
             SqlQuery sqlQuery = getSqlQuery();
@@ -1266,6 +1308,62 @@ public class RolapStar {
 
         public SqlQuery.Datatype getDatatype() {
             return datatype;
+        }
+
+        /**
+         * Returns a string representation of the datatype of this column, in
+         * the dialect specified. For example, 'DECIMAL(10, 2) NOT NULL'.
+         *
+         * @param dialect Dialect
+         * @return String representation of column's datatype
+         */
+        public String getDatatypeString(SqlQuery.Dialect dialect) {
+            final SqlQuery query = new SqlQuery(dialect);
+            query.addFrom(
+                table.star.factTable.relation, table.star.factTable.alias,
+                false);
+            query.addFrom(table.relation, table.alias, false);
+            query.addSelect(expression.getExpression(query));
+            final String sql = query.toString();
+            Connection jdbcConnection = null;
+            try {
+                jdbcConnection = table.star.dataSource.getConnection();
+                final PreparedStatement pstmt =
+                    jdbcConnection.prepareStatement(sql);
+                final ResultSetMetaData resultSetMetaData =
+                    pstmt.getMetaData();
+                assert resultSetMetaData.getColumnCount() == 1;
+                final String type = resultSetMetaData.getColumnTypeName(1);
+                int precision = resultSetMetaData.getPrecision(1);
+                final int scale = resultSetMetaData.getScale(1);
+                if (type.equals("DOUBLE")) {
+                    precision = 0;
+                }
+                String typeString;
+                if (precision == 0) {
+                    typeString = type;
+                } else if (scale == 0) {
+                    typeString = type + "(" + precision + ")";
+                } else {
+                    typeString = type + "(" + precision + ", " + scale + ")";
+                }
+                pstmt.close();
+                jdbcConnection.close();
+                jdbcConnection = null;
+                return typeString;
+            } catch (SQLException e) {
+                throw Util.newError(
+                    e,
+                    "Error while deriving type of column " + toString());
+            } finally {
+                if (jdbcConnection != null) {
+                    try {
+                        jdbcConnection.close();
+                    } catch (SQLException e) {
+                        // ignore
+                    }
+                }
+            }
         }
     }
 
@@ -1320,9 +1418,6 @@ public class RolapStar {
             return h;
         }
 
-        /**
-         * Prints this table and its children.
-         */
         public void print(PrintWriter pw, String prefix) {
             SqlQuery sqlQuery = getSqlQuery();
             pw.print(prefix);

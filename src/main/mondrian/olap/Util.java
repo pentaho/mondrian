@@ -36,8 +36,7 @@ import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.mdx.*;
-import mondrian.util.UtilCompatible;
-import mondrian.util.Pair;
+import mondrian.util.*;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -1302,6 +1301,67 @@ public class Util extends XOMUtil {
         return buf.toString();
     }
 
+    /**
+     * Returns the union of a list of iterables.
+     *
+     * <p>You can use it like this:
+     * <blockquote><pre>
+     * Iterable&lt;String&gt; iter1;
+     * Iterable&lt;String&gt; iter2;
+     * for (String s : union(iter1, iter2)) {
+     *   print(s);
+     * }</pre></blockquote>
+     *
+     * @param iterables Array of one or more iterables
+     * @return iterable over the union
+     */
+    public static <T> Iterable<T> union(
+        final Iterable<? extends T>... iterables) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return new UnionIterator<T>(iterables);
+            }
+        };
+    }
+
+    /**
+     * Makes a name distinct from other names which have already been used
+     * and shorter than a length limit, adds it to the list, and returns it.
+     *
+     * @param name Suggested name, may not be unique
+     * @param maxLength Maximum length of generated name
+     * @param nameList Collection of names already used
+     *
+     * @return Unique name
+     */
+    public static String uniquify(
+        String name,
+        int maxLength,
+        Collection<String> nameList)
+    {
+        assert name != null;
+        if (name.length() > maxLength) {
+            name = name.substring(0, maxLength);
+        }
+        if (nameList.contains(name)) {
+            String aliasBase = name;
+            int j = 0;
+            while (true) {
+                name = aliasBase + j;
+                if (name.length() > maxLength) {
+                    aliasBase = aliasBase.substring(0, aliasBase.length() - 1);
+                    continue;
+                }
+                if (!nameList.contains(name)) {
+                    break;
+                }
+                j++;
+            }
+        }
+        nameList.add(name);
+        return name;
+    }
+
     public static class ErrorCellValue {
         public String toString() {
             return "#ERR";
@@ -2206,7 +2266,7 @@ public class Util extends XOMUtil {
         }
 
         return udf;
-    }    
+    }
 }
 
 // End Util.java

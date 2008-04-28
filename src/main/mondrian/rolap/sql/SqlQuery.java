@@ -17,8 +17,6 @@ import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
-import org.eigenbase.util.property.Property;
-import org.eigenbase.util.property.Trigger;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -80,27 +78,7 @@ import java.util.*;
  */
 public class SqlQuery {
     /** Controls the formatting of the sql string. */
-    private static boolean generateFormattedSql =
-        MondrianProperties.instance().GenerateFormattedSql.get();
-
-    static {
-        // Trigger is used to lookup and change the value of the
-        // variable that controls formatting.
-        // Using a trigger means we don't have to look up the property eveytime.
-        MondrianProperties.instance().GenerateFormattedSql.addTrigger(
-            new Trigger() {
-                public boolean isPersistent() {
-                    return true;
-                }
-                public int phase() {
-                    return Trigger.PRIMARY_PHASE;
-                }
-                public void execute(Property property, String value) {
-                    generateFormattedSql = property.booleanValue();
-                }
-            }
-        );
-    }
+    private final boolean generateFormattedSql;
 
     private boolean distinct;
 
@@ -131,8 +109,12 @@ public class SqlQuery {
     /**
      * Base constructor used by all other constructors to create an empty
      * instance.
+     *
+     * @param dialect Dialect
+     * @param formatted Whether to generate SQL formatted on multiple lines
      */
-    public SqlQuery(Dialect dialect) {
+    public SqlQuery(Dialect dialect, boolean formatted) {
+        this.generateFormattedSql = formatted;
 
         // both select and from allow duplications
         this.select = new ClauseList(true);
@@ -147,6 +129,19 @@ public class SqlQuery {
         this.buf = new StringBuilder(128);
         this.groupingSet = new ArrayList<ClauseList>();
         this.dialect = dialect;
+    }
+
+    /**
+     * Creates a SqlQuery using a given dialect and inheriting the formatting
+     * preferences from {@link MondrianProperties#GenerateFormattedSql}
+     * property.
+     *
+     * @param dialect Dialect
+     */
+    public SqlQuery(Dialect dialect) {
+        this(
+            dialect,
+            MondrianProperties.instance().GenerateFormattedSql.get());
     }
 
     /**
@@ -239,6 +234,7 @@ public class SqlQuery {
      * @param table table name
      * @param alias table alias, may not be null
      *              (if not null, must not be zero length).
+     * @param filter Extra filter condition, or null
      * @param failIfExists Whether to throw a RuntimeException if from clause
      *   already contains this alias
      *
@@ -262,7 +258,7 @@ public class SqlQuery {
         }
 
         buf.setLength(0);
-        dialect.quoteIdentifier(schema, table, buf);
+        dialect.quoteIdentifier(buf, schema, table);
         if (alias != null) {
             Util.assertTrue(alias.length() > 0);
 
@@ -342,9 +338,9 @@ public class SqlQuery {
             if (added) {
                 buf.setLength(0);
 
-                dialect.quoteIdentifier(leftAlias, join.leftKey, buf);
+                dialect.quoteIdentifier(buf, leftAlias, join.leftKey);
                 buf.append(" = ");
-                dialect.quoteIdentifier(rightAlias, join.rightKey, buf);
+                dialect.quoteIdentifier(buf, rightAlias, join.rightKey);
 
                 addWhere(buf.toString());
             }
@@ -492,18 +488,21 @@ public class SqlQuery {
      * @param prefix Prefix for each line
      */
     public void print(PrintWriter pw, String prefix) {
-        select.print(pw, prefix,
-            distinct ? "select distinct " : "select ", ", ");
+        select.print(
+            pw, generateFormattedSql, prefix,
+            distinct ? "select distinct " : "select ",
+            ", ");
         pw.print(getGroupingFunction(prefix));
-        from.print(pw, prefix, "from ", ", ");
-        where.print(pw, prefix, "where ", " and ");
+        from.print(pw, generateFormattedSql, prefix, "from ", ", ");
+        where.print(
+            pw, generateFormattedSql, prefix, "where ", " and ");
         if (hasGroupingSet()) {
             printGroupingSets(pw, prefix);
         } else {
-            groupBy.print(pw, prefix, "group by ", ", ");
+            groupBy.print(pw, generateFormattedSql, prefix, "group by ", ", ");
         }
-        having.print(pw, prefix, "having ", " and ");
-        orderBy.print(pw, prefix, "order by ", ", ");
+        having.print(pw, generateFormattedSql, prefix, "having ", " and ");
+        orderBy.print(pw, generateFormattedSql, prefix, "order by ", ", ");
     }
 
     private String getGroupingFunction(String prefix) {
@@ -513,7 +512,7 @@ public class SqlQuery {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < groupingFunction.size(); i++) {
             if (generateFormattedSql) {
-                buf.append("    " + prefix);
+                buf.append("    ").append(prefix);
             }
             buf.append(", ");
             buf.append("grouping(");
@@ -535,7 +534,8 @@ public class SqlQuery {
                 pw.print(",");
             }
             pw.print("(");
-            groupingSet.get(i).print(pw, prefix, "", ",", "", "");
+            groupingSet.get(i).print(
+                pw, generateFormattedSql, prefix, "", ",", "", "");
             pw.print(")");
         }
         pw.print(")");
@@ -629,19 +629,25 @@ public class SqlQuery {
             }
         }
 
-        void print(final PrintWriter pw,
-                   final String prefix,
-                   final String first,
-                   final String sep) {
-            print(pw, prefix, first, sep, "", "");
+        void print(
+            final PrintWriter pw,
+            boolean generateFormattedSql,
+            final String prefix,
+            final String first,
+            final String sep)
+        {
+            print(pw, generateFormattedSql, prefix, first, sep, "", "");
         }
 
-        void print(final PrintWriter pw,
-                   final String prefix,
-                   final String first,
-                   final String sep,
-                   final String suffix,
-                   final String last) {
+        void print(
+            final PrintWriter pw,
+            boolean generateFormattedSql,
+            final String prefix,
+            final String first,
+            final String sep,
+            final String suffix,
+            final String last)
+        {
             String subprefix = prefix + "    ";
             boolean firstTime = true;
             for (String s : this) {
@@ -1006,35 +1012,37 @@ public class SqlQuery {
                     : (qual.length() + DOUBLE_QUOTE_SIZE));
             StringBuilder buf = new StringBuilder(size);
 
-            quoteIdentifier(qual, name, buf);
+            quoteIdentifier(buf, qual, name);
 
             return buf.toString();
         }
 
         /**
-         * Appends to a buffer an identifier and optional qualifier, quoted
+         * Appends to a buffer a list of identifiers, quoted
          * appropriately for this Dialect.
          *
-         * @param qual optional qualifier to be quoted.
-         * @param name name to be quoted (must not be null).
+         * <p>Names in the list may be null, but there must be at least one
+         * non-null name in the list.</p>
+         *
          * @param buf Buffer
+         * @param names List of names to be quoted
          */
         public void quoteIdentifier(
-            final String qual,
-            final String name,
-            final StringBuilder buf)
+            final StringBuilder buf,
+            final String... names)
         {
-            if (qual == null) {
+            int nonNullNameCount = 0;
+            for (String name : names) {
+                if (name == null) {
+                    continue;
+                }
+                if (nonNullNameCount > 0) {
+                    buf.append('.');
+                }
+                assert name.length() > 0
+                    : "name should probably be null, not empty";
                 quoteIdentifier(name, buf);
-
-            } else {
-                Util.assertTrue(
-                    (qual.length() != 0),
-                    "qual should probably be null, not empty");
-
-                quoteIdentifier(qual, buf);
-                buf.append('.');
-                quoteIdentifier(name, buf);
+                ++nonNullNameCount;
             }
         }
 
