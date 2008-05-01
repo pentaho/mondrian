@@ -213,10 +213,7 @@ public class RolapHierarchy extends HierarchyBase {
     }
 
     protected int computeHashCode() {
-        return super.computeHashCode()
-            ^ (sharedHierarchyName == null
-                ? 0
-                : sharedHierarchyName.hashCode());
+        return Util.hash(super.computeHashCode(), sharedHierarchyName);
     }
 
     /**

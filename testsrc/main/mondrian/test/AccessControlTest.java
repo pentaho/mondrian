@@ -1012,6 +1012,29 @@ public class AccessControlTest extends FoodMartTestCase {
                     + "</Role>")
                 .withRole("California manager");
     }
+
+    public void testBug1949935() {
+        final TestContext testContext =
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name=\"California manager\">\n"
+                    + "  <SchemaGrant access=\"none\">\n"
+                    + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                    + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"none\" />\n"
+                    + "    </CubeGrant>\n"
+                    + "    <CubeGrant cube=\"Sales Ragged\" access=\"all\">\n"
+                    + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" />\n"
+                    + "    </CubeGrant>\n"
+                    + "  </SchemaGrant>\n"
+                    + "</Role>")
+            .withRole("California manager");
+        // With bug 1949935, access-control elements for hierarchies with same
+        // name in different cubes could not be distinguished.
+        assertHierarchyAccess(
+            testContext.getConnection(), Access.NONE, "Sales", "Store");
+        assertHierarchyAccess(
+            testContext.getConnection(), Access.CUSTOM, "Sales Ragged", "Store");
+    }
 }
 
 // End AccessControlTest.java
