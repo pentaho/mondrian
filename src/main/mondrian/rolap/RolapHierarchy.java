@@ -935,7 +935,9 @@ public class RolapHierarchy extends HierarchyBase {
         }
 
         public RolapMember substitute(final RolapMember member) {
-            if (hierarchyAccess.hasInaccessibleDescendants(member)) {
+            if (hierarchyAccess.getAccess(member) == Access.CUSTOM
+                || hierarchyAccess.hasInaccessibleDescendants(member)) 
+            {
                 // Member is visible, but at least one of its
                 // descendants is not.
                 return new LimitedRollupMember((RolapCubeMember)member, exp);
