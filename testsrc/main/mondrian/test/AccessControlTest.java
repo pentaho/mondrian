@@ -898,6 +898,120 @@ public class AccessControlTest extends FoodMartTestCase {
                 "from [Sales]",
             expected);
     }
+
+    /**
+     * Testcase for bug 1952029, "Rollup policy doesn't work for members
+     * that are implicitly visible".
+     */
+    public void testGoodman() {
+        final String query = "select {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            + "Hierarchize(Union(Union(Union({[Store].[All Stores]},"
+            + " [Store].[All Stores].Children),"
+            + " [Store].[All Stores].[USA].Children),"
+            + " [Store].[All Stores].[USA].[CA].Children)) ON ROWS\n"
+            + "from [Sales]\n"
+            + "where [Time].[1997]";
+
+        // Note that total for [Store].[All Stores] and [Store].[USA] is sum
+        // of visible children [Store].[CA] and [Store].[OR].[Portland].
+        goodmanContext(Role.RollupPolicy.PARTIAL).assertQueryReturns(
+            query,
+            fold("Axis #0:\n" +
+                "{[Time].[1997]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores]}\n" +
+                "{[Store].[All Stores].[USA]}\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Alameda]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
+                "{[Store].[All Stores].[USA].[OR]}\n" +
+                "Row #0: 100,827\n" +
+                "Row #1: 100,827\n" +
+                "Row #2: 74,748\n" +
+                "Row #3: \n" +
+                "Row #4: 21,333\n" +
+                "Row #5: 25,663\n" +
+                "Row #6: 25,635\n" +
+                "Row #7: 2,117\n" +
+                "Row #8: 26,079\n"));
+
+        goodmanContext(Role.RollupPolicy.FULL).assertQueryReturns(
+            query,
+            fold(
+            "Axis #0:\n" +
+            "{[Time].[1997]}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Unit Sales]}\n" +
+            "Axis #2:\n" +
+            "{[Store].[All Stores]}\n" +
+            "{[Store].[All Stores].[USA]}\n" +
+            "{[Store].[All Stores].[USA].[CA]}\n" +
+            "{[Store].[All Stores].[USA].[CA].[Alameda]}\n" +
+            "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n" +
+            "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
+            "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
+            "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
+            "{[Store].[All Stores].[USA].[OR]}\n" +
+            "Row #0: 266,773\n" +
+            "Row #1: 266,773\n" +
+            "Row #2: 74,748\n" +
+            "Row #3: \n" +
+            "Row #4: 21,333\n" +
+            "Row #5: 25,663\n" +
+            "Row #6: 25,635\n" +
+            "Row #7: 2,117\n" +
+            "Row #8: 67,659\n"));
+
+        goodmanContext(Role.RollupPolicy.HIDDEN).assertQueryReturns(
+            query,
+            fold("Axis #0:\n" +
+                "{[Time].[1997]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores]}\n" +
+                "{[Store].[All Stores].[USA]}\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Alameda]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
+                "{[Store].[All Stores].[USA].[OR]}\n" +
+                "Row #0: \n" +
+                "Row #1: \n" +
+                "Row #2: 74,748\n" +
+                "Row #3: \n" +
+                "Row #4: 21,333\n" +
+                "Row #5: 25,663\n" +
+                "Row #6: 25,635\n" +
+                "Row #7: 2,117\n" +
+                "Row #8: \n"));
+    }
+
+    private static TestContext goodmanContext(final Role.RollupPolicy policy) {
+        return
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name=\"California manager\">\n"
+                    + "  <SchemaGrant access=\"none\">\n"
+                    + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                    + "      <HierarchyGrant hierarchy=\"[Store]\" rollupPolicy=\""
+                    + policy.name().toLowerCase()
+                    + "\" access=\"custom\">\n"
+                    + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>\n"
+                    + "        <MemberGrant member=\"[Store].[USA].[OR].[Portland]\" access=\"all\"/>\n"
+                    + "      </HierarchyGrant>"
+                    + "    </CubeGrant>\n"
+                    + "  </SchemaGrant>\n"
+                    + "</Role>")
+                .withRole("California manager");
+    }
 }
 
 // End AccessControlTest.java
