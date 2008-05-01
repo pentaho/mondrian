@@ -718,6 +718,7 @@ public class Scanner {
             case '-': advance(); return makeToken(ParserSym.MINUS, "-");
             case '*': advance(); return makeToken(ParserSym.ASTERISK, "*");
             case '/': advance(); return makeToken(ParserSym.SOLIDUS, "/");
+            case '!': advance(); return makeToken(ParserSym.BANG, "!");
             case '|':
                 advance();
                 switch (nextChar) {

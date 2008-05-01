@@ -297,6 +297,13 @@ public class ParserTest extends TestCase {
             "CAST((1.0 + 2.0) AS String)");
     }
 
+    public void testBangFunction() {
+        // Parser accepts '<id> [! <id>] *' as a function name, but ignores
+        // all but last name.
+        assertParseExpr("foo!bar!Exp(2.0)", "Exp(2.0)");
+        assertParseExpr("1 + VBA!Exp(2.0 + 3)", "(1.0 + Exp((2.0 + 3.0)))");
+    }
+
     public void testId() {
         assertParseExpr("foo", "foo");
         assertParseExpr("fOo", "fOo");
@@ -536,19 +543,6 @@ public class ParserTest extends TestCase {
                     cellProp.unparse(pw);
                 }
             }
-        }
-
-        /**
-         * Converts an expression to a string.
-         *
-         * @param exp Expression
-         * @return Expression converted to a string
-         */
-        public String toMdxString(Exp exp) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new QueryPrintWriter(sw);
-            unparse(pw);
-            return sw.toString();
         }
     }
 }

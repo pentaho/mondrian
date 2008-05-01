@@ -315,6 +315,7 @@ terminal
 // b. Symbols
 terminal
     ASTERISK,                   // *
+    BANG,                       // !
     COLON,                      // :
     COMMA,                      // ,
     CONCAT,                     // ||
@@ -365,6 +366,7 @@ non terminal QueryPart
     select_statement,
     statement;
 non terminal Id
+    bang_compound_id,
     compound_id,
     cube_name,
     cube_specification,
@@ -471,7 +473,15 @@ compound_id ::=
     |   compound_id:hd DOT identifier:tl {:
             RESULT = hd.append(tl);
         :}
+    ;
 
+bang_compound_id ::=
+        identifier:i {:
+            RESULT = new Id(i);
+        :}
+    |   bang_compound_id:hd BANG identifier:tl {:
+            RESULT = hd.append(tl);
+        :}
     ;
 
 //
@@ -833,9 +843,10 @@ value_expression_primary ::=
             RESULT = new UnresolvedFunCall(
                 j.name, Syntax.Method, Parser.toExpArray(lis));
         :}
-    |   identifier:i LPAREN exp_list_opt:lis RPAREN {:
+    |   bang_compound_id:i LPAREN exp_list_opt:lis RPAREN {:
             RESULT = new UnresolvedFunCall(
-                i.name, Syntax.Function, Parser.toExpArray(lis));
+                i.getSegments().get(i.getSegments().size() - 1).name,
+                Syntax.Function, Parser.toExpArray(lis));
         :}
     |   CAST LPAREN expression:e AS identifier:t RPAREN {:
             RESULT = new UnresolvedFunCall(
