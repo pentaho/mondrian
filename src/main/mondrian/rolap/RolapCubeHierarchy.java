@@ -191,19 +191,14 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         }
 
         RolapCubeHierarchy that = (RolapCubeHierarchy)o;
-        if (!parentDimension.equals(that.parentDimension)) {
-            return false;
-        } else {
-            return getUniqueName().equals(that.getUniqueName());
-        }
+        return parentDimension.equals(that.parentDimension)
+            && getUniqueName().equals(that.getUniqueName());
     }
-    
-    public int hashCode() {
-        return super.hashCode() ^ (getUniqueName() == null
-                ? 0
-                : getUniqueName().hashCode());
+
+    protected int computeHashCode() {
+        return Util.hash(super.computeHashCode(), this.parentDimension.parent);
     }
-    
+
     public Member createMember(
         Member parent,
         Level level,
