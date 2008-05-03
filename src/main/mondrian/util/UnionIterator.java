@@ -8,6 +8,8 @@
 */
 package mondrian.util;
 
+import mondrian.olap.Util;
+
 import java.util.*;
 
 /**
@@ -23,8 +25,37 @@ public class UnionIterator<T> implements Iterator<T> {
     private final Iterator<Iterable<? extends T>> iterableIterator;
     private Iterator<? extends T> iterator;
 
+    /**
+     * Creates a UnionIterator.
+     *
+     * @param iterables Array of iterables
+     */
     public UnionIterator(Iterable<? extends T>... iterables) {
-        this.iterableIterator = Arrays.asList(iterables).iterator();
+        List<Iterable<? extends T>> list;
+        if (Util.PreJdk15) {
+            // Retroweaver has its own version of Iterable, but
+            // Collection doesn't implement it. Solve the problem by
+            // creating an explicit Iterable wrapper.
+            list = new ArrayList<Iterable<? extends T>>(iterables.length);
+            for (Iterable<? extends T> iterable : iterables) {
+                //noinspection unchecked
+                list.add(new MyIterable(iterable));
+            }
+        } else {
+            list = Arrays.asList(iterables);
+        }
+        this.iterableIterator = list.iterator();
+        moveToNext();
+    }
+
+    public UnionIterator(Collection<? extends T>... iterables) {
+        List<Iterable<? extends T>> list =
+            new ArrayList<Iterable<? extends T>>(iterables.length);
+        for (Iterable<? extends T> iterable : iterables) {
+            //noinspection unchecked
+            list.add(new MyIterable(iterable));
+        }
+        this.iterableIterator = list.iterator();
         moveToNext();
     }
 
@@ -40,6 +71,10 @@ public class UnionIterator<T> implements Iterator<T> {
         return t;
     }
 
+    /**
+     * Moves to the next iterator that has at least one element.
+     * Called after finishing an iterator, or at the start.
+     */
     private void moveToNext() {
         do {
             if (iterableIterator.hasNext()) {
@@ -53,6 +88,23 @@ public class UnionIterator<T> implements Iterator<T> {
 
     public void remove() {
         iterator.remove();
+    }
+
+    private static class MyIterable<T> implements Iterable {
+        private final Iterable<T> iterable;
+
+        /**
+         * Creates a MyIterable.
+         *
+         * @param iterable Iterable
+         */
+        public MyIterable(Iterable<T> iterable) {
+            this.iterable = iterable;
+        }
+
+        public Iterator<T> iterator() {
+            return iterable.iterator();
+        }
     }
 }
 

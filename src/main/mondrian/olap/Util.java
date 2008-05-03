@@ -1313,13 +1313,36 @@ public class Util extends XOMUtil {
      * }</pre></blockquote>
      *
      * @param iterables Array of one or more iterables
-     * @return iterable over the union
+     * @return iterable over the union of the iterables
      */
     public static <T> Iterable<T> union(
         final Iterable<? extends T>... iterables) {
         return new Iterable<T>() {
             public Iterator<T> iterator() {
                 return new UnionIterator<T>(iterables);
+            }
+        };
+    }
+
+    /**
+     * Returns the union of a list of collections.
+     *
+     * <p>This method exists for code that will be retrowoven to run on JDK 1.4.
+     * Retroweaver has its own version of the {@link Iterable} interface, which
+     * is problematic since the {@link Collection} classes don't implement it.
+     * This method solves some of these problems by working in terms of
+     * collections; retroweaver deals with these correctly.
+     *
+     * @see #union(Iterable[])
+     *
+     * @param collections Array of one or more collections
+     * @return iterable over the union of the collections
+     */
+    public static <T> Iterable<T> union(
+        final Collection<? extends T>... collections) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return new UnionIterator<T>(collections);
             }
         };
     }

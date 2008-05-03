@@ -13,6 +13,8 @@ import junit.framework.TestCase;
 
 import java.util.*;
 
+import mondrian.util.UnionIterator;
+
 /**
  * Tests for methods in {@link mondrian.olap.Util}.
  */
@@ -426,6 +428,26 @@ public class UtilTestCase extends TestCase {
             total += s + ";";
         }
         assertEquals("", total);
+
+        total = "";
+        UnionIterator<String> unionIterator =
+            new UnionIterator<String>(xyList, abcList);
+        while (unionIterator.hasNext()) {
+            total += unionIterator.next() + ";";
+        }
+        assertEquals("x;y;a;b;c;", total);
+
+        if (Util.PreJdk15) {
+            // Retrowoven code gives 'ArrayStoreException' when it encounters
+            // 'Util.union()' applied to java.util.Iterator objects.
+            return;
+        }
+
+        total = "";
+        for (String s : Util.union((Iterable<String>) xyList, abcList)) {
+            total += s + ";";
+        }
+        assertEquals("x;y;a;b;c;", total);
     }
 }
 
