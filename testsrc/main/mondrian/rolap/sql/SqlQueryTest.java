@@ -10,7 +10,6 @@
 package mondrian.rolap.sql;
 
 import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
 import mondrian.rolap.BatchTestCase;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
@@ -25,18 +24,14 @@ import java.util.ArrayList;
  * @since 06-Jun-2007
  */
 public class SqlQueryTest extends BatchTestCase {
-    private boolean origGenerateFormattedSql;
     private String origWarnIfNoPatternForDialect;
     
     private MondrianProperties prop = MondrianProperties.instance();
 
     protected void setUp() throws Exception {
         super.setUp();
-        origGenerateFormattedSql = prop.GenerateFormattedSql.get();
         origWarnIfNoPatternForDialect = prop.WarnIfNoPatternForDialect.get();
      
-        prop.GenerateFormattedSql.set(false);
-        
         /*
          * This test warns of missing sql patterns for
          * 
@@ -61,13 +56,16 @@ public class SqlQueryTest extends BatchTestCase {
 
     protected void tearDown() throws Exception {
         super.tearDown();
-        prop.GenerateFormattedSql.set(origGenerateFormattedSql);
         prop.WarnIfNoPatternForDialect.set(origWarnIfNoPatternForDialect);
     }
 
     public void testToStringForSingleGroupingSetSql() {
-        if (isGroupingSetsSupported()) {
-            SqlQuery sqlQuery = new SqlQuery(getTestContext().getDialect());
+        if (!isGroupingSetsSupported()) {
+            return;
+        }
+        for (boolean b : new boolean[]{false, true}) {
+            SqlQuery.Dialect dialect = getTestContext().getDialect();
+            SqlQuery sqlQuery = new SqlQuery(dialect, b);
             sqlQuery.addSelect("c1");
             sqlQuery.addSelect("c2");
             sqlQuery.addGroupingFunction("gf0");
@@ -78,27 +76,29 @@ public class SqlQueryTest extends BatchTestCase {
             groupingsetsList.add("gs2");
             groupingsetsList.add("gs3");
             sqlQuery.addGroupingSet(groupingsetsList);
-            prop.GenerateFormattedSql.set(false);
+            String expected;
+            if (!b) {
+                expected = "select c1 as \"c0\", c2 as \"c1\", grouping(gf0) as \"g0\" "
+                    + "from \"s\".\"t1\" \"t1alias\" where a=b "
+                    + "group by grouping sets ((gs1,gs2,gs3))";
+            } else {
+                expected = "select \n" +
+                    "    c1 as \"c0\", \n" +
+                    "    c2 as \"c1\"\n" +
+                    "    , grouping(gf0) as \"g0\"\n" +
+                    "from \n" +
+                    "    \"s\".\"t1\" \"t1alias\"\n" +
+                    "where \n" +
+                    "    a=b\n" +
+                    " group by grouping sets ((\n" +
+                    "    gs1,\n" +
+                    "    gs2,\n" +
+                    "    gs3\n" +
+                    "))";
+            }
             assertEquals(
-                "select c1 as \"c0\", c2 as \"c1\", grouping(gf0) as \"g0\" " +
-                "from \"s\".\"t1\" \"t1alias\" where a=b " +
-                "group by grouping sets ((gs1,gs2,gs3))",
+                fold(expected),
                 sqlQuery.toString());
-            prop.GenerateFormattedSql.set(true);
-            String expectedString = "select " + Util.nl +
-            "    c1 as \"c0\", " + Util.nl +
-            "    c2 as \"c1\"" + Util.nl +
-            "    , grouping(gf0) as \"g0\"" + Util.nl +
-            "from " + Util.nl +
-            "    \"s\".\"t1\" \"t1alias\"" + Util.nl +
-            "where " + Util.nl +
-            "    a=b" + Util.nl +
-            " group by grouping sets ((" + Util.nl +
-            "    gs1," + Util.nl +
-            "    gs2," + Util.nl +
-            "    gs3" + Util.nl +
-            "))";
-            assertEquals(expectedString, sqlQuery.toString());
         }
     }
 
@@ -245,9 +245,11 @@ public class SqlQueryTest extends BatchTestCase {
     }
 
     public void testToStringForGroupingSetSqlWithEmptyGroup() {
-        if (isGroupingSetsSupported()) {
-            prop.GenerateFormattedSql.set(true);
-            SqlQuery sqlQuery = new SqlQuery(getTestContext().getDialect());
+        if (!isGroupingSetsSupported()) {
+            return;
+        }
+        for (boolean b : new boolean[]{false, true}) {
+            SqlQuery sqlQuery = new SqlQuery(getTestContext().getDialect(), b);
             sqlQuery.addSelect("c1");
             sqlQuery.addSelect("c2");
             sqlQuery.addFromTable("s", "t1", "t1alias", null, true);
@@ -260,35 +262,36 @@ public class SqlQueryTest extends BatchTestCase {
             groupingsetsList.add("gs3");
             sqlQuery.addGroupingSet(new ArrayList<String>());
             sqlQuery.addGroupingSet(groupingsetsList);
-            prop.GenerateFormattedSql.set(false);
+            String expected = b
+                ? "select \n" +
+                "    c1 as \"c0\", \n" +
+                "    c2 as \"c1\"\n" +
+                "    , grouping(g1) as \"g0\"\n" +
+                "    , grouping(g2) as \"g1\"\n" +
+                "from \n" +
+                "    \"s\".\"t1\" \"t1alias\"\n" +
+                "where \n" +
+                "    a=b\n" +
+                " group by grouping sets ((),(\n" +
+                "    gs1,\n" +
+                "    gs2,\n" +
+                "    gs3\n" +
+                "))"
+                : "select c1 as \"c0\", c2 as \"c1\", grouping(g1) as \"g0\", "
+                + "grouping(g2) as \"g1\" from \"s\".\"t1\" \"t1alias\" where a=b "
+                + "group by grouping sets ((),(gs1,gs2,gs3))";
             assertEquals(
-                "select c1 as \"c0\", c2 as \"c1\", grouping(g1) as \"g0\", " +
-                "grouping(g2) as \"g1\" from \"s\".\"t1\" \"t1alias\" where a=b " +
-                "group by grouping sets ((),(gs1,gs2,gs3))",
+                fold(expected),
                 sqlQuery.toString());
-            prop.GenerateFormattedSql.set(true);
-            String expectedString = "select " + Util.nl +
-            "    c1 as \"c0\", " + Util.nl +
-            "    c2 as \"c1\"" + Util.nl +
-            "    , grouping(g1) as \"g0\"" + Util.nl +
-            "    , grouping(g2) as \"g1\"" + Util.nl +
-            "from " + Util.nl +
-            "    \"s\".\"t1\" \"t1alias\"" + Util.nl +
-            "where " + Util.nl +
-            "    a=b" + Util.nl +
-            " group by grouping sets ((),(" + Util.nl +
-            "    gs1," + Util.nl +
-            "    gs2," + Util.nl +
-            "    gs3" + Util.nl +
-            "))";
-            assertEquals(expectedString, sqlQuery.toString());
         }
     }
 
     public void testToStringForMultipleGroupingSetsSql() {
-        if (isGroupingSetsSupported()) {
-            prop.GenerateFormattedSql.set(true);
-            SqlQuery sqlQuery = new SqlQuery(getTestContext().getDialect());
+        if (!isGroupingSetsSupported()) {
+            return;
+        }
+        for (boolean b : new boolean[]{false, true}) {
+            SqlQuery sqlQuery = new SqlQuery(getTestContext().getDialect(), b);
             sqlQuery.addSelect("c0");
             sqlQuery.addSelect("c1");
             sqlQuery.addSelect("c2");
@@ -307,35 +310,37 @@ public class SqlQueryTest extends BatchTestCase {
             groupingsetsList2.add("c1");
             groupingsetsList2.add("c2");
             sqlQuery.addGroupingSet(groupingsetsList2);
-            prop.GenerateFormattedSql.set(false);
+            String expected = b
+                ? "select \n" +
+                "    c0 as \"c0\", \n" +
+                "    c1 as \"c1\", \n" +
+                "    c2 as \"c2\", \n" +
+                "    m1 as \"m1\"\n" +
+                "    , grouping(c0) as \"g0\"\n" +
+                "    , grouping(c1) as \"g1\"\n" +
+                "    , grouping(c2) as \"g2\"\n" +
+                "from \n" +
+                "    \"s\".\"t1\" \"t1alias\"\n" +
+                "where \n" +
+                "    a=b\n" +
+                " group by grouping sets ((\n" +
+                "    c0,\n" +
+                "    c1,\n" +
+                "    c2\n" +
+                "),(\n" +
+                "    c1,\n" +
+                "    c2\n" +
+                "))"
+                : "select c0 as \"c0\", c1 as \"c1\", c2 as \"c2\", m1 as \"m1\", "
+                    +
+                    "grouping(c0) as \"g0\", grouping(c1) as \"g1\", grouping(c2) as \"g2\" "
+                    +
+                    "from \"s\".\"t1\" \"t1alias\" where a=b "
+                    +
+                    "group by grouping sets ((c0,c1,c2),(c1,c2))";
             assertEquals(
-                "select c0 as \"c0\", c1 as \"c1\", c2 as \"c2\", m1 as \"m1\", " +
-                "grouping(c0) as \"g0\", grouping(c1) as \"g1\", grouping(c2) as \"g2\" " +
-                "from \"s\".\"t1\" \"t1alias\" where a=b " +
-                "group by grouping sets ((c0,c1,c2),(c1,c2))",
+                fold(expected),
                 sqlQuery.toString());
-            prop.GenerateFormattedSql.set(true);
-            String expectedString = "select " + Util.nl +
-            "    c0 as \"c0\", " + Util.nl +
-            "    c1 as \"c1\", " + Util.nl +
-            "    c2 as \"c2\", " + Util.nl +
-            "    m1 as \"m1\"" + Util.nl +
-            "    , grouping(c0) as \"g0\"" + Util.nl +
-            "    , grouping(c1) as \"g1\"" + Util.nl +
-            "    , grouping(c2) as \"g2\"" + Util.nl +
-            "from " + Util.nl +
-            "    \"s\".\"t1\" \"t1alias\"" + Util.nl +
-            "where " + Util.nl +
-            "    a=b" + Util.nl +
-            " group by grouping sets ((" + Util.nl +
-            "    c0," + Util.nl +
-            "    c1," + Util.nl +
-            "    c2" + Util.nl +
-            "),(" + Util.nl +
-            "    c1," + Util.nl +
-            "    c2" + Util.nl +
-            "))";
-            assertEquals(expectedString, sqlQuery.toString());
         }
     }
 
