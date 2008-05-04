@@ -581,12 +581,13 @@ public class RolapHierarchy extends HierarchyBase {
                                     evaluator,
                                     ((RolapEvaluator) evaluator).getExpanding()));
                         }
+
+                        public boolean dependsOn(Dimension dimension) {
+                            return true;
+                        }
                     };
                 final Calc partialCalc =
-                    new AggregateFunDef.AggregateCalc(
-                        new DummyExp(returnType),
-                        listCalc,
-                        new ValueCalc(new DummyExp(returnType)));
+                    new LimitedRollupAggregateCalc(returnType, listCalc);
 
                 final Exp partialExp =
                     new ResolvedFunCall(
@@ -952,6 +953,21 @@ public class RolapHierarchy extends HierarchyBase {
             } else {
                 return member;
             }
+        }
+    }
+
+    /**
+     * Compiled expression that computes rollup over a set of visible children.
+     * The {@code listCalc} expression determines that list of children.
+     */
+    private static class LimitedRollupAggregateCalc
+        extends AggregateFunDef.AggregateCalc
+    {
+        public LimitedRollupAggregateCalc(Type returnType, ListCalc listCalc) {
+            super(
+                new DummyExp(returnType),
+                listCalc,
+                new ValueCalc(new DummyExp(returnType)));
         }
     }
 }
