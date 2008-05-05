@@ -77,7 +77,14 @@ public abstract class ListPredicate implements StarPredicate {
     }
     
     public int hashCode() {
-        return children.hashCode();
+        // Don't use the default list hashcode because we want a hash code
+        // that's not order dependent
+        int hashCode = 1;
+        for (StarPredicate child : children) {
+            hashCode *= child.hashCode();
+        }
+        hashCode ^= children.size();
+        return hashCode;
     }
     
     public boolean equalConstraint(StarPredicate that) {

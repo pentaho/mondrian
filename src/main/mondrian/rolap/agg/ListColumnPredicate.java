@@ -65,7 +65,14 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
     }
 
     public int hashCode() {
-        return children.hashCode();
+        // Don't use the default list hashcode because we want a hash code
+        // that's not order dependent
+        int hashCode = 1;
+        for (StarColumnPredicate child : children) {
+            hashCode *= child.hashCode();
+        }
+        hashCode ^= children.size();
+        return hashCode;
     }
 
     public boolean equals(Object obj) {
