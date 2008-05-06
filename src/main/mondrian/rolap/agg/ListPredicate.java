@@ -38,6 +38,11 @@ public abstract class ListPredicate implements StarPredicate {
      */
     private HashMap<Integer, List<StarPredicate>> childrenHashMap;
     
+    /**
+     * Pre-computed hash code for this list column predicate
+     */
+    private int hashValue;
+    
     protected final List<RolapStar.Column> columns =
         new ArrayList<RolapStar.Column>();
 
@@ -46,6 +51,7 @@ public abstract class ListPredicate implements StarPredicate {
     protected ListPredicate(List<StarPredicate> predicateList) {
         columnBitKey = null;
         childrenHashMap = null;
+        hashValue = 0;
         for (StarPredicate predicate : predicateList) {
             if (columnBitKey == null) {
                 columnBitKey =
@@ -79,12 +85,17 @@ public abstract class ListPredicate implements StarPredicate {
     public int hashCode() {
         // Don't use the default list hashcode because we want a hash code
         // that's not order dependent
-        int hashCode = 1;
-        for (StarPredicate child : children) {
-            hashCode *= child.hashCode();
+        if (hashValue == 0) {
+            hashValue = 37;
+            for (StarPredicate child : children) {
+                int childHashCode = child.hashCode();
+                if (childHashCode != 0) {
+                    hashValue *= childHashCode;
+                }
+            }
+            hashValue ^= children.size();
         }
-        hashCode ^= children.size();
-        return hashCode;
+        return hashValue;
     }
     
     public boolean equalConstraint(StarPredicate that) {
