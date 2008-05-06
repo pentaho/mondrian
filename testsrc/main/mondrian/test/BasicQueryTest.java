@@ -6309,6 +6309,82 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * Testcase for Pentaho bug
+     * <a href="http://jira.pentaho.org/browse/BISERVER-1323">BISERVER-1323</a>,
+     * empty SQL query generated when crossjoining more than two sets each
+     * containing just the 'all' member.
+     */
+    public void testEmptySqlBug() {
+        final String expectedResult =
+            fold("Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Store].[All Stores], [Product].[All Products], [Customers].[All Customers]}\n"
+                + "Row #0: 266,773\n");
+        assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                "NON EMPTY Crossjoin({[Store].[All Stores]}" +
+                ", Crossjoin({[Product].[All Products]}, {[Customers].[All Customers]})) ON ROWS " +
+                "from [Sales]",
+            expectedResult);
+        // without NON EMPTY
+        assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                "  Crossjoin({[Store].[All Stores]}" +
+                ", Crossjoin({[Product].[All Products]}, {[Customers].[All Customers]})) ON ROWS " +
+                "from [Sales]",
+            expectedResult);
+        // using * operator
+        assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                "NON EMPTY [Store].[All Stores] " +
+                " * [Product].[All Products]" +
+                " * [Customers].[All Customers] ON ROWS " +
+                "from [Sales]",
+            expectedResult);
+        // combining tuple
+        assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                "NON EMPTY [Store].[All Stores] " +
+                " * {([Product].[All Products]," +
+                "     [Customers].[All Customers])} ON ROWS " +
+                "from [Sales]",
+            expectedResult);
+        // combining two members with tuple
+        final String expectedResult4 =
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores], [Product].[All Products], [Customers].[All Customers], [Gender].[All Gender]}\n" +
+                "Row #0: 266,773\n");
+        assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                "NON EMPTY [Store].[All Stores] " +
+                " * [Product].[All Products]" +
+                " * {([Customers].[All Customers], [Gender].[All Gender])} ON ROWS " +
+                "from [Sales]",
+            expectedResult4);
+        assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                "NON EMPTY [Store].[All Stores] " +
+                " * {([Product].[All Products], [Customers].[All Customers])}" +
+                " * [Gender].[All Gender] ON ROWS " +
+                "from [Sales]",
+            expectedResult4);
+        assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                "NON EMPTY {([Store].[All Stores], [Product].[All Products])}" +
+                " * [Customers].[All Customers]" +
+                " * [Gender].[All Gender] ON ROWS " +
+                "from [Sales]",
+            expectedResult4);
+    }
+
+    /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.
      */

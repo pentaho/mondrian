@@ -325,7 +325,8 @@ public class SetFunDef extends FunDefBase {
                 }
             } else if (TypeUtil.couldBeMember(type)) {
                 final MemberCalc memberCalc = compiler.compileMember(arg);
-                return new AbstractIterCalc(arg, new Calc[] {memberCalc}) {
+                final ResolvedFunCall call = wrapAsSet(arg);
+                return new AbstractIterCalc(call, new Calc[] {memberCalc}) {
                     public Iterable evaluateIterable(Evaluator evaluator) {
                         final Member member =
                             memberCalc.evaluateMember(evaluator);
@@ -356,8 +357,8 @@ public class SetFunDef extends FunDefBase {
                 };
             } else {
                 final TupleCalc tupleCalc = compiler.compileTuple(arg);
-
-                return new AbstractIterCalc(arg, new Calc[] {tupleCalc}) {
+                final ResolvedFunCall call = wrapAsSet(arg);
+                return new AbstractIterCalc(call, new Calc[] {tupleCalc}) {
                     public Iterable evaluateIterable(Evaluator evaluator) {
                         final Member[] members = tupleCalc.evaluateTuple(evaluator);
                         return new Iterable<Member[]>() {
@@ -386,6 +387,13 @@ public class SetFunDef extends FunDefBase {
                     }
                 };
             }
+        }
+
+        private ResolvedFunCall wrapAsSet(Exp arg) {
+            return new ResolvedFunCall(
+                    new SetFunDef(Resolver, new int[] {arg.getCategory()}),
+                    new Exp[] {arg},
+                    new SetType(arg.getType()));
         }
 
         public Iterable evaluateIterable(final Evaluator evaluator) {

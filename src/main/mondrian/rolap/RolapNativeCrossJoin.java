@@ -38,21 +38,23 @@ import mondrian.rolap.sql.TupleConstraint;
 public class RolapNativeCrossJoin extends RolapNativeSet {
 
     public RolapNativeCrossJoin() {
-        super.setEnabled(MondrianProperties.instance().EnableNativeCrossJoin.get());
+        super.setEnabled(
+            MondrianProperties.instance().EnableNativeCrossJoin.get());
     }
 
     /**
-     * restricts the result to the current context.
+     * Constraint that restricts the result to the current context.
      *
-     * If the current context contains calculated members, these are silently ignored
-     * which means, that too many members are return. This does not harm, because the
-     * {@link RolapConnection}.NonEmptyResult will filter out these later.
-     *
-     * @author av
-     * @since Nov 17, 2005
+     * <p>If the current context contains calculated members, silently ignores
+     * them. This means means that too many members are returned, but this does
+     * not matter, because the {@link RolapConnection.NonEmptyResult} will
+     * filter out these later.</p>
      */
     static class NonEmptyCrossJoinConstraint extends SetConstraint {
-        NonEmptyCrossJoinConstraint(CrossJoinArg[] args, RolapEvaluator evaluator) {
+        NonEmptyCrossJoinConstraint(
+            CrossJoinArg[] args,
+            RolapEvaluator evaluator)
+        {
             // Cross join ignores calculated members, including the ones from
             // the slicer.
             super(args, evaluator, false);
@@ -63,13 +65,17 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         return false;
     }
 
-    NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
+    NativeEvaluator createEvaluator(
+        RolapEvaluator evaluator,
+        FunDef fun,
+        Exp[] args)
+    {
         if (!isEnabled()) {
             // native crossjoins were explicitly disabled, so no need
             // to alert about not using them
             return null;
         }
-        RolapCube cube = (RolapCube) evaluator.getCube();
+        RolapCube cube = evaluator.getCube();
 
         CrossJoinArg[] cargs = checkCrossJoin(evaluator, fun, args);
         
@@ -95,12 +101,12 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
                     (MemberListCrossJoinArg)arg;
                 if (cjArg.hasAllMember() ||
                     cjArg.hasCalcMembers()) {
-                    countNonNativeInputArg ++;
+                    ++countNonNativeInputArg;
                 }
             }
         }
 
-        if (countNonNativeInputArg == 2) {
+        if (countNonNativeInputArg == cargs.length) {
             // All inputs contain "All" members.
             // Native evaluation is not feasible.
             alertCrossJoinNonNative(
@@ -144,8 +150,9 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
 
         // join with fact table will always filter out those members
         // that dont have a row in the fact table
-        if (!evaluator.isNonEmpty())
+        if (!evaluator.isNonEmpty()) {
             return null;
+        }
 
         LOGGER.debug("using native crossjoin");
 
@@ -155,7 +162,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         // with the constraints from the inputs).
         evaluator = evaluator.push();
         
-        Member[] evalMembers = (Member[]) evaluator.getMembers().clone();
+        Member[] evalMembers = evaluator.getMembers().clone();
         for (RolapLevel level : levels) {
             RolapHierarchy hierarchy = level.getHierarchy();
             for (int i = 0; i < evalMembers.length; ++i) {
@@ -176,7 +183,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
     private void alertCrossJoinNonNative(
         RolapEvaluator evaluator,
         FunDef fun,
-        String reason) {
+        String reason)
+    {
         if (!(fun instanceof NonEmptyCrossJoinFunDef)) {
             // Only alert for an explicit NonEmptyCrossJoin,
             // since query authors use that to indicate that
@@ -189,3 +197,5 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         RolapUtil.alertNonNative("NonEmptyCrossJoin", reason);
     }
 }
+
+// End RolapNativeCrossJoin.java
