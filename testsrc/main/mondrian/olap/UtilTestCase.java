@@ -437,7 +437,7 @@ public class UtilTestCase extends TestCase {
         }
         assertEquals("x;y;a;b;c;", total);
 
-        if (Util.PreJdk15) {
+        if (Util.Retrowoven) {
             // Retrowoven code gives 'ArrayStoreException' when it encounters
             // 'Util.union()' applied to java.util.Iterator objects.
             return;
