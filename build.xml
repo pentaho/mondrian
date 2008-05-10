@@ -571,7 +571,6 @@ META-INF/**"/>
     <antcall target="checkJavadoc"/>
   </target>
 
-
   <target name="test-list">
     <property name="test.args" value="-l"/>
     <antcall target="test-only"/>  
