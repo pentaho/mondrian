@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -31,9 +31,9 @@ import java.util.List;
 abstract class ArrayMemberSource implements MemberSource {
 
     protected final RolapHierarchy hierarchy;
-    protected final RolapMember[] members;
+    protected final List<RolapMember> members;
 
-    ArrayMemberSource(RolapHierarchy hierarchy, RolapMember[] members) {
+    ArrayMemberSource(RolapHierarchy hierarchy, List<RolapMember> members) {
         this.hierarchy = hierarchy;
         this.members = members;
     }
@@ -43,11 +43,11 @@ abstract class ArrayMemberSource implements MemberSource {
     public boolean setCache(MemberCache cache) {
         return false; // we do not support cache writeback
     }
-    public RolapMember[] getMembers() {
+    public List<RolapMember> getMembers() {
         return members;
     }
     public int getMemberCount() {
-        return members.length;
+        return members.size();
     }
 
     public List<RolapMember> getRootMembers() {

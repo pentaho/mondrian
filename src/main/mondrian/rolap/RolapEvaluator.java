@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -72,7 +72,7 @@ public class RolapEvaluator implements Evaluator {
      * ordinary dimensional context if set when a cell value comes to be
      * evaluated.
      */
-    protected List<List<RolapMember>> aggregationLists;
+    protected List<List<Member[]>> aggregationLists;
 
     private final List<Member> slicerMembers;
 
@@ -111,7 +111,7 @@ public class RolapEvaluator implements Evaluator {
             slicerMembers = new ArrayList<Member> (parent.slicerMembers);
             if (parent.aggregationLists != null) {
                 aggregationLists =
-                        new ArrayList<List<RolapMember>>(parent.aggregationLists);
+                        new ArrayList<List<Member[]>>(parent.aggregationLists);
             } else {
                 aggregationLists = null;
             }
@@ -222,7 +222,7 @@ public class RolapEvaluator implements Evaluator {
         private final Query query;
         private final Date queryStartTime;
         final SqlQuery.Dialect currentDialect;
-        
+
         /**
          * Default members of each hierarchy, from the schema reader's
          * perspective. Finding the default member is moderately expensive, but
@@ -343,12 +343,12 @@ public class RolapEvaluator implements Evaluator {
             }
             tmpExpResultCache.clear();
         }
-        
+
         /**
          * Get query start time.
-         * 
+         *
          * @return the query start time
-         */ 
+         */
         public Date getQueryStartTime() {
             return queryStartTime;
         }
@@ -362,10 +362,10 @@ public class RolapEvaluator implements Evaluator {
         return currentMembers;
     }
 
-    public final List<List<RolapMember>> getAggregationLists() {
+    public final List<List<Member[]>> getAggregationLists() {
         return aggregationLists;
     }
-    
+
     final void setCellReader(CellReader cellReader) {
         this.cellReader = cellReader;
     }
@@ -393,11 +393,11 @@ public class RolapEvaluator implements Evaluator {
     public Date getQueryStartTime() {
         return root.getQueryStartTime();
     }
-    
+
     public SqlQuery.Dialect getDialect() {
         return root.currentDialect;
     }
-    
+
     public final RolapEvaluator push(Member[] members) {
         final RolapEvaluator evaluator = _push();
         evaluator.setContext(members);
@@ -426,37 +426,28 @@ public class RolapEvaluator implements Evaluator {
         return parent;
     }
 
-    public final Evaluator pushAggregation(List list) {
+    public final Evaluator pushAggregation(List<Member[]> list) {
         RolapEvaluator newEvaluator = _push();
         newEvaluator.addToAggregationList(list);
         clearHierarchyFromRegularContext(list, newEvaluator);
         return newEvaluator;
     }
-        
-    private void addToAggregationList(List list){
+
+    private void addToAggregationList(List<Member[]> list){
         if (aggregationLists == null) {
-            aggregationLists = new ArrayList<List<RolapMember>>();
+            aggregationLists = new ArrayList<List<Member[]>>();
         }
         aggregationLists.add(list);
     }
-        
+
     private void clearHierarchyFromRegularContext(
-        List list,
+        List<Member[]> list,
         RolapEvaluator newEvaluator)
     {
-        if (containsTuple(list)) {
-            Member[] tuple = (Member[]) list.get(0);
-            for (Member member : tuple) {
-                newEvaluator.setContext(member.getHierarchy().getAllMember());
-            }
-        } else {
-            newEvaluator.setContext(((RolapMember) list.get(0)).getHierarchy()
-                .getAllMember());
+        Member[] tuple = list.get(0);
+        for (Member member : tuple) {
+            newEvaluator.setContext(member.getHierarchy().getAllMember());
         }
-    }
-
-    private boolean containsTuple(List rolapList) {
-        return rolapList.get(0) instanceof Member[];
     }
 
     /**
@@ -524,23 +515,21 @@ public class RolapEvaluator implements Evaluator {
                          + " , count=" + i);
                 }
                 assert false;
-            } else {
-                setContext(member);
+                continue;
             }
-            i++;
+            setContext(member);
         }
     }
 
     public final void setContext(Member[] members) {
-        for (int i = 0; i < members.length; i++) {
-            final Member member = members[i];
-
-            // more than one usage
+        for (final Member member : members) {
+        // more than one usage
             if (member == null) {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
-                        "RolapEvaluator.setContext: member == null "
-                         + " , count=" + i);
+                        "RolapEvaluator.setContext: "
+                            + "member == null, memberList: "
+                            + Arrays.asList(members));
                 }
                 assert false;
                 continue;
@@ -826,7 +815,7 @@ public class RolapEvaluator implements Evaluator {
                 (aggregateCacheMissCountBefore == aggregateCacheMissCountAfter)) {
                 // Cache the evaluation result as valid result if the
                 // evaluation did not use any missing aggregates. Missing aggregates
-                // could be used when aggregate cache is not fully loaded, or if 
+                // could be used when aggregate cache is not fully loaded, or if
                 // new missing aggregates are seen.
                 isValidResult = true;
             } else {

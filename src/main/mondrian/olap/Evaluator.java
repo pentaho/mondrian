@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -247,14 +247,14 @@ public interface Evaluator {
 
     /**
      * Returns a new Aggregator whose aggregation context adds a given list of
-     * members or tuples, and whose dimensional context is the same as this
+     * tuples, and whose dimensional context is the same as this
      * Aggregator.
      *
-     * @param list List of members
+     * @param list List of tuples
      * @return Aggregator with <code>list</code> added to its aggregation
      *   context
      */
-    Evaluator pushAggregation(List<Member> list);
+    Evaluator pushAggregation(List<Member[]> list);
 
     /**
      * Checks if unrelated dimensions to the measure in the current context

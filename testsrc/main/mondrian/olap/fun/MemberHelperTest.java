@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,6 +13,9 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 
 import junit.framework.TestCase;
+
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * <code>MemberHelperTest</code> tests {@link MemberHelper}.
@@ -27,10 +30,12 @@ public class MemberHelperTest extends TestCase {
 
     public void testEqualsMembers() {
         MemberHelper mh0 = new MemberHelper(null);
+        //noinspection ObjectEqualsNull
         assertFalse(mh0.equals(null));
 
         assertEquals(mh0, mh0);
 
+        //noinspection EqualsBetweenInconvertibleTypes
         assertFalse(mh0.equals(""));
 
         MemberHelper mh1 = new MemberHelper(null);
@@ -107,8 +112,8 @@ public class MemberHelperTest extends TestCase {
             return name.hashCode();
         }
 
-        public Member[] getAncestorMembers() {
-            return new Member[0];
+        public List<Member> getAncestorMembers() {
+            return new ArrayList<Member>();
         }
 
         public String getCaption() {

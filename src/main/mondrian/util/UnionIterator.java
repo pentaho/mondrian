@@ -32,7 +32,7 @@ public class UnionIterator<T> implements Iterator<T> {
      */
     public UnionIterator(Iterable<? extends T>... iterables) {
         List<Iterable<? extends T>> list;
-        if (Util.PreJdk15) {
+        if (Util.Retrowoven) {
             // Retroweaver has its own version of Iterable, but
             // Collection doesn't implement it. Solve the problem by
             // creating an explicit Iterable wrapper.

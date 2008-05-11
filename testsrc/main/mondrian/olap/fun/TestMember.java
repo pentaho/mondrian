@@ -3,13 +3,16 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+
+import java.util.List;
+
 /**
  *
  *
@@ -18,21 +21,18 @@ import mondrian.olap.*;
  */
 public class TestMember implements Member {
     private final String identifer;
+
     public TestMember(String identifer) {
         this.identifer = identifer;
     }
+
     public String toString() {
         return identifer;
     }
+
     public int compareTo(Object o) {
         TestMember other = (TestMember) o;
         return this.identifer.compareTo(other.identifer);
-    }
-    public boolean equals(Object o) {
-        return (this == o);
-    }
-    public int hashCode() {
-        return super.hashCode();
     }
 
     public Member getParentMember() {
@@ -54,6 +54,7 @@ public class TestMember implements Member {
     public MemberType getMemberType() {
         throw new UnsupportedOperationException();
     }
+
     public void setName(String name) {
         throw new UnsupportedOperationException();
     }
@@ -85,7 +86,7 @@ public class TestMember implements Member {
         throw new UnsupportedOperationException();
     }
 
-    public Member[] getAncestorMembers() {
+    public List<Member> getAncestorMembers() {
         throw new UnsupportedOperationException();
     }
 
@@ -163,6 +164,70 @@ public class TestMember implements Member {
     }
 
     public Dimension getDimension() {
-        throw new UnsupportedOperationException();
+        return new MockDimension();
+    }
+
+    private static class MockDimension implements Dimension {
+        public Hierarchy[] getHierarchies() {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isMeasures() {
+            throw new UnsupportedOperationException();
+        }
+
+        public DimensionType getDimensionType() {
+            throw new UnsupportedOperationException();
+        }
+
+        public int getOrdinal(Cube cube) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Schema getSchema() {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isHighCardinality() { return false; }
+
+        public String getUniqueName() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getName() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getDescription() {
+            throw new UnsupportedOperationException();
+        }
+
+        public OlapElement lookupChild(SchemaReader schemaReader,
+                Id.Segment s) {
+            throw new UnsupportedOperationException();
+        }
+
+        public OlapElement lookupChild(SchemaReader schemaReader,
+                Id.Segment s, MatchType matchType) {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getQualifiedName() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getCaption() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Hierarchy getHierarchy() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Dimension getDimension() {
+            throw new UnsupportedOperationException();
+        }
     }
 }
+
+// End TestMember.java

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -60,7 +60,7 @@ public class RolapLevel extends LevelBase {
     static final int FLAG_UNIQUE = 0x04;
 
     private RolapLevel closedPeer;
-    
+
     private final RolapProperty[] properties;
     private final RolapProperty[] inheritedProperties;
 
@@ -102,7 +102,7 @@ public class RolapLevel extends LevelBase {
         int flags,
         SqlQuery.Datatype datatype,
         HideMemberCondition hideMemberCondition,
-        LevelType levelType, 
+        LevelType levelType,
         String approxRowCount)
     {
         super(hierarchy, name, depth, levelType);
@@ -426,12 +426,12 @@ public class RolapLevel extends LevelBase {
     public OlapElement lookupChild(
         SchemaReader schemaReader, Id.Segment name, MatchType matchType)
     {
-        Member[] levelMembers = schemaReader.getLevelMembers(this, true);
-        if (levelMembers.length > 0) {
-            Member parent = levelMembers[0].getParentMember();
+        List<Member> levelMembers = schemaReader.getLevelMembers(this, true);
+        if (levelMembers.size() > 0) {
+            Member parent = levelMembers.get(0).getParentMember();
             return
                 RolapUtil.findBestMemberMatch(
-                    Arrays.asList(levelMembers),
+                    levelMembers,
                     (RolapMember) parent,
                     this,
                     name,
@@ -448,7 +448,7 @@ public class RolapLevel extends LevelBase {
     boolean hasClosedPeer() {
         return closedPeer != null;
     }
-    
+
     public RolapLevel getClosedPeer() {
         return closedPeer;
     }

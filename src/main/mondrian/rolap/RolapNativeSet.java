@@ -50,7 +50,7 @@ public abstract class RolapNativeSet extends RolapNative {
      * <p>
      * If true, expressions containing calculated members will be evaluated by
      * the interpreter, instead of using SQL.
-     * 
+     *
      * If false, calc members will be ignored and the computation will be done
      * in SQL, returning more members than requested.
      * </p>
@@ -157,45 +157,11 @@ public abstract class RolapNativeSet extends RolapNative {
         }
 
         protected Object executeIterable() {
-            final List list = executeList();
-            if (args.length == 1) {
-                return new Iterable<Member>() {
-                    public Iterator<Member> iterator() {
-                        return new Iterator<Member>() {
-                            int index = 0;
-                            public boolean hasNext() {
-                                return (index < list.size());
-                            }
-                            public Member next() {
-                                return (Member) list.get(index++);
-                            }
-                            public void remove() {
-                                throw new UnsupportedOperationException("remove");
-                            }
-                        };
-                    }
-                };
-            } else {
-                return new Iterable<Member[]>() {
-                    public Iterator<Member[]> iterator() {
-                        return new Iterator<Member[]>() {
-                            int index = 0;
-                            public boolean hasNext() {
-                                return (index < list.size());
-                            }
-                            public Member[] next() {
-                                return (Member[]) list.get(index++);
-                            }
-                            public void remove() {
-                                throw new UnsupportedOperationException("remove");
-                            }
-                        };
-                    }
-                };
-            }
+            return executeList();
         }
+
         protected List executeList() {
-            SqlTupleReader tr = new SqlTupleReader(constraint);
+            HighCardSqlTupleReader tr = new HighCardSqlTupleReader(constraint);
             tr.setMaxRows(maxRows);
             for (CrossJoinArg arg : args) {
                 addLevel(tr, arg);
@@ -252,7 +218,8 @@ public abstract class RolapNativeSet extends RolapNative {
          * returns a copy of the result because its modified
          */
         private <T> List<T> copy(List<T> list) {
-            return new ArrayList<T>(list);
+//            return new ArrayList<T>(list);
+            return list;
         }
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
@@ -294,7 +261,7 @@ public abstract class RolapNativeSet extends RolapNative {
     protected interface CrossJoinArg {
         RolapLevel getLevel();
 
-        RolapMember[] getMembers();
+        List<RolapMember> getMembers();
 
         void addConstraint(SqlQuery sqlQuery, RolapCube baseCube);
 
@@ -325,11 +292,13 @@ public abstract class RolapNativeSet extends RolapNative {
             return level;
         }
 
-        public RolapMember[] getMembers() {
+        public List<RolapMember> getMembers() {
             if (member == null) {
                 return null;
             }
-            return new RolapMember[] { member };
+            final List<RolapMember> list = new ArrayList<RolapMember>();
+            list.add(member);
+            return list;
         }
 
         public boolean isPreferInterpreter(boolean joinArg) {
@@ -378,15 +347,15 @@ public abstract class RolapNativeSet extends RolapNative {
      * @since Nov 14, 2005
      */
     protected static class MemberListCrossJoinArg implements CrossJoinArg {
-        private RolapMember[] members;
+        private List<RolapMember> members;
         private RolapLevel level = null;
         private boolean restrictMemberTypes;
         private boolean hasCalcMembers;
         private boolean hasNonCalcMembers;
         private boolean hasAllMember;
-        
+
         private MemberListCrossJoinArg(
-            RolapLevel level, RolapMember[] members, boolean restrictMemberTypes,
+            RolapLevel level, List<RolapMember> members, boolean restrictMemberTypes,
             boolean hasCalcMembers, boolean hasNonCalcMembers, boolean hasAllMember) {
             this.level = level;
             this.members = members;
@@ -398,59 +367,60 @@ public abstract class RolapNativeSet extends RolapNative {
 
         /**
          * Creates an instance of {@link RolapNativeSet.CrossJoinArg}.
-         * 
+         *
          * @param args members in the list
          * @param restrictMemberTypes whether calculated members are allowed
-         * @return MemberListCrossJoinArg if member list is well formed, 
+         * @return MemberListCrossJoinArg if member list is well formed,
          * NULL if not.
          */
         static CrossJoinArg create(Exp[] args, boolean restrictMemberTypes) {
             if (args.length == 0) {
                 return null;
             }
-            
-            RolapMember[] memberList = new RolapMember[args.length];
+
+            List<RolapMember> memberList = new ArrayList<RolapMember>();
             for (int i = 0; i < args.length; i++) {
                 if (!(args[i] instanceof MemberExpr)) {
                     return null;
                 }
-                memberList[i] = 
-                    (RolapMember)(((MemberExpr)args[i]).getMember());
+                memberList.add((RolapMember)
+                        (((MemberExpr)args[i]).getMember()));
             }
-            
+
             return create(memberList, restrictMemberTypes);
         }
 
         /**
          * Creates an instance of {@link RolapNativeSet.CrossJoinArg}.
-         * 
+         *
          * @param args members in the list
          * @param restrictMemberTypes whether calculated members are allowed
-         * @return MemberListCrossJoinArg if member list is well formed, 
+         * @return MemberListCrossJoinArg if member list is well formed,
          * NULL if not.
-         */
+         *
         static CrossJoinArg create(List args, boolean restrictMemberTypes) {
             if (args.isEmpty()) {
                 return null;
             }
-            
-            RolapMember[] memberList = new RolapMember[args.size()];
+
+            List<RolapMember> memberList = new RolapMember[args.size()];
             for (int i = 0; i < args.size(); i++) {
                 if (!(args.get(i) instanceof RolapMember)) {
                     return null;
                 }
                 memberList[i] = (RolapMember) args.get(i);
             }
-            
+
             return create(memberList, restrictMemberTypes);
         }
+        */
 
         /**
          * Creates an instance of {@link RolapNativeSet.CrossJoinArg},
-         * or returns null if the arguments are invalid. This method also 
+         * or returns null if the arguments are invalid. This method also
          * records properties of the member list such as containing
          * calc/non calc members, and containing the All member.
-         * 
+         *
          * <p>To be valid, the arguments must be non-calculated members of the
          * same level (after filtering out any null members).  There must be at
          * least one member to begin with (may be null).  If all members are
@@ -461,63 +431,70 @@ public abstract class RolapNativeSet extends RolapNative {
          * members are presented (and then it's flagged appropriately
          * for special handling downstream).
          */
-        static CrossJoinArg create(RolapMember[] args, boolean restrictMemberTypes) {
+        static CrossJoinArg create(
+            final List<RolapMember> args,
+            final boolean restrictMemberTypes)
+        {
+            if (args.isEmpty()) {
+                return null;
+            }
 
             RolapLevel level = null;
             RolapLevel nullLevel = null;
             boolean hasCalcMembers = false;
             boolean hasNonCalcMembers = false;
             boolean hasAllMember = false;
-            
+
             // First check that the member list will not result in a predicate
             // longer than the underlying DB could support.
-            if (args.length >
-                MondrianProperties.instance().MaxConstraints.get()) {
+            if (args.size() > MondrianProperties.instance()
+                    .MaxConstraints.get()) {
                 return null;
             }
-            
-            int nNullMembers = 0;
-            for (int i = 0; i < args.length; i++) {
-                
-                RolapMember m = args[i];
-                
-                if (m.isNull()) {
-                    // we're going to filter out null members anyway;
-                    // don't choke on the fact that their level
-                    // doesn't match that of others
-                    nullLevel = m.getLevel();
-                    ++nNullMembers;
-                    continue;
-                }
-                
-                // If "All" member, native evaluation is not possible
-                // because "All" member does not have a corresponding
-                // relational representation.
-                //
-                // "All" member is ignored during SQL generation.
-                // The complete MDX query can be evaluated natively only
-                // if there is non all member on at least one level; otherwise
-                // the generated SQL is an empty string.
-                // See SqlTupleReader.addLevelMemberSql()
-                //
-                if (m.isAll()) {
-                    hasAllMember = true;
-                }
 
-                if (m.isCalculated()) {
-                    if (restrictMemberTypes) {
+            int nNullMembers = 0;
+            try {
+                for (RolapMember m : args) {
+                    if (m.isNull()) {
+                        // we're going to filter out null members anyway;
+                        // don't choke on the fact that their level
+                        // doesn't match that of others
+                        nullLevel = m.getLevel();
+                        ++nNullMembers;
+                        continue;
+                    }
+
+                    // If "All" member, native evaluation is not possible
+                    // because "All" member does not have a corresponding
+                    // relational representation.
+                    //
+                    // "All" member is ignored during SQL generation.
+                    // The complete MDX query can be evaluated natively only
+                    // if there is non all member on at least one level;
+                    // otherwise the generated SQL is an empty string.
+                    // See SqlTupleReader.addLevelMemberSql()
+                    //
+                    if (m.isAll()) {
+                        hasAllMember = true;
+                    }
+
+                    if (m.isCalculated()) {
+                        if (restrictMemberTypes) {
+                            return null;
+                        }
+                        hasCalcMembers = true;
+                    } else {
+                        hasNonCalcMembers = true;
+                    }
+                    if (level == null) {
+                        level = m.getLevel();
+                    } else if (!level.equals(m.getLevel())) {
+                        // Members should be on the same level.
                         return null;
                     }
-                    hasCalcMembers = true;
-                } else {
-                    hasNonCalcMembers = true;
                 }
-                if (level == null) {
-                    level = m.getLevel();
-                } else if (!level.equals(m.getLevel())) {
-                    // Members should be on the same level.
-                    return null;
-                }
+            } catch(ClassCastException cce) {
+                return null;
             }
             if (level == null) {
                 // all members were null; use an arbitrary one of the
@@ -529,22 +506,18 @@ public abstract class RolapNativeSet extends RolapNative {
             if (!isSimpleLevel(level)) {
                 return null;
             }
-            RolapMember[] members = new RolapMember[args.length - nNullMembers];
-            
-            int j = 0;
-            for (int i = 0; i < args.length; ++i) {
-                RolapMember m = args[i];
+            List<RolapMember> members = new ArrayList<RolapMember>();
 
+            for (RolapMember m : args) {
                 if (m.isNull()) {
                     // filter out null members
                     continue;
                 }
-                members[j] = m;
-                ++j;
+                members.add(m);
             }
-            
+
             return new MemberListCrossJoinArg(
-                level, members, restrictMemberTypes, 
+                level, members, restrictMemberTypes,
                 hasCalcMembers, hasNonCalcMembers, hasAllMember);
         }
 
@@ -552,7 +525,7 @@ public abstract class RolapNativeSet extends RolapNative {
             return level;
         }
 
-        public RolapMember[] getMembers() {
+        public List<RolapMember> getMembers() {
             return members;
         }
 
@@ -575,7 +548,7 @@ public abstract class RolapNativeSet extends RolapNative {
         public boolean hasAllMember() {
             return hasAllMember;
         }
-        
+
         public int hashCode() {
             int c = 12;
             for (RolapMember member : members) {
@@ -595,8 +568,8 @@ public abstract class RolapNativeSet extends RolapNative {
             if (this.restrictMemberTypes != that.restrictMemberTypes) {
                 return false;
             }
-            for (int i = 0; i < members.length; i++) {
-                if (this.members[i] != that.members[i]) {
+            for (int i = 0; i < members.size(); i++) {
+                if (this.members.get(i) != that.members.get(i)) {
                     return false;
                 }
             }
@@ -606,7 +579,7 @@ public abstract class RolapNativeSet extends RolapNative {
         public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
             SqlConstraintUtils.addMemberConstraint(
                 sqlQuery, baseCube, null,
-                Arrays.asList(members), restrictMemberTypes, true);
+                members, restrictMemberTypes, true);
         }
     }
 
@@ -759,9 +732,9 @@ public abstract class RolapNativeSet extends RolapNative {
      * set1 and set2 are one of
      * <code>member.children</code>, <code>level.members</code> or
      * <code>member.descendants</code>.
-     * 
-     * @param evaluator RolapEvaluator to use if inputs are to be evaluated 
-     * @param fun the CrossJoin function, either "CrossJoin" or "NonEmptyCrossJoin". 
+     *
+     * @param evaluator RolapEvaluator to use if inputs are to be evaluated
+     * @param fun the CrossJoin function, either "CrossJoin" or "NonEmptyCrossJoin".
      * @param args inputs to the CrossJoin
      * @return array of CrossJoinArg representing the inputs.
      */
@@ -779,7 +752,7 @@ public abstract class RolapNativeSet extends RolapNative {
             return null;
         }
         ExpCompiler compiler = evaluator.getQuery().createCompiler();
-        
+
         // Check if the arguments can be natively evaluated.
         // If not, try evaluating this argument and turning the result into
         // MemberListCrossJoinArg.
@@ -788,7 +761,11 @@ public abstract class RolapNativeSet extends RolapNative {
         if (arg0 == null) {
             if (MondrianProperties.instance().ExpandNonNative.get()) {
                 ListCalc listCalc0 = compiler.compileList(args[0]);
-                List list0 = listCalc0.evaluateList(evaluator);
+/*
+                List<RolapMember> list0 =
+                    Util.cast(listCalc0.evaluateMemberList(evaluator));
+*/
+                List<RolapMember> list0 = listCalc0.evaluateList(evaluator);
                 CrossJoinArg arg =
                     MemberListCrossJoinArg.create(list0, restrictMemberTypes());
                 if (arg != null) {
@@ -800,13 +777,15 @@ public abstract class RolapNativeSet extends RolapNative {
                 return null;
             }
         }
-        
+
         CrossJoinArg[] arg1 = checkCrossJoinArg(evaluator, args[1]);
         if (arg1 == null) {
             if (MondrianProperties.instance().ExpandNonNative.get()) {
-                ListCalc listCalc1 = compiler.compileList(args[1]);
-                List list1 = listCalc1.evaluateList(evaluator);
-                CrossJoinArg arg = 
+                MemberListCalc listCalc1 =
+                    (MemberListCalc) compiler.compileList(args[1]);
+                List<RolapMember> list1 =
+                    Util.cast(listCalc1.evaluateMemberList(evaluator));
+                CrossJoinArg arg =
                     MemberListCrossJoinArg.create(list1, restrictMemberTypes());
                 if (arg != null) {
                     arg1 = new CrossJoinArg[] {arg};
@@ -817,7 +796,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 return null;
             }
         }
-        
+
         CrossJoinArg[] ret = new CrossJoinArg[arg0.length + arg1.length];
         System.arraycopy(arg0, 0, ret, 0, arg0.length);
         System.arraycopy(arg1, 0, ret, arg0.length, arg1.length);
@@ -829,7 +808,8 @@ public abstract class RolapNativeSet extends RolapNative {
      */
     protected CrossJoinArg[] checkCrossJoinArg(
         RolapEvaluator evaluator,
-        Exp exp) {
+        Exp exp)
+    {
         if (exp instanceof NamedSetExpr) {
             NamedSet namedSet = ((NamedSetExpr) exp).getNamedSet();
             exp = namedSet.getExp();

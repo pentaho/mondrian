@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -116,16 +116,16 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
                         }
                         continue;
                     }
-                    Member[] children = schemaReader.getMemberChildren(member);
+                    List<Member> children = schemaReader.getMemberChildren(member);
                     sortMembers(
                         evaluator.push(),
-                        Arrays.asList(children),
+                        children,
                         orderCalc,
                         top,
                         true);
-                    int x = Math.min(n, children.length);
+                    int x = Math.min(n, children.size());
                     for (int i = 0; i < x; i++) {
-                        result.add(children[i]);
+                        result.add(children.get(i));
                     }
                 }
                 return result;

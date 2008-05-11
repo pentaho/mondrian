@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -55,7 +55,7 @@ class MondrianOlap4jMember implements Member, Named {
     }
 
     public NamedList<MondrianOlap4jMember> getChildMembers() {
-        final mondrian.olap.Member[] children =
+        final List<mondrian.olap.Member> children =
             olap4jSchema.schemaReader.getMemberChildren(
                 member);
         return new AbstractNamedList<MondrianOlap4jMember>() {
@@ -64,17 +64,17 @@ class MondrianOlap4jMember implements Member, Named {
             }
 
             public MondrianOlap4jMember get(int index) {
-                return new MondrianOlap4jMember(olap4jSchema, children[index]);
+                return new MondrianOlap4jMember(olap4jSchema, children.get(index));
             }
 
             public int size() {
-                return children.length;
+                return children.size();
             }
         };
     }
 
     public int getChildMemberCount() {
-        return olap4jSchema.schemaReader.getMemberChildren(member).length;
+        return olap4jSchema.schemaReader.getMemberChildren(member).size();
     }
 
     public MondrianOlap4jMember getParentMember() {

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -331,6 +331,22 @@ public abstract class RolapAxis implements Axis {
             public Position get(int index) {
                 return new MemberList.MLPosition(index);
             }
+            public Iterator<Position> iterator() {
+                return new Iterator<Position>() {
+                    private final Iterator it = list.iterator();
+                    private int cursor = 0;
+                    public boolean hasNext() {
+                        return it.hasNext();
+                    }
+                    public Position next() {
+                        it.next();
+                        return get(cursor++);
+                    }
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
         }
 
         /**
@@ -558,6 +574,9 @@ public abstract class RolapAxis implements Axis {
                 return list.size();
             }
             public Position get(int index) {
+                if (index >= list.size()) {
+                    throw new IndexOutOfBoundsException();
+                }
                 return new MemberArrayList.MALPosition(index);
             }
         }

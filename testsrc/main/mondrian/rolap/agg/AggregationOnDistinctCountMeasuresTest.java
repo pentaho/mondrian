@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -62,7 +62,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "<VirtualCube name=\"Warehouse and Sales3\" defaultMeasure=\"Store Invoice\">\n" +
                 "  <CubeUsages>\n" +
                 "       <CubeUsage cubeName=\"Sales\" ignoreUnrelatedDimensions=\"true\"/>" +
-                "   </CubeUsages>\n" +                    
+                "   </CubeUsages>\n" +
                 "   <VirtualCubeDimension cubeName=\"Sales\" name=\"Gender\"/>\n" +
                 "   <VirtualCubeDimension name=\"Store\"/>\n" +
                 "   <VirtualCubeDimension name=\"Product\"/>\n" +
@@ -315,7 +315,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
         assertQueryReturns(query, fold(result));
     }
-   
+
 
     public void testDistinctCountOnMembersWithNonJoiningDimensionNotAtAllLevel() {
         assertQueryReturns(
@@ -433,7 +433,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "SELECT PRODUCT.X  ON ROWS, " +
             "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n" +
             "FROM [WAREHOUSE AND SALES2]";
-        
+
         String result;
         if (getTestContext().getDialect().isLucidDB()) {
             // LucidDB has no limit on the size of IN list
@@ -444,7 +444,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "{[Measures].[Customer Count]}\n" +
                 "Axis #2:\n" +
                 "{[Product].[X]}\n" +
-                "Row #0: 1,360\n";            
+                "Row #0: 1,360\n";
         } else {
             result =
                 "Axis #0:\n" +
@@ -454,11 +454,11 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "Axis #2:\n" +
                 "{[Product].[X]}\n" +
                 "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: " +
-                "Distinct Count aggregation is not supported over a large list\n";
+                "Distinct Count aggregation is not supported over a list with more than 7 predicates (see property mondrian.rolap.maxConstraints)\n";
         }
-        
+
         assertQueryReturns(query, fold(result));
-        
+
         props.MaxConstraints.set(origMaxConstraint);
     }
 
@@ -1036,20 +1036,21 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `product` as `product`, `product_class` as `product_class` " +
             "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 " +
             "and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` " +
-            "and (((`product`.`brand_name` = 'Red Wing' and `product_class`.`product_subcategory` = 'Pot Scrubbers' " +
+            "and (((`product`.`brand_name` = 'High Quality' and `product_class`.`product_subcategory` = 'Pot Scrubbers' " +
             "and `product_class`.`product_category` = 'Kitchen Products' and `product_class`.`product_department` = 'Household' " +
-            "and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'Cormorant' " +
-            "and `product_class`.`product_subcategory` = 'Pot Scrubbers' and `product_class`.`product_category` = 'Kitchen Products' " +
-            "and `product_class`.`product_department` = 'Household' and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'Denny' " +
+            "and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'Denny' " +
             "and `product_class`.`product_subcategory` = 'Pot Scrubbers' and `product_class`.`product_category` = 'Kitchen Products' " +
             "and `product_class`.`product_department` = 'Household' " +
-            "and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'High Quality' " +
+            "and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'Red Wing' " +
+            "and `product_class`.`product_subcategory` = 'Pot Scrubbers' and `product_class`.`product_category` = 'Kitchen Products' " +
+            "and `product_class`.`product_department` = 'Household' " +
+            "and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'Cormorant' " +
             "and `product_class`.`product_subcategory` = 'Pot Scrubbers' and `product_class`.`product_category` = 'Kitchen Products' " +
             "and `product_class`.`product_department` = 'Household' " +
             "and `product_class`.`product_family` = 'Non-Consumable')) or (`product_class`.`product_subcategory` = 'Pots and Pans' " +
             "and `product_class`.`product_category` = 'Kitchen Products' and `product_class`.`product_department` = 'Household' " +
             "and `product_class`.`product_family` = 'Non-Consumable'))) as `dummyname` group by `d0`";
-        
+
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
             new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql)};
@@ -1124,10 +1125,13 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     public void testOptimizeChildrenForTuplesWithLength3() {
         List<Member[]> memberList =
             CrossJoinFunDef.crossJoin(
-                genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
+                genderMembersIncludingAll(
+                    false, salesCubeSchemaReader, salesCube),
                 productMembersPotScrubbersPotsAndPans(salesCubeSchemaReader));
         memberList =
-            CrossJoinFunDef.crossJoin(memberList, storeMembersCAAndOR(salesCubeSchemaReader));
+            CrossJoinFunDef.crossJoin(
+                memberList,
+                storeMembersCAAndOR(salesCubeSchemaReader));
         List tuples = optimizeChildren(memberList);
         assertFalse(tuppleListContains(tuples,
             member(
@@ -1143,7 +1147,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     public void testOptimizeChildrenWhenTuplesAreFormedWithDifferentLevels() {
         List<Member[]> memberList =
             CrossJoinFunDef.crossJoin(
-                genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
+                genderMembersIncludingAll(
+                    false, salesCubeSchemaReader, salesCube),
                 productMembersPotScrubbersPotsAndPans(salesCubeSchemaReader));
         List tuples = optimizeChildren(memberList);
         assertEquals(4, tuples.size());
@@ -1168,8 +1173,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     public void testWhetherCJOfChildren() {
         List<Member[]> memberList =
             CrossJoinFunDef.crossJoin(
-                genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
-                storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
+                genderMembersIncludingAll(
+                    false, salesCubeSchemaReader, salesCube),
+                storeMembersUsaAndCanada(
+                    false, salesCubeSchemaReader, salesCube));
 
         List tuples = optimizeChildren(memberList);
         assertEquals(2, tuples.size());
@@ -1197,40 +1204,51 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             CrossJoinFunDef.crossJoin(
                 genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
                 storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
-        Map[] memberCounterMap =
-            AggregateFunDef.AggregateCalc.
-                membersVersusOccurancesInTuple(memberList);
+        Map<Member, Integer>[] memberCounterMap =
+            AggregateFunDef.AggregateCalc.membersVersusOccurencesInTuple(
+                memberList);
 
-        assertTrue(AggregateFunDef.AggregateCalc.
-            areOccurancesEqual(memberCounterMap[0].values()));
-        assertTrue(AggregateFunDef.AggregateCalc.
-            areOccurancesEqual(memberCounterMap[1].values()));
+        assertTrue(
+            Util.areOccurencesEqual(
+                memberCounterMap[0].values()));
+        assertTrue(
+            Util.areOccurencesEqual(
+                memberCounterMap[1].values()));
     }
 
     public void testMemberCountIsNotSameForAllMembersInTuple() {
-
-        Member maleChild = member(
-            Id.Segment.toList("Gender","All Gender","M"), salesCubeSchemaReader);
-        Member femaleChild = member(
-            Id.Segment.toList("Gender","All Gender","F"), salesCubeSchemaReader);
-        Member mexicoMember = member(
-            Id.Segment.toList("Store","All Stores","Mexico"), salesCubeSchemaReader);
+        Member maleChild =
+            member(
+                Id.Segment.toList("Gender","All Gender","M"),
+                salesCubeSchemaReader);
+        Member femaleChild =
+            member(
+                Id.Segment.toList("Gender","All Gender","F"),
+                salesCubeSchemaReader);
+        Member mexicoMember =
+            member(
+                Id.Segment.toList("Store","All Stores","Mexico"),
+                salesCubeSchemaReader);
 
         List<Member[]> memberList = new ArrayList<Member[]>();
         memberList.add(new Member[]{maleChild});
 
-        memberList = CrossJoinFunDef.crossJoin(memberList,
+        memberList = CrossJoinFunDef.crossJoin(
+            memberList,
             storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
 
         memberList.add(new Member[]{femaleChild, mexicoMember});
 
-        Map[] memberCounterMap = AggregateFunDef.AggregateCalc.
-            membersVersusOccurancesInTuple(memberList);
+        Map<Member, Integer>[] memberCounterMap =
+            AggregateFunDef.AggregateCalc.membersVersusOccurencesInTuple(
+                memberList);
 
-        assertFalse(AggregateFunDef.AggregateCalc.
-            areOccurancesEqual(memberCounterMap[0].values()));
-        assertTrue(AggregateFunDef.AggregateCalc.
-            areOccurancesEqual(memberCounterMap[1].values()));
+        assertFalse(
+            Util.areOccurencesEqual(
+                memberCounterMap[0].values()));
+        assertTrue(
+            Util.areOccurencesEqual(
+                memberCounterMap[1].values()));
     }
 
     public void testAggregatesAtTheSameLevelForNormalAndDistinctCountMeasure() {
@@ -1307,6 +1325,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     private List<Member[]> tupleList(List<Member> members) {
-        return AggregateFunDef.AggregateCalc.makeTupleList(members);        
+        return AggregateFunDef.AggregateCalc.makeTupleList(members);
     }
 }

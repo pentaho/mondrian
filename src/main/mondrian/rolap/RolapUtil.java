@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -39,7 +39,6 @@ public class RolapUtil {
     public static final Logger MDX_LOGGER = Logger.getLogger("mondrian.mdx");
     public static final Logger SQL_LOGGER = Logger.getLogger("mondrian.sql");
     static final Logger LOGGER = Logger.getLogger(RolapUtil.class);
-    static final RolapMember[] emptyMemberArray = new RolapMember[0];
     private static Semaphore querySemaphore;
 
     /**
@@ -90,7 +89,7 @@ public class RolapUtil {
 
     static RolapMember[] toArray(List<RolapMember> v) {
         return v.isEmpty()
-            ? emptyMemberArray
+            ? new RolapMember[0]
             : v.toArray(new RolapMember[v.size()]);
     }
 

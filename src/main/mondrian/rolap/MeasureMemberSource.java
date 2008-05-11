@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -30,11 +30,9 @@ import java.util.List;
 class MeasureMemberSource extends ArrayMemberSource {
     MeasureMemberSource(
         RolapHierarchy hierarchy,
-        List<RolapMember> memberList)
+        List<RolapMember> members)
     {
-        super(
-            hierarchy,
-            memberList.toArray(new RolapMember[memberList.size()]));
+        super(hierarchy, members);
     }
 }
 

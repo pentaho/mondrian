@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2006 Julian Hyde
+// Copyright (C) 2004-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -48,8 +48,8 @@ class DrilldownMemberFunDef extends FunDefBase {
 
         return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
             public List evaluateList(Evaluator evaluator) {
-                final List list1 = listCalc1.evaluateList(evaluator);
-                final List list2 = listCalc2.evaluateList(evaluator);
+                final List<?> list1 = listCalc1.evaluateList(evaluator);
+                final List<Member> list2 = listCalc2.evaluateList(evaluator);
                 return drilldownMember(list1, list2, evaluator);
             }
 
@@ -69,42 +69,45 @@ class DrilldownMemberFunDef extends FunDefBase {
                     Evaluator evaluator,
                     Object element,
                     Set memberSet,
-                    List resultList) {
+                    List<Object> resultList) {
                 if (null == element) {
                     return;
                 }
 
                 Member m = null;
+                Member[] tuple;
                 int k = -1;
                 if (element instanceof Member) {
-                    if (!memberSet.contains(element)) {
+                    m = (Member) element;
+                    if (!memberSet.contains(m)) {
                         return;
                     }
-                    m = (Member) element;
+                    tuple = null;
                 } else {
                     Util.assertTrue(element instanceof Member[]);
-                    Member[] members = (Member[]) element;
-                    for (int j = 0; j < members.length; j++) {
-                        Member member = members[j];
+                    tuple = (Member[]) element;
+                    m = null;
+                    for (Member member : tuple) {
+                        ++k;
                         if (memberSet.contains(member)) {
-                            k = j;
                             m = member;
                             break;
                         }
                     }
-                    if (k == -1) {
+                    if (m == null) {
+                        //not found
                         return;
                     }
                 }
 
-                Member[] children = evaluator.getSchemaReader().getMemberChildren(m);
-                for (int j = 0; j < children.length; j++) {
+                List<Member> children = evaluator.getSchemaReader().getMemberChildren(m);
+                for (Member member : children) {
                     Object objNew;
-                    if (k < 0) {
-                        objNew = children[j];
+                    if (tuple == null) {
+                        objNew = member;
                     }  else {
-                        Member[] members = (Member[]) ((Member[]) element).clone();
-                        members[k] = children[j];
+                        Member[] members = tuple.clone();
+                        members[k] = member;
                         objNew = members;
                     }
 
@@ -115,7 +118,7 @@ class DrilldownMemberFunDef extends FunDefBase {
                 }
             }
 
-            private List drilldownMember(List v0, List v1, Evaluator evaluator) {
+            private List drilldownMember(List<?> v0, List<Member> v1, Evaluator evaluator) {
                 if (null == v0 ||
                     v0.isEmpty() ||
                     null == v1 ||
@@ -123,10 +126,10 @@ class DrilldownMemberFunDef extends FunDefBase {
                     return v0;
                 }
 
-                Set set1 = new HashSet();
+                Set<Member> set1 = new HashSet<Member>();
                 set1.addAll(v1);
 
-                List result = new ArrayList();
+                List<Object> result = new ArrayList<Object>();
                 int i = 0, n = v0.size();
                 while (i < n) {
                     Object o = v0.get(i++);

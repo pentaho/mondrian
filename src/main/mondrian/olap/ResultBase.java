@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -111,6 +111,10 @@ public abstract class ResultBase implements Result {
             boolean firstTime = true;
             pw.print("{");
             for (Member member: position) {
+                if (member.getDimension().isHighCardinality()) {
+                    pw.println(" -- High cardinality dimension --}");
+                    return;
+                }
                 if (! firstTime) {
                     pw.print(", ");
                 }

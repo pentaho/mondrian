@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -83,7 +83,7 @@ public class MondrianProperties extends TriggerableProperties {
     public MondrianProperties() {
         this.propertySource = new FilePropertySource(new File(mondrianDotProperties));
     }
-    
+
     public boolean triggersAreEnabled() {
         return EnableTriggers.get();
     }
@@ -328,6 +328,15 @@ public class MondrianProperties extends TriggerableProperties {
         new IntegerProperty(
             this, "mondrian.result.limit", 0);
 
+    /**
+     * Property that establishes the amount of chunks for querying cells
+     * involving high-cardinality dimensions.
+     * Should prime with {@link #ResultLimit mondrian.result.limit}.
+     */
+    public transient final IntegerProperty HighCardChunkSize =
+        new IntegerProperty(this, "mondrian.result.highCardChunkSize", 1);
+
+
     // mondrian.test properties
 
     /**
@@ -399,15 +408,6 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public transient final StringProperty TestJdbcPassword = new StringProperty(
             this, "mondrian.test.jdbcPassword", null);
-
-    /**
-     * Property that determines when a dimension is considered "large".
-     * If a dimension has more than this number of members, Mondrian uses a
-     * {@link mondrian.rolap.SmartMemberReader smart member reader}.
-     */
-    public transient final IntegerProperty LargeDimensionThreshold =
-            new IntegerProperty(
-                    this, "mondrian.rolap.LargeDimensionThreshold", 100);
 
     /**
      * Property that, with {@link #SparseSegmentDensityThreshold}, determines
@@ -505,7 +505,7 @@ public class MondrianProperties extends TriggerableProperties {
 
     /**
      * Property that controls
-     * whether aggregation cache hit / miss counters will be enabled 
+     * whether aggregation cache hit / miss counters will be enabled
      */
     public transient final BooleanProperty EnableCacheHitCounters =
         new BooleanProperty(
@@ -516,7 +516,7 @@ public class MondrianProperties extends TriggerableProperties {
      * comparison tests do not contain expected sqls for the specified
      * dialect. The tests are skipped if no expected sqls are
      * found for the current dialect.
-     * 
+     *
      * Possible values are the following:
      * "NONE": no warning (default)
      * "ANY": any dialect
@@ -525,10 +525,10 @@ public class MondrianProperties extends TriggerableProperties {
      * "LUCIDDB"
      * "MYSQL"
      *  ...and any Dialect enum in SqlPattern.Dialect
-     * 
+     *
      * Specific tests can overwrite the default setting. The priority is
      * Settings besides "ANY" in mondrian.properties file < Any setting in the test < "ANY"
-     * 
+     *
      */
     public transient final StringProperty WarnIfNoPatternForDialect =
         new StringProperty(
@@ -991,7 +991,7 @@ public class MondrianProperties extends TriggerableProperties {
      * aggregation, the measure is ignored in the evaluation context. This
      * behaviour kicks in only if the cubeusage for this measure has
      * IgnoreUnrelatedDimensions attribute set to false.
-     * 
+     *
      * <p>For example, Gender doesn't join with [Warehouse Sales] measure.
      *
      * <p>With mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension=true

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -369,7 +369,7 @@ enum RowsetDefinition {
             return new DbschemaSchemataRowset(request, handler);
         }
     },
-    
+
     /**
      * http://msdn2.microsoft.com/en-us/library/ms126299(SQL.90).aspx
      *
@@ -2312,9 +2312,9 @@ enum RowsetDefinition {
                         }
                     }
 
-                    RolapMember[] rms = cube.getMeasuresMembers();
-                    for (int k = 1; k < rms.length; k++) {
-                        RolapMember member = rms[k];
+                    List<RolapMember> rms = cube.getMeasuresMembers();
+                    for (int k = 1; k < rms.size(); k++) {
+                        RolapMember member = rms.get(k);
 
                         // null == true for regular cubes
                         // virtual cubes do not set the visible property
@@ -2419,8 +2419,7 @@ enum RowsetDefinition {
                 }
             }
 
-            Level[] levels = schemaReader.getHierarchyLevels(hierarchy);
-            for (Level level : levels) {
+            for (Level level : schemaReader.getHierarchyLevels(hierarchy)) {
                 ordinalPosition = populateLevel(
                     cube, hierarchy, level, ordinalPosition, rows);
             }
@@ -4413,7 +4412,7 @@ TODO: see above
                 }
                 // RME
                 //SchemaReader schemaReader = connection.getSchemaReader();
-                // want to pick up cube's 
+                // want to pick up cube's
                 SchemaReader schemaReader = cube.getSchemaReader(connection.getRole());
                 populateCube(schemaReader, catalogName, cube, rows);
             }
@@ -4816,8 +4815,7 @@ TODO: see above
             List<Row> rows)
             throws XmlaException
         {
-            final Level[] levels = schemaReader.getHierarchyLevels(hierarchy);
-            for (Level level : levels) {
+            for (Level level : schemaReader.getHierarchyLevels(hierarchy)) {
                 String uniqueName = level.getUniqueName();
                 String name = level.getName();
                 if (levelUniqueNameRT.passes(uniqueName) &&
@@ -5153,7 +5151,7 @@ TODO: see above
                     }
                     String levelListStr = buf.toString();
 
-                    Member[] storedMembers =
+                    List<Member> storedMembers =
                         schemaReader.getLevelMembers(measuresLevel, false);
                     for (Member member : storedMembers) {
                         String name = member.getName();
@@ -5542,7 +5540,7 @@ TODO: see above
                     }
                     // Get members of this level, without access control, but
                     // including calculated members.
-                    Member[] members =
+                    List<Member> members =
                         cube.getSchemaReader(null).getLevelMembers(level, true);
                     outputMembers(
                         schemaReader, members, catalogName, cube, rows);
@@ -5609,7 +5607,7 @@ TODO: see above
                 }
 
                 Level level = levels[levelNumber];
-                Member[] members =
+                List<Member> members =
                     schemaReader.getLevelMembers(level, false);
                 outputMembers(schemaReader, members, catalogName, cube, rows);
             } else {
@@ -5617,9 +5615,9 @@ TODO: see above
                 // the Hierarchy (rather than getting them one at a time).
                 // The value returned is not used at this point but they are
                 // now cached in the SchemaReader.
-                List<Member[]> membersArray =
+                List<List<Member>> membersArray =
                     RolapMember.getAllMembers(schemaReader, hierarchy);
-                for (Member[] members : membersArray) {
+                for (List<Member> members : membersArray) {
                     outputMembers(
                         schemaReader, members,
                         catalogName, cube, rows);
@@ -5656,7 +5654,7 @@ TODO: see above
             if (mask(treeOp, Enumeration.TreeOp.Siblings.userOrdinal())) {
                 final Member parent =
                     schemaReader.getMemberParent(member);
-                final Member[] siblings = (parent == null)
+                final List<Member> siblings = (parent == null)
                     ?  schemaReader.getHierarchyRootMembers(member.getHierarchy())
                     : schemaReader.getMemberChildren(parent);
 
@@ -5672,7 +5670,7 @@ TODO: see above
             }
             // Visit node's descendants or its immediate children, but not both.
             if (mask(treeOp, Enumeration.TreeOp.Descendants.userOrdinal())) {
-                final Member[] children = schemaReader.getMemberChildren(member);
+                final List<Member> children = schemaReader.getMemberChildren(member);
                 for (Member child : children) {
                     populateMember(
                         schemaReader, catalogName,
@@ -5682,7 +5680,7 @@ TODO: see above
                         rows);
                 }
             } else if (mask(treeOp, Enumeration.TreeOp.Children.userOrdinal())) {
-                final Member[] children =
+                final List<Member> children =
                     schemaReader.getMemberChildren(member);
                 for (Member child : children) {
                     populateMember(
@@ -5726,7 +5724,7 @@ TODO: see above
 
         private void outputMembers(
             final SchemaReader schemaReader,
-            Member[] members,
+            List<Member> members,
             final String catalogName,
             Cube cube, List<Row> rows) {
 
@@ -6319,14 +6317,13 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                     // which means that nothing will match.
                     return;
                 }
-                final List<Id.Segment> nameParts = 
+                final List<Id.Segment> nameParts =
                     Util.parseIdentifier(levelUniqueName);
                 Hierarchy hier = cube.lookupHierarchy(nameParts.get(0), false);
                 if (hier == null) {
                     return;
                 }
-                Level[] levels = schemaReader.getHierarchyLevels(hier);
-                for (Level level : levels) {
+                for (Level level : schemaReader.getHierarchyLevels(hier)) {
                     if (level.getUniqueName().equals(levelUniqueName)) {
                         populateLevel(schemaReader, catalogName,
                             cube, level, rows);
@@ -6369,8 +6366,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
             Hierarchy hierarchy,
             List<Row> rows)
         {
-            Level[] levels = schemaReader.getHierarchyLevels(hierarchy);
-            for (Level level : levels) {
+            for (Level level : schemaReader.getHierarchyLevels(hierarchy)) {
                 populateLevel(schemaReader, catalogName,
                     cube, level, rows);
             }

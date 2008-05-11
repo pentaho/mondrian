@@ -3,15 +3,13 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ListCalc;
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
@@ -50,10 +48,12 @@ class AddCalculatedMembersFunDef extends FunDefBase {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc = compiler.compileList(call.getArg(0));
+        final MemberListCalc listCalc =
+            (MemberListCalc) compiler.compileList(call.getArg(0));
         return new AbstractListCalc(call, new Calc[] {listCalc}) {
             public List evaluateList(Evaluator evaluator) {
-                final List<Member> list = listCalc.evaluateList(evaluator);
+                final List<Member> list =
+                    listCalc.evaluateMemberList(evaluator);
                 return addCalculatedMembers(list, evaluator);
             }
         };

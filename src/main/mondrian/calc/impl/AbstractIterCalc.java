@@ -3,18 +3,19 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.calc.impl;
 
+import mondrian.calc.Calc;
+import mondrian.calc.IterCalc;
+import mondrian.calc.ResultStyle;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
+import mondrian.olap.Member;
 import mondrian.olap.type.SetType;
-import mondrian.calc.IterCalc;
-import mondrian.calc.Calc;
-import mondrian.calc.ResultStyle;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.IterCalc} interface.
@@ -59,6 +60,17 @@ public abstract class AbstractIterCalc
     public ResultStyle getResultStyle() {
         return ResultStyle.ITERABLE;
     }
+
+    @SuppressWarnings({"unchecked"})
+    public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
+        return (Iterable<Member>) evaluateIterable(evaluator);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
+        return (Iterable<Member[]>) evaluateIterable(evaluator);
+    }
+
 }
 
 // End AbstractIterCalc.java

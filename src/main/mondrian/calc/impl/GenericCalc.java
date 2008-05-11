@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -24,7 +24,7 @@ import java.util.*;
  */
 public abstract class GenericCalc
     extends AbstractCalc
-    implements ListCalc, IterCalc, TupleCalc,
+    implements ListCalc, MemberListCalc, TupleListCalc, IterCalc, TupleCalc,
     StringCalc, IntegerCalc, DoubleCalc, BooleanCalc, DateTimeCalc,
     VoidCalc, MemberCalc, LevelCalc, HierarchyCalc, DimensionCalc
 {
@@ -47,6 +47,17 @@ public abstract class GenericCalc
             return list;
         }
     }
+    @SuppressWarnings({"unchecked"})
+    public final List<Member> evaluateMemberList(Evaluator evaluator) {
+        return (List<Member>) evaluateList(evaluator);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public final List<Member[]> evaluateTupleList(Evaluator evaluator) {
+        return (List<Member[]>) evaluateList(evaluator);
+    }
+
+
 
     public Iterable evaluateIterable(Evaluator evaluator) {
         Object o = evaluate(evaluator);
@@ -62,6 +73,17 @@ public abstract class GenericCalc
             };
         }
     }
+
+    @SuppressWarnings({"unchecked"})
+    public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
+        return (Iterable<Member>) evaluateIterable(evaluator);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
+        return (Iterable<Member[]>) evaluateIterable(evaluator);
+    }
+
 
     public Member[] evaluateTuple(Evaluator evaluator) {
         return (Member[]) evaluate(evaluator);

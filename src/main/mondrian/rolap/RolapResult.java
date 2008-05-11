@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,28 +12,49 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Map;
+
+import mondrian.calc.Calc;
+import mondrian.calc.DummyExp;
+import mondrian.calc.ParameterSlot;
+import mondrian.calc.ResultStyle;
+import mondrian.calc.impl.ValueCalc;
+import mondrian.olap.Axis;
+import mondrian.olap.Cell;
+import mondrian.olap.CellFormatter;
+import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.DimensionType;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Parameter;
+import mondrian.olap.Position;
+import mondrian.olap.Query;
+import mondrian.olap.QueryAxis;
+import mondrian.olap.ResultBase;
+import mondrian.olap.ResultLimitExceededException;
+import mondrian.olap.SchemaReader;
+import mondrian.olap.Util;
+import mondrian.olap.fun.FunUtil;
 import mondrian.olap.fun.MondrianEvaluationException;
+import mondrian.olap.type.ScalarType;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.util.ConcatenableList;
 import mondrian.util.Format;
 import mondrian.util.ObjectPool;
 
-import mondrian.olap.fun.FunUtil;
-import mondrian.olap.type.ScalarType;
-import mondrian.calc.*;
-import mondrian.calc.impl.ValueCalc;
-
 import org.apache.log4j.Logger;
-
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Locale;
 
 /**
  * A <code>RolapResult</code> is the result of running a query.
@@ -42,8 +63,7 @@ import java.util.Locale;
  * @since 10 August, 2001
  * @version $Id$
  */
-public
-class RolapResult extends ResultBase {
+public class RolapResult extends ResultBase {
 
     private static final Logger LOGGER = Logger.getLogger(ResultBase.class);
 
@@ -57,6 +77,15 @@ class RolapResult extends ResultBase {
     private Modulos modulos = null;
     private final int maxEvalDepth =
             MondrianProperties.instance().MaxEvalDepth.get();
+
+    private final Map<Integer, Boolean> positionsHighCardinality =
+        new HashMap<Integer, Boolean>();
+    private final Map<Integer, Iterator<Position>> positionsIterators =
+        new HashMap<Integer, Iterator<Position>>();
+    private final Map<Integer, Integer> positionsIndexes =
+        new HashMap<Integer, Integer>();
+    private final Map<Integer, List<Position>> positionsCurrent =
+        new HashMap<Integer, List<Position>>();
 
     RolapResult(Query query, boolean execute) {
         super(query, new Axis[query.axes.length]);
@@ -193,7 +222,7 @@ class RolapResult extends ResultBase {
             final List<Member> nonDefaultAllMembers = new ArrayList<Member>();
 
             // List of Members of Hierarchies that do not have an ALL Member
-            List<Member[]> nonAllMembers = new ArrayList<Member[]>();
+            List<List<Member>> nonAllMembers = new ArrayList<List<Member>>();
 
             // List of Measures
             final List<Member> measureMembers = new ArrayList<Member>();
@@ -211,7 +240,7 @@ class RolapResult extends ResultBase {
             query.putEvalCache("ALL_MEMBER_LIST", nonDefaultAllMembers);
 
 
-            final List<Member[]> emptyNonAllMembers = Collections.emptyList();
+            final List<List<Member>> emptyNonAllMembers = Collections.emptyList();
 
             /////////////////////////////////////////////////////////////////
             //
@@ -224,6 +253,9 @@ class RolapResult extends ResultBase {
 
             if (! axisMembers.isEmpty()) {
                 for (Member m : axisMembers) {
+                    if (m == null) {
+                        break;
+                    }
                     evaluator.setSlicerContext(m);
                     if (m.isMeasure()) {
                         // A Measure was explicitly declared in the
@@ -394,7 +426,7 @@ class RolapResult extends ResultBase {
             //
             // Get value for each Cell
             //
-            executeBody(query);
+            executeBody(this.query, new int[axes.length]);
             //
             /////////////////////////////////////////////////////////////////
 
@@ -443,12 +475,12 @@ class RolapResult extends ResultBase {
             }
         }
     }
-    protected boolean removeDimension(Dimension dimension, List<Member[]> nonAllMembers) {
+    protected boolean removeDimension(Dimension dimension, List<List<Member>> nonAllMembers) {
         boolean changed = false;
-        for (ListIterator<Member[]> it = nonAllMembers.listIterator();
+        for (ListIterator<List<Member>> it = nonAllMembers.listIterator();
                 it.hasNext();) {
-            Member[] ms = it.next();
-            Dimension d = ms[0].getHierarchy().getDimension();
+            List<Member> ms = it.next();
+            Dimension d = ms.get(0).getHierarchy().getDimension();
             if (d.equals(dimension)) {
                 it.remove();
             }
@@ -497,15 +529,15 @@ class RolapResult extends ResultBase {
         }
     }
 
-    protected boolean replaceNonAllMembers(List<Member[]> nonAllMembers,
+    protected boolean replaceNonAllMembers(List<List<Member>> nonAllMembers,
                                             AxisMember axisMembers) {
 
         boolean changed = false;
         List<Member> mList = new ArrayList<Member>();
-        for (ListIterator<Member[]> it = nonAllMembers.listIterator();
+        for (ListIterator<List<Member>> it = nonAllMembers.listIterator();
                 it.hasNext();) {
-            Member[] ms = it.next();
-            Hierarchy h = ms[0].getHierarchy();
+            List<Member> ms = it.next();
+            Hierarchy h = ms.get(0).getHierarchy();
             mList.clear();
             for (Member m : axisMembers) {
                 if (m.getHierarchy().equals(h)) {
@@ -514,15 +546,14 @@ class RolapResult extends ResultBase {
             }
             if (! mList.isEmpty()) {
                 changed = true;
-                Member[] ml = mList.toArray(new Member[mList.size()]);
-                it.set(ml);
+                it.set(mList);
             }
         }
         return changed;
 
     }
 
-    protected void loadMembers(List<Member[]> nonAllMembers,
+    protected void loadMembers(List<List<Member>> nonAllMembers,
                     RolapEvaluator evaluator, QueryAxis axis, Calc calc,
                     AxisMember axisMembers) {
         int attempt = 0;
@@ -540,7 +571,7 @@ class RolapResult extends ResultBase {
                 // will pick up the newly loaded aggregates.
                 evaluator.clearExpResultCache(false);
             }
-            
+
             if (attempt++ > maxEvalDepth) {
                 throw Util.newInternal(
                     "Failed to load all aggregations after " +
@@ -550,7 +581,7 @@ class RolapResult extends ResultBase {
         }
     }
 
-    void evalLoad(List<Member[]> nonAllMembers, int cnt,
+    void evalLoad(List<List<Member>> nonAllMembers, int cnt,
             Evaluator evaluator, QueryAxis axis, Calc calc,
             AxisMember axisMembers) {
         if (cnt < 0) {
@@ -562,7 +593,7 @@ class RolapResult extends ResultBase {
             }
         }
     }
-    Axis evalExecute(List<Member[]> nonAllMembers, int cnt,
+    Axis evalExecute(List<List<Member>> nonAllMembers, int cnt,
             RolapEvaluator evaluator, QueryAxis axis, Calc calc) {
         Axis axisResult = null;
         if (cnt < 0) {
@@ -579,7 +610,7 @@ class RolapResult extends ResultBase {
                 if (axis != null) {
                     ordered = axis.isOrdered();
                 }
-                axisResult = mergeAxes(axisResult, a, evaluator, ordered);                
+                axisResult = mergeAxes(axisResult, a, evaluator, ordered);
             }
         }
         return axisResult;
@@ -598,7 +629,7 @@ class RolapResult extends ResultBase {
      */
     protected void loadSpecialMembers(
         List<Member> nonDefaultAllMembers,
-        List<Member[]> nonAllMembers,
+        List<List<Member>> nonAllMembers,
         List<Member> measureMembers)
     {
         SchemaReader schemaReader = evaluator.getSchemaReader();
@@ -613,7 +644,7 @@ class RolapResult extends ResultBase {
                 continue;
             }
             if (!em.isAll()) {
-                Member[] rootMembers = schemaReader.getHierarchyRootMembers(h);
+                List<Member> rootMembers = schemaReader.getHierarchyRootMembers(h);
                 if (em.isMeasure()) {
                     for (Member mm : rootMembers) {
                         measureMembers.add(mm);
@@ -659,14 +690,21 @@ class RolapResult extends ResultBase {
                     "coordinates should have dimension " + point.size());
         }
 
+        for (int i = 0; i < pos.length; i++) {
+            if (positionsHighCardinality.get(i)) {
+                executeBody(this.query, pos);
+                break;
+            }
+        }
+
         CellInfo ci = cellInfos.lookup(pos);
         if (ci.value == null) {
-            for (int i = 0; i < pos.length; i++) {
-                int po = pos[i];
-                if (po < 0 || po >= axes[i].getPositions().size()) {
-                    throw Util.newError("coordinates out of range");
-                }
-            }
+            //for (int i = 0; i < pos.length; i++) {
+            //    int po = pos[i];
+            //    if (po < 0 || po >= axes[i].getPositions().size()) {
+            //        throw Util.newError("coordinates out of range");
+            //    }
+            //}
             ci.value = Util.nullValue;
         }
 
@@ -694,7 +732,7 @@ class RolapResult extends ResultBase {
             Object value = axisCalc.evaluate(evaluator);
             if (axisCalc.getClass().getName().indexOf("OrderFunDef") != -1) {
                 axis.setOrdered(true);
-            }            
+            }
             evaluator.setNonEmpty(false);
             if (value != null) {
                 // List or Iterable of Member or Member[]
@@ -712,7 +750,7 @@ class RolapResult extends ResultBase {
                                 new RolapAxis.MemberList((List<Member>)value);
                         }
                     } else if (axisMembers != null) {
-                        axisMembers.merge(value);
+                        axisMembers.merge(list);
                     }
                 } else {
                     // Iterable
@@ -738,14 +776,14 @@ class RolapResult extends ResultBase {
         return axisResult;
     }
 
-    private void executeBody(Query query) {
+    private void executeBody(Query query, final int[] pos) {
         // Compute the cells several times. The first time, use a dummy
         // evaluator which collects requests.
         int count = 0;
         while (true) {
 
             evaluator.setCellReader(batchingReader);
-            executeStripe(query.axes.length - 1, evaluator.push());
+            executeStripe(query.axes.length - 1, evaluator.push(), pos);
 
             // Retrieve the aggregations collected.
             //
@@ -801,7 +839,7 @@ class RolapResult extends ResultBase {
                 // will pick up the newly loaded aggregates.
                 ev.clearExpResultCache(false);
             }
-            
+
             if (attempt++ > maxEvalDepth) {
                 throw Util.newInternal(
                         "Failed to load all aggregations after " +
@@ -815,13 +853,17 @@ class RolapResult extends ResultBase {
         if (dirty) {
             batchingReader.setDirty(true);
         }
-        
+
         RolapEvaluator ev = evaluator.push();
         ev.setCellReader(aggregatingReader);
         return calc.evaluate(ev);
     }
 
-    private void executeStripe(int axisOrdinal, RolapEvaluator revaluator) {
+    private void executeStripe(
+        int axisOrdinal,
+        RolapEvaluator revaluator,
+        final int[] pos)
+    {
         if (axisOrdinal < 0) {
             Axis axis = slicerAxis;
             List<Position> positions = axis.getPositions();
@@ -832,7 +874,7 @@ class RolapResult extends ResultBase {
                 try {
                     o = revaluator.evaluateCurrent();
                 } catch (MondrianEvaluationException e) {
-                    LOGGER.warn("Mondrian: exception in executeStripe.", e);                    
+                    LOGGER.warn("Mondrian: exception in executeStripe.", e);
                     o = e;
                 }
 
@@ -907,13 +949,72 @@ class RolapResult extends ResultBase {
         } else {
             Axis axis = axes[axisOrdinal];
             List<Position> positions = axis.getPositions();
-            int i = 0;
-            for (Position position: positions) {
-                point.setAxis(axisOrdinal, i);
-                revaluator.setContext(position);
-                getQuery().checkCancelOrTimeout();
-                executeStripe(axisOrdinal - 1, revaluator);
-                i++;
+            if (positionsHighCardinality.get(axisOrdinal) == null) {
+                try {
+                    positionsHighCardinality.put(
+                        axisOrdinal,
+                        positions.get(0).get(0).getDimension()
+                            .isHighCardinality());
+                } catch (IndexOutOfBoundsException ioobe) {
+                    // No elements... no problem
+                }
+            }
+            if (positionsHighCardinality.get(axisOrdinal) != null
+                    && positionsHighCardinality.get(axisOrdinal))
+            {
+                final int limit =
+                    MondrianProperties.instance().HighCardChunkSize.get();
+                if (positionsIterators.get(axisOrdinal) == null) {
+                    final Iterator<Position> it = positions.iterator();
+                    positionsIterators.put(axisOrdinal, it);
+                    positionsIndexes.put(axisOrdinal, 0);
+                    final List<Position> subPositions =
+                        new ArrayList<Position>();
+                    for (int i = 0; i < limit && it.hasNext(); i++) {
+                        subPositions.add(it.next());
+                    }
+                    positionsCurrent.put(axisOrdinal, subPositions);
+                }
+                final Iterator<Position> it =
+                    positionsIterators.get(axisOrdinal);
+                final int positionIndex = positionsIndexes.get(axisOrdinal);
+                List<Position> subPositions = positionsCurrent.get(axisOrdinal);
+
+                if (subPositions == null) {
+                    return;
+                }
+
+                int pi;
+                if (pos[axisOrdinal]>positionIndex+subPositions.size() - 1
+                        && subPositions.size() == limit)
+                {
+                    pi = positionIndex + subPositions.size();
+                    positionsIndexes.put(
+                        axisOrdinal, positionIndex + subPositions.size());
+                    subPositions.subList(0, subPositions.size()).clear();
+                    for (int i = 0; i < limit && it.hasNext(); i++) {
+                        subPositions.add(it.next());
+                    }
+                    positionsCurrent.put(axisOrdinal, subPositions);
+                } else {
+                    pi = positionIndex;
+                }
+                for (final Position position : subPositions) {
+                    point.setAxis(axisOrdinal, pi);
+                    revaluator.setContext(position);
+                    getQuery().checkCancelOrTimeout();
+                    executeStripe(axisOrdinal - 1, revaluator, pos);
+                    pi++;
+                }
+            } else {
+                int positionIndex = 0;
+                for (final Position position : positions) {
+                    point.setAxis(axisOrdinal, positionIndex);
+                    revaluator.setContext(position);
+                    getQuery().checkCancelOrTimeout();
+                    executeStripe(axisOrdinal - 1, revaluator, pos);
+                    positionIndex++;
+                }
             }
         }
     }
@@ -1037,7 +1138,7 @@ class RolapResult extends ResultBase {
 
         AxisMember() {
             this.countOnly = false;
-            this.members = new ArrayList<Member>();
+            this.members = new ConcatenableList<Member>();
             this.totalCellCount = 1;
             this.axisCount = 0;
             // Now that the axes are evaluated, make sure that the number of
@@ -1081,20 +1182,27 @@ class RolapResult extends ResultBase {
         List<Member> members() {
             return this.members;
         }
-        void merge(Object value) {
-            List<Object> list = (List) value;
+
+        void merge(List list) {
             if (list.size() != 0) {
                 if (list.get(0) instanceof Member[]) {
-                    for (Member[] o : (List<Member[]>) value) {
+                    for (Member[] o : Util.<Member[]>cast(list)) {
                         merge(o);
                     }
                 } else {
-                    for (Member o : (List<Member>) value) {
+                    for (Member o : Util.<Member>cast(list)) {
+                        if (o == null) {
+                            continue;
+                        }
+                        if (o.getDimension().isHighCardinality()) {
+                            break;
+                        }
                         merge(o);
                     }
                 }
             }
         }
+
         void merge(Iterator it) {
             if (it.hasNext()) {
                 Object o = it.next();
@@ -1113,6 +1221,7 @@ class RolapResult extends ResultBase {
                 }
             }
         }
+
         private Member getTopParent(final Member m) {
             Member parent = m.getParentMember();
             return (parent == null) ? m : getTopParent(parent);
@@ -1705,7 +1814,7 @@ class RolapResult extends ResultBase {
     }
 
     static Axis mergeAxes(Axis axis1, Axis axis2, RolapEvaluator evaluator,
-                            boolean ordered) {        
+                            boolean ordered) {
         if (axis1 == null) {
             return axis2;
         }
@@ -1798,7 +1907,7 @@ class RolapResult extends ResultBase {
             list.addAll(extras);
 
             // if there are unique members on both axes and no order function,
-            //  sort the list to ensure default order   
+            //  sort the list to ensure default order
             if (list.size() > 0 && extras.size() > 0 && ordered == false) {
                 Member[] membs = list.get(0);
                 int membsSize = membs.length;

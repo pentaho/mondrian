@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -157,7 +157,7 @@ public class RolapSchema implements Schema {
 
     /**
      * HashMap containing column cardinality. The combination of
-     * Mondrianef.Relation and MondrianDef.Expression uniquely 
+     * Mondrianef.Relation and MondrianDef.Expression uniquely
      * identifies a relational expression(e.g. a column) specified
      * in the xml schema.
      */
@@ -191,7 +191,7 @@ public class RolapSchema implements Schema {
         this.mapNameToRole = new HashMap<String, Role>();
         this.aggTableManager = new AggTableManager(this);
         this.dataSourceChangeListener = createDataSourceChangeListener(connectInfo);
-        this.relationExprCardinalityMap = 
+        this.relationExprCardinalityMap =
             new HashMap<MondrianDef.Relation, Map<MondrianDef.Expression, Integer>>();
     }
 
@@ -1464,26 +1464,15 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
                     "while instantiating member reader '" + memberReaderClass);
         } else {
             SqlMemberSource source = new SqlMemberSource(hierarchy);
-
-            // The following code is disabled bcause
-            // counting members is too slow. The test suite
-            // runs faster without this. So the optimization here
-            // is not to be too clever!
-
-            // Also, the CacheMemberReader is buggy.
-
-            int memberCount;
-            if (false) {
-                memberCount = source.getMemberCount();
+            if(hierarchy.getDimension().isHighCardinality()) {
+                LOGGER.debug("High cardinality for "
+                        + hierarchy.getDimension());
+                return new NoCacheMemberReader(source);
             } else {
-                memberCount = Integer.MAX_VALUE;
+                LOGGER.debug("Normal cardinality for "
+                        + hierarchy.getDimension());
+                return new SmartMemberReader(source);
             }
-            int largeDimensionThreshold =
-                    MondrianProperties.instance().LargeDimensionThreshold.get();
-
-            return (memberCount > largeDimensionThreshold)
-                ? new SmartMemberReader(source)
-                : new CacheMemberReader(source);
         }
     }
 
@@ -1521,7 +1510,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
                 final Constructor<DataSourceChangeListener> ctor =
                     clazz.getConstructor();
                 changeListener = ctor.newInstance(); */
-
+                changeListener = (DataSourceChangeListener) constructor.newInstance();
             } catch (Exception e) {
                 throw Util.newError(e, "loading DataSourceChangeListener "
                     + dataSourceChangeListenerStr);
@@ -1557,7 +1546,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         MondrianDef.Expression columnExpr) {
         Integer card = null;
         synchronized (relationExprCardinalityMap) {
-            Map<MondrianDef.Expression, Integer> exprCardinalityMap = 
+            Map<MondrianDef.Expression, Integer> exprCardinalityMap =
                 relationExprCardinalityMap.get(relation);
             if (exprCardinalityMap != null) {
                 card = exprCardinalityMap.get(columnExpr);
@@ -1565,21 +1554,21 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         }
         return card;
     }
-    
+
     /**
      * Sets the cardinality for a given column in cache.
-     * 
-     * @param relation the relation associated with the column expression 
+     *
+     * @param relation the relation associated with the column expression
      * @param columnExpr the column expression to cache the cardinality for
      * @param cardinality the cardinality for the column expression
      */
     void putCachedRelationExprCardinality(
         MondrianDef.Relation relation,
-        MondrianDef.Expression columnExpr, 
+        MondrianDef.Expression columnExpr,
         Integer cardinality)
     {
         synchronized (relationExprCardinalityMap) {
-            Map<MondrianDef.Expression, Integer> exprCardinalityMap = 
+            Map<MondrianDef.Expression, Integer> exprCardinalityMap =
                 relationExprCardinalityMap.get(relation);
             if (exprCardinalityMap == null) {
                 exprCardinalityMap =

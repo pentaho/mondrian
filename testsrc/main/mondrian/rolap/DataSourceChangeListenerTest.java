@@ -2,8 +2,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Bart Pappyn
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2008 Bart Pappyn
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -85,7 +85,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         // Use hard caching for testing. When using soft references, we can not
         // test caching because things may be garbage collected during the
         // tests.
-        RolapCubeHierarchy.RolapCubeHierarchyMemberReader smr = getSmartMemberReader("Store");
+        SmartMemberReader smr = getSmartMemberReader("Store");
         MemberCacheHelper smrch = (MemberCacheHelper)smr.getMemberCache();
         smrch.mapLevelToMembers.setCache(
             new HardSmartCache<
@@ -97,7 +97,9 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                 List<RolapMember>>());
         smrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
 
-        MemberCacheHelper rcsmrch = (MemberCacheHelper)smr.getRolapCubeMemberCacheHelper();
+        MemberCacheHelper rcsmrch =
+            ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) smr)
+                .getRolapCubeMemberCacheHelper();
         rcsmrch.mapLevelToMembers.setCache(
             new HardSmartCache<
                 SmartMemberListCache.Key2<RolapLevel, Object>,
@@ -108,8 +110,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                 List<RolapMember>>());
         rcsmrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
 
-        
-        
+
+
         SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
         MemberCacheHelper ssmrch = (MemberCacheHelper)ssmr.getMemberCache();
         ssmrch.mapLevelToMembers.setCache(
@@ -121,7 +123,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                 SmartMemberListCache.Key2<RolapMember, Object>,
                 List<RolapMember>>());
         ssmrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
-                
+
 
         // Create a dummy DataSource which will throw a 'bomb' if it is asked
         // to execute a particular SQL statement, but will otherwise behave
@@ -139,7 +141,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             s1 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();
             // s1 should not be empty
-            
+
             assertFalse("[]".equals(s1));
 
             // Run query again, to make sure only cache is used
@@ -154,7 +156,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             smrch.changeListener = new DataSourceChangeListenerImpl();
             ssmrch.changeListener = new DataSourceChangeListenerImpl();
             rcsmrch.changeListener = new DataSourceChangeListenerImpl();
-                
+
             // Run query again, to make sure only cache is used
             Result r3 = executeQuery(
                 "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
@@ -167,21 +169,21 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             smrch.mapKeyToMember.clear();
             smrch.mapLevelToMembers.clear();
             smrch.mapMemberToChildren.clear();
-            
+
             ssmrch.mapKeyToMember.clear();
             ssmrch.mapLevelToMembers.clear();
             ssmrch.mapMemberToChildren.clear();
-            
+
             rcsmrch.mapKeyToMember.clear();
             rcsmrch.mapLevelToMembers.clear();
             rcsmrch.mapMemberToChildren.clear();
-            
+
             // Run query again, to make sure only cache is used
             Result r4 = executeQuery(
                 "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r4);
             s4 = sqlLogger.getSqlQueries().toString();
-            
+
             sqlLogger.clear();
             assertFalse("[]".equals(s4));
 
@@ -202,7 +204,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             smrch.changeListener = new DataSourceChangeListenerImpl3();
             ssmrch.changeListener = new DataSourceChangeListenerImpl3();
             rcsmrch.changeListener = new DataSourceChangeListenerImpl3();
-            
+
             RolapStar star = getStar("Sales");
             star.setChangeListener(smrch.changeListener);
             // Run query again, to make sure only cache is used
@@ -216,7 +218,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             smrch.changeListener = null;
             ssmrch.changeListener = null;
             rcsmrch.changeListener = null;
-            
+
             RolapStar star = getStar("Sales");
             star.setChangeListener(null);
 
@@ -415,7 +417,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         MemberCacheHelper smrStoreCacheHelper = (MemberCacheHelper)smrStore.getMemberCache();
         SmartMemberReader smrProduct = getSmartMemberReader(testContext.getConnection(), "Product");
         MemberCacheHelper smrProductCacheHelper = (MemberCacheHelper)smrProduct.getMemberCache();
-        
+
         // 1/500 of the time, the hierarchies are flushed
         // 1/50 of the time, the aggregates are flushed
         smrStoreCacheHelper.changeListener = new DataSourceChangeListenerImpl4(500,50);
@@ -521,38 +523,49 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         return connection.execute(query);
     }
 
-    RolapCubeHierarchy.RolapCubeHierarchyMemberReader getSmartMemberReader(String hierName) {
+    SmartMemberReader getSmartMemberReader(String hierName) {
         Connection con = getTestContext().getFoodMartConnection();
         return getSmartMemberReader(con, hierName);
     }
 
-    RolapCubeHierarchy.RolapCubeHierarchyMemberReader getSmartMemberReader(Connection con, String hierName) {
+    SmartMemberReader getSmartMemberReader(Connection con, String hierName) {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
-        RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
-        RolapHierarchy hierarchy = (RolapHierarchy) cube.lookupHierarchy(
+        RolapSchemaReader schemaReader =
+            (RolapSchemaReader) cube.getSchemaReader();
+        RolapHierarchy hierarchy =
+            (RolapHierarchy) cube.lookupHierarchy(
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
-        return (RolapCubeHierarchy.RolapCubeHierarchyMemberReader) hierarchy.createMemberReader(schemaReader.getRole());
+        return
+            (SmartMemberReader) hierarchy.createMemberReader(
+                schemaReader.getRole());
     }
-    
+
     SmartMemberReader getSharedSmartMemberReader(String hierName) {
         Connection con = getTestContext().getFoodMartConnection();
         return getSharedSmartMemberReader(con, hierName);
     }
 
-    SmartMemberReader getSharedSmartMemberReader(Connection con, String hierName) {
+    SmartMemberReader getSharedSmartMemberReader(
+        Connection con,
+        String hierName)
+    {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
-        RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
-        RolapCubeHierarchy hierarchy = (RolapCubeHierarchy) cube.lookupHierarchy(
+        RolapSchemaReader schemaReader =
+            (RolapSchemaReader) cube.getSchemaReader();
+        RolapCubeHierarchy hierarchy =
+            (RolapCubeHierarchy) cube.lookupHierarchy(
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
-        return (SmartMemberReader) hierarchy.getRolapHierarchy().createMemberReader(schemaReader.getRole());
+        return (SmartMemberReader) hierarchy.getRolapHierarchy()
+            .createMemberReader(schemaReader.getRole());
     }
 
     RolapStar getStar(String starName) {
         Connection con = getTestContext().getFoodMartConnection();
         return getStar(con, starName);
     }
+
     RolapStar getStar(Connection con, String starName) {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube(starName, true);
         return cube.getStar();

@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2007 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,10 +11,11 @@ package mondrian.rolap;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 import junit.framework.Assert;
+import mondrian.calc.ResultStyle;
 import mondrian.olap.Axis;
 import mondrian.olap.Cell;
 import mondrian.olap.Connection;
@@ -23,9 +24,9 @@ import mondrian.olap.Id;
 import mondrian.olap.Level;
 import mondrian.olap.Member;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.NativeEvaluationUnsupportedException;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
-import mondrian.olap.NativeEvaluationUnsupportedException;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
 import mondrian.rolap.RolapNative.Listener;
 import mondrian.rolap.RolapNative.NativeEvent;
@@ -33,13 +34,17 @@ import mondrian.rolap.RolapNative.TupleEvent;
 import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
-import mondrian.test.TestContext;
 import mondrian.test.SqlPattern;
+import mondrian.test.TestContext;
 import mondrian.util.Bug;
 
-import org.apache.log4j.*;
-import org.apache.log4j.spi.*;
-import org.eigenbase.util.property.*;
+import org.apache.log4j.Appender;
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggingEvent;
+import org.eigenbase.util.property.BooleanProperty;
+import org.eigenbase.util.property.IntegerProperty;
+import org.eigenbase.util.property.StringProperty;
 
 /**
  * Tests for NON EMPTY Optimization, includes SqlConstraint type hierarchy and
@@ -604,8 +609,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Check that if both inputs to NECJ are either 
-     * AllMember(currentMember, defaultMember are also AllMember) 
+     * Check that if both inputs to NECJ are either
+     * AllMember(currentMember, defaultMember are also AllMember)
      * or Calcculated member
      * native CJ is not used.
      */
@@ -660,7 +665,7 @@ public class NonEmptyTest extends BatchTestCase {
             "    [Store Type].[All Store Types].[S]} " +
             "set [Filtered Enum Store Types] as Filter([Enum Store Types], [Measures].[Unit Sales] > 0)" +
             "select NonEmptyCrossJoin([Product].[All Products].Children, [Filtered Enum Store Types])  on rows from [Sales]";
-        
+
         String result =
             "Axis #0:\n" +
             "{}\n" +
@@ -697,7 +702,7 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         }
     }
-    
+
     /**
      * Verify that evaluation is native for expressions with nested non native
      * inputs that preduce MemberList results.
@@ -851,7 +856,7 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         }
     }
-    
+
     /**
      * Verify that native MemberLists inputs are subject to SQL constriant
      * limitation. If mondrian.rolap.maxConstraints is set too low, native
@@ -1437,7 +1442,7 @@ public class NonEmptyTest extends BatchTestCase {
             "and (\"product_class\".\"product_family\" = 'Food') group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", " +
             "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, " +
             "\"warehouse\".\"wa_address1\" ASC, \"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
-        
+
         String necjSqlMySql =
             "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`wa_address1` as `c2`, `warehouse`.`warehouse_name` as `c3`, " +
             "`product_class`.`product_family` as `c4` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, `product` as `product`, " +
@@ -1449,7 +1454,7 @@ public class NonEmptyTest extends BatchTestCase {
             "order by ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`), `warehouse`.`wa_address2` ASC, " +
             "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`), `warehouse`.`warehouse_name` ASC, " +
             "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
-        
+
         TestContext testContext =
             TestContext.create(
                 dimension,
@@ -1536,7 +1541,7 @@ public class NonEmptyTest extends BatchTestCase {
             "order by ISNULL(`warehouse`.`warehouse_fax`), `warehouse`.`warehouse_fax` ASC, " +
             "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`), " +
             "`warehouse`.`warehouse_name` ASC, ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
-        
+
         TestContext testContext =
             TestContext.create(
                 dimension,
@@ -1554,7 +1559,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         assertQuerySql(testContext, query, patterns);
     }
-    
+
     /**
      * Check that multi-level member list generates compact form of SQL where clause:
      * (1) Use IN list if possible(not possible if there are null values because
@@ -1577,7 +1582,7 @@ public class NonEmptyTest extends BatchTestCase {
             "    <Level name=\"fax\" column=\"warehouse_fax\" uniqueMembers=\"false\"/>\n" +
             "  </Hierarchy>\n" +
             "</Dimension>\n";
-        
+
         String cube =
             "<Cube name=\"Warehouse2\">\n" +
             "  <Table name=\"inventory_fact_1997\"/>\n" +
@@ -1594,7 +1599,7 @@ public class NonEmptyTest extends BatchTestCase {
             " [Warehouse2].[#null].[#null].[971-555-6213]} " +
             "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) " +
             "select [NECJ] on rows from [Warehouse2]";
-        
+
         String necjSqlDerby =
             "select \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" " +
             "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" " +
@@ -1621,7 +1626,7 @@ public class NonEmptyTest extends BatchTestCase {
             "order by ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`), " +
             "`warehouse`.`wa_address2` ASC, ISNULL(`warehouse`.`warehouse_fax`), `warehouse`.`warehouse_fax` ASC, " +
             "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
-        
+
         TestContext testContext =
             TestContext.create(
                 dimension,
@@ -1639,7 +1644,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         assertQuerySql(testContext, query, patterns);
     }
-    
+
     public void testNonEmptyUnionQuery() {
         Result result = executeQuery(
                 "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,\n" +
@@ -1668,13 +1673,12 @@ public class NonEmptyTest extends BatchTestCase {
             // test.
             return;
         }
-        
+
         // there currently isn't a cube member to children cache, only a shared cache
         // so use the shared smart member reader
-        RolapCubeHierarchy.RolapCubeHierarchyMemberReader smr = 
-            getSmartMemberReader("Store");
+        SmartMemberReader smr = getSmartMemberReader("Store");
         MemberCacheHelper smrch = smr.cacheHelper;
-        MemberCacheHelper rcsmrch = smr.getRolapCubeMemberCacheHelper();
+        MemberCacheHelper rcsmrch = ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) smr).getRolapCubeMemberCacheHelper();
         SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(smrch);
@@ -1687,7 +1691,7 @@ public class NonEmptyTest extends BatchTestCase {
                 ssmrch.mapKeyToMember.size() <= 5);
         RolapMember sf = (RolapMember) result.getAxes()[0].getPositions().get(0).get(0);
         RolapMember ca = sf.getParentMember();
-        
+
         // convert back to shared members
         ca = ((RolapCubeMember)ca).getRolapMember();
         sf = ((RolapCubeMember)sf).getRolapMember();
@@ -1823,11 +1827,11 @@ public class NonEmptyTest extends BatchTestCase {
         }
         SmartMemberReader smr = getSmartMemberReader("Customers");
         // use the RolapCubeHierarchy's member cache for levels
-        MemberCacheHelper smrch = ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader)smr).rolapCubeCacheHelper;
+        MemberCacheHelper smrch = ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader)smr).rolapCubeCacheHelper;
         clearAndHardenCache(smrch);
-        MemberCacheHelper smrich = ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader)smr).cacheHelper;
+        MemberCacheHelper smrich = ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader)smr).cacheHelper;
         clearAndHardenCache(smrich);
-        
+
         // use the shared member cache for mapMemberToChildren
         SmartMemberReader ssmr = getSharedSmartMemberReader("Customers");
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
@@ -1878,15 +1882,15 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testLevelMembersWithoutNonEmpty() {
-        
+
         SmartMemberReader smr = getSmartMemberReader("Customers");
-        
-        MemberCacheHelper smrch = ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader)smr).rolapCubeCacheHelper;
+
+        MemberCacheHelper smrch = ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader)smr).rolapCubeCacheHelper;
         clearAndHardenCache(smrch);
 
-        MemberCacheHelper smrich = ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader)smr).cacheHelper;
+        MemberCacheHelper smrich = ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader)smr).cacheHelper;
         clearAndHardenCache(smrich);
-        
+
         SmartMemberReader ssmr = getSharedSmartMemberReader("Customers");
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(ssmrch);
@@ -1921,7 +1925,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         parent = ((RolapCubeMember)parent).getRolapMember();
         member = ((RolapCubeMember)member).getRolapMember();
-        
+
         // lookup all children of [Burnaby] -> yes, found in cache
         MemberChildrenConstraint mcc = scf.getMemberChildrenConstraint(null);
         list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
@@ -2064,7 +2068,7 @@ public class NonEmptyTest extends BatchTestCase {
         SmartMemberReader smr = getSmartMemberReader(con, "Customers");
         MemberCacheHelper smrch = smr.cacheHelper;
         clearAndHardenCache(smrch);
-        
+
         SmartMemberReader ssmr = getSmartMemberReader(con, "Customers");
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(ssmrch);
@@ -2082,10 +2086,10 @@ public class NonEmptyTest extends BatchTestCase {
         // [Customers].[All Customers].[USA].[CA].[Burlingame].[Peggy Justice]
         RolapMember peggy = (RolapMember) result.getAxes()[1].getPositions().get(1).get(0);
         RolapMember burlingame = peggy.getParentMember();
-        
+
         peggy = ((RolapCubeMember)peggy).getRolapMember();
         burlingame = ((RolapCubeMember)burlingame).getRolapMember();
-        
+
         // all children of burlingame are not in cache
         MemberChildrenConstraint mcc = scf.getMemberChildrenConstraint(null);
         assertNull(ssmrch.mapMemberToChildren.get(burlingame, mcc));
@@ -3374,6 +3378,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     Result executeQuery(String mdx, Connection connection) {
         Query query = connection.parseQuery(mdx);
+        query.setResultStyle(ResultStyle.LIST);
         return connection.execute(query);
     }
 
@@ -3396,22 +3401,20 @@ public class NonEmptyTest extends BatchTestCase {
                     List<RolapMember>>());
         helper.mapKeyToMember.clear();
     }
-    
-    RolapCubeHierarchy.RolapCubeHierarchyMemberReader 
-    getSmartMemberReader(String hierName) {
+
+    SmartMemberReader getSmartMemberReader(String hierName) {
         Connection con = getTestContext().getFoodMartConnection();
         return getSmartMemberReader(con, hierName);
     }
 
-    RolapCubeHierarchy.RolapCubeHierarchyMemberReader 
-    getSmartMemberReader(Connection con, String hierName) {
+    SmartMemberReader getSmartMemberReader(Connection con, String hierName) {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
         RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
         RolapHierarchy hierarchy = (RolapHierarchy) cube.lookupHierarchy(
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
-        return (RolapCubeHierarchy.RolapCubeHierarchyMemberReader) 
-                        hierarchy.createMemberReader(schemaReader.getRole());
+        return (SmartMemberReader)
+            hierarchy.createMemberReader(schemaReader.getRole());
     }
 
     SmartMemberReader getSharedSmartMemberReader(String hierName) {
@@ -3428,7 +3431,7 @@ public class NonEmptyTest extends BatchTestCase {
         return (SmartMemberReader) hierarchy.getRolapHierarchy().createMemberReader(schemaReader.getRole());
     }
 
-    
+
     RolapEvaluator getEvaluator(Result res, int[] pos) {
         while (res instanceof NonEmptyResult)
             res = ((NonEmptyResult) res).underlying;

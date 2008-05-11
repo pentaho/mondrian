@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -237,16 +237,16 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
                 final int levelDepth = random.nextInt(levels.length) + 1;
                 Member member = null;
                 for (int i = 0; i < levelDepth; i++) {
-                    Member[] members;
+                    List<Member> members;
                     if (i == 0) {
                         members = schemaReader.getLevelMembers(levels[i], false);
                     } else {
                         members = schemaReader.getMemberChildren(member);
                     }
-                    if (members.length == 0) {
+                    if (members.size() == 0) {
                         break;
                     }
-                    member = members[random.nextInt(members.length)];
+                    member = members.get(random.nextInt(members.size()));
                 }
                 // If the member chosen happens to be the same as the original
                 // member, try again. Give up after 100 attempts (in case the

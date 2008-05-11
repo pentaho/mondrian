@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -44,7 +44,7 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getRole();
     }
 
-    public Member[] getHierarchyRootMembers(Hierarchy hierarchy) {
+    public List<Member> getHierarchyRootMembers(Hierarchy hierarchy) {
         return schemaReader.getHierarchyRootMembers(hierarchy);
     }
 
@@ -56,11 +56,11 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.substitute(member);
     }
 
-    public Member[] getMemberChildren(Member member) {
+    public List<Member> getMemberChildren(Member member) {
         return schemaReader.getMemberChildren(member);
     }
 
-    public Member[] getMemberChildren(Member[] members) {
+    public List<Member> getMemberChildren(List<Member> members) {
         return schemaReader.getMemberChildren(members);
     }
 
@@ -135,11 +135,11 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getElementChild(parent, name, matchType);
     }
 
-    public Member[] getLevelMembers(Level level, boolean includeCalculated) {
+    public List<Member> getLevelMembers(Level level, boolean includeCalculated) {
         return schemaReader.getLevelMembers(level, includeCalculated);
     }
 
-    public Level[] getHierarchyLevels(Hierarchy hierarchy) {
+    public List<Level> getHierarchyLevels(Hierarchy hierarchy) {
         return schemaReader.getHierarchyLevels(hierarchy);
     }
 
@@ -182,15 +182,15 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
             level, approximate, materialize);
     }
 
-    public Member[] getLevelMembers(Level level, Evaluator context) {
+    public List<Member> getLevelMembers(Level level, Evaluator context) {
       return schemaReader.getLevelMembers(level, context);
     }
 
-    public Member[] getMemberChildren(Member member, Evaluator context) {
+    public List<Member> getMemberChildren(Member member, Evaluator context) {
       return schemaReader.getMemberChildren(member, context);
     }
 
-    public Member[] getMemberChildren(Member[] members, Evaluator context) {
+    public List<Member> getMemberChildren(List<Member> members, Evaluator context) {
       return schemaReader.getMemberChildren(members, context);
     }
 

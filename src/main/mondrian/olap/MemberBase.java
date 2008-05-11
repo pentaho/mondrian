@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -94,7 +94,7 @@ public abstract class MemberBase
         this.flags = 0;
     	this.parentUniqueName = null;
     }
-    
+
     public String getQualifiedName() {
         return MondrianResource.instance().MdxMemberName.str(getUniqueName());
     }
@@ -254,14 +254,14 @@ public abstract class MemberBase
     }
 
     // implement Member
-    public Member[] getAncestorMembers() {
+    public List<Member> getAncestorMembers() {
         List<Member> list = new ArrayList<Member>();
         Member parentMember = getParentMember();
         while (parentMember != null) {
             list.add(parentMember);
             parentMember = parentMember.getParentMember();
         }
-        return list.toArray(new Member[list.size()]);
+        return list;
     }
 
     /**
@@ -279,7 +279,7 @@ public abstract class MemberBase
     public Comparable getOrderKey() {
         return null;
     }
-    
+
     public boolean isHidden() {
         return false;
     }

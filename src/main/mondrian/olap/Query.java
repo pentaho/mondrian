@@ -144,7 +144,7 @@ public class Query extends QueryPart {
      * Comtains a list of base cubes related to a virtual cube
      */
     private Set<RolapCube> baseCubes;
-    
+
     /**
      * If true, loading schema
      */
@@ -353,7 +353,7 @@ public class Query extends QueryPart {
         startTime = System.currentTimeMillis();
         isExecuting = true;
     }
-    
+
     /**
      * Gets the query start time
      * @return start time
@@ -798,7 +798,7 @@ public class Query extends QueryPart {
     }
 
     /**
-     * Looks up a member whose unique name is <code>memberUniqueName</code> 
+     * Looks up a member whose unique name is <code>memberUniqueName</code>
      * from cache. If the member is not in cache, returns null.
      */
     public Member lookupMemberFromCache(String memberUniqueName) {
@@ -806,7 +806,7 @@ public class Query extends QueryPart {
         for (Member member : getDefinedMembers()) {
             if (Util.equalName(member.getUniqueName(), memberUniqueName) ||
                 Util.equalName(
-                        getUniqueNameWithoutAll(member), 
+                        getUniqueNameWithoutAll(member),
                         memberUniqueName)
             ) {
                 return member;
@@ -814,13 +814,13 @@ public class Query extends QueryPart {
         }
         return null;
     }
-    
+
     private String getUniqueNameWithoutAll(Member member) {
         // build unique string
-        Member parentMember = member.getParentMember(); 
+        Member parentMember = member.getParentMember();
         if ((parentMember != null) && !parentMember.isAll()) {
             return Util.makeFqName(
-                            getUniqueNameWithoutAll(parentMember), 
+                            getUniqueNameWithoutAll(parentMember),
                             member.getName());
         } else {
             return Util.makeFqName(member.getHierarchy(), member.getName());
@@ -1027,7 +1027,7 @@ public class Query extends QueryPart {
 
     /**
      * Compiles an expression, using a cached compiled expression if available.
-     * 
+     *
      * @param exp Expression
      * @param scalar Whether expression is scalar
      * @param resultStyle Preferred result style; if null, use query's default
@@ -1125,17 +1125,17 @@ public class Query extends QueryPart {
     /**
      * Saves away the base cubes related to the virtual cube
      * referenced in this query
-     * 
+     *
      * @param baseCubes set of base cubes
      */
     public void setBaseCubes(Set<RolapCube> baseCubes) {
         this.baseCubes = baseCubes;
     }
-    
+
     /**
      * return the set of base cubes associated with the virtual cube referenced
      * in this query
-     * 
+     *
      * @return set of base cubes
      */
     public Set<RolapCube> getBaseCubes() {
@@ -1464,10 +1464,14 @@ public class Query extends QueryPart {
             }
         }
 
-        public Member[] getLevelMembers(
-                Level level, boolean includeCalculated) {
-            Member[] members = super.getLevelMembers(level, false);
+        public List<Member> getLevelMembers(
+            Level level, boolean includeCalculated)
+        {
+            // Get members defined in the cube. Omit calculated members because
+            // they will be added later.
+            List<Member> members = super.getLevelMembers(level, false);
             if (includeCalculated) {
+                // Get calculated members defined in the query or the cube.
                 members = Util.addLevelCalculatedMembers(this, level, members);
             }
             return members;

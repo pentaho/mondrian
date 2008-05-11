@@ -3,20 +3,19 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.calc.impl;
 
+import java.util.List;
+
+import mondrian.calc.*;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
+import mondrian.olap.Member;
 import mondrian.olap.type.SetType;
-import mondrian.calc.ListCalc;
-import mondrian.calc.Calc;
-import mondrian.calc.ResultStyle;
-
-import java.util.List;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.ListCalc} interface.
@@ -30,8 +29,9 @@ import java.util.List;
  * @since Sep 27, 2005
  */
 public abstract class AbstractListCalc
-        extends AbstractCalc
-        implements ListCalc {
+    extends AbstractCalc
+    implements ListCalc, MemberListCalc, TupleListCalc
+{
     private final Calc[] calcs;
     private final boolean mutable;
 
@@ -78,6 +78,17 @@ public abstract class AbstractListCalc
             ResultStyle.MUTABLE_LIST :
             ResultStyle.LIST;
     }
+
+    @SuppressWarnings({"unchecked"})
+    public List<Member> evaluateMemberList(Evaluator evaluator) {
+        return (List<Member>) evaluateList(evaluator);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public List<Member[]> evaluateTupleList(Evaluator evaluator) {
+        return (List<Member[]>) evaluateList(evaluator);
+    }
+
 }
 
 // End AbstractListCalc.java

@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2007 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -72,24 +72,24 @@ public class SqlTupleReader implements TupleReader {
         final RolapLevel level;
         final MemberCache cache;
         final Object cacheLock;
-        
+
         RolapLevel[] levels;
         List<RolapMember> list;
         int levelDepth;
         boolean parentChild;
-        RolapMember[] members;
-        List<RolapMember>[] siblings;
+        List<RolapMember> members;
+        List<List<RolapMember>> siblings;
         final MemberBuilder memberBuilder;
         // if set, the rows for this target come from the array rather
         // than native sql
-        private final RolapMember[] srcMembers;
+        private final List<RolapMember> srcMembers;
         // current member within the current result set row
         // for this target
         private RolapMember currMember;
 
         public Target(
             RolapLevel level, MemberBuilder memberBuilder,
-            RolapMember[] srcMembers) {
+            List<RolapMember> srcMembers) {
             this.level = level;
             this.cache = memberBuilder.getMemberCache();
             this.cacheLock = memberBuilder.getMemberCacheLock();
@@ -104,8 +104,12 @@ public class SqlTupleReader implements TupleReader {
             parentChild = level.isParentChild();
             // members[i] is the current member of level#i, and siblings[i]
             // is the current member of level#i plus its siblings
-            members = new RolapMember[levels.length];
-            siblings = new List[levels.length + 1];
+            members = new ArrayList<RolapMember>();
+            for(int i=0; i<levels.length; i++) members.add(null);
+            siblings = new ArrayList<List<RolapMember>>();
+            for(int i=0; i<levels.length+1; i++) {
+                siblings.add(new ArrayList<RolapMember>());
+            }
         }
 
         /**
@@ -164,15 +168,15 @@ public class SqlTupleReader implements TupleReader {
                     }
                     column += childLevel.getProperties().length;
 
-                    if (member != members[i]) {
+                    if (member != members.get(i)) {
                         // Flush list we've been building.
-                        List<RolapMember> children = siblings[i + 1];
+                        List<RolapMember> children = siblings.get(i + 1);
                         if (children != null) {
                             MemberChildrenConstraint mcc =
                                 constraint.getMemberChildrenConstraint(
-                                    members[i]);
+                                    members.get(i));
                             if (mcc != null) {
-                                cache.putChildren(members[i], mcc, children);
+                                cache.putChildren(members.get(i), mcc, children);
                             }
                         }
                         // Start a new list, if the cache needs one. (We don't
@@ -185,27 +189,27 @@ public class SqlTupleReader implements TupleReader {
                         List cachedChildren =
                             cache.getChildrenFromCache(member, mcc);
                         if (i < levelDepth && cachedChildren == null) {
-                            siblings[i + 1] = new ArrayList<RolapMember>();
+                            siblings.set(i + 1, new ArrayList<RolapMember>());
                         } else {
                             // don't bother building up a list
-                            siblings[i + 1] = null;
+                            siblings.set(i + 1,  null);
                         }
                         // Record new current member of this level.
-                        members[i] = member;
+                        members.set(i, member);
                         // If we're building a list of siblings at this level,
                         // we haven't seen this one before, so add it.
-                        if (siblings[i] != null) {
+                        if (siblings.get(i) != null) {
                             if (value == RolapUtil.sqlNullValue) {
-                                addAsOldestSibling(siblings[i], member);
+                                addAsOldestSibling(siblings.get(i), member);
                             } else {
-                                siblings[i].add(member);
+                                ((List)siblings.get(i)).add(member);
                             }
                         }
                     }
                 }
                 currMember = member;
             }
-            list.add(member);
+            ((List)list).add(member);
             return column;
         }
 
@@ -222,9 +226,9 @@ public class SqlTupleReader implements TupleReader {
          * @return list of members
          */
         public List<RolapMember> internalClose() {
-            for (int i = 0; i < members.length; i++) {
-                RolapMember member = members[i];
-                final List<RolapMember> children = siblings[i + 1];
+            for (int i = 0; i < members.size(); i++) {
+                RolapMember member = members.get(i);
+                final List<RolapMember> children = siblings.get(i + 1);
                 if (member != null && children != null) {
                     // If we are finding the members of a particular level, and
                     // we happen to find some of the children of an ancestor of
@@ -275,7 +279,7 @@ public class SqlTupleReader implements TupleReader {
     public void addLevelMembers(
         RolapLevel level,
         MemberBuilder memberBuilder,
-        RolapMember[] srcMembers)
+        List<RolapMember> srcMembers)
     {
         targets.add(new Target(level, memberBuilder, srcMembers));
     }
@@ -515,7 +519,7 @@ public class SqlTupleReader implements TupleReader {
 
         // loop through the list of members for the current enum target
         Target currTarget = targets.get(currTargetIdx);
-        for (int i = 0; i < currTarget.srcMembers.length; i++) {
+        for (int i = 0; i < currTarget.srcMembers.size(); i++) {
             srcMemberIdxes[currEnumTargetIdx] = i;
             // if we're not on the last enum target, recursively move
             // to the next one
@@ -544,7 +548,7 @@ public class SqlTupleReader implements TupleReader {
                         }
                     } else {
                         RolapMember member =
-                            target.srcMembers[srcMemberIdxes[enumTargetIdx++]];
+                            target.srcMembers.get(srcMemberIdxes[enumTargetIdx++]);
                         target.list.add(member);
                     }
                 }
@@ -596,7 +600,7 @@ public class SqlTupleReader implements TupleReader {
             String selectString = "";
             Query query = constraint.getEvaluator().getQuery();
             Set<RolapCube> baseCubes = query.getBaseCubes();
-            
+
             // generate sub-selects, each one joining with one of
             // underlying fact tables
             int k = -1;
@@ -604,7 +608,7 @@ public class SqlTupleReader implements TupleReader {
                 boolean finalSelect = (++k == baseCubes.size() - 1);
                 WhichSelect whichSelect =
                     finalSelect ? WhichSelect.LAST : WhichSelect.NOT_LAST;
-                selectString += 
+                selectString +=
                     generateSelectForLevels(dataSource, baseCube, whichSelect);
                 if (!finalSelect) {
                     selectString += " union ";
@@ -620,7 +624,7 @@ public class SqlTupleReader implements TupleReader {
      * Generates the SQL string corresponding to the levels referenced.
      *
      * @param dataSource jdbc connection that they query will execute against
-     * @param baseCube this is the cube object for regular cubes, and the 
+     * @param baseCube this is the cube object for regular cubes, and the
      *   underlying base cube for virtual cubes
      * @param whichSelect Position of this select statement in a union
      * @return SQL statement string
@@ -647,11 +651,11 @@ public class SqlTupleReader implements TupleReader {
         }
 
         // additional constraints
-        constraint.addConstraint(sqlQuery, baseCube); 
-        
+        constraint.addConstraint(sqlQuery, baseCube);
+
         return sqlQuery.toString();
     }
-    
+
     /**
      * Generates the SQL statement to access members of <code>level</code>. For
      * example, <blockquote>
@@ -671,7 +675,7 @@ public class SqlTupleReader implements TupleReader {
      *
      * @param sqlQuery the query object being constructed
      * @param level level to be added to the sql query
-     * @param baseCube this is the cube object for regular cubes, and the 
+     * @param baseCube this is the cube object for regular cubes, and the
      *   underlying base cube for virtual cubes
      * @param whichSelect describes whether this select belongs to a larger
      * select containing unions or this is a non-union select
@@ -685,7 +689,7 @@ public class SqlTupleReader implements TupleReader {
         RolapHierarchy hierarchy = level.getHierarchy();
 
         // lookup RolapHierarchy of base cube that matches this hierarchy
-        
+
         if (hierarchy instanceof RolapCubeHierarchy) {
             RolapCubeHierarchy cubeHierarchy = (RolapCubeHierarchy)hierarchy;
             if (baseCube != null && !cubeHierarchy.getDimension().getCube().equals(baseCube)) {

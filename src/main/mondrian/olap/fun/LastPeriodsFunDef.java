@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -50,7 +50,7 @@ class LastPeriodsFunDef extends FunDefBase {
         if (args.length == 1) {
             // If Member is not specified,
             // it is Time.CurrentMember.
-            Dimension defaultTimeDimension = 
+            Dimension defaultTimeDimension =
                 validator.getQuery().getCube().getTimeDimension();
             if (defaultTimeDimension == null) {
                 throw MondrianResource.instance().
@@ -135,18 +135,18 @@ class LastPeriodsFunDef extends FunDefBase {
                 .getLeadMember(member, -(indexValue-1));
             endMember = member;
             if (startMember.isNull()) {
-                Member[] members = evaluator.getSchemaReader()
+                List<Member> members = evaluator.getSchemaReader()
                     .getLevelMembers(member.getLevel(), false);
-                startMember = members[0];
+                startMember = members.get(0);
             }
         } else {
             startMember = member;
             endMember = evaluator.getSchemaReader()
                 .getLeadMember(member, -(indexValue+1));
             if (endMember.isNull()) {
-                Member[] members = evaluator.getSchemaReader()
+                List<Member> members = evaluator.getSchemaReader()
                     .getLevelMembers(member.getLevel(), false);
-                endMember = members[members.length - 1];
+                endMember = members.get(members.size() - 1);
             }
         }
 

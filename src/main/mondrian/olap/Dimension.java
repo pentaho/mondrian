@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -47,6 +47,18 @@ public interface Dimension extends OlapElement {
      * Returns the schema this dimension belongs to.
      */
     Schema getSchema();
+
+    /**
+     * Returns whether the dimension should be considered as a "high
+     * cardinality" or "low cardinality" according to cube definition.
+     *
+     * Mondrian tends to evaluate high cardinality dimensions using
+     * iterators rather than lists, avoiding instantiating the dimension in
+     * memory.
+     *
+     * @return whether this dimension is high-cardinality
+     */
+    boolean isHighCardinality();
 }
 
 // End Dimension.java

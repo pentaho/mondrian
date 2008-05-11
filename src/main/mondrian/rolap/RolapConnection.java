@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,24 +12,50 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.*;
-import mondrian.util.MemoryMonitor;
-import mondrian.util.MemoryMonitorFactory;
-import mondrian.util.Pair;
-import mondrian.rolap.agg.AggregationManager;
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DataSourceConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 
-import org.apache.log4j.Logger;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.*;
+
+import mondrian.olap.CacheControl;
+import mondrian.olap.Cell;
+import mondrian.olap.ConnectionBase;
+import mondrian.olap.Cube;
+import mondrian.olap.DriverManager;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Position;
+import mondrian.olap.Query;
+import mondrian.olap.QueryAxis;
+import mondrian.olap.QueryCanceledException;
+import mondrian.olap.QueryTimeoutException;
+import mondrian.olap.ResourceLimitExceededException;
+import mondrian.olap.Result;
+import mondrian.olap.ResultBase;
+import mondrian.olap.ResultLimitExceededException;
+import mondrian.olap.Role;
+import mondrian.olap.RoleImpl;
+import mondrian.olap.Schema;
+import mondrian.olap.SchemaReader;
+import mondrian.olap.Util;
+import mondrian.rolap.agg.AggregationManager;
+import mondrian.util.FilteredIterableList;
+import mondrian.util.MemoryMonitor;
+import mondrian.util.MemoryMonitorFactory;
+import mondrian.util.Pair;
+
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DataSourceConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.log4j.Logger;
 
 /**
  * A <code>RolapConnection</code> is a connection to a Mondrian OLAP Server.
@@ -46,12 +72,12 @@ import java.util.*;
  */
 public class RolapConnection extends ConnectionBase {
     private static final Logger LOGGER = Logger.getLogger(RolapConnection.class);
-    
+
     private final Util.PropertyList connectInfo;
 
-    // used for MDX logging, allows for a MDX Statement UID 
+    // used for MDX logging, allows for a MDX Statement UID
     private static long executeCount = 0;
-    
+
     /**
      * Factory for JDBC connections to talk to the RDBMS. This factory will
      * usually use a connection pool.
@@ -438,7 +464,7 @@ public class RolapConnection extends ConnectionBase {
                 currId = executeCount++;
                 RolapUtil.MDX_LOGGER.debug( currId + ": " + Util.unparse(query));
             }
-            
+
             query.setQueryStartTime();
             Result result = new RolapResult(query, true);
             for (int i = 0; i < query.axes.length; i++) {
@@ -447,6 +473,7 @@ public class RolapConnection extends ConnectionBase {
                     result = new NonEmptyResult(result, query, i);
                 }
             }
+            /* It will not work with HighCardinality.
             if (LOGGER.isDebugEnabled()) {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
@@ -454,6 +481,7 @@ public class RolapConnection extends ConnectionBase {
                 pw.flush();
                 LOGGER.debug(sw.toString());
             }
+            */
             query.setQueryEndExecution();
             return result;
 
@@ -473,7 +501,7 @@ public class RolapConnection extends ConnectionBase {
         } finally {
             mm.removeListener(listener);
             if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {
-                RolapUtil.MDX_LOGGER.debug( currId + ": exec: " + 
+                RolapUtil.MDX_LOGGER.debug( currId + ": exec: " +
                     (System.currentTimeMillis() - query.getQueryStartTime()) +
                     " ms");
             }
@@ -584,16 +612,35 @@ public class RolapConnection extends ConnectionBase {
             this.slicerAxis = underlying.getSlicerAxis();
             List<Position> positions = underlying.getAxes()[axis].getPositions();
 
-            List<Position> positionsList = new ArrayList<Position>();
-            int i = 0;
-            for (Position position: positions) {
-                if (! isEmpty(i, axis)) {
-                    map.put(positionsList.size(), i);
-                    positionsList.add(position);
+            final List<Position> positionsList;
+            try {
+                if (positions.get(0).get(0).getDimension().isHighCardinality()) {
+                    positionsList = new FilteredIterableList<Position>(
+                            positions,
+                            new FilteredIterableList.Filter<Position>() {
+                                public boolean accept(final Position p) {
+                                    return p.get(0)!=null;
+                                }
+                            }
+                    );
+                } else {
+                    positionsList = new ArrayList<Position>();
+                    int i = -1;
+                    for (Position position : positions) {
+                        ++i;
+                        if (! isEmpty(i, axis)) {
+                            map.put(positionsList.size(), i);
+                            positionsList.add(position);
+                        }
+                    }
                 }
-                i++;
+                this.axes[axis] = new RolapAxis.PositionList(positionsList);
+            } catch (IndexOutOfBoundsException ioobe) {
+                // No elements.
+                this.axes[axis] =
+                    new RolapAxis.PositionList(
+                            new ArrayList<Position>());
             }
-            this.axes[axis] = new RolapAxis.PositionList(positionsList);
         }
 
         protected Logger getLogger() {
@@ -636,11 +683,17 @@ public class RolapConnection extends ConnectionBase {
 
         // synchronized because we use 'pos'
         public synchronized Cell getCell(int[] externalPos) {
-            System.arraycopy(externalPos, 0, this.pos, 0, externalPos.length);
-            int offset = externalPos[axis];
-            int mappedOffset = mapOffsetToUnderlying(offset);
-            this.pos[axis] = mappedOffset;
-            return underlying.getCell(this.pos);
+            try {
+                System.arraycopy(externalPos, 0, this.pos, 0, externalPos.length);
+                int offset = externalPos[axis];
+                int mappedOffset = mapOffsetToUnderlying(offset);
+                this.pos[axis] = mappedOffset;
+                return underlying.getCell(this.pos);
+            } catch(NullPointerException npe) {
+                System.out.println("RolapConnection:619 please, review for "
+                        + "high cardinality...");
+                return underlying.getCell(externalPos);
+            }
         }
 
         private int mapOffsetToUnderlying(int offset) {

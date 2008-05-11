@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,18 +13,16 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
-import mondrian.calc.impl.AbstractIterCalc;
-import mondrian.calc.impl.AbstractVoidCalc;
+import mondrian.calc.impl.*;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
-import mondrian.mdx.ResolvedFunCall;
+import mondrian.util.ConcatenableList;
+import mondrian.util.FilteredIterableList;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * <code>SetFunDef</code> implements the 'set' function (whose syntax is the
@@ -90,7 +88,7 @@ public class SetFunDef extends FunDefBase {
      * to avoid generating lots of intermediate lists.
      */
     public static class ListSetCalc extends AbstractListCalc {
-        private List result = new ArrayList();
+        private List result = new ConcatenableList();
         private final VoidCalc[] voidCalcs;
 
         public ListSetCalc(
@@ -126,17 +124,22 @@ public class SetFunDef extends FunDefBase {
                 final ListCalc listCalc = compiler.compileList(arg);
                 final Type elementType = ((SetType) type).getElementType();
                 if (elementType instanceof MemberType) {
+                    final MemberListCalc memberListCalc =
+                        (MemberListCalc) listCalc;
                     return new AbstractVoidCalc(arg, new Calc[] {listCalc}) {
                         public void evaluateVoid(Evaluator evaluator) {
-                            List<Member> list =
-                                listCalc.evaluateList(evaluator);
-                            // Add only members which are not null.
-                            for (Member member : list) {
-                                if (member == null || member.isNull()) {
-                                    continue;
-                                }
-                                result.add(member);
-                            }
+                            final List<Member> memberList =
+                                memberListCalc.evaluateMemberList(evaluator);
+                            final List<Member> list =
+                                new FilteredIterableList<Member>(
+                                    memberList,
+                                    new FilteredIterableList.Filter<Member>() {
+                                        public boolean accept(Member m) {
+                                            return m != null && !m.isNull();
+                                        }
+                                    }
+                                );
+                            result.addAll(list);
                         }
 
                         protected String getName() {
@@ -144,17 +147,19 @@ public class SetFunDef extends FunDefBase {
                         }
                     };
                 } else {
+                    final TupleListCalc tupleListCalc =
+                        (TupleListCalc) listCalc;
                     return new AbstractVoidCalc(arg, new Calc[] {listCalc}) {
                         public void evaluateVoid(Evaluator evaluator) {
                             List<Member[]> list =
-                                listCalc.evaluateList(evaluator);
+                                tupleListCalc.evaluateTupleList(evaluator);
                             // Add only tuples which are not null. Tuples with
                             // any null members are considered null.
-                            list:
+                            outer:
                             for (Member[] members : list) {
                                 for (Member member : members) {
                                     if (member == null || member.isNull()) {
-                                        continue list;
+                                        continue outer;
                                     }
                                 }
                                 result.add(members);
@@ -198,14 +203,27 @@ public class SetFunDef extends FunDefBase {
             }
         }
 
-        public List evaluateList(Evaluator evaluator) {
-            result.clear();
+        public List evaluateList(final Evaluator evaluator) {
+            this.result = new ConcatenableList();
             for (VoidCalc voidCalc : voidCalcs) {
                 voidCalc.evaluateVoid(evaluator);
             }
-            return new ArrayList(result);
+            // REVIEW: What the heck is this code doing? Why is it OK to
+            // ignore IndexOutOfBoundsException and NullPointerException?
+            try {
+                if (result.get(0) instanceof Member) {
+                    if (!((Member)result.get(0)).getDimension()
+                            .isHighCardinality()) {
+                        result.toArray();
+                    }
+                }
+            } catch (IndexOutOfBoundsException iooe) {
+            } catch (NullPointerException npe) {
+            }
+            return result;
         }
     }
+
     public static class IterSetCalc extends AbstractIterCalc {
         private final IterCalc[] iterCalcs;
 
@@ -259,11 +277,12 @@ public class SetFunDef extends FunDefBase {
                     case LIST:
                     case MUTABLE_LIST:
                         return new AbstractIterCalc(arg, new Calc[] {calc}) {
-                            private final ListCalc listCalc = (ListCalc) calc;
+                            private final MemberListCalc memberListCalc =
+                                (MemberListCalc) calc;
                             public Iterable evaluateIterable(Evaluator evaluator) {
-                                List result = new ArrayList();
+                                List<Member> result = new ArrayList<Member>();
                                 List<Member> list =
-                                    listCalc.evaluateList(evaluator);
+                                    memberListCalc.evaluateMemberList(evaluator);
                                 // Add only members which are not null.
                                 for (Member member : list) {
                                     if (member == null || member.isNull()) {
@@ -296,10 +315,20 @@ public class SetFunDef extends FunDefBase {
                     case LIST:
                     case MUTABLE_LIST:
                         return new AbstractIterCalc(arg, new Calc[] {calc}) {
-                            private final ListCalc listCalc = (ListCalc) calc;
+                            private final TupleListCalc tupleListCalc =
+                                (TupleListCalc) calc;
+
                             public Iterable evaluateIterable(Evaluator evaluator) {
-                                List result = new ArrayList();
-                                List<Member[]> list = listCalc.evaluateList(evaluator);
+                                return evaluateTupleIterable(evaluator);
+                            }
+
+                            public Iterable<Member[]> evaluateTupleIterable(
+                                Evaluator evaluator)
+                            {
+                                List<Member[]> result =
+                                    new ArrayList<Member[]>();
+                                List<Member[]> list =
+                                    tupleListCalc.evaluateTupleList(evaluator);
                                 // Add only tuples which are not null. Tuples with
                                 // any null members are considered null.
                                 list:
@@ -412,8 +441,8 @@ public class SetFunDef extends FunDefBase {
                                     return false;
                                 }
                                 IterCalc iterCalc = iterCalcs[index++];
-                                Iterable iter =
-                                    iterCalc.evaluateIterable(evaluator);
+                                Iterable<Member> iter =
+                                    iterCalc.evaluateMemberIterable(evaluator);
                                 currentIterator = iter.iterator();
                             }
                             while(true) {
@@ -423,8 +452,8 @@ public class SetFunDef extends FunDefBase {
                                         return false;
                                     }
                                     IterCalc iterCalc = iterCalcs[index++];
-                                    Iterable iter =
-                                        iterCalc.evaluateIterable(evaluator);
+                                    Iterable<Member> iter =
+                                        iterCalc.evaluateMemberIterable(evaluator);
                                     currentIterator = iter.iterator();
                                     b = currentIterator.hasNext();
                                 }

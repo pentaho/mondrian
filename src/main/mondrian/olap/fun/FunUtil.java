@@ -19,11 +19,12 @@ import mondrian.calc.Calc;
 import mondrian.calc.ResultStyle;
 import mondrian.calc.DoubleCalc;
 import mondrian.mdx.*;
+import mondrian.util.FilteredIterableList;
+import mondrian.util.ConcatenableList;
 
 import org.apache.log4j.Logger;
 
 import java.util.*;
-import java.util.Set;
 import java.io.PrintWriter;
 
 /**
@@ -63,8 +64,6 @@ public class FunUtil extends Util {
      * Actually, a placeholder until we actually implement 3VL.
      */
     public static final boolean BooleanNull = false;
-
-    private static final String EMPTY_STRING = "";
 
     /**
      * Creates an exception which indicates that an error has occurred while
@@ -230,17 +229,17 @@ public class FunUtil extends Util {
      * Adds every element of <code>right</code> which is not in <code>set</code>
      * to both <code>set</code> and <code>left</code>.
      */
-    static void addUnique(List left, List right, Set set) {
+    static <T> void addUnique(List<T> left, List<T> right, Set<Object> set) {
         assert left != null;
         assert right != null;
         if (right.isEmpty()) {
             return;
         }
         for (int i = 0, n = right.size(); i < n; i++) {
-            Object o = right.get(i),
-                    p = o;
+            T o = right.get(i);
+            Object p = o;
             if (o instanceof Object[]) {
-                p = new ArrayHolder((Object[]) o);
+                p = new ArrayHolder<Object>((Object[]) o);
             }
             if (set.add(p)) {
                 left.add(o);
@@ -249,13 +248,13 @@ public class FunUtil extends Util {
     }
 
     static List<Member> addMembers(
-            SchemaReader schemaReader,
-            List<Member> members,
-            Hierarchy hierarchy) {
+        final SchemaReader schemaReader,
+        final List<Member> members,
+        final Hierarchy hierarchy)
+    {
         // only add accessible levels
-        Level[] levels = schemaReader.getHierarchyLevels(hierarchy);
-        for (int i = 0; i < levels.length; i++) {
-            addMembers(schemaReader, members, levels[i]);
+        for (Level level : schemaReader.getHierarchyLevels(hierarchy)) {
+            addMembers(schemaReader, members, level);
         }
         return members;
     }
@@ -264,24 +263,28 @@ public class FunUtil extends Util {
             SchemaReader schemaReader,
             List<Member> members,
             Level level) {
-        Member[] levelMembers = schemaReader.getLevelMembers(level, true);
-        addAll(members, levelMembers);
+        List<Member> levelMembers = schemaReader.getLevelMembers(level, true);
+        members.addAll(levelMembers);
         return members;
     }
 
     /**
      * Removes every member from a list which is calculated.
      * The list must not be null, and must consist only of members.
+     *
+     * @param memberList Member list
+     * @return List of non-calculated members
      */
-    static void removeCalculatedMembers(List<Member> memberList)
+    static List<Member> removeCalculatedMembers(List<Member> memberList)
     {
-        for (int i = 0; i < memberList.size(); i++) {
-            Member member = (Member) memberList.get(i);
-            if (member.isCalculated()) {
-                memberList.remove(i);
-                --i;
-            }
-        }
+    	return new FilteredIterableList<Member>(
+                memberList,
+                new FilteredIterableList.Filter<Member>() {
+                    public boolean accept(final Member m) {
+                        return ! m.isCalculated();
+                    }
+                }
+            );
     }
 
     /**
@@ -332,8 +335,7 @@ public class FunUtil extends Util {
 
         assert exp.getType() instanceof ScalarType;
         Map<Member, Object> mapMemberToValue = new HashMap<Member, Object>();
-        for (int i = 0, count = members.size(); i < count; i++) {
-            Member member = members.get(i);
+        for (Member member : members) {
             while (true) {
                 evaluator.setContext(member);
                 Object result = exp.evaluate(evaluator);
@@ -464,7 +466,7 @@ public class FunUtil extends Util {
         if (debug) {
             final PrintWriter pw = new PrintWriter(System.out);
             for (int i = 0; i < members.size(); i++) {
-                Object o = members.get(i);
+                Member o = members.get(i);
                 pw.print(i);
                 pw.print(": ");
                 if (mapMemberToValue != null) {
@@ -509,7 +511,7 @@ public class FunUtil extends Util {
         if (debug) {
             final PrintWriter pw = new PrintWriter(System.out);
             for (int i = 0; i < tuples.size(); i++) {
-                Object o = tuples.get(i);
+                Member[] o = tuples.get(i);
                 pw.print(i);
                 pw.print(": ");
                 pw.println(o);
@@ -522,15 +524,19 @@ public class FunUtil extends Util {
         if (members.isEmpty()) {
             return;
         }
-        Object first = members.get(0);
+        final Object first = members.get(0);
         if (first instanceof Member) {
-            List<Member> memberList = members;
+            if (((Member) first).getDimension().isHighCardinality()) {
+            		return;
+            }
+            List<Member> memberList = Util.cast(members);
             Comparator<Member> comparator = new HierarchizeComparator(post);
+            members.toArray();
             Collections.sort(memberList, comparator);
         } else {
             assert first instanceof Member[];
             final int arity = ((Member[]) first).length;
-            List<Member[]> tupleList = members;
+            List<Member[]> tupleList = Util.cast(members);
             Comparator<Member[]> comparator =
                 new HierarchizeArrayComparator(arity, post).wrap();
             Collections.sort(tupleList, comparator);
@@ -1254,8 +1260,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
 
         // todo: treat constant exps as evaluateMembers() does
         SetWrapper retval = new SetWrapper();
-        for (Iterator it = members.iterator(); it.hasNext();) {
-            Object obj = it.next();
+        for (Object obj : members) {
             if (obj instanceof Member[]) {
                 evaluator.setContext((Member[])obj);
             } else {
@@ -1304,11 +1309,11 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         for (int i = 0; i < calcs.length; i++) {
             retvals[i] = new SetWrapper();
         }
-        for (int j = 0; j < members.size(); j++) {
+        for (final Object member : members) {
             if (isTuples) {
-                evaluator.setContext((Member[]) members.get(j));
+                evaluator.setContext((List<Member>) member);
             } else {
-                evaluator.setContext((Member) members.get(j));
+                evaluator.setContext((Member) member);
             }
             for (int i = 0; i < calcs.length; i++) {
                 DoubleCalc calc = calcs[i];
@@ -1421,11 +1426,11 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             return null;
         }
         int ordinal = Util.getMemberOrdinalInParent(schemaReader, member1);
-        Member[] cousins = schemaReader.getMemberChildren(uncle);
-        if (cousins.length <= ordinal) {
+        List<Member> cousins = schemaReader.getMemberChildren(uncle);
+        if (cousins.size() <= ordinal) {
             return null;
         }
-        return cousins[ordinal];
+        return cousins.get(ordinal);
     }
 
     /**
@@ -1469,14 +1474,14 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             return member.getHierarchy().getNullMember();
         }
 
-        Member[] ancestors = member.getAncestorMembers();
+        List<Member> ancestors = member.getAncestorMembers();
         final SchemaReader schemaReader = evaluator.getSchemaReader();
 
         Member result = member.getHierarchy().getNullMember();
 
         searchLoop:
-        for (int i = 0; i < ancestors.length; i++) {
-            final Member ancestorMember = ancestors[i];
+        for (int i = 0; i < ancestors.size(); i++) {
+            final Member ancestorMember = ancestors.get(i);
 
             if (targetLevel != null) {
                 if (ancestorMember.getLevel() == targetLevel) {
@@ -1762,7 +1767,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         return new FunDefBase(resolver, returnCategory, argCategories) {};
     }
 
-    public static Member[] getNonEmptyMemberChildren(
+    public static List<Member> getNonEmptyMemberChildren(
         Evaluator evaluator,
         Member member)
     {
@@ -1782,14 +1787,14 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
      * @param level Level
      * @param includeCalcMembers Whether to include calculated members
      */
-    static Member[] getNonEmptyLevelMembers(
-        Evaluator evaluator,
-        Level level,
-        boolean includeCalcMembers)
+    static List<Member> getNonEmptyLevelMembers(
+        final Evaluator evaluator,
+        final Level level,
+        final boolean includeCalcMembers)
     {
         SchemaReader sr = evaluator.getSchemaReader();
         if (evaluator.isNonEmpty()) {
-            final Member[] members = sr.getLevelMembers(level, evaluator);
+            List<Member> members = sr.getLevelMembers(level, evaluator);
             if (includeCalcMembers) {
                 return addLevelCalculatedMembers(sr, level, members);
             }
@@ -1799,16 +1804,14 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
     }
 
     static List<Member> levelMembers(
-        Level level,
-        Evaluator evaluator,
+        final Level level,
+        final Evaluator evaluator,
         final boolean includeCalcMembers)
     {
-        Member[] members =
+        List <Member> memberList =
             getNonEmptyLevelMembers(evaluator, level, includeCalcMembers);
-        List<Member> memberList =
-            new ArrayList<Member>(Arrays.asList(members));
         if (!includeCalcMembers) {
-            removeCalculatedMembers(memberList);
+            memberList = removeCalculatedMembers(memberList);
         }
         hierarchize(memberList, false);
         return memberList;
@@ -1819,23 +1822,23 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         Evaluator evaluator,
         final boolean includeCalcMembers)
     {
-        final List<Member> memberList;
+        List<Member> memberList;
         if (evaluator.isNonEmpty()) {
             // Allow the SQL generator to generate optimized SQL since we know
             // we're only interested in non-empty members of this level.
             memberList = new ArrayList<Member>();
             for (Level level : hierarchy.getLevels()) {
-                Member[] members =
+                List<Member> members =
                     getNonEmptyLevelMembers(
                         evaluator, level, includeCalcMembers);
-                memberList.addAll(Arrays.asList(members));
+                memberList.addAll(members);
             }
         } else {
             memberList = addMembers(
                 evaluator.getSchemaReader(),
-                new ArrayList<Member>(), hierarchy);
+                new ConcatenableList<Member>(), hierarchy);
             if (!includeCalcMembers && memberList != null) {
-                removeCalculatedMembers(memberList);
+                memberList = removeCalculatedMembers(memberList);
             }
         }
         hierarchize(memberList, false);
@@ -2143,7 +2146,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
                 if (!FunUtil.equals(m1, m2)) {
                     // throw an assert exception
                     throw Util.newInternal(
-                        "assertion failed in HierarchizeArrayComparator: Members " 
+                        "assertion failed in HierarchizeArrayComparator: Members "
                         + m1 + ", " + m2 + " are not equal."
                       );
                 }
@@ -2278,7 +2281,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             throw new UnsupportedOperationException();
         }
 
-        public Member[] getAncestorMembers() {
+        public List<Member> getAncestorMembers() {
             throw new UnsupportedOperationException();
         }
 

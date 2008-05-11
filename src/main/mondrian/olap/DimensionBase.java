@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,17 +29,20 @@ public abstract class DimensionBase
     protected final String name;
     protected final String uniqueName;
     protected final String description;
+    protected final boolean highCardinality;
     protected Hierarchy[] hierarchies;
     protected DimensionType dimensionType;
 
     protected DimensionBase(
             String name,
-            DimensionType dimensionType)
+            DimensionType dimensionType,
+            final boolean highCardinality)
     {
         this.name = name;
         this.uniqueName = Util.makeFqName(name);
         this.description = null;
         this.dimensionType = dimensionType;
+        this.highCardinality = highCardinality;
     }
 
     public String getUniqueName() {
@@ -119,6 +122,10 @@ public abstract class DimensionBase
         }
 
         return oe;
+    }
+
+    public boolean isHighCardinality() {
+        return this.highCardinality;
     }
 
     private Hierarchy lookupHierarchy(Id.Segment s) {

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -229,7 +229,7 @@ public class UtilTestCase extends TestCase {
     public void testQuoteMdxIdentifier() {
         assertEquals("[San Francisco]", Util.quoteMdxIdentifier("San Francisco"));
         assertEquals("[a [bracketed]] string]", Util.quoteMdxIdentifier("a [bracketed] string"));
-        assertEquals("[Store].[USA].[California]", 
+        assertEquals("[Store].[USA].[California]",
             Util.quoteMdxIdentifier(
                 Arrays.asList(
                     new Id.Segment("Store", Id.Quoting.QUOTED),
@@ -448,6 +448,16 @@ public class UtilTestCase extends TestCase {
             total += s + ";";
         }
         assertEquals("x;y;a;b;c;", total);
+    }
+
+    public void testAreOccurrencesEqual() {
+        assertFalse(Util.areOccurencesEqual(Collections.<String>emptyList()));
+        assertTrue(Util.areOccurencesEqual(Arrays.asList("x")));
+        assertTrue(Util.areOccurencesEqual(Arrays.asList("x", "x")));
+        assertFalse(Util.areOccurencesEqual(Arrays.asList("x", "y")));
+        assertFalse(Util.areOccurencesEqual(Arrays.asList("x", "y", "x")));
+        assertTrue(Util.areOccurencesEqual(Arrays.asList("x", "x", "x")));
+        assertFalse(Util.areOccurencesEqual(Arrays.asList("x", "x", "y", "z")));
     }
 }
 

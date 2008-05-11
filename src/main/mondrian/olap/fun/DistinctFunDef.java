@@ -3,23 +3,23 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ListCalc;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Evaluator;
-
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.ArrayList;
+import mondrian.olap.Member;
 
 /**
  * Definition of the <code>Distinct</code> MDX function.
@@ -67,6 +67,32 @@ class DistinctFunDef extends FunDefBase {
                 MemberHelper lookupObj = new MemberHelper(element);
 
                 if (set.add(lookupObj)) {
+                    result.add(element);
+                }
+            }
+            return result;
+        }
+
+        public List<Member> evaluateMemberList(Evaluator evaluator) {
+            List<Member> list =
+                ((MemberListCalc) listCalc).evaluateMemberList(evaluator);
+            Set<Member> set = new HashSet<Member>(list.size());
+            List<Member> result = new ArrayList<Member>();
+            for (Member element : list) {
+                if (set.add(element)) {
+                    result.add(element);
+                }
+            }
+            return result;
+        }
+
+        public List<Member[]> evaluateTupleList(Evaluator evaluator) {
+            List<Member[]> list =
+                ((TupleListCalc) listCalc).evaluateTupleList(evaluator);
+            Set<List<Member>> set = new HashSet<List<Member>>(list.size());
+            List<Member[]> result = new ArrayList<Member[]>();
+            for (Member[] element : list) {
+                if (set.add(Arrays.asList(element))) {
                     result.add(element);
                 }
             }

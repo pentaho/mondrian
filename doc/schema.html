@@ -5,7 +5,7 @@
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
   == Copyright (C) 2001-2002 Kana Software, Inc.
-  == Copyright (C) 2002-2007 Julian Hyde
+  == Copyright (C) 2002-2008 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   == jhyde, 24 September, 2002
@@ -913,9 +913,7 @@ enough not to read the schema literally. It applies a number of optimizations wh
 queries:</p>
 
 <ul>
-  	<li>If a dimension has a small number of members, Mondrian reads it into a cache on first use. See the <a
- 	href="api/mondrian/olap/MondrianProperties.html#getLargeDimensionThreshold%28%29"
-	class="included_content_links">mondrian.rolap.LargeDimensionThreshold</a> property.</li>
+  	<li>TODO: describe large dimension support</li>
   	<li>If a dimension (or, more precisely, the level of the dimension being accessed) is in the fact table, Mondrian does
 	not perform a join.</li>
   	<li>If two dimensions access the same table via the same join path, Mondrian only joins them once. For example,

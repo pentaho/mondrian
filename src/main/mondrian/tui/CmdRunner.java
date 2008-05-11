@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -541,7 +541,11 @@ public class CmdRunner {
      */
     public String execute(String queryString) {
         Result result = runQuery(queryString, true);
-        return toString(result);
+        if (this.options.highCardResults) {
+            return highCardToString(result);
+        } else {
+            return toString(result);
+        }
     }
 
     /**
@@ -584,6 +588,16 @@ public class CmdRunner {
         result.print(pw);
         pw.flush();
         return sw.toString();
+    }
+    /**
+     * Converts a {@link Result} object to a string printing to standard
+     * output directly, without buffering.
+     *
+     * @return null String since output is dump directly to stdout.
+     */
+    public String highCardToString(Result result) {
+        result.print(new PrintWriter(System.out, true));
+        return null;
     }
 
 
@@ -2283,6 +2297,10 @@ public class CmdRunner {
         buf.append(nl);
         buf.append("  -h               : print this usage text");
         buf.append(nl);
+        buf.append("  -H               : ready to print out high cardinality");
+        buf.append(nl);
+        buf.append("                     dimensions");
+        buf.append(nl);
         buf.append("  -d               : enable local debugging");
         buf.append(nl);
         buf.append("  -t               : time each mdx query");
@@ -2365,6 +2383,7 @@ public class CmdRunner {
         private final List<String> filenames = new ArrayList<String>();
         private int doingWhat = DO_MDX;
         private String singleMdxCmd;
+        private boolean highCardResults;
     }
 
     public static void main(String[] args) throws Exception {
@@ -2451,6 +2470,8 @@ public class CmdRunner {
 
             if (arg.equals("-h")) {
                 throw new BadOption(null);
+            } else if (arg.equals("-H")) {
+                options.highCardResults = true;
 
             } else if (arg.equals("-d")) {
                 options.debug = true;

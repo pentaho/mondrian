@@ -3,15 +3,13 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ListCalc;
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.mdx.DimensionExpr;
@@ -170,7 +168,8 @@ class ExtractFunDef extends FunDefBase {
         Util.assertTrue(
             extractedOrdinalList.size() == extractedDimensionList.size());
         Exp arg = call.getArg(0);
-        final ListCalc listCalc = compiler.compileList(arg, false);
+        final TupleListCalc listCalc =
+            (TupleListCalc) compiler.compileList(arg, false);
         int inArity = ((SetType) arg.getType()).getArity();
         final int outArity = extractedOrdinalList.size();
         if (inArity == 1) {
@@ -184,15 +183,13 @@ class ExtractFunDef extends FunDefBase {
             return new AbstractListCalc(call, new Calc[] {listCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     List<Member> result = new ArrayList<Member>();
-                    List<Member[]> list = listCalc.evaluateList(evaluator);
+                    List<Member[]> list = listCalc.evaluateTupleList(evaluator);
                     Set<Member> emittedMembers = new HashSet<Member>();
                     for (Member[] members : list) {
                         Member outMember = members[extractedOrdinals[0]];
-                        if (emittedMembers.contains(outMember)) {
-                            continue;
+                        if (emittedMembers.add(outMember)) {
+                            result.add(outMember);
                         }
-                        emittedMembers.add(outMember);
-                        result.add(outMember);
                     }
                     return result;
                 }
@@ -201,7 +198,7 @@ class ExtractFunDef extends FunDefBase {
             return new AbstractListCalc(call, new Calc[] {listCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     List<Member[]> result = new ArrayList<Member[]>();
-                    List<Member[]> list = listCalc.evaluateList(evaluator);
+                    List<Member[]> list = listCalc.evaluateTupleList(evaluator);
                     Set<List<Member>> emittedTuples = new HashSet<List<Member>>();
                     for (Member[] members : list) {
                         Member[] outMembers = new Member[outArity];
@@ -209,11 +206,9 @@ class ExtractFunDef extends FunDefBase {
                             outMembers[i] = members[extractedOrdinals[i]];
                         }
                         final List<Member> outTuple = Arrays.asList(outMembers);
-                        if (emittedTuples.contains(outTuple)) {
-                            continue;
+                        if (emittedTuples.add(outTuple)) {
+                            result.add(outMembers);
                         }
-                        emittedTuples.add(outTuple);
-                        result.add(outMembers);
                     }
                     return result;
                 }

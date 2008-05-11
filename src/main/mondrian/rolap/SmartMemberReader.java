@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -13,12 +13,18 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import mondrian.olap.Id;
+import mondrian.olap.Util;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
-
-import java.util.*;
+import mondrian.util.ConcatenableList;
 
 /**
  * <code>SmartMemberReader</code> implements {@link MemberReader} by keeping a
@@ -66,7 +72,7 @@ public class SmartMemberReader implements MemberReader {
     public RolapHierarchy getHierarchy() {
         return source.getHierarchy();
     }
-    
+
     public MemberCache getMemberCache() {
         return cacheHelper;
     }
@@ -87,8 +93,8 @@ public class SmartMemberReader implements MemberReader {
     }
 
     // implement MemberReader
-    public RolapMember[] getMembers() {
-        List<RolapMember> v = new ArrayList<RolapMember>();
+    public List<RolapMember> getMembers() {
+        List<RolapMember> v = new ConcatenableList<RolapMember>();
         RolapLevel[] levels = (RolapLevel[]) getHierarchy().getLevels();
         // todo: optimize by walking to children for members we know about
         for (RolapLevel level : levels) {
@@ -98,7 +104,7 @@ public class SmartMemberReader implements MemberReader {
                 Integer.MAX_VALUE);
             v.addAll(membersInLevel);
         }
-        return v.toArray(new RolapMember[v.size()]);
+        return v;
     }
 
     public List<RolapMember> getRootMembers() {
@@ -120,7 +126,7 @@ public class SmartMemberReader implements MemberReader {
     protected void checkCacheStatus() {
         cacheHelper.checkCacheStatus();
     }
-    
+
     public List<RolapMember> getMembersInLevel(
         RolapLevel level,
         int startOrdinal,
@@ -129,13 +135,13 @@ public class SmartMemberReader implements MemberReader {
     {
         synchronized(cacheHelper) {
             checkCacheStatus();
-    
-            List<RolapMember> members = 
+
+            List<RolapMember> members =
                 cacheHelper.getLevelMembersFromCache(level, constraint);
             if (members != null) {
                 return members;
             }
-    
+
             members =
                 source.getMembersInLevel(
                     level, startOrdinal, endOrdinal, constraint);
@@ -183,10 +189,10 @@ public class SmartMemberReader implements MemberReader {
             MemberChildrenConstraint constraint) {
         synchronized(cacheHelper) {
             checkCacheStatus();
-    
+
             List<RolapMember> missed = new ArrayList<RolapMember>();
             for (RolapMember parentMember : parentMembers) {
-                List<RolapMember> list = 
+                List<RolapMember> list =
                     cacheHelper.getChildrenFromCache(parentMember, constraint);
                 if (list == null) {
                     // the null member has no children
@@ -233,7 +239,7 @@ public class SmartMemberReader implements MemberReader {
             //   -- jhyde, 2004/6/10.
             Util.assertPrecondition(isSorted(members), "isSorted(members)");
         }
-        List<RolapMember> children = new ArrayList<RolapMember>();
+        List<RolapMember> children = new ConcatenableList<RolapMember>();
         source.getMemberChildren(members, children, constraint);
         // Put them in a temporary hash table first. Register them later, when
         // we know their size (hence their 'cost' to the cache pool).
@@ -242,14 +248,13 @@ public class SmartMemberReader implements MemberReader {
         for (RolapMember member1 : members) {
             tempMap.put(member1, Collections.EMPTY_LIST);
         }
-        for (int i = 0, childrenCount = children.size(); i < childrenCount; i++) {
+        for (final RolapMember child : children) {
             // todo: We could optimize here. If members.length is small, it's
             // more efficient to drive from members, rather than hashing
             // children.length times. We could also exploit the fact that the
             // result is sorted by ordinal and therefore, unless the "members"
             // contains members from different levels, children of the same
             // member will be contiguous.
-            RolapMember child = children.get(i);
             assert child != null : "child";
             assert tempMap != null : "tempMap";
             final RolapMember parentMember = child.getParentMember();
@@ -264,8 +269,8 @@ public class SmartMemberReader implements MemberReader {
                 list = new ArrayList<RolapMember>();
                 tempMap.put(parentMember, list);
             }
-            list.add(child);
-            result.add(child);
+            ((List)list).add(child);
+            ((List)result).add(child);
         }
         synchronized (cacheHelper) {
             for (Map.Entry<RolapMember, List<RolapMember>> entry :
@@ -273,7 +278,7 @@ public class SmartMemberReader implements MemberReader {
             {
                 final RolapMember member = entry.getKey();
                 if (cacheHelper.getChildrenFromCache(member, constraint)
-                    == null) 
+                    == null)
                 {
                     final List<RolapMember> list = entry.getValue();
                     cacheHelper.putChildren(member, constraint, list);
@@ -307,7 +312,7 @@ public class SmartMemberReader implements MemberReader {
     }
 
     public RolapMember getLeadMember(RolapMember member, int n) {
-        // uncertain if this method needs to be synchronized 
+        // uncertain if this method needs to be synchronized
         synchronized(cacheHelper) {
             if (n == 0 || member.isNull()) {
                 return member;
@@ -317,7 +322,7 @@ public class SmartMemberReader implements MemberReader {
                     RolapMember sibling = null;
                     while (n-- > 0) {
                         if (!iter.hasNext()) {
-                            return 
+                            return
                                 (RolapMember) member.getHierarchy().getNullMember();
                         }
                         sibling = iter.nextMember();
@@ -328,7 +333,7 @@ public class SmartMemberReader implements MemberReader {
                     RolapMember sibling = null;
                     while (n-- > 0) {
                         if (!iter.hasPrevious()) {
-                            return 
+                            return
                                 (RolapMember) member.getHierarchy().getNullMember();
                         }
                         sibling = iter.previousMember();
@@ -454,7 +459,7 @@ public class SmartMemberReader implements MemberReader {
     class SiblingIterator {
         private final MemberReader reader;
         private final SiblingIterator parentIterator;
-        private RolapMember[] siblings;
+        private List<RolapMember> siblings;
         private int position;
 
         SiblingIterator(MemberReader reader, RolapMember member) {
@@ -469,10 +474,10 @@ public class SmartMemberReader implements MemberReader {
                 reader.getMemberChildren(parent, siblingList);
                 this.parentIterator = new SiblingIterator(reader, parent);
             }
-            this.siblings = RolapUtil.toArray(siblingList);
+            this.siblings = siblingList;
             this.position = -1;
-            for (int i = 0; i < this.siblings.length; i++) {
-                if (siblings[i].equals(member)) {
+            for (int i = 0; i < this.siblings.size(); i++) {
+                if (siblings.get(i).equals(member)) {
                     this.position = i;
                     break;
                 }
@@ -483,7 +488,7 @@ public class SmartMemberReader implements MemberReader {
             }
         }
         boolean hasNext() {
-            return (this.position < this.siblings.length - 1) ||
+            return (this.position < this.siblings.size() - 1) ||
                 (parentIterator != null) &&
                 parentIterator.hasNext();
         }
@@ -491,17 +496,17 @@ public class SmartMemberReader implements MemberReader {
             return nextMember();
         }
         RolapMember nextMember() {
-            if (++this.position >= this.siblings.length) {
+            if (++this.position >= this.siblings.size()) {
                 if (parentIterator == null) {
                     throw Util.newInternal("there is no next member");
                 }
                 RolapMember parent = parentIterator.nextMember();
                 List<RolapMember> siblingList = new ArrayList<RolapMember>();
                 reader.getMemberChildren(parent, siblingList);
-                this.siblings = RolapUtil.toArray(siblingList);
+                this.siblings = siblingList;
                 this.position = 0;
             }
-            return this.siblings[this.position];
+            return this.siblings.get(this.position);
         }
         boolean hasPrevious() {
             return (this.position > 0) ||
@@ -519,10 +524,10 @@ public class SmartMemberReader implements MemberReader {
                 RolapMember parent = parentIterator.previousMember();
                 List<RolapMember> siblingList = new ArrayList<RolapMember>();
                 reader.getMemberChildren(parent, siblingList);
-                this.siblings = RolapUtil.toArray(siblingList);
-                this.position = this.siblings.length - 1;
+                this.siblings = siblingList;
+                this.position = this.siblings.size() - 1;
             }
-            return this.siblings[this.position];
+            return this.siblings.get(this.position);
         }
     }
 

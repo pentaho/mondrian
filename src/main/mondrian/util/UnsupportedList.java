@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -116,6 +116,8 @@ public abstract class UnsupportedList<T> implements List<T> {
         throw new UnsupportedOperationException(getClass().getName()+".iterator");
     }
 
+
+
     protected class Itr implements Iterator<T> {
         protected int cursor;
         protected int lastRet;
@@ -186,6 +188,21 @@ public abstract class UnsupportedList<T> implements List<T> {
 
         public void add(T o) {
             throw new UnsupportedOperationException(getClass().getName()+".add");
+        }
+    }
+    /**
+     * Iterator for arrays of a priori unknown size.
+     */
+    protected class ItrUnknownSize extends Itr {
+        public ItrUnknownSize() { super(); }
+
+        public boolean hasNext() {
+            try {
+                get(cursor);
+                return true;
+                    } catch(IndexOutOfBoundsException e) {
+                        return false;
+                    }
         }
     }
 }
