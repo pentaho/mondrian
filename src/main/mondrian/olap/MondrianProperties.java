@@ -377,6 +377,15 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final StringProperty TestConnectString =
             new StringProperty(
                     this, "mondrian.test.connectString", null);
+    /**
+     * Property containing a list of dimensions in the Sales cube that should
+     * be treated as high-cardinality dimensions by the testing infrastructure.
+     * This allows us to run the full suite of tests with high-cardinality
+     * functionality enabled.
+     */
+    public transient final StringProperty TestHighCardinalityDimensionList =
+        new StringProperty(
+            this, "mondrian.test.highCardDimensions", null);
 
     // miscellaneous
 
