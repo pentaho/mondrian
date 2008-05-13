@@ -371,7 +371,13 @@ public class TestContext {
         return s;
     }
 
-    private static String getRawFoodMartSchema() {
+    /**
+     * Returns the definition of the "FoodMart" schema as stored in
+     * {@code FoodMart.xml}.
+     *
+     * @return XML definition of the FoodMart schema
+     */
+    public static String getRawFoodMartSchema() {
         synchronized (SnoopingSchemaProcessor.class) {
             if (unadulteratedFoodMartSchema == null) {
                 instance().getFoodMartConnection(
@@ -714,7 +720,11 @@ public class TestContext {
      * thrown.
      */
     public void assertSimpleQuery() {
-        assertQueryReturns("select from [Sales]", "");
+        assertQueryReturns(
+            "select from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "266,773"));
     }
 
     /**
@@ -1365,6 +1375,27 @@ public class TestContext {
 
     public static String allDims() {
         return allDimsExcept();
+    }
+
+    /**
+     * Creates a FoodMart connection with "Ignore=true" and returns the list
+     * of warnings in the schema.
+     *
+     * @return Warnings encountered while loading schema
+     */
+    public List<Exception> getSchemaWarnings() {
+        final Connection connection =
+            new DelegatingTestContext(this) {
+                public Util.PropertyList getFoodMartConnectionProperties() {
+                    final Util.PropertyList propertyList =
+                        super.getFoodMartConnectionProperties();
+                    propertyList.put(
+                        RolapConnectionProperties.Ignore.name(),
+                        "true");
+                    return propertyList;
+                }
+            }.getFoodMartConnection();
+        return connection.getSchema().getWarnings();
     }
 
     public static class SnoopingSchemaProcessor

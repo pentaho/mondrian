@@ -35,7 +35,6 @@ import mondrian.olap.Hierarchy;
 import mondrian.olap.Level;
 import mondrian.olap.Member;
 import mondrian.olap.MondrianDef;
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.NamedSet;
 import mondrian.olap.Parameter;
 import mondrian.olap.Role;
@@ -61,10 +60,7 @@ import mondrian.spi.DynamicSchemaProcessor;
 import org.apache.log4j.Logger;
 import org.apache.commons.vfs.*;
 
-import org.eigenbase.xom.DOMWrapper;
-import org.eigenbase.xom.Parser;
-import org.eigenbase.xom.XOMException;
-import org.eigenbase.xom.XOMUtil;
+import org.eigenbase.xom.*;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -132,14 +128,18 @@ public class RolapSchema implements Schema {
      * used it its equals and hashCode methods.
      */
     private String key;
+
     /**
      * Maps {@link String names of roles} to {@link Role roles with those names}.
      */
     private final Map<String, Role> mapNameToRole;
+
     /**
      * Maps {@link String names of sets} to {@link NamedSet named sets}.
      */
-    private final Map<String, NamedSet> mapNameToSet = new HashMap<String, NamedSet>();
+    private final Map<String, NamedSet> mapNameToSet =
+        new HashMap<String, NamedSet>();
+
     /**
      * Table containing all standard MDX functions, plus user-defined functions
      * for this schema.
@@ -165,6 +165,13 @@ public class RolapSchema implements Schema {
         relationExprCardinalityMap;
 
     /**
+     * List of warnings. Populated when a schema is created by a connection
+     * that has
+     * {@link mondrian.rolap.RolapConnectionProperties#Ignore Ignore}=true.
+     */
+    private final List<Exception> warningList = new ArrayList<Exception>();
+
+    /**
      * This is ONLY called by other constructors (and MUST be called
      * by them) and NEVER by the Pool.
      *
@@ -185,12 +192,14 @@ public class RolapSchema implements Schema {
         this.internalConnection =
             new RolapConnection(connectInfo, this, dataSource);
 
-        this.mapSharedHierarchyNameToHierarchy = new HashMap<String, RolapHierarchy>();
+        this.mapSharedHierarchyNameToHierarchy =
+            new HashMap<String, RolapHierarchy>();
         this.mapSharedHierarchyToReader = new HashMap<String, MemberReader>();
         this.mapNameToCube = new HashMap<String, RolapCube>();
         this.mapNameToRole = new HashMap<String, Role>();
         this.aggTableManager = new AggTableManager(this);
-        this.dataSourceChangeListener = createDataSourceChangeListener(connectInfo);
+        this.dataSourceChangeListener =
+            createDataSourceChangeListener(connectInfo);
         this.relationExprCardinalityMap =
             new HashMap<MondrianDef.Relation, Map<MondrianDef.Expression, Integer>>();
     }
@@ -234,6 +243,7 @@ public class RolapSchema implements Schema {
     }
 
     protected void finalize() throws Throwable {
+        super.finalize();
         finalCleanUp();
     }
 
@@ -352,6 +362,10 @@ public class RolapSchema implements Schema {
 		return schemaLoadDate;
     }
 
+    public List<Exception> getWarnings() {
+        return Collections.unmodifiableList(warningList);
+    }
+
     RoleImpl getDefaultRole() {
         return defaultRole;
     }
@@ -464,11 +478,53 @@ public class RolapSchema implements Schema {
         if (xmlSchema.defaultRole != null) {
             Role role = lookupRole(xmlSchema.defaultRole);
             if (role == null) {
-                throw Util.newError("Role '" + xmlSchema.defaultRole + "' not found");
+                error(
+                    "Role '" + xmlSchema.defaultRole + "' not found",
+                    locate(xmlSchema, "defaultRole"));
+            } else {
+                // At this stage, the only roles in mapNameToRole are
+                // RoleImpl roles so it is safe to case.
+                defaultRole = (RoleImpl) role;
             }
-            // At this stage, the only roles in mapNameToRole are
-            // RoleImpl roles so it is safe to case.
-            defaultRole = (RoleImpl) role;
+        }
+    }
+
+    /**
+     * Returns the location of an element or attribute in an XML document.
+     *
+     * <p>TODO: modify eigenbase-xom parser to return position info
+     *
+     * @param node Node
+     * @param attributeName Attribute name, or null
+     * @return Location of node or attribute in an XML document
+     */
+    XmlLocation locate(ElementDef node, String attributeName) {
+        return null;
+    }
+
+    /**
+     * Reports an error. If we are tolerant of errors
+     * (see {@link mondrian.rolap.RolapConnectionProperties#Ignore}), adds
+     * it to the stack, overwise throws. A thrown exception will typically
+     * abort the attempt to create the exception.
+     *
+     * @param message Message
+     * @param xmlLocation Location of XML element or attribute that caused
+     * the error, or null
+     */
+    void error(
+        String message,
+        XmlLocation xmlLocation)
+    {
+        final RuntimeException ex = new RuntimeException(message);
+        if (internalConnection != null
+            && "true".equals(
+            internalConnection.getProperty(
+                RolapConnectionProperties.Ignore.name())))
+        {
+            warningList.add(ex);
+        } else {
+            throw ex;
         }
     }
 
@@ -1708,6 +1764,13 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         DataSourceChangeListener dataSourceChangeListener)
     {
         this.dataSourceChangeListener = dataSourceChangeListener;
+    }
+
+    /**
+     * Location of a node in an XML document.
+     */
+    private interface XmlLocation {
+
     }
 }
 

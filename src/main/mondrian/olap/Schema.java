@@ -10,6 +10,7 @@
 package mondrian.olap;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * A <code>Schema</code> is a collection of cubes, shared dimensions, and roles.
@@ -88,6 +89,14 @@ public interface Schema {
      * @return Date and time when this schema was last loaded
      */
     Date getSchemaLoadDate();
+
+    /**
+     * Returns a list of warnings and errors that occurred while loading this
+     * schema.
+     *
+     * @return list of warnings
+     */
+    List<Exception> getWarnings();
 }
 
 // End Schema.java

@@ -19,7 +19,6 @@ import mondrian.util.Bug;
 
 import java.io.StringWriter;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Unit tests for various schema features.
@@ -33,6 +32,35 @@ public class SchemaTest extends FoodMartTestCase {
     public SchemaTest(String name) {
         super(name);
     }
+
+    /**
+     * Asserts that a list of exceptions (probably from
+     * {@link mondrian.olap.Schema#getWarnings()}) contains the expected
+     * exception.
+     *
+     * @param exceptionList List of exceptions
+     * @param expected Expected message
+     */
+    private void assertContains(
+        List<Exception> exceptionList,
+        String expected)
+    {
+        StringBuilder buf = new StringBuilder();
+        for (Exception exception : exceptionList) {
+            if (exception.getMessage().matches(expected)) {
+                return;
+            }
+            if (buf.length() > 0) {
+                buf.append(Util.nl);
+            }
+            buf.append(exception.getMessage());
+        }
+        fail(
+            "Exception list did not contain expected exception '"
+                + expected + "'. Exception list is:" + buf.toString());
+    }
+
+    // Tests follow...
 
     public void testSolveOrderInCalculatedMember(){
         final TestContext testContext = TestContext.createSubstitutingCube(
@@ -1754,10 +1782,21 @@ public class SchemaTest extends FoodMartTestCase {
                 + "      <Level name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
                 + "    </Hierarchy>\n"
                 + "  </Dimension>");
-        final List<Throwable> list = new ArrayList<Throwable>();
-//        testContext.getConnection().getSchema().validate(list);
-        throw new RuntimeException("todo ");
+        final List<Exception> exceptionList = testContext.getSchemaWarnings();
+        assertContains(exceptionList, "todo xxxxx");
     }
+
+    public void testInvalidRoleError() {
+        String schema = TestContext.getRawFoodMartSchema();
+        schema =
+            schema.replaceFirst(
+                "<Schema name=\"FoodMart\"",
+                "<Schema name=\"FoodMart\" defaultRole=\"Unknown\"");
+        final TestContext testContext = TestContext.create(schema);
+        final List<Exception> exceptionList = testContext.getSchemaWarnings();
+        assertContains(exceptionList, "Role 'Unknown' not found");
+    }
+
 }
 
 // End SchemaTest.java
