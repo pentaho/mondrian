@@ -645,16 +645,10 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Verify that naitve evaluation is possible when calculated members are present
-     * expanded member list inputs to NECJ, as long as the other input to NECJ can be
-     * expressed in SQL.
+     * Native evaluation is no longer possible after the fix to testCjEnumCalcMembersBug() testt
      *
      */
     public void testExpandCalcMembers() {
-        // Note there is a bug currently wrt Calc members in the inputs to native cross join.
-        // See testCjEnumCalcMembersBug() test.
-        // However, that bug doe snot affect this test as the empty cell is filtered out by
-        // the Filter, whose result is not affected by the calc members in its input.
         String query =
             "with " +
             "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) " +
@@ -693,11 +687,8 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().ExpandNonNative.get();
         MondrianProperties.instance().ExpandNonNative.set(true);
 
-        // Get a fresh connection; Otherwise the mondrian property setting
-        // is not refreshed for this parameter.
-        boolean requestFreshConnection = true;
         try {
-            checkNative(0, 9, query, fold(result), requestFreshConnection);
+            checkNotNative(9, query, fold(result));
         } finally {
             MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         }
@@ -739,10 +730,10 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().ExpandNonNative.set(true);
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
-
+        
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
-        boolean requestFreshConnection = true;
+        boolean requestFreshConnection = true;        
         checkNative(0, 6, query, fold(result), requestFreshConnection);
 
         MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
@@ -2388,8 +2379,8 @@ public class NonEmptyTest extends BatchTestCase {
     {
         // 3 cross joins -- 2 of the 4 arguments to the cross joins are
         // enumerated sets with calculated members
-        checkNative(
-            30,
+        // should be non-native due to the fix to testCjEnumCalcMembersBug()
+        checkNotNative(
             30,
             "with " +
             "member [Product].[All Products].[Drink].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
@@ -2420,8 +2411,6 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjEnumCalcMembersBug() {
-        // TO be fixed:
-        // Native evaluation of NECJ is incorrect.
         String query =
             "with " +
             "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) " +
@@ -2434,40 +2423,41 @@ public class NonEmptyTest extends BatchTestCase {
             "    NonEmptyCrossJoin([Product].[All Products].Children, [Enum Store Types]) on rows " +
             "from [Sales]";
 
-        String wrongResult =
+        String result =
             "Axis #0:\n" +
             "{}\n" +
             "Axis #1:\n" +
-            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[HeadQuarters]}\n" +
             "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Small Grocery]}\n" +
             "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Supermarket]}\n" +
             "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[S]}\n" +
-            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[HeadQuarters]}\n" +
             "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Small Grocery]}\n" +
             "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Supermarket]}\n" +
             "{[Product].[All Products].[Food], [Store Type].[All Store Types].[S]}\n" +
-            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[HeadQuarters]}\n" +
             "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Small Grocery]}\n" +
             "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Supermarket]}\n" +
             "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[S]}\n" +
-            "Row #0: \n" +
             "Row #0: 574\n" +
             "Row #0: 14,092\n" +
             "Row #0: 24,597\n" +
-            "Row #0: \n" +
             "Row #0: 4,764\n" +
             "Row #0: 108,188\n" +
             "Row #0: 191,940\n" +
-            "Row #0: \n" +
             "Row #0: 1,219\n" +
             "Row #0: 28,275\n" +
             "Row #0: 50,236\n";
 
-        // Get a fresh connection; Otherwise the mondrian property setting
-        // is not refreshed for this parameter.
-        Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);
-        context.assertQueryReturns(query, fold(wrongResult));
+        // make sure NECJ is forced to be non-native
+        // before the fix, the query is natively evaluated and result
+        // has empty rows for [Store Type].[All Store Types].[HeadQuarters]
+        boolean origNativeCJ =
+            MondrianProperties.instance().EnableNativeCrossJoin.get();
+        MondrianProperties.instance().EnableNativeCrossJoin.set(true);
+        boolean origExpandNonNative =
+            MondrianProperties.instance().ExpandNonNative.get();
+        MondrianProperties.instance().ExpandNonNative.set(true);
+        checkNotNative(9, query, fold(result));
+        MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCJ);
+        MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
     }
 
     public void testCjEnumEmptyCalcMembers()
@@ -2483,8 +2473,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         try {
             // enumerated list of calculated members results in some empty cells
-            checkNative(
-                15,
+            checkNotNative(
                 5,
                 "with " +
                 "member [Customers].[All Customers].[USA].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
@@ -2510,11 +2499,8 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjUnionEnumCalcMembers()
     {
-        // native sql should be used to retrieve Product Department members
-        // and the second cross join should use the cached results from the
-        // first, since the sql select excludes the calculated members
-        checkNative(
-            46,
+        // non-native due to the fix to testCjEnumCalcMembersBug()
+        checkNotNative(
             46,
             "with " +
             "member [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM] as " +

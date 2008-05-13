@@ -714,7 +714,7 @@ public abstract class RolapNativeSet extends RolapNative {
 
     /**
      * Checks for a set constructor, <code>{member1, member2,
-     * &#46;&#46;&#46;}</code>.
+     * &#46;&#46;&#46;}</code> that does not contain calculated members.
      *
      * @return an {@link CrossJoinArg} instance describing the enumeration,
      *    or null if <code>fun</code> represents something else.
@@ -723,6 +723,13 @@ public abstract class RolapNativeSet extends RolapNative {
         if (!"{}".equalsIgnoreCase(fun.getName())) {
             return null;
         }
+        // also returns null if any member is calculated
+        for (int i = 0; i < args.length; ++i) {
+            if (!(args[i] instanceof MemberExpr) ||
+                ((MemberExpr) args[i]).getMember().isCalculated()) {	
+                return null;
+            }
+        }        
         return MemberListCrossJoinArg.create(args, restrictMemberTypes());
     }
 
