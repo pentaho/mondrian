@@ -236,7 +236,17 @@ public class TestContext {
     }
 
     public Util.PropertyList getFoodMartConnectionProperties() {
-        return Util.parseConnectString(getDefaultConnectString());
+        final Util.PropertyList propertyList =
+            Util.parseConnectString(getDefaultConnectString());
+        if (MondrianProperties.instance().TestHighCardinalityDimensionList
+            .get() != null
+            && propertyList.get(
+            RolapConnectionProperties.DynamicSchemaProcessor.name()) == null) {
+            propertyList.put(
+                RolapConnectionProperties.DynamicSchemaProcessor.name(),
+                HighCardDynamicSchemaProcessor.class.getName());
+        }
+        return propertyList;
     }
 
     /**
@@ -1369,6 +1379,38 @@ public class TestContext {
         {
             catalogContent = super.filter(schemaUrl, connectInfo, stream);
             return catalogContent;
+        }
+    }
+
+    /**
+     * Schema processor that flags dimensions as high-cardinality if they
+     * appear in the list of values in the
+     * {@link MondrianProperties#TestHighCardinalityDimensionList} property.
+     * It's a convenient way to run the whole suite against high-cardinality
+     * dimensions without modifying FoodMart.xml.
+     */
+    public static class HighCardDynamicSchemaProcessor
+        extends FilterDynamicSchemaProcessor
+    {
+        protected String filter(
+            String schemaUrl, Util.PropertyList connectInfo, InputStream stream)
+            throws Exception
+        {
+            String s = super.filter(schemaUrl, connectInfo, stream);
+            final String highCardDimensionList =
+                MondrianProperties.instance()
+                    .TestHighCardinalityDimensionList.get();
+            if (highCardDimensionList != null
+                && !highCardDimensionList.equals(""))
+            {
+                for (String dimension : highCardDimensionList.split(",")) {
+                    final String match =
+                        "<Dimension name=\"" + dimension + "\"";
+                    s = s.replaceAll(
+                        match, match + " highCardinality=\"true\"");
+                }
+            }
+            return s;
         }
     }
 }

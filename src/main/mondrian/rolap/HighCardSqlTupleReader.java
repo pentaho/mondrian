@@ -15,7 +15,6 @@ import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.util.*;
 
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -160,13 +159,13 @@ public class HighCardSqlTupleReader implements TupleReader {
 
         // List of tuples
         final int n = targets.size();
-        final List<Member>[] lists = new List[n];
+        final List<RolapMember>[] lists = new List[n];
         for (int i = 0; i < n; i++) {
-            lists[i] = (List) targets.get(i).close();
+            lists[i] = targets.get(i).close();
         }
 
-        final List<Member[]> tupleList =
-            new TraversalList<Member>(lists, Member.class);
+        final List<RolapMember[]> tupleList =
+            new TraversalList<RolapMember>(lists, RolapMember.class);
 
         // need to hierarchize the columns from the enumerated targets
         // since we didn't necessarily add them in the order in which
@@ -175,7 +174,7 @@ public class HighCardSqlTupleReader implements TupleReader {
         if (enumTargetCount > 0) {
             FunUtil.hierarchize(tupleList, false);
         }
-        return (List) tupleList;
+        return tupleList;
     }
 
     /**
@@ -187,24 +186,23 @@ public class HighCardSqlTupleReader implements TupleReader {
 
     /**
      * Reads next tuple notifing all internal targets.
+     *
+     * @return whether there are any more rows
      */
     public boolean readNextTuple() {
         if (!this.moreRows) {
             return false;
-        } else {
-            try {
-                if (this.moreRows) {
-                    this.moreRows = this.resultLoader.loadResult();
-                }
-            } catch (SQLException sqle) {
-                this.resultLoader.handle(sqle);
-                this.moreRows = false;
-            }
-            if (!this.moreRows) {
-                this.resultLoader.close();
-            }
-            return this.moreRows;
         }
+        try {
+            this.moreRows = this.resultLoader.loadResult();
+        } catch (SQLException sqle) {
+            this.resultLoader.handle(sqle);
+            this.moreRows = false;
+        }
+        if (!this.moreRows) {
+            this.resultLoader.close();
+        }
+        return this.moreRows;
     }
 
     public void setMaxRows(int maxRows) {
