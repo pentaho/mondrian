@@ -59,10 +59,9 @@
 -->
         <dependency org="xmlunit" name="xmlunit" rev="1.0"/>
         <dependency org="org.apache.derby" name="derby" rev="10.2.2.0"/>
-        <!-- Can't get ivy to retrieve jpivot.war - it arrives with a .jar
-             suffix. Leave it in source control for now.
-        <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-080327"/>
-        -->
+        <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-080327">
+            <artifact name="jpivot" type="war"/>
+        </dependency>
 
         <!--Exclusions-->
         <exclude org="avalon-framework" module="avalon-framework"/>

@@ -47,6 +47,7 @@
   <property name="javatest.dir" value="${testsrc.dir}/main"/>
   <property name="etc.dir" value="${src.dir}/etc"/>
   <property name="lib.dir" value="lib"/>
+  <property name="wb.plugins.dir" value="workbench/plugins"/>
   <property name="doc.dir" value="doc"/>
   <property name="resource.location" location="resource"/>
   <property name="javadoc.dir" value="${doc.dir}/api"/>
@@ -360,7 +361,8 @@ demo/access/MondrianFoodMart.mdb"/>
       <fileset dir="${testclasses-jdk14.dir}" />
       <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
       <fileset dir="${testsrc.dir}" includes="**/*JUnit.java"/>
-      <fileset dir="${lib.dir}" includes="*.jar" excludes="xml-apis.jar"/>
+      <fileset dir="${lib.dir}" includes="*.jar,*.war" excludes="xml-apis.jar"/>
+      <fileset dir="${wb.plugins.dir}" includes="*.jar"/>
     </delete>
   </target>
 
@@ -379,7 +381,13 @@ demo/access/MondrianFoodMart.mdb"/>
   </target>
 
   <target name="resolve">
-    <ivy:retrieve pattern="${lib.dir}/[module].[ext]"/>
+      <!-- Workbench dependencies to workbench/plugins -->
+      <ivy:resolve file="workbench/ivy.xml"/>
+      <ivy:retrieve pattern="${wb.plugins.dir}/[module].[ext]"/>
+
+      <!-- Mondrian depenencies. -->
+      <ivy:resolve file="ivy.xml"/>
+      <ivy:retrieve pattern="${lib.dir}/[module].[ext]"/>
   </target>
 
   <target name="cmdrunner" depends="compile">

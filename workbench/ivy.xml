@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="http://ivyrep.jayasoft.org/ivy-doc.xsl"?>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == Copyright (C) 2008-2008 Julian Hyde
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  -->
+<ivy-module
+    version="2.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
+
+    <info organisation="pentaho" module="mondrian-workbench" revision="3.0.3">
+        <license name="CPL" url="http://www.opensource.org/licenses/cpl.html"/>
+        <ivyauthor name="Julian Hyde" />
+        <repository name="julian-rep" url="http://repo.hydromatic.net"/>
+        <description homepage="http://mondrian.pentaho.org">
+            Mondrian workbench.
+        </description>
+    </info>
+    <dependencies>
+        <dependency org="commons-codec" name="commons-codec" rev="1.2"/>
+        <dependency org="commons-httpclient" name="commons-httpclient" rev="3.0.1"/>
+        <dependency org="commons-lang" name="commons-lang" rev="2.3"/>
+        <dependency org="jaxen" name="jaxen" rev="1.1.1"/>
+        <dependency org="dom4j" name="dom4j" rev="1.6.1"/>
+        <dependency org="junit" name="junit" rev="4.0"/>
+        <dependency org="pentaho" name="pentaho-mondrianschemaworkbench-plugins" rev="1.0"/>
+
+        <!--Exclusions-->
+        <exclude org="jaxme" module="jaxme-api"/>
+        <exclude org="jdom" module="jdom"/>
+        <exclude org="xom" module="xom"/>
+        <exclude org="com.ibm.icu" module="icu4j"/>
+    </dependencies>
+</ivy-module>

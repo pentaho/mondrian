@@ -1,11 +1,19 @@
 #!/bin/sh
 
 # mondrian jars
-CP="lib/commons-dbcp.jar:lib/commons-collections.jar:lib/commons-pool.jar"
-CP=$CP:"lib/eigenbase-properties.jar:lib/eigenbase-resgen.jar:lib/eigenbase-xom.jar"
-CP=$CP:"lib/javacup.jar:lib/log4j-1.2.12.jar:lib/mondrian.jar"
-CP=$CP:"lib/jlfgr-1_0.jar:lib/jmi.jar:lib/mof.jar:lib/commons-math-1.0.jar"
-CP=$CP:"lib/commons-vfs.jar:lib/commons-logging.jar"
+CP="lib/commons-dbcp.jar"
+CP=$CP:"lib/commons-collections.jar"
+CP=$CP:"lib/commons-pool.jar"
+CP=$CP:"lib/eigenbase-properties.jar"
+CP=$CP:"lib/eigenbase-resgen.jar"
+CP=$CP:"lib/eigenbase-xom.jar"
+CP=$CP:"lib/javacup.jar"
+CP=$CP:"lib/log4j.jar"
+CP=$CP:"lib/mondrian.jar"
+CP=$CP:"lib/jlfgr.jar"
+CP=$CP:"lib/commons-math.jar"
+CP=$CP:"lib/commons-vfs.jar"
+CP=$CP:"lib/commons-logging.jar"
 
 # Workbench GUI code and resources
 
@@ -51,3 +59,4 @@ done
 
 java -Xms100m -Xmx500m -cp "$CP" -Dlog4j.configuration=~/.schemaWorkbench/log4j.xml mondrian.gui.Workbench
 
+# End workbench.sh
