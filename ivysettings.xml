@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == Copyright (C) 2008-2008 Julian Hyde
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  -->
+<ivysettings>
+  <settings defaultResolver="chain"/>
+  <resolvers>
+    <chain name="chain">
+      <url name="julian-repo" m2compatible="true">
+        <artifact pattern="http://repo.hydromatic.net/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]" />
+        <artifact pattern="http://repo.hydromatic.net/[organisation]/[module]/[revision]/[artifact].[ext]" />
+      </url>
+      <ibiblio name="ibiblio" m2compatible="true" />
+    </chain>
+  </resolvers>
+</ivysettings>

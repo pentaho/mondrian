@@ -8,8 +8,14 @@
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
-<project name="mondrian" default="all">
+<project name="mondrian" default="all" xmlns:ivy="antlib:org.apache.ivy.ant">
   <property environment="env"/>
+
+  <!-- Define desired ivy version and location. -->
+  <property name="ivy.install.version" value="2.0.0-beta1"/>
+  <property name="ivy.jar.dir" value="${basedir}/ivy"/>
+  <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+
   <property name="project.location" location="${basedir}"/>
   <property name="lib.location" location="${project.location}/lib"/>
   <property file="${project.location}/build.properties"/>
@@ -41,7 +47,6 @@
   <property name="javatest.dir" value="${testsrc.dir}/main"/>
   <property name="etc.dir" value="${src.dir}/etc"/>
   <property name="lib.dir" value="lib"/>
-  <property name="testlib.dir" value="testlib"/>
   <property name="doc.dir" value="doc"/>
   <property name="resource.location" location="resource"/>
   <property name="javadoc.dir" value="${doc.dir}/api"/>
@@ -149,22 +154,21 @@ demo/FoodMartCreateData.sql,
 demo/access/MondrianFoodMart.mdb"/>
 
   <path id="project.classpath">
-    <pathelement location="${lib.dir}/servlet.jar"/>
+    <pathelement location="${lib.dir}/servlet-api.jar"/>
     <pathelement location="${lib.dir}/jsp-api.jar"/>
     <pathelement location="${lib.dir}/commons-dbcp.jar"/>
     <pathelement location="${lib.dir}/commons-collections.jar"/>
     <pathelement location="${lib.dir}/commons-logging.jar"/>
-    <pathelement location="${lib.dir}/commons-math-1.0.jar"/>
+    <pathelement location="${lib.dir}/commons-math.jar"/>
     <pathelement location="${lib.dir}/commons-pool.jar"/>
     <pathelement location="${lib.dir}/commons-vfs.jar"/>
     <pathelement location="${lib.dir}/eigenbase-properties.jar"/>
     <pathelement location="${lib.dir}/eigenbase-resgen.jar"/>
     <pathelement location="${lib.dir}/eigenbase-xom.jar"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
-    <pathelement location="${lib.dir}/log4j-1.2.9.jar"/>
+    <pathelement location="${lib.dir}/log4j.jar"/>
     <pathelement location="${lib.dir}/olap4j.jar"/>
     <pathelement location="${lib.dir}/xalan.jar"/>
-    <pathelement location="${lib.dir}/xml-apis.jar"/>
     <pathelement location="${lib.dir}/xercesImpl.jar"/>
     <!-- CLASSPATH must contain xml-apis.jar, xercesImpl.jar, javacup.jar -->
     <pathelement path="${env.CLASSPATH}"/>
@@ -181,8 +185,10 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${classes.dir}"/>
     <path refid="project.classpath"/>
     <pathelement location="${testclasses.dir}"/>
-    <fileset dir="${testlib.dir}">
-      <include name="**/*.jar"/>
+    <fileset dir="${lib.dir}">
+      <include name="derby.jar"/>
+      <include name="xmlunit.jar"/>
+      <include name="junit.jar"/>
     </fileset>
     <pathelement location="${driver.classpath}"/>
   </path>
@@ -192,10 +198,13 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/olap4j-jdk14.jar"/>
     <path refid="project.classpath"/>
     <pathelement location="${testclasses-jdk14.dir}"/>
-    <fileset dir="${testlib.dir}">
-      <include name="**/*.jar"/>
+    <fileset dir="${lib.dir}">
+      <include name="derby.jar"/>
+      <include name="xmlunit.jar"/>
+      <include name="junit.jar"/>
+      <include name="xml-apis.jar"/>
     </fileset>
-    <pathelement location="${lib.dir}/retroweaver-rt-1.2.4.jar" />
+    <pathelement location="${lib.dir}/retroweaver-rt.jar" />
     <pathelement location="${lib.dir}/backport-util-concurrent.jar" />
     <pathelement location="${driver.classpath}"/>
   </path>
@@ -228,13 +237,19 @@ demo/access/MondrianFoodMart.mdb"/>
 
   <path id="project.test.classpath" refid="project.test.classpath-${jdk}"/>
 
-  <taskdef name="javacup" classname="java_cup.JavaCUPTask">
-    <classpath refid="project.classpath"/>
-  </taskdef>
+  <target name="define-tasks">
+    <taskdef name="javacup" classname="java_cup.JavaCUPTask">
+      <classpath refid="project.classpath"/>
+    </taskdef>
 
-  <taskdef name="xomgen" classname="org.eigenbase.xom.XOMGenTask">
-    <classpath refid="project.classpath"/>
-  </taskdef>
+    <taskdef name="xomgen" classname="org.eigenbase.xom.XOMGenTask">
+      <classpath refid="project.classpath"/>
+    </taskdef>
+
+    <taskdef name="resgen" classname="org.eigenbase.resgen.ResourceGenTask">
+      <classpath refid="project.build.classpath"/>
+    </taskdef>
+  </target>
 
   <!--
     ===================================================================
@@ -265,8 +280,45 @@ demo/access/MondrianFoodMart.mdb"/>
   <!-- Arguments to the java process spawned by the junit task. -->
   <property name="junit.jvmargs" value="-ea -esa -Xmx256m"/>
 
+  <!-- Bootstrap Ivy from web site so that it can be used without any special
+       installation. Then of course it will load all of the other jars we
+       need. -->
+  <target name="download-ivy" unless="skip.download">
+    <mkdir dir="${ivy.jar.dir}"/>
+    <get
+        src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+        dest="${ivy.jar.file}"
+        usetimestamp="true"/>
+  </target>
+
+  <!-- Define ivy tasks. If you put ivy.jar in your ant lib directory, this
+       task is not necessary. -->
+  <target name="install-ivy" depends="download-ivy">
+    <!-- Try to load ivy here from local ivy dir, in case the user has not
+         already dropped it into ant's lib dir. (Note that the latter copy
+         will always take precedence.) We will not fail as long as local
+         lib dir exists (it may be empty) and ivy is in at least one of
+         ant's lib dir or the local lib dir. -->
+    <path id="ivy.lib.path">
+        <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+    </path>
+    <taskdef
+        resource="org/apache/ivy/ant/antlib.xml"
+        uri="antlib:org.apache.ivy.ant"
+        classpathref="ivy.lib.path"/>
+    <ivy:settings file="${basedir}/ivysettings.xml"/>
+  </target>
+
+  <target name="clean-ivy">
+    <delete dir="${ivy.jar.dir}"/>
+  </target>
+
+  <target name="clean-cache" depends="install-ivy">
+    <ivy:cleancache/>
+  </target>
+
   <target name="help">
-      <echo>
+    <echo>
       You must specify a specific project target when using the ANT build.
       Targets are one of the following:
       - all
@@ -279,7 +331,7 @@ demo/access/MondrianFoodMart.mdb"/>
           Runs a simple test.
       - info
           shows configuration info
-      </echo>
+    </echo>
   </target>
 
   <target name="info">
@@ -308,6 +360,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <fileset dir="${testclasses-jdk14.dir}" />
       <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
       <fileset dir="${testsrc.dir}" includes="**/*JUnit.java"/>
+      <fileset dir="${lib.dir}" includes="*.jar" excludes="xml-apis.jar"/>
     </delete>
   </target>
 
@@ -319,11 +372,14 @@ demo/access/MondrianFoodMart.mdb"/>
     <antcall target="clean"/>
   </target>
 
-  <target name="prepare">
+  <target name="prepare" depends="download-ivy,install-ivy,resolve,define-tasks">
     <mkdir dir="${classes.dir}"/>
     <mkdir dir="${testclasses.dir}"/>
     <mkdir dir="${build.dir}"/>
-    <mkdir dir="${testlib.dir}"/>
+  </target>
+
+  <target name="resolve">
+    <ivy:retrieve pattern="${lib.dir}/[module].[ext]"/>
   </target>
 
   <target name="cmdrunner" depends="compile">
@@ -344,7 +400,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <unjar src="${lib.dir}/servlet.jar" dest="${crtmp.dir}"/>
 
     <unjar dest="${crtmp.dir}">
-        <fileset dir="${testlib.dir}">
+        <fileset dir="${lib.dir}">
             <include name="**/*.jar"/>
             <exclude name="**/junit.zip"/>
         </fileset>
@@ -396,10 +452,7 @@ generate.resources,
 def,
 compile.java"/>
 
-  <target name="generate.resources">
-    <taskdef name="resgen" classname="org.eigenbase.resgen.ResourceGenTask">
-      <classpath refid="project.build.classpath"/>
-    </taskdef>
+  <target name="generate.resources" depends="define-tasks">
 
     <!-- Compile MondrianException first, so that resgen can use
          reflection on it. -->
@@ -472,7 +525,7 @@ META-INF/**"/>
     </javac>
   </target>
 
-  <target name="parser">
+  <target name="parser" depends="define-tasks">
     <javacup
         srcdir="${java.dir}"
         input="${java.dir}/mondrian/olap/Parser.cup"
@@ -803,24 +856,7 @@ ${java.dir}/**/*.java,
 ${java.dir}/**/*.cup,
 ${java.dir}/**/*.gif,
 ${java.dir}/**/*.html,
-${lib.dir}/commons-collections.jar,
-${lib.dir}/commons-dbcp.jar,
-${lib.dir}/commons-logging.jar,
-${lib.dir}/commons-math-1.0.jar,
-${lib.dir}/commons-pool.jar,
-${lib.dir}/commons-vfs.jar,
-${lib.dir}/eigenbase-properties.jar,
-${lib.dir}/eigenbase-resgen.jar,
-${lib.dir}/eigenbase-xom.jar,
-${lib.dir}/javacup.jar,
-${lib.dir}/log4j-1.2.9.jar,
 ${lib.dir}/mondrian.xsd,
-${lib.dir}/jsp-api.jar,
-${lib.dir}/eigenbase-resgen.jar,
-${lib.dir}/eigenbase-xom.jar,
-${lib.dir}/servlet.jar,
-${lib.dir}/xalan.jar,
-${lib.dir}/xercesImpl.jar,
 ${testsrc.dir}/queryFiles/**/*.xml,
 ${testsrc.dir}/**/*.csv,
 ${testsrc.dir}/**/*.error,
@@ -828,8 +864,6 @@ ${testsrc.dir}/**/*.java,
 ${testsrc.dir}/**/*.xml,
 ${testsrc.dir}/**/*.html,
 ${testsrc.dir}/**/*.txt,
-${testlib.dir}/junit.jar,
-${testlib.dir}/xmlunit*.jar,
 ${webapp.dir}/WEB-INF/*.xml,
 ${webapp.dir}/**/*.jsp,
 ${webapp.dir}/WEB-INF/*.xsl,
@@ -965,7 +999,7 @@ ${war.file},
 ${jar.file},
 ${jar-jdk14.file},
 ${lib.dir}/olap4j-jdk14.jar,
-${lib.dir}/retroweaver-rt-1.2.4.jar,
+${lib.dir}/retroweaver-rt.jar,
 lib/*.dtd,
 demo/FoodMart.xml,
 demo/FoodMartCreateData.sql,
@@ -1003,7 +1037,7 @@ ${war.embeddedDb.file},
 ${jar.file},
 ${jar-jdk14.file},
 ${lib.dir}/olap4j-jdk14.jar,
-${lib.dir}/retroweaver-rt-1.2.4.jar,
+${lib.dir}/retroweaver-rt.jar,
 lib/*.dtd,
 demo/FoodMart.xml,
 LICENSE.html,
@@ -1254,24 +1288,6 @@ diagrams and hyperlinks to source code">
     </delete>
   </target>
 
-  <target name="copy-jars">
-    <copy todir="${lib.dir}">
-      <fileset dir="${ant.home}/lib" includes="ant.jar,optional.jar"/>
-      <fileset dir="${catalina.home}/common/lib" includes="jsp-api.jar"/>
-    </copy>
-    <copy todir="${lib.dir}">
-      <fileset dir="${catalina.home}/common/lib" includes="servlet*.jar"/>
-      <mapper type="merge" to="servlet.jar"/>
-    </copy>
-    <copy todir="${lib.dir}">
-      <fileset dir="${catalina.home}/common/lib" includes="commons-*.jar" excludes="commons-el*.jar"/>
-      <mapper type="regexp" from="(^.+)-([.0-9]+\.jar$)" to="\1.jar" /> <!-- strip version -->
-    </copy>
-    <copy todir="${testlib.dir}">
-      <fileset dir="${junit.home}" includes="junit.jar"/>
-    </copy>
-  </target>
-
   <target name="war" depends="jar,compile.tests" description="
 Creates mondrian.war based upon jpivot.war.
 Assumes that mondrian.jar exists (use 'jar' target)">
@@ -1314,8 +1330,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <webinf dir="${build.dir}/mondrian/WEB-INF" excludes="web.xml"/>
       <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
       <fileset dir="${webapp.dir}" includes="*.*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,eigenbase-*.jar,xalan.jar,*.dtd"/>
-      <lib dir="${testlib.dir}" includes="xmlunit*.jar"/>
+      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,*.dtd"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
@@ -1373,9 +1388,7 @@ Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded data
 
       <fileset dir="${build.dir}/mondrian-embedded" excludes="busy.jsp,WEB-INF/**/*"/>
       <fileset dir="${webapp.dir}" excludes="index.jsp,testpage.jsp,WEB-INF/**/*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,eigenbase-*.jar,xalan.jar,*.dtd"/>
-      <!-- <lib dir="${lib.dir}" includes="commons-math-1.0.jar"/>  -->
-      <lib dir="${testlib.dir}" includes="xmlunit*.jar,derby.jar"/>
+      <lib dir="${lib.dir}" includes="${name}.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,derby.jar,*.dtd"/>
       <classes dir="${demo.dir}/derby" includes="foodmart/**/*.*"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
@@ -1391,7 +1404,7 @@ Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded data
   <target name="war-no-jpivot" depends="jar" description="
 Creates mondrian.war.
 Assumes that mondrian.jar exists (use 'jar' target),
-and lib contains ant.jar, junit.jar etc. (use 'copy-jars' target)">
+and lib contains ant.jar, junit.jar etc.">
     <filter filtersfile="mondrian.properties"/>
     <mkdir dir="${lib.dir}" />
     <delete file="${war.file}"/>
@@ -1451,7 +1464,7 @@ lib/x*.jar,
 lib/eigenbase*.jar,
 lib/commons*.jar,
 lib/javacup.jar,
-lib/jlfgr-*.jar,
+lib/jlfgr.jar,
 lib/*.dtd,
 lib/*.xsd,
 demo/FoodMart.xml,
@@ -1503,10 +1516,10 @@ ${doc.dir}/api/src-html/**/*"/>
     <taskdef name="retroweaver"
         classname="com.rc.retroweaver.ant.RetroWeaverTask">
       <classpath>
-        <pathelement location="${lib.dir}/asm-2.2.3.jar" />
-        <pathelement location="${lib.dir}/asm-commons-2.2.3.jar" />
-        <pathelement location="${lib.dir}/retroweaver-1.2.4.jar" />
-        <pathelement location="${lib.dir}/retroweaver-rt-1.2.4.jar" />
+        <pathelement location="${lib.dir}/asm.jar" />
+        <pathelement location="${lib.dir}/asm-commons.jar" />
+        <pathelement location="${lib.dir}/retroweaver.jar" />
+        <pathelement location="${lib.dir}/retroweaver-rt.jar" />
       </classpath>
     </taskdef>
 
