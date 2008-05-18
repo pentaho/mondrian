@@ -77,6 +77,9 @@
   <property name="jdk.home" value="${env.JAVA_HOME}"/>
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
   <property name="junit.home" value="${env.JUNIT_HOME}"/>
+<!--
+  <property name="log4j.configuration" value="log4j.properties" />
+  -->
   <property name="mondrian.webapp.deploy" value="${env.JBOSS_HOME}/server/default/deploy"/>
   <property name="mondrian.retroweave" value="false"
       description="Tells mondrian to use retroweaver even if the JDK is later than 1.4"/>
@@ -171,7 +174,6 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/olap4j.jar"/>
     <pathelement location="${lib.dir}/xalan.jar"/>
     <pathelement location="${lib.dir}/xercesImpl.jar"/>
-    <!-- CLASSPATH must contain xml-apis.jar, xercesImpl.jar, javacup.jar -->
     <pathelement path="${env.CLASSPATH}"/>
     <pathelement location="${ant.home}/lib/ant.jar"/>
     <pathelement location="${ant.home}/lib/optional.jar"/>
@@ -390,7 +392,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <ivy:retrieve pattern="${lib.dir}/[module].[ext]"/>
   </target>
 
-  <target name="cmdrunner" depends="compile">
+  <target name="cmdrunner" depends="jar">
     <property name="crtmp.dir" location="${build.dir}/tmpcmdrunner"/>
     <mkdir dir="${crtmp.dir}"/>
 
@@ -403,9 +405,9 @@ demo/access/MondrianFoodMart.mdb"/>
     <unjar src="${lib.dir}/eigenbase-resgen.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/eigenbase-xom.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/javacup.jar" dest="${crtmp.dir}"/>
-    <unjar src="${lib.dir}/log4j-1.2.9.jar" dest="${crtmp.dir}"/>
+    <unjar src="${lib.dir}/log4j.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/mondrian.jar" dest="${crtmp.dir}"/>
-    <unjar src="${lib.dir}/servlet.jar" dest="${crtmp.dir}"/>
+    <unjar src="${lib.dir}/servlet-api.jar" dest="${crtmp.dir}"/>
 
     <unjar dest="${crtmp.dir}">
         <fileset dir="${lib.dir}">
@@ -541,7 +543,7 @@ META-INF/**"/>
         interface="true"/>
   </target>
 
-  <target name="def">
+  <target name="def" depends="define-tasks">
     <xomgen
         model="${java.dir}/mondrian/olap/Mondrian.xml"
         destdir="${java.dir}"
