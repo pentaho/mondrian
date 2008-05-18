@@ -240,7 +240,7 @@ demo/access/MondrianFoodMart.mdb"/>
 
   <path id="project.test.classpath" refid="project.test.classpath-${jdk}"/>
 
-  <target name="define-tasks">
+  <target name="define-tasks" depends="prepare">
     <taskdef name="javacup" classname="java_cup.JavaCUPTask">
       <classpath refid="project.classpath"/>
     </taskdef>
@@ -376,7 +376,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <antcall target="clean"/>
   </target>
 
-  <target name="prepare" depends="download-ivy,install-ivy,resolve,define-tasks">
+  <target name="prepare" depends="download-ivy,install-ivy,resolve">
     <mkdir dir="${classes.dir}"/>
     <mkdir dir="${testclasses.dir}"/>
     <mkdir dir="${build.dir}"/>
