@@ -193,7 +193,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
     </fileset>
-    <pathelement location="${driver.classpath}"/>
+    <pathelement path="${driver.classpath}"/>
   </path>
 
   <path id="project.test.classpath-jdk14">
@@ -209,7 +209,7 @@ demo/access/MondrianFoodMart.mdb"/>
     </fileset>
     <pathelement location="${lib.dir}/retroweaver-rt.jar" />
     <pathelement location="${lib.dir}/backport-util-concurrent.jar" />
-    <pathelement location="${driver.classpath}"/>
+    <pathelement path="${driver.classpath}"/>
   </path>
 
   <condition property="jdk" id="jdk" value="jdk14">

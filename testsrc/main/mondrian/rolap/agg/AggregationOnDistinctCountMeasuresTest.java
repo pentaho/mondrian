@@ -140,10 +140,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "and `sales_fact_1997`.`store_id` = `store`.`store_id` and `store`.`store_state` = 'CA' " +
             "group by `time_by_day`.`the_year`";
 
-        String oracleSql =
+        String oraTeraSql =
             "select \"time_by_day\".\"the_year\" as \"c0\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", \"store\" \"store\" " +
+            "from \"time_by_day\" =as= \"time_by_day\", \"sales_fact_1997\" =as= \"sales_fact_1997\", \"store\" =as= \"store\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 " +
             "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"store\".\"store_state\" = 'CA' " +
             "group by \"time_by_day\".\"the_year\"";
@@ -151,7 +151,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
             new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql),
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql)};
+            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSql, oraTeraSql),
+        };
 
         assertQuerySql(query, patterns);
 
@@ -195,10 +197,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "and (`store`.`store_country` = 'Canada' or `store`.`store_state` = 'CA') " +
             "group by `time_by_day`.`the_year`";
 
-        String oracleSql=
+        String oraTeraSql=
             "select \"time_by_day\".\"the_year\" as \"c0\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", \"store\" \"store\" " +
+            "from \"time_by_day\" =as= \"time_by_day\", \"sales_fact_1997\" =as= \"sales_fact_1997\", \"store\" =as= \"store\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 " +
             "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
             "and (\"store\".\"store_country\" = 'Canada' or \"store\".\"store_state\" = 'CA') " +
@@ -207,7 +209,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
             new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql),
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql)};
+            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSql, oraTeraSql),
+        };
 
         assertQuerySql(query, patterns);
 
@@ -684,14 +688,17 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "IIF(COUNT([COG_OQP_INT_s1], INCLUDEEMPTY) > 0, 1, 0))} ON AXIS(1) \n" +
             "FROM [sales]";
 
-        String oracleSql =
+        String oraTeraSql =
             "select \"store\".\"store_state\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"store\" \"store\", \"sales_fact_1997\" \"sales_fact_1997\", \"time_by_day\" \"time_by_day\" " +
+            "from \"store\" =as= \"store\", \"sales_fact_1997\" =as= \"sales_fact_1997\", \"time_by_day\" =as= \"time_by_day\" " +
             "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
             "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 " +
             "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
-        SqlPattern[] patterns = {new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql)};
+        SqlPattern[] patterns = {
+            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSql, oraTeraSql),
+        };
         assertQuerySql(mdxQuery,patterns);
     }
 
@@ -720,33 +727,36 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                             "Row #1: 1,037\n" +
                             "Row #2: 5,581\n");
 
-        String  oracleSqlForAgg =
+        String  oraTeraSqlForAgg =
             "select \"time_by_day\".\"the_year\" as \"c0\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"time_by_day\" \"time_by_day\", " +
-            "\"sales_fact_1997\" \"sales_fact_1997\", \"store\" \"store\" " +
+            "from \"time_by_day\" =as= \"time_by_day\", " +
+            "\"sales_fact_1997\" =as= \"sales_fact_1997\", \"store\" =as= \"store\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and \"time_by_day\".\"the_year\" = 1997 and " +
             "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
             "and \"store\".\"store_country\" = 'USA' " +
             "group by \"time_by_day\".\"the_year\"";
 
-        String  oracleSqlForDetail =
+        String  oraTeraSqlForDetail =
             "select \"store\".\"store_state\" as \"c0\", " +
             "\"time_by_day\".\"the_year\" as \"c1\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"store\" \"store\", " +
-            "\"sales_fact_1997\" \"sales_fact_1997\", " +
-            "\"time_by_day\" \"time_by_day\" " +
+            "from \"store\" =as= \"store\", " +
+            "\"sales_fact_1997\" =as= \"sales_fact_1997\", " +
+            "\"time_by_day\" =as= \"time_by_day\" " +
             "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
             "and \"store\".\"store_state\" in ('CA', 'OR') " +
             "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and \"time_by_day\".\"the_year\" = 1997 " +
             "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
 
-        SqlPattern[] patterns =
-            {new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSqlForAgg, oracleSqlForAgg),
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSqlForDetail, oracleSqlForDetail)};
+        SqlPattern[] patterns = {
+            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSqlForAgg, oraTeraSqlForAgg),
+            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSqlForAgg, oraTeraSqlForAgg),
+            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSqlForDetail, oraTeraSqlForDetail),
+            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSqlForDetail, oraTeraSqlForDetail),
+        };
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
         assertQuerySql(mdxQueryWithFewMembers, patterns);
@@ -778,12 +788,12 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "Row #1: 1,037\n" +
                 "Row #2: 3,753\n");
 
-        String  oracleSql = "select \"store\".\"store_state\" as \"c0\", " +
+        String  oraTeraSql = "select \"store\".\"store_state\" as \"c0\", " +
             "\"time_by_day\".\"the_year\" as \"c1\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\", " +
             "grouping(\"store\".\"store_state\") as \"g0\" " +
-            "from \"store\" \"store\", \"sales_fact_1997\" \"sales_fact_1997\", " +
-            "\"time_by_day\" \"time_by_day\" " +
+            "from \"store\" =as= \"store\", \"sales_fact_1997\" =as= \"sales_fact_1997\", " +
+            "\"time_by_day\" =as= \"time_by_day\" " +
             "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
             "and \"store\".\"store_state\" in ('CA', 'OR') " +
             "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
@@ -792,8 +802,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "((\"store\".\"store_state\",\"time_by_day\".\"the_year\")," +
             "(\"time_by_day\".\"the_year\"))";
 
-        SqlPattern[] patterns =
-            {new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql)};
+        SqlPattern[] patterns = {
+            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSql, oraTeraSql),
+        };
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
         assertQuerySql(mdxQueryWithFewMembers, patterns);
@@ -829,34 +841,35 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "Row #2: 3,753\n" +
                 "Row #2: 142,407\n");
 
-        String  oracleSqlForDetail =
+        String  oraTeraSqlForDetail =
             "select \"store\".\"store_state\" as \"c0\", " +
             "\"time_by_day\".\"the_year\" as \"c1\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\", " +
             "sum(\"sales_fact_1997\".\"unit_sales\") as \"m1\" " +
-            "from \"store\" \"store\", \"sales_fact_1997\" \"sales_fact_1997\", " +
-            "\"time_by_day\" \"time_by_day\" " +
+            "from \"store\" =as= \"store\", \"sales_fact_1997\" =as= \"sales_fact_1997\", " +
+            "\"time_by_day\" =as= \"time_by_day\" " +
             "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
             "and \"store\".\"store_state\" in ('CA', 'OR') " +
             "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and \"time_by_day\".\"the_year\" = 1997 " +
             "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
-        String  oracleSqlForDistinctCountAgg =
+        String  oraTeraSqlForDistinctCountAgg =
             "select \"time_by_day\".\"the_year\" as \"c0\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"time_by_day\" \"time_by_day\", " +
-            "\"sales_fact_1997\" \"sales_fact_1997\", \"store\" \"store\" " +
+            "from \"time_by_day\" =as= \"time_by_day\", " +
+            "\"sales_fact_1997\" =as= \"sales_fact_1997\", \"store\" =as= \"store\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and \"time_by_day\".\"the_year\" = 1997 " +
             "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
             "and \"store\".\"store_state\" in ('CA', 'OR') " +
             "group by \"time_by_day\".\"the_year\"";
 
-        SqlPattern[] patterns =
-            {new SqlPattern(SqlPattern.Dialect.ORACLE,
-                oracleSqlForDetail, oracleSqlForDetail),
-            new SqlPattern(SqlPattern.Dialect.ORACLE,
-                oracleSqlForDistinctCountAgg, oracleSqlForDistinctCountAgg)};
+        SqlPattern[] patterns = {
+            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSqlForDetail, oraTeraSqlForDetail),
+            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSqlForDetail, oraTeraSqlForDetail),
+            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSqlForDistinctCountAgg, oraTeraSqlForDistinctCountAgg),
+            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSqlForDistinctCountAgg, oraTeraSqlForDistinctCountAgg),
+        };
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
         assertQuerySql(mdxQueryWithFewMembers, patterns);
@@ -898,18 +911,20 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "Row #2: 2,826\n" +
                 "Row #3: 5,581\n");
 
-        String  oracleSql = "select \"time_by_day\".\"the_year\" as \"c0\", " +
+        String  oraTeraSql = "select \"time_by_day\".\"the_year\" as \"c0\", " +
             "\"customer\".\"gender\" as \"c1\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"time_by_day\" \"time_by_day\", " +
-            "\"sales_fact_1997\" \"sales_fact_1997\", \"customer\" \"customer\" " +
+            "from \"time_by_day\" =as= \"time_by_day\", " +
+            "\"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and \"time_by_day\".\"the_year\" = 1997 " +
             "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
             "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"";
 
-        SqlPattern[] patterns =
-            {new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql)};
+        SqlPattern[] patterns = {
+            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSql, oraTeraSql),
+        };
 
         assertQueryReturns(mdxQueryWithMembers, desiredResult);
         assertQuerySql(mdxQueryWithMembers, patterns);

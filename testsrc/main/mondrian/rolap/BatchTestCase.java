@@ -198,6 +198,16 @@ public class BatchTestCase extends FoodMartTestCase {
 
             String sql = sqlPattern.getSql();
             String trigger = sqlPattern.getTriggerSql();
+            switch (d) {
+            case ORACLE:
+                sql = sql.replaceAll(" =as= ", " ");
+                trigger = trigger.replaceAll(" =as= ", " ");
+                break;
+            case TERADATA:
+                sql = sql.replaceAll(" =as= ", " as ");
+                trigger = trigger.replaceAll(" =as= ", " as ");
+                break;
+            }
 
             // Create a dummy DataSource which will throw a 'bomb' if it is
             // asked to execute a particular SQL statement, but will otherwise
@@ -348,6 +358,17 @@ public class BatchTestCase extends FoodMartTestCase {
             
             String sql = sqlPattern.getSql();
             String trigger = sqlPattern.getTriggerSql();
+
+            switch (d) {
+            case ORACLE:
+                sql = sql.replaceAll(" =as= ", " ");
+                trigger = trigger.replaceAll(" =as= ", " ");
+                break;
+            case TERADATA:
+                sql = sql.replaceAll(" =as= ", " as ");
+                trigger = trigger.replaceAll(" =as= ", " as ");
+                break;
+            }
 
             // Create a dummy DataSource which will throw a 'bomb' if it is
             // asked to execute a particular SQL statement, but will otherwise

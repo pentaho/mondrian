@@ -534,6 +534,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                 break;
             case MYSQL:
             case DERBY:
+            case TERADATA:
                 content = Util.replace(
                     content,
                     " sql:field=\"Store Sqft\" type=\"xsd:double\"",

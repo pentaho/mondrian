@@ -835,6 +835,11 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCanBatchForBatchWithDifferentAggregationTable() {
+        if (getTestContext().getDialect().isTeradata()) {
+            // On Teradata we don't create aggregate tables, so this test will
+            // fail.
+            return;
+        }
         getTestContext().clearConnection();
         boolean useAggregates =
             MondrianProperties.instance().UseAggregates.get();
@@ -961,8 +966,12 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         // count(distinct).
         final SqlQuery.Dialect dialect = getTestContext().getDialect();
         switch (SqlPattern.Dialect.get(dialect)) {
-        case ORACLE: // gives 'feature not supported' in Express 10.2
+        case ORACLE:
+            // Oracle gives 'feature not supported' in Express 10.2
         case ACCESS:
+        case TERADATA:
+            // Teradata gives "Syntax error: expected something between '(' and
+            // the 'select' keyword." in 12.0.
             return;
         }
 

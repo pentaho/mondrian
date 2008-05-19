@@ -1011,7 +1011,10 @@ public class TestContext {
                     search,
                     "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)");
         } else if (dialect.isPostgres()
-            || dialect.isOracle() || dialect.isLucidDB()) {
+            || dialect.isOracle()
+            || dialect.isLucidDB()
+            || dialect.isTeradata())
+        {
             sql = sql.replaceAll(
                     search,
                     "`fname` || ' ' || `lname`");

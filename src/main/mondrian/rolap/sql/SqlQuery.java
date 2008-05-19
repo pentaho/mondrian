@@ -1239,6 +1239,7 @@ public class SqlQuery {
         public boolean requiresAliasForFromQuery() {
             return isMySQL() ||
                 isDerby() ||
+                isTeradata() ||
                 isPostgres();
         }
 
@@ -1362,16 +1363,16 @@ public class SqlQuery {
                 return generateInlineGeneric(
                     columnNames, columnTypes, valueList,
                     " from `days` where `day` = 1");
-            } else if (isMySQL() || isIngres()) {
+            } else if (isMySQL() || isIngres() || isTeradata()) {
+                String fromClause = null;
+                if (isTeradata() && valueList.size() > 1) {
+                    // In teradata, "SELECT 1,2" is valid but "SELECT 1,2 UNION
+                    // SELECT 3,4" gives "3888: SELECT for a UNION,INTERSECT or
+                    // MINUS must reference a table."
+                    fromClause = " FROM (SELECT 1 a) z ";
+                }
                 return generateInlineGeneric(
-                        columnNames, columnTypes, valueList, null);
-            } else if (isLucidDB()) {
-                // TODO jvs 26-Nov-2006:  Eliminate this once LucidDB
-                // can support applying column names to a VALUES clause
-                // (needed by generateInlineForAnsi).
-                return generateInlineGeneric(
-                    columnNames, columnTypes, valueList,
-                    " from (values(0))");
+                        columnNames, columnTypes, valueList, fromClause);
             } else {
                 return generateInlineForAnsi(
                     "t", columnNames, columnTypes, valueList);
@@ -1389,6 +1390,30 @@ public class SqlQuery {
                 List<String[]> valueList,
                 String fromClause) {
             final StringBuilder buf = new StringBuilder();
+            int columnCount = columnNames.size();
+            assert columnTypes.size() == columnCount;
+
+            // Teradata derives datatype from value of column in first row, and
+            // truncates subsequent rows. Therefore, we need to cast every
+            // value to the correct length. Figure out the maximum length now.
+            Integer[] maxLengths = new Integer[columnCount];
+            if (isTeradata()) {
+                for (int i = 0; i < columnTypes.size(); i++) {
+                    String columnType = columnTypes.get(i);
+                    Datatype datatype = Datatype.valueOf(columnType);
+                    if (datatype == Datatype.String) {
+                        int maxLen = -1;
+                        for (String[] strings : valueList) {
+                            if (strings[i] != null
+                                && strings[i].length() > maxLen) {
+                                maxLen = strings[i].length();
+                            }
+                        }
+                        maxLengths[i] = maxLen;
+                    }
+                }
+            }
+
             for (int i = 0; i < valueList.size(); i++) {
                 if (i > 0) {
                     buf.append(" union all ");
@@ -1403,7 +1428,15 @@ public class SqlQuery {
                     final String columnType = columnTypes.get(j);
                     final String columnName = columnNames.get(j);
                     Datatype datatype = Datatype.valueOf(columnType);
-                    quote(buf, value, datatype);
+                    final Integer maxLength = maxLengths[j];
+                    if (maxLength != null) {
+                        // Generate CAST for Teradata.
+                        buf.append("CAST(");
+                        quote(buf, value, datatype);
+                        buf.append(" AS VARCHAR(").append(maxLength).append("))");
+                    } else {
+                        quote(buf, value, datatype);
+                    }
                     if (allowsAs()) {
                         buf.append(" as ");
                     } else {

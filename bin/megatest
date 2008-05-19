@@ -12,9 +12,14 @@
 # release environment.
 
 ANT_FLAGS=
+CLEAN=clean
+CLEAN=
 
 # The script's path is $OPEN_DIR/mondrian/bin/megatest; deduce OPEN_DIR.
 OPEN_DIR=$(cd $(dirname $0)/../..; pwd)
+case $(uname) in
+CYGWIN*) OPEN_DIR=$(cygpath -m $OPEN_DIR);;
+esac
 
 case $(uname -n) in
 branston)
@@ -23,10 +28,10 @@ branston)
   ;;
 mackerel)
   databaseList="access derby"
-  jdkList="jdk1.4 jdk1.6"
+  jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 mackerel-winxp)
-  databaseList="access derby"
+  databaseList="access derby teradata"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 marmalade)
@@ -37,6 +42,11 @@ marmalade)
   databaseList="derby oracle mysql"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
+esac
+
+case $(uname) in
+CYGWIN*) export PS=';' ;;
+*) export PS=':' ;;
 esac
 
 doTest() {
@@ -140,6 +150,16 @@ doTest2() {
       echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
+  teradata)
+    (
+      jdbcDrivers=com.ncr.teradata.TeraDriver
+      export jdbcURL='jdbc:teradata://localhost/foodmart'
+      echo mondrian.foodmart.jdbcURL=${jdbcURL}
+      echo mondrian.jdbcDrivers=${jdbcDrivers}
+      echo "driver.classpath=${OPEN_DIR}/mondrian/drivers/terajdbc4.jar${PS}${OPEN_DIR}/mondrian/drivers/tdgssjava.jar${PS}${OPEN_DIR}/mondrian/drivers/tdgssconfig.jar"
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=tduser;JdbcPassword=tduser;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+    ) >> megatest.properties
+    ;;
   *) echo "Unknown database $database"; exit 1 ;;
   esac
 
@@ -185,13 +205,13 @@ doTest2() {
           export JAVA_HOME=$(chooseJavaHome jdk1.5)
           export PATH="$JAVA_HOME/bin:$PATH"
           export ANT_HOME=$(chooseAntHome jdk1.5)
-          $ANT_HOME/bin/ant $ANT_FLAGS clean all retroweave
+          $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} all retroweave
         )
         export JAVA_HOME=$(chooseJavaHome jdk1.4)
         export PATH=$JAVA_HOME/bin:$PATH
         ;;
       *)
-        $ANT_HOME/bin/ant $ANT_FLAGS clean all retroweave
+        $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} all retroweave
         ;;
       esac
       $ANT_HOME/bin/ant $ANT_FLAGS -Dmondrian.retroweave=true test-nobuild
@@ -199,10 +219,10 @@ doTest2() {
       export ANT_HOME=$(chooseAntHome $jdk)
       case $database in
       (derby|access)
-        $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests unzip-databases test-nobuild
+        $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} compile compile.tests unzip-databases test-nobuild
         ;;
       (*)
-        $ANT_HOME/bin/ant $ANT_FLAGS clean compile compile.tests test-nobuild
+        $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} compile compile.tests test-nobuild
         ;;
       esac
     fi
@@ -244,7 +264,8 @@ chooseJavaHome() {
   (mackerel)
     case $jdk in
     (jdk1.4) echo /c/j2sdk1.4.2_16 ;;
-    (jdk1.5|jdk1.6) echo /c/jdk1.6.0_01 ;;
+    (jdk1.5) echo /c/jdk1.5.0_14 ;;
+    (jdk1.6) echo /c/jdk1.6.0_06 ;;
     (*) echo "Unknown java version $jdk"; exit 1 ;;
     esac;;
   (branston)
@@ -255,9 +276,9 @@ chooseJavaHome() {
     esac;;
   (mackerel-winxp)
     case $jdk in
-    (jdk1.4) echo /c/jdk1.4.2_15 ;;
-    (jdk1.5) echo /c/jdk1.5.0_12 ;;
-    (jdk1.6) echo /c/jdk1.6.0_02 ;;
+    (jdk1.4) echo /e/j2sdk1.4.2_16 ;;
+    (jdk1.5) echo /e/jdk1.5.0_14 ;;
+    (jdk1.6) echo /e/jdk1.6.0_06 ;;
     (*) echo "Unknown java version $jdk"; exit 1 ;;
     esac;;
   (*)
@@ -638,6 +659,10 @@ doAllTests() {
   doTest jdk1.4 oracle mondrian.test.VUsers=1
   doTest jdk1.5 oracle mondrian.test.VUsers=1
   doTest jdk1.6 oracle mondrian.test.VUsers=1
+
+  doTest jdk1.6 teradata mondrian.test.VUsers=1
+  doTest jdk1.5 teradata mondrian.test.VUsers=1 mondrian.rolap.groupingsets.enable=true
+  doTest jdk1.4 teradata mondrian.test.VUsers=1
 
   doTest jdk1.5 oracle mondrian.test.ExpDependencies=10 mondrian.test.random.seed=-1 mondrian.expCache.enable=false #mondrian.test.Name=mondrian.test.ParentChildHierarchyTest
   doTest jdk1.5 access mondrian.olap.NullMemberRepresentation= mondrian.test.Class=mondrian.olap.NullMemberRepresentationTest
