@@ -57,6 +57,6 @@ done
 
 #echo $CP
 
-java -Xms100m -Xmx500m -cp "$CP" -Dlog4j.configuration=~/.schemaWorkbench/log4j.xml mondrian.gui.Workbench
+java -Xms100m -Xmx500m -cp "$CP" mondrian.gui.Workbench
 
 # End workbench.sh
