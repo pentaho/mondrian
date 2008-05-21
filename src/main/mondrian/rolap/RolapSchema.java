@@ -370,7 +370,7 @@ public class RolapSchema implements Schema {
         return defaultRole;
     }
 
-    MondrianDef.Schema getXMLSchema() {
+    public MondrianDef.Schema getXMLSchema() {
         return xmlSchema;
     }
 
