@@ -16,6 +16,8 @@ import org.apache.log4j.varia.LevelRangeFilter;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.olap.*;
 import mondrian.util.Bug;
+import mondrian.olap.Member;
+import mondrian.olap.Position;
 
 import java.io.StringWriter;
 import java.util.List;
@@ -753,6 +755,45 @@ public class SchemaTest extends FoodMartTestCase {
                     "Row #0: 16,266\n"));
     }
 
+    /**
+     * Test Multiple DimensionUsages on same Dimension.
+     * Alias the fact table to avoid issues with aggregation rules
+     * and multiple column names
+     */
+    public void testMultipleDimensionHierarchyCaptionUsages() {
+        TestContext testContext = TestContext.create(
+                null,
+
+                "<Cube name=\"Sales Two Dimensions\">\n" +
+                    "  <Table name=\"sales_fact_1997\" alias=\"sales_fact_1997_mdu\"/>\n" + 
+                    "  <DimensionUsage name=\"Time\" caption=\"TimeOne\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
+                    "  <DimensionUsage name=\"Time2\" caption=\"TimeTwo\" source=\"Time\" foreignKey=\"product_id\"/>\n" +
+                    "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n" +
+                    "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" "+
+                    "   formatString=\"Standard\"/>\n" +
+                    "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"" +
+                    "   formatString=\"#,###.00\"/>\n" +
+                    "</Cube>",
+                null, null, null, null);
+        
+        String query = "select\n" +
+        " {[Time2].[1997]} on columns,\n" +
+        " {[Time].[1997].[Q3]} on rows\n" +
+        "From [Sales Two Dimensions]";
+        
+        Result result = testContext.executeQuery(query);
+        
+        // Time2.1997 Member
+        Member member1 = result.getAxes()[0].getPositions().iterator().next().iterator().next();
+
+        // NOTE: The caption is modified at the dimension, not the hierarchy
+        assertEquals("TimeTwo", member1.getLevel().getDimension().getCaption());
+        
+        Member member2 = result.getAxes()[1].getPositions().iterator().next().iterator().next();
+        assertEquals("TimeOne", member2.getLevel().getDimension().getCaption());
+    }
+
+    
     /**
      * This test verifies that the createDimension() API call is working correctly.
      */
@@ -1632,6 +1673,38 @@ public class SchemaTest extends FoodMartTestCase {
                 + "Legal values: {all, custom, none, all_dimensions}");
     }
 
+    
+    public void testAllMemberNoStringReplace() {
+        TestContext testContext = TestContext.create(
+                null,
+                "<Cube name=\"Sales Special Time\">\n" +
+                    "  <Table name=\"sales_fact_1997\"/>\n" +
+                    "<Dimension name=\"TIME\" foreignKey=\"time_id\" type=\"TimeDimension\">" +
+                    "<Hierarchy name=\"CALENDAR\" hasAll=\"true\" allMemberName=\"All TIME(CALENDAR)\" primaryKey=\"time_id\">" +
+                    "  <Table name=\"time_by_day\"/>" +
+                    "  <Level name=\"Years\" column=\"the_year\" uniqueMembers=\"true\" levelType=\"TimeYears\"/>" +
+                    "  <Level name=\"Quarters\" column=\"quarter\" uniqueMembers=\"false\" levelType=\"TimeQuarters\"/>" +
+                    "  <Level name=\"Months\" column=\"month_of_year\" uniqueMembers=\"false\" levelType=\"TimeMonths\"/>" +
+                    "</Hierarchy>"+
+                    "</Dimension>" + 
+                    "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n" +
+                    "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" "+
+                    "   formatString=\"Standard\"/>\n" +
+                    "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"" +
+                    "   formatString=\"#,###.00\"/>\n" +
+                    "</Cube>",
+                null, null, null, null);
+
+        
+        testContext.assertQueryReturns("select [TIME.CALENDAR].[All TIME(CALENDAR)] on rows from [Sales Special Time]", 
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[TIME.CALENDAR].[All TIME(CALENDAR)]}\n" +
+                    "Row #0: 266,773\n"));
+    }
+    
     public void testUnionRole() {
         final TestContext testContext = TestContext.create(
             null, null, null, null, null,

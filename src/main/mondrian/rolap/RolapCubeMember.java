@@ -59,12 +59,22 @@ public class RolapCubeMember extends RolapMember {
         if (member.isAll()) {
             // this is a special case ...
             // replace hierarchy name portion of all member with new name
-            // special case if we're dealing with a closure
-            String replacement = 
-                level.getHierarchy().getName().replaceAll("\\$", "\\\\\\$");
-            rolapAllMemberCubeName = member.getName().replaceAll(
-                    member.getLevel().getHierarchy().getName(),
-                   replacement);
+            if (member.getLevel().getHierarchy().getName().equals(
+                    level.getHierarchy().getName()
+                    )) {
+                rolapAllMemberCubeName = member.getName();
+            } else {
+                // special case if we're dealing with a closure
+                String replacement = 
+                    level.getHierarchy().getName().replaceAll("\\$", "\\\\\\$");
+                
+                // convert string to regular expression
+                String memberLevelName = member.getLevel().getHierarchy().getName().replaceAll("\\.", "\\\\.");
+                
+                rolapAllMemberCubeName = member.getName().replaceAll(
+                        memberLevelName,
+                       replacement);
+            }
             setUniqueName(rolapAllMemberCubeName);
         } else {
             rolapAllMemberCubeName = null;
