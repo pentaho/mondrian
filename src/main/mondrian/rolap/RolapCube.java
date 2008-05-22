@@ -280,20 +280,33 @@ public class RolapCube extends CubeBase {
             measure.setOrdinal(ordinal);
         }
 
-        this.measuresHierarchy.setMemberReader(
+        setMeasuresHierarchyMemberReader(
             new CacheMemberReader(
                 new MeasureMemberSource(this.measuresHierarchy, measureList)));
-        // this invalidates any cached schema reader
-        this.schemaReader = null;
+
         this.measuresHierarchy.setDefaultMember(defaultMeasure);
         init(xmlCube.dimensions);
         init(xmlCube, measureList);
-        this.measuresHierarchy.setMemberReader(
+        
+        setMeasuresHierarchyMemberReader(
             new CacheMemberReader(
                 new MeasureMemberSource(this.measuresHierarchy, measureList)));
 
         checkOrdinals(xmlCube.name, measureList);
         loadAggGroup(xmlCube);
+    }
+    
+    /**
+     * this method makes sure that the schemaReader cache is invalidated.
+     * problems can occur if the measure hierarchy member reader is out
+     * of sync with the cache.
+     * 
+     * @param memberReader new member reader for measures hierarchy
+     */
+    private void setMeasuresHierarchyMemberReader(MemberReader memberReader) {
+        this.measuresHierarchy.setMemberReader(memberReader);
+        // this invalidates any cached schema reader
+        this.schemaReader = null;
     }
 
     /**
@@ -456,14 +469,16 @@ public class RolapCube extends CubeBase {
         calculatedMemberList.addAll(
             Arrays.asList(xmlVirtualCube.calculatedMembers));
 
+
         // Resolve all calculated members relative to this virtual cube,
         // whose measureHierarchy member reader now contains all base
         // measures referenced in those calculated members
-        this.measuresHierarchy.setMemberReader(
+        setMeasuresHierarchyMemberReader(
             new CacheMemberReader(
                 new MeasureMemberSource(
                     this.measuresHierarchy,
                     Util.<RolapMember>cast(modifiedMeasureList))));
+
         createCalcMembersAndNamedSets(
             calculatedMemberList,
             Arrays.asList(xmlVirtualCube.namedSets),
@@ -474,13 +489,11 @@ public class RolapCube extends CubeBase {
 
         // reset the measureHierarchy member reader back to the list of
         // measures that are only defined on this virtual cube
-        this.measuresHierarchy.setMemberReader(
+        setMeasuresHierarchyMemberReader(
             new CacheMemberReader(
                 new MeasureMemberSource(
                     this.measuresHierarchy,
                     Util.<RolapMember>cast(origMeasureList))));
-        // this invalidates any cached schema reader
-        this.schemaReader = null;
 
         this.measuresHierarchy.setDefaultMember(defaultMeasure);
 
@@ -2595,13 +2608,12 @@ public class RolapCube extends CubeBase {
                 // now that we've located all measures referenced in the
                 // calculated member's formula, resolve the calculated
                 // member relative to the virtual cube
-                virtualCube.measuresHierarchy.setMemberReader(
+                virtualCube.setMeasuresHierarchyMemberReader(
                     new CacheMemberReader(
                         new MeasureMemberSource(
                             virtualCube.measuresHierarchy,
                             Util.<RolapMember>cast(measuresFound))));
-                // this invalidates any cached schema reader
-                RolapCube.this.schemaReader = null;
+
                 MondrianDef.CalculatedMember xmlCalcMember =
                     schema.lookupXmlCalculatedMember(
                         calcMember.getUniqueName(),
