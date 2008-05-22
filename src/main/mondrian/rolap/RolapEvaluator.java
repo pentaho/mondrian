@@ -13,8 +13,10 @@
 
 package mondrian.rolap;
 import mondrian.calc.*;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
+import mondrian.olap.fun.AggregateFunDef;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
 import mondrian.util.Format;
@@ -75,6 +77,23 @@ public class RolapEvaluator implements Evaluator {
     protected List<List<Member[]>> aggregationLists;
 
     private final List<Member> slicerMembers;
+
+    private final MondrianProperties.SolveOrderModeEnum solveOrderMode =
+        Util.lookup(
+            MondrianProperties.SolveOrderModeEnum.class,
+            MondrianProperties.instance().SolveOrderMode.get().toUpperCase(),
+            MondrianProperties.SolveOrderModeEnum.ABSOLUTE);
+
+    /**
+     * States of the finite state machine for determining the max solve order
+     * for the "scoped" behavior.
+     */
+    private enum ScopedMaxSolveOrderFinderState {
+        START,
+        AGG_SCOPE,
+        CUBE_SCOPE,
+        QUERY_SCOPE
+    };
 
     /**
      * Creates an evaluator.
@@ -877,26 +896,154 @@ public class RolapEvaluator implements Evaluator {
             return calcMembers[0];
 
         default:
-            // Find member with the highest solve order.
-            Member maxSolveMember = calcMembers[0];
-            int maxSolve = maxSolveMember.getSolveOrder();
-            for (int i = 1; i < calcMemberCount; i++) {
-                Member member = calcMembers[i];
-                int solve = member.getSolveOrder();
-                if (solve >= maxSolve) {
-                    // If solve orders tie, the dimension with the lower
-                    // ordinal wins.
-                    if (solve > maxSolve
-                        || member.getDimension().getOrdinal(root.cube)
-                        < maxSolveMember.getDimension().getOrdinal(root.cube))
-                    {
-                        maxSolve = solve;
+            // TODO Consider revising employing the Strategy architectural pattern
+            // for setting up solve order mode handling.
+
+            switch (solveOrderMode) {
+            case ABSOLUTE:
+                return getAbsoluteMaxSolveOrder(calcMembers);
+            case SCOPED:
+                return getScopedMaxSolveOrder(calcMembers);
+            default:
+                throw Util.unexpected(solveOrderMode);
+            }
+        }
+    }
+
+    /*
+     * Returns the member with the highest solve order according to AS2000 rules.
+     * This was the behavior prior to solve order mode being configurable.
+     *
+     * <p>The SOLVE_ORDER value is absolute regardless of where it is defined;
+     * e.g. a query defined calculated member with a SOLVE_ORDER of 1 always takes
+     * precedence over a cube defined value of 2.
+     *
+     * <p>No special consideration is given to the aggregate function.
+     */
+    private Member getAbsoluteMaxSolveOrder(Member [] calcMembers) {
+        // Find member with the highest solve order.
+        Member maxSolveMember = calcMembers[0];
+        int maxSolve = maxSolveMember.getSolveOrder();
+        for (int i = 1; i < calcMemberCount; i++) {
+            Member member = calcMembers[i];
+            int solve = member.getSolveOrder();
+            if (solve >= maxSolve) {
+                // If solve orders tie, the dimension with the lower
+                // ordinal wins.
+                if (solve > maxSolve
+                    || member.getDimension().getOrdinal(root.cube)
+                    < maxSolveMember.getDimension().getOrdinal(root.cube)) {
+                    maxSolve = solve;
+                    maxSolveMember = member;
+                }
+            }
+        }
+
+        return maxSolveMember;
+    }
+
+    /*
+     * Returns the member with the highest solve order according to AS2005
+     * scoping rules.
+     *
+     * <p>By default, cube calculated members are resolved before any session
+     * scope calculated members, and session scope members are resolved before
+     * any query defined calculation.  The SOLVE_ORDER value only applies within
+     * the scope in which it was defined.
+     *
+     * <p>The aggregate function is always applied to base members; i.e. as if
+     * SOLVE_ORDER was defined to be the lowest value in a given evaluation in a
+     * SSAS2000 sense.
+     */
+    private Member getScopedMaxSolveOrder(Member [] calcMembers) {
+
+        // Finite state machine that determines the member with the highest
+        // solve order.
+        Member maxSolveMember = null;
+        ScopedMaxSolveOrderFinderState state =
+            ScopedMaxSolveOrderFinderState.START;
+        for (int i = 0; i < calcMemberCount; i++) {
+            Member member = calcMembers[i];
+            switch (state) {
+            case START:
+                maxSolveMember = member;
+                if (foundAggregateFunction(maxSolveMember.getExpression())) {
+                    state = ScopedMaxSolveOrderFinderState.AGG_SCOPE;
+                } else if (maxSolveMember.isCalculatedInQuery()) {
+                    state = ScopedMaxSolveOrderFinderState.QUERY_SCOPE;
+                } else {
+                    state = ScopedMaxSolveOrderFinderState.CUBE_SCOPE;
+                }
+                break;
+
+            case AGG_SCOPE:
+                if (foundAggregateFunction(member.getExpression())) {
+                    if (member.getSolveOrder() > maxSolveMember.getSolveOrder() ||
+                        (member.getSolveOrder() == maxSolveMember.getSolveOrder() &&
+                         member.getDimension().getOrdinal(root.cube) <
+                         maxSolveMember.getDimension().getOrdinal(root.cube))) {
+                        maxSolveMember = member;
+                    }
+                } else if (member.isCalculatedInQuery()) {
+                    maxSolveMember = member;
+                    state = ScopedMaxSolveOrderFinderState.QUERY_SCOPE;
+                } else {
+                    maxSolveMember = member;
+                    state = ScopedMaxSolveOrderFinderState.CUBE_SCOPE;
+                }
+                break;
+
+            case CUBE_SCOPE:
+                if (foundAggregateFunction(member.getExpression())) {
+                    continue;
+                }
+
+                if (member.isCalculatedInQuery()) {
+                    maxSolveMember = member;
+                    state = ScopedMaxSolveOrderFinderState.QUERY_SCOPE;
+                } else if (member.getSolveOrder() > maxSolveMember.getSolveOrder() ||
+                        (member.getSolveOrder() == maxSolveMember.getSolveOrder() &&
+                         member.getDimension().getOrdinal(root.cube) <
+                         maxSolveMember.getDimension().getOrdinal(root.cube))){
+
+                    maxSolveMember = member;
+                }
+                break;
+
+            case QUERY_SCOPE:
+                if (foundAggregateFunction(member.getExpression())) {
+                    continue;
+                }
+
+                if (member.isCalculatedInQuery()) {
+                    if (member.getSolveOrder() > maxSolveMember.getSolveOrder() ||
+                       (member.getSolveOrder() == maxSolveMember.getSolveOrder() &&
+                        member.getDimension().getOrdinal(root.cube) <
+                        maxSolveMember.getDimension().getOrdinal(root.cube))){
                         maxSolveMember = member;
                     }
                 }
+                break;
             }
-            return maxSolveMember;
         }
+
+        return maxSolveMember;
+    }
+
+    private boolean foundAggregateFunction(Exp exp) {
+        if (exp instanceof ResolvedFunCall) {
+            ResolvedFunCall resolvedFunCall = (ResolvedFunCall) exp;
+            if (resolvedFunCall.getFunDef() instanceof AggregateFunDef) {
+                return true;
+            } else {
+                for (Exp argExp : resolvedFunCall.getArgs()) {
+                    if (foundAggregateFunction(argExp)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private void removeCalcMember(Member previous) {

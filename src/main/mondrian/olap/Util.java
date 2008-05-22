@@ -2222,13 +2222,22 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Looks up an enumeration by name, returns null if not valid.
+     * Looks up an enumeration by name, returning null if not valid.
      */
     public static <E extends Enum<E>> E lookup(Class<E> clazz, String name) {
+        return lookup(clazz, name, null);
+    }
+
+    /**
+     * Looks up an enumeration by name, returning a given default value if not
+     * valid.
+     */
+    public static <E extends Enum<E>> E lookup(
+        Class<E> clazz, String name, E defaultValue) {
         try {
             return Enum.valueOf(clazz, name);
         } catch (IllegalArgumentException e) {
-            return null;
+            return defaultValue;
         }
     }
 
