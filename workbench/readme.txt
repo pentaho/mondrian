@@ -2,7 +2,7 @@
 # This software is subject to the terms of the Common Public License
 # Agreement, available at the following URL:
 # http://www.opensource.org/licenses/cpl.html.
-# Copyright (C) 2007 Cincom Inc, JasperSoft and others
+# Copyright (C) 2008 Cincom Inc, JasperSoft, Pentaho, and others
 
 Welcome to the Mondrian Schema Workbench.
 
