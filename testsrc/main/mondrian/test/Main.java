@@ -176,6 +176,7 @@ public class Main extends TestSuite {
                 addTest(suite, (Test) o, clazz.getName() + method.getName());
             }
         } else {
+            addTest(suite, HighDimensionsTest.class);
             addTest(suite, IndexedValuesTest.class);
             addTest(suite, MemoryMonitorTest.class);
             addTest(suite, ObjectPoolTest.class);

@@ -28,16 +28,15 @@ import javax.sql.DataSource;
  * @since Dec, 2007
  * @version $Id$
  */
-public class HighCardSqlTupleReader implements TupleReader {
+public class HighCardSqlTupleReader extends SqlTupleReader {
     private ResultLoader resultLoader;
     private boolean moreRows;
 
-    private final TupleConstraint constraint;
     private final List<Target> targets = new ArrayList<Target>();
     int maxRows = 0;
 
     public HighCardSqlTupleReader(final TupleConstraint constraint) {
-        this.constraint = constraint;
+        super(constraint);
     }
 
     public void addLevelMembers(

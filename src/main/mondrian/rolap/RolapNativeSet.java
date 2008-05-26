@@ -146,22 +146,17 @@ public abstract class RolapNativeSet extends RolapNative {
         public Object execute(ResultStyle desiredResultStyle) {
             switch (desiredResultStyle) {
             case ITERABLE:
-                return executeIterable();
+                return executeList(new HighCardSqlTupleReader(constraint));
             case MUTABLE_LIST:
             case LIST:
-                return executeList();
+                return executeList(new SqlTupleReader(constraint));
             }
             throw ResultStyleException.generate(
                 ResultStyle.ITERABLE_MUTABLELIST_LIST,
                 Collections.singletonList(desiredResultStyle));
         }
 
-        protected Object executeIterable() {
-            return executeList();
-        }
-
-        protected List executeList() {
-            HighCardSqlTupleReader tr = new HighCardSqlTupleReader(constraint);
+        protected List executeList(final SqlTupleReader tr) {
             tr.setMaxRows(maxRows);
             for (CrossJoinArg arg : args) {
                 addLevel(tr, arg);

@@ -61,7 +61,7 @@ import java.util.*;
  * @version $Id$
  */
 public class SqlTupleReader implements TupleReader {
-    TupleConstraint constraint;
+    protected final TupleConstraint constraint;
     List<Target> targets = new ArrayList<Target>();
     int maxRows = 0;
 
@@ -573,7 +573,7 @@ public class SqlTupleReader implements TupleReader {
         partialResult.add(row);
     }
 
-    String makeLevelMembersSql(DataSource dataSource) {
+    private String makeLevelMembersSql(DataSource dataSource) {
 
         // In the case of a virtual cube, if we need to join to the fact
         // table, we do not necessarily have a single underlying fact table,
