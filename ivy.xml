@@ -53,7 +53,7 @@
         <dependency org="org.olap4j" name="olap4j" rev="0.9.5.076"/>
         <!--try xalan 2.6.0?-->
         <dependency org="xalan" name="xalan" rev="2.4.1"/>
-        <dependency org="xerces" name="xercesImpl" rev="2.3.0"/>
+        <dependency org="xerces" name="xercesImpl" rev="2.6.0"/>
 <!--
         <dependency org="xml-apis" name="xml-apis" rev="2.0.2"/>
 -->
