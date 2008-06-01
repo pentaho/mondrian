@@ -23,6 +23,7 @@ public class ConcatenableList<T> extends AbstractList<T> {
     private final int hashCode = nextHashCode++;
     private Iterator<T> getIterator = null;
     private int previousIndex = -200;
+    private T previousElement = null;
 
     public ConcatenableList() {
         this.lists = new ArrayList<List<T>>();
@@ -62,7 +63,8 @@ public class ConcatenableList<T> extends AbstractList<T> {
                 this.getIterator = this.iterator();
                 this.previousIndex = index;
                 if(this.getIterator.hasNext()) {
-                    return this.getIterator.next();
+                    this.previousElement = this.getIterator.next();
+                    return this.previousElement;
                 } else {
                     this.getIterator = null;
                     this.previousIndex = -200;
@@ -72,13 +74,16 @@ public class ConcatenableList<T> extends AbstractList<T> {
             } else if(this.previousIndex+1==index && this.getIterator!=null) {
                 this.previousIndex = index;
                 if(this.getIterator.hasNext()) {
-                    return this.getIterator.next();
+                    this.previousElement = this.getIterator.next();
+                    return this.previousElement;
                 } else {
                     this.getIterator = null;
                     this.previousIndex = -200;
                     throw new IndexOutOfBoundsException("Index " + index
                             + " out of concatenable list range");
                 }
+            } else if(this.previousIndex==index) {
+                return this.previousElement;
             } else {
                 this.previousIndex = -200;
                 this.getIterator = null;
@@ -94,10 +99,12 @@ public class ConcatenableList<T> extends AbstractList<T> {
                     }
                     it.next();
                 }
-                return it.next();
+                this.previousElement = it.next();
+                return this.previousElement;
             }
         } else {
-            return this.plainList.get(index);
+            this.previousElement = this.plainList.get(index);
+            return this.previousElement;
         }
     }
 

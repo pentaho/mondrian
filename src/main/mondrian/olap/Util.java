@@ -849,7 +849,7 @@ public class Util extends XOMUtil {
         // we can use it in a hierarchical search
         Member searchMember = null;
         if (matchType != MatchType.EXACT && !hierarchy.hasAll() &&
-            rootMembers.size() > 0)
+            ! rootMembers.isEmpty())
         {
             searchMember =
                 hierarchy.createMember(
@@ -1088,7 +1088,8 @@ public class Util extends XOMUtil {
         }
         if (!calcMembersInThisLevel.isEmpty()) {
             List<Member> newMemberList =
-                new ArrayList<Member>(members);
+                new ConcatenableList<Member>();
+            newMemberList.addAll(members);
             newMemberList.addAll(calcMembersInThisLevel);
             return newMemberList;
         }

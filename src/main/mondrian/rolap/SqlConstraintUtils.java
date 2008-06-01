@@ -19,6 +19,7 @@ import mondrian.olap.Util;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.util.FilteredIterableList;
 
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
@@ -152,12 +153,12 @@ public class SqlConstraintUtils {
     }
 
     static List<Member> removeCalculatedMembers(List<Member> members) {
-        List<Member> result = new ArrayList<Member>();
-        for (Member member : members) {
-            if (!member.isCalculated()) {
-                result.add(member);
-            }
-        }
+        List<Member> result = new FilteredIterableList<Member>(members,
+                new FilteredIterableList.Filter<Member>() {
+                    public boolean accept(final Member m) {
+                        return !m.isCalculated();
+                    }
+                });
         return result;
     }
 

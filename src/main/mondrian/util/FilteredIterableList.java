@@ -42,9 +42,6 @@ public class FilteredIterableList<T> extends AbstractSequentialList<T> {
         this.isEmpty = ! this.listIterator(0).hasNext();
         this.size = -1;
         this.cached = new CacheMap<Integer, T>(4);
-
-        //
-        this.toArray();
     }
 
     public T get(final int index) {
@@ -52,7 +49,6 @@ public class FilteredIterableList<T> extends AbstractSequentialList<T> {
 
         final T t = cached.get(index);
         if(t!=null) {
-            // Está entre los cacheados => no queremos que vaya a super.get
             return cached.get(index);
         } else {
             if(index!=this.lastGetIndex || index<0) {
@@ -104,6 +100,7 @@ public class FilteredIterableList<T> extends AbstractSequentialList<T> {
                     public T next() {
                         idx++;
                         final T n = nxt;
+                        cached.put(idx-1, n);
                         postNext();
                         return n;
                     }
@@ -178,6 +175,10 @@ public class FilteredIterableList<T> extends AbstractSequentialList<T> {
             this.plainList = tmpPlainList;
         }
         return this.plainList.toArray();
+    }
+
+    public int hashCode() {
+        return this.filter.hashCode();
     }
 
 /*
