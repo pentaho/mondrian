@@ -1377,7 +1377,7 @@ public class RolapStar {
         private final String cubeName;
         private final RolapAggregator aggregator;
 
-        private Measure(
+        public Measure(
             String name,
             String cubeName,
             RolapAggregator aggregator,
