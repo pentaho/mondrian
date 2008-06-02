@@ -2,7 +2,7 @@ This is a source, binary or data distribution of Mondrian,
 an OLAP Server written in Java.
 
 This code is released under the terms of the Common Public
-License; see LICENSE.html.
+License (CPL); see LICENSE.html.
 
 For installation instructions, see doc/install.html
 (http://mondrian.pentaho.org/documentation/installation.php).
