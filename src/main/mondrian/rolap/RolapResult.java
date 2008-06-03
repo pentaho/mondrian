@@ -402,7 +402,7 @@ public class RolapResult extends ResultBase {
 
                     if (! nonAllMembers.isEmpty()) {
                         List<Position> pl = axisResult.getPositions();
-                        if (pl.size() > 0) {
+                        if (!pl.isEmpty()) {
                             // Only need to process the first Position
                             Position p = pl.get(0);
                             for (Member m : p) {
@@ -739,7 +739,7 @@ public class RolapResult extends ResultBase {
                 if (value instanceof List) {
                     List<Object> list = (List) value;
                     if (construct) {
-                        if (list.size() == 0) {
+                        if (list.isEmpty()) {
                             // should be???
                             axisResult = new RolapAxis.NoPosition();
                         } else if (list.get(0) instanceof Member[]) {
@@ -1184,7 +1184,7 @@ public class RolapResult extends ResultBase {
         }
 
         void merge(List list) {
-            if (list.size() != 0) {
+            if (!list.isEmpty()) {
                 if (list.get(0) instanceof Member[]) {
                     for (Member[] o : Util.<Member[]>cast(list)) {
                         merge(o);
@@ -1822,7 +1822,7 @@ public class RolapResult extends ResultBase {
         List<Position> pl2 = axis2.getPositions();
         int arrayLen = -1;
         if (pl1 instanceof RolapAxis.PositionListBase) {
-            if (pl1.size() == 0) {
+            if (pl1.isEmpty()) {
                 return axis2;
             }
             arrayLen = pl1.get(0).size();
@@ -1834,7 +1834,7 @@ public class RolapResult extends ResultBase {
             return axis2;
         }
         if (pl2 instanceof RolapAxis.PositionListBase) {
-            if (pl2.size() == 0) {
+            if (pl2.isEmpty()) {
                 return axis1;
             }
             arrayLen = pl2.get(0).size();
@@ -1908,7 +1908,7 @@ public class RolapResult extends ResultBase {
 
             // if there are unique members on both axes and no order function,
             //  sort the list to ensure default order
-            if (list.size() > 0 && extras.size() > 0 && ordered == false) {
+            if (!list.isEmpty() && !extras.isEmpty() && ordered == false) {
                 Member[] membs = list.get(0);
                 int membsSize = membs.length;
                 ValueCalc valCalc = new ValueCalc(new DummyExp(new ScalarType()));
