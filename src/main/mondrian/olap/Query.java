@@ -284,6 +284,12 @@ public class Query extends QueryPart {
         return new StackValidator(connection.getSchema().getFunTable());
     }
 
+    public Validator createValidator(FunTable functionTable) {
+        StackValidator validator;
+        validator = new StackValidator(functionTable);
+        return validator;
+    }
+
     public Object clone() {
         return new Query(
                 connection,
@@ -1361,7 +1367,8 @@ public class Query extends QueryPart {
                 }
             } else if (parent instanceof UnresolvedFunCall) {
                 final UnresolvedFunCall funCall = (UnresolvedFunCall) parent;
-                if (funCall.getSyntax() == Syntax.Parentheses) {
+                if (funCall.getSyntax() == Syntax.Parentheses ||
+                    funCall.getFunName() == "*") {
                     return requiresExpression(n - 1);
                 } else {
                     int k = whichArg(funCall, (Exp) stack.get(n));

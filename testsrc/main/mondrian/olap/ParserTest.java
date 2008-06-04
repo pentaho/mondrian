@@ -9,7 +9,7 @@
 */
 package mondrian.olap;
 
-import junit.framework.TestCase;
+import mondrian.test.FoodMartTestCase;
 import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.mdx.UnresolvedFunCall;
 import mondrian.mdx.QueryPrintWriter;
@@ -24,7 +24,7 @@ import java.io.PrintWriter;
  * @author gjohnson
  * @version $Id$
  */
-public class ParserTest extends TestCase {
+public class ParserTest extends FoodMartTestCase {
     public ParserTest(String name) {
         super(name);
     }
@@ -297,6 +297,23 @@ public class ParserTest extends TestCase {
             "CAST((1.0 + 2.0) AS String)");
     }
 
+    /**
+     * Verify that calculated measures made of several * operators can resolve them
+     * correctly.
+     */
+    public void testMultiplication() {
+        Parser p = new Parser();
+        final String mdx = 
+            wrapExpr("([Measures].[Unit Sales] * [Measures].[Store Cost] * [Measures].[Store Sales])");
+
+        try {
+            final Query query = p.parseInternal(getConnection(), mdx, false, funTable, false);
+            query.resolve();
+        } catch(Throwable e) {
+            fail(e.getMessage());
+        }
+    }
+    
     public void testBangFunction() {
         // Parser accepts '<id> [! <id>] *' as a function name, but ignores
         // all but last name.
