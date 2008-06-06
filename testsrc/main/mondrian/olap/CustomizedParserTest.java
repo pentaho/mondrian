@@ -133,6 +133,23 @@ public class CustomizedParserTest extends FoodMartTestCase {
         }
     }
 
+    public void testMissingObjectFail() {
+        Set<String> functionNameSet = new HashSet<String>();
+        functionNameSet.add("+");
+        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+
+        try {
+            Query q = 
+                getParsedQueryForExpr(cftab, "([Measures].[Store Cost] + [Measures].[Unit Salese])");
+            q.resolve(q.createValidator(cftab));
+            // Shouldn't reach here
+            fail();
+        } catch (Throwable e) {
+            checkErrorMsg(e,
+            "Mondrian Error:MDX object '[Measures].[Unit Salese]' not found in cube 'Sales'");            
+        }
+    }
+    
     public void testMultiplicationFail() {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("+");
