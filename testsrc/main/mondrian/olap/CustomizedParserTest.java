@@ -45,16 +45,16 @@ public class CustomizedParserTest extends FoodMartTestCase {
     }
 
     private void checkErrorMsg(Throwable e, String expectedErrorMsg) {
-        String actualMsg = e.getMessage();
-        if (e.getCause() != null) {
-            actualMsg = e.getCause().getMessage();
+        while (e.getCause() != null && !e.getCause().equals(e)) {
+            e = e.getCause();
         }
+        String actualMsg = e.getMessage();
         assertEquals(fold(expectedErrorMsg), actualMsg);        
     }
 
     private Query getParsedQueryForExpr(CustomizedFunctionTable cftab, String expr) {
         String mdx = wrapExpr(expr);
-        Query q = p.parseInternal(getConnection(), mdx, false, cftab, false);
+        Query q = getConnection().parseQuery(mdx, cftab);
         return q;
     }
     
@@ -215,7 +215,9 @@ public class CustomizedParserTest extends FoodMartTestCase {
         try {
             Query q = 
                 getParsedQueryForExpr(cftab, "([Measures].[Store Cost], [Gender].[F])");
-            q.resolve(q.createValidator(cftab));
+            q.resolve(q.createValidator(cftab));            
+            // Shouldn't reach here            
+            fail();
         } catch (Throwable e) {
             checkErrorMsg(e, 
             "Mondrian Error:No function matches signature '(<Member>, <Member>)'");

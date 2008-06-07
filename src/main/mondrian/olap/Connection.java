@@ -80,6 +80,11 @@ public interface Connection {
     Query parseQuery(String s);
 
     /**
+     * Parses a query, with specified function table
+     */
+    Query parseQuery(String s, FunTable funTable);
+
+    /**
      * Sets the privileges for the this connection.
      *
      * @pre role != null

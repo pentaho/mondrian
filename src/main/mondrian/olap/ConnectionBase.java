@@ -56,26 +56,15 @@ public abstract class ConnectionBase implements Connection {
     }
 
     public Query parseQuery(String s) {
-        return parseQuery(s, false);
+        return parseQuery(s, null, false);
     }
 
     public Query parseQuery(String s, boolean load) {
-        boolean debug = false;
-        if (getLogger().isDebugEnabled()) {
-            //debug = true;
-            StringBuilder buf = new StringBuilder(256);
-            buf.append(Util.nl);
-            buf.append(s);
-            getLogger().debug(buf.toString());
-        }
-        try {
-            Parser parser = new Parser();
-            final FunTable funTable = getSchema().getFunTable();
-            Query q = parser.parseInternal(this, s, debug, funTable, load);
-            return q;
-        } catch (Throwable e) {
-            throw MondrianResource.instance().FailedToParseQuery.ex(s, e);
-        }
+        return parseQuery(s, null, load);
+    }
+
+    public Query parseQuery(String s, FunTable funTable) {
+        return parseQuery(s, funTable, false);
     }
 
     public Exp parseExpression(String s) {
@@ -94,6 +83,33 @@ public abstract class ConnectionBase implements Connection {
             return q;
         } catch (Throwable e) {
             throw MondrianResource.instance().FailedToParseQuery.ex(s, e);
+        }
+    }
+    
+    private Query parseQuery(String query, FunTable cftab, boolean load) {
+        Parser parser = new Parser();
+        boolean debug = false;
+        final FunTable funTable;
+        
+        if (cftab == null) {
+            funTable = getSchema().getFunTable();
+        } else {
+            funTable = cftab;
+        }
+        
+        if (getLogger().isDebugEnabled()) {
+            //debug = true;
+            StringBuilder buf = new StringBuilder(256);
+            buf.append(Util.nl);
+            buf.append(query);
+            getLogger().debug(buf.toString());
+        }
+        
+        try {
+            Query q = parser.parseInternal(this, query, debug, funTable, load);
+            return q;
+        } catch (Throwable e) {
+            throw MondrianResource.instance().FailedToParseQuery.ex(query, e);
         }
     }
 }
