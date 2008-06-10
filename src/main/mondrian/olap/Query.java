@@ -500,7 +500,7 @@ public class Query extends QueryPart {
      *
      * @param validator Validator
      */
-    void resolve(Validator validator) {
+    public void resolve(Validator validator) {
         // Before commencing validation, create all calculated members,
         // calculated sets, and parameters.
         if (formulas != null) {
