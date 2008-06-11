@@ -140,10 +140,10 @@ public class CustomizedParserTest extends FoodMartTestCase {
 
         try {
             Query q = 
-                getParsedQueryForExpr(cftab, "([Measures].[Store Cost] + [Measures].[Unit Salese])");
+                getParsedQueryForExpr(cftab, "'[Measures].[Store Cost] + [Measures].[Unit Salese]'");
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here
-            fail();
+            fail("Expected error did not occur.");
         } catch (Throwable e) {
             checkErrorMsg(e,
             "Mondrian Error:MDX object '[Measures].[Unit Salese]' not found in cube 'Sales'");            
@@ -160,7 +160,7 @@ public class CustomizedParserTest extends FoodMartTestCase {
                 getParsedQueryForExpr(cftab, "([Measures].[Store Cost] * [Measures].[Unit Sales])");
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here
-            fail();
+            fail("Expected error did not occur.");
         } catch (Throwable e) {
             checkErrorMsg(e,
             "Mondrian Error:No function matches signature '<Member> * <Member>'");            
@@ -174,10 +174,10 @@ public class CustomizedParserTest extends FoodMartTestCase {
 
         try {
             Query q = 
-                getParsedQueryForExpr(cftab, "([Measures].[Store Cost] + [Customers].[Name])");
+                getParsedQueryForExpr(cftab, "([Measures].[Store Cost] + [Store].[Store Country])");
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here
-            fail();            
+            fail("Expected error did not occur.");
         } catch (Throwable e) {
             checkErrorMsg(e,
                 "Mondrian Error:No function matches signature '<Member> + <Level>'");            
@@ -197,7 +197,7 @@ public class CustomizedParserTest extends FoodMartTestCase {
                 getParsedQueryForExpr(cftab, "CrossJoin([Measures].[Store Cost], [Measures].[Unit Sales])");
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here
-            fail();            
+            fail("Expected error did not occur.");
         } catch (Throwable e) {
             checkErrorMsg(e,
             "Mondrian Error:No function matches signature 'CrossJoin(<Member>, <Member>)'");            
@@ -216,8 +216,8 @@ public class CustomizedParserTest extends FoodMartTestCase {
             Query q = 
                 getParsedQueryForExpr(cftab, "([Measures].[Store Cost], [Gender].[F])");
             q.resolve(q.createValidator(cftab));            
-            // Shouldn't reach here            
-            fail();
+            // Shouldn't reach here
+            fail("Expected error did not occur.");
         } catch (Throwable e) {
             checkErrorMsg(e, 
             "Mondrian Error:No function matches signature '(<Member>, <Member>)'");
@@ -237,13 +237,35 @@ public class CustomizedParserTest extends FoodMartTestCase {
                 getParsedQueryForExpr(cftab, "([Store].[USA], [Gender].[F])");
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here
-            fail();            
+            fail("Expected error did not occur.");
         } catch (Throwable e) {
             checkErrorMsg(e, 
             "Mondrian Error:No function matches signature '(<Member>, <Member>)'");
         }        
     }    
 
+    /**
+     * Mondrian is not strict about referencing a dimension member in calculated measures.
+     * 
+     * The following expression passes parsing and validation. 
+     * Its computation is strange: the result is as if the measure is defined as
+     *  ([Measures].[Store Cost] + [Measures].[Store Cost])
+     */
+    public void testMixingMemberLimitation() {
+        Set<String> functionNameSet = new HashSet<String>();
+        functionNameSet.add("+");
+        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+
+        try {
+            Query q = 
+                getParsedQueryForExpr(cftab, "([Measures].[Store Cost] + [Store].[USA])");
+            q.resolve(q.createValidator(cftab));
+            // Shouldn't reach here
+            fail("Expected error did not occur.");
+        } catch (Throwable e) {
+            checkErrorMsg(e, "Expected error did not occur.");
+        }
+    }    
 }
 
 //End CustomizedParserTest.java
