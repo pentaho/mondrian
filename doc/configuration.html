@@ -130,6 +130,26 @@ suite of regression tests.</p>
       path.</td>
     </tr>
     <tr>
+      <td><code><a href="api/mondrian/olap/MondrianProperties.html#HighCardChunkSize">
+      mondrian.result.highCardChunkSize</a></code></td>
+      <td>int</td>
+      <td>1</td>
+      <td>When reading high cardinality dimension elements, number
+      of elements read from database in each step.<br>
+      When dealing with high cardinality dimensions, elements are
+      retrieved in blocks: first N elements are retrieved, when
+      these elements are read, next ones (from N+1 to 2N) are got.
+      N number is this property.
+      <br>
+      Setting great values for this property increases performance but
+      may overload memory.
+      Values should be prime with
+      <code><a href="api/mondrian/olap/MondrianProperties.html#ResultLimit">
+      mondrian.result.limit</a></code>
+      </td>
+    </tr>
+
+    <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#ResultLimit">
       mondrian.result.limit</a></code></td>
 
