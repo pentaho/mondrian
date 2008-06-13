@@ -52,12 +52,17 @@ public class CustomizedParserTest extends FoodMartTestCase {
         assertEquals(fold(expectedErrorMsg), actualMsg);        
     }
 
-    private Query getParsedQueryForExpr(CustomizedFunctionTable cftab, String expr) {
+    private Query getParsedQueryForExpr(
+        CustomizedFunctionTable cftab, String expr, boolean strictValidation) {
         String mdx = wrapExpr(expr);
-        Query q = getConnection().parseQuery(mdx, cftab);
+        Query q = getConnection().parseQuery(mdx, cftab, strictValidation);
         return q;
     }
     
+    private Query getParsedQueryForExpr(CustomizedFunctionTable cftab, String expr) {
+        return getParsedQueryForExpr(cftab, expr, false);
+    }
+
     public void testAddition() {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("+");
@@ -150,6 +155,46 @@ public class CustomizedParserTest extends FoodMartTestCase {
         }
     }
     
+    public void testMissingObjectFailWithStrict() {
+        testMissingObject(true);
+    }
+
+    public void testMissingObjectSucceedWithoutStrict() {
+        testMissingObject(false);
+    }
+
+    private void testMissingObject(boolean strictValidation) {
+        Set<String> functionNameSet = new HashSet<String>();
+        functionNameSet.add("+");
+        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+
+        MondrianProperties properties = MondrianProperties.instance();
+        boolean oldIgnoreInvalidMembers = 
+            properties.IgnoreInvalidMembers.get();
+        boolean oldIgnoreInvalidMembersDuringQuery = 
+            properties.IgnoreInvalidMembersDuringQuery.get();
+                    
+        try {
+            properties.IgnoreInvalidMembers.set(true);
+            properties.IgnoreInvalidMembersDuringQuery.set(true);
+            Query q = 
+                getParsedQueryForExpr(cftab, "'[Measures].[Store Cost] + [Measures].[Unit Salese]'", strictValidation);
+            q.resolve(q.createValidator(cftab));
+            // Shouldn't reach here if strictValidation
+            fail("Expected error does not occur when strictValidation is set:" + strictValidation);
+        } catch (Throwable e) {
+            properties.IgnoreInvalidMembers.set(oldIgnoreInvalidMembers);
+            properties.IgnoreInvalidMembersDuringQuery.set(oldIgnoreInvalidMembersDuringQuery);
+            if (strictValidation) {
+                checkErrorMsg(e,
+                "Mondrian Error:MDX object '[Measures].[Unit Salese]' not found in cube 'Sales'");
+            } else {
+                checkErrorMsg(e,
+                "Expected error does not occur when strictValidation is set:" + strictValidation);                
+            }
+        }
+    }
+
     public void testMultiplicationFail() {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("+");

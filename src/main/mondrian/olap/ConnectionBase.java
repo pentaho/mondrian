@@ -56,15 +56,15 @@ public abstract class ConnectionBase implements Connection {
     }
 
     public Query parseQuery(String s) {
-        return parseQuery(s, null, false);
+        return parseQuery(s, null, false, false);
     }
 
     public Query parseQuery(String s, boolean load) {
-        return parseQuery(s, null, load);
+        return parseQuery(s, null, load, false);
     }
 
-    public Query parseQuery(String s, FunTable funTable) {
-        return parseQuery(s, funTable, false);
+    public Query parseQuery(String s, FunTable funTable, boolean strictValidation) {
+        return parseQuery(s, funTable, false, strictValidation);
     }
 
     public Exp parseExpression(String s) {
@@ -86,7 +86,7 @@ public abstract class ConnectionBase implements Connection {
         }
     }
     
-    private Query parseQuery(String query, FunTable cftab, boolean load) {
+    private Query parseQuery(String query, FunTable cftab, boolean load, boolean strictValidation) {
         Parser parser = new Parser();
         boolean debug = false;
         final FunTable funTable;
@@ -106,7 +106,7 @@ public abstract class ConnectionBase implements Connection {
         }
         
         try {
-            Query q = parser.parseInternal(this, query, debug, funTable, load);
+            Query q = parser.parseInternal(this, query, debug, funTable, load, strictValidation);
             return q;
         } catch (Throwable e) {
             throw MondrianResource.instance().FailedToParseQuery.ex(query, e);

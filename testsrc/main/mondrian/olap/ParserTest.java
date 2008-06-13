@@ -50,7 +50,7 @@ public class ParserTest extends FoodMartTestCase {
             String expectedName) {
         Parser p = new TestParser();
         String q = "select [member] on " + s + " from [cube]";
-        Query query = p.parseInternal(null, q, false, funTable, false);
+        Query query = p.parseInternal(null, q, false, funTable, false, false);
         assertNull("Test parser should return null query", query);
 
         QueryAxis[] axes = ((TestParser) p).getAxes();
@@ -119,7 +119,7 @@ public class ParserTest extends FoodMartTestCase {
 
     private void checkFails(Parser p, String query, String expected) {
         try {
-            p.parseInternal(null, query, false, funTable, false);
+            p.parseInternal(null, query, false, funTable, false, false);
 
             fail("Must return an error");
         } catch (Exception e) {
@@ -139,7 +139,7 @@ public class ParserTest extends FoodMartTestCase {
                 + "{[axis1mbr]} on axis(1) from cube";
 
         assertNull("Test parser should return null query",
-            p.parseInternal(null, query, false, funTable, false));
+            p.parseInternal(null, query, false, funTable, false, false));
 
         QueryAxis[] axes = ((TestParser) p).getAxes();
 
@@ -153,7 +153,7 @@ public class ParserTest extends FoodMartTestCase {
                 + "{[axis0mbr]} on AxIs(0) from cube";
 
         assertNull("Test parser should return null query",
-            p.parseInternal(null, query, false, funTable, false));
+            p.parseInternal(null, query, false, funTable, false, false));
 
         assertEquals("Number of axes", 2, axes.length);
         assertEquals("Axis index name must be correct",
@@ -307,7 +307,8 @@ public class ParserTest extends FoodMartTestCase {
             wrapExpr("([Measures].[Unit Sales] * [Measures].[Store Cost] * [Measures].[Store Sales])");
 
         try {
-            final Query query = p.parseInternal(getConnection(), mdx, false, funTable, false);
+            final Query query = 
+                p.parseInternal(getConnection(), mdx, false, funTable, false, false);
             query.resolve();
         } catch(Throwable e) {
             fail(e.getMessage());
@@ -418,7 +419,7 @@ public class ParserTest extends FoodMartTestCase {
      */
     private void assertParseQuery(String mdx, final String expected) {
         Parser p = new TestParser();
-        final Query query = p.parseInternal(null, mdx, false, funTable, false);
+        final Query query = p.parseInternal(null, mdx, false, funTable, false, false);
         assertNull("Test parser should return null query", query);
         final String actual = ((TestParser) p).toMdxString();
         TestContext.assertEqualsVerbose(expected, actual);
@@ -434,7 +435,7 @@ public class ParserTest extends FoodMartTestCase {
     private void assertParseExpr(String expr, final String expected) {
         TestParser p = new TestParser();
         final String mdx = wrapExpr(expr);
-        final Query query = p.parseInternal(null, mdx, false, funTable, false);
+        final Query query = p.parseInternal(null, mdx, false, funTable, false, false);
         assertNull("Test parser should return null query", query);
         final String actual = Util.unparse(p.formulas[0].getExpression());
         TestContext.assertEqualsVerbose(expected, actual);
