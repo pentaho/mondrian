@@ -377,6 +377,14 @@ were sure that <code>[Product Name]</code> was unique, then you can set
 <code>uniqueMembers="true"</code>. If you are not sure, then always set
 <code>uniqueMembers="false"</code>. At the top level, this will always be
 <code>uniqueMembers="true"</code>, as there is no parent level.</p>
+
+<p>The <code>highCardinality</code> attribute is used to notify Mondrian
+there are undefined and very high number of elements for this dimension.
+Acceptable values are <code>true</code> or <code>false</code> (last one
+is default value). Actions performed over the whole set of dimension elements
+cannot be performed when using <code>highCardinality="true"</code>.
+</p>
+
 <!--
 ################################
 ##  3.3.2 The 'all' member #####
