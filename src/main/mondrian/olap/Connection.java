@@ -80,12 +80,6 @@ public interface Connection {
     Query parseQuery(String s);
 
     /**
-     * Parses a query, with specified function table and the mode for strict 
-     * validation(if true then invalid members are not ignored).
-     */
-    Query parseQuery(String s, FunTable funTable, boolean strictValidation);
-
-    /**
      * Sets the privileges for the this connection.
      *
      * @pre role != null

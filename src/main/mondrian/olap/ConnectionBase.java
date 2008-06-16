@@ -55,34 +55,46 @@ public abstract class ConnectionBase implements Connection {
         return s;
     }
 
-    public Query parseQuery(String s) {
-        return parseQuery(s, null, false, false);
+    public Query parseQuery(String query) {
+        return parseQuery(query, null, false, false);
     }
 
-    public Query parseQuery(String s, boolean load) {
-        return parseQuery(s, null, load, false);
+    public Query parseQuery(String query, boolean load) {
+        return parseQuery(query, null, load, false);
     }
 
-    public Query parseQuery(String s, FunTable funTable, boolean strictValidation) {
-        return parseQuery(s, funTable, false, strictValidation);
+    /**
+     * Parses a query, with specified function table and the mode for strict 
+     * validation(if true then invalid members are not ignored).
+     * 
+     * This method is only used in testing and bu clients that need to support customized
+     * parser behavior. That is why this method is not part of the Connection interface.
+     * 
+     * @param mdxQuery
+     * @param funTable
+     * @param strictValidation
+     * @return Query if parsing is successful
+     */
+    public Query parseQuery(String query, FunTable funTable, boolean strictValidation) {
+        return parseQuery(query, funTable, false, strictValidation);
     }
 
-    public Exp parseExpression(String s) {
+    public Exp parseExpression(String expr) {
         boolean debug = false;
         if (getLogger().isDebugEnabled()) {
             //debug = true;
             StringBuilder buf = new StringBuilder(256);
             buf.append(Util.nl);
-            buf.append(s);
+            buf.append(expr);
             getLogger().debug(buf.toString());
         }
         try {
             Parser parser = new Parser();
             final FunTable funTable = getSchema().getFunTable();
-            Exp q = parser.parseExpression(this, s, debug, funTable);
+            Exp q = parser.parseExpression(this, expr, debug, funTable);
             return q;
-        } catch (Throwable e) {
-            throw MondrianResource.instance().FailedToParseQuery.ex(s, e);
+        } catch (Throwable exception) {
+            throw MondrianResource.instance().FailedToParseQuery.ex(expr, exception);
         }
     }
     

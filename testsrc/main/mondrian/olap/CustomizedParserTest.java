@@ -55,7 +55,7 @@ public class CustomizedParserTest extends FoodMartTestCase {
     private Query getParsedQueryForExpr(
         CustomizedFunctionTable cftab, String expr, boolean strictValidation) {
         String mdx = wrapExpr(expr);
-        Query q = getConnection().parseQuery(mdx, cftab, strictValidation);
+        Query q = ((ConnectionBase)getConnection()).parseQuery(mdx, cftab, strictValidation);
         return q;
     }
     
