@@ -64,18 +64,22 @@ public abstract class ConnectionBase implements Connection {
     }
 
     /**
-     * Parses a query, with specified function table and the mode for strict 
+     * Parses a query, with specified function table and the mode for strict
      * validation(if true then invalid members are not ignored).
      * 
-     * This method is only used in testing and bu clients that need to support customized
-     * parser behavior. That is why this method is not part of the Connection interface.
+     * <p>This method is only used in testing and by clients that need to
+     * support customized parser behavior. That is why this method is not part
+     * of the Connection interface.
      * 
-     * @param mdxQuery
-     * @param funTable
-     * @param strictValidation
-     * @return Query if parsing is successful
+     * @param query MDX query that requires special parsing
+     * @param funTable Customized function table to use in parsing
+     * @param strictValidation If true, do not ignore invalid members
+     * @return Query the corresponding Query object if parsing is successful
+     * @throws MondrianException if parsing fails
+     * @see mondrian.olap.CustomizedParserTest
      */
-    public Query parseQuery(String query, FunTable funTable, boolean strictValidation) {
+    public Query parseQuery(String query, FunTable funTable,
+        boolean strictValidation) {
         return parseQuery(query, funTable, false, strictValidation);
     }
 
@@ -94,11 +98,15 @@ public abstract class ConnectionBase implements Connection {
             Exp q = parser.parseExpression(this, expr, debug, funTable);
             return q;
         } catch (Throwable exception) {
-            throw MondrianResource.instance().FailedToParseQuery.ex(expr, exception);
+            throw
+                MondrianResource.instance().FailedToParseQuery.ex(
+                    expr,
+                    exception);
         }
     }
     
-    private Query parseQuery(String query, FunTable cftab, boolean load, boolean strictValidation) {
+    private Query parseQuery(String query, FunTable cftab, boolean load,
+        boolean strictValidation) {
         Parser parser = new Parser();
         boolean debug = false;
         final FunTable funTable;
@@ -118,7 +126,9 @@ public abstract class ConnectionBase implements Connection {
         }
         
         try {
-            Query q = parser.parseInternal(this, query, debug, funTable, load, strictValidation);
+            Query q =
+                parser.parseInternal(this, query, debug, funTable, load,
+                    strictValidation);
             return q;
         } catch (Throwable e) {
             throw MondrianResource.instance().FailedToParseQuery.ex(query, e);
