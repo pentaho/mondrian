@@ -382,7 +382,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <mkdir dir="${build.dir}"/>
   </target>
 
-  <target name="resolve">
+  <target name="resolve" unless="skip.download">
       <!-- Workbench dependencies to workbench/plugins -->
       <ivy:resolve file="workbench/ivy.xml"/>
       <ivy:retrieve pattern="${wb.plugins.dir}/[module].[ext]"/>
