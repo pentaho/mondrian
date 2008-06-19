@@ -107,9 +107,6 @@ class HeadTailFunDef extends FunDefBase {
 
     static List head(final int count, final List members) {
         assert members != null;
-        if (count >= members.size()) {
-            return members;
-        }
         if (count <= 0) {
             return Collections.EMPTY_LIST;
         }

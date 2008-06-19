@@ -72,6 +72,22 @@ public class HighDimensionsTest extends FoodMartTestCase {
                     + "from [Sales Ragged]", 1, "Promotions");
     }
 
+/*
+    public void testNonEmpty() throws Exception {
+        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
+                    + "non empty {[Promotions].[Promotion Name].Members} "
+                    + "on rows from [Sales Ragged]", 1, "Promotions");
+    }
+*/
+
+    public void testHead() throws Exception {
+        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
+                    + "head({[Promotions].[Promotion Name].Members},51) "
+                    + "on rows from [Sales Ragged]", 1, "Promotions");
+    }
+
+
+
 
     //
     // Private Stuff --------------------------------------------
