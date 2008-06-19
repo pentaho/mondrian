@@ -736,12 +736,10 @@ public abstract class RolapNativeSet extends RolapNative {
         // MemberListCrossJoinArg.
         // If either the inputs can be natively evaluated, or the result list
         CrossJoinArg[] arg0 = checkCrossJoinArg(evaluator, args[0]);
-        ListCalc listCalc0;
-        List<RolapMember> list0 = null;
         if (arg0 == null) {
             if (MondrianProperties.instance().ExpandNonNative.get()) {
-                listCalc0 = compiler.compileList(args[0]);
-                list0 = Util.cast(listCalc0.evaluateList(evaluator));
+                ListCalc listCalc0 = compiler.compileList(args[0]);
+                List<RolapMember> list0 = Util.cast(listCalc0.evaluateList(evaluator));
                 // Prevent the case when the second argument size is too large
                 if (list0 != null) {
                     Util.checkCJResultLimit(list0.size());
@@ -761,10 +759,9 @@ public abstract class RolapNativeSet extends RolapNative {
         CrossJoinArg[] arg1 = checkCrossJoinArg(evaluator, args[1]);
         if (arg1 == null) {
             if (MondrianProperties.instance().ExpandNonNative.get()) {
-                MemberListCalc listCalc1 =
+                ListCalc listCalc1 =
                     (MemberListCalc) compiler.compileList(args[1]);
-                List<RolapMember> list1 =
-                    Util.cast(listCalc1.evaluateMemberList(evaluator));
+                List<RolapMember> list1 = Util.cast(listCalc1.evaluateList(evaluator));
                 // Prevent the case when the second argument size is too large
                 if (list1 != null) {
                     Util.checkCJResultLimit(list1.size());

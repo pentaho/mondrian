@@ -858,7 +858,37 @@ public class NonEmptyTest extends BatchTestCase {
      * Verify that native evaluation is turned off for tuple inputs, even if
      * ExpandNonNative is set.
      */
-    public void testExpandTupleInputs() {
+    public void testExpandTupleInputs1() {
+        String query =
+            "with " +
+            "set [Tuple Set] as {([Store Type].[All Store Types].[HeadQuarters], [Product].[All Products].[Drink]), ([Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food])} " +
+            "set [Filtered Tuple Set] as Filter([Tuple Set], 1=1) " +
+            "set [NECJ] as NonEmptyCrossJoin([Store].Children, [Filtered Tuple Set]) " +
+            "select [NECJ] on rows from [Sales]";
+
+        String result =
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food]}\n" +
+            "Row #0: 108,188\n";
+
+        boolean origExpandNonNative =
+            MondrianProperties.instance().ExpandNonNative.get();
+        MondrianProperties.instance().ExpandNonNative.set(true);
+
+        try {
+            checkNotNative(1, query, fold(result));
+        } finally {
+            MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
+        }
+    }
+
+    /**
+     * Verify that native evaluation is turned off for tuple inputs, even if
+     * ExpandNonNative is set.
+     */
+    public void testExpandTupleInputs2() {
         String query =
             "with " +
             "set [Tuple Set] as {([Store Type].[All Store Types].[HeadQuarters], [Product].[All Products].[Drink]), ([Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food])} " +
@@ -3274,7 +3304,7 @@ public class NonEmptyTest extends BatchTestCase {
             String nonNativeResult = toString(result);
             if (!nonNativeResult.equals(expectedResult)) {
                 TestContext.assertEqualsVerbose(
-                    nonNativeResult, expectedResult, false,
+                    expectedResult, nonNativeResult, false,
                     "Non Native implementation returned different result than " +
                     "expected; MDX=" + mdx);
             }
@@ -3377,16 +3407,16 @@ public class NonEmptyTest extends BatchTestCase {
 
             if (expectedResult != null) {
                 TestContext.assertEqualsVerbose(
-                    nativeResult, expectedResult, false,
+                    expectedResult, nativeResult, false,
                     "Native implementation returned different result than expected; MDX=" + mdx);
                 TestContext.assertEqualsVerbose(
-                    interpretedResult, expectedResult, false,
+                    expectedResult, interpretedResult, false,
                     "Interpreter implementation returned different result than expected; MDX=" + mdx);
             }
 
             if (!nativeResult.equals(interpretedResult)) {
                 TestContext.assertEqualsVerbose(
-                    nativeResult, interpretedResult, false,
+                    interpretedResult, nativeResult, false,
                     "Native implementation returned different result than interpreter; MDX=" + mdx);
             }
 
