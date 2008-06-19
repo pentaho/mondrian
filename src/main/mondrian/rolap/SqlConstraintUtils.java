@@ -884,7 +884,8 @@ public class SqlConstraintUtils {
     {
         int maxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
-
+        SqlQuery.Dialect dialect = sqlQuery.getDialect();
+        
         String condition = "";
         boolean firstLevel = true;
         for (Collection<RolapMember> c = members;
@@ -925,7 +926,8 @@ public class SqlConstraintUtils {
                 q = level.getKeyExp().getExpression(sqlQuery);
             }
 
-            if (cc instanceof ListColumnPredicate &&
+            if (!dialect.supportsUnlimitedValueList() &&
+                cc instanceof ListColumnPredicate &&
                 ((ListColumnPredicate) cc).getPredicates().size() >
                 maxConstraints)
             {

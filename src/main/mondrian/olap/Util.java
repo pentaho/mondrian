@@ -2329,6 +2329,37 @@ public class Util extends XOMUtil {
 
         return udf;
     }
+
+    /**
+     * Check the resultSize against the result limit setting. Throws
+     * LimitExceededDuringCrossjoin exception if limit exceeded.
+     * 
+     * When it is called from RolapNativeSet.checkCrossJoin(), it is only
+     * possible to check the known input size, because the final CJ result 
+     * will come from the DB(and will be checked against the limit when
+     * fetching from the JDBC result set, in SqlTupleReader.prepareTuples())
+     * 
+     * @param resultSize
+     * @throws ResourceLimitExceededException
+     */
+    public static void checkCJResultLimit(long resultSize) {
+        int resultLimit = MondrianProperties.instance().ResultLimit.get();
+
+        // Throw an exeption, if the size of the crossjoin exceeds the result
+        // limit.
+        //
+        if (resultLimit > 0 && resultLimit < resultSize) {
+            throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
+                resultSize, resultLimit);
+        }
+
+        // Throw an exception if the crossjoin exceeds a reasonable limit.
+        // (Yes, 4 billion is a reasonable limit.)
+        if (resultSize > Integer.MAX_VALUE) {
+            throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
+                resultSize, Integer.MAX_VALUE);
+        }        
+    }    
 }
 
 // End Util.java

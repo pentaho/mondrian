@@ -18,7 +18,6 @@ import mondrian.olap.*;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.TupleType;
 import mondrian.olap.type.Type;
-import mondrian.resource.MondrianResource;
 import mondrian.util.UnsupportedList;
 import mondrian.rolap.*;
 
@@ -1925,26 +1924,13 @@ public class CrossJoinFunDef extends FunDefBase {
         }
         // Optimize nonempty(crossjoin(a,b)) ==
         //  nonempty(crossjoin(nonempty(a),nonempty(b))
-        long size = (long)list1.size() * (long)list2.size();
-        int resultLimit = MondrianProperties.instance().ResultLimit.get();
-
-        // Throw an exeption, if the size of the crossjoin exceeds the result
-        // limit.
-        //
+        
         // FIXME: If we're going to apply a NON EMPTY constraint later, it's
         // possible that the ultimate result will be much smaller.
-        if (resultLimit > 0 && resultLimit < size) {
-            throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
-                size, resultLimit);
-        }
-
-        // Throw an exception if the crossjoin exceeds a reasonable limit.
-        // (Yes, 4 billion is a reasonable limit.)
-        if (size > Integer.MAX_VALUE) {
-            throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
-                size, Integer.MAX_VALUE);
-        }
-
+        
+        long size = (long)list1.size() * (long)list2.size();
+        Util.checkCJResultLimit(size);
+        
         // Now we can safely cast size to an integer. It still might be very
         // large - which means we're allocating a huge array which we might
         // pare down later by applying NON EMPTY constraints - which is a

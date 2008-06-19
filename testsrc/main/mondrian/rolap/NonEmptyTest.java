@@ -530,6 +530,42 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
+     * Check that the ExpandNonNative does not create Joins with input lists
+     * containing large number of members.
+     *
+     */
+    public void testExpandNonNativeResourceLimitFailure() {
+        String query =
+            "select " +
+            "NonEmptyCrossJoin({[Gender].Children, [Gender].[F]}, {[Store].Children, [Store].[Mexico]}) on rows " +
+            "from [Sales]";
+
+        boolean origExpandNonNative =
+            MondrianProperties.instance().ExpandNonNative.get();
+        boolean origNativeCrossJoin =
+            MondrianProperties.instance().EnableNativeCrossJoin.get();
+        int origResultLimit =
+            MondrianProperties.instance().ResultLimit.get();
+            
+        MondrianProperties.instance().ExpandNonNative.set(true);
+        MondrianProperties.instance().EnableNativeCrossJoin.set(true);
+        MondrianProperties.instance().ResultLimit.set(2);
+        
+        try {
+            executeQuery(query);
+            fail("Expected error did not occur");
+        } catch (Throwable e) {
+            String expectedErrorMsg = 
+                "Mondrian Error:Size of CrossJoin result (3) exceeded limit (2)";
+            assertEquals(expectedErrorMsg, e.getMessage());
+        } finally {
+            MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
+            MondrianProperties.instance().EnableNativeCrossJoin.set(origNativeCrossJoin);
+            MondrianProperties.instance().ResultLimit.set(origResultLimit);
+        }
+    }
+    
+    /**
      * Verify that the presence of All member in all the inputs disables native
      * evaluation, even when ExpandNonNative is true.
      */
