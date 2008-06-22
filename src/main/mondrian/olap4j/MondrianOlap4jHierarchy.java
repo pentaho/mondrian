@@ -3,23 +3,16 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde
+// Copyright (C) 2007-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
-import java.util.*;
+import org.olap4j.metadata.*;
+import org.olap4j.impl.*;
 
-import org.olap4j.impl.AbstractNamedList;
-import org.olap4j.impl.Named;
-import org.olap4j.impl.NamedListImpl;
-import org.olap4j.impl.Olap4jUtil;
-import org.olap4j.metadata.Dimension;
-import org.olap4j.metadata.Hierarchy;
-import org.olap4j.metadata.Level;
-import org.olap4j.metadata.Member;
-import org.olap4j.metadata.NamedList;
+import java.util.*;
 
 /**
  * Implementation of {@link org.olap4j.metadata.Hierarchy}
@@ -79,21 +72,23 @@ class MondrianOlap4jHierarchy implements Hierarchy, Named {
     public NamedList<Member> getRootMembers() {
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
-        final List<mondrian.olap.Member> levelMembers =
+        final mondrian.olap.Member[] levelMembers =
             olap4jConnection.connection.getSchemaReader().getLevelMembers(
                 hierarchy.getLevels()[0], true);
 
+        final List<mondrian.olap.Member> levelMemberList =
+            new ArrayList<mondrian.olap.Member>(Arrays.asList(levelMembers));
         return new AbstractNamedList<Member>() {
             protected String getName(Member member) {
                 return member.getName();
             }
 
             public Member get(int index) {
-                return olap4jConnection.toOlap4j(levelMembers.get(index));
+                return olap4jConnection.toOlap4j(levelMemberList.get(index));
             }
 
             public int size() {
-                return levelMembers.size();
+                return levelMemberList.size();
             }
         };
     }

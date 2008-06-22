@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,13 +13,12 @@
 
 package mondrian.rolap;
 
+import mondrian.olap.DriverManager;
+import mondrian.olap.Id;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-import mondrian.olap.DriverManager;
-import mondrian.olap.Id;
-import mondrian.olap.Level;
 
 /**
  * todo:
@@ -124,25 +123,25 @@ public class Test {
         pw.println("Count=" + reader.getMemberCount());
 
         pw.print("Root member(s)=");
-        List<RolapMember> rootMembers = reader.getRootMembers();
+        RolapMember[] rootMembers = RolapUtil.toArray(reader.getRootMembers());
         print(rootMembers);
         pw.println();
 
-        Level[] levels = rootMembers.get(0).getHierarchy().getLevels();
-        Level level = levels[levels.length > 1 ? 1 : 0];
+        RolapLevel[] levels = (RolapLevel[]) rootMembers[0].getHierarchy().getLevels();
+        RolapLevel level = levels[levels.length > 1 ? 1 : 0];
         pw.print("Members at level " + level.getUniqueName() + " are ");
-        List<RolapMember> members = reader.getMembersInLevel((RolapLevel)level, 0, Integer.MAX_VALUE);
+        RolapMember[] members = RolapUtil.toArray(reader.getMembersInLevel(level, 0, Integer.MAX_VALUE));
         print(members);
         pw.println();
 
         pw.println("First children of first children: {");
         List<RolapMember> firstChildren = new ArrayList<RolapMember>();
-        RolapMember member = rootMembers.get(0);
+        RolapMember member = rootMembers[0];
         while (member != null) {
             firstChildren.add(member);
             pw.print("\t");
             print(member);
-            List<RolapMember> children = new ArrayList<RolapMember>();
+            ArrayList<RolapMember> children = new ArrayList<RolapMember>();
             reader.getMemberChildren(member, children);
             if (children.isEmpty()) {
                 break;
@@ -170,14 +169,14 @@ public class Test {
         }
         pw.print("Member(" + member.getUniqueName() + ")");
     }
-    private void print(List<RolapMember> members)
+    private void print(RolapMember[] members)
     {
         pw.print("{");
-        for (int i = 0; i < members.size(); i++) {
+        for (int i = 0; i < members.length; i++) {
             if (i > 0) {
                 pw.print(", ");
             }
-            print(members.get(i));
+            print(members[i]);
         }
         pw.print("}");
     }

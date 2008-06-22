@@ -41,7 +41,7 @@ public class CacheControlImpl implements CacheControl {
      * mondrian.
      */
     private static final Object MEMBER_CACHE_LOCK = new Object();
-
+    
     // cell cache control
     public CellRegion createMemberRegion(Member member, boolean descendants) {
         if (member == null) {
@@ -130,11 +130,11 @@ public class CacheControlImpl implements CacheControl {
 
     public CellRegion createMeasuresRegion(Cube cube) {
         final Dimension measuresDimension = cube.getDimensions()[0];
-        final List<Member> measures =
+        final Member[] measures =
             cube.getSchemaReader(null).getLevelMembers(
                 measuresDimension.getHierarchy().getLevels()[0],
                 false);
-        return new MemberCellRegion(measures, false);
+        return new MemberCellRegion(Arrays.asList(measures), false);
     }
 
     public void flush(CellRegion region) {
@@ -392,14 +392,12 @@ public class CacheControlImpl implements CacheControl {
         // Figure out which measure (therefore star) it belongs to.
         List<RolapStar> starList = new ArrayList<RolapStar>();
         final List<Member> measuresList = findMeasures(region);
-        for (Member measure : measuresList) {
-            if (measure instanceof RolapStoredMeasure) {
-                RolapStoredMeasure storedMeasure = (RolapStoredMeasure) measure;
-                final RolapStar.Measure starMeasure =
-                    (RolapStar.Measure) storedMeasure.getStarMeasure();
-                if (!starList.contains(starMeasure.getStar())) {
-                    starList.add(starMeasure.getStar());
-                }
+        for (Member member : measuresList) {
+            RolapStoredMeasure measure = (RolapStoredMeasure) member;
+            final RolapStar.Measure starMeasure =
+                (RolapStar.Measure) measure.getStarMeasure();
+            if (!starList.contains(starMeasure.getStar())) {
+                starList.add(starMeasure.getStar());
             }
         }
         return starList;
@@ -666,12 +664,13 @@ public class CacheControlImpl implements CacheControl {
     static class MemberCellRegion implements CellRegionImpl {
         private final List<Member> memberList;
         private final Dimension dimension;
+        private final boolean descendants;
 
         MemberCellRegion(List<Member> memberList, boolean descendants) {
             assert memberList.size() > 0;
             this.memberList = memberList;
             this.dimension = (memberList.get(0)).getDimension();
-            Util.discard(descendants);
+            this.descendants = descendants;
         }
 
         public List<Dimension> getDimensionality() {
@@ -856,7 +855,7 @@ public class CacheControlImpl implements CacheControl {
             this.regions = regions;
             assert regions.size() >= 1;
 
-            // All regions must have same dimensionality.
+            // All regions must have same dimensionality.  
             for (int i = 1; i < regions.size(); i++) {
                 final CellRegion region0 = regions.get(0);
                 final CellRegion region = regions.get(i);
@@ -1307,7 +1306,7 @@ public class CacheControlImpl implements CacheControl {
         DeleteMemberCommand(MemberSetPlus set) {
             this.set = set;
         }
-
+        
         public String toString() {
             return "DeleteMemberCommand(" + set + ")";
         }
@@ -1338,7 +1337,7 @@ public class CacheControlImpl implements CacheControl {
         public String toString() {
             return "AddMemberCommand(" + member + ")";
         }
-
+        
         public void execute(List<CellRegion> cellRegionList) {
             addMember(member, member.getParentMember(), cellRegionList);
         }
@@ -1355,11 +1354,11 @@ public class CacheControlImpl implements CacheControl {
             this.member = member;
             this.newParent = newParent;
         }
-
+        
         public String toString() {
             return "MoveMemberCommand(" + member + ", " + newParent + ")";
         }
-
+        
         public void execute(final List<CellRegion> cellRegionList) {
             deleteMember(member, member.getParentMember(), cellRegionList);
             member.setParentMember(newParent);
@@ -1384,7 +1383,7 @@ public class CacheControlImpl implements CacheControl {
             this.memberSet = memberSet;
             this.propertyValues = propertyValues;
         }
-
+        
         public String toString() {
             return "CreateMemberPropsCommand(" + memberSet
                 + ", " + propertyValues + ")";

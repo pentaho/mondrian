@@ -28,7 +28,6 @@ parser code {:
     private Connection mdxConnection;
     private FunTable funTable;
     private boolean load;
-    private boolean strictValidation;
 
     /**
       * Recursively parses an expression.
@@ -48,8 +47,7 @@ parser code {:
         String queryString,
         boolean debug,
         FunTable funTable,
-        boolean load,
-        boolean strictValidation)
+        boolean load)
     {
         Symbol parse_tree = null;
         this.scanner = new StringScanner(queryString, debug);
@@ -57,7 +55,6 @@ parser code {:
         this.queryString = queryString;
         this.funTable = funTable;
         this.load = load;
-        this.strictValidation = strictValidation;
         try {
             if (debug) {
                 parse_tree = debug_parse();
@@ -159,7 +156,7 @@ parser code {:
                     false, slicer, AxisOrdinal.SLICER,
                     QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
         return new Query(
-            mdxConnection, formulae, axes, cube, slicerAxis, cellProps, load, strictValidation);
+            mdxConnection, formulae, axes, cube, slicerAxis, cellProps, load);
     }
 
     // Override lr_parser methods for NLS.  With this error handling scheme,

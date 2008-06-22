@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -33,11 +33,8 @@ import java.util.*;
  * @since 21 December, 2001
  * @version $Id$
  */
-class SqlMemberSource
-    implements MemberReader, SqlTupleReader.MemberBuilder
-{
-    private final SqlConstraintFactory sqlConstraintFactory =
-        SqlConstraintFactory.instance();
+class SqlMemberSource implements MemberReader, SqlTupleReader.MemberBuilder {
+    private final SqlConstraintFactory sqlConstraintFactory = SqlConstraintFactory.instance();
     private final RolapHierarchy hierarchy;
     private final DataSource dataSource;
     private MemberCache cache;
@@ -266,11 +263,11 @@ class SqlMemberSource
     }
 
 
-    public List<RolapMember> getMembers() {
+    public RolapMember[] getMembers() {
         return getMembers(dataSource);
     }
 
-    private List<RolapMember> getMembers(DataSource dataSource) {
+    private RolapMember[] getMembers(DataSource dataSource) {
         String sql = makeKeysSql(dataSource);
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         SqlStatement stmt =
@@ -349,7 +346,7 @@ RME is this right
                 }
             }
 
-            return list;
+            return RolapUtil.toArray(list);
         } catch (SQLException e) {
             throw stmt.handle(e);
         } finally {
@@ -434,10 +431,7 @@ RME is this right
             int endOrdinal,
             TupleConstraint constraint) {
         if (level.isAll()) {
-            final List<RolapMember> list = new ArrayList<RolapMember>();
-            list.add(hierarchy.getAllMember());
-                //return Collections.singletonList(hierarchy.getAllMember());
-            return list;
+            return Collections.singletonList(hierarchy.getAllMember());
         }
         return getMembersInLevel(level, constraint);
     }
@@ -446,56 +440,23 @@ RME is this right
         RolapLevel level,
         TupleConstraint constraint)
     {
-        final TupleReader tupleReader =
-            level.getDimension().isHighCardinality()
-                ? new HighCardSqlTupleReader(constraint)
-                : new SqlTupleReader(constraint);
+        TupleReader tupleReader = new SqlTupleReader(constraint);
         tupleReader.addLevelMembers(level, this, null);
-        final List<RolapMember[]> tupleList =
+        List<RolapMember[]> tupleList =
             tupleReader.readTuples(dataSource, null, null);
-
-        return new AbstractList<RolapMember>() {
-            public RolapMember get(final int index) {
-                return tupleList.get(index)[0];
-            }
-
-            public int size() {
-                return tupleList.size();
-            }
-
-            public mondrian.rolap.RolapMember[] toArray() {
-                final List<Member> l = new ArrayList<Member>();
-                for(final RolapMember[] tuple : tupleList) {
-                    l.add(tuple[0]);
-                }
-                return l.toArray(new RolapMember[l.size()]);
-            }
-
-            public <T> T[] toArray(T[] pattern) {
-                return (T[]) toArray();
-            }
-
-            public Iterator<RolapMember> iterator() {
-                final Iterator<RolapMember[]> it = tupleList.iterator();
-                return new Iterator<RolapMember>() {
-                    public boolean hasNext() {
-                        return it.hasNext();
-                    }
-                    public RolapMember next() {
-                        return it.next()[0];
-                    }
-                    public void remove() {
-                        it.remove();
-                    }
-                };
-            }
-        };
+        List<RolapMember> memberList =
+            new ArrayList<RolapMember>(tupleList.size());
+        for (RolapMember[] tuple : tupleList) {
+            assert tuple.length == 1;
+            memberList.add(tuple[0]);
+        }
+        return memberList;
     }
 
     public MemberCache getMemberCache() {
         return cache;
     }
-
+    
     public Object getMemberCacheLock() {
         return cache;
     }
@@ -519,7 +480,7 @@ RME is this right
      * GROUP BY "city"</pre>
      * </blockquote> retrieves the children of the member
      * <code>[Canada].[BC]</code>.
-     * <p>Note that this method is never called in the context of
+     * <p>Note that this method is never called in the context of 
      * virtual cubes, it is only called on regular cubes.
      *
      * <p>See also {@link SqlTupleReader#makeLevelMembersSql}.
@@ -608,13 +569,13 @@ RME is this right
         // RolapCubeMembers so this cast is necessary for now. Also note that
         // this method will never be called in the context of a virtual cube
         // so baseCube isn't necessary for retrieving the correct column
-
+        
         // get the level using the current depth
-        RolapCubeLevel childLevel =
+        RolapCubeLevel childLevel = 
             (RolapCubeLevel) member.getLevel().getChildLevel();
-
+        
         RolapStar.Column column = childLevel.getStarKeyColumn();
-
+        
         // set a bit for each level which is constrained in the context
         final CellRequest request =
             RolapAggregationManager.makeRequest(members);
@@ -684,8 +645,8 @@ RME is this right
     {
         // allow parent child calculated members through
         // this fixes the non closure parent child hierarchy bug
-        if (!parentMember.isAll() &&
-                parentMember.isCalculated() &&
+        if (!parentMember.isAll() && 
+                parentMember.isCalculated() && 
                 !parentMember.getLevel().isParentChild()) {
             return;
         }
@@ -801,7 +762,6 @@ RME is this right
                             parentChild, resultSet, key, columnOffset);
                 }
                 if (value == RolapUtil.sqlNullValue) {
-                    children.toArray();
                     addAsOldestSibling(children, member);
                 } else {
                     children.add(member);
@@ -1108,7 +1068,7 @@ RME is this right
         protected boolean computeCalculated(final MemberType memberType) {
             return true;
         }
-
+        
         public Exp getExpression() {
             return getHierarchy().getAggregateChildrenExpression();
         }

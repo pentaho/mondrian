@@ -236,17 +236,7 @@ public class TestContext {
     }
 
     public Util.PropertyList getFoodMartConnectionProperties() {
-        final Util.PropertyList propertyList =
-            Util.parseConnectString(getDefaultConnectString());
-        if (MondrianProperties.instance().TestHighCardinalityDimensionList
-            .get() != null
-            && propertyList.get(
-            RolapConnectionProperties.DynamicSchemaProcessor.name()) == null) {
-            propertyList.put(
-                RolapConnectionProperties.DynamicSchemaProcessor.name(),
-                HighCardDynamicSchemaProcessor.class.getName());
-        }
-        return propertyList;
+        return Util.parseConnectString(getDefaultConnectString());
     }
 
     /**
@@ -371,13 +361,7 @@ public class TestContext {
         return s;
     }
 
-    /**
-     * Returns the definition of the "FoodMart" schema as stored in
-     * {@code FoodMart.xml}.
-     *
-     * @return XML definition of the FoodMart schema
-     */
-    public static String getRawFoodMartSchema() {
+    private static String getRawFoodMartSchema() {
         synchronized (SnoopingSchemaProcessor.class) {
             if (unadulteratedFoodMartSchema == null) {
                 instance().getFoodMartConnection(
@@ -720,11 +704,7 @@ public class TestContext {
      * thrown.
      */
     public void assertSimpleQuery() {
-        assertQueryReturns(
-            "select from [Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "266,773"));
+        assertQueryReturns("select from [Sales]", "");
     }
 
     /**
@@ -1011,10 +991,7 @@ public class TestContext {
                     search,
                     "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)");
         } else if (dialect.isPostgres()
-            || dialect.isOracle()
-            || dialect.isLucidDB()
-            || dialect.isTeradata())
-        {
+            || dialect.isOracle() || dialect.isLucidDB()) {
             sql = sql.replaceAll(
                     search,
                     "`fname` || ' ' || `lname`");
@@ -1380,27 +1357,6 @@ public class TestContext {
         return allDimsExcept();
     }
 
-    /**
-     * Creates a FoodMart connection with "Ignore=true" and returns the list
-     * of warnings in the schema.
-     *
-     * @return Warnings encountered while loading schema
-     */
-    public List<Exception> getSchemaWarnings() {
-        final Connection connection =
-            new DelegatingTestContext(this) {
-                public Util.PropertyList getFoodMartConnectionProperties() {
-                    final Util.PropertyList propertyList =
-                        super.getFoodMartConnectionProperties();
-                    propertyList.put(
-                        RolapConnectionProperties.Ignore.name(),
-                        "true");
-                    return propertyList;
-                }
-            }.getFoodMartConnection();
-        return connection.getSchema().getWarnings();
-    }
-
     public static class SnoopingSchemaProcessor
         extends FilterDynamicSchemaProcessor
     {
@@ -1413,38 +1369,6 @@ public class TestContext {
         {
             catalogContent = super.filter(schemaUrl, connectInfo, stream);
             return catalogContent;
-        }
-    }
-
-    /**
-     * Schema processor that flags dimensions as high-cardinality if they
-     * appear in the list of values in the
-     * {@link MondrianProperties#TestHighCardinalityDimensionList} property.
-     * It's a convenient way to run the whole suite against high-cardinality
-     * dimensions without modifying FoodMart.xml.
-     */
-    public static class HighCardDynamicSchemaProcessor
-        extends FilterDynamicSchemaProcessor
-    {
-        protected String filter(
-            String schemaUrl, Util.PropertyList connectInfo, InputStream stream)
-            throws Exception
-        {
-            String s = super.filter(schemaUrl, connectInfo, stream);
-            final String highCardDimensionList =
-                MondrianProperties.instance()
-                    .TestHighCardinalityDimensionList.get();
-            if (highCardDimensionList != null
-                && !highCardDimensionList.equals(""))
-            {
-                for (String dimension : highCardDimensionList.split(",")) {
-                    final String match =
-                        "<Dimension name=\"" + dimension + "\"";
-                    s = s.replaceAll(
-                        match, match + " highCardinality=\"true\"");
-                }
-            }
-            return s;
         }
     }
 }

@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde
+// Copyright (C) 2007-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -56,13 +56,11 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
 
     // ~ -- Implementations of MemberReader methods ---------------------------
 
-    @Override
     public RolapMember getLeadMember(RolapMember member, int n) {
         return substitute(
             memberReader.getLeadMember(desubstitute(member), n));
     }
 
-    @Override
     public List<RolapMember> getMembersInLevel(
         RolapLevel level,
         int startOrdinal,
@@ -72,7 +70,6 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             memberReader.getMembersInLevel(level, startOrdinal, endOrdinal));
     }
 
-    @Override
     public void getMemberRange(
         RolapLevel level,
         RolapMember startMember,
@@ -86,7 +83,6 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             new SubstitutingMemberList(list));
     }
 
-    @Override
     public int compare(
         RolapMember m1,
         RolapMember m2,
@@ -98,29 +94,24 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             siblingsAreEqual);
     }
 
-    @Override
     public RolapHierarchy getHierarchy() {
         return memberReader.getHierarchy();
     }
 
-    @Override
     public boolean setCache(MemberCache cache) {
         // cache semantics don't make sense if members are not comparable
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public List<RolapMember> getMembers() {
+    public RolapMember[] getMembers() {
         // might make sense, but I doubt it
         throw new UnsupportedOperationException();
     }
 
-    @Override
     public List<RolapMember> getRootMembers() {
         return substitute(memberReader.getRootMembers());
     }
 
-    @Override
     public void getMemberChildren(
         RolapMember parentMember,
         List<RolapMember> children)
@@ -130,7 +121,6 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             new SubstitutingMemberList(children));
     }
 
-    @Override
     public void getMemberChildren(
         List<RolapMember> parentMembers,
         List<RolapMember> children)
@@ -140,12 +130,10 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             new SubstitutingMemberList(children));
     }
 
-    @Override
     public int getMemberCount() {
         return memberReader.getMemberCount();
     }
 
-    @Override
     public RolapMember lookupMember(
         List<Id.Segment> uniqueNameParts,
         boolean failIfNotFound)
@@ -154,19 +142,17 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             memberReader.lookupMember(uniqueNameParts, failIfNotFound));
     }
 
-    @Override
     public void getMemberChildren(
         RolapMember member,
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
         memberReader.getMemberChildren(
-            desubstitute(member),
+            desubstitute(member), 
             new SubstitutingMemberList(children),
             constraint);
     }
 
-    @Override
     public void getMemberChildren(
         List<RolapMember> parentMembers,
         List<RolapMember> children,
@@ -178,7 +164,6 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             constraint);
     }
 
-    @Override
     public List<RolapMember> getMembersInLevel(
         RolapLevel level,
         int startOrdinal,
@@ -190,17 +175,14 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
                 level, startOrdinal, endOrdinal, constraint));
     }
 
-    @Override
     public RolapMember getDefaultMember() {
         return substitute(memberReader.getDefaultMember());
     }
 
-    @Override
     public RolapMember getMemberParent(RolapMember member) {
         return substitute(memberReader.getMemberParent(desubstitute(member)));
     }
 
-    @Override
     public TupleReader.MemberBuilder getMemberBuilder() {
         throw new UnsupportedOperationException();
     }
@@ -216,27 +198,22 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             this.list = list;
         }
 
-        @Override
         public RolapMember get(int index) {
             return desubstitute(list.get(index));
         }
 
-        @Override
         public int size() {
             return list.size();
         }
 
-        @Override
         public RolapMember set(int index, RolapMember element) {
             return desubstitute(list.set(index, substitute(element)));
         }
 
-        @Override
         public void add(int index, RolapMember element) {
             list.add(index, substitute(element));
         }
 
-        @Override
         public RolapMember remove(int index) {
             return list.remove(index);
         }

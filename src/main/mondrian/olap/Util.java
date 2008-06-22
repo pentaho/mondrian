@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -269,7 +269,7 @@ public class Util extends XOMUtil {
             return v == 0 ? s.compareTo(t) : v;
         }
     }
-
+    
     /**
      * Compares two names.
      * Takes into account the {@link MondrianProperties#CaseSensitive case
@@ -415,7 +415,7 @@ public class Util extends XOMUtil {
                 new Id.Segment(
                     replace(s.substring(i + 1, j), "]]", "]"),
                     type));
-
+                    
             i = j + 2;
         }
         return list;
@@ -571,14 +571,15 @@ public class Util extends XOMUtil {
                 Util.assertPrecondition(child instanceof Member);
                 Member bestChild = (Member) child;
                 for (int j = i + 1; j < names.size(); j++) {
-                    List<Member> childrenList =
+                    Member[] children =
                         schemaReader.getMemberChildren(bestChild);
+                    List<Member> childrenList = Arrays.asList(children);
                     FunUtil.hierarchize(childrenList, false);
                     if (matchType == MatchType.AFTER) {
                         bestChild = childrenList.get(0);
                     } else {
                         bestChild =
-                            childrenList.get(childrenList.size() - 1);
+                            childrenList.get(children.length - 1);
                     }
                     if (bestChild == null) {
                         child = null;
@@ -710,7 +711,7 @@ public class Util extends XOMUtil {
         // Look for any kind of object (member, level, hierarchy,
         // dimension) in the cube. Use a schema reader without restrictions.
         final SchemaReader schemaReader = q.getSchemaReader(false);
-        OlapElement olapElement =
+        OlapElement olapElement = 
             schemaReader.lookupCompound(
                 q.getCube(), nameParts, false, Category.Unknown);
         if (olapElement != null) {
@@ -842,71 +843,69 @@ public class Util extends XOMUtil {
         //
         // Don't use access control. Suppose we cannot see the 'nation' level,
         // we still want to be able to resolve '[Customer].[USA].[CA]'.
-        List<Member> rootMembers = reader.getHierarchyRootMembers(hierarchy);
+        Member[] rootMembers = reader.getHierarchyRootMembers(hierarchy);
 
         // if doing an inexact search on a non-all hieararchy, create
         // a member corresponding to the name we're searching for so
         // we can use it in a hierarchical search
         Member searchMember = null;
         if (matchType != MatchType.EXACT && !hierarchy.hasAll() &&
-            ! rootMembers.isEmpty())
+            rootMembers.length > 0)
         {
             searchMember =
                 hierarchy.createMember(
                     null,
-                    rootMembers.get(0).getLevel(),
+                    rootMembers[0].getLevel(),
                     memberName.name,
                     null);
         }
 
         int bestMatch = -1;
-        int k = -1;
-        for (Member rootMember : rootMembers) {
-        	++k;
+        for (int i = 0; i < rootMembers.length; i++) {
             int rc;
             // when searching on the ALL hierarchy, match must be exact
             if (matchType == MatchType.EXACT || hierarchy.hasAll()) {
-                rc = rootMember.getName()
+                rc = rootMembers[i].getName()
                         .compareToIgnoreCase(memberName.name);
             } else {
                 rc = FunUtil.compareSiblingMembers(
-                    rootMember,
+                    rootMembers[i],
                     searchMember);
             }
             if (rc == 0) {
-                return rootMember;
+                return rootMembers[i];
             }
             if (!hierarchy.hasAll()) {
                 if (matchType == MatchType.BEFORE) {
                     if (rc < 0 &&
                         (bestMatch == -1 ||
                         FunUtil.compareSiblingMembers(
-                            rootMember,
-                            rootMembers.get(bestMatch)) > 0))
+                            rootMembers[i],
+                            rootMembers[bestMatch]) > 0))
                     {
-                        bestMatch = k;
+                        bestMatch = i;
                     }
                 } else if (matchType == MatchType.AFTER) {
                     if (rc > 0 &&
                         (bestMatch == -1 ||
                         FunUtil.compareSiblingMembers(
-                            rootMember,
-                            rootMembers.get(bestMatch)) < 0))
+                            rootMembers[i],
+                            rootMembers[bestMatch]) < 0))
                     {
-                        bestMatch = k;
+                        bestMatch = i;
                     }
                 }
             }
         }
         if (matchType != MatchType.EXACT && bestMatch != -1) {
-            return rootMembers.get(bestMatch);
+            return rootMembers[bestMatch];
         }
         // If the first level is 'all', lookup member at second level. For
         // example, they could say '[USA]' instead of '[(All
         // Customers)].[USA]'.
-        return (rootMembers.size() == 1 && rootMembers.get(0).isAll())
+        return (rootMembers.length == 1 && rootMembers[0].isAll())
             ? reader.lookupMemberChildByName(
-                rootMembers.get(0),
+                rootMembers[0],
                 memberName,
                 matchType)
             : null;
@@ -936,18 +935,17 @@ public class Util extends XOMUtil {
         Member member)
     {
         Member parent = member.getParentMember();
-        List<Member> siblings =
-            (parent == null)
+        Member[] siblings =  (parent == null)
             ? reader.getHierarchyRootMembers(member.getHierarchy())
             : reader.getMemberChildren(parent);
 
-        for (int i = 0; i < siblings.size(); i++) {
-            if (siblings.get(i).equals(member)) {
+        for (int i = 0; i < siblings.length; i++) {
+            if (siblings[i].equals(member)) {
                 return i;
             }
         }
         throw Util.newInternal(
-            "could not find member " + member + " amongst its siblings");
+                "could not find member " + member + " amongst its siblings");
     }
 
     /**
@@ -962,8 +960,8 @@ public class Util extends XOMUtil {
     {
         Member m = parent;
         while (m.getLevel() != level) {
-            List<Member> children = reader.getMemberChildren(m);
-            m = children.get(0);
+            Member[] children = reader.getMemberChildren(m);
+            m = children[0];
         }
         return m;
     }
@@ -1073,11 +1071,10 @@ public class Util extends XOMUtil {
         throw new UnsupportedOperationException(reason);
     }
 
-    public static List<Member> addLevelCalculatedMembers(
-        SchemaReader reader,
-        Level level,
-        List<Member> members)
-    {
+    public static Member[] addLevelCalculatedMembers(
+            SchemaReader reader,
+            Level level,
+            Member[] members) {
         List<Member> calcMembers =
             reader.getCalculatedMembers(level.getHierarchy());
         List<Member> calcMembersInThisLevel = new ArrayList<Member>();
@@ -1088,10 +1085,9 @@ public class Util extends XOMUtil {
         }
         if (!calcMembersInThisLevel.isEmpty()) {
             List<Member> newMemberList =
-                new ConcatenableList<Member>();
-            newMemberList.addAll(members);
+                new ArrayList<Member>(Arrays.asList(members));
             newMemberList.addAll(calcMembersInThisLevel);
-            return newMemberList;
+            members = newMemberList.toArray(new Member[newMemberList.size()]);
         }
         return members;
     }
@@ -1134,7 +1130,7 @@ public class Util extends XOMUtil {
      * Converts a list of SQL-style patterns into a Java regular expression.
      *
      * <p>For example, {"Foo_", "Bar%BAZ"} becomes "Foo.|Bar.*BAZ".
-     *
+     * 
      * @param wildcards List of SQL-style wildcard expressions
      * @return Regular expression
      */
@@ -1387,32 +1383,6 @@ public class Util extends XOMUtil {
         }
         nameList.add(name);
         return name;
-    }
-
-    /**
-     * Returns whether a collection contains precisely one distinct element.
-     * Returns false if the collection is empty, or if it contains elements
-     * that are not the same as each other.
-     *
-     * @param collection Collection
-     * @return boolean true if all values are same
-     */
-    public static <T> boolean areOccurencesEqual(
-        Collection<T> collection)
-    {
-        Iterator<T> it = collection.iterator();
-        if (!it.hasNext()) {
-            // Collection is empty
-            return false;
-        }
-        T first = it.next();
-        while (it.hasNext()) {
-            T t = it.next();
-            if (!t.equals(first)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public static class ErrorCellValue {
@@ -1682,7 +1652,7 @@ public class Util extends XOMUtil {
             }
             return found;
         }
-
+        
         public String toString() {
             StringBuilder sb = new StringBuilder(64);
             for (int i = 0, n = list.size(); i < n; i++) {
@@ -2223,22 +2193,13 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Looks up an enumeration by name, returning null if not valid.
+     * Looks up an enumeration by name, returns null if not valid.
      */
     public static <E extends Enum<E>> E lookup(Class<E> clazz, String name) {
-        return lookup(clazz, name, null);
-    }
-
-    /**
-     * Looks up an enumeration by name, returning a given default value if not
-     * valid.
-     */
-    public static <E extends Enum<E>> E lookup(
-        Class<E> clazz, String name, E defaultValue) {
         try {
             return Enum.valueOf(clazz, name);
         } catch (IllegalArgumentException e) {
-            return defaultValue;
+            return null;
         }
     }
 
@@ -2278,11 +2239,11 @@ public class Util extends XOMUtil {
         return compatible.enumSetAllOf(elementType);
     }
 
-    /**
+    /** 
      * Make a BigDecimal from a double. On JDK 1.5 or later, the BigDecimal
      * precision reflects the precision of the double while with JDK 1.4
      * this is not the case.
-     *
+     * 
      * @param d the input double
      * @return the BigDecimal
      */
@@ -2305,7 +2266,7 @@ public class Util extends XOMUtil {
 
     /**
      * Creates a new udf instance from the given udf class.
-     *
+     * 
      * @param udfClass the class to create new instance for
      * @return an instance of UserDefinedFunction
      */
@@ -2313,7 +2274,7 @@ public class Util extends XOMUtil {
         // Instantiate class with default constructor.
         UserDefinedFunction udf;
         String className = udfClass.getName();
-
+ 
         try {
             udf = (UserDefinedFunction) udfClass.newInstance();
         } catch (InstantiationException e) {
@@ -2329,37 +2290,6 @@ public class Util extends XOMUtil {
 
         return udf;
     }
-
-    /**
-     * Check the resultSize against the result limit setting. Throws
-     * LimitExceededDuringCrossjoin exception if limit exceeded.
-     * 
-     * When it is called from RolapNativeSet.checkCrossJoin(), it is only
-     * possible to check the known input size, because the final CJ result 
-     * will come from the DB(and will be checked against the limit when
-     * fetching from the JDBC result set, in SqlTupleReader.prepareTuples())
-     * 
-     * @param resultSize
-     * @throws ResourceLimitExceededException
-     */
-    public static void checkCJResultLimit(long resultSize) {
-        int resultLimit = MondrianProperties.instance().ResultLimit.get();
-
-        // Throw an exeption, if the size of the crossjoin exceeds the result
-        // limit.
-        //
-        if (resultLimit > 0 && resultLimit < resultSize) {
-            throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
-                resultSize, resultLimit);
-        }
-
-        // Throw an exception if the crossjoin exceeds a reasonable limit.
-        // (Yes, 4 billion is a reasonable limit.)
-        if (resultSize > Integer.MAX_VALUE) {
-            throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
-                resultSize, Integer.MAX_VALUE);
-        }        
-    }    
 }
 
 // End Util.java

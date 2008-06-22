@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2008 Julian Hyde
+// Copyright (C) 2003-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -40,7 +40,7 @@ public interface SchemaReader {
      * @param hierarchy Hierarchy
      * @see #getCalculatedMembers(Hierarchy)
      */
-    List<Member> getHierarchyRootMembers(Hierarchy hierarchy);
+    Member[] getHierarchyRootMembers(Hierarchy hierarchy);
 
     /**
      * Returns number of children parent of a member,
@@ -73,7 +73,7 @@ public interface SchemaReader {
      * @pre member != null
      * @post return != null
      */
-    List<Member> getMemberChildren(Member member);
+    Member[] getMemberChildren(Member member);
 
     /**
      * Returns direct children of <code>member</code>, optimized
@@ -88,7 +88,7 @@ public interface SchemaReader {
      * Wether or not optimization is possible depends
      * on the SchemaReader implementation.
      */
-    List<Member> getMemberChildren(Member member, Evaluator context);
+    Member[] getMemberChildren(Member member, Evaluator context);
 
     /**
      * Returns direct children of each element of <code>members</code>.
@@ -99,7 +99,7 @@ public interface SchemaReader {
      * @pre members != null
      * @post return != null
      */
-    List<Member> getMemberChildren(List<Member> members);
+    Member[] getMemberChildren(Member[] members);
 
     /**
      * Returns direct children of each element of <code>members</code>
@@ -112,7 +112,7 @@ public interface SchemaReader {
      * @pre members != null
      * @post return != null
      */
-    List<Member> getMemberChildren(List<Member> members, Evaluator context);
+    Member[] getMemberChildren(Member[] members, Evaluator context);
 
     /**
      * Returns the parent of <code>member</code>.
@@ -282,7 +282,7 @@ public interface SchemaReader {
     /**
      * Returns the members of a level, optionally including calculated members.
      */
-    List<Member> getLevelMembers(Level level, boolean includeCalculated);
+    Member[] getLevelMembers(Level level, boolean includeCalculated);
 
     /**
      * Returns the members of a level, optionally filtering out members which
@@ -292,7 +292,7 @@ public interface SchemaReader {
      * @param context Context for filtering
      * @return Members of this level
      */
-    List<Member> getLevelMembers(Level level, Evaluator context);
+    Member[] getLevelMembers(Level level, Evaluator context);
 
     /**
      * Returns the accessible levels of a hierarchy.
@@ -300,7 +300,7 @@ public interface SchemaReader {
      * @pre hierarchy != null
      * @post return.length >= 1
      */
-    List<Level> getHierarchyLevels(Hierarchy hierarchy);
+    Level[] getHierarchyLevels(Hierarchy hierarchy);
 
     /**
      * Returns the default member of a hierarchy. If the default member is in

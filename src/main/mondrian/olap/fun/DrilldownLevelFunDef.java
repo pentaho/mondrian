@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -86,9 +86,9 @@ class DrilldownLevelFunDef extends FunDefBase {
                     for (Member member : list) {
                         result.add(member);
                         if (index == 0) {
-                            final List<Member> children =
+                            final Member[] children =
                                 schemaReader.getMemberChildren(member);
-                            result.addAll(children);
+                            result.addAll(Arrays.asList(children));
                         }
                     }
                     return result;
@@ -108,7 +108,7 @@ class DrilldownLevelFunDef extends FunDefBase {
                     for (Member[] tuple : list) {
                         result.add(tuple);
                         if (index >= 0 && index < tuple.length) {
-                            final List<Member> children =
+                            final Member[] children =
                                 schemaReader.getMemberChildren(tuple[index]);
                             for (Member child : children) {
                                 final Member[] tupleClone = tuple.clone();
@@ -155,8 +155,7 @@ class DrilldownLevelFunDef extends FunDefBase {
             //
             if (member.getLevel().getDepth() == searchDepth
                     && !FunUtil.isAncestorOf(member, nextMember, true)) {
-                final List<Member> childMembers =
-                    evaluator.getSchemaReader().getMemberChildren(member);
+                Member[] childMembers = evaluator.getSchemaReader().getMemberChildren(member);
                 for (Member childMember : childMembers) {
                     drilledSet.add(childMember);
                 }

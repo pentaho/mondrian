@@ -144,17 +144,12 @@ public class Query extends QueryPart {
      * Comtains a list of base cubes related to a virtual cube
      */
     private Set<RolapCube> baseCubes;
-
+    
     /**
      * If true, loading schema
      */
     private boolean load;
 
-    /**
-     * If true, enforce validation even when ignoreInvalidMembers is set.
-     */
-    private boolean strictValidation;
-    
     /**
      * How should the query be returned? Valid values are:
      *    ResultStyle.ITERABLE
@@ -178,8 +173,7 @@ public class Query extends QueryPart {
             String cube,
             QueryAxis slicerAxis,
             QueryPart[] cellProps,
-            boolean load,
-            boolean strictValidation) {
+            boolean load) {
         this(
             connection,
             Util.lookupCube(connection.getSchemaReader(), cube, true),
@@ -188,8 +182,7 @@ public class Query extends QueryPart {
             slicerAxis,
             cellProps,
             new Parameter[0],
-            load,
-            strictValidation);
+            load);
     }
 
     /**
@@ -203,8 +196,7 @@ public class Query extends QueryPart {
             QueryAxis slicerAxis,
             QueryPart[] cellProps,
             Parameter[] parameters,
-            boolean load,
-            boolean strictValidation) {
+            boolean load) {
         this.connection = connection;
         this.cube = mdxCube;
         this.formulas = formulas;
@@ -221,7 +213,6 @@ public class Query extends QueryPart {
         // processed natively; as we parse the query, we'll know otherwise
         this.nativeCrossJoinVirtualCube = true;
         this.load = load;
-        this.strictValidation = strictValidation;
         this.alertedNonNativeFunDefs = new HashSet<FunDef>();
         resolve();
     }
@@ -293,12 +284,6 @@ public class Query extends QueryPart {
         return new StackValidator(connection.getSchema().getFunTable());
     }
 
-    public Validator createValidator(FunTable functionTable) {
-        StackValidator validator;
-        validator = new StackValidator(functionTable);
-        return validator;
-    }
-
     public Object clone() {
         return new Query(
                 connection,
@@ -308,8 +293,7 @@ public class Query extends QueryPart {
                 (slicerAxis == null) ? null : (QueryAxis) slicerAxis.clone(),
                 cellProps,
                 parameters.toArray(new Parameter[parameters.size()]),
-                load,
-                strictValidation);
+                load);
     }
 
     public Query safeClone() {
@@ -369,7 +353,7 @@ public class Query extends QueryPart {
         startTime = System.currentTimeMillis();
         isExecuting = true;
     }
-
+    
     /**
      * Gets the query start time
      * @return start time
@@ -442,9 +426,10 @@ public class Query extends QueryPart {
     public boolean ignoreInvalidMembers()
     {
         MondrianProperties props = MondrianProperties.instance();
-        return 
-            !strictValidation &&
-            ((load && props.IgnoreInvalidMembers.get()) || (!load && props.IgnoreInvalidMembersDuringQuery.get()));
+        return
+            (load && props.IgnoreInvalidMembers.get())
+            ||
+            (!load && props.IgnoreInvalidMembersDuringQuery.get());
     }
 
     /**
@@ -509,7 +494,7 @@ public class Query extends QueryPart {
      *
      * @param validator Validator
      */
-    public void resolve(Validator validator) {
+    void resolve(Validator validator) {
         // Before commencing validation, create all calculated members,
         // calculated sets, and parameters.
         if (formulas != null) {
@@ -813,7 +798,7 @@ public class Query extends QueryPart {
     }
 
     /**
-     * Looks up a member whose unique name is <code>memberUniqueName</code>
+     * Looks up a member whose unique name is <code>memberUniqueName</code> 
      * from cache. If the member is not in cache, returns null.
      */
     public Member lookupMemberFromCache(String memberUniqueName) {
@@ -821,7 +806,7 @@ public class Query extends QueryPart {
         for (Member member : getDefinedMembers()) {
             if (Util.equalName(member.getUniqueName(), memberUniqueName) ||
                 Util.equalName(
-                        getUniqueNameWithoutAll(member),
+                        getUniqueNameWithoutAll(member), 
                         memberUniqueName)
             ) {
                 return member;
@@ -829,13 +814,13 @@ public class Query extends QueryPart {
         }
         return null;
     }
-
+    
     private String getUniqueNameWithoutAll(Member member) {
         // build unique string
-        Member parentMember = member.getParentMember();
+        Member parentMember = member.getParentMember(); 
         if ((parentMember != null) && !parentMember.isAll()) {
             return Util.makeFqName(
-                            getUniqueNameWithoutAll(parentMember),
+                            getUniqueNameWithoutAll(parentMember), 
                             member.getName());
         } else {
             return Util.makeFqName(member.getHierarchy(), member.getName());
@@ -1042,7 +1027,7 @@ public class Query extends QueryPart {
 
     /**
      * Compiles an expression, using a cached compiled expression if available.
-     *
+     * 
      * @param exp Expression
      * @param scalar Whether expression is scalar
      * @param resultStyle Preferred result style; if null, use query's default
@@ -1140,17 +1125,17 @@ public class Query extends QueryPart {
     /**
      * Saves away the base cubes related to the virtual cube
      * referenced in this query
-     *
+     * 
      * @param baseCubes set of base cubes
      */
     public void setBaseCubes(Set<RolapCube> baseCubes) {
         this.baseCubes = baseCubes;
     }
-
+    
     /**
      * return the set of base cubes associated with the virtual cube referenced
      * in this query
-     *
+     * 
      * @return set of base cubes
      */
     public Set<RolapCube> getBaseCubes() {
@@ -1376,8 +1361,7 @@ public class Query extends QueryPart {
                 }
             } else if (parent instanceof UnresolvedFunCall) {
                 final UnresolvedFunCall funCall = (UnresolvedFunCall) parent;
-                if (funCall.getSyntax() == Syntax.Parentheses ||
-                    funCall.getFunName() == "*") {
+                if (funCall.getSyntax() == Syntax.Parentheses) {
                     return requiresExpression(n - 1);
                 } else {
                     int k = whichArg(funCall, (Exp) stack.get(n));
@@ -1480,14 +1464,10 @@ public class Query extends QueryPart {
             }
         }
 
-        public List<Member> getLevelMembers(
-            Level level, boolean includeCalculated)
-        {
-            // Get members defined in the cube. Omit calculated members because
-            // they will be added later.
-            List<Member> members = super.getLevelMembers(level, false);
+        public Member[] getLevelMembers(
+                Level level, boolean includeCalculated) {
+            Member[] members = super.getLevelMembers(level, false);
             if (includeCalculated) {
-                // Get calculated members defined in the query or the cube.
                 members = Util.addLevelCalculatedMembers(this, level, members);
             }
             return members;

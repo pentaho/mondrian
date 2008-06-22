@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,7 +26,7 @@ import mondrian.calc.impl.*;
 
 import org.apache.log4j.Logger;
 
-import java.util.List;
+import java.util.*;
 import java.io.PrintWriter;
 
 /**
@@ -104,8 +104,8 @@ public class RolapHierarchy extends HierarchyBase {
      *
      * @param dimension the dimension this hierarchy belongs to
      * @param xmlHierarchy the xml object defining this hierarchy
-     * @param xmlCubeDimension the xml object defining the cube
-     *   dimension for this object
+     * @param xmlCubeDimension the xml object defining the cube 
+     *   dimension for this object 
      */
     RolapHierarchy(
         RolapDimension dimension,
@@ -115,7 +115,7 @@ public class RolapHierarchy extends HierarchyBase {
         this(dimension, xmlHierarchy.name, xmlHierarchy.hasAll);
 
         assert(!(this instanceof RolapCubeHierarchy));
-
+        
         this.xmlHierarchy = xmlHierarchy;
         this.relation = xmlHierarchy.relation;
         if (xmlHierarchy.relation instanceof MondrianDef.InlineTable) {
@@ -213,10 +213,7 @@ public class RolapHierarchy extends HierarchyBase {
     }
 
     protected int computeHashCode() {
-        return super.computeHashCode()
-            ^ (sharedHierarchyName == null
-                ? 0
-                : sharedHierarchyName.hashCode());
+        return Util.hash(super.computeHashCode(), sharedHierarchyName);
     }
 
     /**
@@ -575,14 +572,14 @@ public class RolapHierarchy extends HierarchyBase {
                         null);
                 SetType setType = new SetType(memberType1);
                 ListCalc listCalc =
-                    new AbstractMemberListCalc(
+                    new AbstractListCalc(
                         new DummyExp(setType), new Calc[0])
                     {
-                        public List<Member> evaluateMemberList(
-                            Evaluator evaluator) {
-                            return FunUtil.getNonEmptyMemberChildren(
-                                evaluator,
-                                ((RolapEvaluator) evaluator).getExpanding());
+                        public List evaluateList(Evaluator evaluator) {
+                            return Arrays.asList(
+                                FunUtil.getNonEmptyMemberChildren(
+                                    evaluator,
+                                    ((RolapEvaluator) evaluator).getExpanding()));
                         }
 
                         public boolean dependsOn(Dimension dimension) {
@@ -745,8 +742,7 @@ public class RolapHierarchy extends HierarchyBase {
         RolapDimension peerDimension = new RolapDimension(
             dimension.getSchema(),
             dimension.getName() + "$Closure",
-            DimensionType.StandardDimension,
-            dimension.isHighCardinality());
+            DimensionType.StandardDimension);
 
         // Create a peer hierarchy.
         RolapHierarchy peerHier = peerDimension.newHierarchy(subName, true);
@@ -907,7 +903,7 @@ public class RolapHierarchy extends HierarchyBase {
         protected boolean computeCalculated(final MemberType memberType) {
             return true;
         }
-
+        
         public boolean isCalculated() {
             return true;
         }
@@ -936,10 +932,9 @@ public class RolapHierarchy extends HierarchyBase {
             this.exp = exp;
         }
 
-        @Override
         public RolapMember substitute(final RolapMember member) {
             if (hierarchyAccess.getAccess(member) == Access.CUSTOM
-                || hierarchyAccess.hasInaccessibleDescendants(member))
+                || hierarchyAccess.hasInaccessibleDescendants(member)) 
             {
                 // Member is visible, but at least one of its
                 // descendants is not.
@@ -952,7 +947,6 @@ public class RolapHierarchy extends HierarchyBase {
             }
         }
 
-        @Override
         public RolapMember desubstitute(RolapMember member) {
             if (member instanceof LimitedRollupMember) {
                 return ((LimitedRollupMember) member).member;

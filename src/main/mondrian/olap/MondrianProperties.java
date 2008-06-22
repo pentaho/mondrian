@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -83,7 +83,7 @@ public class MondrianProperties extends TriggerableProperties {
     public MondrianProperties() {
         this.propertySource = new FilePropertySource(new File(mondrianDotProperties));
     }
-
+    
     public boolean triggersAreEnabled() {
         return EnableTriggers.get();
     }
@@ -328,15 +328,6 @@ public class MondrianProperties extends TriggerableProperties {
         new IntegerProperty(
             this, "mondrian.result.limit", 0);
 
-    /**
-     * Property that establishes the amount of chunks for querying cells
-     * involving high-cardinality dimensions.
-     * Should prime with {@link #ResultLimit mondrian.result.limit}.
-     */
-    public transient final IntegerProperty HighCardChunkSize =
-        new IntegerProperty(this, "mondrian.result.highCardChunkSize", 1);
-
-
     // mondrian.test properties
 
     /**
@@ -377,15 +368,6 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final StringProperty TestConnectString =
             new StringProperty(
                     this, "mondrian.test.connectString", null);
-    /**
-     * Property containing a list of dimensions in the Sales cube that should
-     * be treated as high-cardinality dimensions by the testing infrastructure.
-     * This allows us to run the full suite of tests with high-cardinality
-     * functionality enabled.
-     */
-    public transient final StringProperty TestHighCardinalityDimensionList =
-        new StringProperty(
-            this, "mondrian.test.highCardDimensions", null);
 
     // miscellaneous
 
@@ -417,6 +399,15 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public transient final StringProperty TestJdbcPassword = new StringProperty(
             this, "mondrian.test.jdbcPassword", null);
+
+    /**
+     * Property that determines when a dimension is considered "large".
+     * If a dimension has more than this number of members, Mondrian uses a
+     * {@link mondrian.rolap.SmartMemberReader smart member reader}.
+     */
+    public transient final IntegerProperty LargeDimensionThreshold =
+            new IntegerProperty(
+                    this, "mondrian.rolap.LargeDimensionThreshold", 100);
 
     /**
      * Property that, with {@link #SparseSegmentDensityThreshold}, determines
@@ -514,7 +505,7 @@ public class MondrianProperties extends TriggerableProperties {
 
     /**
      * Property that controls
-     * whether aggregation cache hit / miss counters will be enabled
+     * whether aggregation cache hit / miss counters will be enabled 
      */
     public transient final BooleanProperty EnableCacheHitCounters =
         new BooleanProperty(
@@ -525,7 +516,7 @@ public class MondrianProperties extends TriggerableProperties {
      * comparison tests do not contain expected sqls for the specified
      * dialect. The tests are skipped if no expected sqls are
      * found for the current dialect.
-     *
+     * 
      * Possible values are the following:
      * "NONE": no warning (default)
      * "ANY": any dialect
@@ -534,10 +525,10 @@ public class MondrianProperties extends TriggerableProperties {
      * "LUCIDDB"
      * "MYSQL"
      *  ...and any Dialect enum in SqlPattern.Dialect
-     *
+     * 
      * Specific tests can overwrite the default setting. The priority is
      * Settings besides "ANY" in mondrian.properties file < Any setting in the test < "ANY"
-     *
+     * 
      */
     public transient final StringProperty WarnIfNoPatternForDialect =
         new StringProperty(
@@ -1000,7 +991,7 @@ public class MondrianProperties extends TriggerableProperties {
      * aggregation, the measure is ignored in the evaluation context. This
      * behaviour kicks in only if the cubeusage for this measure has
      * IgnoreUnrelatedDimensions attribute set to false.
-     *
+     * 
      * <p>For example, Gender doesn't join with [Warehouse Sales] measure.
      *
      * <p>With mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension=true
@@ -1091,47 +1082,6 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final BooleanProperty EnableRolapCubeMemberCache =
         new BooleanProperty(
             this, "mondrian.rolap.EnableRolapCubeMemberCache", true);
-
-    /**
-     * Property that controls the behavior of
-     * {@link Property#SOLVE_ORDER solve order} of calculated members and sets.
-     *
-     * <p>Valid values are "absolute" and "scoped" (the default). See
-     * {@link SolveOrderModeEnum} for details.</p>
-     */
-    public transient final StringProperty SolveOrderMode =
-        new StringProperty(
-            this, "mondrian.rolap.SolveOrderMode", SolveOrderModeEnum.ABSOLUTE.name());
-
-    /**
-     * Strategies for applying solve order, exposed via the property
-     * {@link MondrianProperties#SolveOrderMode}.
-     */
-    public enum SolveOrderModeEnum {
-
-        /**
-         * The SOLVE_ORDER value is absolute regardless of
-         * where it is defined; e.g. a query defined calculated
-         * member with a SOLVE_ORDER of 1 always takes precedence
-         * over a cube defined value of 2.
-         *
-         * <p>Compatible with Analysis Services 2000, and default behavior
-         * up to mondrian-3.0.3.
-         */
-        ABSOLUTE,
-
-        /**
-         * Cube calculated members are resolved before any session
-         * scope calculated members, and session scope members are
-         * resolved before any query defined calculation.  The
-         * SOLVE_ORDER value only applies within the scope in which
-         * it was defined.
-         *
-         * <p>Compatible with Analysis Services 2005, and default behavior
-         * from mondrian-3.0.4 and later.
-         */
-        SCOPED;
-    }
 }
 
 // End MondrianProperties.java

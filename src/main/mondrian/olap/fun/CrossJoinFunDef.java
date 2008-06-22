@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2003-2008 Julian Hyde and others
+// Copyright (C) 2003-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -18,6 +18,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.TupleType;
 import mondrian.olap.type.Type;
+import mondrian.resource.MondrianResource;
 import mondrian.util.UnsupportedList;
 import mondrian.rolap.*;
 
@@ -738,7 +739,7 @@ public class CrossJoinFunDef extends FunDefBase {
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             Iterable<Member> it1 = (Iterable<Member>) o1;
-            Iterable<List<Member>> it2 = (Iterable<List<Member>>) o2;
+            Iterable<Member[]> it2 = (Iterable<Member[]>) o2;
             return makeIterableIterable(it1, it2);
         }
     }
@@ -753,7 +754,7 @@ public class CrossJoinFunDef extends FunDefBase {
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             Iterable<Member> it1 = (Iterable<Member>) o1;
-            List<List<Member>> l2 = (List<List<Member>>) o2;
+            List<Member[]> l2 = (List<Member[]>) o2;
 
             if (l2 instanceof RandomAccess) {
                 // direct access faster
@@ -775,7 +776,7 @@ public class CrossJoinFunDef extends FunDefBase {
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             List<Member> l1 = (List<Member>) o1;
-            Iterable<List<Member>> it2 = (Iterable<List<Member>>) o2;
+            Iterable<Member[]> it2 = (Iterable<Member[]>) o2;
 
             if (l1 instanceof RandomAccess) {
                 // direct access faster
@@ -797,7 +798,7 @@ public class CrossJoinFunDef extends FunDefBase {
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             List<Member> l1 = (List<Member>) o1;
-            List<List<Member>> l2 = (List<List<Member>>) o2;
+            List<Member[]> l2 = (List<Member[]>) o2;
 
             if (l1 instanceof RandomAccess) {
                 // l1 direct access faster
@@ -832,7 +833,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<List<Member>> it1 = (Iterable<List<Member>>) o1;
+            Iterable<Member[]> it1 = (Iterable<Member[]>) o1;
             Iterable<Member> it2 = (Iterable<Member>) o2;
             return makeIterableIterable(it1, it2);
         }
@@ -847,7 +848,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<List<Member>> it1 = (Iterable<List<Member>>) o1;
+            Iterable<Member[]> it1 = (Iterable<Member[]>) o1;
             List<Member> l2 = (List<Member>) o2;
 
             if (l2 instanceof RandomAccess) {
@@ -869,7 +870,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            List<List<Member>> l1 = (List<List<Member>>) o1;
+            List<Member[]> l1 = (List<Member[]>) o1;
             Iterable<Member> it2 = (Iterable<Member>) o2;
 
             if (l1 instanceof RandomAccess) {
@@ -891,7 +892,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            List<List<Member>> l1 = (List<List<Member>>) o1;
+            List<Member[]> l1 = (List<Member[]>) o1;
             List<Member> l2 = (List<Member>) o2;
 
             if (l1 instanceof RandomAccess) {
@@ -927,8 +928,8 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<List<Member>> it1 = (Iterable<List<Member>>) o1;
-            Iterable<List<Member>> it2 = (Iterable<List<Member>>) o2;
+            Iterable<Member[]> it1 = (Iterable<Member[]>) o1;
+            Iterable<Member[]> it2 = (Iterable<Member[]>) o2;
             return makeIterableIterable(it1, it2);
         }
     }
@@ -942,8 +943,8 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<List<Member>> it1 = (Iterable<List<Member>>) o1;
-            List<List<Member>> l2 = (List<List<Member>>) o2;
+            Iterable<Member[]> it1 = (Iterable<Member[]>) o1;
+            List<Member[]> l2 = (List<Member[]>) o2;
 
             if (l2 instanceof RandomAccess) {
                 // direct access faster
@@ -964,8 +965,8 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            List<List<Member>> l1 = (List<List<Member>>) o1;
-            Iterable<List<Member>> it2 = (Iterable<List<Member>>) o2;
+            List<Member[]> l1 = (List<Member[]>) o1;
+            Iterable<Member[]> it2 = (Iterable<Member[]>) o2;
 
             if (l1 instanceof RandomAccess) {
                 // direct access faster
@@ -986,8 +987,8 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            List<List<Member>> l1 = (List<List<Member>>) o1;
-            List<List<Member>> l2 = (List<List<Member>>) o2;
+            List<Member[]> l1 = (List<Member[]>) o1;
+            List<Member[]> l2 = (List<Member[]>) o2;
 
             if (l1 instanceof RandomAccess) {
                 // l1 direct access faster
@@ -1139,9 +1140,9 @@ public class CrossJoinFunDef extends FunDefBase {
         }
         public List<Member[]> toArrayList() {
             List<Member[]> l = new ArrayList<Member[]>(size());
-            Iterator<Member[]> i = iterator();
+            Iterator i = iterator();
             while (i.hasNext()) {
-                l.add(i.next());
+                l.add((Member[]) i.next());
             }
             return l;
         }
@@ -1416,8 +1417,8 @@ public class CrossJoinFunDef extends FunDefBase {
      */
     public abstract class BaseMutableList
                             extends UnsupportedList<Member[]> {
-        protected final List<Member> members;
-        protected BaseMutableList(List<Member> members) {
+        protected final Member[] members;
+        protected BaseMutableList(Member[] members) {
             this.members = members;
         }
         public abstract int size();
@@ -1436,9 +1437,9 @@ public class CrossJoinFunDef extends FunDefBase {
         }
         public List<Member[]> toArrayList() {
             List<Member[]> l = new ArrayList<Member[]>(size());
-            Iterator<Member[]> i = iterator();
+            Iterator i = iterator();
             while (i.hasNext()) {
-                l.add(i.next());
+                l.add((Member[]) i.next());
             }
             return l;
         }
@@ -1492,122 +1493,112 @@ public class CrossJoinFunDef extends FunDefBase {
         }
     }
 
-    //LIST Member LIST Member
-    class MutableListMemberListMemberListCalc extends BaseListCalc {
-        MutableListMemberListMemberListCalc(
-            final ResolvedFunCall call, final Calc[] calcs)
-        {
+    // LIST Member LIST Member
+    class MutableListMemberListMemberListCalc
+            extends BaseListCalc {
+        MutableListMemberListMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs, true);
         }
+        protected List<Member[]> makeList(final List l1, final List l2) {
+            int size1 = l1.size();
+            // len1 == 1
+            int size2 = l2.size();
+            // len2 == 1
+            int arraySize = (2 * (size1 * size2));
 
-        @SuppressWarnings({"unchecked"})
-        protected List<Member[]> makeList(final List _l1, final List _l2) {
-            final List<Member> l1 = (List<Member>) _l1;
-            final List<Member> l2 = (List<Member>) _l2;
-            if (l1.isEmpty() || l2.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            final Iterator<Member> it1 = l1.iterator();
-            final Member first = it1.next();
-            if (first.getDimension().isHighCardinality()) {
-                return new AbstractSequentialList<Member []>() {
-                    public int size() {
-                        return l1.size() * l2.size();
-                    }
-                    public ListIterator<Member[]> listIterator(
-                        final int index)
-                    {
-                        return new ListIterator<Member []>() {
-                            private int idx = 0;
-                            private Member m1 = first;
-                            private Iterator<Member> it2 = l2.iterator();
-                            public boolean hasNext() {
-                                return it2.hasNext() || it1.hasNext();
-                            }
-                            public Member[] next() {
-                                if (!it2.hasNext()) {
-                                    it2 = l2.iterator();
-                                    m1 = it1.next();
-                                }
-                                idx++;
-                                return new Member[] {m1, it2.next()};
-                            }
-                            public int nextIndex() {
-                                return idx;
-                            }
-                            public void add(final Member[] t) {
-                                throw new UnsupportedOperationException();
-                            }
-                            public void set(final Member[] t) {
-                                throw new UnsupportedOperationException();
-                            }
-                            public boolean hasPrevious() {
-                                throw new UnsupportedOperationException();
-                            }
-                            public Member[] previous() {
-                                throw new UnsupportedOperationException();
-                            }
-                            public int previousIndex() {
-                                throw new UnsupportedOperationException();
-                            }
-                            public void remove() {
-                                throw new UnsupportedOperationException();
-                            }
-                        };
-                    }
-                };
-            }
-            final List<Member[]> members =
-                new ArrayList<Member[]>(l1.size() * l2.size());
-            for (final Member m1 : l1) {
-                for (final Member m2 : l2) {
-                    members.add(new Member[] {m1, m2});
+            Member[] members = new Member[arraySize];
+            for (int i = 0; i < size1; i++) {
+                Member m1 = (Member) l1.get(i);
+                int ii = i*size2;
+                for (int j = 0; j < size2; j++) {
+                    Member m2 = (Member) l2.get(j);
+                    members[2*(ii + j)] = m1;
+                    members[2*(ii + j)+1] = m2;
                 }
             }
-            return members;
+            return makeList(members);
+        }
+        protected List<Member[]> makeList(Member[] members) {
+            // externally looks like:
+            //  [] <- [a][A]
+            //  [] <- [a][B]
+            //  ...
+            //  [] <- [m][N]
+            //
+            // but internally is:
+            //  [a][A][a][B] ... [m][M][m][N]
+            return new BaseMutableList(members) {
+                int size = members.length/2;
+                public int size() {
+                    return size;
+                }
+                public Member[] get(int index) {
+                    int i = index+index;
+                    return new Member[] { members[i], members[i+1] };
+                }
+                public Member[] set(int index, Member[] element) {
+                    int i = index+index;
+                    Member[] oldValue =
+                        new Member[] { members[i], members[i+1] };
+
+                    members[i] = element[0];
+                    members[i+1] = element[1];
+
+                    return oldValue;
+                }
+                public Member[] remove(int index) {
+                    int i = index+index;
+                    Member[] oldValue =
+                        new Member[] { members[i], members[i+1] };
+
+                    System.arraycopy(members, i+2, members, i,
+                            members.length - (i+2));
+
+                    size--;
+                    return oldValue;
+                }
+                public List<Member[]> subList(int fromIndex, int toIndex) {
+                    int from = fromIndex + fromIndex;
+                    int to = toIndex + toIndex;
+                    Member[] sublist = new Member[to - from];
+                    System.arraycopy(members, from, sublist, 0, to - from);
+                    return makeList(sublist);
+                }
+            };
         }
     }
 
     // LIST Member LIST Member[]
     class MutableListMemberListMemberArrayListCalc
             extends BaseListCalc {
-        MutableListMemberListMemberArrayListCalc(
-            ResolvedFunCall call, Calc[] calcs)
-        {
+        MutableListMemberListMemberArrayListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs, true);
         }
-
-        @SuppressWarnings({"unchecked"})
-        protected List<Member[]> makeList(final List _l1, final List _l2) {
-            final List<Member> l1 = (List<Member>) _l1;
-            final List<Member[]> l2 = (List<Member[]>) _l2;
+        protected List<Member[]> makeList(final List l1, final List l2) {
             int size1 = l1.size();
             // len1 == 1
             int size2 = l2.size();
-            int len2 = l2.get(0).length;
-            int totalLen = 1 + len2;
+            int len2 = ((Member[])l2.get(0)).length;
+            int totalLen = 1+len2;
             int arraySize = (totalLen * (size1 * size2));
 
-            List<Member> memberList = new ArrayList<Member>(arraySize);
+            Member[] members = new Member[arraySize];
             for (int i = 0; i < size1; i++) {
-                Member m1 = l1.get(i);
+                Member m1 = (Member) l1.get(i);
+                int ii = i*size2;
                 for (int j = 0; j < size2; j++) {
-                    final Member[] ma2 = l2.get(j);
-                    memberList.add(m1);
+                    Member[] ma2 = (Member[]) l2.get(j);
+                    members[totalLen*(ii + j)] = m1;
                     for (int k = 0; k < len2; k++) {
-                        final Member m2 = ma2[k];
-                        memberList.add(m2);
+                        Member m2 = ma2[k];
+                        members[totalLen * (ii + j) + k + 1] = m2;
                     }
                 }
             }
-            return makeList(memberList, totalLen);
-        }
 
-        protected List<Member[]> makeList(
-            final List<Member> members,
-            final int totalLen)
-        {
+            return makeList(members, totalLen);
+        }
+        protected List<Member[]> makeList(Member[] members, final int totalLen) {
             // l1: a,b
             // l2: {A,B,C},{D,E,F}
             //
@@ -1620,98 +1611,82 @@ public class CrossJoinFunDef extends FunDefBase {
             // but internally is:
             // a,A,B,C,a,D,E,F,b,A,B,C,b,D,E,F
             return new BaseMutableList(members) {
-                int size = members.size() / totalLen;
-
+                int size = members.length/totalLen;
                 public int size() {
                     return size;
                 }
-
                 public Member[] get(int index) {
-                    int base = totalLen * index;
+                    int i = totalLen*index;
                     Member[] ma = new Member[totalLen];
-                    for (int i = 0; i < totalLen; i++) {
-                        ma[i] = members.get(base + i);
-                    }
+                    System.arraycopy(members, i, ma, 0, totalLen);
                     return ma;
                 }
-
                 public Member[] set(int index, Member[] element) {
-                    int base = totalLen * index;
+                    int i = totalLen*index;
                     Member[] oldValue = new Member[totalLen];
-                    for (int i = 0; i < totalLen; i++) {
-                        oldValue[i] = members.set(base + i, element[i]);
-                    }
+                    System.arraycopy(members, i, oldValue, 0, totalLen);
+
+                    System.arraycopy(element, 0, members, i, totalLen);
+
                     return oldValue;
                 }
-
                 public Member[] remove(int index) {
-                    int base = totalLen * index;
+                    int i = totalLen*index;
                     Member[] oldValue = new Member[totalLen];
-                    for (int i = 0; i < totalLen; i++) {
-                        oldValue[i] = members.remove(base);
-                    }
+                    System.arraycopy(members, i, oldValue, 0, totalLen);
+
+                    System.arraycopy(members, i+totalLen,
+                            members, i,
+                            members.length-(i+totalLen));
+
                     size--;
                     return oldValue;
                 }
-
                 public List<Member[]> subList(int fromIndex, int toIndex) {
-                    int from = totalLen * fromIndex;
-                    int to = totalLen * toIndex;
-                    List<Member> sublist = members.subList(from, to);
+                    int from = totalLen*fromIndex;
+                    int to = totalLen*toIndex;
+                    Member[] sublist = new Member[to - from];
+                    System.arraycopy(members, from, sublist, 0, to - from);
                     return makeList(sublist, totalLen);
                 }
             };
         }
     }
-
     // LIST Member[] LIST Member
     class MutableListMemberArrayListMemberListCalc
             extends BaseListCalc {
-        MutableListMemberArrayListMemberListCalc(
-            final ResolvedFunCall call,
-            final Calc[] calcs)
-        {
+        MutableListMemberArrayListMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs, true);
         }
 
         @SuppressWarnings({"unchecked"})
         protected List<Member[]> makeList(final List _l1, final List _l2) {
-            final List<Member[]> l1 = (List<Member[]>) _l1;
-            final List<Member> l2 = (List<Member>) _l2;
-            int size1 = _l1.size();
+            List<Member[]> l1 = (List<Member[]>) _l1;
+            List<Member> l2 = (List<Member>) _l2;
+            int size1 = l1.size();
             int len1 = l1.get(0).length;
             int size2 = l2.size();
             // len2 == 1
-            int totalLen = 1 + len1;
+            int totalLen = 1+len1;
             int arraySize = (totalLen * (size1 * size2));
 
             Member[] members = new Member[arraySize];
-            int x = 0;
             for (int i = 0; i < size1; i++) {
                 Member[] ma1 = l1.get(i);
                 int ii = i*size2;
                 for (int j = 0; j < size2; j++) {
                     for (int k = 0; k < len1; k++) {
                         Member m1 = ma1[k];
-                        members[x++] = m1;
+                        members[totalLen * (ii + j) +k] = m1;
                     }
                     Member m2 = l2.get(j);
-                    members[x++] = m2;
+                    members[totalLen * (ii + j) + len1] = m2;
                 }
             }
-            assert x == arraySize;
 
-            // Use ArrayList, not Arrays.asList, because we want the remove()
-            // operation.
-            final List<Member> list =
-                new ArrayList<Member>(Arrays.asList(members));
-            return makeList(list, totalLen);
+            return makeList(members, totalLen);
         }
-
-        protected List<Member []> makeList(
-            final List<Member> members,
-            final int totalLen)
-        {
+        protected List<Member[]> makeList(Member[] members, final int totalLen) {
             // l1: {A,B,C},{D,E,F}
             // l2: a,b
             //
@@ -1724,90 +1699,82 @@ public class CrossJoinFunDef extends FunDefBase {
             // but internally is:
             //  A,B,C,a,A,B,C,b,D,E,F,a,D,E,F,b
             return new BaseMutableList(members) {
-                int size = members.size() / totalLen;
-
+                int size = members.length/totalLen;
                 public int size() {
                     return size;
                 }
-
                 public Member[] get(int index) {
-                    int base = totalLen * index;
-                    final List<Member> memberList =
-                        members.subList(base, totalLen + base);
-                    return memberList.toArray(new Member[totalLen]);
+                    int i = totalLen*index;
+                    Member[] ma = new Member[totalLen];
+                    System.arraycopy(members, i, ma, 0, totalLen);
+                    return ma;
                 }
-
                 public Member[] set(int index, Member[] element) {
-                    int base = totalLen * index;
+                    int i = totalLen*index;
                     Member[] oldValue = new Member[totalLen];
-                    for (int j = 0; j < totalLen; j++) {
-                        oldValue[j] = members.set(base + j, element[j]);
-                    }
+                    System.arraycopy(members, i, oldValue, 0, totalLen);
+
+                    System.arraycopy(element, 0, members, i, totalLen);
+
                     return oldValue;
                 }
-
                 public Member[] remove(int index) {
-                    int base = totalLen * index;
+                    int i = totalLen*index;
                     Member[] oldValue = new Member[totalLen];
-                    for (int i = 0; i < totalLen; i++) {
-                        oldValue[i] = members.remove(base);
-                    }
+                    System.arraycopy(members, i, oldValue, 0, totalLen);
+
+                    System.arraycopy(members, i+totalLen,
+                            members, i,
+                            members.length-(i+totalLen));
+
                     size--;
                     return oldValue;
                 }
-
                 public List<Member[]> subList(int fromIndex, int toIndex) {
-                    int from = totalLen * fromIndex;
-                    int to = totalLen * toIndex;
-                    List<Member> sublist = members.subList(from, to);
+                    int from = totalLen*fromIndex;
+                    int to = totalLen*toIndex;
+                    Member[] sublist = new Member[to - from];
+                    System.arraycopy(members, from, sublist, 0, to - from);
                     return makeList(sublist, totalLen);
                 }
             };
         }
     }
-
     // LIST Member[] LIST Member[]
     class MutableListMemberArrayListMemberArrayListCalc
             extends BaseListCalc {
-        MutableListMemberArrayListMemberArrayListCalc(
-            ResolvedFunCall call, Calc[] calcs)
-        {
+        MutableListMemberArrayListMemberArrayListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs, true);
         }
-
-        @SuppressWarnings({"unchecked"})
-        protected List<Member[]> makeList(final List _l1, final List _l2) {
-            final List<Member[]> l1 = (List<Member[]>) _l1;
-            final List<Member[]> l2 = (List<Member[]>) _l2;
+        protected List<Member[]> makeList(final List l1, final List l2) {
             int size1 = l1.size();
-            int len1 = l1.get(0).length;
+            int len1 = ((Member[])l1.get(0)).length;
             int size2 = l2.size();
-            int len2 = l2.get(0).length;
-            int totalLen = len1 + len2;
+            int len2 = ((Member[])l2.get(0)).length;
+            int totalLen = len1+len2;
             int arraySize = (totalLen * (size1 * size2));
 
-            final List<Member> members = new ArrayList<Member>(arraySize);
+            Member[] members = new Member[arraySize];
             for (int i = 0; i < size1; i++) {
-                Member[] ma1 = l1.get(i);
+                Member[] ma1 = (Member[]) l1.get(i);
+                int ii = i*size2;
                 for (int j = 0; j < size2; j++) {
                     for (int k = 0; k < len1; k++) {
                         Member m1 = ma1[k];
-                        members.add(m1);
+                        members[totalLen*(ii + j)+k] = m1;
                     }
-                    Member[] ma2 = l2.get(j);
+                    Member[] ma2 = (Member[]) l2.get(j);
                     for (int k = 0; k < len2; k++) {
                         Member m2 = ma2[k];
-                        members.add(m2);
+                        members[totalLen * (ii + j) + len1 + k] = m2;
                     }
                 }
             }
             return makeList(members, totalLen);
         }
 
-        protected List<Member []> makeList(
-            final List<Member> members,
-            final int totalLen)
-        {
+        protected List<Member[]> makeList(Member[] members, final int totalLen) {
+
             // l1: {A,B,C},{D,E,F}
             // l2: {a,b},{c,d},{e,f}
             //
@@ -1821,70 +1788,58 @@ public class CrossJoinFunDef extends FunDefBase {
             //
             // but internally is:
             //  A,B,C,a,b,A,B,C,c,d,A,B,C,e,f,D,E,F,a,b,D,E,F,c,d,D,E,F,e,d
+            //
             return new BaseMutableList(members) {
-                int size = members.size()/totalLen;
+                int size = members.length/totalLen;
                 public int size() {
                     return size;
                 }
-
                 public Member[] get(int index) {
-                    int base = totalLen * index;
-                    Member[] m = new Member[totalLen];
-                    for (int i = 0; i < totalLen; i++) {
-                        m[i] = members.get(base + i);
-                    }
-                    return m;
+                    int i = totalLen*index;
+                    Member[] ma = new Member[totalLen];
+                    System.arraycopy(members, i, ma, 0, totalLen);
+                    return ma;
                 }
-
                 public Member[] set(int index, Member[] element) {
-                    int base = totalLen * index;
+                    int i = totalLen*index;
                     Member[] oldValue = new Member[totalLen];
-                    for (int j = 0; j < totalLen; j++) {
-                        oldValue[j] = members.set(base + j, element[j]);
-                    }
+                    System.arraycopy(members, i, oldValue, 0, totalLen);
+
+                    System.arraycopy(element, 0, members, i, totalLen);
+
                     return oldValue;
                 }
 
                 public Member[] remove(int index) {
-                    int base = totalLen * index;
+                    int i = totalLen*index;
                     Member[] oldValue = new Member[totalLen];
-                    for (int i = 0; i < totalLen; i++) {
-                        oldValue[i] = members.remove(base);
-                    }
+                    System.arraycopy(members, i, oldValue, 0, totalLen);
+
+                    System.arraycopy(members, i+totalLen,
+                            members, i,
+                            members.length-(i+totalLen));
+
                     size--;
                     return oldValue;
                 }
-
                 public List<Member[]> subList(int fromIndex, int toIndex) {
-                    int from = totalLen * fromIndex;
-                    int to = totalLen * toIndex;
-                    List<Member> sublist = members.subList(from, to);
+                    int from = totalLen*fromIndex;
+                    int to = totalLen*toIndex;
+                    Member[] sublist = new Member[to - from];
+                    System.arraycopy(members, from, sublist, 0, to - from);
                     return makeList(sublist, totalLen);
                 }
             };
         }
     }
 
+
     protected List nonEmptyOptimizeList(
-            Evaluator evaluator,
+            Evaluator evaluator, 
             List list,
             ResolvedFunCall call) {
 
         int opSize = MondrianProperties.instance().CrossJoinOptimizerSize.get();
-        if (list.isEmpty()) {
-            return list;
-        }
-        try {
-            final Object o = list.get(0);
-            if (o instanceof Member) {
-                // Cannot optimize high cardinality dimensions
-                if (((Member)o).getDimension().isHighCardinality()) {
-                    return list;
-                }
-            }
-        } catch (IndexOutOfBoundsException ioobe) {
-            return Collections.EMPTY_LIST;
-        }
         int size = list.size();
 
         if (size > opSize && evaluator.isNonEmpty()) {
@@ -1915,22 +1870,36 @@ public class CrossJoinFunDef extends FunDefBase {
         return list;
     }
 
-    public static List<Member[]> crossJoin(
+    @SuppressWarnings({"unchecked"})
+    public static List crossJoin(
         List list1,
         List list2)
     {
         if (list1.isEmpty() || list2.isEmpty()) {
-            return Collections.emptyList();
+            return Collections.EMPTY_LIST;
         }
         // Optimize nonempty(crossjoin(a,b)) ==
         //  nonempty(crossjoin(nonempty(a),nonempty(b))
-        
+        long size = (long)list1.size() * (long)list2.size();
+        int resultLimit = MondrianProperties.instance().ResultLimit.get();
+
+        // Throw an exeption, if the size of the crossjoin exceeds the result
+        // limit.
+        //
         // FIXME: If we're going to apply a NON EMPTY constraint later, it's
         // possible that the ultimate result will be much smaller.
-        
-        long size = (long)list1.size() * (long)list2.size();
-        Util.checkCJResultLimit(size);
-        
+        if (resultLimit > 0 && resultLimit < size) {
+            throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
+                size, resultLimit);
+        }
+
+        // Throw an exception if the crossjoin exceeds a reasonable limit.
+        // (Yes, 4 billion is a reasonable limit.)
+        if (size > Integer.MAX_VALUE) {
+            throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
+                size, Integer.MAX_VALUE);
+        }
+
         // Now we can safely cast size to an integer. It still might be very
         // large - which means we're allocating a huge array which we might
         // pare down later by applying NON EMPTY constraints - which is a
@@ -2031,7 +2000,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     /**
      * Traverses the function call tree of
-     * the non empty crossjoin function and populates the queryMeasureSet
+     * the non empty crossjoin function and populates the queryMeasureSet 
      * with base measures
      */
     private static class MeasureVisitor extends MdxVisitorImpl {
@@ -2106,7 +2075,7 @@ public class CrossJoinFunDef extends FunDefBase {
             }
         }
     }
-
+    
     /**
      * This is the entry point to the crossjoin non-empty optimizer code.
      *
@@ -2170,14 +2139,9 @@ public class CrossJoinFunDef extends FunDefBase {
      * Members (for Hierarchies that have no All Members) and evaluator
      * default Members did the element evaluate to non-null.
      *
-     *
-     * <p>This method can be applied to members or tuples. Accordingly, the
-     * type parameter {@code T} can be either {@code Member} or
-     * {@code Member[]}.
-     *
      * @param evaluator Evaluator
      *
-     * @param list      List of members or tuples
+     * @param list      List of members being checked for non-emptiness
      *
      * @param call      Calling ResolvedFunCall used to determine what Measures
      *                  to use
@@ -2185,22 +2149,23 @@ public class CrossJoinFunDef extends FunDefBase {
      * @return List of elements from the input parameter list that have
      * evaluated to non-null.
      */
-    protected <T> List<T> nonEmptyList(
+    @SuppressWarnings({"unchecked"})
+    protected List nonEmptyList(
         Evaluator evaluator,
-        List<T> list,
+        List list,
         ResolvedFunCall call)
     {
         if (list.isEmpty()) {
             return list;
         }
 
-        List<T> result = new ArrayList<T>((list.size() + 2) >> 1);
+        List result = new ArrayList((list.size() + 2) >> 1);
 
         // Get all of the Measures
         final Query query = evaluator.getQuery();
 
         final String measureSetKey = "MEASURE_SET-"+ctag;
-        Set<Member> measureSet =
+        Set<Member> measureSet = 
                 (Set<Member>) query.getEvalCache(measureSetKey);
         // If not in query cache, then create and place into cache.
         // This information is used for each iteration so it makes
@@ -2229,11 +2194,11 @@ public class CrossJoinFunDef extends FunDefBase {
         }
 
         final String allMemberListKey = "ALL_MEMBER_LIST-"+ctag;
-        List<Member> allMemberList =
+        List<Member> allMemberList = 
                 (List<Member>) query.getEvalCache(allMemberListKey);
 
         final String nonAllMembersKey = "NON_ALL_MEMBERS-"+ctag;
-        Member[][] nonAllMembers =
+        Member[][] nonAllMembers = 
             (Member[][]) query.getEvalCache(nonAllMembersKey);
         if (nonAllMembers == null) {
             //
@@ -2243,10 +2208,10 @@ public class CrossJoinFunDef extends FunDefBase {
             Member[] evalMembers = evaluator.getMembers().clone();
 
             Member[] listMembers = (list.get(0) instanceof Member[])
-                ? (Member[]) list.get(0)
-                : new Member[] { (Member) list.get(0) };
+                ? (Member[]) list.get(0) 
+                : new Member[] { (Member) list.get(0) }; 
 
-            // Remove listMembers from evalMembers and independentSlicerMembers
+            // Remove listMembers from evalMembers and independentSlicerMembers   
             for (Member lm : listMembers) {
                 Hierarchy h = lm.getHierarchy();
                 for (int i = 0; i < evalMembers.length; i++) {
@@ -2254,7 +2219,7 @@ public class CrossJoinFunDef extends FunDefBase {
                     if ((em != null) && h.equals(em.getHierarchy())) {
                         evalMembers[i] = null;
                     }
-                }
+                }                
             }
 
             List<Member> slicerMembers = null;
@@ -2262,17 +2227,17 @@ public class CrossJoinFunDef extends FunDefBase {
                 RolapEvaluator rev = (RolapEvaluator) evaluator;
                 slicerMembers = rev.getSlicerMembers();
             }
-
-            // Now we have the non-List-Members, but some of them may not be
+            
+            // Now we have the non-List-Members, but some of them may not be 
             // All Members (default Member need not be the All Member) and
-            // for some Hierarchies there may not be an All Member.
-            // So we create an array of Objects some elements of which are
+            // for some Hierarchies there may not be an All Member. 
+            // So we create an array of Objects some elements of which are 
             // All Members and others elements will be an array of all top-level
             // Members when there is not an All Member.
             SchemaReader schemaReader = evaluator.getSchemaReader();
             allMemberList = new ArrayList<Member>();
             List<Member[]> nonAllMemberList = new ArrayList<Member[]>();
-
+            
             Member em;
             boolean isSlicerMember;
             for (Member evalMember : evalMembers) {
@@ -2315,12 +2280,12 @@ public class CrossJoinFunDef extends FunDefBase {
                 // replace with the "all" member.
                 if (isSlicerMember || !em.isAll()) {
                     Hierarchy h = em.getHierarchy();
-                    final List<Member> rootMemberList =
+                    Member[] rootMembers =
                         schemaReader.getHierarchyRootMembers(h);
                     if (h.hasAll()) {
                         // The Hierarchy has an All member
                         boolean found = false;
-                        for (Member m : rootMemberList) {
+                        for (Member m : rootMembers) {
                             if (m.isAll()) {
                                 allMemberList.add(m);
                                 found = true;
@@ -2334,9 +2299,6 @@ public class CrossJoinFunDef extends FunDefBase {
                         }
                     } else {
                         // The Hierarchy does NOT have an All member
-                        Member[] rootMembers =
-                            rootMemberList.toArray(
-                                    new Member[rootMemberList.size()]);
                         nonAllMemberList.add(rootMembers);
                     }
                 }
@@ -2364,17 +2326,17 @@ public class CrossJoinFunDef extends FunDefBase {
         if (list.get(0) instanceof Member[]) {
             for (Member[] ms : ((List<Member[]>) list)) {
                 evaluator.setContext(ms);
-                if (checkData(nonAllMembers, nonAllMembers.length-1,
+                if (checkData(nonAllMembers, nonAllMembers.length-1, 
                             measureSet, evaluator)) {
-                    result.add((T) ms);
+                    result.add(ms);
                 }
             }
         } else {
             for (Member m : ((List<Member>) list)) {
                 evaluator.setContext(m);
-                if (checkData(nonAllMembers, nonAllMembers.length-1,
+                if (checkData(nonAllMembers, nonAllMembers.length-1, 
                             measureSet, evaluator)) {
-                    result.add((T) m);
+                    result.add(m);
                 }
             }
         }
@@ -2382,13 +2344,13 @@ public class CrossJoinFunDef extends FunDefBase {
         return result;
     }
 
-    /**
+    /** 
      * Return <code>true</code> if for some combination of Members
      * from the nonAllMembers array of Member arrays and Measures from
      * the Set of Measures evaluate to a non-null value. Even if a
      * particular combination is non-null, all combinations are tested
      * just to make sure that the data is loaded.
-     *
+     * 
      * @param nonAllMembers array of Member arrays of top-level Members
      * for Hierarchies that have no All Member.
      * @param cnt which Member array is to be processed.
@@ -2397,7 +2359,7 @@ public class CrossJoinFunDef extends FunDefBase {
      * @return True if at least one combination evaluated to non-null.
      */
     private static boolean checkData(
-            Member[][] nonAllMembers,
+            Member[][] nonAllMembers, 
             int cnt,
             Set<Member> measureSet,
             Evaluator evaluator) {

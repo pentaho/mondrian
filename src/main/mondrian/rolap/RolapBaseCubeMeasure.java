@@ -26,7 +26,7 @@ import java.util.Arrays;
  * @since 24 August, 2006
  * @version $Id$
  */
-public class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeasure {
+class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeasure {
 
     private static final List<String> datatypeList =
         Arrays.asList("Integer", "Numeric", "String");

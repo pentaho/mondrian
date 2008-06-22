@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// Copyright (C) 2005-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -81,10 +81,9 @@ public class RankFunDef extends FunDefBase {
     }
 
     public Calc compileCall2(ResolvedFunCall call, ExpCompiler compiler) {
-        final boolean tuple = call.getArg(0).getType() instanceof TupleType;
         final Exp listExp = call.getArg(1);
         ListCalc listCalc0 = compiler.compileList(listExp);
-        Calc listCalc1 = new RankedListCalc(listCalc0, tuple);
+        Calc listCalc1 = new RankedListCalc(listCalc0);
         final Calc listCalc;
         if (MondrianProperties.instance().EnableExpCache.get()) {
             final ExpCacheDescriptor key = new ExpCacheDescriptor(
@@ -93,7 +92,7 @@ public class RankFunDef extends FunDefBase {
         } else {
             listCalc = listCalc1;
         }
-        if (tuple) {
+        if (call.getArg(0).getType() instanceof TupleType) {
             final TupleCalc tupleCalc =
                     compiler.compileTuple(call.getArg(0));
             return new Rank2TupleCalc(call, tupleCalc, listCalc);
@@ -129,7 +128,7 @@ public class RankFunDef extends FunDefBase {
             // list, so returns an error "Formula error - dimension count is
             // not valid - in the Rank function". We will naturally return 0,
             // which I think is better.
-            RankedTupleList rankedList = (RankedTupleList) listCalc.evaluate(evaluator);
+            RankedList rankedList = (RankedList) listCalc.evaluate(evaluator);
             if (rankedList == null) {
                 return 0;
             }
@@ -168,7 +167,7 @@ public class RankFunDef extends FunDefBase {
             // list, so returns an error "Formula error - dimension count is
             // not valid - in the Rank function". We will naturally return 0,
             // which I think is better.
-            RankedMemberList rankedList = (RankedMemberList) listCalc.evaluate(evaluator);
+            RankedList rankedList = (RankedList) listCalc.evaluate(evaluator);
             if (rankedList == null) {
                 return 0;
             }
@@ -432,19 +431,15 @@ public class RankFunDef extends FunDefBase {
 
     /**
      * Expression which evaluates an expression to form a list of tuples.
-     * The result is a value of type
-     * {@link mondrian.olap.fun.RankFunDef.RankedMemberList} or
-     * {@link mondrian.olap.fun.RankFunDef.RankedTupleList}, or
-     * null if the list is empty.
+     * The result is a value of type {@link RankedList}, or null if the list
+     * is empty.
      */
     private static class RankedListCalc extends AbstractCalc {
         private final ListCalc listCalc;
-        private final boolean tuple;
 
-        public RankedListCalc(ListCalc listCalc, boolean tuple) {
+        public RankedListCalc(ListCalc listCalc) {
             super(new DummyExp(listCalc.getType()));
             this.listCalc = listCalc;
-            this.tuple = tuple;
         }
 
         public Calc[] getCalcs() {
@@ -454,17 +449,11 @@ public class RankFunDef extends FunDefBase {
         public Object evaluate(Evaluator evaluator) {
             // Construct an array containing the value of the expression
             // for each member.
-            if (tuple) {
-                List<Member[]> tupleList =
-                    ((TupleListCalc) listCalc).evaluateTupleList(evaluator);
-                assert tupleList != null;
-                return new RankedTupleList(tupleList);
-            } else {
-                List<Member> memberList =
-                    ((MemberListCalc) listCalc).evaluateMemberList(evaluator);
-                assert memberList != null;
-                return new RankedMemberList(memberList);
+            List members = listCalc.evaluateList(evaluator);
+            if (members == null) {
+                return null;
             }
+            return new RankedList(members);
         }
     }
 
@@ -472,44 +461,20 @@ public class RankFunDef extends FunDefBase {
      * Data structure which contains a list and can return the position of an
      * element in the list in O(log N).
      */
-    static class RankedMemberList {
-        Map<Member, Integer> map = new HashMap<Member, Integer>();
+    static class RankedList {
+        Map<Object, Integer> map = new HashMap<Object, Integer>();
 
-        RankedMemberList(List<Member> members) {
-            int i = -1;
-            for (final Member member : members) {
-                ++i;
-                final Integer value = map.put(member, i);
-                if (value != null) {
-                    // The list already contained a value for this key -- put
-                    // it back.
-                    map.put(member, value);
+        RankedList(List members) {
+            for (int i = 0; i < members.size(); i++) {
+                Object o = members.get(i);
+                final Object key;
+                if (o instanceof Member) {
+                    key = o;
+                } else if (o instanceof Member[]) {
+                    key = Arrays.asList((Member []) o);
+                } else {
+                    throw Util.newInternal("bad member/tuple " + o);
                 }
-            }
-        }
-
-        int indexOf(Member m) {
-            Integer integer = map.get(m);
-            if (integer == null) {
-                return -1;
-            } else {
-                return integer;
-            }
-        }
-    }
-    /**
-     * Data structure which contains a list and can return the position of an
-     * element in the list in O(log N).
-     */
-    static class RankedTupleList {
-        final Map<List<Member>, Integer> map =
-            new HashMap<List<Member>, Integer>();
-
-        RankedTupleList(List<Member[]> tupleList) {
-            int i = -1;
-            for (final Member[] tupleMembers : tupleList) {
-                ++i;
-                final List<Member> key = Arrays.asList(tupleMembers);
                 final Integer value = map.put(key, i);
                 if (value != null) {
                     // The list already contained a value for this key -- put
@@ -519,9 +484,16 @@ public class RankFunDef extends FunDefBase {
             }
         }
 
-        int indexOf(Member[] tupleMembers) {
-            final List<Member> key = Arrays.asList(tupleMembers);
-            Integer integer = map.get(key);
+        int indexOf(Member m) {
+            return indexOf((Object) m);
+        }
+
+        int indexOf(Member[] tuple) {
+            return indexOf(Arrays.asList(tuple));
+        }
+
+        private int indexOf(Object o) {
+            Integer integer = map.get(o);
             if (integer == null) {
                 return -1;
             } else {

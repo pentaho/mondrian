@@ -58,7 +58,7 @@ import org.apache.log4j.*;
  * <blockquote><code>
  * $ mysqladmin create foodmart<br/>
  * $ java -cp 'classes;testclasses' mondrian.test.loader.MondrianFoodMartLoader
- *     --aggregates -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver
+ *     -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver
  *     -inputJdbcURL=jdbc:odbc:MondrianFoodMart -outputJdbcURL=jdbc:mysql://localhost/foodmart
  * </code></blockquote>
  *
@@ -69,7 +69,7 @@ import org.apache.log4j.*;
  * Use CONNECT or CREATE DATABASE to specify a database<br/>
  * SQL&gt; CREATE DATABASE '/mondrian/foodmart.gdb';<br/>
  * SQL&gt; QUIT;<br/>
- * $ java -cp "/mondrian/lib/mondrian.jar:/mondrian/lib/log4j.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/jdbc/fb/firebirdsql-full.jar"
+ * $ java -cp "/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/jdbc/fb/firebirdsql-full.jar"
  *    mondrian.test.loader.MondrianFoodMartLoader
  *    -tables -data -indexes
  *    -jdbcDrivers="org.firebirdsql.jdbc.FBDriver"
@@ -106,7 +106,6 @@ public class MondrianFoodMartLoader {
     private String inputPassword;
     private String inputFile;
     private String outputDirectory;
-    private boolean aggregates = false;
     private boolean tables = false;
     private boolean indexes = false;
     private boolean data = false;
@@ -155,8 +154,6 @@ public class MondrianFoodMartLoader {
                 if (!LOGGER.isDebugEnabled()) {
                     LOGGER.setLevel(Level.DEBUG);
                 }
-            } else if (arg.equals("-aggregates")) {
-                aggregates = true;
             } else if (arg.equals("-tables")) {
                 tables = true;
             } else if (arg.equals("-data")) {
@@ -242,7 +239,6 @@ public class MondrianFoodMartLoader {
         System.out.println("  <jdbcDrivers>         Comma-separated list of JDBC drivers;");
         System.out.println("                        they must be on the classpath.");
         System.out.println("  -verbose              Verbose mode.");
-        System.out.println("  -aggregates           If specified, create aggregate tables and indexes for them.");
         System.out.println("  -tables               If specified, drop and create the tables.");
         System.out.println("  -data                 If specified, load the data.");
         System.out.println("  -indexes              If specified, drop and create the tables.");
@@ -330,14 +326,9 @@ public class MondrianFoodMartLoader {
                     createIndexes(true, false);
                 }
                 loadFromSQLInserts();
-            } else {
-                // Create indexes without loading data.
-                if (indexes) {
-                    createIndexes(true, false);
-                }
             }
 
-            if (indexes && aggregates) {
+            if (indexes) {
                 createIndexes(false, true);
             }
         } finally {
@@ -1075,8 +1066,7 @@ public class MondrianFoodMartLoader {
                 try {
                     buf.append("DROP INDEX ")
                         .append(quoteId(indexName));
-                    if (dialect.isMySQL()
-                            || dialect.isTeradata()) {
+                    if (dialect.isMySQL()) {
                         buf.append(" ON ")
                             .append(quoteId(tableName));
                     }
@@ -1089,11 +1079,8 @@ public class MondrianFoodMartLoader {
 
             buf.setLength(0);
             buf.append(isUnique ? "CREATE UNIQUE INDEX " : "CREATE INDEX ")
-                .append(quoteId(indexName));
-            if (!dialect.isTeradata()) {
-                buf.append(" ON ").append(quoteId(tableName));
-            }
-            buf.append(" (");
+                .append(quoteId(indexName)).append(" ON ")
+                .append(quoteId(tableName)).append(" (");
             for (int i = 0; i < columnNames.length; i++) {
                 String columnName = columnNames[i];
                 if (i > 0) {
@@ -1102,9 +1089,6 @@ public class MondrianFoodMartLoader {
                 buf.append(quoteId(columnName));
             }
             buf.append(")");
-            if (dialect.isTeradata()) {
-                buf.append(" ON ").append(quoteId(tableName));
-            }
             final String createDDL = buf.toString();
             executeDDL(createDDL);
         } catch (Exception e) {
@@ -1116,8 +1100,7 @@ public class MondrianFoodMartLoader {
     /**
      * Defines all tables for the FoodMart database.<p/>
      *
-     * <p>Also initializes {@link #tableMetadataToLoad} and
-     * {@link #aggregateTableMetadataToLoad}.
+     * Also initializes mapTableNameToColumns
      */
     private void createTables() throws Exception  {
         if (outputDirectory != null) {
@@ -1593,7 +1576,7 @@ public class MondrianFoodMartLoader {
                 tableMetadataToLoad.put(name, columns);
             }
 
-            if (aggregate && aggregates) {
+            if (aggregate) {
                 aggregateTableMetadataToLoad.put(name, columns);
             }
 
@@ -1911,7 +1894,6 @@ public class MondrianFoodMartLoader {
                     !dialect.isFirebird() &&
                     !dialect.isMSSQL() &&
                     !dialect.isDerby() &&
-                    !dialect.isTeradata() &&
                     !dialect.isIngres()) {
                 if (trimmedValue.equals("1")) {
                     return "true";

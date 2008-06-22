@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,10 +13,8 @@
 
 package mondrian.rolap;
 import mondrian.calc.*;
-import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
-import mondrian.olap.fun.AggregateFunDef;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
 import mondrian.util.Format;
@@ -74,26 +72,9 @@ public class RolapEvaluator implements Evaluator {
      * ordinary dimensional context if set when a cell value comes to be
      * evaluated.
      */
-    protected List<List<Member[]>> aggregationLists;
+    protected List<List<RolapMember>> aggregationLists;
 
     private final List<Member> slicerMembers;
-
-    private final MondrianProperties.SolveOrderModeEnum solveOrderMode =
-        Util.lookup(
-            MondrianProperties.SolveOrderModeEnum.class,
-            MondrianProperties.instance().SolveOrderMode.get().toUpperCase(),
-            MondrianProperties.SolveOrderModeEnum.ABSOLUTE);
-
-    /**
-     * States of the finite state machine for determining the max solve order
-     * for the "scoped" behavior.
-     */
-    private enum ScopedMaxSolveOrderFinderState {
-        START,
-        AGG_SCOPE,
-        CUBE_SCOPE,
-        QUERY_SCOPE
-    };
 
     /**
      * Creates an evaluator.
@@ -130,7 +111,7 @@ public class RolapEvaluator implements Evaluator {
             slicerMembers = new ArrayList<Member> (parent.slicerMembers);
             if (parent.aggregationLists != null) {
                 aggregationLists =
-                        new ArrayList<List<Member[]>>(parent.aggregationLists);
+                        new ArrayList<List<RolapMember>>(parent.aggregationLists);
             } else {
                 aggregationLists = null;
             }
@@ -241,7 +222,7 @@ public class RolapEvaluator implements Evaluator {
         private final Query query;
         private final Date queryStartTime;
         final SqlQuery.Dialect currentDialect;
-
+        
         /**
          * Default members of each hierarchy, from the schema reader's
          * perspective. Finding the default member is moderately expensive, but
@@ -362,12 +343,12 @@ public class RolapEvaluator implements Evaluator {
             }
             tmpExpResultCache.clear();
         }
-
+        
         /**
          * Get query start time.
-         *
+         * 
          * @return the query start time
-         */
+         */ 
         public Date getQueryStartTime() {
             return queryStartTime;
         }
@@ -381,10 +362,10 @@ public class RolapEvaluator implements Evaluator {
         return currentMembers;
     }
 
-    public final List<List<Member[]>> getAggregationLists() {
+    public final List<List<RolapMember>> getAggregationLists() {
         return aggregationLists;
     }
-
+    
     final void setCellReader(CellReader cellReader) {
         this.cellReader = cellReader;
     }
@@ -412,11 +393,11 @@ public class RolapEvaluator implements Evaluator {
     public Date getQueryStartTime() {
         return root.getQueryStartTime();
     }
-
+    
     public SqlQuery.Dialect getDialect() {
         return root.currentDialect;
     }
-
+    
     public final RolapEvaluator push(Member[] members) {
         final RolapEvaluator evaluator = _push();
         evaluator.setContext(members);
@@ -445,28 +426,37 @@ public class RolapEvaluator implements Evaluator {
         return parent;
     }
 
-    public final Evaluator pushAggregation(List<Member[]> list) {
+    public final Evaluator pushAggregation(List list) {
         RolapEvaluator newEvaluator = _push();
         newEvaluator.addToAggregationList(list);
         clearHierarchyFromRegularContext(list, newEvaluator);
         return newEvaluator;
     }
-
-    private void addToAggregationList(List<Member[]> list){
+        
+    private void addToAggregationList(List list){
         if (aggregationLists == null) {
-            aggregationLists = new ArrayList<List<Member[]>>();
+            aggregationLists = new ArrayList<List<RolapMember>>();
         }
         aggregationLists.add(list);
     }
-
+        
     private void clearHierarchyFromRegularContext(
-        List<Member[]> list,
+        List list,
         RolapEvaluator newEvaluator)
     {
-        Member[] tuple = list.get(0);
-        for (Member member : tuple) {
-            newEvaluator.setContext(member.getHierarchy().getAllMember());
+        if (containsTuple(list)) {
+            Member[] tuple = (Member[]) list.get(0);
+            for (Member member : tuple) {
+                newEvaluator.setContext(member.getHierarchy().getAllMember());
+            }
+        } else {
+            newEvaluator.setContext(((RolapMember) list.get(0)).getHierarchy()
+                .getAllMember());
         }
+    }
+
+    private boolean containsTuple(List rolapList) {
+        return rolapList.get(0) instanceof Member[];
     }
 
     /**
@@ -534,21 +524,23 @@ public class RolapEvaluator implements Evaluator {
                          + " , count=" + i);
                 }
                 assert false;
-                continue;
+            } else {
+                setContext(member);
             }
-            setContext(member);
+            i++;
         }
     }
 
     public final void setContext(Member[] members) {
-        for (final Member member : members) {
-        // more than one usage
+        for (int i = 0; i < members.length; i++) {
+            final Member member = members[i];
+
+            // more than one usage
             if (member == null) {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
-                        "RolapEvaluator.setContext: "
-                            + "member == null, memberList: "
-                            + Arrays.asList(members));
+                        "RolapEvaluator.setContext: member == null "
+                         + " , count=" + i);
                 }
                 assert false;
                 continue;
@@ -834,7 +826,7 @@ public class RolapEvaluator implements Evaluator {
                 (aggregateCacheMissCountBefore == aggregateCacheMissCountAfter)) {
                 // Cache the evaluation result as valid result if the
                 // evaluation did not use any missing aggregates. Missing aggregates
-                // could be used when aggregate cache is not fully loaded, or if
+                // could be used when aggregate cache is not fully loaded, or if 
                 // new missing aggregates are seen.
                 isValidResult = true;
             } else {
@@ -896,154 +888,26 @@ public class RolapEvaluator implements Evaluator {
             return calcMembers[0];
 
         default:
-            // TODO Consider revising employing the Strategy architectural pattern
-            // for setting up solve order mode handling.
-
-            switch (solveOrderMode) {
-            case ABSOLUTE:
-                return getAbsoluteMaxSolveOrder(calcMembers);
-            case SCOPED:
-                return getScopedMaxSolveOrder(calcMembers);
-            default:
-                throw Util.unexpected(solveOrderMode);
-            }
-        }
-    }
-
-    /*
-     * Returns the member with the highest solve order according to AS2000 rules.
-     * This was the behavior prior to solve order mode being configurable.
-     *
-     * <p>The SOLVE_ORDER value is absolute regardless of where it is defined;
-     * e.g. a query defined calculated member with a SOLVE_ORDER of 1 always takes
-     * precedence over a cube defined value of 2.
-     *
-     * <p>No special consideration is given to the aggregate function.
-     */
-    private Member getAbsoluteMaxSolveOrder(Member [] calcMembers) {
-        // Find member with the highest solve order.
-        Member maxSolveMember = calcMembers[0];
-        int maxSolve = maxSolveMember.getSolveOrder();
-        for (int i = 1; i < calcMemberCount; i++) {
-            Member member = calcMembers[i];
-            int solve = member.getSolveOrder();
-            if (solve >= maxSolve) {
-                // If solve orders tie, the dimension with the lower
-                // ordinal wins.
-                if (solve > maxSolve
-                    || member.getDimension().getOrdinal(root.cube)
-                    < maxSolveMember.getDimension().getOrdinal(root.cube)) {
-                    maxSolve = solve;
-                    maxSolveMember = member;
-                }
-            }
-        }
-
-        return maxSolveMember;
-    }
-
-    /*
-     * Returns the member with the highest solve order according to AS2005
-     * scoping rules.
-     *
-     * <p>By default, cube calculated members are resolved before any session
-     * scope calculated members, and session scope members are resolved before
-     * any query defined calculation.  The SOLVE_ORDER value only applies within
-     * the scope in which it was defined.
-     *
-     * <p>The aggregate function is always applied to base members; i.e. as if
-     * SOLVE_ORDER was defined to be the lowest value in a given evaluation in a
-     * SSAS2000 sense.
-     */
-    private Member getScopedMaxSolveOrder(Member [] calcMembers) {
-
-        // Finite state machine that determines the member with the highest
-        // solve order.
-        Member maxSolveMember = null;
-        ScopedMaxSolveOrderFinderState state =
-            ScopedMaxSolveOrderFinderState.START;
-        for (int i = 0; i < calcMemberCount; i++) {
-            Member member = calcMembers[i];
-            switch (state) {
-            case START:
-                maxSolveMember = member;
-                if (foundAggregateFunction(maxSolveMember.getExpression())) {
-                    state = ScopedMaxSolveOrderFinderState.AGG_SCOPE;
-                } else if (maxSolveMember.isCalculatedInQuery()) {
-                    state = ScopedMaxSolveOrderFinderState.QUERY_SCOPE;
-                } else {
-                    state = ScopedMaxSolveOrderFinderState.CUBE_SCOPE;
-                }
-                break;
-
-            case AGG_SCOPE:
-                if (foundAggregateFunction(member.getExpression())) {
-                    if (member.getSolveOrder() > maxSolveMember.getSolveOrder() ||
-                        (member.getSolveOrder() == maxSolveMember.getSolveOrder() &&
-                         member.getDimension().getOrdinal(root.cube) <
-                         maxSolveMember.getDimension().getOrdinal(root.cube))) {
-                        maxSolveMember = member;
-                    }
-                } else if (member.isCalculatedInQuery()) {
-                    maxSolveMember = member;
-                    state = ScopedMaxSolveOrderFinderState.QUERY_SCOPE;
-                } else {
-                    maxSolveMember = member;
-                    state = ScopedMaxSolveOrderFinderState.CUBE_SCOPE;
-                }
-                break;
-
-            case CUBE_SCOPE:
-                if (foundAggregateFunction(member.getExpression())) {
-                    continue;
-                }
-
-                if (member.isCalculatedInQuery()) {
-                    maxSolveMember = member;
-                    state = ScopedMaxSolveOrderFinderState.QUERY_SCOPE;
-                } else if (member.getSolveOrder() > maxSolveMember.getSolveOrder() ||
-                        (member.getSolveOrder() == maxSolveMember.getSolveOrder() &&
-                         member.getDimension().getOrdinal(root.cube) <
-                         maxSolveMember.getDimension().getOrdinal(root.cube))){
-
-                    maxSolveMember = member;
-                }
-                break;
-
-            case QUERY_SCOPE:
-                if (foundAggregateFunction(member.getExpression())) {
-                    continue;
-                }
-
-                if (member.isCalculatedInQuery()) {
-                    if (member.getSolveOrder() > maxSolveMember.getSolveOrder() ||
-                       (member.getSolveOrder() == maxSolveMember.getSolveOrder() &&
-                        member.getDimension().getOrdinal(root.cube) <
-                        maxSolveMember.getDimension().getOrdinal(root.cube))){
+            // Find member with the highest solve order.
+            Member maxSolveMember = calcMembers[0];
+            int maxSolve = maxSolveMember.getSolveOrder();
+            for (int i = 1; i < calcMemberCount; i++) {
+                Member member = calcMembers[i];
+                int solve = member.getSolveOrder();
+                if (solve >= maxSolve) {
+                    // If solve orders tie, the dimension with the lower
+                    // ordinal wins.
+                    if (solve > maxSolve
+                        || member.getDimension().getOrdinal(root.cube)
+                        < maxSolveMember.getDimension().getOrdinal(root.cube))
+                    {
+                        maxSolve = solve;
                         maxSolveMember = member;
                     }
                 }
-                break;
             }
+            return maxSolveMember;
         }
-
-        return maxSolveMember;
-    }
-
-    private boolean foundAggregateFunction(Exp exp) {
-        if (exp instanceof ResolvedFunCall) {
-            ResolvedFunCall resolvedFunCall = (ResolvedFunCall) exp;
-            if (resolvedFunCall.getFunDef() instanceof AggregateFunDef) {
-                return true;
-            } else {
-                for (Exp argExp : resolvedFunCall.getArgs()) {
-                    if (foundAggregateFunction(argExp)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     private void removeCalcMember(Member previous) {

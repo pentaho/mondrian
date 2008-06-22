@@ -3,18 +3,23 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// Copyright (C) 2006-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.*;
+import mondrian.olap.FunDef;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Member;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.SetType;
+import mondrian.olap.type.TupleType;
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
+import mondrian.calc.ListCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.*;
-import mondrian.olap.type.*;
-import mondrian.util.FilteredIterableList;
 
 import java.util.*;
 
@@ -39,33 +44,30 @@ class ExceptFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         // todo: implement ALL
-        final ListCalc listCalc0 = compiler.compileList(call.getArg(0));
-        final ListCalc listCalc1 = compiler.compileList(call.getArg(1));
+        final ListCalc listCalc0 =
+                compiler.compileList(call.getArg(0));
+        final ListCalc listCalc1 =
+                compiler.compileList(call.getArg(1));
         final Type elementType = ((SetType) listCalc0.getType()).getElementType();
         if (elementType instanceof TupleType) {
-            final TupleListCalc tupleListCalc0 = (TupleListCalc) listCalc0;
-            final TupleListCalc tupleListCalc1 = (TupleListCalc) listCalc1;
             return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
                 public List evaluateList(Evaluator evaluator) {
-                    List<Member[]> list0 =
-                        tupleListCalc0.evaluateTupleList(evaluator);
+                    List<Member[]> list0 = listCalc0.evaluateList(evaluator);
                     if (list0.isEmpty()) {
                         return list0;
                     }
-                    List<Member[]> list1 = tupleListCalc1.evaluateTupleList(evaluator);
+                    List<Member[]> list1 = listCalc1.evaluateList(evaluator);
                     return exceptTuples(list0, list1);
                 }
             };
         } else {
-            final MemberListCalc memberListCalc0 = (MemberListCalc) listCalc0;
-            final MemberListCalc memberListCalc1 = (MemberListCalc) listCalc1;
             return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
                 public List evaluateList(Evaluator evaluator) {
-                    List<Member> list0 = memberListCalc0.evaluateMemberList(evaluator);
+                    List<Member> list0 = listCalc0.evaluateList(evaluator);
                     if (list0.isEmpty()) {
                         return list0;
                     }
-                    List<Member> list1 = memberListCalc1.evaluateMemberList(evaluator);
+                    List<Member> list1 = listCalc1.evaluateList(evaluator);
                     return except(list0, list1);
                 }
             };
@@ -76,33 +78,36 @@ class ExceptFunDef extends FunDefBase {
         if (list0.size() == 0) {
             return list0;
         }
-        final Set<T> set = new HashSet<T>(list1);
-        return new FilteredIterableList<T>(
-                list0,
-                new FilteredIterableList.Filter<T>() {
-                    public boolean accept(final T o) {
-                        return !set.contains(o);
-                    }
-                });
+        Set<T> set = new HashSet<T>(list1);
+        List<T> result = new ArrayList<T>();
+        for (int i = 0, count = list0.size(); i < count; i++) {
+            T o = list0.get(i);
+            if (!set.contains(o)) {
+                result.add(o);
+            }
+        }
+        return result;
     }
 
-    List exceptTuples(final List<Member[]> list0, final List<Member[]> list1) {
+    List exceptTuples(final List<Member[]> list0, final List list1) {
         if (list0.size() == 0) {
             return list0;
         }
         // Because the .equals and .hashCode methods of
         // Member[] use identity, wrap each tuple in a list.
-        final Set<List<Member>> set = new HashSet<List<Member>>();
-        for (Member[] members : list1) {
+        Set<List<Member>> set = new HashSet<List<Member>>();
+        for (int i = 0, count1 = list1.size(); i < count1; i++) {
+            Member[] members = (Member[]) list1.get(i);
             set.add(Arrays.asList(members));
         }
-        return new FilteredIterableList<Member[]>(
-                list0,
-                new FilteredIterableList.Filter<Member[]>() {
-                    public boolean accept(final Member[] o) {
-                        return !set.contains(Arrays.asList(o));
-                    }
-                });
+        List<Member[]> result = new ArrayList<Member[]>();
+        for (int i = 0, count0 = list0.size(); i < count0; i++) {
+            Member[] members = list0.get(i);
+            if (!set.contains(Arrays.asList(members))) {
+                result.add(members);
+            }
+        }
+        return result;
     }
 }
 

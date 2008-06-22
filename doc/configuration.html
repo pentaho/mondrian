@@ -10,7 +10,7 @@
   -->
 <head>
     <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
-    <title>Pentaho Analysis Services: Configuration Guide</title>
+	<title>Pentaho Analysis Services: Configuration Guide</title>
 </head>
 <body>
 <!-- doc2web start -->
@@ -130,26 +130,6 @@ suite of regression tests.</p>
       path.</td>
     </tr>
     <tr>
-      <td><code><a href="api/mondrian/olap/MondrianProperties.html#HighCardChunkSize">
-      mondrian.result.highCardChunkSize</a></code></td>
-      <td>int</td>
-      <td>1</td>
-      <td>When reading high cardinality dimension elements, number
-      of elements read from database in each step.<br>
-      When dealing with high cardinality dimensions, elements are
-      retrieved in blocks: first N elements are retrieved, when
-      these elements are read, next ones (from N+1 to 2N) are got.
-      N number is this property.
-      <br>
-      Setting great values for this property increases performance but
-      may overload memory.
-      Values should be prime with
-      <code><a href="api/mondrian/olap/MondrianProperties.html#ResultLimit">
-      mondrian.result.limit</a></code>
-      </td>
-    </tr>
-
-    <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#ResultLimit">
       mondrian.result.limit</a></code></td>
 
@@ -182,6 +162,17 @@ suite of regression tests.</p>
       <td>Maximum number of passes allowable while evaluating an MDX expression.
       If evaluation exceeds this depth (for example, while evaluating a very
       complex calculated member), Mondrian will throw an error.</td>
+    </tr>
+    <tr>
+      <td>
+      <code><a href="api/mondrian/olap/MondrianProperties.html#LargeDimensionThreshold">
+      mondrian.rolap.LargeDimension Threshold</a></code></td>
+      <td>int</td>
+      <td>100</td>
+      <td>Determines when a dimension is considered &quot;large&quot;. If a dimension has
+      more than this number of members, Mondrian uses a
+      <a href="api/mondrian/rolap/SmartMemberReader.html">smart member reader</a>.</td>
+
     </tr>
     <tr>
       <td>
@@ -472,33 +463,6 @@ suite of regression tests.</p>
          arrived at by suming up values against Gender M and F. This can be
          confusing to the user. This feature can be used to eliminate such a
          situation.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        <code>
-        <a href="api/mondrian/olap/MondrianProperties.html#SolveOrderMode">mondrian.rolap.SolveOrderMode</a></code></td>
-      <td>string</td>
-      <td>absolute</td>
-      <td>
-        <p>Controls solve_order evaluation behavior.</p>
-
-        <p>Valid values are:
-        <ul>
-        <li><b>absolute</b> - The SOLVE_ORDER value is absolute regardless of 
-        where it is defined; e.g. a query defined calculated member with a SOLVE_ORDER 
-        of 1 always takes precedence over a cube defined value of 2.</li>
-
-        <li><b>scoped</b> - Cube calculated members are resolved before any session scope 
-        calculated members, and session scope members are resolved before any query 
-        defined calculation.  The SOLVE_ORDER value only applies within the scope in 
-        which it was defined.</li>
-        </ul></p>
-
-        <p>The default behavior (scoped) is compatible with Microsoft SQL Server
-        Analysis Services 2005 and later. Use {@code absolute} to be compatible
-        with Analysis Services 2000 and Mondrian 3.0 and earlier.</p>
       </td>
     </tr>
 

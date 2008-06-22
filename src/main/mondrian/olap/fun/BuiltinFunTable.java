@@ -445,11 +445,11 @@ public class BuiltinFunTable extends FunTableImpl {
             }
 
             Member firstChild(Evaluator evaluator, Member member) {
-                List<Member> children = evaluator.getSchemaReader()
+                Member[] children = evaluator.getSchemaReader()
                         .getMemberChildren(member);
-                return (children.size() == 0)
+                return (children.length == 0)
                         ? member.getHierarchy().getNullMember()
-                        : children.get(0);
+                        : children[0];
             }
         });
 
@@ -471,7 +471,7 @@ public class BuiltinFunTable extends FunTableImpl {
 
             Member firstSibling(Member member, Evaluator evaluator) {
                 Member parent = member.getParentMember();
-                List<Member> children;
+                Member[] children;
                 final SchemaReader schemaReader = evaluator.getSchemaReader();
                 if (parent == null) {
                     if (member.isNull()) {
@@ -482,7 +482,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 } else {
                     children = schemaReader.getMemberChildren(parent);
                 }
-                return children.get(0);
+                return children[0];
             }
         });
 
@@ -505,11 +505,11 @@ public class BuiltinFunTable extends FunTableImpl {
             }
 
             Member lastChild(Evaluator evaluator, Member member) {
-                List<Member> children =
+                Member[] children =
                         evaluator.getSchemaReader().getMemberChildren(member);
-                return (children.size() == 0)
+                return (children.length == 0)
                         ? member.getHierarchy().getNullMember()
-                        : children.get(children.size() - 1);
+                        : children[children.length - 1];
             }
         });
 
@@ -531,7 +531,7 @@ public class BuiltinFunTable extends FunTableImpl {
 
             Member firstSibling(Member member, Evaluator evaluator) {
                 Member parent = member.getParentMember();
-                List<Member> children;
+                Member[] children;
                 final SchemaReader schemaReader = evaluator.getSchemaReader();
                 if (parent == null) {
                     if (member.isNull()) {
@@ -542,7 +542,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 } else {
                     children = schemaReader.getMemberChildren(parent);
                 }
-                return children.get(children.size() - 1);
+                return children[children.length - 1];
             }
         });
 
@@ -874,11 +874,11 @@ public class BuiltinFunTable extends FunTableImpl {
                 if (member.isNull()) {
                     return Collections.emptyList();
                 }
-                List<Member> members = member.getAncestorMembers();
+                Member[] members = member.getAncestorMembers();
                 final List<Member> result =
-                    new ArrayList<Member>(members.size() + 1);
+                    new ArrayList<Member>(members.length + 1);
                 result.add(member);
-                result.addAll(members);
+                XOMUtil.addAll(result, members);
                 return result;
             }
         });
@@ -903,7 +903,8 @@ public class BuiltinFunTable extends FunTableImpl {
                         // Return the list of children. The list is immutable,
                         // hence 'false' above.
                         Member member = memberCalc.evaluateMember(evaluator);
-                        return getNonEmptyMemberChildren(evaluator, member);
+                        Member[] children = getNonEmptyMemberChildren(evaluator, member);
+                        return Arrays.asList(children);
                     }
                 };
             }
@@ -1057,9 +1058,9 @@ public class BuiltinFunTable extends FunTableImpl {
                 "pxl") {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final LevelCalc levelCalc =
-                    compiler.compileLevel(call.getArg(0));
-                return new AbstractMemberListCalc(call, new Calc[] {levelCalc}) {
-                    public List<Member> evaluateMemberList(Evaluator evaluator) {
+                        compiler.compileLevel(call.getArg(0));
+                return new AbstractListCalc(call, new Calc[] {levelCalc}) {
+                    public List evaluateList(Evaluator evaluator) {
                         Level level = levelCalc.evaluateLevel(evaluator);
                         return levelMembers(level, evaluator, false);
                     }
@@ -1075,8 +1076,8 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final LevelCalc levelCalc =
                         compiler.compileLevel(call.getArg(0));
-                return new AbstractMemberListCalc(call, new Calc[] {levelCalc}) {
-                    public List<Member> evaluateMemberList(Evaluator evaluator) {
+                return new AbstractListCalc(call, new Calc[] {levelCalc}) {
+                    public List evaluateList(Evaluator evaluator) {
                         Level level = levelCalc.evaluateLevel(evaluator);
                         return levelMembers(level, evaluator, true);
                     }
@@ -1099,8 +1100,8 @@ public class BuiltinFunTable extends FunTableImpl {
                         compiler.compileList(call.getArg(0));
                 return new AbstractListCalc(call, new Calc[] {listCalc}) {
                     public List evaluateList(Evaluator evaluator) {
-                        List<Member> list = listCalc.evaluateList(evaluator);
-                        list = removeCalculatedMembers(list);
+                        final List<Member> list = listCalc.evaluateList(evaluator);
+                        removeCalculatedMembers(list);
                         return list;
                     }
                 };
@@ -1132,13 +1133,15 @@ public class BuiltinFunTable extends FunTableImpl {
                 }
                 Member parent = member.getParentMember();
                 final SchemaReader schemaReader = evaluator.getSchemaReader();
+                Member[] siblings;
                 if (parent == null) {
-                	return schemaReader.getHierarchyRootMembers(
+                    siblings =
+                        schemaReader.getHierarchyRootMembers(
                             member.getHierarchy());
-                	
                 } else {
-                    return schemaReader.getMemberChildren(parent);
+                    siblings = schemaReader.getMemberChildren(parent);
                 }
+                return Arrays.asList(siblings);
             }
         });
 
@@ -1508,7 +1511,7 @@ public class BuiltinFunTable extends FunTableImpl {
                     NullDenominatorProducesNull.get();
 
                 // If the mondrian property
-                //   mondrian.olap.NullOrZeroDenominatorProducesNull
+                //   mondrian.olap.NullOrZeroDenominatorProducesNull 
                 // is false(default), Null in denominator with numeric numerator
                 // returns infinity. This is consistent with MSAS.
                 //

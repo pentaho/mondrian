@@ -3,21 +3,24 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// Copyright (C) 2006-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
-import mondrian.calc.impl.ConstantCalc;
-import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.Evaluator;
 import mondrian.olap.FunDef;
-import mondrian.util.UnsupportedList;
+import mondrian.olap.Evaluator;
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
+import mondrian.calc.ListCalc;
+import mondrian.calc.IntegerCalc;
+import mondrian.calc.impl.ConstantCalc;
+import mondrian.calc.impl.AbstractListCalc;
+import mondrian.mdx.ResolvedFunCall;
 
-import java.util.*;
+import java.util.List;
+import java.util.Collections;
 
 /**
  * Definition of the <code>Head</code> and <code>Tail</code>
@@ -76,7 +79,7 @@ class HeadTailFunDef extends FunDefBase {
         }
     }
 
-    static List tail(final int count, final List members) {
+    static List tail(final int count, List members) {
         assert members != null;
         final int memberCount = members.size();
         if (count >= memberCount) {
@@ -85,50 +88,18 @@ class HeadTailFunDef extends FunDefBase {
         if (count <= 0) {
             return Collections.EMPTY_LIST;
         }
-        return new UnsupportedList<Object>() {
-            public boolean isEmpty() {
-                return false;
-            }
-
-            public int size() {
-                return Math.min(count, members.size());
-            }
-
-            public Object get(final int idx) {
-                final int index = idx + memberCount - count;
-                return members.get(index);
-            }
-
-            public Iterator<Object> iterator() {
-                return new ItrUnknownSize();
-            }
-        };
+        return members.subList(memberCount - count, memberCount);
     }
 
-    static List head(final int count, final List members) {
+    static List head(final int count, List members) {
         assert members != null;
+        if (count >= members.size()) {
+            return members;
+        }
         if (count <= 0) {
             return Collections.EMPTY_LIST;
         }
-        return new UnsupportedList<Object>() {
-            public boolean isEmpty() {
-                return false;
-            }
-
-            public int size() {
-                return Math.min(count, members.size());
-            }
-
-            public Object get(final int index) {
-                if (index >= count) {
-                    throw new IndexOutOfBoundsException();
-                }
-                return members.get(index);
-            }
-            public Iterator<Object> iterator() {
-                return new ItrUnknownSize();
-            }
-        };
+        return members.subList(0, count);
     }
 }
 

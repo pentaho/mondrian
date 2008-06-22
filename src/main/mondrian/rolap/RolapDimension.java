@@ -4,7 +4,7 @@
  // Agreement, available at the following URL:
  // http://www.opensource.org/licenses/cpl.html.
  // Copyright (C) 2001-2002 Kana Software, Inc.
- // Copyright (C) 2001-2008 Julian Hyde and others
+ // Copyright (C) 2001-2007 Julian Hyde and others
  // All Rights Reserved.
  // You must accept the terms of that agreement to use this software.
  //
@@ -62,11 +62,10 @@ class RolapDimension extends DimensionBase {
 
     private final Schema schema;
 
-    RolapDimension(Schema schema, String name, DimensionType dimensionType,
-    		final boolean highCardinality) {
+    RolapDimension(Schema schema, String name, DimensionType dimensionType) {
         // todo: recognition of a time dimension should be improved
         // allow multiple time dimensions
-        super(name, dimensionType, highCardinality);
+        super(name, dimensionType);
         this.schema = schema;
         this.hierarchies = new RolapHierarchy[0];
     }
@@ -80,8 +79,7 @@ class RolapDimension extends DimensionBase {
                    RolapCube cube,
                    MondrianDef.Dimension xmlDimension,
                    MondrianDef.CubeDimension xmlCubeDimension) {
-        this(schema, xmlDimension.name, xmlDimension.getDimensionType(),
-        		xmlDimension.highCardinality);
+        this(schema, xmlDimension.name, xmlDimension.getDimensionType());
 
         Util.assertPrecondition(schema != null);
 
@@ -103,7 +101,7 @@ class RolapDimension extends DimensionBase {
                     cube != null) {
                 xmlDimension.hierarchies[i].relation = cube.fact;
             }
-
+            
             RolapHierarchy hierarchy = new RolapHierarchy(
                 this, xmlDimension.hierarchies[i], xmlCubeDimension);
             hierarchies[i] = hierarchy;

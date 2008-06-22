@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -35,6 +35,7 @@ import mondrian.olap.Hierarchy;
 import mondrian.olap.Level;
 import mondrian.olap.Member;
 import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.NamedSet;
 import mondrian.olap.Parameter;
 import mondrian.olap.Role;
@@ -60,7 +61,10 @@ import mondrian.spi.DynamicSchemaProcessor;
 import org.apache.log4j.Logger;
 import org.apache.commons.vfs.*;
 
-import org.eigenbase.xom.*;
+import org.eigenbase.xom.DOMWrapper;
+import org.eigenbase.xom.Parser;
+import org.eigenbase.xom.XOMException;
+import org.eigenbase.xom.XOMUtil;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -128,18 +132,14 @@ public class RolapSchema implements Schema {
      * used it its equals and hashCode methods.
      */
     private String key;
-
     /**
      * Maps {@link String names of roles} to {@link Role roles with those names}.
      */
     private final Map<String, Role> mapNameToRole;
-
     /**
      * Maps {@link String names of sets} to {@link NamedSet named sets}.
      */
-    private final Map<String, NamedSet> mapNameToSet =
-        new HashMap<String, NamedSet>();
-
+    private final Map<String, NamedSet> mapNameToSet = new HashMap<String, NamedSet>();
     /**
      * Table containing all standard MDX functions, plus user-defined functions
      * for this schema.
@@ -157,19 +157,12 @@ public class RolapSchema implements Schema {
 
     /**
      * HashMap containing column cardinality. The combination of
-     * Mondrianef.Relation and MondrianDef.Expression uniquely
+     * Mondrianef.Relation and MondrianDef.Expression uniquely 
      * identifies a relational expression(e.g. a column) specified
      * in the xml schema.
      */
     private final Map<MondrianDef.Relation, Map<MondrianDef.Expression, Integer>>
         relationExprCardinalityMap;
-
-    /**
-     * List of warnings. Populated when a schema is created by a connection
-     * that has
-     * {@link mondrian.rolap.RolapConnectionProperties#Ignore Ignore}=true.
-     */
-    private final List<Exception> warningList = new ArrayList<Exception>();
 
     /**
      * This is ONLY called by other constructors (and MUST be called
@@ -192,15 +185,13 @@ public class RolapSchema implements Schema {
         this.internalConnection =
             new RolapConnection(connectInfo, this, dataSource);
 
-        this.mapSharedHierarchyNameToHierarchy =
-            new HashMap<String, RolapHierarchy>();
+        this.mapSharedHierarchyNameToHierarchy = new HashMap<String, RolapHierarchy>();
         this.mapSharedHierarchyToReader = new HashMap<String, MemberReader>();
         this.mapNameToCube = new HashMap<String, RolapCube>();
         this.mapNameToRole = new HashMap<String, Role>();
         this.aggTableManager = new AggTableManager(this);
-        this.dataSourceChangeListener =
-            createDataSourceChangeListener(connectInfo);
-        this.relationExprCardinalityMap =
+        this.dataSourceChangeListener = createDataSourceChangeListener(connectInfo);
+        this.relationExprCardinalityMap = 
             new HashMap<MondrianDef.Relation, Map<MondrianDef.Expression, Integer>>();
     }
 
@@ -243,7 +234,6 @@ public class RolapSchema implements Schema {
     }
 
     protected void finalize() throws Throwable {
-        super.finalize();
         finalCleanUp();
     }
 
@@ -362,15 +352,11 @@ public class RolapSchema implements Schema {
 		return schemaLoadDate;
     }
 
-    public List<Exception> getWarnings() {
-        return Collections.unmodifiableList(warningList);
-    }
-
     RoleImpl getDefaultRole() {
         return defaultRole;
     }
 
-    public MondrianDef.Schema getXMLSchema() {
+    MondrianDef.Schema getXMLSchema() {
         return xmlSchema;
     }
 
@@ -478,53 +464,11 @@ public class RolapSchema implements Schema {
         if (xmlSchema.defaultRole != null) {
             Role role = lookupRole(xmlSchema.defaultRole);
             if (role == null) {
-                error(
-                    "Role '" + xmlSchema.defaultRole + "' not found",
-                    locate(xmlSchema, "defaultRole"));
-            } else {
-                // At this stage, the only roles in mapNameToRole are
-                // RoleImpl roles so it is safe to case.
-                defaultRole = (RoleImpl) role;
+                throw Util.newError("Role '" + xmlSchema.defaultRole + "' not found");
             }
-        }
-    }
-
-    /**
-     * Returns the location of an element or attribute in an XML document.
-     *
-     * <p>TODO: modify eigenbase-xom parser to return position info
-     *
-     * @param node Node
-     * @param attributeName Attribute name, or null
-     * @return Location of node or attribute in an XML document
-     */
-    XmlLocation locate(ElementDef node, String attributeName) {
-        return null;
-    }
-
-    /**
-     * Reports an error. If we are tolerant of errors
-     * (see {@link mondrian.rolap.RolapConnectionProperties#Ignore}), adds
-     * it to the stack, overwise throws. A thrown exception will typically
-     * abort the attempt to create the exception.
-     *
-     * @param message Message
-     * @param xmlLocation Location of XML element or attribute that caused
-     * the error, or null
-     */
-    void error(
-        String message,
-        XmlLocation xmlLocation)
-    {
-        final RuntimeException ex = new RuntimeException(message);
-        if (internalConnection != null
-            && "true".equals(
-            internalConnection.getProperty(
-                RolapConnectionProperties.Ignore.name())))
-        {
-            warningList.add(ex);
-        } else {
-            throw ex;
+            // At this stage, the only roles in mapNameToRole are
+            // RoleImpl roles so it is safe to case.
+            defaultRole = (RoleImpl) role;
         }
     }
 
@@ -1520,15 +1464,26 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
                     "while instantiating member reader '" + memberReaderClass);
         } else {
             SqlMemberSource source = new SqlMemberSource(hierarchy);
-            if(hierarchy.getDimension().isHighCardinality()) {
-                LOGGER.debug("High cardinality for "
-                        + hierarchy.getDimension());
-                return new NoCacheMemberReader(source);
+
+            // The following code is disabled bcause
+            // counting members is too slow. The test suite
+            // runs faster without this. So the optimization here
+            // is not to be too clever!
+
+            // Also, the CacheMemberReader is buggy.
+
+            int memberCount;
+            if (false) {
+                memberCount = source.getMemberCount();
             } else {
-                LOGGER.debug("Normal cardinality for "
-                        + hierarchy.getDimension());
-                return new SmartMemberReader(source);
+                memberCount = Integer.MAX_VALUE;
             }
+            int largeDimensionThreshold =
+                    MondrianProperties.instance().LargeDimensionThreshold.get();
+
+            return (memberCount > largeDimensionThreshold)
+                ? new SmartMemberReader(source)
+                : new CacheMemberReader(source);
         }
     }
 
@@ -1566,7 +1521,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
                 final Constructor<DataSourceChangeListener> ctor =
                     clazz.getConstructor();
                 changeListener = ctor.newInstance(); */
-                changeListener = (DataSourceChangeListener) constructor.newInstance();
+
             } catch (Exception e) {
                 throw Util.newError(e, "loading DataSourceChangeListener "
                     + dataSourceChangeListenerStr);
@@ -1602,7 +1557,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         MondrianDef.Expression columnExpr) {
         Integer card = null;
         synchronized (relationExprCardinalityMap) {
-            Map<MondrianDef.Expression, Integer> exprCardinalityMap =
+            Map<MondrianDef.Expression, Integer> exprCardinalityMap = 
                 relationExprCardinalityMap.get(relation);
             if (exprCardinalityMap != null) {
                 card = exprCardinalityMap.get(columnExpr);
@@ -1610,21 +1565,21 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         }
         return card;
     }
-
+    
     /**
      * Sets the cardinality for a given column in cache.
-     *
-     * @param relation the relation associated with the column expression
+     * 
+     * @param relation the relation associated with the column expression 
      * @param columnExpr the column expression to cache the cardinality for
      * @param cardinality the cardinality for the column expression
      */
     void putCachedRelationExprCardinality(
         MondrianDef.Relation relation,
-        MondrianDef.Expression columnExpr,
+        MondrianDef.Expression columnExpr, 
         Integer cardinality)
     {
         synchronized (relationExprCardinalityMap) {
-            Map<MondrianDef.Expression, Integer> exprCardinalityMap =
+            Map<MondrianDef.Expression, Integer> exprCardinalityMap = 
                 relationExprCardinalityMap.get(relation);
             if (exprCardinalityMap == null) {
                 exprCardinalityMap =
@@ -1764,13 +1719,6 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         DataSourceChangeListener dataSourceChangeListener)
     {
         this.dataSourceChangeListener = dataSourceChangeListener;
-    }
-
-    /**
-     * Location of a node in an XML document.
-     */
-    private interface XmlLocation {
-
     }
 }
 

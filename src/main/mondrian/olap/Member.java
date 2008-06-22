@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,8 +12,6 @@
 */
 
 package mondrian.olap;
-
-import java.util.List;
 
 /**
  * A <code>Member</code> is a 'point' on a dimension of a cube. Examples are
@@ -103,13 +101,13 @@ public interface Member extends OlapElement, Comparable {
     Exp getExpression();
 
     /**
-     * Returns a list of the ancestor members of this member.
+     * Returns array of all members, which are ancestor to <code>this</code>.
      */
-    List<Member> getAncestorMembers();
+    Member[] getAncestorMembers();
 
     /**
-     * Returns whether this member is computed from a {@code WITH MEMBER}
-     * clause in an MDX query.
+     * Returns whether this member is computed from a <code>with member</code>
+     * clause in an mdx query.
      */
     boolean isCalculatedInQuery();
 

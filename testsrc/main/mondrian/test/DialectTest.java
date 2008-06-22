@@ -16,10 +16,6 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 
 import mondrian.olap.Util;
 import mondrian.rolap.sql.SqlQuery;
@@ -109,9 +105,7 @@ public class DialectTest extends TestCase {
                 // postgres
                 "ERROR: function count\\(integer, integer\\) does not exist",
                 // LucidDb
-                ".*Invalid number of arguments to function 'COUNT'. Was expecting 1 arguments",
-                // teradata
-                ".*Syntax error: expected something between the word 'customer_id' and ','\\..*",
+                ".*Invalid number of arguments to function 'COUNT'. Was expecting 1 arguments"
             };
             assertQueryFails(sql, errs);
         }
@@ -228,9 +222,7 @@ public class DialectTest extends TestCase {
                 // derby
                 "Syntax error: Encountered \"<EOF>\" at line 1, column 47.",
                 // postgres
-                "ERROR: subquery in FROM must have an alias",
-                // teradata
-                ".*Syntax error, expected something like a name or a Unicode delimited identifier or an 'UDFCALLNAME' keyword between '\\)' and ';'\\.",
+                "ERROR: subquery in FROM must have an alias"
             };
             assertQueryFails(sql, errs);
         } else {
@@ -326,9 +318,7 @@ public class DialectTest extends TestCase {
                 // derby
                 "Syntax error: Encountered \",\" at line 3, column 20.",
                 // access
-                "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(comma\\) in query expression '.*'.",
-                // teradata
-                ".*Syntax error, expected something like a 'SELECT' keyword or '\\(' between '\\(' and the integer '1'\\.",
+                "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(comma\\) in query expression '.*'."
             };
             assertQueryFails(sql, errs);
         }
@@ -380,46 +370,6 @@ public class DialectTest extends TestCase {
                             // ignore
                         }
                     }
-                }
-            }
-        }
-    }
-
-    public void testGenerateInline() throws SQLException {
-        assertInline(new String[]{"a", "1"});
-        assertInline(new String[]{"a", "1"}, new String[]{"bb", "2"});
-    }
-
-    private void assertInline(String[]... valueList) throws SQLException {
-        String sql =
-            getDialect().generateInline(
-                Arrays.asList("x", "y"),
-                Arrays.asList("String", "Numeric"),
-                Arrays.asList(valueList));
-        Statement stmt = null;
-        try {
-            stmt = getConnection().createStatement();
-            ResultSet resultSet = stmt.executeQuery(sql);
-            Set<List<String>> actualValues = new HashSet<List<String>>();
-            while (resultSet.next()) {
-                actualValues.add(
-                    Arrays.asList(
-                        resultSet.getString(1),
-                        String.valueOf(resultSet.getInt(2))));
-            }
-            Set<List<String>> expectedRows = new HashSet<List<String>>();
-            for (String[] strings : valueList) {
-                expectedRows.add(Arrays.asList(strings));
-            }
-            assertEquals(actualValues, expectedRows);
-            stmt.close();
-            stmt = null;
-        } finally {
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException e) {
-                    // ignore
                 }
             }
         }

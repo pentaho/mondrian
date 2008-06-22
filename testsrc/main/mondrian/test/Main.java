@@ -176,8 +176,6 @@ public class Main extends TestSuite {
                 addTest(suite, (Test) o, clazz.getName() + method.getName());
             }
         } else {
-            addTest(suite, FilteredIterableTest.class);
-            addTest(suite, HighDimensionsTest.class);
             addTest(suite, IndexedValuesTest.class);
             addTest(suite, MemoryMonitorTest.class);
             addTest(suite, ObjectPoolTest.class);
@@ -208,7 +206,6 @@ public class Main extends TestSuite {
             addTest(suite, ParameterTest.class);
             addTest(suite, AccessControlTest.class);
             addTest(suite, ParserTest.class);
-            addTest(suite, CustomizedParserTest.class);
             addTest(suite, ParentChildHierarchyTest.class);
             addTest(suite, XmlaBasicTest.class);
             addTest(suite, XmlaErrorTest.class);

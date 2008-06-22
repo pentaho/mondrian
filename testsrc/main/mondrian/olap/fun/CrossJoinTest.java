@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1005,9 +1005,9 @@ if (! Util.Retrowoven) {
     protected String toString(Iterable l) {
         StringBuffer buf = new StringBuffer(100);
         buf.append('{');
-        int j = 0;
+        boolean firstTime = true;
         for (Object o: l) {
-            if (j++ > 0) {
+            if (! firstTime) {
                 buf.append(',');
             }
             if (o instanceof Member) {
@@ -1015,15 +1015,17 @@ if (! Util.Retrowoven) {
             } else {
                 Member[] members = (Member[]) o;
                 buf.append('[');
-                int k = 0;
-                for (Member m : members) {
-                    if (k++ > 0) {
+                boolean firstTimeInner = true;
+                for (Member m: members) {
+                    if (! firstTimeInner) {
                         buf.append(',');
                     }
                     buf.append(m);
+                    firstTimeInner = false;
                 }
                 buf.append(']');
             }
+            firstTime = false;
         }
         buf.append('}');
         return buf.toString();
@@ -1043,10 +1045,18 @@ if (! Util.Retrowoven) {
         return buf.toString();
     }
     protected List<Member> makeListMember(Member[] ms) {
-        return new ArrayList<Member>(Arrays.asList(ms));
+        List<Member> l = new ArrayList<Member>();
+        for(Member member: ms) {
+            l.add(member);
+        }
+        return l;
     }
     protected List<Member[]> makeListMemberArray(Member[][] ms) {
-        return new ArrayList<Member[]>(Arrays.asList(ms));
+        List<Member[]> l = new ArrayList<Member[]>();
+        for(Member[] members: ms) {
+            l.add(members);
+        }
+        return l;
     }
     protected ResolvedFunCall getResolvedFunCall() {
         FunDef funDef = new TestFunDef();

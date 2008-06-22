@@ -27,9 +27,9 @@ import java.io.PrintWriter;
  * @since 3 March, 2002
  * @version $Id$
  */
-public class ParenthesesFunDef extends FunDefBase {
+class ParenthesesFunDef extends FunDefBase {
     private final int argType;
-    public ParenthesesFunDef(int argType) {
+    ParenthesesFunDef(int argType) {
         super(
             "()",
             "(<Expression>)",

@@ -559,11 +559,6 @@ public class DrillThroughTest extends FoodMartTestCase {
      * definition".
      */
     public void testBug1438285() throws Exception {
-        if (getTestContext().getDialect().isTeradata()) {
-            // On default Teradata express instance there isn't enough spool
-            // space to run this query.
-            return;
-        }
 
         // Specify the column and nameColumn to be the same
         // in order to reproduce the problem

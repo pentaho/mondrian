@@ -33,9 +33,9 @@ public class QueryTest extends FoodMartTestCase {
         Connection connection = testContext.getConnection();
 
         queryWithCellProps = new Query(connection, formulas, axes, "Sales",
-                null, cellProps, false, false);
+                null, cellProps, false);
         queryWithoutCellProps = new Query(connection, formulas, axes, "Sales",
-                null, new QueryPart[0], false, false);
+                null, new QueryPart[0], false);
     }
 
     public void testHasCellPropertyWhenQueryHasCellProperties() {

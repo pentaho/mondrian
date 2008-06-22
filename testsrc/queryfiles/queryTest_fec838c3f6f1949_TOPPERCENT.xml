@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>SELECT {Measures.[Sales Count], Measures.[Store Cost], Measures.[Store Sales], Measures.[Unit Sales], Measures.[Customer Count]} ON COLUMNS, TOPPERCENT({[Store].[Store City].MEMBERS}, 50,    Measures.[Sales Count]) ON ROWS FROM [Sales]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Sales Count]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Cost]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Customer Count]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[OR].[Salem]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Tacoma]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[OR].[Portland]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[San Diego]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>13347.0</cell>
+                <cell>34823.5566</cell>
+                <cell>87218.28</cell>
+                <cell>41580.0</cell>
+                <cell>474.0</cell>
+            </drow>
+            <drow>
+                <cell>11184.0</cell>
+                <cell>29959.2813</cell>
+                <cell>74843.96</cell>
+                <cell>35257.0</cell>
+                <cell>278.0</cell>
+            </drow>
+            <drow>
+                <cell>8264.0</cell>
+                <cell>21948.944</cell>
+                <cell>55058.79</cell>
+                <cell>26079.0</cell>
+                <cell>563.0</cell>
+            </drow>
+            <drow>
+                <cell>8207.0</cell>
+                <cell>21771.536</cell>
+                <cell>54545.28</cell>
+                <cell>25663.0</cell>
+                <cell>1147.0</cell>
+            </drow>
+            <drow>
+                <cell>8095.0</cell>
+                <cell>21713.5328</cell>
+                <cell>54431.14</cell>
+                <cell>25635.0</cell>
+                <cell>962.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

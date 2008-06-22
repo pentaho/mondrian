@@ -4,13 +4,15 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2002 Kana Software, Inc.
-// Copyright (C) 2004-2008 Julian Hyde and others
+// Copyright (C) 2004-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import mondrian.olap.*;
 import mondrian.olap.type.NumericType;
@@ -92,13 +94,12 @@ class DescendantsFunDef extends FunDefBase {
             return new AbstractListCalc(call, new Calc[] {memberCalc, depthCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     final Member member = memberCalc.evaluateMember(evaluator);
-                    List<Member> result = new ArrayList<Member>();
+                    List result = new ArrayList();
                     final int depth = depthCalc.evaluateInteger(evaluator);
                     final SchemaReader schemaReader = evaluator.getSchemaReader();
                     descendantsByDepth(
-                        member, result, schemaReader,
-                        depth, flag1.before, flag1.self, flag1.after,
-                        evaluator);
+                            member, result, schemaReader,
+                            depth, flag1.before, flag1.self, flag1.after, evaluator);
                     hierarchize(result, false);
                     return result;
                 }
@@ -130,39 +131,37 @@ class DescendantsFunDef extends FunDefBase {
     }
 
     private static void descendantsByDepth(
-        Member member,
-        List<Member> result,
-        final SchemaReader schemaReader,
-        final int depthLimitFinal,
-        final boolean before,
-        final boolean self,
-        final boolean after,
-        final Evaluator context)
-    {
-        List<Member> children = new ArrayList<Member>();
-        children.add(member);
+            Member member,
+            List result,
+            final SchemaReader schemaReader,
+            final int depthLimitFinal,
+            final boolean before,
+            final boolean self,
+            final boolean after,
+            final Evaluator context) {
+        Member[] children = {member};
         for (int depth = 0;; ++depth) {
             if (depth == depthLimitFinal) {
                 if (self) {
-                    result.addAll(children);
+                    addAll(result, children);
                 }
                 if (!after) {
                     break; // no more results after this level
                 }
             } else if (depth < depthLimitFinal) {
                 if (before) {
-                    result.addAll(children);
+                    addAll(result, children);
                 }
             } else {
                 if (after) {
-                    result.addAll(children);
+                    addAll(result, children);
                 } else {
                     break; // no more results after this level
                 }
             }
 
             children = schemaReader.getMemberChildren(children, context);
-            if (children.size() == 0) {
+            if (children.length == 0) {
                 break;
             }
         }
@@ -184,11 +183,10 @@ class DescendantsFunDef extends FunDefBase {
             }
             return;
         }
-        List<Member> children = new ArrayList<Member>();
-        children.add(member);
+        Member[] children = {member};
         for (int depth = 0; depthLimit == -1 || depth <= depthLimit; ++depth) {
             children = schemaReader.getMemberChildren(children);
-            if (children.size() == 0) {
+            if (children.length == 0) {
                 throw Util.newInternal("drillable member must have children");
             }
             List<Member> nextChildren = new ArrayList<Member>();
@@ -206,7 +204,7 @@ class DescendantsFunDef extends FunDefBase {
             if (nextChildren.isEmpty()) {
                 return;
             }
-            children = nextChildren;
+            children = nextChildren.toArray(new Member[nextChildren.size()]);
         }
     }
 
@@ -251,7 +249,7 @@ class DescendantsFunDef extends FunDefBase {
         // (a city). This is why we repeat the before/self/after logic for
         // each member.
         final int levelDepth = level.getDepth();
-        List<Member> members = Collections.singletonList(ancestor);
+        Member[] members = {ancestor};
         // Each pass, "fertileMembers" has the same contents as "members",
         // except that we omit members whose children we are not interested
         // in. We allocate it once, and clear it each pass, to save a little
@@ -262,24 +260,25 @@ class DescendantsFunDef extends FunDefBase {
                 List<Member> nextMembers = new ArrayList<Member>();
                 for (Member member : members) {
                     final int currentDepth = member.getLevel().getDepth();
-                    List<Member> childMembers =
+                    Member[] childMembers =
                         schemaReader.getMemberChildren(member, context);
-                    if (childMembers.size() == 0) {
+                    if (childMembers.length == 0) {
                         // this member is a leaf -- add it
                         if (currentDepth == levelDepth) {
                             result.add(member);
                         }
+                        continue;
                     } else {
                         // this member is not a leaf -- add its children
                         // to the list to be considered next iteration
                         if (currentDepth <= levelDepth) {
-                            nextMembers.addAll(childMembers);
+                            nextMembers.addAll(Arrays.asList(childMembers));
                         }
                     }
                 }
-                members = nextMembers;
+                members = nextMembers.toArray(new Member[nextMembers.size()]);
             }
-            while (members.size() > 0);
+            while (members.length > 0);
         } else {
             List<Member> fertileMembers = new ArrayList<Member>();
             do {
@@ -306,10 +305,11 @@ class DescendantsFunDef extends FunDefBase {
                         }
                     }
                 }
-                members =
-                    schemaReader.getMemberChildren(fertileMembers, context);
+                members = new Member[fertileMembers.size()];
+                members = fertileMembers.toArray(members);
+                members = schemaReader.getMemberChildren(members, context);
             }
-            while (members.size() > 0);
+            while (members.length > 0);
         }
     }
 
