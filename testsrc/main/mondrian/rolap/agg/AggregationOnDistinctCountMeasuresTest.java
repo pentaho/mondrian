@@ -585,6 +585,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "((`warehouse`.`warehouse_name` = 'Jones International' and `warehouse`.`wa_address1` = '3377 Coachman Place' and `warehouse`.`warehouse_fax` = '971-555-6213') " +
             "or (`warehouse`.`warehouse_name` = 'Freeman And Co' and `warehouse`.`wa_address1` = '234 West Covina Pkwy' and `warehouse`.`warehouse_fax` is null))";
 
+        String necjSqlMySql2 =
+            "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and ((`warehouse`.`warehouse_name` = 'Freeman And Co' and `warehouse`.`wa_address1` = '234 West Covina Pkwy' and `warehouse`.`warehouse_fax` is null) or (`warehouse`.`warehouse_name` = 'Jones International' and `warehouse`.`wa_address1` = '3377 Coachman Place' and `warehouse`.`warehouse_fax` = '971-555-6213'))";
+
+
         TestContext testContext =
             TestContext.create(
                 dimension,
@@ -600,7 +604,17 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
             };
 
-        assertQuerySql(testContext, query, patterns);
+        try {
+            assertQuerySql(testContext, query, patterns);
+        } catch(Throwable t) {
+            patterns =
+                new SqlPattern[] {
+                    new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
+                    new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql2, necjSqlMySql2)
+                };
+ 
+            assertQuerySql(testContext, query, patterns);
+        }
     }
 
     public void testMultiLevelsMixedNullNonNullChild() {
@@ -648,6 +662,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "((`warehouse`.`warehouse_fax` = '971-555-6213' and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null) " +
             "or (`warehouse`.`warehouse_fax` is null and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null))";
 
+        String necjSqlMySql2 =
+            "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and ((`warehouse`.`warehouse_fax` is null and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null) or (`warehouse`.`warehouse_fax` = '971-555-6213' and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null))";
+
         TestContext testContext =
             TestContext.create(
                 dimension,
@@ -663,7 +680,17 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
             };
 
-        assertQuerySql(testContext, query, patterns);
+        try {
+            assertQuerySql(testContext, query, patterns);
+        } catch(Throwable t) {
+            patterns =
+                new SqlPattern[] {
+                    new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
+                    new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql2, necjSqlMySql2)
+            };
+            
+            assertQuerySql(testContext, query, patterns);
+        }
     }
 
     public void testAggregationOnCJofMembersGeneratesOptimalQuery() {
@@ -1025,7 +1052,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "\"product\" as \"product\", \"product_class\" as \"product_class\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and \"time_by_day\".\"the_year\" = 1997 and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" " +
-            "and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
+            "and \"product\".\"product_claid\" = \"product_class\".\"product_claid\" " +
             "and (((\"product\".\"brand_name\" = 'Red Wing' and \"product_class\".\"product_subcategory\" = 'Pot Scrubbers' " +
             "and \"product_class\".\"product_category\" = 'Kitchen Products' " +
             "and \"product_class\".\"product_department\" = 'Household' " +
@@ -1050,7 +1077,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "select `d0` as `c0`, count(`m0`) as `c1` from (select distinct `time_by_day`.`the_year` as `d0`, `sales_fact_1997`.`customer_id` as `m0` " +
             "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `product` as `product`, `product_class` as `product_class` " +
             "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 " +
-            "and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` " +
+            "and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_claid` = `product_class`.`product_claid` " +
             "and (((`product`.`brand_name` = 'High Quality' and `product_class`.`product_subcategory` = 'Pot Scrubbers' " +
             "and `product_class`.`product_category` = 'Kitchen Products' and `product_class`.`product_department` = 'Household' " +
             "and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'Denny' " +
