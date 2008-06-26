@@ -45,7 +45,6 @@ public class HighDimensionsTest extends FoodMartTestCase {
         super(name);
     }
 
-    
     public void testBug1971406() throws Exception {
         final Connection connection = TestContext.instance()
             .getFoodMartConnection();
@@ -69,22 +68,26 @@ public class HighDimensionsTest extends FoodMartTestCase {
     public void testPromotionsTwoDimensions() throws Exception {
         execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
                     + "{[Promotions].[Promotion Name].Members} on rows\n"
-                    + "from [Sales Ragged]", 1, "Promotions");
+                    + "from [Sales Ragged]", 1, "Promotions",
+                    highCardResults);
     }
 
-/*
-    public void testNonEmpty() throws Exception {
-        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
-                    + "non empty {[Promotions].[Promotion Name].Members} "
-                    + "on rows from [Sales Ragged]", 1, "Promotions");
-    }
-*/
 
     public void testHead() throws Exception {
         execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
-                    + "head({[Promotions].[Promotion Name].Members},51) "
-                    + "on rows from [Sales Ragged]", 1, "Promotions");
+                    + "head({[Promotions].[Promotion Name].Members},40) "
+                    + "on rows from [Sales Ragged]", 1, "Promotions",
+                    first40HighCardResults);
     }
+
+
+    public void testNonEmpty() throws Exception {
+        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
+                    + "non empty {[Promotions].[Promotion Name].Members} "
+                    + "on rows from [Sales Ragged]", 1, "Promotions",
+                    nonEmptyHighCardResults);
+    }
+
 
 
 
@@ -98,7 +101,8 @@ public class HighDimensionsTest extends FoodMartTestCase {
      * into an axis from the results.
      */
     private void execHighCardTest(final String queryString, final int axisIndex,
-            final String highDimensionName) throws Exception {
+            final String highDimensionName, final String results) 
+            throws Exception {
         final int old = MondrianProperties.instance()
                     .ResultLimit.get();
         try {
@@ -133,7 +137,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
                 softReferences.add(new SoftReference(o.get(0)));
                 buffer.append(o.get(0).toString());
             }
-            assertEquals(buffer.toString(), highCardResults);
+            assertEquals(buffer.toString(), results);
             buffer = null;
 
             // Tests that really results over ResultLimit are erased from 
@@ -161,6 +165,100 @@ public class HighDimensionsTest extends FoodMartTestCase {
             MondrianProperties.instance().ResultLimit.set(old);
         }
     }
+
+
+    private static final String first40HighCardResults =
+                 "[Promotions].[All Promotions].[Bag Stuffers]"
+                + "[Promotions].[All Promotions].[Best Savings]"
+                + "[Promotions].[All Promotions].[Big Promo]"
+                + "[Promotions].[All Promotions].[Big Time Discounts]"
+                + "[Promotions].[All Promotions].[Big Time Savings]"
+                + "[Promotions].[All Promotions].[Bye Bye Baby]"
+                + "[Promotions].[All Promotions].[Cash Register Lottery]"
+                + "[Promotions].[All Promotions].[Coupon Spectacular]"
+                + "[Promotions].[All Promotions].[Dimes Off]"
+                + "[Promotions].[All Promotions].[Dollar Cutters]"
+                + "[Promotions].[All Promotions].[Dollar Days]"
+                + "[Promotions].[All Promotions].[Double Down Sale]"
+                + "[Promotions].[All Promotions].[Double Your Savings]"
+                + "[Promotions].[All Promotions].[Fantastic Discounts]"
+                + "[Promotions].[All Promotions].[Free For All]"
+                + "[Promotions].[All Promotions].[Go For It]"
+                + "[Promotions].[All Promotions].[Green Light Days]"
+                + "[Promotions].[All Promotions].[Green Light Special]"
+                + "[Promotions].[All Promotions].[High Roller Savings]"
+                + "[Promotions].[All Promotions].[I Cant Believe It Sale]"
+                + "[Promotions].[All Promotions].[Money Grabbers]"
+                + "[Promotions].[All Promotions].[Money Savers]"
+                + "[Promotions].[All Promotions].[Mystery Sale]"
+                + "[Promotions].[All Promotions].[No Promotion]"
+                + "[Promotions].[All Promotions].[One Day Sale]"
+                + "[Promotions].[All Promotions].[Pick Your Savings]"
+                + "[Promotions].[All Promotions].[Price Cutters]"
+                + "[Promotions].[All Promotions].[Price Destroyers]"
+                + "[Promotions].[All Promotions].[Price Savers]"
+                + "[Promotions].[All Promotions].[Price Slashers]"
+                + "[Promotions].[All Promotions].[Price Smashers]"
+                + "[Promotions].[All Promotions].[Price Winners]"
+                + "[Promotions].[All Promotions].[Sale Winners]"
+                + "[Promotions].[All Promotions].[Sales Days]"
+                + "[Promotions].[All Promotions].[Sales Galore]"
+                + "[Promotions].[All Promotions].[Save-It Sale]"
+                + "[Promotions].[All Promotions].[Saving Days]"
+                + "[Promotions].[All Promotions].[Savings Galore]"
+                + "[Promotions].[All Promotions].[Shelf Clearing Days]"
+                + "[Promotions].[All Promotions].[Shelf Emptiers]";
+ 
+
+    private static final String nonEmptyHighCardResults =
+                "[Promotions].[All Promotions].[Bag Stuffers]"
+                + "[Promotions].[All Promotions].[Best Savings]"
+                + "[Promotions].[All Promotions].[Big Promo]"
+                + "[Promotions].[All Promotions].[Big Time Discounts]"
+                + "[Promotions].[All Promotions].[Big Time Savings]"
+                + "[Promotions].[All Promotions].[Bye Bye Baby]"
+                + "[Promotions].[All Promotions].[Cash Register Lottery]"
+                + "[Promotions].[All Promotions].[Dimes Off]"
+                + "[Promotions].[All Promotions].[Dollar Cutters]"
+                + "[Promotions].[All Promotions].[Dollar Days]"
+                + "[Promotions].[All Promotions].[Double Down Sale]"
+                + "[Promotions].[All Promotions].[Double Your Savings]"
+                + "[Promotions].[All Promotions].[Free For All]"
+                + "[Promotions].[All Promotions].[Go For It]"
+                + "[Promotions].[All Promotions].[Green Light Days]"
+                + "[Promotions].[All Promotions].[Green Light Special]"
+                + "[Promotions].[All Promotions].[High Roller Savings]"
+                + "[Promotions].[All Promotions].[I Cant Believe It Sale]"
+                + "[Promotions].[All Promotions].[Money Savers]"
+                + "[Promotions].[All Promotions].[Mystery Sale]"
+                + "[Promotions].[All Promotions].[No Promotion]"
+                + "[Promotions].[All Promotions].[One Day Sale]"
+                + "[Promotions].[All Promotions].[Pick Your Savings]"
+                + "[Promotions].[All Promotions].[Price Cutters]"
+                + "[Promotions].[All Promotions].[Price Destroyers]"
+                + "[Promotions].[All Promotions].[Price Savers]"
+                + "[Promotions].[All Promotions].[Price Slashers]"
+                + "[Promotions].[All Promotions].[Price Smashers]"
+                + "[Promotions].[All Promotions].[Price Winners]"
+                + "[Promotions].[All Promotions].[Sale Winners]"
+                + "[Promotions].[All Promotions].[Sales Days]"
+                + "[Promotions].[All Promotions].[Sales Galore]"
+                + "[Promotions].[All Promotions].[Save-It Sale]"
+                + "[Promotions].[All Promotions].[Saving Days]"
+                + "[Promotions].[All Promotions].[Savings Galore]"
+                + "[Promotions].[All Promotions].[Shelf Clearing Days]"
+                + "[Promotions].[All Promotions].[Shelf Emptiers]"
+                + "[Promotions].[All Promotions].[Super Duper Savers]"
+                + "[Promotions].[All Promotions].[Super Savers]"
+                + "[Promotions].[All Promotions].[Super Wallet Savers]"
+                + "[Promotions].[All Promotions].[Three for One]"
+                + "[Promotions].[All Promotions].[Tip Top Savings]"
+                + "[Promotions].[All Promotions].[Two Day Sale]"
+                + "[Promotions].[All Promotions].[Two for One]"
+                + "[Promotions].[All Promotions].[Unbeatable Price Savers]"
+                + "[Promotions].[All Promotions].[Wallet Savers]"
+                + "[Promotions].[All Promotions].[Weekend Markdown]"
+                + "[Promotions].[All Promotions].[You Save Days]";
 
 
     private static final String highCardResults =
@@ -215,6 +313,5 @@ public class HighDimensionsTest extends FoodMartTestCase {
                 + "[Promotions].[All Promotions].[Wallet Savers]"
                 + "[Promotions].[All Promotions].[Weekend Markdown]"
                 + "[Promotions].[All Promotions].[You Save Days]";
-
 
 }

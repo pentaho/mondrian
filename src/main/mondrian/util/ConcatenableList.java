@@ -24,6 +24,7 @@ public class ConcatenableList<T> extends AbstractList<T> {
     private Iterator<T> getIterator = null;
     private int previousIndex = -200;
     private T previousElement = null;
+    private T prePreviousElement = null;
 
     public ConcatenableList() {
         this.lists = new ArrayList<List<T>>();
@@ -74,6 +75,7 @@ public class ConcatenableList<T> extends AbstractList<T> {
             } else if(this.previousIndex+1==index && this.getIterator!=null) {
                 this.previousIndex = index;
                 if(this.getIterator.hasNext()) {
+                    this.prePreviousElement = this.previousElement;
                     this.previousElement = this.getIterator.next();
                     return this.previousElement;
                 } else {
@@ -84,6 +86,8 @@ public class ConcatenableList<T> extends AbstractList<T> {
                 }
             } else if(this.previousIndex==index) {
                 return this.previousElement;
+            } else if(this.previousIndex-1==index) {
+                return this.prePreviousElement;
             } else {
                 this.previousIndex = -200;
                 this.getIterator = null;
@@ -97,9 +101,11 @@ public class ConcatenableList<T> extends AbstractList<T> {
                         throw new IndexOutOfBoundsException("Index " + index
                             + " out of concatenable list range");
                     }
-                    it.next();
+                    this.prePreviousElement = it.next();
                 }
                 this.previousElement = it.next();
+                this.previousIndex = index;
+                this.getIterator = it;
                 return this.previousElement;
             }
         } else {
