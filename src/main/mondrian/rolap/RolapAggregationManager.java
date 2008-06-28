@@ -204,6 +204,7 @@ public abstract class RolapAggregationManager {
             }
         } else {
             for (int i = 1; i < members.length; i++) {
+                if(!(members[i] instanceof RolapCubeMember)) continue;
                 RolapCubeMember member = (RolapCubeMember) members[i];
                 final RolapCubeLevel level = member.getLevel();
                 final boolean needToReturnNull =

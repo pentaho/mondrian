@@ -397,7 +397,9 @@ class FilterFunDef extends FunDefBase {
                             call.getFunDef(), call.getArgs(), evaluator, this);
             if (nativeEvaluator != null) {
                 return (List) nativeEvaluator.execute(
-                        ResultStyle.MUTABLE_LIST);
+                        ResultStyle.ITERABLE);
+//                return (List) nativeEvaluator.execute(
+//                        ResultStyle.MUTABLE_LIST);
             } else {
                 return makeList(evaluator);
             }
@@ -508,75 +510,6 @@ class FilterFunDef extends FunDefBase {
             return result;
         }
     }
-
-/*
- TODO: Previous code, remove if new code passes code review
-    public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc = compiler.compileList(call.getArg(0));
-        final BooleanCalc calc = compiler.compileBoolean(call.getArg(1));
-        if (((SetType) listCalc.getType()).getElementType() instanceof MemberType) {
-            return new AbstractListCalc(call, new Calc[] {listCalc, calc}) {
-                public List evaluateList(Evaluator evaluator) {
-                    // Use a native evaluator, if more efficient.
-                    // TODO: Figure this out at compile time.
-                    SchemaReader schemaReader = evaluator.getSchemaReader();
-                    NativeEvaluator nativeEvaluator =
-                            schemaReader.getNativeSetEvaluator(
-                                    call.getFunDef(), call.getArgs(), evaluator, this);
-                    if (nativeEvaluator != null) {
-                        return (List) nativeEvaluator.execute();
-                    }
-
-                    List members = listCalc.evaluateList(evaluator);
-                    List result = new ArrayList();
-                    Evaluator evaluator2 = evaluator.push();
-                    for (int i = 0, count = members.size(); i < count; i++) {
-                        Member member = (Member) members.get(i);
-                        evaluator2.setContext(member);
-                        if (calc.evaluateBoolean(evaluator2)) {
-                            result.add(member);
-                        }
-                    }
-                    return result;
-                }
-
-                public boolean dependsOn(Dimension dimension) {
-                    return anyDependsButFirst(getCalcs(), dimension);
-                }
-            };
-        } else {
-            return new AbstractListCalc(call, new Calc[] {listCalc, calc}) {
-                public List evaluateList(Evaluator evaluator) {
-                    // Use a native evaluator, if more efficient.
-                    // TODO: Figure this out at compile time.
-                    SchemaReader schemaReader = evaluator.getSchemaReader();
-                    NativeEvaluator nativeEvaluator =
-                            schemaReader.getNativeSetEvaluator(
-                                    call.getFunDef(), call.getArgs(), evaluator, this);
-                    if (nativeEvaluator != null) {
-                        return (List) nativeEvaluator.execute();
-                    }
-
-                    List tupleList = listCalc.evaluateList(evaluator);
-                    List result = new ArrayList();
-                    Evaluator evaluator2 = evaluator.push();
-                    for (int i = 0, count = tupleList.size(); i < count; i++) {
-                        Member[] members = (Member []) tupleList.get(i);
-                        evaluator2.setContext(members);
-                        if (calc.evaluateBoolean(evaluator2)) {
-                            result.add(members);
-                        }
-                    }
-                    return result;
-                }
-
-                public boolean dependsOn(Dimension dimension) {
-                    return anyDependsButFirst(getCalcs(), dimension);
-                }
-            };
-        }
-    }
-*/
 }
 
 // End FilterFunDef.java

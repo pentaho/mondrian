@@ -45,6 +45,19 @@ public class HighDimensionsTest extends FoodMartTestCase {
         super(name);
     }
 
+/*
+public void testDelme() throws Exception {
+final Connection connection = TestContext.instance()
+            .getFoodMartConnection();
+final Query query = connection.parseQuery("select {[Measures].[Unit Sales]} on columns, {filter([Promotions].[Promotion Name].Members, [Measures].[Unit Sales]>4000)} on rows from [Sales Ragged]");
+        Result result = connection.execute(query);
+        int i=0;
+        for(final Position o : result.getAxes()[1].getPositions()) {
+            System.out.println(o.get(0));
+        }
+}
+*/
+
     public void testBug1971406() throws Exception {
         final Connection connection = TestContext.instance()
             .getFoodMartConnection();
@@ -86,6 +99,20 @@ public class HighDimensionsTest extends FoodMartTestCase {
                     + "non empty {[Promotions].[Promotion Name].Members} "
                     + "on rows from [Sales Ragged]", 1, "Promotions",
                     nonEmptyHighCardResults);
+    }
+
+
+    public void testFilter() throws Exception {
+         execHighCardTest("select {[Measures].[Unit Sales]} on columns, "
+                    + "{filter([Promotions].[Promotion Name].Members, "
+                    + "[Measures].[Unit Sales]>0)} "
+                    + "on rows from [Sales Ragged]", 1, "Promotions",
+                    nonEmptyHighCardResults);
+           execHighCardTest("select {[Measures].[Unit Sales]} on columns, "
+                    + "{filter([Promotions].[Promotion Name].Members, "
+                    + "[Measures].[Unit Sales]>4000)} "
+                    + "on rows from [Sales Ragged]", 1, "Promotions",
+                    moreThan4000highCardResults);
     }
 
 
@@ -150,11 +177,11 @@ public class HighDimensionsTest extends FoodMartTestCase {
             }
             System.gc();
 
-            for(int i=5; i<10; i++) {
+            for(int i=4; i<ii-40; i++) {
                 assertNull(softReferences.get(i).get());
             }
 
-            for(int i=0; i<10; i++) {
+            for(int i=5; i<10 && i<ii; i++) {
               try {
                     result.getAxes()[axisIndex].getPositions().get(0).get(0);
                     assert false;
@@ -314,4 +341,8 @@ public class HighDimensionsTest extends FoodMartTestCase {
                 + "[Promotions].[All Promotions].[Weekend Markdown]"
                 + "[Promotions].[All Promotions].[You Save Days]";
 
+        private static final String moreThan4000highCardResults =
+                "[Promotions].[All Promotions].[Cash Register Lottery]"
+                + "[Promotions].[All Promotions].[No Promotion]"
+                + "[Promotions].[All Promotions].[Price Savers]";
 }
