@@ -7,16 +7,6 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
-/*
-// $Id$
-// This software is subject to the terms of the Common Public License
-// Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
-// All Rights Reserved.
-// You must accept the terms of that agreement to use this software.
-*/
 package mondrian.rolap;
 
 import mondrian.calc.ResultStyle;
@@ -45,18 +35,6 @@ public class HighDimensionsTest extends FoodMartTestCase {
         super(name);
     }
 
-/*
-public void testDelme() throws Exception {
-final Connection connection = TestContext.instance()
-            .getFoodMartConnection();
-final Query query = connection.parseQuery("select {[Measures].[Unit Sales]} on columns, {filter([Promotions].[Promotion Name].Members, [Measures].[Unit Sales]>4000)} on rows from [Sales Ragged]");
-        Result result = connection.execute(query);
-        int i=0;
-        for(final Position o : result.getAxes()[1].getPositions()) {
-            System.out.println(o.get(0));
-        }
-}
-*/
 
     public void testBug1971406() throws Exception {
         final Connection connection = TestContext.instance()
