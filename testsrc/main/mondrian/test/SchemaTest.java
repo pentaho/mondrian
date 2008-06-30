@@ -112,6 +112,37 @@ public class SchemaTest extends FoodMartTestCase {
                 "Row #0: 135,215\n"));
     }
 
+    /**
+     * Test case for the issue described in
+     * <a href="http://forums.pentaho.org/showthread.php?p=190737">Pentaho
+     * forum post 'wrong unique name for default member when hasAll=false'</a>.
+     */
+    public void testDefaultMemberName() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name=\"Product with no all\" foreignKey=\"product_id\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+                + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+                + "        <Table name=\"product\"/>\n"
+                + "        <Table name=\"product_class\"/>\n"
+                + "      </Join>\n"
+                + "      <Level name=\"Product Class\" table=\"product_class\" nameColumn=\"product_subcategory\"\n"
+                + "          column=\"product_class_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+                + "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+                + "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+                + "          uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n");
+        // note that default member name has no 'all' and has a name not an id
+        testContext.assertQueryReturns(
+            "select {[Product with no all]} on columns from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Product with no all].[Nuts]}\n" +
+                "Row #0: 4,400\n"));
+    }
+
     public void testHierarchyAbbreviatedDefaultMember() {
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",
