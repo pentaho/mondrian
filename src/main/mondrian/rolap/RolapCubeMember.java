@@ -150,7 +150,8 @@ public class RolapCubeMember extends RolapMember {
     }
 
     public boolean equals(OlapElement o) {
-        return (o instanceof RolapCubeMember) && equals((RolapCubeMember) o);
+        return o.getClass() == RolapCubeMember.class
+            && equals((RolapCubeMember) o);
     }
 
     private boolean equals(RolapCubeMember that) {

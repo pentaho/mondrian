@@ -900,6 +900,15 @@ public class RolapHierarchy extends HierarchyBase {
             this.exp = exp;
         }
 
+        public boolean equals(Object o) {
+            return o instanceof LimitedRollupMember
+                && ((LimitedRollupMember) o).member.equals(member);
+        }
+
+        public int hashCode() {
+            return member.hashCode();
+        }
+
         public Exp getExpression() {
             return exp;
         }
