@@ -363,13 +363,13 @@ demo/access/MondrianFoodMart.mdb"/>
       <fileset dir="${testclasses-jdk14.dir}" />
       <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
       <fileset dir="${testsrc.dir}" includes="**/*JUnit.java"/>
-      <fileset dir="${lib.dir}" includes="*.jar,*.war" excludes="xml-apis.jar"/>
       <fileset dir="${wb.plugins.dir}" includes="*.jar"/>
     </delete>
   </target>
 
   <target name="clean-deep">
     <delete includeEmptyDirs="true" quiet="true">
+      <fileset dir="${lib.dir}" includes="*.jar,*.war" excludes="xml-apis.jar"/>
       <fileset dir="${classes.dir}"/>
       <fileset dir="${testclasses.dir}"/>
     </delete>
