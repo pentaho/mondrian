@@ -86,12 +86,14 @@ public class RolapCube extends CubeBase {
      *
      * @param schema Schema cube belongs to
      * @param name Name of cube
+     * @param caption Caption
      * @param fact Definition of fact table
      */
     private RolapCube(
         RolapSchema schema,
         MondrianDef.Schema xmlSchema,
         String name,
+        String caption,
         boolean isCache,
         MondrianDef.Relation fact,
         MondrianDef.CubeDimension[] dimensions,
@@ -100,6 +102,7 @@ public class RolapCube extends CubeBase {
         super(name, new RolapDimension[dimensions.length + 1]);
 
         this.schema = schema;
+        this.caption = caption;
         this.fact = fact;
         this.hierarchyUsages = new ArrayList<HierarchyUsage>();
         this.calculatedMembers = new Formula[0];
@@ -174,15 +177,20 @@ public class RolapCube extends CubeBase {
         boolean load)
     {
         this(
-            schema, xmlSchema, xmlCube.name, xmlCube.cache,
+            schema, xmlSchema, xmlCube.name, xmlCube.caption, xmlCube.cache,
             xmlCube.fact, xmlCube.dimensions, load);
+
+        if (fact == null) {
+            throw Util.newError(
+                "Must specify fact table of cube '" +
+                    getName() + "'");
+        }
 
         if (fact.getAlias() == null) {
             throw Util.newError(
                 "Must specify alias for fact table of cube '" +
                     getName() + "'");
         }
-
 
         // since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure
         // can not be treated as the same, measure creation can not be
@@ -341,8 +349,8 @@ public class RolapCube extends CubeBase {
         MondrianDef.VirtualCube xmlVirtualCube,
         boolean load)
     {
-        this(schema, xmlSchema, xmlVirtualCube.name, true,
-            null, xmlVirtualCube.dimensions, load);
+        this(schema, xmlSchema, xmlVirtualCube.name, xmlVirtualCube.caption,
+            true, null, xmlVirtualCube.dimensions, load);
 
 
         // Since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure cannot

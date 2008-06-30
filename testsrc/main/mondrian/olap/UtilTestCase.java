@@ -72,6 +72,20 @@ public class UtilTestCase extends TestCase {
         assertEquals(value, "one; two");
         value = properties.get("singleQuotedValueWithSpecials");
         assertEquals(value, "one; two \"three'four=five");
+
+        assertEquals(
+            "normalProp=value;"
+                + " emptyValue=;"
+                + " spaceBeforeProp=abc;"
+                + " spaceBeforeAndAfterProp=def;"
+                + " space in prop=foo bar;"
+                + " equalsInValue=foo=bar;"
+                + " semiInProp;Name=value;"
+                + " singleQuotedValue=single quoted value ending in space ;"
+                + " doubleQuotedValue==double quoted value preceded by equals;"
+                + " singleQuotedValueWithSemi='one; two';"
+                + " singleQuotedValueWithSpecials='one; two \"three''four=five'",
+            properties.toString());
     }
 
     public void testConnectStringMore() {

@@ -12,15 +12,20 @@ package mondrian.test;
 import org.apache.log4j.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.varia.LevelRangeFilter;
+import org.olap4j.OlapConnection;
+import org.olap4j.metadata.*;
 
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.olap.*;
 import mondrian.util.Bug;
 import mondrian.olap.Member;
 import mondrian.olap.Position;
+import mondrian.olap.Cube;
+import mondrian.olap.Schema;
 
 import java.io.StringWriter;
 import java.util.List;
+import java.sql.SQLException;
 
 /**
  * Unit tests for various schema features.
@@ -1510,6 +1515,45 @@ public class SchemaTest extends FoodMartTestCase {
                 "Row #0: 24,597\n" +
                 "Row #0: 191,940\n" +
                 "Row #0: 50,236\n"));
+    }
+
+    public void testCubeHasFact() {
+        final TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"Cube with caption\" caption=\"Cube with name\"/>\n",
+            null, null, null, null);
+        Throwable throwable = null;
+        try {
+            testContext.assertSimpleQuery();
+        } catch (Throwable e) {
+            throwable = e;
+        }
+        TestContext.checkThrowable(
+            throwable,
+            "Must specify fact table of cube 'Cube with caption'");
+    }
+
+    public void testCubeCaption() throws SQLException {
+        final TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"Cube with caption\" caption=\"Cube with name\">"
+                + "  <Table name='sales_fact_1997'/>"
+                + "</Cube>\n",
+            "<VirtualCube name=\"Warehouse and Sales with caption\" "
+                + " caption=\"Warehouse and Sales with name\" "
+                + "defaultMeasure=\"Store Sales\">\n"
+                + "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\"/>\n"
+                + "</VirtualCube>",
+            null, null, null);
+        final OlapConnection olapConnection =
+            testContext.getOlap4jConnection().unwrap(OlapConnection.class);
+        final NamedList<org.olap4j.metadata.Cube> cubes =
+            olapConnection.getSchema().getCubes();
+        final org.olap4j.metadata.Cube cube = cubes.get("Cube with caption");
+        assertEquals("Cube with name", cube.getCaption(null));
+        final org.olap4j.metadata.Cube cube2 =
+            cubes.get("Warehouse and Sales with caption");
+        assertEquals("Warehouse and Sales with name", cube2.getCaption(null));
     }
 
     public void testCubeWithNoDimensions() {

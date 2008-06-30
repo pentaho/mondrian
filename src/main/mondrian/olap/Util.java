@@ -1697,22 +1697,24 @@ public class Util extends XOMUtil {
                 if (right == null) {
                     sb.append("'null'");
                 } else {
-                    /*
-                     * Quote a property value if is has a semi colon in it
-                     * 'xxx;yyy';
-                     */
-                    if (right.indexOf(';') >= 0 && right.charAt(0) != '\'') {
-                        sb.append("'");
-                    }
-
-                    sb.append(right);
-
-                    if (right.indexOf(';') >= 0 && right.charAt(
-                        right.length() - 1) != '\'') {
-                        sb.append("'");
+                    // Quote a property value if is has a semi colon in it
+                    // 'xxx;yyy'. Escape any single-quotes by doubling them.
+                    final int needsQuote = right.indexOf(';');
+                    if (needsQuote >= 0) {
+                        // REVIEW: This logic leaves off the leading/trailing
+                        //   quote if the property value already has a
+                        //   leading/trailing quote. Doesn't seem right to me.
+                        if (right.charAt(0) != '\'') {
+                            sb.append("'");
+                        }
+                        sb.append(replace(right, "'", "''"));
+                        if (right.charAt(right.length() - 1) != '\'') {
+                            sb.append("'");
+                        }
+                    } else {
+                        sb.append(right);
                     }
                 }
-
             }
             return sb.toString();
         }
