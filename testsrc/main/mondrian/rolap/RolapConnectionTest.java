@@ -309,6 +309,11 @@ public class RolapConnectionTest extends TestCase {
         // use the datasource property to connect to the database
         Util.PropertyList properties =
             TestContext.instance().getFoodMartConnectionProperties();
+        if (TestContext.instance().getDialect().isAccess()) {
+            // Access doesn't accept user/password, so this test is pointless.
+            return;
+        }
+
         final String jdbcUser =
             properties.get(RolapConnectionProperties.JdbcUser.name());
         final String jdbcPassword =
