@@ -37,6 +37,9 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.lang.reflect.*;
 
+import org.olap4j.OlapWrapper;
+import org.olap4j.OlapConnection;
+
 /**
  * <code>TestContext</code> is a singleton class which contains the information
  * necessary to run mondrian tests (otherwise we'd have to pass this
@@ -1402,7 +1405,7 @@ public class TestContext {
         return connection.getSchema().getWarnings();
     }
 
-    public java.sql.Connection getOlap4jConnection() throws SQLException {
+    public OlapConnection getOlap4jConnection() throws SQLException {
         try {
             Class.forName("mondrian.olap4j.MondrianOlap4jDriver");
         } catch (ClassNotFoundException e) {
@@ -1412,8 +1415,10 @@ public class TestContext {
         if (connectString.startsWith("Provider=mondrian; ")) {
             connectString = connectString.substring("Provider=mondrian; ".length());
         }
-        return java.sql.DriverManager.getConnection(
-            "jdbc:mondrian:" + connectString);
+        final java.sql.Connection connection =
+            java.sql.DriverManager.getConnection(
+                "jdbc:mondrian:" + connectString);
+        return ((OlapWrapper) connection).unwrap(OlapConnection.class);
     }
 
     public static class SnoopingSchemaProcessor

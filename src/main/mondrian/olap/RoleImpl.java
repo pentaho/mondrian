@@ -292,13 +292,11 @@ public class RoleImpl implements Role {
      * </ol>
      *
      * @pre member != null
-     * @pre Access.instance().isValid(access)
      * @pre isMutable()
      * @pre getAccess(member.getHierarchy()) == Access.CUSTOM
      */
     public void grant(Member member, Access access) {
         Util.assertPrecondition(member != null, "member != null");
-        assert Util.isValid(Access.class, access);
         assert isMutable();
         assert getAccess(member.getHierarchy()) == Access.CUSTOM;
         HierarchyAccessImpl hierarchyAccess = hierarchyGrants.get(member.getHierarchy());

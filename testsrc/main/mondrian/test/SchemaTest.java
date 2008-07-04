@@ -1545,10 +1545,8 @@ public class SchemaTest extends FoodMartTestCase {
                 + "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\"/>\n"
                 + "</VirtualCube>",
             null, null, null);
-        final OlapConnection olapConnection =
-            testContext.getOlap4jConnection().unwrap(OlapConnection.class);
         final NamedList<org.olap4j.metadata.Cube> cubes =
-            olapConnection.getSchema().getCubes();
+            testContext.getOlap4jConnection().getSchema().getCubes();
         final org.olap4j.metadata.Cube cube = cubes.get("Cube with caption");
         assertEquals("Cube with name", cube.getCaption(null));
         final org.olap4j.metadata.Cube cube2 =

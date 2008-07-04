@@ -83,6 +83,14 @@ public class Util extends XOMUtil {
         System.getProperty("java.version").startsWith("1.4");
 
     /**
+     * What version of JDBC? Returns 4 in JDK 1.6 and higher, 3 otherwise.
+     */
+    public static final int JdbcVersion =
+        System.getProperty("java.version").compareTo("1.6") >= 0
+            ? 4
+            : 3;
+
+    /**
      * Whether the code base has re-engineered using retroweaver.
      * If this is the case, some functionality is not available.
      */
@@ -91,6 +99,7 @@ public class Util extends XOMUtil {
             "com.rc.retroweaver.runtime.Enum_");
 
     private static final UtilCompatible compatible;
+
     static {
         String className;
         if (PreJdk15 || Retrowoven) {
@@ -2204,24 +2213,6 @@ public class Util extends XOMUtil {
     @SuppressWarnings({"unchecked"})
     public static <T> List<T> cast(List<?> list) {
         return (List<T>) list;
-    }
-
-    /**
-     * Returns whether an enumeration value is a valid not-null value of a given
-     * enumeration class.
-     *
-     * @param clazz Enumeration class
-     * @param e Enumeration value
-     * @return Whether t is a value of enum clazz
-     */
-    public static <E extends Enum<E>> boolean isValid(Class<E> clazz, E e) {
-        E[] enumConstants = clazz.getEnumConstants();
-        for (E enumConstant : enumConstants) {
-            if (e == enumConstant) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

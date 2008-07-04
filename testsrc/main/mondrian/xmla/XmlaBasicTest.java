@@ -532,6 +532,16 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                     " type=\"xsd:integer\"",
                     " type=\"xsd:decimal\"");
                 break;
+            case POSTGRES:
+                content = Util.replace(
+                    content,
+                    " sql:field=\"Store Sqft\" type=\"xsd:double\"",
+                    " sql:field=\"Store Sqft\" type=\"xsd:integer\"");
+                content = Util.replace(
+                    content,
+                    " sql:field=\"Unit Sales\" type=\"xsd:double\"",
+                    " sql:field=\"Unit Sales\" type=\"xsd:decimal\"");
+                break;
             case MYSQL:
             case DERBY:
             case TERADATA:
