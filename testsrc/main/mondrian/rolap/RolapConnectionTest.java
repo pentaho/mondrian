@@ -305,7 +305,9 @@ public class RolapConnectionTest extends TestCase {
         assertTrue(lookupCalls.size() > 0);
     }
 
-    public void testDataSourceOverrideUserPass() throws SQLException, NamingException {
+    public void testDataSourceOverrideUserPass()
+        throws SQLException, NamingException
+    {
         // use the datasource property to connect to the database
         Util.PropertyList properties =
             TestContext.instance().getFoodMartConnectionProperties();
@@ -322,6 +324,9 @@ public class RolapConnectionTest extends TestCase {
             // Can only run this test if username and password are explicit.
             return;
         }
+
+        final SqlPattern.Dialect dialect =
+            SqlPattern.Dialect.get(TestContext.instance().getDialect());
 
         // Define a data source with bogus user and password.
         properties.put(
@@ -400,22 +405,12 @@ public class RolapConnectionTest extends TestCase {
                 fail("Expected exception");
             } catch (MondrianException e) {
                 final String s = TestContext.getStackTrace(e);
-                final SqlPattern.Dialect dialect =
-                    SqlPattern.Dialect.get(TestContext.instance().getDialect());
-                switch (dialect) {
-                case DERBY:
-                    // Derby detects an error while running a query, not while
-                    // creating the connection.
-                    break;
-                default:
-                    assertTrue(s, s.indexOf(
-                        "Error while creating SQL connection: DataSource=jndiDataSource") >= 0);
-                    break;
-                }
+                assertTrue(s, s.indexOf(
+                    "Error while creating SQL connection: DataSource=jndiDataSource") >= 0);
                 switch (dialect) {
                 case DERBY:
                     assertTrue(s, s.indexOf(
-                        "Caused by: java.sql.SQLSyntaxErrorException: Schema 'BOGUSUSER' does not exist") >= 0);
+                        "Caused by: java.sql.SQLException: Schema 'BOGUSUSER' does not exist") >= 0);
                     break;
                 case ORACLE:
                     assertTrue(s, s.indexOf(

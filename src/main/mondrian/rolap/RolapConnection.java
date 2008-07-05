@@ -15,6 +15,8 @@ package mondrian.rolap;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.ResultSet;
 import java.util.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
@@ -44,6 +46,7 @@ import mondrian.olap.Schema;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.util.FilteredIterableList;
 import mondrian.util.MemoryMonitor;
 import mondrian.util.MemoryMonitorFactory;
@@ -216,15 +219,33 @@ public class RolapConnection extends ConnectionBase {
             // make sure that the JDBC credentials are valid, for this
             // connection and for external connections built on top of this.
             Connection conn = null;
+            Statement statement = null;
             try {
                 conn = this.dataSource.getConnection();
-                Util.discard(conn);
+                SqlQuery.Dialect dialect =
+                    SqlQuery.Dialect.create(conn.getMetaData());
+                if (dialect.isDerby()) {
+                    // Derby requires a little extra prodding to do the
+                    // validation to detect an error.
+                    statement = conn.createStatement();
+                    statement.executeQuery("select * from bogustable");
+                }
             } catch (SQLException e) {
-                final String message =
-                    "Error while creating SQL connection: " + buf.toString();
-                throw Util.newError(e, message);
+                if (e.getMessage().equals("Table/View 'BOGUSTABLE' does not exist.")) {
+                    // Ignore. This exception comes from Derby when the
+                    // connection is valid. If the connection were invalid, we
+                    // would receive an error such as "Schema 'BOGUSUSER' does
+                    // not exist"
+                } else {
+                    final String message =
+                        "Error while creating SQL connection: " + buf.toString();
+                    throw Util.newError(e, message);
+                }
             } finally {
                 try {
+                    if (statement != null) {
+                        statement.close();
+                    }
                     if (conn != null) {
                         conn.close();
                     }
