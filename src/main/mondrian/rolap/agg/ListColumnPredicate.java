@@ -43,6 +43,11 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
     private HashMap<Integer, List<StarColumnPredicate>> childrenHashMap;
 
     /**
+     * Pre-computed hash code for this list column predicate
+     */
+    private int hashValue;
+    
+    /**
      * Creates a ListColumnPredicate
      *
      * @param column Column being constrained
@@ -53,6 +58,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
         super(column);
         this.children = list;
         childrenHashMap = null;
+        hashValue = 0;
     }
 
     /**
@@ -67,12 +73,17 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
     public int hashCode() {
         // Don't use the default list hashcode because we want a hash code
         // that's not order dependent
-        int hashCode = 1;
-        for (StarColumnPredicate child : children) {
-            hashCode *= child.hashCode();
+        if (hashValue == 0) {
+            hashValue = 37;
+            for (StarColumnPredicate child : children) {
+                int childHashCode = child.hashCode();
+                if (childHashCode != 0) {
+                    hashValue *= childHashCode;
+                }
+            }
+            hashValue ^= children.size();
         }
-        hashCode ^= children.size();
-        return hashCode;
+        return hashValue;
     }
 
     public boolean equals(Object obj) {
