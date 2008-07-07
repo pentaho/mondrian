@@ -200,6 +200,9 @@ CONCAT(CONCAT("customer"."fname", ' '), "customer"."lname")
           <SQL dialect="luciddb">
 "fname" || ' ' || "lname"
           </SQL>
+            <SQL dialect="teradata">
+"fname" || ' ' || "lname"
+            </SQL>
           <SQL dialect="generic">
 fullname
           </SQL>

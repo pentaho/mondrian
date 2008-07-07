@@ -4,11 +4,19 @@ rem Schema Workbench launch script
 
 rem base Mondrian JARs need to be included
 
-set CP=lib/commons-dbcp.jar;lib/commons-collections.jar;lib/commons-pool.jar
-set CP=%CP%;lib/eigenbase-properties.jar;lib/eigenbase-resgen.jar;lib/eigenbase-xom.jar
-set CP=%CP%;lib/javacup.jar;lib/log4j-1.2.12.jar;lib/mondrian.jar
-set CP=%CP%;lib/jlfgr-1_0.jar;lib/jmi.jar;lib/mof.jar;lib/commons-math-1.0.jar
-set CP=%CP%;lib/commons-vfs.jar;lib/commons-logging.jar
+set CP=lib/commons-dbcp.jar
+set CP=%CP%;lib/commons-collections.jar
+set CP=%CP%;lib/commons-pool.jar
+set CP=%CP%;lib/eigenbase-properties.jar
+set CP=%CP%;lib/eigenbase-resgen.jar
+set CP=%CP%;lib/eigenbase-xom.jar
+set CP=%CP%;lib/javacup.jar
+set CP=%CP%;lib/log4j.jar
+set CP=%CP%;lib/mondrian.jar
+set CP=%CP%;lib/jlfgr.jar
+set CP=%CP%;lib/commons-math.jar
+set CP=%CP%;lib/commons-vfs.jar
+set CP=%CP%;lib/commons-logging.jar
 
 rem Workbench GUI code and resources
 
@@ -40,3 +48,5 @@ rem add all needed plugin jars to the classpath
 for %%i in ("plugins\*.jar") do call cpappend %%i
 
 java -Xms100m -Xmx500m -cp "%CP%" -Dlog4j.configuration=file:///%ROOT%\.schemaWorkbench\log4j.xml mondrian.gui.Workbench
+
+rem End workbench.bat

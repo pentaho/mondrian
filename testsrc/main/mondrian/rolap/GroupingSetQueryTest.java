@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,13 +11,13 @@ package mondrian.rolap;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-import mondrian.rolap.BatchTestCase.CellRequestConstraint;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 import mondrian.test.SqlPattern;
-import mondrian.util.Bug;
 
 /**
  * Test support for generating SQL queries with the <code>GROUPING SETS</code>
@@ -39,6 +39,8 @@ public class GroupingSetQueryTest extends BatchTestCase {
     private boolean useGroupingSets;
     private boolean formattedSql;
     private String origWarnIfNoPatternForDialect;
+    private static final Set<SqlPattern.Dialect> ORACLE_TERADATA =
+        Util.enumSetOf(SqlPattern.Dialect.ORACLE, SqlPattern.Dialect.TERADATA);
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -91,10 +93,10 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         SqlPattern[] patternsWithGsets = {
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
                 "grouping(\"customer\".\"gender\") as \"g0\" " +
-                "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
+                "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
                 "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                 "group by grouping sets ((\"customer\".\"gender\"),())",
             26)
@@ -104,12 +106,12 @@ public class GroupingSetQueryTest extends BatchTestCase {
         // be the same with or without grouping sets enabled.
         SqlPattern[] patternsWithAggs = {
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select sum(\"agg_c_10_sales_fact_1997\".\"unit_sales\") as \"m0\""
                     + " from \"agg_c_10_sales_fact_1997\" \"agg_c_10_sales_fact_1997\"",
                 null),
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select \"agg_g_ms_pcat_sales_fact_1997\".\"gender\" as \"c0\","
                     + " sum(\"agg_g_ms_pcat_sales_fact_1997\".\"unit_sales\") as \"m0\" "
                     + "from \"agg_g_ms_pcat_sales_fact_1997\" \"agg_g_ms_pcat_sales_fact_1997\" "
@@ -125,9 +127,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by \"customer\".\"gender\"", 26),
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
+                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by \"customer\".\"gender\"", 26)
         };
@@ -182,7 +184,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                     "group by \"agg_g_ms_pcat_sales_fact_1997\".\"gender\"",
                 26),
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select \"agg_g_ms_pcat_sales_fact_1997\".\"gender\" as \"c0\", " +
                     "sum(\"agg_g_ms_pcat_sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"agg_g_ms_pcat_sales_fact_1997\" \"agg_g_ms_pcat_sales_fact_1997\" " +
@@ -207,9 +209,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         SqlPattern[] patternsWithGsets = {
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
+                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by \"customer\".\"gender\"", 72)
             };
@@ -227,9 +229,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by \"customer\".\"gender\"", 72),
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
+                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by \"customer\".\"gender\"", 72)
         };
@@ -259,10 +261,10 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         SqlPattern[] patternsWithGsets = {
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
                     "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\", grouping(\"customer\".\"gender\") as \"g0\" " +
-                    "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
+                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by grouping sets ((\"customer\".\"gender\"),())",
                 26)
@@ -283,10 +285,10 @@ public class GroupingSetQueryTest extends BatchTestCase {
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by \"customer\".\"gender\"", 26),
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
                     "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\" " +
-                    "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
+                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by \"customer\".\"gender\"", 26)
         };
@@ -316,18 +318,18 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         SqlPattern[] patternWithGsets = {
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
                     "grouping(\"customer\".\"gender\") as \"g0\" " +
-                    "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
+                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by grouping sets ((\"customer\".\"gender\"),())",
                 26),
 
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select \"customer\".\"marital_status\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" " +
+                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                     "group by \"customer\".\"marital_status\"",
                 26),
@@ -347,9 +349,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
                     "from \"sales_fact_1997\" as \"sales_fact_1997\"",
                 40),
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"sales_fact_1997\" \"sales_fact_1997\"",
+                    "from \"sales_fact_1997\" =as= \"sales_fact_1997\"",
                 40)
         };
 
@@ -379,10 +381,10 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         SqlPattern[] patternsWithGsets = {
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                 "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
                 "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", grouping(\"customer\".\"gender\") as \"g0\" " +
-                "from \"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", \"customer\" \"customer\" " +
+                "from \"time_by_day\" =as= \"time_by_day\", \"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\" " +
                 "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 " +
                 "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
                 "group by grouping sets ((\"time_by_day\".\"the_year\",\"customer\".\"gender\"),(\"time_by_day\".\"the_year\"))",
@@ -417,11 +419,11 @@ public class GroupingSetQueryTest extends BatchTestCase {
                     "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"",
                 50),
             new SqlPattern(
-                SqlPattern.Dialect.ORACLE,
+                ORACLE_TERADATA,
                     "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
                         "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                        "from \"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", " +
-                        "\"customer\" \"customer\" " +
+                        "from \"time_by_day\" =as= \"time_by_day\", \"sales_fact_1997\" =as= \"sales_fact_1997\", " +
+                        "\"customer\" =as= \"customer\" " +
                         "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and " +
                         "\"time_by_day\".\"the_year\" = 1997 " +
                         "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
@@ -461,9 +463,9 @@ public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
             "\"customer\".\"gender\" as \"c1\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\", " +
             "grouping(\"customer\".\"gender\") as \"g0\" " +
-            "from \"time_by_day\" \"time_by_day\", " +
-            "\"sales_fact_1997\" \"sales_fact_1997\", \"customer\" \"customer\", " +
-            "\"store\" \"store\" " +
+            "from \"time_by_day\" =as= \"time_by_day\", " +
+            "\"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\", " +
+            "\"store\" =as= \"store\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and \"time_by_day\".\"the_year\" = 1997 and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
             "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and ((\"store\".\"store_country\" = 'USA' " +
@@ -472,8 +474,8 @@ public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
             "group by grouping sets ((\"time_by_day\".\"the_year\",\"customer\".\"gender\"),(\"time_by_day\".\"the_year\"))";
         String sqlWithoutGS =
             "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
-            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" from \"time_by_day\" \"time_by_day\", " +
-            "\"sales_fact_1997\" \"sales_fact_1997\", \"customer\" \"customer\", \"store\" \"store\" " +
+            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" from \"time_by_day\" =as= \"time_by_day\", " +
+            "\"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\", \"store\" =as= \"store\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 " +
             "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and " +
             "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and " +
@@ -482,11 +484,11 @@ public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
             "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"";
 
         SqlPattern[] patternsGSDisabled = {
-            new SqlPattern(SqlPattern.Dialect.ORACLE, sqlWithoutGS, sqlWithoutGS)
+            new SqlPattern(ORACLE_TERADATA, sqlWithoutGS, sqlWithoutGS)
         };
 
         SqlPattern[] patternsGSEnabled = {
-            new SqlPattern(SqlPattern.Dialect.ORACLE, sqlWithGS, sqlWithGS)
+            new SqlPattern(ORACLE_TERADATA, sqlWithGS, sqlWithGS)
         };
 
         prop.EnableGroupingSets.set(true);
@@ -522,16 +524,16 @@ public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
             "IIF(COUNT([COG_OQP_INT_s1], INCLUDEEMPTY) > 0, 1, 0))} ON AXIS(1) \n" +
             "FROM [sales]";
 
-        String oracleSql="select \"store\".\"store_country\" as \"c0\", " +
+        String oraTeraSql = "select \"store\".\"store_country\" as \"c0\", " +
             "\"time_by_day\".\"the_year\" " +
             "as \"c1\", \"customer\".\"gender\" as \"c2\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\", " +
             "grouping(\"customer\".\"gender\") as \"g0\", " +
             "grouping(\"store\".\"store_country\") as \"g1\" " +
-            "from \"store\" \"store\", " +
-            "\"sales_fact_1997\" \"sales_fact_1997\", " +
-            "\"time_by_day\" \"time_by_day\", " +
-            "\"customer\" \"customer\" " +
+            "from \"store\" =as= \"store\", " +
+            "\"sales_fact_1997\" =as= \"sales_fact_1997\", " +
+            "\"time_by_day\" =as= \"time_by_day\", " +
+            "\"customer\" =as= \"customer\" " +
             "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
             "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and \"time_by_day\".\"the_year\" = 1997 " +
@@ -543,7 +545,7 @@ public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
 
 
         SqlPattern[] patterns1 = {
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql)};
+            new SqlPattern(ORACLE_TERADATA, oraTeraSql, oraTeraSql)};
 
         assertQuerySql(mdxQuery,patterns1);
     }
@@ -583,12 +585,12 @@ public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
                 "Row #3: 5,581\n");
 
 
-        String  oracleSql = "select \"time_by_day\".\"the_year\" as \"c0\", " +
+        String  oraTeraSql = "select \"time_by_day\".\"the_year\" as \"c0\", " +
             "\"customer\".\"gender\" as \"c1\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\", " +
             "grouping(\"customer\".\"gender\") as \"g0\" " +
-            "from \"time_by_day\" \"time_by_day\", " +
-            "\"sales_fact_1997\" \"sales_fact_1997\", \"customer\" \"customer\" " +
+            "from \"time_by_day\" =as= \"time_by_day\", " +
+            "\"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and \"time_by_day\".\"the_year\" = 1997 " +
             "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
@@ -596,7 +598,7 @@ public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
             "((\"time_by_day\".\"the_year\",\"customer\".\"gender\"),(\"time_by_day\".\"the_year\"))";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql)};
+            new SqlPattern(ORACLE_TERADATA, oraTeraSql, oraTeraSql)};
 
         assertQueryReturns(mdxQueryWithMembers, desiredResult);
         assertQuerySql(mdxQueryWithMembers, patterns);

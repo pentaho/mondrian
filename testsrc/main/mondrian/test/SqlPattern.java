@@ -138,6 +138,7 @@ public class SqlPattern {
         POSTGRES,
         MYSQL,
         SYBASE,
+        TERADATA,
         LUCIDDB;
 
         public static Dialect get(SqlQuery.Dialect dialect) {
@@ -165,6 +166,8 @@ public class SqlPattern {
                 return MYSQL;
             } else if (dialect.isSybase()) {
                 return SYBASE;
+            } else if (dialect.isTeradata()) {
+                return TERADATA;
             } else if (dialect.isLucidDB()) {
                 return LUCIDDB;
             } else {

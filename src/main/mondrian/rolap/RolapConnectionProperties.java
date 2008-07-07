@@ -144,7 +144,15 @@ public enum RolapConnectionProperties {
      * A data source change listener is used to flush the cache of
      * mondrian every time the datasource is changed.
      */
-    DataSourceChangeListener;
+    DataSourceChangeListener,
+
+    /**
+     * The "Ignore" property is a boolean value. If true, mondrian ignores
+     * warnings and non-fatal errors while loading the schema. The resulting
+     * errors can be obtained by calling
+     * {@link mondrian.olap.Schema#getWarnings}.
+     */
+    Ignore;
 
     /**
      * Any property beginning with this value will be added to the
