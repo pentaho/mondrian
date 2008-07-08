@@ -9,12 +9,13 @@
 */
 package mondrian.rolap;
 
-import mondrian.mdx.MemberExpr;
+import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 
 import java.sql.*;
+import java.util.*;
 
 /**
  * <code>RolapCell</code> implements {@link mondrian.olap.Cell} within a
@@ -111,9 +112,20 @@ class RolapCell implements Cell {
     public boolean canDrillThrough() {
         // get current members
         final Member[] currentMembers = getMembersForDrillThrough();
-        // First member is the measure, test if it is stored measure, return
-        // true if it is, false if not.
-        return (currentMembers[0] instanceof RolapStoredMeasure);
+        final DrillThroughVisitor visitor =
+            new DrillThroughVisitor(result.getCube());
+        try {
+            for (Member member : currentMembers) {
+                visitor.handleMember(member);
+            }
+        } catch (RuntimeException e) {
+            if (e == visitor.bomb) {
+                return false;
+            } else {
+                throw e;
+            }
+        }
+        return visitor.cubes.size() > 0;
     }
 
     private RolapEvaluator getEvaluator() {
@@ -168,6 +180,139 @@ class RolapCell implements Cell {
 
     public Member getContextMember(Dimension dimension) {
         return result.getMember(pos, dimension);
+    }
+
+    /**
+     * Visitor that walks over a cell's expression and checks whether the
+     * cell should allow drill-through. If not, throws the {@link #bomb}
+     * exception.
+     *
+     * <p>Examples:</p>
+     * <ul>
+     * <li>Literal 1 is drillable</li>
+     * <li>Member [Measures].[Unit Sales] is drillable</li>
+     * <li>Calculated member with expression [Measures].[Unit Sales] + 1 is drillable</li>
+     * <li>Calculated member with expression
+     *     ([Measures].[Unit Sales], [Time].PrevMember) is not drillable</li>
+     * </ul>
+     */
+    private static class DrillThroughVisitor extends MdxVisitorImpl {
+        final RuntimeException bomb = new RuntimeException();
+        final Set<Cube> cubes = new HashSet<Cube>();
+
+        DrillThroughVisitor(RolapCube cube) {
+            if (!cube.isVirtual()) {
+                cubes.add(cube);
+            } else {
+                for (RolapMember member : cube.getMeasuresMembers()) {
+                    if (member instanceof RolapVirtualCubeMeasure) {
+                        RolapVirtualCubeMeasure measure =
+                            (RolapVirtualCubeMeasure) member;
+                        cubes.add(measure.getCube());
+                    }
+                }
+            }
+        }
+
+        public Object visit(MemberExpr memberExpr) {
+            handleMember(memberExpr.getMember());
+            return null;
+        }
+
+        public Object visit(ResolvedFunCall call) {
+            final FunDef def = call.getFunDef();
+            final Exp[] args = call.getArgs();
+            if (def.getName().equals("+")
+                || def.getName().equals("-")
+                || def.getName().equals("/")
+                || def.getName().equals("*")
+                || def.getName().equals("CoalesceEmpty")
+                // Allow parentheses but don't allow tuple
+                || def.getName().equals("()") && args.length == 1) {
+                visitChildren(args);
+                return null;
+            }
+            throw bomb;
+        }
+
+        private void visitChildren(Exp[] args) {
+            for (Exp arg : args) {
+                arg.accept(this);
+            }
+        }
+
+        public void handleMember(Member member) {
+            if (member instanceof RolapStoredMeasure) {
+                // Whittle down the list of cubes that we can drill into. If
+                // this member is in a different cube that previous members
+                // we've seen, the list will become empty and we will deduce
+                // that we cannot drill through.
+                final RolapCube cube = ((RolapStoredMeasure) member).getCube();
+                cubes.retainAll(Collections.singletonList(cube));
+                if (cubes.isEmpty()) {
+                    throw bomb;
+                }
+            } else if (member instanceof RolapCubeMember) {
+                handleMember(((RolapCubeMember) member).rolapMember);
+            } else if (member instanceof RolapHierarchy.RolapCalculatedMeasure) {
+                RolapHierarchy.RolapCalculatedMeasure measure =
+                    (RolapHierarchy.RolapCalculatedMeasure) member;
+                measure.getFormula().getExpression().accept(this);
+            } else if (member instanceof RolapMember) {
+                // regular RolapMember - fine
+            } else {
+                // don't know what this is!
+                throw bomb;
+            }
+        }
+
+        public Object visit(NamedSetExpr namedSetExpr) {
+            throw Util.newInternal("not valid here: " + namedSetExpr);
+        }
+
+        public Object visit(Literal literal) {
+            return null; // literals are drillable
+        }
+
+        public Object visit(Query query) {
+            throw Util.newInternal("not valid here: " + query);
+        }
+
+        public Object visit(QueryAxis queryAxis) {
+            throw Util.newInternal("not valid here: " + queryAxis);
+        }
+
+        public Object visit(Formula formula) {
+            throw Util.newInternal("not valid here: " + formula);
+        }
+
+        public Object visit(UnresolvedFunCall call) {
+            throw Util.newInternal("expected resolved expression");
+        }
+
+        public Object visit(Id id) {
+            throw Util.newInternal("expected resolved expression");
+        }
+
+        public Object visit(ParameterExpr parameterExpr) {
+            // Not valid in general; might contain complex expression
+            throw bomb;
+        }
+
+        public Object visit(DimensionExpr dimensionExpr) {
+            // Not valid in general; might be part of complex expression
+            throw bomb;
+        }
+
+        public Object visit(HierarchyExpr hierarchyExpr) {
+            // Not valid in general; might be part of complex expression
+            throw bomb;
+        }
+
+        public Object visit(LevelExpr levelExpr) {
+            // Not valid in general; might be part of complex expression
+            throw bomb;
+        }
     }
 }
 
