@@ -3101,6 +3101,28 @@ public class FunctionTest extends FoodMartTestCase {
                 "Row #0: 94,814\n"));
     }
 
+    /**
+     * Test case for bug 1911832, "Exception converting immutable list to array
+     * in JDK 1.5".
+     */
+    public void testCrossjoinOrder() {
+        assertQueryReturns(
+            "WITH\n"
+                + "\n"
+                + "SET [S1] AS 'CROSSJOIN({[Time].[1997]}, {[Gender].[Gender].MEMBERS})'\n"
+                + "\n"
+                + "SELECT CROSSJOIN(ORDER([S1], [Measures].[Unit Sales], BDESC),\n"
+                + "{[Measures].[Unit Sales]}) ON AXIS(0)\n"
+                + "FROM [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1997], [Gender].[All Gender].[M], [Measures].[Unit Sales]}\n" +
+                "{[Time].[1997], [Gender].[All Gender].[F], [Measures].[Unit Sales]}\n" +
+                "Row #0: 135,215\n" +
+                "Row #0: 131,558\n"));
+    }
+
     public void testDescendantsM() {
         assertAxisReturns("Descendants([Time].[1997].[Q1])",
                 fold(
