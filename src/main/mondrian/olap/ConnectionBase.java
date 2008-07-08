@@ -55,45 +55,83 @@ public abstract class ConnectionBase implements Connection {
         return s;
     }
 
-    public Query parseQuery(String s) {
-        return parseQuery(s, false);
+    public Query parseQuery(String query) {
+        return parseQuery(query, null, false, false);
     }
 
-    public Query parseQuery(String s, boolean load) {
+    public Query parseQuery(String query, boolean load) {
+        return parseQuery(query, null, load, false);
+    }
+
+    /**
+     * Parses a query, with specified function table and the mode for strict
+     * validation(if true then invalid members are not ignored).
+     * 
+     * <p>This method is only used in testing and by clients that need to
+     * support customized parser behavior. That is why this method is not part
+     * of the Connection interface.
+     * 
+     * @param query MDX query that requires special parsing
+     * @param funTable Customized function table to use in parsing
+     * @param strictValidation If true, do not ignore invalid members
+     * @return Query the corresponding Query object if parsing is successful
+     * @throws MondrianException if parsing fails
+     * @see mondrian.olap.CustomizedParserTest
+     */
+    public Query parseQuery(String query, FunTable funTable,
+        boolean strictValidation) {
+        return parseQuery(query, funTable, false, strictValidation);
+    }
+
+    public Exp parseExpression(String expr) {
         boolean debug = false;
         if (getLogger().isDebugEnabled()) {
             //debug = true;
             StringBuilder buf = new StringBuilder(256);
             buf.append(Util.nl);
-            buf.append(s);
+            buf.append(expr);
             getLogger().debug(buf.toString());
         }
         try {
             Parser parser = new Parser();
             final FunTable funTable = getSchema().getFunTable();
-            Query q = parser.parseInternal(this, s, debug, funTable, load);
+            Exp q = parser.parseExpression(this, expr, debug, funTable);
             return q;
-        } catch (Throwable e) {
-            throw MondrianResource.instance().FailedToParseQuery.ex(s, e);
+        } catch (Throwable exception) {
+            throw
+                MondrianResource.instance().FailedToParseQuery.ex(
+                    expr,
+                    exception);
         }
     }
-
-    public Exp parseExpression(String s) {
+    
+    private Query parseQuery(String query, FunTable cftab, boolean load,
+        boolean strictValidation) {
+        Parser parser = new Parser();
         boolean debug = false;
+        final FunTable funTable;
+        
+        if (cftab == null) {
+            funTable = getSchema().getFunTable();
+        } else {
+            funTable = cftab;
+        }
+        
         if (getLogger().isDebugEnabled()) {
             //debug = true;
             StringBuilder buf = new StringBuilder(256);
             buf.append(Util.nl);
-            buf.append(s);
+            buf.append(query);
             getLogger().debug(buf.toString());
         }
+        
         try {
-            Parser parser = new Parser();
-            final FunTable funTable = getSchema().getFunTable();
-            Exp q = parser.parseExpression(this, s, debug, funTable);
+            Query q =
+                parser.parseInternal(this, query, debug, funTable, load,
+                    strictValidation);
             return q;
         } catch (Throwable e) {
-            throw MondrianResource.instance().FailedToParseQuery.ex(s, e);
+            throw MondrianResource.instance().FailedToParseQuery.ex(query, e);
         }
     }
 }

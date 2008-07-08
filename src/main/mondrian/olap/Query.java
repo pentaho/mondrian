@@ -151,6 +151,11 @@ public class Query extends QueryPart {
     private boolean load;
 
     /**
+     * If true, enforce validation even when ignoreInvalidMembers is set.
+     */
+    private boolean strictValidation;
+    
+    /**
      * How should the query be returned? Valid values are:
      *    ResultStyle.ITERABLE
      *    ResultStyle.LIST
@@ -173,7 +178,8 @@ public class Query extends QueryPart {
             String cube,
             QueryAxis slicerAxis,
             QueryPart[] cellProps,
-            boolean load) {
+            boolean load,
+            boolean strictValidation) {
         this(
             connection,
             Util.lookupCube(connection.getSchemaReader(), cube, true),
@@ -182,7 +188,8 @@ public class Query extends QueryPart {
             slicerAxis,
             cellProps,
             new Parameter[0],
-            load);
+            load,
+            strictValidation);
     }
 
     /**
@@ -196,7 +203,8 @@ public class Query extends QueryPart {
             QueryAxis slicerAxis,
             QueryPart[] cellProps,
             Parameter[] parameters,
-            boolean load) {
+            boolean load,
+            boolean strictValidation) {
         this.connection = connection;
         this.cube = mdxCube;
         this.formulas = formulas;
@@ -213,6 +221,7 @@ public class Query extends QueryPart {
         // processed natively; as we parse the query, we'll know otherwise
         this.nativeCrossJoinVirtualCube = true;
         this.load = load;
+        this.strictValidation = strictValidation;
         this.alertedNonNativeFunDefs = new HashSet<FunDef>();
         resolve();
     }
@@ -284,6 +293,12 @@ public class Query extends QueryPart {
         return new StackValidator(connection.getSchema().getFunTable());
     }
 
+    public Validator createValidator(FunTable functionTable) {
+        StackValidator validator;
+        validator = new StackValidator(functionTable);
+        return validator;
+    }
+
     public Object clone() {
         return new Query(
                 connection,
@@ -293,7 +308,8 @@ public class Query extends QueryPart {
                 (slicerAxis == null) ? null : (QueryAxis) slicerAxis.clone(),
                 cellProps,
                 parameters.toArray(new Parameter[parameters.size()]),
-                load);
+                load,
+                strictValidation);
     }
 
     public Query safeClone() {
@@ -426,10 +442,9 @@ public class Query extends QueryPart {
     public boolean ignoreInvalidMembers()
     {
         MondrianProperties props = MondrianProperties.instance();
-        return
-            (load && props.IgnoreInvalidMembers.get())
-            ||
-            (!load && props.IgnoreInvalidMembersDuringQuery.get());
+        return 
+            !strictValidation &&
+            ((load && props.IgnoreInvalidMembers.get()) || (!load && props.IgnoreInvalidMembersDuringQuery.get()));
     }
 
     /**
@@ -494,7 +509,7 @@ public class Query extends QueryPart {
      *
      * @param validator Validator
      */
-    void resolve(Validator validator) {
+    public void resolve(Validator validator) {
         // Before commencing validation, create all calculated members,
         // calculated sets, and parameters.
         if (formulas != null) {
@@ -1361,7 +1376,8 @@ public class Query extends QueryPart {
                 }
             } else if (parent instanceof UnresolvedFunCall) {
                 final UnresolvedFunCall funCall = (UnresolvedFunCall) parent;
-                if (funCall.getSyntax() == Syntax.Parentheses) {
+                if (funCall.getSyntax() == Syntax.Parentheses ||
+                    funCall.getFunName() == "*") {
                     return requiresExpression(n - 1);
                 } else {
                     int k = whichArg(funCall, (Exp) stack.get(n));
