@@ -915,6 +915,85 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
+     * Verify that native evaluation is on when ExpendNonNative is set, even if
+     * the input list is empty.
+     *
+     */
+    public void testExpandWithOneEmptyInput() {
+        boolean origExpandNonNative =
+            MondrianProperties.instance().ExpandNonNative.get();
+
+        MondrianProperties.instance().ExpandNonNative.set(true);
+        
+        String query =
+            "With " +
+            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],[*BASE_MEMBERS_Product])' " +
+            "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' " +
+            "Set [*BASE_MEMBERS_Gender] as 'Filter([Gender].[Gender].Members,[Gender].CurrentMember.Name Matches (\"abc\"))' " +
+            "Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})' " +
+            "Set [*BASE_MEMBERS_Product] as '[Product].[Product Name].Members' " +
+            "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' " +
+            "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 " +
+            "Select " +
+            "[*BASE_MEMBERS_Measures] on columns, " +
+            "Non Empty Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember,[Product].CurrentMember)}) on rows " +
+            "From [Sales]";
+        
+        String result =
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
+            "Axis #2:\n";
+        
+        boolean requestFreshConnection = true;
+        
+        try {
+            // Query should return empty result.
+            checkNative(0, 0, fold(query), result, requestFreshConnection);
+        } finally {
+            MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
+        }
+    }
+    public void testExpandWithTwoEmptyInputs() {
+        getConnection().getCacheControl(null).flushSchemaCache();
+    	
+        boolean origExpandNonNative =
+            MondrianProperties.instance().ExpandNonNative.get();
+
+        MondrianProperties.instance().ExpandNonNative.set(true);
+        
+        String query =
+            "With " +
+            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],[*BASE_MEMBERS_Product])' " +
+            "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' " +
+            "Set [*BASE_MEMBERS_Gender] as 'Filter([Gender].[Gender].Members,[Gender].CurrentMember.Name Matches (\"abc\"))' " +
+            "Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})' " +
+            "Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Name].Members, [Product].[Product Name].CurrentMember.Name Matches (\"abc\"))' " +
+            "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' " +
+            "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 " +
+            "Select " +
+            "[*BASE_MEMBERS_Measures] on columns, " +
+            "Non Empty Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember,[Product].CurrentMember)}) on rows " +
+            "From [Sales]";
+        
+        String result =
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
+            "Axis #2:\n";
+                
+        try {
+            // Query should return empty result.
+            checkNotNative(0, fold(query), result);
+        } finally {
+            MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
+        }
+    }
+
+    
+    /**
      * Verify that native MemberLists inputs are subject to SQL constriant
      * limitation. If mondrian.rolap.maxConstraints is set too low, native
      * evaluations will be turned off.

@@ -219,6 +219,15 @@ public abstract class RolapNativeSet extends RolapNative {
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
             RolapLevel level = arg.getLevel();
+            if (level == null) {
+                // Level can be null if the CrossJoinArg represent
+                // an empty set.
+                // This is used to push down the "1 = 0" predicate
+                // into the emerging CJ so that the entire CJ can
+                // be natively evaluated.
+                return;
+            }
+            
             RolapHierarchy hierarchy = level.getHierarchy();
             MemberReader mr = schemaReader.getMemberReader(hierarchy);
             MemberBuilder mb = mr.getMemberBuilder();
@@ -296,6 +305,13 @@ public abstract class RolapNativeSet extends RolapNative {
             return list;
         }
 
+        public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
+            if (member != null) {
+                SqlConstraintUtils.addMemberConstraint(
+                    sqlQuery, baseCube, null, member, true);
+            }
+        }
+        
         public boolean isPreferInterpreter(boolean joinArg) {
             return false;
         }
@@ -324,13 +340,6 @@ public abstract class RolapNativeSet extends RolapNative {
                 c = 31 * c + member.hashCode();
             }
             return c;
-        }
-
-        public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
-            if (member != null) {
-                SqlConstraintUtils.addMemberConstraint(
-                    sqlQuery, baseCube, null, member, true);
-            }
         }
     }
 
@@ -395,8 +404,14 @@ public abstract class RolapNativeSet extends RolapNative {
             RolapLevel nullLevel = null;
             boolean hasCalcMembers = false;
             boolean hasNonCalcMembers = false;
-            boolean hasAllMember = false;
-
+            
+            // Crossjoin Arg is an empty member list.
+            // This is used to push down the constant "false" condition to the
+            // native evaluator.
+            if (args.size() == 0) {
+                hasNonCalcMembers = true;
+            }
+            boolean hasAllMember = false;            
             int nNullMembers = 0;
             try {
                 for (RolapMember m : args) {
@@ -445,10 +460,13 @@ public abstract class RolapNativeSet extends RolapNative {
                 // all members were null; use an arbitrary one of the
                 // null levels since the SQL predicate is going to always
                 // fail anyway
-                assert(nullLevel != null);
                 level = nullLevel;
             }
-            if (!isSimpleLevel(level)) {
+            
+            // level will be null for an empty CJ input that is pushed down
+            // to the native evaluator.
+            // This case is not treated as a non-native input.
+            if ((level != null) && (!isSimpleLevel(level))) {
                 return null;
             }
             List<RolapMember> members = new ArrayList<RolapMember>();
@@ -486,6 +504,23 @@ public abstract class RolapNativeSet extends RolapNative {
             }
         }
 
+        public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
+            SqlConstraintUtils.addMemberConstraint(
+                sqlQuery, baseCube, null,
+                members, restrictMemberTypes, true);
+        }
+        
+        // Return true if the input CJ arg is empty.
+        // This is used to selectively push down empty input arg into the 
+        // native evaluator.        
+        public boolean isEmptyCrossJoinArg() {
+        	boolean isEmpty = false;
+        	 if (level == null && members.size() == 0) {
+        		 isEmpty = true;
+        	 }
+        	 return isEmpty;
+        }
+        
         public boolean hasCalcMembers() {
             return hasCalcMembers;
         }
@@ -519,12 +554,6 @@ public abstract class RolapNativeSet extends RolapNative {
                 }
             }
             return true;
-        }
-
-        public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
-            SqlConstraintUtils.addMemberConstraint(
-                sqlQuery, baseCube, null,
-                members, restrictMemberTypes, true);
         }
     }
 
@@ -661,11 +690,12 @@ public abstract class RolapNativeSet extends RolapNative {
         RolapEvaluator evaluator,
         int argSize) {
         boolean argSizeNotSupported = false;
-        
-        if (argSize == 0) {
-            argSizeNotSupported = true;
-        }
-        
+
+        // Note: srg size 0 is accepted as valid CJ argument
+        // This is used to push down the "1 = 0" predicate
+        // into the emerging CJ so that the entire CJ can
+        // be natively evaluated.
+
         // First check that the member list will not result in a predicate
         // longer than the underlying DB could support.
         if (!evaluator.getDialect().supportsUnlimitedValueList() &&
@@ -892,10 +922,13 @@ public abstract class RolapNativeSet extends RolapNative {
         SchemaReader schemaReader = evaluator.getSchemaReader();
         RolapEvaluator newEvaluator = (RolapEvaluator) evaluator.push();
         for (CrossJoinArg carg : cargs) {
-            Hierarchy hierarchy = carg.getLevel().getHierarchy();
-            Member defaultMember =
-                schemaReader.getHierarchyDefaultMember(hierarchy);
-            newEvaluator.setContext(defaultMember);
+            RolapLevel level = carg.getLevel();
+            if (level != null) {
+                Hierarchy hierarchy = level.getHierarchy();
+                Member defaultMember =
+                    schemaReader.getHierarchyDefaultMember(hierarchy);
+                newEvaluator.setContext(defaultMember);
+            }
         }
         if (storedMeasure != null)
             newEvaluator.setContext(storedMeasure);
