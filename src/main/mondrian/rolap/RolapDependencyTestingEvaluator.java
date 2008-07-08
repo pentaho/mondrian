@@ -73,6 +73,16 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
             return result;
         }
 
+        // If the result is a list and says that it is mutable, see whether it
+        // really is.
+        if (calc.getResultStyle() == ResultStyle.MUTABLE_LIST) {
+            List<Object> list = (List) result;
+            if (list.size() > 0) {
+                final Object zeroth = list.get(0);
+                list.set(0, zeroth);
+            }
+        }
+
         // Change one of the allegedly independent dimensions and evaluate
         // again.
         //
