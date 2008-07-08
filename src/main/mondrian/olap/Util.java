@@ -83,6 +83,14 @@ public class Util extends XOMUtil {
         System.getProperty("java.version").startsWith("1.4");
 
     /**
+     * What version of JDBC? Returns 4 in JDK 1.6 and higher, 3 otherwise.
+     */
+    public static final int JdbcVersion =
+        System.getProperty("java.version").compareTo("1.6") >= 0
+            ? 4
+            : 3;
+
+    /**
      * Whether the code base has re-engineered using retroweaver.
      * If this is the case, some functionality is not available.
      */
@@ -91,6 +99,7 @@ public class Util extends XOMUtil {
             "com.rc.retroweaver.runtime.Enum_");
 
     private static final UtilCompatible compatible;
+
     static {
         String className;
         if (PreJdk15 || Retrowoven) {
@@ -1667,22 +1676,24 @@ public class Util extends XOMUtil {
                 if (right == null) {
                     sb.append("'null'");
                 } else {
-                    /*
-                     * Quote a property value if is has a semi colon in it
-                     * 'xxx;yyy';
-                     */
-                    if (right.indexOf(';') >= 0 && right.charAt(0) != '\'') {
-                        sb.append("'");
-                    }
-
-                    sb.append(right);
-
-                    if (right.indexOf(';') >= 0 && right.charAt(
-                        right.length() - 1) != '\'') {
-                        sb.append("'");
+                    // Quote a property value if is has a semi colon in it
+                    // 'xxx;yyy'. Escape any single-quotes by doubling them.
+                    final int needsQuote = right.indexOf(';');
+                    if (needsQuote >= 0) {
+                        // REVIEW: This logic leaves off the leading/trailing
+                        //   quote if the property value already has a
+                        //   leading/trailing quote. Doesn't seem right to me.
+                        if (right.charAt(0) != '\'') {
+                            sb.append("'");
+                        }
+                        sb.append(replace(right, "'", "''"));
+                        if (right.charAt(right.length() - 1) != '\'') {
+                            sb.append("'");
+                        }
+                    } else {
+                        sb.append(right);
                     }
                 }
-
             }
             return sb.toString();
         }
@@ -2172,24 +2183,6 @@ public class Util extends XOMUtil {
     @SuppressWarnings({"unchecked"})
     public static <T> List<T> cast(List<?> list) {
         return (List<T>) list;
-    }
-
-    /**
-     * Returns whether an enumeration value is a valid not-null value of a given
-     * enumeration class.
-     *
-     * @param clazz Enumeration class
-     * @param e Enumeration value
-     * @return Whether t is a value of enum clazz
-     */
-    public static <E extends Enum<E>> boolean isValid(Class<E> clazz, E e) {
-        E[] enumConstants = clazz.getEnumConstants();
-        for (E enumConstant : enumConstants) {
-            if (e == enumConstant) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

@@ -26,6 +26,7 @@ import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.util.DelegatingInvocationHandler;
+import mondrian.olap4j.MondrianOlap4jDriver;
 
 import javax.sql.DataSource;
 import java.io.*;
@@ -35,6 +36,9 @@ import java.sql.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.lang.reflect.*;
+
+import org.olap4j.OlapWrapper;
+import org.olap4j.OlapConnection;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information
@@ -1389,6 +1393,22 @@ public class TestContext {
                 }
             }.getFoodMartConnection();
         return connection.getSchema().getWarnings();
+    }
+
+    public OlapConnection getOlap4jConnection() throws SQLException {
+        try {
+            Class.forName("mondrian.olap4j.MondrianOlap4jDriver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Driver not found");
+        }
+        String connectString = getConnectString();
+        if (connectString.startsWith("Provider=mondrian; ")) {
+            connectString = connectString.substring("Provider=mondrian; ".length());
+        }
+        final java.sql.Connection connection =
+            java.sql.DriverManager.getConnection(
+                "jdbc:mondrian:" + connectString);
+        return ((OlapWrapper) connection).unwrap(OlapConnection.class);
     }
 
     public static class SnoopingSchemaProcessor

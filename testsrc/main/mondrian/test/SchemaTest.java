@@ -12,15 +12,20 @@ package mondrian.test;
 import org.apache.log4j.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.varia.LevelRangeFilter;
+import org.olap4j.OlapConnection;
+import org.olap4j.metadata.*;
 
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.olap.*;
 import mondrian.util.Bug;
 import mondrian.olap.Member;
 import mondrian.olap.Position;
+import mondrian.olap.Cube;
+import mondrian.olap.Schema;
 
 import java.io.StringWriter;
 import java.util.List;
+import java.sql.SQLException;
 
 /**
  * Unit tests for various schema features.
@@ -110,6 +115,37 @@ public class SchemaTest extends FoodMartTestCase {
                 "Axis #1:\n" +
                 "{[Gender with default].[All Gender with defaults].[M]}\n" +
                 "Row #0: 135,215\n"));
+    }
+
+    /**
+     * Test case for the issue described in
+     * <a href="http://forums.pentaho.org/showthread.php?p=190737">Pentaho
+     * forum post 'wrong unique name for default member when hasAll=false'</a>.
+     */
+    public void testDefaultMemberName() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name=\"Product with no all\" foreignKey=\"product_id\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+                + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+                + "        <Table name=\"product\"/>\n"
+                + "        <Table name=\"product_class\"/>\n"
+                + "      </Join>\n"
+                + "      <Level name=\"Product Class\" table=\"product_class\" nameColumn=\"product_subcategory\"\n"
+                + "          column=\"product_class_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+                + "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+                + "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+                + "          uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n");
+        // note that default member name has no 'all' and has a name not an id
+        testContext.assertQueryReturns(
+            "select {[Product with no all]} on columns from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Product with no all].[Nuts]}\n" +
+                "Row #0: 4,400\n"));
     }
 
     public void testHierarchyAbbreviatedDefaultMember() {
@@ -1479,6 +1515,43 @@ public class SchemaTest extends FoodMartTestCase {
                 "Row #0: 24,597\n" +
                 "Row #0: 191,940\n" +
                 "Row #0: 50,236\n"));
+    }
+
+    public void testCubeHasFact() {
+        final TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"Cube with caption\" caption=\"Cube with name\"/>\n",
+            null, null, null, null);
+        Throwable throwable = null;
+        try {
+            testContext.assertSimpleQuery();
+        } catch (Throwable e) {
+            throwable = e;
+        }
+        TestContext.checkThrowable(
+            throwable,
+            "Must specify fact table of cube 'Cube with caption'");
+    }
+
+    public void testCubeCaption() throws SQLException {
+        final TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"Cube with caption\" caption=\"Cube with name\">"
+                + "  <Table name='sales_fact_1997'/>"
+                + "</Cube>\n",
+            "<VirtualCube name=\"Warehouse and Sales with caption\" "
+                + " caption=\"Warehouse and Sales with name\" "
+                + "defaultMeasure=\"Store Sales\">\n"
+                + "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\"/>\n"
+                + "</VirtualCube>",
+            null, null, null);
+        final NamedList<org.olap4j.metadata.Cube> cubes =
+            testContext.getOlap4jConnection().getSchema().getCubes();
+        final org.olap4j.metadata.Cube cube = cubes.get("Cube with caption");
+        assertEquals("Cube with name", cube.getCaption(null));
+        final org.olap4j.metadata.Cube cube2 =
+            cubes.get("Warehouse and Sales with caption");
+        assertEquals("Warehouse and Sales with name", cube2.getCaption(null));
     }
 
     public void testCubeWithNoDimensions() {

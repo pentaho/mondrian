@@ -984,12 +984,16 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testCousinThreeDown() {
-        Member member = executeSingletonAxis("Cousin([Customers].[USA].[CA].[Berkeley].[Alma Shelton], [Customers].[Mexico])");
-        // Alma Shelton is the 3rd child
+        Member member = executeSingletonAxis("Cousin([Customers].[USA].[CA].[Berkeley].[Barbara Combs], [Customers].[Mexico])");
+        // Barbara Combs is the 6th child
         // of the 4th child (Berkeley)
         // of the 1st child (CA)
         // of USA
-        Assert.assertEquals("[Customers].[All Customers].[Mexico].[DF].[Tixapan].[Albert Clouse]", member.getUniqueName());
+        // Annmarie Hill is the 6th child
+        // of the 4th child (Tixapan)
+        // of the 1st child (DF)
+        // of Mexico
+        Assert.assertEquals("[Customers].[All Customers].[Mexico].[DF].[Tixapan].[Annmarie Hill]", member.getUniqueName());
     }
 
     public void testCousinSameLevel() {

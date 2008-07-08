@@ -5,7 +5,7 @@
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
   == Copyright (C) 2001-2002 Kana Software, Inc.
-  == Copyright (C) 2002-2007 Julian Hyde and others
+  == Copyright (C) 2002-2008 Julian Hyde and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -49,10 +49,10 @@ configure Mondrian as an XML/A provider</a><ol>
   <li><a href="#8_Compatibility_issues">Compatibility issues</a></li>
   <ol>
     <li><a href="#8_1_Weblogic_6_1_and_Xerces">Weblogic 6.1 and Xerces</a></li>
-    <li><a href="#8_2_Xalan_and_Tomcat">Xalan and Tomcat</a></li>
-    <li><a href="#8_3_Log4j_and_Tomcat">Log4j and Tomcat</a></li>
+    <li><a href="#8_2_Log4j_and_Tomcat">Log4j and Tomcat</a></li>
   </ol>
 </ol>
+
 <h2>1. Introduction<a name="1_Introduction">&nbsp;</a></h2>
 <p>The core of Mondrian is a JAR that acts as "JDBC for OLAP":
 providing connections and executing SQL against underlying relational
@@ -277,7 +277,7 @@ user:</p>
 
 <blockquote>
   <code><b><i>$</i></b> java -cp
-"/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-5.0.5-bin.jar"<br>
+"/mondrian/lib/mondrian.jar:/mondrian/lib/log4j.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-5.0.5-bin.jar"<br>
 &nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=com.mysql.jdbc.Driver<br>
@@ -293,7 +293,7 @@ dataset in the Access database:</p>
 
 <blockquote>
 	<code><i><b>C:\mondrian&gt;</b></i> java -cp
-"C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar; C:\mondrian\lib\eigenbase-xom.jar; C:\mondrian\lib\eigenbase-resgen.jar; C:\mondrian\lib\eigenbase-properties.jar; C:\mondrian\lib\postgres-jdbc.jar"<br>
+"C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j.jar; C:\mondrian\lib\eigenbase-xom.jar; C:\mondrian\lib\eigenbase-resgen.jar; C:\mondrian\lib\eigenbase-properties.jar; C:\mondrian\lib\postgres-jdbc.jar"<br>
 &nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers="org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver"<br>
@@ -505,6 +505,27 @@ property settings, and any other tweaks which were required.</p>
 <code><a href="http://p4web.eigenbase.org/open/mondrian/mondrian.properties">mondrian.properties</a></code>.  There are are sample connect
 strings for most databases in there.</p>
 
+<h3>PostgreSQL</h3>
+
+<p>To install PostgreSQL 8.2 and its JDBC driver on Ubuntu, I typed:</p>
+
+<blockquote><code>$ sudo apt-get install postgresql libpg-java</code></blockquote>
+
+<p>The JDBC driver can be found at <code>/usr/share/java/postgresql.jar</code>.</p>
+
+<p>Change password:</p>
+
+<blockquote><code>
+    $ sudo -u postgres psql postgres<br/>
+    # ALTER USER postgres WITH ENCRYPTED PASSWORD ' <***password***> ';<br/>
+    # \q</code></blockquote>
+
+<p>Create a user and a database:</p>
+
+<blockquote><code>
+    $ sudo -u postgres  createuser -D -A -P foodmart<br/>
+    $ sudo -u postgres createdb -O foodmart foodmart</code></blockquote>
+
 <h3>Ingres</h3>
 <p>Andy Grimm writes:</p>
 <blockquote>
@@ -560,66 +581,7 @@ explicitly uses Xerces.&nbsp; Fyi,
 note</a>
 describes how to change Weblogic's default XML parser.</p>
 
-<h3>8.2. JDK, Xalan and Tomcat<a name="8_2_Xalan_and_Tomcat">&nbsp;</a></h3>
-
-<p>Mondrian binaries, as shipped, require JDK 1.4.x, Xalan 2.6.0, and
-Tomcat
-5.0.25 or later. Things work better that way.</p>
-<p>If you are running JDK 1.3.<i>x</i>, you will need some extra JAR
-files, because JDK 1.3 does
-not include the an XML parser. Copy <code> xalan.jar</code> and <code>xml-apis.jar</code>
-to <code><i>TOMCAT_HOME</i>/common/lib</code>. (or <code><i>TOMCAT_HOME</i>/common/endorsed</code>,
-if your version of Tomcat has one). If you get the configuration wrong,
-a typical error is</p>
-<blockquote>
-	<code>java.lang.VerifyError: Cannot inherit from final class<br>
-&nbsp; at java.lang.ClassLoader.defineClass0(Native Method)<br>
-&nbsp; at java.lang.ClassLoader.defineClass(ClassLoader.java:502)<br>
-&nbsp; at
-java.security.SecureClassLoader.defineClass(SecureClassLoader.java:123)<br>
-&nbsp; at
-org.apache.catalina.loader.WebappClassLoader.findClassInternal(WebappClassLoader.java:1664)<br>
-&nbsp; at
-org.apache.catalina.loader.WebappClassLoader.findClass(WebappClassLoader.java:953)<br>
-&nbsp; at
-org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1394)<br>
-&nbsp; at
-org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1274)<br>
-&nbsp; at java.lang.ClassLoader.loadClassInternal(ClassLoader.java:315)<br>
-&nbsp; at
-org.apache.xerces.impl.XMLNSDocumentScannerImpl.createContentDispatcher(Unknown
-Source)<br>
-&nbsp; at
-org.apache.xerces.impl.XMLDocumentFragmentScannerImpl.&lt;init&gt;(XMLDocumentFragmentScannerImpl.java:249)<br>
-&nbsp; at
-org.apache.xerces.impl.XMLDocumentScannerImpl.&lt;init&gt;(XMLDocumentScannerImpl.java:245)<br>
-&nbsp; at
-org.apache.xerces.impl.XMLNSDocumentScannerImpl.&lt;init&gt;(Unknown
-Source)<br>
-&nbsp; at
-org.apache.xerces.parsers.IntegratedParserConfiguration.createDocumentScanner(Unknown
-Source)<br>
-&nbsp; at
-org.apache.xerces.parsers.DTDConfiguration.&lt;init&gt;(DTDConfiguration.java:367)<br>
-&nbsp; at
-org.apache.xerces.parsers.StandardParserConfiguration.&lt;init&gt;(StandardParserConfiguration.java:198)<br>
-&nbsp; at
-org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown
-Source)<br>
-&nbsp; at
-org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown
-Source)<br>
-&nbsp; at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native
-Method)</code>
-</blockquote>
-<p>This error occurred under JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. The
-solutions to the error were (a) move to JDK 1.4 and remove <code>xml-apis.jar</code>
-and
-<code>xercesImpl.jar</code> from <code>mondrian.war</code>, or (b)
-revert to Xalan 2.3.1.<br>
-</p>
-
-<h3>8.3. Log4j and Tomcat<a name="8_3_Log4j_and_Tomcat">&nbsp;</a></h3>
+<h3>8.2. Log4j and Tomcat<a name="8_2_Log4j_and_Tomcat">&nbsp;</a></h3>
 
 <p>The Mondrian WARs come packaged with a version of log4j.jar. This
 may conflict with your app server, such as JBoss, and cause errors in
@@ -630,11 +592,11 @@ Mondrian WAR.</p>
 <hr>
 
 <p>
-    Author: Julian Hyde and others; last updated October, 2006.<br/>
+    Author: Julian Hyde and others; last updated July, 2008.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/install.html?ac=22">log</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc.<br/>
-    Copyright (C) 2002-2007 Julian Hyde
+    Copyright (C) 2002-2008 Julian Hyde and others
 </p>
 
 <br/>

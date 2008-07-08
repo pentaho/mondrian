@@ -1035,6 +1035,52 @@ public class AccessControlTest extends FoodMartTestCase {
         assertHierarchyAccess(
             testContext.getConnection(), Access.CUSTOM, "Sales Ragged", "Store");
     }
+
+    public void testPartialRollupParentChildHierarchy() {
+        final TestContext testContext = TestContext.create(
+            null, null, null, null, null,
+            "<Role name=\"Buggy Role\">\n"
+                + "  <SchemaGrant access=\"none\">\n"
+                + "    <CubeGrant cube=\"HR\" access=\"all\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Employees]\" access=\"custom\"\n"
+                + "                      rollupPolicy=\"partial\">\n"
+                + "        <MemberGrant\n"
+                + "            member=\"[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz]\"\n"
+                + "            access=\"all\"/>\n"
+                + "      </HierarchyGrant>\n"
+                + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\"\n"
+                + "                      rollupPolicy=\"partial\">\n"
+                + "        <MemberGrant member=\"[Store].[All Stores].[USA].[CA]\" access=\"all\"/>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>").
+            withRole("Buggy Role");
+        testContext.assertQueryReturns(
+            "select\n"
+                + "  {[Measures].[Number of Employees]} on columns,\n"
+                + "  {[Store]} on rows\n"
+                + "from HR",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Number of Employees]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores]}\n" +
+                "Row #0: 1\n"));
+        testContext.assertQueryReturns(
+            "select\n"
+                + "  {[Measures].[Number of Employees]} on columns,\n"
+                + "  {[Employees]} on rows\n"
+                + "from HR",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Number of Employees]}\n" +
+                "Axis #2:\n" +
+                "{[Employees].[All Employees]}\n" +
+                "Row #0: 1\n"));
+    }
 }
 
 // End AccessControlTest.java
