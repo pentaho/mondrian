@@ -1356,7 +1356,7 @@ public class SqlQuery {
             if (isOracle()) {
                 return generateInlineGeneric(
                     columnNames, columnTypes, valueList,
-                    "from dual");
+                    " from dual");
             } else if (isAccess()) {
                 // Fall back to using the FoodMart 'days' table, because
                 // Access SQL has no way to generate values not from a table.

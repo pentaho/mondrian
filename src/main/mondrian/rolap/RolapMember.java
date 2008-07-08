@@ -360,7 +360,13 @@ public class RolapMember extends MemberBase {
         MemberType memberType)
     {
         super(parentMember, level, memberType);
-        this.key = key;
+        if (key instanceof byte[]) {
+            // Some drivers (e.g. Derby) return byte arrays for binary columns
+            // but byte arrays do not implement Comparable
+            this.key = new String((byte[])key);
+        } else {
+            this.key = key;
+        }
         this.ordinal = -1;
         this.mapPropertyNameToValue = Collections.emptyMap();
 
