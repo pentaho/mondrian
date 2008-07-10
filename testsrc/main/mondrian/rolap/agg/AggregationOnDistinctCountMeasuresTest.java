@@ -715,13 +715,39 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "IIF(COUNT([COG_OQP_INT_s1], INCLUDEEMPTY) > 0, 1, 0))} ON AXIS(1) \n" +
             "FROM [sales]";
 
-        String oraTeraSql =
-            "select \"store\".\"store_state\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", " +
-            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"store\" =as= \"store\", \"sales_fact_1997\" =as= \"sales_fact_1997\", \"time_by_day\" =as= \"time_by_day\" " +
-            "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-            "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 " +
-            "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
+        final String oraTeraSql;
+        if (MondrianProperties.instance().EnableGroupingSets.get()) {
+            oraTeraSql = "select \"store\".\"store_state\" as \"c0\", " +
+                "\"store\".\"store_city\" as \"c1\", " +
+                "\"time_by_day\".\"the_year\" as \"c2\", " +
+                "\"customer\".\"gender\" as \"c3\", " +
+                "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\", " +
+                "grouping(\"customer\".\"gender\") as \"g0\", " +
+                "grouping(\"store\".\"store_city\") as \"g1\" " +
+                "from \"store\" =as= \"store\"," +
+                " \"sales_fact_1997\" =as= \"sales_fact_1997\"," +
+                " \"time_by_day\" =as= \"time_by_day\"," +
+                " \"customer\" =as= \"customer\" " +
+                "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+                "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
+                "and \"time_by_day\".\"the_year\" = 1997 " +
+                "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
+                "group by grouping sets ((\"store\".\"store_state\",\"store\".\"store_city\",\"time_by_day\".\"the_year\",\"customer\".\"gender\")," +
+                "(\"store\".\"store_state\",\"store\".\"store_city\",\"time_by_day\".\"the_year\")," +
+                "(\"store\".\"store_state\",\"time_by_day\".\"the_year\")," +
+                "(\"store\".\"store_state\",\"time_by_day\".\"the_year\",\"customer\".\"gender\"))";
+        } else {
+            oraTeraSql = "select \"store\".\"store_state\" as \"c0\", " +
+                "\"time_by_day\".\"the_year\" as \"c1\", " +
+                "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
+                "from \"store\" =as= \"store\"," +
+                " \"sales_fact_1997\" =as= \"sales_fact_1997\"," +
+                " \"time_by_day\" =as= \"time_by_day\" " +
+                "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
+                "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
+                "and \"time_by_day\".\"the_year\" = 1997 " +
+                "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
+        }
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSql, oraTeraSql),
             new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSql, oraTeraSql),

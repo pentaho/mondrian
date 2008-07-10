@@ -13,6 +13,7 @@ import mondrian.olap.MondrianProperties;
 import mondrian.rolap.BatchTestCase;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
+import mondrian.olap.Util;
 
 import java.util.ArrayList;
 
@@ -59,6 +60,14 @@ public class SqlQueryTest extends BatchTestCase {
         prop.WarnIfNoPatternForDialect.set(origWarnIfNoPatternForDialect);
     }
 
+    private static String dialectize(SqlQuery.Dialect dialect, String expected) {
+        if (dialect.isOracle()) {
+            return Util.replace(fold(expected), " =as= ", " ");
+        } else {
+            return Util.replace(fold(expected), " =as= ", " as ");
+        }
+    }
+
     public void testToStringForSingleGroupingSetSql() {
         if (!isGroupingSetsSupported()) {
             return;
@@ -78,16 +87,16 @@ public class SqlQueryTest extends BatchTestCase {
             sqlQuery.addGroupingSet(groupingsetsList);
             String expected;
             if (!b) {
-                expected = "select c1 as \"c0\", c2 as \"c1\", grouping(gf0) as \"g0\" "
-                    + "from \"s\".\"t1\" \"t1alias\" where a=b "
+                expected = "select c1 =as= \"c0\", c2 =as= \"c1\", grouping(gf0) as \"g0\" "
+                    + "from \"s\".\"t1\" =as= \"t1alias\" where a=b "
                     + "group by grouping sets ((gs1,gs2,gs3))";
             } else {
                 expected = "select \n" +
-                    "    c1 as \"c0\", \n" +
-                    "    c2 as \"c1\"\n" +
+                    "    c1 =as= \"c0\", \n" +
+                    "    c2 =as= \"c1\"\n" +
                     "    , grouping(gf0) as \"g0\"\n" +
                     "from \n" +
-                    "    \"s\".\"t1\" \"t1alias\"\n" +
+                    "    \"s\".\"t1\" =as= \"t1alias\"\n" +
                     "where \n" +
                     "    a=b\n" +
                     " group by grouping sets ((\n" +
@@ -97,7 +106,7 @@ public class SqlQueryTest extends BatchTestCase {
                     "))";
             }
             assertEquals(
-                fold(expected),
+                dialectize(dialect, expected),
                 sqlQuery.toString());
         }
     }
@@ -248,6 +257,7 @@ public class SqlQueryTest extends BatchTestCase {
         if (!isGroupingSetsSupported()) {
             return;
         }
+        final SqlQuery.Dialect dialect = getTestContext().getDialect();
         for (boolean b : new boolean[]{false, true}) {
             SqlQuery sqlQuery = new SqlQuery(getTestContext().getDialect(), b);
             sqlQuery.addSelect("c1");
@@ -262,26 +272,29 @@ public class SqlQueryTest extends BatchTestCase {
             groupingsetsList.add("gs3");
             sqlQuery.addGroupingSet(new ArrayList<String>());
             sqlQuery.addGroupingSet(groupingsetsList);
-            String expected = b
-                ? "select \n" +
-                "    c1 as \"c0\", \n" +
-                "    c2 as \"c1\"\n" +
-                "    , grouping(g1) as \"g0\"\n" +
-                "    , grouping(g2) as \"g1\"\n" +
-                "from \n" +
-                "    \"s\".\"t1\" \"t1alias\"\n" +
-                "where \n" +
-                "    a=b\n" +
-                " group by grouping sets ((),(\n" +
-                "    gs1,\n" +
-                "    gs2,\n" +
-                "    gs3\n" +
-                "))"
-                : "select c1 as \"c0\", c2 as \"c1\", grouping(g1) as \"g0\", "
-                + "grouping(g2) as \"g1\" from \"s\".\"t1\" \"t1alias\" where a=b "
-                + "group by grouping sets ((),(gs1,gs2,gs3))";
+            String expected;
+            if (b) {
+                expected = "select \n" +
+                    "    c1 as \"c0\", \n" +
+                    "    c2 as \"c1\"\n" +
+                    "    , grouping(g1) as \"g0\"\n" +
+                    "    , grouping(g2) as \"g1\"\n" +
+                    "from \n" +
+                    "    \"s\".\"t1\" =as= \"t1alias\"\n" +
+                    "where \n" +
+                    "    a=b\n" +
+                    " group by grouping sets ((),(\n" +
+                    "    gs1,\n" +
+                    "    gs2,\n" +
+                    "    gs3\n" +
+                    "))";
+            } else {
+                expected = "select c1 as \"c0\", c2 as \"c1\", grouping(g1) as \"g0\", "
+                    + "grouping(g2) as \"g1\" from \"s\".\"t1\" =as= \"t1alias\" where a=b "
+                    + "group by grouping sets ((),(gs1,gs2,gs3))";
+            }
             assertEquals(
-                fold(expected),
+                dialectize(dialect, expected),
                 sqlQuery.toString());
         }
     }
@@ -290,8 +303,9 @@ public class SqlQueryTest extends BatchTestCase {
         if (!isGroupingSetsSupported()) {
             return;
         }
+        final SqlQuery.Dialect dialect = getTestContext().getDialect();
         for (boolean b : new boolean[]{false, true}) {
-            SqlQuery sqlQuery = new SqlQuery(getTestContext().getDialect(), b);
+            SqlQuery sqlQuery = new SqlQuery(dialect, b);
             sqlQuery.addSelect("c0");
             sqlQuery.addSelect("c1");
             sqlQuery.addSelect("c2");
@@ -310,36 +324,36 @@ public class SqlQueryTest extends BatchTestCase {
             groupingsetsList2.add("c1");
             groupingsetsList2.add("c2");
             sqlQuery.addGroupingSet(groupingsetsList2);
-            String expected = b
-                ? "select \n" +
-                "    c0 as \"c0\", \n" +
-                "    c1 as \"c1\", \n" +
-                "    c2 as \"c2\", \n" +
-                "    m1 as \"m1\"\n" +
-                "    , grouping(c0) as \"g0\"\n" +
-                "    , grouping(c1) as \"g1\"\n" +
-                "    , grouping(c2) as \"g2\"\n" +
-                "from \n" +
-                "    \"s\".\"t1\" \"t1alias\"\n" +
-                "where \n" +
-                "    a=b\n" +
-                " group by grouping sets ((\n" +
-                "    c0,\n" +
-                "    c1,\n" +
-                "    c2\n" +
-                "),(\n" +
-                "    c1,\n" +
-                "    c2\n" +
-                "))"
-                : "select c0 as \"c0\", c1 as \"c1\", c2 as \"c2\", m1 as \"m1\", "
-                    +
-                    "grouping(c0) as \"g0\", grouping(c1) as \"g1\", grouping(c2) as \"g2\" "
-                    +
-                    "from \"s\".\"t1\" \"t1alias\" where a=b "
-                    +
+            String expected;
+            if (b) {
+                expected = "select \n" +
+                    "    c0 as \"c0\", \n" +
+                    "    c1 as \"c1\", \n" +
+                    "    c2 as \"c2\", \n" +
+                    "    m1 as \"m1\"\n" +
+                    "    , grouping(c0) as \"g0\"\n" +
+                    "    , grouping(c1) as \"g1\"\n" +
+                    "    , grouping(c2) as \"g2\"\n" +
+                    "from \n" +
+                    "    \"s\".\"t1\" =as= \"t1alias\"\n" +
+                    "where \n" +
+                    "    a=b\n" +
+                    " group by grouping sets ((\n" +
+                    "    c0,\n" +
+                    "    c1,\n" +
+                    "    c2\n" +
+                    "),(\n" +
+                    "    c1,\n" +
+                    "    c2\n" +
+                    "))";
+            } else {
+                expected = "select c0 as \"c0\", c1 as \"c1\", c2 as \"c2\", m1 as \"m1\", " +
+                    "grouping(c0) as \"g0\", grouping(c1) as \"g1\", grouping(c2) as \"g2\" " +
+                    "from \"s\".\"t1\" =as= \"t1alias\" where a=b " +
                     "group by grouping sets ((c0,c1,c2),(c1,c2))";
+            }
             assertEquals(
-                fold(expected),
+                dialectize(dialect, expected),
                 sqlQuery.toString());
         }
     }
@@ -459,4 +473,5 @@ public class SqlQueryTest extends BatchTestCase {
     }
 }
 
-//End SqlQueryTest.java
+// End SqlQueryTest.java
+
