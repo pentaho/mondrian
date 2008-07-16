@@ -721,19 +721,6 @@ public abstract class RolapAggregationManager {
     public abstract PinSet createPinSet();
 
     /**
-     * Generates a SQL query to retrieve a cell value for an evaluation
-     * context where some of the dimensions have more than one member.
-     *
-     * <p>Returns null if the request is unsatisfiable. This would happen, say,
-     * if one of the members is null.
-     *
-     * @param evaluator Provides evaluation context
-     * @param aggregationLists List of aggregations, each of which is a set
-     *   of members in the same hierarchy which need to be summed together.
-     * @return SQL query, or null if request is unsatisfiable
-     */
-
-    /**
      * A set of segments which are pinned for a short duration as a result of a
      * cache inquiry.
      */

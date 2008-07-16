@@ -228,10 +228,11 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         wrapNonBatchedBatchesWithCompositeBatches(batchList, batchGroups);
-        ArrayList<CompositeBatch> list =
-            new ArrayList<CompositeBatch>(batchGroups.values());
-        Collections.sort(list, CompositeBatchComparator.instance);
-        return list;
+        final CompositeBatch[] compositeBatches =
+            batchGroups.values().toArray(
+                new CompositeBatch[batchGroups.size()]);
+        Arrays.sort(compositeBatches, CompositeBatchComparator.instance);
+        return Arrays.asList(compositeBatches);
     }
 
     private void wrapNonBatchedBatchesWithCompositeBatches(
@@ -337,7 +338,7 @@ public class FastBatchingCellReader implements CellReader {
 
             getSegmentLoader().load(
                 batchCollector.getGroupingSets(),
-                pinnedSegments, 
+                pinnedSegments,
                 detailedBatch.batchKey.getCompoundPredicateList());
         }
 
@@ -364,6 +365,8 @@ public class FastBatchingCellReader implements CellReader {
             new ArrayList<RolapStar.Measure>();
         final Set<StarColumnPredicate>[] valueSets;
         final AggregationKey batchKey;
+        // string representation; for debug; set lazily in toString
+        private String string;
 
         public Batch(CellRequest request) {
             columns = request.getConstrainedColumns();
@@ -372,6 +375,22 @@ public class FastBatchingCellReader implements CellReader {
                 valueSets[i] = new HashSet<StarColumnPredicate>();
             }
             batchKey = new AggregationKey(request);
+        }
+
+        public String toString() {
+            if (string == null) {
+                final StringBuilder buf = new StringBuilder();
+                buf.append("Batch {\n")
+                    .append("  columns={").append(Arrays.asList(columns))
+                    .append("}\n")
+                    .append("  measures={").append(measuresList).append("}\n")
+                    .append("  valueSets={").append(Arrays.asList(valueSets))
+                    .append("}\n")
+                    .append("  batchKey=").append(batchKey).append("}\n")
+                    .append("}");
+                string = buf.toString();
+            }
+            return string;
         }
 
         public final void add(CellRequest request) {
@@ -668,17 +687,48 @@ public class FastBatchingCellReader implements CellReader {
                 && haveSameStarAndAggregation(other);
         }
 
+        /**
+         * Returns whether the constraints on this Batch subsume the constraints
+         * on another Batch and therefore the other Batch can be subsumed into
+         * this one for GROUPING SETS purposes. Not symmetric.
+         *
+         * @param other Other batch
+         * @return Whether other batch can be subsumed into this one
+         */
         private boolean constraintsMatch(Batch other) {
-            if(areBothDistinctCountBatches(other)){
-                if(getConstrainedColumnsBitKey().equals(
+            if (areBothDistinctCountBatches(other)) {
+                if (getConstrainedColumnsBitKey().equals(
                     other.getConstrainedColumnsBitKey())) {
-                        return hasSameCompoundPredicate(other)
-                            && haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other);
+                    return hasSameCompoundPredicate(other)
+                        && haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other);
+                } else {
+                    return hasSameCompoundPredicate(other)
+                        || (other.batchKey.getCompoundPredicateList().isEmpty()
+                            || equalConstraint(
+                                batchKey.getCompoundPredicateList(),
+                                other.batchKey.getCompoundPredicateList()))
+                        && haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other);
                 }
-                return hasSameCompoundPredicate(other)
-                    || haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other);
+            } else {
+                return haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other);
             }
-            return haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other);
+        }
+
+        private boolean equalConstraint(
+            List<StarPredicate> predList1,
+            List<StarPredicate> predList2)
+        {
+            if (predList1.size() != predList2.size()) {
+                return false;
+            }
+            for (int i = 0; i < predList1.size(); i++) {
+                StarPredicate pred1 = predList1.get(i);
+                StarPredicate pred2 = predList2.get(i);
+                if (!pred1.equalConstraint(pred2)) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private boolean areBothDistinctCountBatches(Batch other) {
@@ -788,8 +838,9 @@ public class FastBatchingCellReader implements CellReader {
                         if (hasSameValues(other.valueSets[i], valueSets[j])) {
                             isCommonColumn = true;
                             break;
-                        } else
+                        } else {
                             return false;
+                        }
                     }
                 }
                 if (!isCommonColumn &&
@@ -800,30 +851,38 @@ public class FastBatchingCellReader implements CellReader {
             return true;
         }
 
-        private boolean hasAllValues(RolapStar.Column column,
-                                     Set<StarColumnPredicate> valueSet)
+        private boolean hasAllValues(
+            RolapStar.Column column,
+            Set<StarColumnPredicate> valueSet)
         {
             return column.getCardinality() == valueSet.size();
         }
 
-        private boolean areSameColumns(RolapStar.Column otherColumn,
-                                       RolapStar.Column thisColumn)
+        private boolean areSameColumns(
+            RolapStar.Column otherColumn,
+            RolapStar.Column thisColumn)
         {
             return otherColumn.equals(thisColumn);
         }
 
-        private boolean hasSameValues(Set<StarColumnPredicate> otherValueSet,
-                                      Set<StarColumnPredicate> thisValueSet)
+        private boolean hasSameValues(
+            Set<StarColumnPredicate> otherValueSet,
+            Set<StarColumnPredicate> thisValueSet)
         {
             return otherValueSet.equals(thisValueSet);
         }
     }
 
-    private static class CompositeBatchComparator implements Comparator<CompositeBatch> {
-        static final CompositeBatchComparator instance = new CompositeBatchComparator();
+    private static class CompositeBatchComparator
+        implements Comparator<CompositeBatch>
+    {
+        static final CompositeBatchComparator instance =
+            new CompositeBatchComparator();
 
         public int compare(CompositeBatch o1, CompositeBatch o2) {
-            return BatchComparator.instance.compare(o1.detailedBatch, o2.detailedBatch);
+            return BatchComparator.instance.compare(
+                o1.detailedBatch,
+                o2.detailedBatch);
         }
     }
 

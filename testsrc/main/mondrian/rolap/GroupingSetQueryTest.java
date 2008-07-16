@@ -435,7 +435,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             patternsWithoutGsets);
     }
 
-public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
+    public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             return;
         }
@@ -604,6 +604,83 @@ public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
         assertQuerySql(mdxQueryWithMembers, patterns);
         assertQueryReturns(mdxQueryWithDefaultMember, desiredResult);
         assertQuerySql(mdxQueryWithDefaultMember, patterns);
+    }
+
+    /**
+     * Testcase for bug 2004202, "Except not working with grouping sets".
+     */
+    public void testBug2004202() {
+        assertQueryReturns(
+            "with member store.allbutwallawalla as\n"
+                + " 'aggregate(\n"
+                + "    except(\n"
+                + "        store.[store name].members,\n"
+                + "        { [Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}))'\n"
+                + "select {\n"
+                + "          store.[store name].members,\n"
+                + "         store.allbutwallawalla,\n"
+                + "         store.[all stores]} on 0,\n" 
+                + "  {measures.[customer count]} on 1\n"
+                + "from sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[Canada].[BC].[Vancouver].[Store 19]}\n" +
+                "{[Store].[All Stores].[Canada].[BC].[Victoria].[Store 20]}\n" +
+                "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n" +
+                "{[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]}\n" +
+                "{[Store].[All Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]}\n" +
+                "{[Store].[All Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]}\n" +
+                "{[Store].[All Stores].[Mexico].[Veracruz].[Orizaba].[Store 10]}\n" +
+                "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n" +
+                "{[Store].[All Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]}\n" +
+                "{[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 12]}\n" +
+                "{[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 18]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}\n" +
+                "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n" +
+                "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n" +
+                "{[Store].[allbutwallawalla]}\n" +
+                "{[Store].[All Stores]}\n" +
+                "Axis #2:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: 1,059\n" +
+                "Row #0: 1,147\n" +
+                "Row #0: 962\n" +
+                "Row #0: 296\n" +
+                "Row #0: 563\n" +
+                "Row #0: 474\n" +
+                "Row #0: 190\n" +
+                "Row #0: 179\n" +
+                "Row #0: 906\n" +
+                "Row #0: 84\n" +
+                "Row #0: 278\n" +
+                "Row #0: 96\n" +
+                "Row #0: 95\n" +
+                "Row #0: 5,485\n" +
+                "Row #0: 5,581\n"));
     }
 }
 

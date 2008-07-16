@@ -60,13 +60,6 @@ public class RangeColumnPredicate extends AbstractColumnPredicate {
         this.upperBound = upperBound;
     }
 
-    public String toString() {
-        final StringBuilder buf = new StringBuilder();
-        describe(buf);
-        return buf.toString();
-    }
-
-
     public int hashCode() {
         int h = lowerInclusive ? 2 : 1;
         h = 31 * h + lowerBound.hashCode();

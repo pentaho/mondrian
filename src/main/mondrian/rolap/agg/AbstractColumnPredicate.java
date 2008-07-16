@@ -28,7 +28,7 @@ import java.util.ArrayList;
  * @version $Id$
  */
 public abstract class AbstractColumnPredicate implements StarColumnPredicate {
-    private final RolapStar.Column constrainedColumn;
+    protected final RolapStar.Column constrainedColumn;
     private final BitKey constrainedColumnBitKey;
 
     /**
@@ -51,6 +51,13 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
         } else {
             constrainedColumnBitKey = null;
         }
+    }
+
+    public String toString() {
+        final StringBuilder buf = new StringBuilder();
+        buf.append(constrainedColumn.getExpression().getGenericExpression());
+        describe(buf);
+        return buf.toString();
     }
 
     public RolapStar.Column getConstrainedColumn() {
