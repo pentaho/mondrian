@@ -18,7 +18,14 @@ CLEAN=
 # The script's path is $OPEN_DIR/mondrian/bin/megatest; deduce OPEN_DIR.
 OPEN_DIR=$(cd $(dirname $0)/../..; pwd)
 case $(uname) in
-CYGWIN*) OPEN_DIR=$(cygpath -m $OPEN_DIR);;
+CYGWIN*)
+  OPEN_DIR=$(cygpath -m $OPEN_DIR)
+  if [ $(uname -n) = mackerel-winxp \
+    -a "$OPEN_DIR" = "e:/open" ]; then
+    OPEN_DIR=/open
+    echo $OPEN_DIR
+  fi
+  ;;
 esac
 
 case $(uname -n) in
@@ -650,6 +657,10 @@ doAllTests() {
   doTest --olap4j jdk1.5 oracle
   doTest --olap4j jdk1.5 access
 
+  doTest jdk1.6 teradata mondrian.test.VUsers=1
+  doTest jdk1.5 teradata mondrian.test.VUsers=1 mondrian.rolap.groupingsets.enable=true
+  doTest jdk1.4 teradata mondrian.test.VUsers=1
+
   # Basic
   doTest jdk1.5 derby mondrian.test.VUsers=1
 
@@ -659,10 +670,6 @@ doAllTests() {
   doTest jdk1.4 oracle mondrian.test.VUsers=1
   doTest jdk1.5 oracle mondrian.test.VUsers=1
   doTest jdk1.6 oracle mondrian.test.VUsers=1
-
-  doTest jdk1.6 teradata mondrian.test.VUsers=1
-  doTest jdk1.5 teradata mondrian.test.VUsers=1 mondrian.rolap.groupingsets.enable=true
-  doTest jdk1.4 teradata mondrian.test.VUsers=1
 
   doTest jdk1.5 oracle mondrian.test.ExpDependencies=10 mondrian.test.random.seed=-1 mondrian.expCache.enable=false #mondrian.test.Name=mondrian.test.ParentChildHierarchyTest
   doTest jdk1.5 access mondrian.olap.NullMemberRepresentation= mondrian.test.Class=mondrian.olap.NullMemberRepresentationTest
@@ -798,12 +805,12 @@ if [ "$nightly" ]; then
   echo
   echo ::: megatest.log :::::::::::::::::::::::::::::::::
   # Limit to 10MB, because that is gmail's limit.
-  dos2unix megatest.log
   head --bytes=10000000 megatest.log
 
 else
   doTests | tee megatest.log
-fi
+fi |
+dos2unix
 
 # End megatest
 
