@@ -41,11 +41,6 @@ You must accept the terms of that agreement to use this software.
     <filter-name>JPivotController</filter-name>
     <filter-class>com.tonbeller.wcf.controller.RequestFilter</filter-class>
     <init-param>
-      <param-name>indexJSP</param-name>
-      <param-value>/index.html</param-value>
-      <description>forward to this page if session is new</description>
-    </init-param>
-    <init-param>
       <param-name>errorJSP</param-name>
       <param-value>/error.jsp</param-value>
       <description>URI of error page</description>
