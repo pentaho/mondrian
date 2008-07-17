@@ -882,12 +882,27 @@ ${doc.dir}/**/*.css,
 ${doc.dir}/**/*.gif,
 ${doc.dir}/**/*.jpeg,
 ${doc.dir}/**/*.html,
+bin/cmdrunner.sh,
+bin/cmdrunner.cmd,
+bin/run.sh,
 misc/**/*.mf,
 misc/Meta.xsl,
+workbench/drivers/readme.txt,
+workbench/plugins/readme.txt,
+workbench/cpappend.bat,
+workbench/ivy.xml,
+workbench/log4j.xml,
+workbench/mondrian.properties,
+workbench/readme.txt,
+workbench/workbench.bat,
+workbench/workbench.sh,
 build.xml,
 build.bat,
 build.sh,
 build.properties,
+ivy.xml,
+ivysettings.xml,
+log4j.properties,
 mondrian.properties,
 LICENSE.html,
 README.txt,
@@ -1180,7 +1195,7 @@ clean against JDK 1.6.">
       <fileset dir="${classes.dir}" includes="**/package.html"/>
       <fileset dir="${testclasses.dir}" includes="**/package.html"/>
     </delete>
-    <javadoc sourcepath="${java.dir}:${javatest.dir}"
+    <javadoc
         maxmemory="1024m"
         classpathref="project.test.classpath"
         destdir="${javadoc.dir}"
@@ -1193,6 +1208,13 @@ clean against JDK 1.6.">
         Windowtitle="Mondrian OLAP Server, version ${version}"
         additionalparam="${additionalparam}"
       >
+      <fileset dir="${java.dir}">
+        <include name="**/*.java"/>
+        <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java" if="jdk16.not.present"/>
+      </fileset>
+      <fileset dir="${javatest.dir}">
+        <include name="**/*.java"/>
+      </fileset>
       <tag name="pre" description="Pre-condition:"
            scope="constructors,methods"/>
       <tag name="post" description="Post-condition:"
