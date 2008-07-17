@@ -451,7 +451,7 @@ public class RolapSchema implements Schema {
         for (MondrianDef.Cube xmlCube : xmlSchema.cubes) {
             if (xmlCube.isEnabled()) {
                 RolapCube cube = new RolapCube(this, xmlSchema, xmlCube, true);
-                cube.validate();
+                Util.discard(cube);
             }
         }
 

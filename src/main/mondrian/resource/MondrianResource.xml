@@ -380,10 +380,6 @@
     <text>Duplicate parameter ''{0}'' in schema</text>
 </exception>
 
-<exception id="40280" name="DuplicateAliasInCube">
-    <text>Duplicate table alias ''{0}'' in cube ''{1}''</text>
-</exception>
-
 <exception id="40290" name="UnknownAggregator">
     <text>Unknown aggregator ''{0}''; valid aggregators are: {1}</text>
 </exception>
