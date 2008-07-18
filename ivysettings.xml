@@ -12,9 +12,9 @@
   <settings defaultResolver="chain"/>
   <resolvers>
     <chain name="chain">
-      <url name="julian-repo" m2compatible="true">
-        <artifact pattern="http://repo.hydromatic.net/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]" />
-        <artifact pattern="http://repo.hydromatic.net/[organisation]/[module]/[revision]/[artifact].[ext]" />
+      <url name="pentaho-repo" m2compatible="true">
+        <artifact pattern="http://repo.pentaho.org/artifactory/repo/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]" />
+        <artifact pattern="http://repo.pentaho.org/artifactory/repo/[organisation]/[module]/[revision]/[artifact].[ext]" />
       </url>
       <ibiblio name="ibiblio" m2compatible="true" />
     </chain>
