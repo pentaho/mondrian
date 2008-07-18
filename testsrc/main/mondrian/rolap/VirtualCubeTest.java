@@ -144,6 +144,58 @@ public class VirtualCubeTest extends BatchTestCase {
                 "Row #0: 266,773\n"));
     }
 
+    public void testCartesianJoin() {
+      // these examples caused cartesian joins to occur, a fix in SqlTupleReader
+    	// was made and now these queries run normally.
+      TestContext testContext = createContextWithNonDefaultAllMember();
+
+      testContext.assertQueryReturns(
+      		"select " +
+      		"{ [measures].[store sales], [measures].[warehouse sales] } on 0, " +
+      		"non empty { [product].[product family].members } on 1 " +
+      		"from [warehouse and sales] " +
+      		"where [store].[all stores].[usa].[or]",
+        	fold(
+            	"Axis #0:\n" +
+            	"{[Store].[All Stores].[USA].[OR]}\n" +
+            	"Axis #1:\n" +
+            	"{[Measures].[Store Sales]}\n" +
+            	"{[Measures].[Warehouse Sales]}\n" +
+            	"Axis #2:\n" +
+            	"{[Product].[All Products].[Drink]}\n" +
+            	"{[Product].[All Products].[Food]}\n" +
+            	"{[Product].[All Products].[Non-Consumable]}\n" +
+            	"Row #0: 12,137.29\n" +
+            	"Row #0: 3,986.32\n" +
+            	"Row #1: 102,564.67\n" +
+            	"Row #1: 26,496.483\n" +
+            	"Row #2: 27,575.11\n" +
+            	"Row #2: 8,352.25\n"));
+      
+      testContext.assertQueryReturns(
+      		"select " +
+      		"{ [measures].[warehouse sales], [measures].[store sales] } on 0, " +
+      		"non empty { [product].[product family].members } on 1 " +
+      		"from [warehouse and sales] " +
+      		"where [store].[all stores].[usa].[or]",
+        	fold(
+            	"Axis #0:\n" +
+            	"{[Store].[All Stores].[USA].[OR]}\n" +
+            	"Axis #1:\n" +
+            	"{[Measures].[Warehouse Sales]}\n" +
+            	"{[Measures].[Store Sales]}\n" +            	
+            	"Axis #2:\n" +
+            	"{[Product].[All Products].[Drink]}\n" +
+            	"{[Product].[All Products].[Food]}\n" +
+            	"{[Product].[All Products].[Non-Consumable]}\n" +
+            	"Row #0: 3,986.32\n" +
+            	"Row #0: 12,137.29\n" +
+            	"Row #1: 26,496.483\n" +
+            	"Row #1: 102,564.67\n" +
+            	"Row #2: 8,352.25\n" +
+            	"Row #2: 27,575.11\n"));
+    }
+    
     /**
      * Query a virtual cube that contains a non-conforming dimension that
      * does not have ALL as its default member.
