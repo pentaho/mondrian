@@ -33,14 +33,18 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     private final List<String> columnNames;
     private final int maxColumnNameLength;
 
-    public DrillThroughQuerySpec(
-        CellRequest request,
-        boolean countOnly)
-    {
+    public DrillThroughQuerySpec(CellRequest request, boolean countOnly) {
         super(request.getMeasure().getStar(), countOnly);
         this.request = request;
-        this.maxColumnNameLength =
+        int tmpMaxColumnNameLength =
             getStar().getSqlQueryDialect().getMaxColumnNameLength();
+        if (tmpMaxColumnNameLength == 0) {
+            // From java.sql.DatabaseMetaData: "a result of zero means that 
+            // there is no limit or the limit is not known"
+            maxColumnNameLength = Integer.MAX_VALUE;
+        } else {
+            maxColumnNameLength = tmpMaxColumnNameLength;
+        }
         this.columnNames = computeDistinctColumnNames();
     }
 
