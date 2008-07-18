@@ -66,7 +66,7 @@ public class SqlStatement {
     private long startTime;
     
     // used for SQL logging, allows for a SQL Statement UID
-    private static long executeCount = 0;
+    private static long executeCount = -1;
 
     SqlStatement(
         DataSource dataSource,
@@ -95,7 +95,7 @@ public class SqlStatement {
         long currId = 0;
         // Trace start of execution.
         if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
-            currId = executeCount++;
+            currId = ++executeCount;
             StringBuffer sqllog = new StringBuffer();
             sqllog.append(currId + ": " + component + ": executing sql [");
             if (sql.indexOf('\n') >= 0) {
@@ -187,7 +187,7 @@ public class SqlStatement {
         long totalMs = time - startTime;
         String status = ", exec+fetch " + totalMs + " ms, " + rowCount + " rows";
 
-        RolapUtil.SQL_LOGGER.debug(status);
+        RolapUtil.SQL_LOGGER.debug(executeCount + ": " + status);
         
         if (RolapUtil.LOGGER.isDebugEnabled()) {
             RolapUtil.LOGGER.debug(component + ": done executing sql [" +
