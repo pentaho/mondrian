@@ -21,11 +21,9 @@ import mondrian.rolap.RolapUtil;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>
@@ -1105,14 +1103,34 @@ public class SqlQuery {
             // RolapSchemaReader.lookupMemberChildByName looks for
             // NumberFormatException to suppress it, so that is why
             // we convert the exception here.
+            final java.sql.Date date;
             try {
-                java.sql.Date.valueOf(value);
+                date = java.sql.Date.valueOf(value);
             } catch (IllegalArgumentException ex) {
                 throw new NumberFormatException(
                     "Illegal DATE literal:  " + value);
             }
-            buf.append("DATE ");
-            Util.singleQuoteString(value, buf);
+            if (isDerby()) {
+                // Derby accepts DATE('2008-01-23') but not SQL:2003 format.
+                buf.append("DATE(");
+                Util.singleQuoteString(value, buf);
+                buf.append(")");
+            } else if (isAccess()) {
+                // Access accepts #01/23/2008# but not SQL:2003 format.
+                buf.append("#");
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(date);
+                buf.append(calendar.get(Calendar.MONTH) + 1);
+                buf.append("/");
+                buf.append(calendar.get(Calendar.DAY_OF_MONTH));
+                buf.append("/");
+                buf.append(calendar.get(Calendar.YEAR));
+                buf.append("#");
+            } else {
+                // SQL:2003 date format: DATE '2008-01-23'.
+                buf.append("DATE ");
+                Util.singleQuoteString(value, buf);
+            }
         }
 
         /**

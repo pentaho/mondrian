@@ -175,6 +175,58 @@ public class InlineTableTest extends FoodMartTestCase {
                 "Row #0: \n" +
                 "Row #0: 266,773\n"));
     }
+
+    public void testInlineTableDate() {
+        final String cubeName = "Sales_Inline_Date";
+        TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"" + cubeName + "\">\n"
+                + "  <Table name=\"sales_fact_1997\"/>\n"
+                + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+                + "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">\n"
+                + "    <Hierarchy hasAll=\"true\" primaryKey=\"id\">\n"
+                + "        <InlineTable alias=\"inline_promo\">\n"
+                + "          <ColumnDefs>\n"
+                + "            <ColumnDef name=\"id\" type=\"Numeric\"/>\n"
+                + "            <ColumnDef name=\"date\" type=\"Date\"/>\n"
+                + "          </ColumnDefs>\n"
+                + "          <Rows>\n"
+                + "            <Row>\n"
+                + "              <Value column=\"id\">1</Value>\n"
+                + "              <Value column=\"date\">2008-04-29</Value>\n"
+                + "            </Row>\n"
+                + "            <Row>\n"
+                + "              <Value column=\"id\">2</Value>\n"
+                + "              <Value column=\"date\">2007-01-20</Value>\n"
+                + "            </Row>\n"
+                + "          </Rows>\n"
+                + "        </InlineTable>\n"
+                + "      <Level name=\"Alternative Promotion\" column=\"id\" nameColumn=\"date\" uniqueMembers=\"true\"/> \n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+                + "      formatString=\"Standard\" visible=\"false\"/>\n"
+                + "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###.00\"/>\n"
+                + "</Cube>",
+            null, null, null, null);
+        // Access returns date literals as timestamp values, which results in
+        // extra fields when converted to a string.
+        final String extra =
+            testContext.getDialect().isAccess() ? " 00:00:00.0" : "";
+        testContext.assertQueryReturns(
+            "select {[Alternative Promotion].Members} ON COLUMNS\n"
+                + "from [" + cubeName + "] ",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Alternative Promotion].[All Alternative Promotions]}\n" +
+                "{[Alternative Promotion].[All Alternative Promotions].[2008-04-29" + extra + "]}\n" +
+                "{[Alternative Promotion].[All Alternative Promotions].[2007-01-20" + extra + "]}\n" +
+                "Row #0: 266,773\n" +
+                "Row #0: \n" +
+                "Row #0: \n"));
+    }
 }
 
 // End InlineTableTest.java

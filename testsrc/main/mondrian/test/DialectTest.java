@@ -16,10 +16,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 import mondrian.olap.Util;
 import mondrian.rolap.sql.SqlQuery;
@@ -386,15 +383,31 @@ public class DialectTest extends TestCase {
     }
 
     public void testGenerateInline() throws SQLException {
-        assertInline(new String[]{"a", "1"});
-        assertInline(new String[]{"a", "1"}, new String[]{"bb", "2"});
+        final List<String> typeList = Arrays.asList("String", "Numeric");
+        final List<String> nameList = Arrays.asList("x", "y");
+        assertInline(
+            nameList, typeList,
+            new String[]{"a", "1"});
+
+        assertInline(
+            nameList, typeList,
+            new String[]{"a", "1"}, new String[]{"bb", "2"});
+
+        // date value
+        final List<String> typeList2 = Arrays.asList("String", "Date");
+        assertInline(
+            nameList, typeList2,
+            new String[]{"a", "2008-04-29"}, new String[]{"b", "2007-01-02"});
     }
 
-    private void assertInline(String[]... valueList) throws SQLException {
+    private void assertInline(
+        List<String> nameList,
+        List<String> typeList,
+        String[]... valueList) throws SQLException {
         String sql =
             getDialect().generateInline(
-                Arrays.asList("x", "y"),
-                Arrays.asList("String", "Numeric"),
+                nameList,
+                typeList,
                 Arrays.asList(valueList));
         Statement stmt = null;
         try {
@@ -402,16 +415,28 @@ public class DialectTest extends TestCase {
             ResultSet resultSet = stmt.executeQuery(sql);
             Set<List<String>> actualValues = new HashSet<List<String>>();
             while (resultSet.next()) {
-                actualValues.add(
-                    Arrays.asList(
-                        resultSet.getString(1),
-                        String.valueOf(resultSet.getInt(2))));
+                final List<String> row = new ArrayList<String>();
+                for (int i = 0; i < typeList.size(); i++) {
+                    final String s;
+                    final String type = typeList.get(i);
+                    if (type.equals("String")) {
+                        s = resultSet.getString(i + 1);
+                    } else if (type.equals("Date")) {
+                        s = String.valueOf(resultSet.getDate(i + 1));
+                    } else if (type.equals("Numeric")) {
+                        s = String.valueOf(resultSet.getInt(i + 1));
+                    } else {
+                        throw new RuntimeException("unknown type " + type);
+                    }
+                    row.add(s);
+                }
+                actualValues.add(row);
             }
             Set<List<String>> expectedRows = new HashSet<List<String>>();
             for (String[] strings : valueList) {
                 expectedRows.add(Arrays.asList(strings));
             }
-            assertEquals(actualValues, expectedRows);
+            assertEquals(expectedRows, actualValues);
             stmt.close();
             stmt = null;
         } finally {
