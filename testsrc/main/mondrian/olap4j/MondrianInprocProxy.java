@@ -9,7 +9,7 @@
 package mondrian.olap4j;
 
 import org.xml.sax.SAXException;
-import org.olap4j.driver.xmla.XmlaOlap4jDriver;
+import org.olap4j.driver.xmla.proxy.XmlaOlap4jProxy;
 
 import javax.servlet.ServletException;
 import java.util.concurrent.*;
@@ -28,7 +28,7 @@ import mondrian.tui.XmlaSupport;
  * @author jhyde
  */
 public class MondrianInprocProxy
-    implements XmlaOlap4jDriver.Proxy
+    implements XmlaOlap4jProxy
 {
     private final Map<String, String> catalogNameUrls;
     private final String urlString;

@@ -50,7 +50,7 @@
         <dependency org="javax.servlet" name="jsp-api" rev="2.0"/>
         <dependency org="javax.servlet" name="servlet-api" rev="2.4"/>
         <dependency org="log4j" name="log4j" rev="1.2.9"/>
-        <dependency org="org.olap4j" name="olap4j" rev="0.9.5.076"/>
+        <dependency org="org.olap4j" name="olap4j" rev="0.9.6-svn098"/>
         <!--try xalan 2.6.0?-->
         <dependency org="xalan" name="xalan" rev="2.4.1"/>
         <dependency org="xerces" name="xercesImpl" rev="2.5.0"/>
