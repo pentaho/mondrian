@@ -144,6 +144,61 @@ public class VirtualCubeTest extends BatchTestCase {
                 "Row #0: 266,773\n"));
     }
 
+    /**
+     * verifies the cartesion join sql does not appear
+     */
+    public void testCartesionJoinSqlDoesNotOccur() {
+    	
+    	// only test on mysql dialect
+    	if (!getTestContext().getDialect().isMySQL()) {
+    		return;
+    	}
+    	
+    	String mdxQuery = 
+    		"select " +
+    		"{ [measures].[store sales], [measures].[warehouse sales] } on 0, " +
+  		  	"non empty { [product].[product family].members } on 1 " +
+  		  	"from [warehouse and sales] " +
+  		  	"where [store].[all stores].[usa].[or]";
+    	
+    	String expectedSql = 
+  			"select "+
+  			"`product_class`.`product_family` as `c0` " +
+  			"from " +
+  			"`product` as `product`, " +
+  			"`product_class` as `product_class`, " +
+  			"`inventory_fact_1997` as `inventory_fact_1997` " +
+  			"where " +
+  			"`product`.`product_class_id` = `product_class`.`product_class_id` " +
+  			"and `inventory_fact_1997`.`product_id` = `product`.`product_id` " +
+  			"group by " +
+  			"`product_class`.`product_family` " +
+  			"union " +
+  			"select " +
+  			"`product_class`.`product_family` as `c0` " +
+  			"from " +
+  			"`product` as `product`, " +
+  			"`product_class` as `product_class`, " +
+  			"`sales_fact_1997` as `sales_fact_1997`, " +
+  			"`store` as `store` " +
+  			"where " +
+  			"`product`.`product_class_id` = `product_class`.`product_class_id` " +
+  			"and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
+  			"and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
+  			"and `store`.`store_state` = 'OR' " +
+  			"group by " +
+  			"`product_class`.`product_family` " +
+  			"order by " +
+  			"ISNULL(1), 1 ASC";
+    	
+    	SqlPattern[] patterns =
+        new SqlPattern[] {
+            new SqlPattern(SqlPattern.Dialect.MYSQL, expectedSql, expectedSql)
+        };
+
+    	assertQuerySql(mdxQuery, patterns, true);
+    }
+
     public void testCartesianJoin() {
       // these examples caused cartesian joins to occur, a fix in SqlTupleReader
     	// was made and now these queries run normally.
