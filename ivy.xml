@@ -59,7 +59,7 @@
 -->
         <dependency org="xmlunit" name="xmlunit" rev="1.1"/>
         <dependency org="org.apache.derby" name="derby" rev="10.2.2.0"/>
-        <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-080327">
+        <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-080722">
             <artifact name="jpivot" type="war"/>
         </dependency>
 
