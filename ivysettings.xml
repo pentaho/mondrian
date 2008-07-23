@@ -12,7 +12,7 @@
   <settings defaultResolver="chain"/>
   <resolvers>
     <chain name="chain">
-      <url name="pentaho-repo" m2compatible="true">
+      <url name="pentaho-rep" m2compatible="true">
         <artifact pattern="http://repo.pentaho.org/artifactory/repo/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]" />
         <artifact pattern="http://repo.pentaho.org/artifactory/repo/[organisation]/[module]/[revision]/[artifact].[ext]" />
       </url>
