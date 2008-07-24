@@ -649,7 +649,7 @@ public class SqlTupleReader implements TupleReader {
         // if we're a virtual cube (baseCube != null), only apply the 
         // constraint if it maps to the current base cube.
         if (baseCube == null || 
-        		constraint.getEvaluator().getMeasureCube().equals(baseCube)) {
+                Util.equals(constraint.getEvaluator().getMeasureCube(), baseCube)) {
         	constraint.addConstraint(sqlQuery, baseCube);
         }
 
