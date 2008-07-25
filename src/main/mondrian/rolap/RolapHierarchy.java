@@ -878,8 +878,8 @@ public class RolapHierarchy extends HierarchyBase {
      *
      * @see mondrian.olap.Role.RollupPolicy
      */
-    static class LimitedRollupMember extends RolapCubeMember {
-        final RolapMember member;
+    public static class LimitedRollupMember extends RolapCubeMember {
+        public final RolapMember member;
         private final Exp exp;
 
         LimitedRollupMember(

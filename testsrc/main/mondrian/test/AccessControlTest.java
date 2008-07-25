@@ -25,6 +25,21 @@ import mondrian.olap.*;
  * @version $Id$
  */
 public class AccessControlTest extends FoodMartTestCase {
+    private static final String BiServer1574Role1 =
+        "<Role name=\"role1\">\n"
+            + " <SchemaGrant access=\"none\">\n"
+            + "  <CubeGrant cube=\"Warehouse\" access=\"all\">\n"
+            + "   <HierarchyGrant hierarchy=\"[Store Size in SQFT]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "    <MemberGrant member=\"[Store Size in SQFT].[20319]\" access=\"all\"/>\n"
+            + "    <MemberGrant member=\"[Store Size in SQFT].[21215]\" access=\"none\"/>\n"
+            + "   </HierarchyGrant>\n"
+            + "   <HierarchyGrant hierarchy=\"[Store Type]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "    <MemberGrant member=\"[Store Type].[Supermarket]\" access=\"all\"/>\n"
+            + "   </HierarchyGrant>\n"
+            + "  </CubeGrant>\n"
+            + " </SchemaGrant>\n"
+            + "</Role>";
+
     public AccessControlTest(String name) {
         super(name);
     }
@@ -1138,20 +1153,8 @@ public class AccessControlTest extends FoodMartTestCase {
     public void testBugBiserver1574() {
         final TestContext testContext =
             TestContext.create(
-                null, null, null, null, null,
-                "<Role name=\"role1\">\n"
-                + " <SchemaGrant access=\"none\">\n"
-                + "  <CubeGrant cube=\"Warehouse\" access=\"all\">\n"
-                + "   <HierarchyGrant hierarchy=\"[Store Size in SQFT]\" access=\"custom\" rollupPolicy=\"partial\">\n"
-                + "    <MemberGrant member=\"[Store Size in SQFT].[20319]\" access=\"all\"/>\n"
-                + "    <MemberGrant member=\"[Store Size in SQFT].[21215]\" access=\"none\"/>\n"
-                + "   </HierarchyGrant>\n"
-                + "   <HierarchyGrant hierarchy=\"[Store Type]\" access=\"custom\" rollupPolicy=\"partial\">\n"
-                + "    <MemberGrant member=\"[Store Type].[Supermarket]\" access=\"all\"/>\n"
-                + "   </HierarchyGrant>\n"
-                + "  </CubeGrant>\n"
-                + " </SchemaGrant>\n"
-                + "</Role>").withRole("role1");
+                null, null, null, null, null, BiServer1574Role1)
+                .withRole("role1");
         final String mdx =
             "select {([Measures].[Store Invoice], [Store Size in SQFT].[All Store Size in SQFTs])} ON COLUMNS,\n"
                 + "  {[Warehouse].[All Warehouses]} ON ROWS\n"
@@ -1166,6 +1169,110 @@ public class AccessControlTest extends FoodMartTestCase {
                 "Axis #2:\n" +
                 "{[Warehouse].[All Warehouses]}\n" +
                 "Row #0: 4,042.96\n"));
+    }
+
+    /**
+     * Testcase for bug 2028231,
+     * "Internal error in HierarchizeArrayComparator". Occurs when apply
+     * Hierarchize function to tuples on a hierarchy with partial-rollup.
+     */
+    public void testBug2028231() {
+        final TestContext testContext =
+            TestContext.create(
+                null, null, null, null, null, BiServer1574Role1)
+                .withRole("role1");
+
+        // minimal testcase
+        testContext.assertQueryReturns(
+            "select hierarchize("
+                + "    crossjoin({[Store Size in SQFT], [Store Size in SQFT].Children}, {[Product]})"
+                + ") on 0,"
+                + "[Store Type].Members on 1 from [Warehouse]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products]}\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products]}\n" +
+                "Axis #2:\n" +
+                "{[Store Type].[All Store Types].[Supermarket]}\n" +
+                "Row #0: 4,042.96\n" +
+                "Row #0: 4,042.96\n"));
+
+        // explicit tuples, not crossjoin
+        testContext.assertQueryReturns(
+            "select hierarchize("
+                + "    { ([Store Size in SQFT], [Product]),\n"
+                + "      ([Store Size in SQFT].[20319], [Product].[Food]),\n"
+                + "      ([Store Size in SQFT], [Product].[Drink].[Dairy]),\n"
+                + "      ([Store Size in SQFT].[20319], [Product]) }\n"
+                + ") on 0,"
+                + "[Store Type].Members on 1 from [Warehouse]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products]}\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products].[Drink].[Dairy]}\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products]}\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products].[Food]}\n" +
+                "Axis #2:\n" +
+                "{[Store Type].[All Store Types].[Supermarket]}\n" +
+                "Row #0: 4,042.96\n" +
+                "Row #0: 82.454\n" +
+                "Row #0: 4,042.96\n" +
+                "Row #0: 2,696.758\n"));
+
+        // extended testcase; note that [Store Size in SQFT].Parent is null,
+        // so disappears
+        testContext.assertQueryReturns(
+            "select non empty hierarchize("
+                + "union("
+                + "  union("
+                + "    crossjoin({[Store Size in SQFT]}, {[Product]}),"
+                + "    crossjoin({[Store Size in SQFT], [Store Size in SQFT].Children}, {[Product]}),"
+                + "    all),"
+                + "  union("
+                + "    crossjoin({[Store Size in SQFT].Parent}, {[Product].[Drink]}),"
+                + "    crossjoin({[Store Size in SQFT].Children}, {[Product].[Food]}),"
+                + "    all),"
+                + "  all)) on 0,"
+                + "[Store Type].Members on 1 from [Warehouse]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products]}\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products]}\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products]}\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products].[Food]}\n" +
+                "Axis #2:\n" +
+                "{[Store Type].[All Store Types].[Supermarket]}\n" +
+                "Row #0: 4,042.96\n" +
+                "Row #0: 4,042.96\n" +
+                "Row #0: 4,042.96\n" +
+                "Row #0: 2,696.758\n"));
+
+        testContext.assertQueryReturns(
+            "select Hierarchize(\n" +
+                "  CrossJoin\n(" +
+                "    CrossJoin(\n" +
+                "      {[Product].[All Products], " +
+                "       [Product].[Food],\n" +
+                "       [Product].[Food].[Eggs],\n" +
+                "       [Product].[Drink].[Dairy]},\n" +
+                "      [Store Type].MEMBERS),\n" +
+                "    [Store Size in SQFT].MEMBERS),\n" +
+                "  PRE) on 0\n"
+                + "from [Warehouse]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Product].[All Products], [Store Type].[All Store Types].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy], [Store Type].[All Store Types].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n" +
+                "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n" +
+                "{[Product].[All Products].[Food].[Eggs], [Store Type].[All Store Types].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n" +
+                "Row #0: 4,042.96\n" +
+                "Row #0: 82.454\n" +
+                "Row #0: 2,696.758\n" +
+                "Row #0: \n"));
     }
 }
 
