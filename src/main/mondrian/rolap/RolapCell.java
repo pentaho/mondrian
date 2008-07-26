@@ -15,11 +15,14 @@ import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 
 import java.sql.*;
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * <code>RolapCell</code> implements {@link mondrian.olap.Cell} within a
  * {@link RolapResult}.
+ *
+ * @version $Id$
  */
 class RolapCell implements Cell {
     private final RolapResult result;
@@ -65,7 +68,7 @@ class RolapCell implements Cell {
         final Member[] currentMembers = getMembersForDrillThrough();
         CellRequest cellRequest =
             RolapAggregationManager.makeDrillThroughRequest(
-                currentMembers, extendedContext);
+                currentMembers, extendedContext, result.getCube());
         return (cellRequest == null)
             ? null
             : aggMan.getDrillThroughSql(cellRequest, false);
@@ -77,7 +80,7 @@ class RolapCell implements Cell {
         final Member[] currentMembers = getMembersForDrillThrough();
         CellRequest cellRequest =
             RolapAggregationManager.makeDrillThroughRequest(
-                currentMembers, false);
+                currentMembers, false, result.getCube());
         if (cellRequest == null) {
             return -1;
         }
@@ -112,20 +115,43 @@ class RolapCell implements Cell {
     public boolean canDrillThrough() {
         // get current members
         final Member[] currentMembers = getMembersForDrillThrough();
+        Cube x = chooseDrillThroughCube(currentMembers, result.getCube());
+        return x != null;
+    }
+
+    public static RolapCube chooseDrillThroughCube(
+        Member[] currentMembers,
+        RolapCube defaultCube)
+    {
+        if (defaultCube != null && defaultCube.isVirtual()) {
+            List<RolapCube> cubes = new ArrayList<RolapCube>();
+            for (RolapMember member : defaultCube.getMeasuresMembers()) {
+                if (member instanceof RolapVirtualCubeMeasure) {
+                    RolapVirtualCubeMeasure measure =
+                        (RolapVirtualCubeMeasure) member;
+                    cubes.add(measure.getCube());
+                }
+            }
+            defaultCube = cubes.get(0);
+            assert !defaultCube.isVirtual();
+        }
         final DrillThroughVisitor visitor =
-            new DrillThroughVisitor(result.getCube());
+            new DrillThroughVisitor();
         try {
             for (Member member : currentMembers) {
                 visitor.handleMember(member);
             }
         } catch (RuntimeException e) {
-            if (e == visitor.bomb) {
-                return false;
+            if (e == DrillThroughVisitor.bomb) {
+                // No cubes left
+                return null;
             } else {
                 throw e;
             }
         }
-        return visitor.cubes.size() > 0;
+        return visitor.cube == null
+             ? defaultCube
+             : visitor.cube;
     }
 
     private RolapEvaluator getEvaluator() {
@@ -197,21 +223,10 @@ class RolapCell implements Cell {
      * </ul>
      */
     private static class DrillThroughVisitor extends MdxVisitorImpl {
-        final RuntimeException bomb = new RuntimeException();
-        final Set<Cube> cubes = new HashSet<Cube>();
+        static final RuntimeException bomb = new RuntimeException();
+        RolapCube cube = null;
 
-        DrillThroughVisitor(RolapCube cube) {
-            if (!cube.isVirtual()) {
-                cubes.add(cube);
-            } else {
-                for (RolapMember member : cube.getMeasuresMembers()) {
-                    if (member instanceof RolapVirtualCubeMeasure) {
-                        RolapVirtualCubeMeasure measure =
-                            (RolapVirtualCubeMeasure) member;
-                        cubes.add(measure.getCube());
-                    }
-                }
-            }
+        DrillThroughVisitor() {
         }
 
         public Object visit(MemberExpr memberExpr) {
@@ -243,13 +258,14 @@ class RolapCell implements Cell {
 
         public void handleMember(Member member) {
             if (member instanceof RolapStoredMeasure) {
-                // Whittle down the list of cubes that we can drill into. If
-                // this member is in a different cube that previous members
-                // we've seen, the list will become empty and we will deduce
-                // that we cannot drill through.
+                // If this member is in a different cube that previous members
+                // we've seen, we cannot drill through.
                 final RolapCube cube = ((RolapStoredMeasure) member).getCube();
-                cubes.retainAll(Collections.singletonList(cube));
-                if (cubes.isEmpty()) {
+                if (this.cube == null) {
+                    this.cube = cube;
+                } else if (this.cube != cube) {
+                    // this measure lives in a different cube than previous
+                    // measures we have seen
                     throw bomb;
                 }
             } else if (member instanceof RolapCubeMember) {

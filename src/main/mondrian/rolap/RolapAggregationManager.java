@@ -13,12 +13,8 @@
 
 package mondrian.rolap;
 
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
-import mondrian.olap.Member;
-import mondrian.olap.Util;
 import mondrian.rolap.agg.*;
-import mondrian.olap.CacheControl;
+import mondrian.olap.*;
 
 import java.util.*;
 import java.io.PrintWriter;
@@ -53,7 +49,7 @@ public abstract class RolapAggregationManager {
      */
     public static CellRequest makeRequest(final Member[] members)
     {
-        return makeCellRequest(members, false, false);
+        return makeCellRequest(members, false, false, null);
     }
 
     /**
@@ -70,13 +66,16 @@ public abstract class RolapAggregationManager {
      *                          This additional context makes the drill-through
      *                          queries easier for humans to understand.
      *
+     * @param cube              Cube
      * @return Cell request, or null if the requst is unsatisfiable
      */
     public static CellRequest makeDrillThroughRequest(
         final Member[] members,
-        final boolean extendedContext)
+        final boolean extendedContext,
+        RolapCube cube)
     {
-        return makeCellRequest(members, true, extendedContext);
+        assert cube != null;
+        return makeCellRequest(members, true, extendedContext, cube);
     }
 
     /**
@@ -103,7 +102,8 @@ public abstract class RolapAggregationManager {
         assert starMeasure != null;
         int starColumnCount = starMeasure.getStar().getColumnCount();
 
-        CellRequest request = makeCellRequest(currentMembers, false, false);
+        CellRequest request =
+            makeCellRequest(currentMembers, false, false, null);
 
         /*
          * Now setting the compound keys.
@@ -161,23 +161,41 @@ public abstract class RolapAggregationManager {
     private static CellRequest makeCellRequest(
         final Member[] members,
         boolean drillThrough,
-        final boolean extendedContext)
+        final boolean extendedContext,
+        RolapCube cube)
     {
+        // Need cube for drill-through requests
+        assert drillThrough == (cube != null);
+
         if (extendedContext) {
             assert (drillThrough);
         }
 
-        if (!(members[0] instanceof RolapStoredMeasure)) {
-            return null;
+        final RolapStoredMeasure measure;
+        if (drillThrough) {
+            cube = RolapCell.chooseDrillThroughCube(members, cube);
+            if (cube == null) {
+                return null;
+            }
+            if (members[0] instanceof RolapStoredMeasure) {
+                measure = (RolapStoredMeasure) members[0];
+            } else {
+                measure = (RolapStoredMeasure) cube.getMeasures()[0];
+            }
+        } else {
+            if (members[0] instanceof RolapStoredMeasure) {
+                measure = (RolapStoredMeasure) members[0];
+            } else {
+                return null;
+            }
         }
 
-        final RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
         final RolapStar.Measure starMeasure =
             (RolapStar.Measure) measure.getStarMeasure();
         assert starMeasure != null;
         final CellRequest request =
             new CellRequest(starMeasure, extendedContext, drillThrough);
-        
+
         // Since 'request.extendedContext == false' is a well-worn code path,
         // we have moved the test outside the loop.
         if (extendedContext) {
@@ -310,7 +328,7 @@ public abstract class RolapAggregationManager {
         // The special case is a tuple defined by only one member.
         int unsatisfiableTupleCount=0;
         for (Object aggregation : aggregationList) {
-            boolean isTuple = false;
+            boolean isTuple;
             if (aggregation instanceof Member) {
                 isTuple = false;
             } else if (aggregation instanceof Member[] &&
@@ -340,7 +358,7 @@ public abstract class RolapAggregationManager {
             for (RolapCubeMember member : tuple) {
                 // Tuple cannot be constrained if any of the member cannot be.
                 tupleUnsatisfiable =
-                    makeCompoundGroupForMember((RolapCubeMember)member, baseCube, bitKey);
+                    makeCompoundGroupForMember(member, baseCube, bitKey);
                 if (tupleUnsatisfiable) {
                     // If this tuple is unsatisfiable, skip it and try to 
                     // constrain the next tuple.
@@ -390,7 +408,7 @@ public abstract class RolapAggregationManager {
                 } else {
                     // One level in a member causes the member to be 
                     // unsatisfiable.
-                    memberUnsatisfiable = true;;
+                    memberUnsatisfiable = true;
                     break;
                 }
             }
