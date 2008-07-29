@@ -13,6 +13,11 @@ package mondrian.test;
 
 import junit.framework.Assert;
 import mondrian.olap.*;
+import org.eigenbase.util.property.*;
+import org.eigenbase.util.property.Property;
+
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
@@ -25,6 +30,8 @@ import mondrian.olap.*;
  * @version $Id$
  */
 public class AccessControlTest extends FoodMartTestCase {
+    private final PropertySaver propertySaver = new PropertySaver();
+
     private static final String BiServer1574Role1 =
         "<Role name=\"role1\">\n"
             + " <SchemaGrant access=\"none\">\n"
@@ -42,6 +49,12 @@ public class AccessControlTest extends FoodMartTestCase {
 
     public AccessControlTest(String name) {
         super(name);
+    }
+
+    protected void tearDown() throws Exception {
+        // revert any properties that have been set during this test
+        propertySaver.reset();
+        super.tearDown();
     }
 
     public void testGrantDimensionNone() {
@@ -1273,6 +1286,116 @@ public class AccessControlTest extends FoodMartTestCase {
                 "Row #0: 82.454\n" +
                 "Row #0: 2,696.758\n" +
                 "Row #0: \n"));
+    }
+
+    /**
+     * Testcase for bug 2031158,
+     * "SubstitutingMemberReader.getMemberBuilder gives
+     * UnsupportedOperationException".
+     */
+    public void testBug2031158() {
+        propertySaver.set(propertySaver.properties.EnableNativeCrossJoin, true);
+        propertySaver.set(propertySaver.properties.EnableNativeFilter, true);
+        propertySaver.set(propertySaver.properties.EnableNativeNonEmpty, true);
+        propertySaver.set(propertySaver.properties.EnableNativeTopCount, true);
+        propertySaver.set(propertySaver.properties.ExpandNonNative, true);
+
+        // Run with native enabled, then with whatever properties are set for
+        // this test run.
+        checkBug2031158();
+        propertySaver.reset();
+        checkBug2031158();
+    }
+
+    private void checkBug2031158() {
+        final TestContext testContext =
+            TestContext.create(
+                null, null, null, null, null, BiServer1574Role1)
+                .withRole("role1");
+
+        testContext.assertQueryReturns(
+            "select non empty {[Measures].[Units Ordered],\n"
+                + "            [Measures].[Units Shipped]} on 0,\n"
+                + "non empty hierarchize(\n"
+                + "    union(\n"
+                + "        crossjoin(\n"
+                + "            {[Store Size in SQFT]},\n"
+                + "            {[Product].[Drink],\n"
+                + "             [Product].[Food],\n"
+                + "             [Product].[Drink].[Dairy]}),\n"
+                + "        crossjoin(\n"
+                + "            {[Store Size in SQFT].[20319]},\n"
+                + "            {[Product].Children}))) on 1\n"
+                + "from [Warehouse]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Units Ordered]}\n" +
+                "{[Measures].[Units Shipped]}\n" +
+                "Axis #2:\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products].[Drink]}\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products].[Drink].[Dairy]}\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products].[Food]}\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products].[Drink]}\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products].[Food]}\n" +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products].[Non-Consumable]}\n" +
+                "Row #0: 865.0\n" +
+                "Row #0: 767.0\n" +
+                "Row #1: 195.0\n" +
+                "Row #1: 182.0\n" +
+                "Row #2: 6065.0\n" +
+                "Row #2: 5723.0\n" +
+                "Row #3: 865.0\n" +
+                "Row #3: 767.0\n" +
+                "Row #4: 6065.0\n" +
+                "Row #4: 5723.0\n" +
+                "Row #5: 2179.0\n" +
+                "Row #5: 2025.0\n"));
+    }
+
+    /**
+     * Sets properties, and remembers them so they can be reverted at the
+     * end of the test.
+     */
+    static class PropertySaver {
+
+        public final MondrianProperties properties =
+            MondrianProperties.instance();
+
+        private final Map<Property, String> originalValues =
+            new HashMap<Property, String>();
+
+        // wacky initializer to prevent compiler from internalizing the
+        // string (we don't want it to be == other occurrences of "NOT_SET")
+        private static final String NOT_SET =
+            new StringBuffer("NOT_" + "SET").toString();
+
+        // need to implement for other kinds of property too
+        public void set(BooleanProperty property, boolean value) {
+            if (!originalValues.containsKey(property)) {
+                final String originalValue =
+                    properties.containsKey(property.getPath())
+                        ? properties.getProperty(property.getPath())
+                        : NOT_SET;
+                originalValues.put(
+                    property,
+                    originalValue);
+            }
+            property.set(value);
+        }
+
+        public void reset() {
+            for (Map.Entry<Property,String> entry : originalValues.entrySet())
+            {
+                final String value = entry.getValue();
+                //noinspection StringEquality
+                if (value == NOT_SET) {
+                    properties.remove(entry.getKey());
+                } else {
+                    properties.setProperty(entry.getKey().getPath(), value);
+                }
+            }
+        }
     }
 }
 
