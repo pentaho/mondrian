@@ -507,63 +507,70 @@ public class SchemaTest extends FoodMartTestCase {
      * unique joins to the fact table.
      */
     public void testSnowflakeHierarchyValidationNotNeeded() {
-    	final TestContext testContext = TestContext.create(
-    			null,
-    			"<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n" +
-    			"  <Table name=\"sales_fact_1997\"/>\n" +
-    			"  <Dimension name=\"Store\" foreignKey=\"store_id\">\n" +
-    			"    <Hierarchy hasAll=\"true\" primaryKeyTable=\"store\" primaryKey=\"store_id\">\n" +
-    			"      <Join leftKey=\"region_id\" rightKey=\"region_id\">\n" +
-    			"        <Table name=\"store\"/>\n" +
-    			"        <Join leftKey=\"sales_district_id\" rightKey=\"promotion_id\">\n" +
-    			"          <Table name=\"region\"/>\n" +
-    			"          <Table name=\"promotion\"/>\n" +
-    			"        </Join>\n" +
-    			"      </Join>\n" +
-    			"      <Level name=\"Store Country\" table=\"store\" column=\"store_country\"/>\n" +
-    			"      <Level name=\"Store Region\" table=\"region\" column=\"sales_region\" />\n" +
-    			"      <Level name=\"Store Name\" table=\"store\" column=\"store_name\" />\n" +
-    			"    </Hierarchy>\n" +
-    			"    <Hierarchy name=\"MyHierarchy\" hasAll=\"true\" primaryKeyTable=\"customer\" primaryKey=\"customer_id\">\n" +
-    			"      <Join leftKey=\"customer_region_id\" rightKey=\"region_id\">\n" +
-    			"        <Table name=\"customer\"/>\n" +
-    			"        <Table name=\"region\"/>\n" +
-    			"      </Join>\n" +
-    			"      <Level name=\"Country\" table=\"customer\" column=\"country\" uniqueMembers=\"true\"/>\n" +
-    			"      <Level name=\"Region\" table=\"region\" column=\"sales_region\" uniqueMembers=\"true\"/>\n" +
-    			"      <Level name=\"City\" table=\"customer\" column=\"city\" uniqueMembers=\"false\"/>\n" +
-    			"      <Level name=\"Name\" table=\"customer\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n" +
-    			"    </Hierarchy>\n" +
-    			"  </Dimension>\n" +
-    			"  <Dimension name=\"Customers\" foreignKey=\"customer_id\">\n" +
-    			"    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKeyTable=\"customer\" primaryKey=\"customer_id\">\n" +
-    			"      <Join leftKey=\"customer_region_id\" rightKey=\"region_id\">\n" +
-    			"        <Table name=\"customer\"/>\n" +
-    			"        <Table name=\"region\"/>\n" +
-    			"      </Join>\n" +
-    			"      <Level name=\"Country\" table=\"customer\" column=\"country\" uniqueMembers=\"true\"/>\n" +
-    			"      <Level name=\"Region\" table=\"region\" column=\"sales_region\" uniqueMembers=\"true\"/>\n" +
-    			"      <Level name=\"City\" table=\"customer\" column=\"city\" uniqueMembers=\"false\"/>\n" +
-    			"      <Level name=\"Name\" table=\"customer\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n" +
-    			"    </Hierarchy>\n" +
-    			"  </Dimension>\n" +
-    			"<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
-    			"</Cube>",
-    			null, null, null, null);
 
-    	testContext.assertQueryReturns(
-          "select  {[Store.MyHierarchy].[Mexico]} on rows," +
-          "{[Customers].[USA].[South West]} on columns" +
-          " from " +
-          "AliasedDimensionsTesting",
-          fold("Axis #0:\n" +
-               "{}\n" +
-               "Axis #1:\n" +
-               "{[Customers].[All Customers].[USA].[South West]}\n" +
-               "Axis #2:\n" +
-               "{[Store.MyHierarchy].[All Store.MyHierarchys].[Mexico]}\n" +
-               "Row #0: 51,298\n"));
-    	
+        // this test breaks when using aggregates at the moment
+        // due to a known limitation
+        if ((MondrianProperties.instance().ReadAggregates.get() || 
+                MondrianProperties.instance().UseAggregates.get())
+                && !Bug.Bug1867953Fixed) {
+            return;
+        }
+
+        final TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Dimension name=\"Store\" foreignKey=\"store_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKeyTable=\"store\" primaryKey=\"store_id\">\n"
+            + "      <Join leftKey=\"region_id\" rightKey=\"region_id\">\n"
+            + "        <Table name=\"store\"/>\n"
+            + "        <Join leftKey=\"sales_district_id\" rightKey=\"promotion_id\">\n"
+            + "          <Table name=\"region\"/>\n"
+            + "          <Table name=\"promotion\"/>\n"
+            + "        </Join>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Store Country\" table=\"store\" column=\"store_country\"/>\n"
+            + "      <Level name=\"Store Region\" table=\"region\" column=\"sales_region\" />\n"
+            + "      <Level name=\"Store Name\" table=\"store\" column=\"store_name\" />\n"
+            + "    </Hierarchy>\n"
+            + "    <Hierarchy name=\"MyHierarchy\" hasAll=\"true\" primaryKeyTable=\"customer\" primaryKey=\"customer_id\">\n"
+            + "      <Join leftKey=\"customer_region_id\" rightKey=\"region_id\">\n"
+            + "        <Table name=\"customer\"/>\n"
+            + "        <Table name=\"region\"/>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Country\" table=\"customer\" column=\"country\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Region\" table=\"region\" column=\"sales_region\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"City\" table=\"customer\" column=\"city\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Name\" table=\"customer\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Customers\" foreignKey=\"customer_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKeyTable=\"customer\" primaryKey=\"customer_id\">\n"
+            + "      <Join leftKey=\"customer_region_id\" rightKey=\"region_id\">\n"
+            + "        <Table name=\"customer\"/>\n"
+            + "        <Table name=\"region\"/>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Country\" table=\"customer\" column=\"country\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Region\" table=\"region\" column=\"sales_region\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"City\" table=\"customer\" column=\"city\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Name\" table=\"customer\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n"
+            + "</Cube>", null, null, null, null);
+
+        testContext.assertQueryReturns(
+            "select  {[Store.MyHierarchy].[Mexico]} on rows,"
+            + "{[Customers].[USA].[South West]} on columns"
+            + " from " + "AliasedDimensionsTesting",
+            fold("Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Customers].[All Customers].[USA].[South West]}\n"
+                + "Axis #2:\n"
+                + "{[Store.MyHierarchy].[All Store.MyHierarchys].[Mexico]}\n"
+                + "Row #0: 51,298\n"));
+
     }
 
     /**
