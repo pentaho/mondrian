@@ -241,7 +241,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         if (virtualCube) {
             final StringBuffer selectString = new StringBuffer();
             final Query query = constraint.getEvaluator().getQuery();
-            final Set<RolapCube> baseCubes = query.getBaseCubes();
+            final List<RolapCube> baseCubes = query.getBaseCubes();
 
             int k = -1;
             for (RolapCube baseCube : baseCubes) {

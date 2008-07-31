@@ -143,7 +143,7 @@ public class Query extends QueryPart {
      * Used for virtual cubes.
      * Comtains a list of base cubes related to a virtual cube
      */
-    private Set<RolapCube> baseCubes;
+    private List<RolapCube> baseCubes;
 
     /**
      * If true, loading schema
@@ -1143,7 +1143,7 @@ public class Query extends QueryPart {
      *
      * @param baseCubes set of base cubes
      */
-    public void setBaseCubes(Set<RolapCube> baseCubes) {
+    public void setBaseCubes(List<RolapCube> baseCubes) {
         this.baseCubes = baseCubes;
     }
 
@@ -1153,7 +1153,7 @@ public class Query extends QueryPart {
      *
      * @return set of base cubes
      */
-    public Set<RolapCube> getBaseCubes() {
+    public List<RolapCube> getBaseCubes() {
         return baseCubes;
     }
 

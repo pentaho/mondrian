@@ -599,7 +599,7 @@ public class SqlTupleReader implements TupleReader {
         if (virtualCube) {
             String selectString = "";
             Query query = constraint.getEvaluator().getQuery();
-            Set<RolapCube> baseCubes = query.getBaseCubes();
+            List<RolapCube> baseCubes = query.getBaseCubes();
 
             // generate sub-selects, each one joining with one of
             // underlying fact tables
@@ -653,7 +653,7 @@ public class SqlTupleReader implements TupleReader {
         // if we're a virtual cube (baseCube != null), only apply the 
         // constraint if it maps to the current base cube.
         if (baseCube == null || 
-        		constraint.getEvaluator().getMeasureCube().equals(baseCube)) {
+        		Util.equals(baseCube, constraint.getEvaluator().getMeasureCube())) {
         	constraint.addConstraint(sqlQuery, baseCube);
         }
 

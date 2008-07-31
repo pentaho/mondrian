@@ -73,7 +73,8 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         if (cube.isVirtual()) {
             Query query = context.getQuery();
             Set<RolapCube> baseCubes = new HashSet<RolapCube>();
-            if (!findVirtualCubeBaseCubes(query, baseCubes)) {
+            List<RolapCube> baseCubeList = new ArrayList<RolapCube>();
+            if (!findVirtualCubeBaseCubes(query, baseCubes, baseCubeList)) {
                 return false;
             }
             assert(levels != null);
@@ -91,7 +92,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
                 }
             }
                         
-            query.setBaseCubes(baseCubes);
+            query.setBaseCubes(baseCubeList);
         }
         return true;
     }
@@ -106,7 +107,8 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      */
     private static boolean findVirtualCubeBaseCubes(
         Query query,
-        Set<RolapCube> baseCubes)
+        Set<RolapCube> baseCubes,
+        List<RolapCube> baseCubeList)
     {
         // Gather the unique set of level-to-column maps corresponding
         // to the underlying star/cube where the measure column
@@ -122,9 +124,9 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         }
         for (Member member : query.getMeasuresMembers()) {
             if (member instanceof RolapStoredMeasure) {
-                addMeasure((RolapStoredMeasure) member, baseCubes);
+                addMeasure((RolapStoredMeasure) member, baseCubes, baseCubeList);
             } else if (member instanceof RolapCalculatedMember) {
-                findMeasures(member.getExpression(), baseCubes);
+                findMeasures(member.getExpression(), baseCubes, baseCubeList);
             }
         }
         if (baseCubes.isEmpty()) {
@@ -142,10 +144,14 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      */
     private static void addMeasure(
         RolapStoredMeasure measure,
-        Set<RolapCube> baseCubes) 
+        Set<RolapCube> baseCubes,
+        List<RolapCube> baseCubeList
+        ) 
     {
         RolapCube baseCube = measure.getCube();
-        baseCubes.add(baseCube);
+        if (baseCubes.add(baseCube)) {
+        	baseCubeList.add(baseCube);
+        }
     }
 
     /**
@@ -156,21 +162,22 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      */
     private static void findMeasures(
         Exp exp,
-        Set<RolapCube> baseCubes) 
+        Set<RolapCube> baseCubes,
+        List<RolapCube> baseCubeList) 
     {
         if (exp instanceof MemberExpr) {
             MemberExpr memberExpr = (MemberExpr) exp;
             Member member = memberExpr.getMember();
             if (member instanceof RolapStoredMeasure) {
-                addMeasure((RolapStoredMeasure) member, baseCubes);
+                addMeasure((RolapStoredMeasure) member, baseCubes, baseCubeList);
             } else if (member instanceof RolapCalculatedMember) {
-                findMeasures(member.getExpression(), baseCubes);
+                findMeasures(member.getExpression(), baseCubes, baseCubeList);
             }
         } else if (exp instanceof ResolvedFunCall) {
             ResolvedFunCall funCall = (ResolvedFunCall) exp;
             Exp [] args = funCall.getArgs();
             for (Exp arg : args) {
-                findMeasures(arg, baseCubes);
+                findMeasures(arg, baseCubes, baseCubeList);
             }
         }
     }
