@@ -13,16 +13,18 @@
 
 ANT_FLAGS=
 CLEAN=clean
-CLEAN=
 
 # The script's path is $OPEN_DIR/mondrian/bin/megatest; deduce OPEN_DIR.
 OPEN_DIR=$(cd $(dirname $0)/../..; pwd)
+MONDRIAN_DIR=$(cd $(dirname $0)/..; pwd)
 case $(uname) in
 CYGWIN*)
   OPEN_DIR=$(cygpath -m $OPEN_DIR)
+  MONDRIAN_DIR=$(cygpath -m $MONDRIAN_DIR)
   if [ $(uname -n) = mackerel-winxp \
     -a "$OPEN_DIR" = "e:/open" ]; then
     OPEN_DIR=/open
+    MONDRIAN_DIR=/open/mondrian
     echo $OPEN_DIR
   fi
   ;;
@@ -110,7 +112,7 @@ doTest2() {
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo mondrian.jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver
-      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   oracle)
@@ -125,7 +127,7 @@ doTest2() {
           echo "Oracle JDBC not found"
           exit 1
         fi
-        echo driver.classpath=${OPEN_DIR}/mondrian/testlib/ojdbc14.jar
+        echo driver.classpath=${MONDRIAN_DIR}/testlib/ojdbc14.jar
       fi
       jdbcURL=jdbc:oracle:thin:foodmart/foodmart@//marmalade.hydromatic.net:1521/XE
       jdbcDrivers=oracle.jdbc.OracleDriver
@@ -133,18 +135,18 @@ doTest2() {
       echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo mondrian.foodmart.jdbcUser=foodmart
       echo mondrian.foodmart.jdbcPassword=foodmart
-      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   derby)
     (
       jdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver
-      jdbcURL=jdbc:derby:${OPEN_DIR}/mondrian/demo/derby/foodmart
+      jdbcURL=jdbc:derby:${MONDRIAN_DIR}/demo/derby/foodmart
 #     jdbcURL=jdbc:derby:jar:\(demo/derby/derby-foodmart.zip\)/foodmart
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
-      echo driver.classpath=${OPEN_DIR}/mondrian/testlib/derby.jar
-      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=sa;JdbcPassword=sa;PoolNeeded=false;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+      echo driver.classpath=${MONDRIAN_DIR}/testlib/derby.jar
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=sa;JdbcPassword=sa;PoolNeeded=false;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   mysql)
@@ -154,7 +156,7 @@ doTest2() {
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo driver.classpath=/usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar
-      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   teradata)
@@ -163,8 +165,8 @@ doTest2() {
       export jdbcURL='jdbc:teradata://localhost/foodmart'
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
-      echo "driver.classpath=${OPEN_DIR}/mondrian/drivers/terajdbc4.jar${PS}${OPEN_DIR}/mondrian/drivers/tdgssjava.jar${PS}${OPEN_DIR}/mondrian/drivers/tdgssconfig.jar"
-      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=tduser;JdbcPassword=tduser;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+      echo "driver.classpath=${MONDRIAN_DIR}/drivers/terajdbc4.jar${PS}${MONDRIAN_DIR}/drivers/tdgssjava.jar${PS}${MONDRIAN_DIR}/drivers/tdgssconfig.jar"
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=tduser;JdbcPassword=tduser;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   *) echo "Unknown database $database"; exit 1 ;;
@@ -334,7 +336,7 @@ olap4j() {
   (xmla)
     echo "org.olap4j.test.connectUrl=jdbc:mondrian:${CONNECT_STRING}"
     echo 'org.olap4j.test.helperClassName=org.olap4j.XmlaTester'
-    echo "org.olap4j.XmlaTester.CatalogUrl=${FILE_PREFIX}${OPEN_DIR}/mondrian/demo/FoodMart.xml"
+    echo "org.olap4j.XmlaTester.CatalogUrl=${FILE_PREFIX}${MONDRIAN_DIR}/demo/FoodMart.xml"
     echo "org.olap4j.test.driverClasspath=${DRIVER_CLASSPATH}"
     echo "org.olap4j.test.wrapper=${wrapper}"
     ;;
@@ -784,7 +786,7 @@ if [ "$nightly" ]; then
   fi
 fi
 
-cd "${OPEN_DIR}/mondrian"
+cd "${MONDRIAN_DIR}"
 if [ "$nightly" ]; then
   # If a cron job, run the whole suite before emitting any output.
   doTests >megatest.log 2>&1

@@ -48,9 +48,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public TestContext getTestContext() {
-
-        final TestContext testContext =
-            TestContext.create(null, null,
+        return
+            TestContext.create(
+                null, null,
                 "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n" +
                 "   <VirtualCubeDimension cubeName=\"Sales\" name=\"Gender\"/>\n" +
                 "   <VirtualCubeDimension name=\"Store\"/>\n" +
@@ -70,7 +70,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "   <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Customer Count]\"/>\n" +
                 "</VirtualCube>",
                 null, null, null);
-        return testContext;
     }
 
     public void testTupleWithAllLevelMembersOnly() {
@@ -715,38 +714,34 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "IIF(COUNT([COG_OQP_INT_s1], INCLUDEEMPTY) > 0, 1, 0))} ON AXIS(1) \n" +
             "FROM [sales]";
 
-        final String oraTeraSql;
-        if (MondrianProperties.instance().EnableGroupingSets.get()) {
-            oraTeraSql = "select \"store\".\"store_state\" as \"c0\", " +
-                "\"store\".\"store_city\" as \"c1\", " +
-                "\"time_by_day\".\"the_year\" as \"c2\", " +
-                "\"customer\".\"gender\" as \"c3\", " +
-                "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\", " +
-                "grouping(\"customer\".\"gender\") as \"g0\", " +
-                "grouping(\"store\".\"store_city\") as \"g1\" " +
-                "from \"store\" =as= \"store\"," +
-                " \"sales_fact_1997\" =as= \"sales_fact_1997\"," +
-                " \"time_by_day\" =as= \"time_by_day\"," +
-                " \"customer\" =as= \"customer\" " +
-                "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-                "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-                "and \"time_by_day\".\"the_year\" = 1997 " +
-                "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                "group by grouping sets ((\"store\".\"store_state\",\"store\".\"store_city\",\"time_by_day\".\"the_year\",\"customer\".\"gender\")," +
-                "(\"store\".\"store_state\",\"store\".\"store_city\",\"time_by_day\".\"the_year\")," +
-                "(\"store\".\"store_state\",\"time_by_day\".\"the_year\")," +
-                "(\"store\".\"store_state\",\"time_by_day\".\"the_year\",\"customer\".\"gender\"))";
+        String oraTeraSql;
+        if (props.EnableGroupingSets.get()) {
+            oraTeraSql = "select \"store\".\"store_name\" as \"c0\","
+                + " \"time_by_day\".\"the_year\" as \"c1\","
+                + " \"customer\".\"gender\" as \"c2\","
+                + " count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\","
+                + " grouping(\"customer\".\"gender\") as \"g0\" "
+                + "from \"store\" =as= \"store\","
+                + " \"sales_fact_1997\" =as= \"sales_fact_1997\","
+                + " \"time_by_day\" =as= \"time_by_day\","
+                + " \"customer\" =as= \"customer\" "
+                + "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
+                + "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+                + "and \"time_by_day\".\"the_year\" = 1997 "
+                + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by grouping sets ((\"store\".\"store_name\",\"time_by_day\".\"the_year\",\"customer\".\"gender\"),"
+                + "(\"store\".\"store_name\",\"time_by_day\".\"the_year\"))";
         } else {
-            oraTeraSql = "select \"store\".\"store_state\" as \"c0\", " +
-                "\"time_by_day\".\"the_year\" as \"c1\", " +
-                "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-                "from \"store\" =as= \"store\"," +
-                " \"sales_fact_1997\" =as= \"sales_fact_1997\"," +
-                " \"time_by_day\" =as= \"time_by_day\" " +
-                "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-                "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-                "and \"time_by_day\".\"the_year\" = 1997 " +
-                "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
+            oraTeraSql = "select \"store\".\"store_state\" as \"c0\","
+                + " \"time_by_day\".\"the_year\" as \"c1\","
+                + " count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
+                + "from \"store\" =as= \"store\","
+                + " \"sales_fact_1997\" =as= \"sales_fact_1997\","
+                + " \"time_by_day\" =as= \"time_by_day\" "
+                + "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
+                + "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+                + "and \"time_by_day\".\"the_year\" = 1997 "
+                + "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
         }
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSql, oraTeraSql),
@@ -862,6 +857,37 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
         assertQuerySql(mdxQueryWithFewMembers, patterns);
+
+
+        // As above, but with [Store].[All] to throw in potential further
+        // confusion to the grouping sets optimization process.
+        mdxQueryWithFewMembers = "WITH " +
+            "MEMBER [Store].[COG_OQP_USR_Aggregate(Store)] AS " +
+            "'AGGREGATE({[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR]})', SOLVE_ORDER = 8" +
+            "SELECT {[Measures].[Customer Count]} ON AXIS(0), " +
+            "{[Store].[All Stores], [Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR], [Store].[COG_OQP_USR_Aggregate(Store)]} " +
+            "ON AXIS(1) " +
+            "FROM [Sales]";
+
+        desiredResult =
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores]}\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "{[Store].[All Stores].[USA].[OR]}\n" +
+                "{[Store].[COG_OQP_USR_Aggregate(Store)]}\n" +
+                "Row #0: 5,581\n" +
+                "Row #1: 2,716\n" +
+                "Row #2: 1,037\n" +
+                "Row #3: 3,753\n");
+
+        assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
+        assertQuerySql(mdxQueryWithFewMembers, patterns);
+
         props.EnableGroupingSets.set(originalGroupingSetsPropertyValue);
     }
 

@@ -122,19 +122,22 @@ public class Aggregation {
      * each constrained by the same set of column values, and each pinned
      * once.
      *
-     * A Column and its constraints are accessed at the same level in their
+     * <p>A Column and its constraints are accessed at the same level in their
      * respective arrays.
      *
-     * For example,
+     * <p>For example,
+     * <blockquote><pre>
      * measures = {unit_sales, store_sales},
      * state = {CA, OR},
-     * gender = unconstrained
+     * gender = unconstrained</pre></blockquote>
      */
     public void load(
-            RolapStar.Column[] columns, RolapStar.Measure[] measures,
-            StarColumnPredicate[] predicates,
-            RolapAggregationManager.PinSet pinnedSegments,
-            GroupingSetsCollector groupingSetsCollector) {
+        RolapStar.Column[] columns,
+        RolapStar.Measure[] measures,
+        StarColumnPredicate[] predicates,
+        RolapAggregationManager.PinSet pinnedSegments,
+        GroupingSetsCollector groupingSetsCollector)
+    {
         // all constrained columns
         if (this.columns == null) {
             this.columns = columns;
@@ -150,35 +153,42 @@ public class Aggregation {
         for (int i = 0; i < axisCount; i++) {
             axes[i] = new Aggregation.Axis(predicates[i]);
         }
-        Segment[] segments = addSegmentsToAggregation(measures,
-                measureBitKey, axes, pinnedSegments);
+        Segment[] segments =
+            addSegmentsToAggregation(
+                measures, measureBitKey, axes, pinnedSegments);
         // The constrained columns are simply the level and foreign columns
         BitKey levelBitKey = getConstrainedColumnsBitKey();
-        GroupingSet groupingSet = new GroupingSet(segments,
-                levelBitKey, measureBitKey, axes, columns);
+        GroupingSet groupingSet =
+            new GroupingSet(
+                segments, levelBitKey, measureBitKey, axes, columns);
+        final List<StarPredicate> compoundPredicateList =
+            aggregationKey.getCompoundPredicateList();
         if (groupingSetsCollector.useGroupingSets()) {
             groupingSetsCollector.add(groupingSet);
             // Segments are loaded using group by grouping sets
             // by CompositeBatch.loadAggregation
         } else {
-            ArrayList<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
-            groupingSets.add(groupingSet);
             new SegmentLoader().load(
-                    groupingSets, pinnedSegments,
-                    aggregationKey.getCompoundPredicateList());
+                Collections.singletonList(groupingSet),
+                pinnedSegments,
+                compoundPredicateList);
         }
     }
 
     private Segment[] addSegmentsToAggregation(
-            RolapStar.Measure[] measures, BitKey measureBitKey, Axis[] axes,
-            RolapAggregationManager.PinSet pinnedSegments) {
+        RolapStar.Measure[] measures,
+        BitKey measureBitKey,
+        Axis[] axes,
+        RolapAggregationManager.PinSet pinnedSegments)
+    {
         Segment[] segments = new Segment[measures.length];
         for (int i = 0; i < measures.length; i++) {
             RolapStar.Measure measure = measures[i];
             measureBitKey.set(measure.getBitPosition());
-            List<Segment.Region> excludedRegions = Collections.emptyList();
             Segment segment =
-                    new Segment(this, measure, axes, excludedRegions);
+                new Segment(
+                    this, measure, axes,
+                    Collections.<Segment.Region>emptyList());
             segments[i] = segment;
             SoftReference<Segment> ref = new SoftReference<Segment>(segment);
             segmentRefs.add(ref);

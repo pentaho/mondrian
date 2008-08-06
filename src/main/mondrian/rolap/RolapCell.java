@@ -9,16 +9,20 @@
 */
 package mondrian.rolap;
 
-import mondrian.mdx.MemberExpr;
+import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 
 import java.sql.*;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * <code>RolapCell</code> implements {@link mondrian.olap.Cell} within a
  * {@link RolapResult}.
+ *
+ * @version $Id$
  */
 class RolapCell implements Cell {
     private final RolapResult result;
@@ -64,7 +68,7 @@ class RolapCell implements Cell {
         final Member[] currentMembers = getMembersForDrillThrough();
         CellRequest cellRequest =
             RolapAggregationManager.makeDrillThroughRequest(
-                currentMembers, extendedContext);
+                currentMembers, extendedContext, result.getCube());
         return (cellRequest == null)
             ? null
             : aggMan.getDrillThroughSql(cellRequest, false);
@@ -76,7 +80,7 @@ class RolapCell implements Cell {
         final Member[] currentMembers = getMembersForDrillThrough();
         CellRequest cellRequest =
             RolapAggregationManager.makeDrillThroughRequest(
-                currentMembers, false);
+                currentMembers, false, result.getCube());
         if (cellRequest == null) {
             return -1;
         }
@@ -111,9 +115,43 @@ class RolapCell implements Cell {
     public boolean canDrillThrough() {
         // get current members
         final Member[] currentMembers = getMembersForDrillThrough();
-        // First member is the measure, test if it is stored measure, return
-        // true if it is, false if not.
-        return (currentMembers[0] instanceof RolapStoredMeasure);
+        Cube x = chooseDrillThroughCube(currentMembers, result.getCube());
+        return x != null;
+    }
+
+    public static RolapCube chooseDrillThroughCube(
+        Member[] currentMembers,
+        RolapCube defaultCube)
+    {
+        if (defaultCube != null && defaultCube.isVirtual()) {
+            List<RolapCube> cubes = new ArrayList<RolapCube>();
+            for (RolapMember member : defaultCube.getMeasuresMembers()) {
+                if (member instanceof RolapVirtualCubeMeasure) {
+                    RolapVirtualCubeMeasure measure =
+                        (RolapVirtualCubeMeasure) member;
+                    cubes.add(measure.getCube());
+                }
+            }
+            defaultCube = cubes.get(0);
+            assert !defaultCube.isVirtual();
+        }
+        final DrillThroughVisitor visitor =
+            new DrillThroughVisitor();
+        try {
+            for (Member member : currentMembers) {
+                visitor.handleMember(member);
+            }
+        } catch (RuntimeException e) {
+            if (e == DrillThroughVisitor.bomb) {
+                // No cubes left
+                return null;
+            } else {
+                throw e;
+            }
+        }
+        return visitor.cube == null
+             ? defaultCube
+             : visitor.cube;
     }
 
     private RolapEvaluator getEvaluator() {
@@ -168,6 +206,129 @@ class RolapCell implements Cell {
 
     public Member getContextMember(Dimension dimension) {
         return result.getMember(pos, dimension);
+    }
+
+    /**
+     * Visitor that walks over a cell's expression and checks whether the
+     * cell should allow drill-through. If not, throws the {@link #bomb}
+     * exception.
+     *
+     * <p>Examples:</p>
+     * <ul>
+     * <li>Literal 1 is drillable</li>
+     * <li>Member [Measures].[Unit Sales] is drillable</li>
+     * <li>Calculated member with expression [Measures].[Unit Sales] + 1 is drillable</li>
+     * <li>Calculated member with expression
+     *     ([Measures].[Unit Sales], [Time].PrevMember) is not drillable</li>
+     * </ul>
+     */
+    private static class DrillThroughVisitor extends MdxVisitorImpl {
+        static final RuntimeException bomb = new RuntimeException();
+        RolapCube cube = null;
+
+        DrillThroughVisitor() {
+        }
+
+        public Object visit(MemberExpr memberExpr) {
+            handleMember(memberExpr.getMember());
+            return null;
+        }
+
+        public Object visit(ResolvedFunCall call) {
+            final FunDef def = call.getFunDef();
+            final Exp[] args = call.getArgs();
+            if (def.getName().equals("+")
+                || def.getName().equals("-")
+                || def.getName().equals("/")
+                || def.getName().equals("*")
+                || def.getName().equals("CoalesceEmpty")
+                // Allow parentheses but don't allow tuple
+                || def.getName().equals("()") && args.length == 1) {
+                visitChildren(args);
+                return null;
+            }
+            throw bomb;
+        }
+
+        private void visitChildren(Exp[] args) {
+            for (Exp arg : args) {
+                arg.accept(this);
+            }
+        }
+
+        public void handleMember(Member member) {
+            if (member instanceof RolapStoredMeasure) {
+                // If this member is in a different cube that previous members
+                // we've seen, we cannot drill through.
+                final RolapCube cube = ((RolapStoredMeasure) member).getCube();
+                if (this.cube == null) {
+                    this.cube = cube;
+                } else if (this.cube != cube) {
+                    // this measure lives in a different cube than previous
+                    // measures we have seen
+                    throw bomb;
+                }
+            } else if (member instanceof RolapCubeMember) {
+                handleMember(((RolapCubeMember) member).rolapMember);
+            } else if (member instanceof RolapHierarchy.RolapCalculatedMeasure) {
+                RolapHierarchy.RolapCalculatedMeasure measure =
+                    (RolapHierarchy.RolapCalculatedMeasure) member;
+                measure.getFormula().getExpression().accept(this);
+            } else if (member instanceof RolapMember) {
+                // regular RolapMember - fine
+            } else {
+                // don't know what this is!
+                throw bomb;
+            }
+        }
+
+        public Object visit(NamedSetExpr namedSetExpr) {
+            throw Util.newInternal("not valid here: " + namedSetExpr);
+        }
+
+        public Object visit(Literal literal) {
+            return null; // literals are drillable
+        }
+
+        public Object visit(Query query) {
+            throw Util.newInternal("not valid here: " + query);
+        }
+
+        public Object visit(QueryAxis queryAxis) {
+            throw Util.newInternal("not valid here: " + queryAxis);
+        }
+
+        public Object visit(Formula formula) {
+            throw Util.newInternal("not valid here: " + formula);
+        }
+
+        public Object visit(UnresolvedFunCall call) {
+            throw Util.newInternal("expected resolved expression");
+        }
+
+        public Object visit(Id id) {
+            throw Util.newInternal("expected resolved expression");
+        }
+
+        public Object visit(ParameterExpr parameterExpr) {
+            // Not valid in general; might contain complex expression
+            throw bomb;
+        }
+
+        public Object visit(DimensionExpr dimensionExpr) {
+            // Not valid in general; might be part of complex expression
+            throw bomb;
+        }
+
+        public Object visit(HierarchyExpr hierarchyExpr) {
+            // Not valid in general; might be part of complex expression
+            throw bomb;
+        }
+
+        public Object visit(LevelExpr levelExpr) {
+            // Not valid in general; might be part of complex expression
+            throw bomb;
+        }
     }
 }
 

@@ -13,6 +13,8 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 
 import java.util.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Implementation of {@link MemberReader} which replaces given members
@@ -26,6 +28,8 @@ import java.util.*;
  * @since Oct 5, 2007
  */
 public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
+    private final TupleReader.MemberBuilder memberBuilder =
+        new SubstitutingMemberBuilder();
 
     /**
      * Creates a SubstitutingMemberReader.
@@ -202,7 +206,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
 
     @Override
     public TupleReader.MemberBuilder getMemberBuilder() {
-        throw new UnsupportedOperationException();
+        return memberBuilder;
     }
 
     /**
@@ -239,6 +243,40 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
         @Override
         public RolapMember remove(int index) {
             return list.remove(index);
+        }
+    }
+
+    private class SubstitutingMemberBuilder
+        implements TupleReader.MemberBuilder
+    {
+        public MemberCache getMemberCache() {
+            return memberReader.getMemberBuilder().getMemberCache();
+        }
+
+        public Object getMemberCacheLock() {
+            return memberReader.getMemberBuilder().getMemberCacheLock();
+        }
+
+        public RolapMember makeMember(
+            RolapMember parentMember,
+            RolapLevel childLevel,
+            Object value,
+            Object captionValue,
+            boolean parentChild,
+            ResultSet resultSet,
+            Object key,
+            int column) throws SQLException
+        {
+            return substitute(
+                memberReader.getMemberBuilder().makeMember(
+                    desubstitute(parentMember),
+                    childLevel,
+                    value,
+                    captionValue,
+                    parentChild,
+                    resultSet,
+                    key,
+                    column));
         }
     }
 }

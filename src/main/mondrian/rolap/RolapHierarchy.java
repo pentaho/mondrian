@@ -882,8 +882,8 @@ public class RolapHierarchy extends HierarchyBase {
      *
      * @see mondrian.olap.Role.RollupPolicy
      */
-    static class LimitedRollupMember extends RolapCubeMember {
-        final RolapMember member;
+    public static class LimitedRollupMember extends RolapCubeMember {
+        public final RolapMember member;
         private final Exp exp;
 
         LimitedRollupMember(
@@ -947,8 +947,9 @@ public class RolapHierarchy extends HierarchyBase {
 
         @Override
         public RolapMember substitute(final RolapMember member) {
-            if (hierarchyAccess.getAccess(member) == Access.CUSTOM
-                || hierarchyAccess.hasInaccessibleDescendants(member))
+            if (member != null
+                && (hierarchyAccess.getAccess(member) == Access.CUSTOM
+                || hierarchyAccess.hasInaccessibleDescendants(member)))
             {
                 // Member is visible, but at least one of its
                 // descendants is not.

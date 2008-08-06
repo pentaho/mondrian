@@ -913,6 +913,35 @@ public class NamedSetTest extends FoodMartTestCase {
     }
 
     /**
+     * Test csae for bug 1971080, "hierarchize(named set) causes attempt to
+     * sort immutable list".
+     */
+    public void testHierarchizeNamedSetImmutable() {
+        assertQueryReturns(
+            "with set necj as\n"
+                + "NonEmptyCrossJoin([Customers].[Name].members,[Store].[Store Name].members)\n"
+                + "select\n"
+                + "{[Measures].[Unit Sales]} on columns,\n"
+                + "Tail(hierarchize(necj),5) on rows\n"
+                + "from sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Yakima].[Tracy Meyer], [Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Yakima].[Vanessa Thompson], [Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Yakima].[Velma Lykes], [Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Yakima].[William Battaglia], [Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Yakima].[Wilma Fink], [Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n" +
+                "Row #0: 44\n" +
+                "Row #1: 128\n" +
+                "Row #2: 55\n" +
+                "Row #3: 149\n" +
+                "Row #4: 89\n"));
+    }
+
+    /**
      * Dynamic schema processor which adds two named sets to a the first cube
      * in a schema.
      */

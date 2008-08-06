@@ -32,7 +32,8 @@ import java.util.*;
  */
 public class AggregationManager extends RolapAggregationManager {
     
-    private static final MondrianProperties properties = MondrianProperties.instance();
+    private static final MondrianProperties properties =
+        MondrianProperties.instance();
     
     private static final Logger LOGGER =
             Logger.getLogger(AggregationManager.class);
@@ -76,7 +77,8 @@ public class AggregationManager extends RolapAggregationManager {
         AggregationKey aggregationKey,
         StarColumnPredicate[] predicates,
         PinSet pinnedSegments,
-        GroupingSetsCollector groupingSetsCollector) {
+        GroupingSetsCollector groupingSetsCollector)
+    {
         RolapStar star = measures[0].getStar();
         Aggregation aggregation =
             star.lookupOrCreateAggregation(aggregationKey);
@@ -84,7 +86,9 @@ public class AggregationManager extends RolapAggregationManager {
         // try to eliminate unneccessary constraints
         // for Oracle: prevent an IN-clause with more than 1000 elements
         predicates = aggregation.optimizePredicates(columns, predicates);
-        aggregation.load(columns, measures, predicates, pinnedSegments, groupingSetsCollector);
+        aggregation.load(
+            columns, measures, predicates, pinnedSegments,
+            groupingSetsCollector);
     }
 
     public Object getCellFromCache(CellRequest request) {
@@ -99,14 +103,13 @@ public class AggregationManager extends RolapAggregationManager {
         AggregationKey aggregationKey = new AggregationKey(request);
         final Aggregation aggregation =
             measure.getStar().lookupAggregation(aggregationKey);
-        
+
         if (aggregation == null) {
             // cell is not in any aggregation
             return null;
         } else {
-            final Object o = aggregation.getCellValue(
+            return aggregation.getCellValue(
                 measure, request.getSingleValues(), pinSet);
-            return o;
         }
     }
     
@@ -137,8 +140,8 @@ public class AggregationManager extends RolapAggregationManager {
      */
     public String generateSql(
         GroupingSetsList groupingSetsList,
-        List<StarPredicate> compoundPredicateList) {
-
+        List<StarPredicate> compoundPredicateList)
+    {
         BitKey levelBitKey = groupingSetsList.getDefaultLevelBitKey();
         BitKey measureBitKey = groupingSetsList.getDefaultMeasureBitKey();
 
@@ -359,7 +362,6 @@ System.out.println(buf.toString());
                 // For each such measure, is it based upon a foreign key.
                 // Are there any foreign keys left over. No, can use AggStar.
                 BitKey fkBitKey = aggStar.getForeignKeyBitKey().copy();
-                Iterator mit = aggStar.getFactTable().getMeasures().iterator();
                 for (AggStar.FactTable.Measure measure : aggStar.getFactTable()
                     .getMeasures()) {
                     if (measure.isDistinct()) {
@@ -394,8 +396,9 @@ System.out.println(buf.toString());
      * Implementation of {@link mondrian.rolap.RolapAggregationManager.PinSet}
      * using a {@link HashSet}.
      */
-    public static class PinSetImpl extends HashSet<Segment>
-                implements RolapAggregationManager.PinSet {
+    public static class PinSetImpl
+        extends HashSet<Segment>
+        implements RolapAggregationManager.PinSet {
     }
 }
 

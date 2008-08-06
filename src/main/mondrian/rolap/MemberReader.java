@@ -136,6 +136,7 @@ interface MemberReader extends MemberSource {
 
     /**
      * Substitutes a given member.
+     * If member is null, returns null.
      *
      * <p>This method is called whenever a member is returned from the wrapped
      * member reader and is to be returned to the caller. You could say that it

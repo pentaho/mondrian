@@ -42,15 +42,42 @@ public class DrillThroughTest extends FoodMartTestCase {
     
     public void testTrivalCalcMemberDrillThrough() throws Exception {
         Result result = executeQuery(
-                "WITH MEMBER [Measures].[Formatted Unit Sales] AS '[Measures].[Unit Sales]', FORMAT_STRING='$#,###.000'" + nl +
-                "SELECT {[Measures].[Unit Sales], [Measures].[Formatted Unit Sales]} on columns," + nl +
-                " {[Product].Children} on rows" + nl +
+            "WITH MEMBER [Measures].[Formatted Unit Sales]" +
+                " AS '[Measures].[Unit Sales]', FORMAT_STRING='$#,###.000'\n" +
+                "MEMBER [Measures].[Twice Unit Sales]" +
+                " AS '[Measures].[Unit Sales] * 2'\n" +
+                "MEMBER [Measures].[Twice Unit Sales Plus Store Sales] " +
+                " AS '[Measures].[Twice Unit Sales] + [Measures].[Store Sales]'," +
+                "  FOMRAT_STRING='#'\n" +
+                "MEMBER [Measures].[Foo] " +
+                " AS '[Measures].[Unit Sales] + ([Measures].[Unit Sales], [Time].PrevMember)'\n" +
+                "MEMBER [Measures].[Unit Sales Percentage] " +
+                " AS '[Measures].[Unit Sales] / [Measures].[Twice Unit Sales]'\n" +
+                "SELECT {[Measures].[Unit Sales],\n" +
+                "  [Measures].[Formatted Unit Sales],\n" +
+                "  [Measures].[Twice Unit Sales],\n" +
+                "  [Measures].[Twice Unit Sales Plus Store Sales],\n" +
+                "  [Measures].[Foo],\n" +
+                "  [Measures].[Unit Sales Percentage]} on columns,\n" +
+                " {[Product].Children} on rows\n" +
                 "from Sales");
-        
+
+        // can drill through [Formatted Unit Sales]
         final Cell cell = result.getCell(new int[]{0, 0});
         assertTrue(cell.canDrillThrough());
-        String sql = cell.getDrillThroughSQL(false);
+        // can drill through [Unit Sales]
+        assertTrue(result.getCell(new int[]{1, 0}).canDrillThrough());
+        // can drill through [Twice Unit Sales]
+        assertTrue(result.getCell(new int[]{2, 0}).canDrillThrough());
+        // can drill through [Twice Unit Sales Plus Store Sales]
+        assertTrue(result.getCell(new int[]{3, 0}).canDrillThrough());
+        // can not drill through [Foo]
+        assertFalse(result.getCell(new int[]{4, 0}).canDrillThrough());
+        // can drill through [Unit Sales Percentage]
+        assertTrue(result.getCell(new int[]{5, 0}).canDrillThrough());
+        assertNotNull(result.getCell(new int[]{5, 0}).getDrillThroughSQL(false));
 
+        String sql = cell.getDrillThroughSQL(false);
         String expectedSql =
                 "select `time_by_day`.`the_year` as `Year`," +
                 " `product_class`.`product_family` as `Product Family`," +
@@ -99,7 +126,7 @@ public class DrillThroughTest extends FoodMartTestCase {
 
     public void testDrillThrough() throws Exception {
         Result result = executeQuery(
-                "WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / [Measures].[Unit Sales]'" + nl +
+                "WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / ([Measures].[Store Sales], [Time].PrevMember)'" + nl +
                 "SELECT {[Measures].[Unit Sales], [Measures].[Price]} on columns," + nl +
                 " {[Product].Children} on rows" + nl +
                 "from Sales");
@@ -159,7 +186,7 @@ public class DrillThroughTest extends FoodMartTestCase {
 
     public void testDrillThrough2() throws Exception {
         Result result = executeQuery(
-                "WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / [Measures].[Unit Sales]'" + nl +
+                "WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / ([Measures].[Unit Sales], [Time].PrevMember)'" + nl +
                 "SELECT {[Measures].[Unit Sales], [Measures].[Price]} on columns," + nl +
                 " {[Product].Children} on rows" + nl +
                 "from Sales");
@@ -513,6 +540,7 @@ public class DrillThroughTest extends FoodMartTestCase {
 
         getTestContext().assertSqlEquals(expectedSql, sql, 0);
     }
+
     /**
      * Tests that cells in a virtual cube say they can be drilled through.
      */
@@ -693,6 +721,93 @@ public class DrillThroughTest extends FoodMartTestCase {
             if (connection != null) {
                 connection.close();
             }
+        }
+    }
+
+    public void testDrillThroughExprs() {
+        assertCanDrillThrough(
+            true,
+            "Sales",
+            "CoalesceEmpty([Measures].[Unit Sales], [Measures].[Store Sales])");
+        assertCanDrillThrough(
+            true,
+            "Sales",
+            "[Measures].[Unit Sales] + [Measures].[Unit Sales]");
+        assertCanDrillThrough(
+            true,
+            "Sales",
+            "[Measures].[Unit Sales] / ([Measures].[Unit Sales] - 5.0)");
+        assertCanDrillThrough(
+            true,
+            "Sales",
+            "[Measures].[Unit Sales] * [Measures].[Unit Sales]");
+        // constants are drillable - in a virtual cube it means take the first
+        // cube
+        assertCanDrillThrough(
+            true,
+            "Warehouse and Sales",
+            "2.0");
+        assertCanDrillThrough(
+            true,
+            "Warehouse and Sales",
+            "[Measures].[Unit Sales] * 2.0");
+        // in virtual cube, mixture of measures from two cubes is not drillable
+        assertCanDrillThrough(
+            false,
+            "Warehouse and Sales",
+            "[Measures].[Unit Sales] + [Measures].[Units Ordered]");
+        // expr with measures both from [Sales] is drillable
+        assertCanDrillThrough(
+            true,
+            "Warehouse and Sales",
+            "[Measures].[Unit Sales] + [Measures].[Store Sales]");
+        // expr with measures both from [Warehouse] is drillable
+        assertCanDrillThrough(
+            true,
+            "Warehouse and Sales",
+            "[Measures].[Warehouse Cost] + [Measures].[Units Ordered]");
+        // <Member>.Children not drillable
+        assertCanDrillThrough(
+            false,
+            "Sales",
+            "Sum([Product].Children)");
+        // Sets of members not drillable
+        assertCanDrillThrough(
+            false,
+            "Sales",
+            "Sum({[Store].[USA], [Store].[Canada].[BC]})");
+        // Tuples not drillable
+        assertCanDrillThrough(
+            false,
+            "Sales",
+            "([Time].[1997].[Q1], [Measures].[Unit Sales])");
+    }
+
+    /**
+     * Asserts that a cell based on the given measure expression has a given
+     * drillability.
+     *
+     * @param canDrillThrough Whether we expect the cell to be drillable
+     * @param cubeName Cube name
+     * @param expr Scalar expression
+     */
+    private void assertCanDrillThrough(
+        boolean canDrillThrough,
+        String cubeName,
+        String expr)
+    {
+        Result result = executeQuery(
+            "WITH MEMBER [Measures].[Foo] AS '" + expr + "'\n" +
+                "SELECT {[Measures].[Foo]} on columns,\n" +
+                " {[Product].Children} on rows\n" +
+                "from [" + cubeName + "]");
+        final Cell cell = result.getCell(new int[] {0, 0});
+        assertEquals(canDrillThrough, cell.canDrillThrough());
+        final String sql = cell.getDrillThroughSQL(false);
+        if (canDrillThrough) {
+            assertNotNull(sql);
+        } else {
+            assertNull(sql);
         }
     }
 }

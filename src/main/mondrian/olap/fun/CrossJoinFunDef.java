@@ -1137,6 +1137,22 @@ public class CrossJoinFunDef extends FunDefBase {
             }
             return result;
         }
+
+        public <T> T[] toArray(T[] a) {
+            int size = size();
+            if (a.length < size) {
+                a = (T[]) java.lang.reflect.Array.newInstance(
+                    a.getClass().getComponentType(), size);
+            }
+            for (int i = 0; i < size; i++) {
+                a[i] = (T) get(i);
+            }
+            if (a.length > size) {
+                a[size] = null;
+            }
+            return a;
+        }
+
         public List<Member[]> toArrayList() {
             List<Member[]> l = new ArrayList<Member[]>(size());
             Iterator<Member[]> i = iterator();

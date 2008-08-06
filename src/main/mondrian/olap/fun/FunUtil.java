@@ -19,6 +19,7 @@ import mondrian.calc.Calc;
 import mondrian.calc.ResultStyle;
 import mondrian.calc.DoubleCalc;
 import mondrian.mdx.*;
+import mondrian.rolap.RolapHierarchy;
 import mondrian.util.FilteredIterableList;
 import mondrian.util.ConcatenableList;
 
@@ -1537,9 +1538,19 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
      *   1 if m1 collates after m2
      */
     public static int compareHierarchically(
-            Member m1,
-            Member m2,
-            boolean post) {
+        Member m1,
+        Member m2,
+        boolean post)
+    {
+        // Strip away the LimitedRollupMember wrapper, if it exists. The
+        // wrapper does not implement equals and comparisons correctly. This
+        // is safe this method has no side-effects: it just returns an int.
+        if (m1 instanceof RolapHierarchy.LimitedRollupMember) {
+            m1 = ((RolapHierarchy.LimitedRollupMember) m1).member;
+        }
+        if (m2 instanceof RolapHierarchy.LimitedRollupMember) {
+            m2 = ((RolapHierarchy.LimitedRollupMember) m2).member;
+        }
         if (equals(m1, m2)) {
             return 0;
         }
@@ -1562,7 +1573,13 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
                 m1 = m1.getParentMember();
                 m2 = m2.getParentMember();
                 if (equals(m1, m2)) {
-                    return compareSiblingMembers(prev1, prev2);
+                    final int c = compareSiblingMembers(prev1, prev2);
+                    // compareHierarchically needs to impose a total order;
+                    // cannot return 0 for non-equal members
+                    assert c != 0 :
+                        "Members " + prev1 + ", " + prev2 +
+                            " are not equal, but compare returned 0.";
+                    return c;
                 }
             }
         }
@@ -2053,7 +2070,6 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
                     break;
                 }
                 // compareHierarchicallyButSiblingsByValue imposes a total order
-                //Util.assertTrue(m1 == m2);
                 Util.assertTrue(m1.equals(m2));
                 evaluator.setContext(m1);
             }
@@ -2094,6 +2110,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
                 }
             }
         }
+
         private int compareByValue(Member m1, Member m2) {
             int c;
             Member old = evaluator.setContext(m1);
@@ -2142,14 +2159,6 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
                 if (c != 0) {
                     return c;
                 }
-                // compareHierarchically imposes a total order
-                if (!FunUtil.equals(m1, m2)) {
-                    // throw an assert exception
-                    throw Util.newInternal(
-                        "assertion failed in HierarchizeArrayComparator: Members "
-                        + m1 + ", " + m2 + " are not equal."
-                      );
-                }
             }
             return 0;
         }
@@ -2165,8 +2174,8 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         HierarchizeComparator(boolean post) {
             this.post = post;
         }
-        public int compare(Member o1, Member o2) {
-            return FunUtil.compareHierarchically(o1, o2, post);
+        public int compare(Member m1, Member m2) {
+            return FunUtil.compareHierarchically(m1, m2, post);
         }
     }
 

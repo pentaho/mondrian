@@ -12,7 +12,6 @@ package mondrian.rolap.agg;
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.BitKey;
-import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.util.*;
@@ -71,15 +70,15 @@ public class OrPredicate extends ListPredicate {
     }
 
     /**
-     * Check if a predicate can be translated using IN list, and group predicates
-     * based on how many columns can be translated using IN list. If none of the
-     * columns can be made part of IN, the entire predicate will be translated using
-     * AND/OR. This method identified all the columns that can be part of IN and
-     * and categorizes this predicate based on number of column values to use in the
-     * IN list. 
-     * 
+     * Checks whether a predicate can be translated using an IN list, and groups
+     * predicates based on how many columns can be translated using IN list. If
+     * none of the columns can be made part of IN, the entire predicate will be
+     * translated using AND/OR. This method identifies all the columns that can
+     * be part of IN and and categorizes this predicate based on number of
+     * column values to use in the IN list.
+     *
      * @param predicate predicate to analyze
-     * @param sqlQuery
+     * @param sqlQuery Query
      * @param predicateMap the map containing predicates analyzed so far
      */
     private void checkInListForPredicate(
@@ -110,18 +109,18 @@ public class OrPredicate extends ListPredicate {
     
     private void checkInList(
         SqlQuery sqlQuery, 
-        Map<BitKey, List<StarPredicate>> predicateMap) {
-
+        Map<BitKey, List<StarPredicate>> predicateMap)
+    {
         for (StarPredicate predicate : children) {
             checkInListForPredicate(predicate, sqlQuery, predicateMap);
         }
     }
 
     /**
-     * Translate a list of predicates over the same set of columns into sql using IN
-     * list where possible.
+     * Translates a list of predicates over the same set of columns into sql
+     * using IN list where possible.
      * 
-     * @param sqlQuery 
+     * @param sqlQuery Query
      * @param buf buffer to build sql
      * @param inListRHSBitKey which column positions are included in the IN predicate
      * The non included positions corresponde to columns that are nulls.
@@ -131,7 +130,8 @@ public class OrPredicate extends ListPredicate {
         SqlQuery sqlQuery, 
         StringBuilder buf, 
         BitKey inListRHSBitKey,
-        List<StarPredicate> predicateList) {
+        List<StarPredicate> predicateList)
+    {
         // Make a col position to column map to aid search.
         Map<Integer, RolapStar.Column> columnMap =
             new HashMap<Integer, RolapStar.Column>();

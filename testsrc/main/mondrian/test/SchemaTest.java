@@ -16,6 +16,7 @@ import org.olap4j.OlapConnection;
 import org.olap4j.metadata.*;
 
 import mondrian.rolap.aggmatcher.AggTableManager;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.*;
 import mondrian.util.Bug;
 import mondrian.olap.Member;
@@ -2079,6 +2080,82 @@ public class SchemaTest extends FoodMartTestCase {
         assertContains(exceptionList, "Role 'Unknown' not found");
     }
 
+    /**
+     * Test case for bug 1963913, "RolapMember causes ClassCastException in
+     * compare()", caused by binary column value.
+     */
+    public void testBinaryLevelKey() {
+        final SqlQuery.Dialect dialect = TestContext.instance().getDialect();
+        if (!dialect.isDerby() && !dialect.isMySQL()) {
+            // Not all databases support binary literals (e.g. X'AB01'). Only
+            // Derby returns them as byte[] values from its JDBC driver and
+            // therefore experiences bug 1963913.
+            return;
+        }
+        final TestContext testContext =
+            TestContext.createSubstitutingCube(
+                "Sales",
+                "  <Dimension name=\"Binary\" foreignKey=\"promotion_id\">\n" +
+                    "    <Hierarchy hasAll=\"false\" primaryKey=\"id\">\n" +
+                    "      <InlineTable alias=\"binary\">\n" +
+                    "        <ColumnDefs>\n" +
+                    "          <ColumnDef name=\"id\" type=\"Integer\"/>\n" +
+                    "          <ColumnDef name=\"bin\" type=\"Integer\"/>\n" +
+                    "          <ColumnDef name=\"name\" type=\"String\"/>\n" +
+                    "        </ColumnDefs>\n" +
+                    "        <Rows>\n" +
+                    "          <Row>\n" +
+                    "            <Value column=\"id\">2</Value>\n" +
+                    "            <Value column=\"bin\">X'4546'</Value>\n" +
+                    "            <Value column=\"name\">Ben</Value>\n" +
+                    "          </Row>\n" +
+                    "          <Row>\n" +
+                    "            <Value column=\"id\">3</Value>\n" +
+                    "            <Value column=\"bin\">X'424344'</Value>\n" +
+                    "            <Value column=\"name\">Bill</Value>\n" +
+                    "          </Row>\n" +
+                    "          <Row>\n" +
+                    "            <Value column=\"id\">4</Value>\n" +
+                    "            <Value column=\"bin\">X'424344'</Value>\n" +
+                    "            <Value column=\"name\">Bill</Value>\n" +
+                    "          </Row>\n" +
+                    "        </Rows>\n" +
+                    "      </InlineTable>\n" +
+                    "      <Level name=\"Level1\" column=\"bin\" nameColumn=\"name\" ordinalColumn=\"name\" />\n" +
+                    "      <Level name=\"Level2\" column=\"id\"/>\n" +
+                    "    </Hierarchy>\n" +
+                    "  </Dimension>\n");
+        testContext.assertQueryReturns(
+            "select {[Binary].members} on 0 from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Binary].[Ben]}\n" +
+                "{[Binary].[Ben].[2]}\n" +
+                "{[Binary].[Bill]}\n" +
+                "{[Binary].[Bill].[3]}\n" +
+                "{[Binary].[Bill].[4]}\n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n"));
+        testContext.assertQueryReturns(
+            "select hierarchize({[Binary].members}) on 0 from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Binary].[Ben]}\n" +
+                "{[Binary].[Ben].[2]}\n" +
+                "{[Binary].[Bill]}\n" +
+                "{[Binary].[Bill].[3]}\n" +
+                "{[Binary].[Bill].[4]}\n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n"));
+    }
 }
 
 // End SchemaTest.java

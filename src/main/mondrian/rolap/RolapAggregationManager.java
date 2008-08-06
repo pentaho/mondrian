@@ -13,12 +13,8 @@
 
 package mondrian.rolap;
 
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
-import mondrian.olap.Member;
-import mondrian.olap.Util;
 import mondrian.rolap.agg.*;
-import mondrian.olap.CacheControl;
+import mondrian.olap.*;
 
 import java.util.*;
 import java.io.PrintWriter;
@@ -53,7 +49,7 @@ public abstract class RolapAggregationManager {
      */
     public static CellRequest makeRequest(final Member[] members)
     {
-        return makeCellRequest(members, false, false);
+        return makeCellRequest(members, false, false, null);
     }
 
     /**
@@ -70,13 +66,16 @@ public abstract class RolapAggregationManager {
      *                          This additional context makes the drill-through
      *                          queries easier for humans to understand.
      *
+     * @param cube              Cube
      * @return Cell request, or null if the requst is unsatisfiable
      */
     public static CellRequest makeDrillThroughRequest(
         final Member[] members,
-        final boolean extendedContext)
+        final boolean extendedContext,
+        RolapCube cube)
     {
-        return makeCellRequest(members, true, extendedContext);
+        assert cube != null;
+        return makeCellRequest(members, true, extendedContext, cube);
     }
 
     /**
@@ -103,7 +102,8 @@ public abstract class RolapAggregationManager {
         assert starMeasure != null;
         int starColumnCount = starMeasure.getStar().getColumnCount();
 
-        CellRequest request = makeCellRequest(currentMembers, false, false);
+        CellRequest request =
+            makeCellRequest(currentMembers, false, false, null);
 
         /*
          * Now setting the compound keys.
@@ -170,17 +170,35 @@ public abstract class RolapAggregationManager {
     private static CellRequest makeCellRequest(
         final Member[] members,
         boolean drillThrough,
-        final boolean extendedContext)
+        final boolean extendedContext,
+        RolapCube cube)
     {
+        // Need cube for drill-through requests
+        assert drillThrough == (cube != null);
+
         if (extendedContext) {
             assert (drillThrough);
         }
 
-        if (!(members[0] instanceof RolapStoredMeasure)) {
-            return null;
+        final RolapStoredMeasure measure;
+        if (drillThrough) {
+            cube = RolapCell.chooseDrillThroughCube(members, cube);
+            if (cube == null) {
+                return null;
+            }
+            if (members[0] instanceof RolapStoredMeasure) {
+                measure = (RolapStoredMeasure) members[0];
+            } else {
+                measure = (RolapStoredMeasure) cube.getMeasures().get(0);
+            }
+        } else {
+            if (members[0] instanceof RolapStoredMeasure) {
+                measure = (RolapStoredMeasure) members[0];
+            } else {
+                return null;
+            }
         }
 
-        final RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
         final RolapStar.Measure starMeasure =
             (RolapStar.Measure) measure.getStarMeasure();
         assert starMeasure != null;
@@ -395,7 +413,7 @@ public abstract class RolapAggregationManager {
                 } else {
                     // One level in a member causes the member to be
                     // unsatisfiable.
-                    memberUnsatisfiable = true;;
+                    memberUnsatisfiable = true;
                     break;
                 }
             }
@@ -724,19 +742,6 @@ public abstract class RolapAggregationManager {
      * @return a new PinSet
      */
     public abstract PinSet createPinSet();
-
-    /**
-     * Generates a SQL query to retrieve a cell value for an evaluation
-     * context where some of the dimensions have more than one member.
-     *
-     * <p>Returns null if the request is unsatisfiable. This would happen, say,
-     * if one of the members is null.
-     *
-     * @param evaluator Provides evaluation context
-     * @param aggregationLists List of aggregations, each of which is a set
-     *   of members in the same hierarchy which need to be summed together.
-     * @return SQL query, or null if request is unsatisfiable
-     */
 
     /**
      * A set of segments which are pinned for a short duration as a result of a
