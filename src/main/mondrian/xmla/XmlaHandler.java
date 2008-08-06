@@ -661,7 +661,7 @@ public class XmlaHandler implements XmlaConstants {
                     MDDataSet_Tabular tabResult = (MDDataSet_Tabular) result;
                     tabResult.metadata(writer);
                 } else if (rowset) {
-                	((TabularRowSet) result).metadata(writer);
+                    ((TabularRowSet) result).metadata(writer);
                 } else {
                     writer.verbatim(MD_DATA_SET_XML_SCHEMA);
                 }
@@ -1536,7 +1536,7 @@ public class XmlaHandler implements XmlaConstants {
                 rows.add(row);
             }
         }
-    
+
         /**
          * Writes the tabular drillthrough schema
          *

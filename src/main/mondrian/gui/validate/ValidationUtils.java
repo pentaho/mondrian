@@ -5,9 +5,9 @@ import java.lang.reflect.Field;
 import mondrian.gui.MondrianGuiDef;
 
 /**
- * Validates a <code>MondrianGuiDef</code>. Class contains <code>invalid</code> 
+ * Validates a <code>MondrianGuiDef</code>. Class contains <code>invalid</code>
  * method formerly from <code>mondrian.gui.SchemaTreeCellRenderer</code>.
- * 
+ *
  * @author mlowery
  */
 public class ValidationUtils {
@@ -451,3 +451,5 @@ public class ValidationUtils {
     }
 
 }
+
+// End ValidationUtils.java

@@ -37,7 +37,7 @@ public abstract class Excel {
     public static double acos(double number) {
         return Math.acos(number);
     }
-    
+
     @FunctionName("Acosh")
     @JavaFunDef.Signature("Acosh(number)")
     @Description("Returns the inverse hyperbolic cosine of a number. Number must be greater than or equal to 1. The inverse hyperbolic cosine is the value whose hyperbolic cosine is Arg1, so Acosh(Cosh(number)) equals Arg1.")

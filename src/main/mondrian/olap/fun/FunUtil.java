@@ -278,14 +278,14 @@ public class FunUtil extends Util {
      */
     static List<Member> removeCalculatedMembers(List<Member> memberList)
     {
-    	return new FilteredIterableList<Member>(
-                memberList,
-                new FilteredIterableList.Filter<Member>() {
-                    public boolean accept(final Member m) {
-                        return ! m.isCalculated();
-                    }
+        return new FilteredIterableList<Member>(
+            memberList,
+            new FilteredIterableList.Filter<Member>() {
+                public boolean accept(final Member m) {
+                    return ! m.isCalculated();
                 }
-            );
+            }
+        );
     }
 
     /**
@@ -528,7 +528,7 @@ public class FunUtil extends Util {
         final Object first = members.get(0);
         if (first instanceof Member) {
             if (((Member) first).getDimension().isHighCardinality()) {
-            		return;
+                return;
             }
             List<Member> memberList = Util.cast(members);
             Comparator<Member> comparator = new HierarchizeComparator(post);

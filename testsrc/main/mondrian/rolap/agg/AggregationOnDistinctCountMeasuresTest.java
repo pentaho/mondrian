@@ -611,7 +611,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                     new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
                     new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql2, necjSqlMySql2)
                 };
- 
+
             assertQuerySql(testContext, query, patterns);
         }
     }
@@ -687,7 +687,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                     new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
                     new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql2, necjSqlMySql2)
             };
-            
+
             assertQuerySql(testContext, query, patterns);
         }
     }
@@ -1422,3 +1422,5 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         return AggregateFunDef.AggregateCalc.makeTupleList(members);
     }
 }
+
+// End AggregationOnDistinctCountMeasuresTest.java

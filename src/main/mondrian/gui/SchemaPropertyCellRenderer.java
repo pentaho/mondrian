@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -21,9 +21,9 @@ import javax.swing.table.TableCellRenderer;
  * @version $Id$
  */
 public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCellRenderer {
-    
+
     Workbench workbench;
-    
+
     JLabel stringRenderer;
     JCheckBox booleanRenderer;
     JLabel integerRenderer;
@@ -41,7 +41,7 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
 
     /** Creates a new instance of SchemaPropertyCellRenderer */
     public SchemaPropertyCellRenderer(Workbench wb) {
-        
+
         workbench = wb;
 
         super.setBackground(attributeBackground);
@@ -73,7 +73,7 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
         relationRenderer = new JPanel();
 
         rlPanel = new JPanel();
-        relationList = new JComboBox( new String[] {workbench.getResourceConverter().getString("schemaPropertyCellRenderer.join","Join"), 
+        relationList = new JComboBox( new String[] {workbench.getResourceConverter().getString("schemaPropertyCellRenderer.join","Join"),
                                                     workbench.getResourceConverter().getString("schemaPropertyCellRenderer.table","Table")} );
         relationList.setMaximumSize(new Dimension(55,22));
         relationList.setPreferredSize(new Dimension(55,22));

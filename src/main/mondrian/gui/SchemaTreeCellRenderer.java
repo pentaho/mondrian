@@ -4,7 +4,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -120,13 +120,13 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                 }
             }
             if (value instanceof MondrianGuiDef.Join) {
-                setText(workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.join.title", 
+                setText(workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.join.title",
                         "{0} : Join", new String[] {prefix}));
                 //setText(prefix + " " + workbench.getResourceConverter().getString("common.join.title","Join"));
                 super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("join"))));
             } else if (value instanceof MondrianGuiDef.Table) {
                 //setText(prefix+"Table: "+ ((MondrianGuiDef.Table) value).name);
-                setText(workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.table.title", 
+                setText(workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.table.title",
                         "{0}Table: {1}", new String[] {(prefix.length() == 0 ? "" : prefix + " : "), ((MondrianGuiDef.Table) value).name}));
                 super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("table"))));
             }
@@ -248,11 +248,11 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 
 
     public String invalid(JTree tree, TreePath tpath, Object value, Object icube, Object iparentDimension, Object iparentHierarchy, Object iparentLevel) {
-    	return ValidationUtils.invalid(new WorkbenchMessages(workbench.getResourceConverter()), new WorkbenchJDBCValidator(jdbcMetaData), 
-    			new WorkbenchTreeModel((SchemaTreeModel) tree.getModel()), new WorkbenchTreeModelPath(tpath), value, icube, iparentDimension,
-    			iparentHierarchy, iparentLevel);
-	}
-	private boolean isInvalid(JTree tree, Object value, int row) {
+        return ValidationUtils.invalid(new WorkbenchMessages(workbench.getResourceConverter()), new WorkbenchJDBCValidator(jdbcMetaData),
+                new WorkbenchTreeModel((SchemaTreeModel) tree.getModel()), new WorkbenchTreeModelPath(tpath), value, icube, iparentDimension,
+                iparentHierarchy, iparentLevel);
+    }
+    private boolean isInvalid(JTree tree, Object value, int row) {
         //return (invalid(tree.getSelectionPath(), value) ==null)?false:true;
         /* (TreePath) tree.getPathForRow(row) returns null for new objects added to tree in the first run of rendering.
          * Check for null before calling methods on Treepath returned.

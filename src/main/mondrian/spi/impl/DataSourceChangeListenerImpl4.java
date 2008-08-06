@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -48,7 +48,7 @@ public class DataSourceChangeListenerImpl4 implements DataSourceChangeListener {
     private int flushInverseFrequencyHierarchy;
     private int flushInverseFrequencyAggregation;
     final Random random = new Random(123456);
-	
+
     /** Creates a new instance of DataSourceChangeListenerImpl2 */
     public DataSourceChangeListenerImpl4() {
         this(0,0);

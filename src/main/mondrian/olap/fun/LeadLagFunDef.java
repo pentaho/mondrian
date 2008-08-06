@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -57,7 +57,7 @@ class LeadLagFunDef extends FunDefBase {
                 int n = integerCalc.evaluateInteger(evaluator);
                 if (lag) {
                     if (n == Integer.MIN_VALUE) {
-                        // bump up lagValue by one 
+                        // bump up lagValue by one
                         // otherwise -n(used in the getLeadMember call below)is out of range
                         // because Integer.MAX_VALUE == -(Integer.MIN_VALUE + 1)
                         n += 1;
@@ -71,4 +71,4 @@ class LeadLagFunDef extends FunDefBase {
     }
 }
 
-// End LagFunDef.java
+// End LeadLagFunDef.java

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -105,7 +105,7 @@ public class Pair <L, R>
      * @param c1 First value
      * @param c2 Second value
      * @return  a negative integer, zero, or a positive integer if c1
-     *		is less than, equal to, or greater than c2.
+     *          is less than, equal to, or greater than c2.
      */
     private static <C extends Comparable<C>> int compare(C c1, C c2) {
         if (c1 == null) {

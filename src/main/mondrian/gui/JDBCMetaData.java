@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde and others
+// Copyright (C) 2006-2008 Julian Hyde and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
@@ -33,7 +33,7 @@ public class JDBCMetaData {
 
     Connection conn = null;
     DatabaseMetaData md = null;
-    
+
     Workbench workbench;
 
     /* Map of Schema and its fact tables ::
@@ -86,8 +86,8 @@ public class JDBCMetaData {
         try {
             if (jdbcDriverClassName == null || jdbcDriverClassName.trim().length() == 0 ||
                     jdbcConnectionUrl == null|| jdbcConnectionUrl.trim().length() == 0) {
-                errMsg = getResourceConverter().getFormattedString("jdbcMetaData.blank.exception", 
-                        "Driver={0}\nConnection URL={1}\nUse Preferences to set Database Connection parameters first and then open a Schema", 
+                errMsg = getResourceConverter().getFormattedString("jdbcMetaData.blank.exception",
+                        "Driver={0}\nConnection URL={1}\nUse Preferences to set Database Connection parameters first and then open a Schema",
                         new String[] { jdbcDriverClassName, jdbcConnectionUrl });
                 return errMsg;
             }

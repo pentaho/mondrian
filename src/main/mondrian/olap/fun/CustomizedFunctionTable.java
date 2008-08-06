@@ -16,7 +16,7 @@ public class CustomizedFunctionTable extends FunTableImpl {
 
     Set<String> supportedBuiltInFunctions;
     Set<FunDef> specialFunctions;
-    
+
     public CustomizedFunctionTable(Set<String> buildInFunctions) {
         supportedBuiltInFunctions = buildInFunctions;
         this.specialFunctions = new HashSet<FunDef>();
@@ -29,19 +29,19 @@ public class CustomizedFunctionTable extends FunTableImpl {
 
     protected void defineFunctions() {
         final FunTable builtinFunTable = BuiltinFunTable.instance();
-        
+
         // Includes all the keywords form builtin function table
         for (String reservedWord : builtinFunTable.getReservedWords()) {
             defineReserved(reservedWord);
         }
-        
+
         // Add supported builtin functions
         for (Resolver resolver : builtinFunTable.getResolvers()) {
             if (supportedBuiltInFunctions.contains(resolver.getName())) {
                 define(resolver);
             }
         }
-        
+
         // Add special function definitions
         for (FunDef funDef : specialFunctions) {
             define(funDef);

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde and others
+// Copyright (C) 2007-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -51,7 +51,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "From [Sales]";
 
         String result =
-            "Axis #0:\n" + 
+            "Axis #0:\n" +
             "{}\n" +
             "Axis #1:\n" +
             "{[Measures].[Unit Sales]}\n"+
@@ -66,23 +66,23 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
     public void testMissingSubtotalBugMultiLevelMetricFilter() {
         String query =
-            "With " + 
-            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])' " + 
+            "With " +
+            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])' " +
             "Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Store Cost_SEL~SUM] > 1000.0)' " +
-            "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink].[Beverages],[Product].[All Products].[Food].[Baked Goods]}' " + 
-            "Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})' " + 
-            "Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[High School Degree],[Education Level].[All Education Levels].[Partial High School]}' " + 
+            "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink].[Beverages],[Product].[All Products].[Food].[Baked Goods]}' " +
+            "Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})' " +
+            "Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[High School Degree],[Education Level].[All Education Levels].[Partial High School]}' " +
             "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' " +
-            "Member [Measures].[*Store Cost_SEL~SUM] as '([Measures].[Store Cost],[Product].CurrentMember,[Education Level].CurrentMember)', SOLVE_ORDER=200 " + 
-            "Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Drink]))', SOLVE_ORDER=-100 " + 
+            "Member [Measures].[*Store Cost_SEL~SUM] as '([Measures].[Store Cost],[Product].CurrentMember,[Education Level].CurrentMember)', SOLVE_ORDER=200 " +
+            "Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Drink]))', SOLVE_ORDER=-100 " +
             "Member [Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Food]))', SOLVE_ORDER=-100 " +
             "Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Education Level],[Measures].[*Store Cost_SEL~SUM] > 1000.0))', SOLVE_ORDER=-101 " +
             "Select " +
-            "{[Measures].[Store Cost]} on columns, " + 
+            "{[Measures].[Store Cost]} on columns, " +
             "NonEmptyCrossJoin({[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}) " +
             "on rows From [Sales]";
-        
-        String result = 
+
+        String result =
             "Axis #0:\n" +
             "{}\n" +
             "Axis #1:\n" +
@@ -92,10 +92,10 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "{[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n" +
             "Row #0: 6,535.30\n" +
             "Row #1: 3,860.89\n";
-        
+
         assertQueryReturns(query, fold(result));
     }
-        
+
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnSupportedDB() {
         boolean oldValue = MondrianProperties.instance().EnableGroupingSets.get();
         MondrianProperties.instance().EnableGroupingSets.set(true);
@@ -1387,7 +1387,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and ((\"time_by_day\".\"quarter\" = 'Q1' and \"time_by_day\".\"the_year\" = 1997) " +
             "or (\"time_by_day\".\"month_of_year\" = 7 and \"time_by_day\".\"quarter\" = 'Q3' " +
-            "and \"time_by_day\".\"the_year\" = 1997))"; 
+            "and \"time_by_day\".\"the_year\" = 1997))";
 
         final String mysqlSql = "select count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
             "from `store` as `store`, `sales_fact_1997` as `sales_fact_1997`, " +

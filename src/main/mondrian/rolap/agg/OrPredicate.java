@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -86,19 +86,19 @@ public class OrPredicate extends ListPredicate {
         SqlQuery sqlQuery,
         Map<BitKey, List<StarPredicate>> predicateMap) {
         BitKey inListRHSBitKey;
-        
+
         if (predicate instanceof ValueColumnPredicate) {
             // OR of column values from the same column
-            inListRHSBitKey = 
+            inListRHSBitKey =
                 ((ValueColumnPredicate) predicate).checkInList(columnBitKey);
-        } else if (predicate instanceof AndPredicate) {                          
-            // OR of ANDs over a set of values over the same column set 
+        } else if (predicate instanceof AndPredicate) {
+            // OR of ANDs over a set of values over the same column set
             inListRHSBitKey =
                   ((AndPredicate) predicate).checkInList(sqlQuery, columnBitKey);
         } else {
             inListRHSBitKey = columnBitKey.emptyCopy();
         }
-        List<StarPredicate> predicateGroup = 
+        List<StarPredicate> predicateGroup =
             predicateMap.get(inListRHSBitKey);
         if (predicateGroup == null) {
             predicateGroup = new ArrayList<StarPredicate> ();
@@ -106,9 +106,9 @@ public class OrPredicate extends ListPredicate {
         }
         predicateGroup.add(predicate);
     }
-    
+
     private void checkInList(
-        SqlQuery sqlQuery, 
+        SqlQuery sqlQuery,
         Map<BitKey, List<StarPredicate>> predicateMap)
     {
         for (StarPredicate predicate : children) {
@@ -119,7 +119,7 @@ public class OrPredicate extends ListPredicate {
     /**
      * Translates a list of predicates over the same set of columns into sql
      * using IN list where possible.
-     * 
+     *
      * @param sqlQuery Query
      * @param buf buffer to build sql
      * @param inListRHSBitKey which column positions are included in the IN predicate
@@ -127,23 +127,23 @@ public class OrPredicate extends ListPredicate {
      * @param predicateList the list of predicates to translate.
      */
     private void toInListSql(
-        SqlQuery sqlQuery, 
-        StringBuilder buf, 
+        SqlQuery sqlQuery,
+        StringBuilder buf,
         BitKey inListRHSBitKey,
         List<StarPredicate> predicateList)
     {
         // Make a col position to column map to aid search.
         Map<Integer, RolapStar.Column> columnMap =
             new HashMap<Integer, RolapStar.Column>();
-        
+
         for (RolapStar.Column column : columns) {
             columnMap.put(column.getBitPosition(), column);
         }
-        
+
         buf.append("(");
         // First generate nulls for the columns which will not be included
         // in the IN list
-        
+
         boolean firstNullColumnPredicate = true;
         for (Integer colPos : columnBitKey.andNot(inListRHSBitKey)) {
             if (firstNullColumnPredicate) {
@@ -172,8 +172,8 @@ public class OrPredicate extends ListPredicate {
         if (multiInList) {
             // Multi-IN list
             buf.append("(");
-        }            
-        
+        }
+
         boolean firstColumn = true;
         for (Integer colPos : inListRHSBitKey) {
             if (firstColumn) {
@@ -182,12 +182,12 @@ public class OrPredicate extends ListPredicate {
                 buf.append(", ");
             }
             String expr = columnMap.get(colPos).generateExprString(sqlQuery);
-            buf.append(expr);            
+            buf.append(expr);
         }
         if (multiInList) {
             // Multi-IN list
             buf.append(")");
-        }            
+        }
         buf.append(" in (");
 
         boolean firstPredicate = true;
@@ -197,9 +197,9 @@ public class OrPredicate extends ListPredicate {
             } else {
                 buf.append(", ");
             }
-            
+
             if (predicate instanceof AndPredicate) {
-                ((AndPredicate)predicate).toInListSql(sqlQuery, buf, inListRHSBitKey);                        
+                ((AndPredicate)predicate).toInListSql(sqlQuery, buf, inListRHSBitKey);
             } else {
                 assert (predicate instanceof ValueColumnPredicate);
                 ((ValueColumnPredicate)predicate).toInListSql(sqlQuery, buf);
@@ -225,17 +225,17 @@ public class OrPredicate extends ListPredicate {
         //   (country, state) IN ((USA, CA), (USA, OR))
         //   OR
         //   (country, state, city) IN ((USA, CA, SF), (USA, OR, Portland))
-        // 
+        //
         // The second case is handled by calling toSql on the children in
         // super.toSql().
         //
         Map<BitKey, List<StarPredicate>> predicateMap =
             new HashMap<BitKey, List<StarPredicate>> ();
-        
+
         boolean first = true;
         checkInList(sqlQuery, predicateMap);
         buf.append("(");
-        
+
         for (BitKey columnKey : predicateMap.keySet()) {
             List<StarPredicate> predList = predicateMap.get(columnKey);
             if (columnKey.isEmpty() || predList.size() <= 1) {
@@ -245,7 +245,7 @@ public class OrPredicate extends ListPredicate {
                     if (first) {
                         first = false;
                     } else {
-                        buf.append(" or ");                        
+                        buf.append(" or ");
                     }
                     pred.toSql(sqlQuery, buf);
                 }
@@ -254,15 +254,15 @@ public class OrPredicate extends ListPredicate {
                 if (first) {
                     first = false;
                 } else {
-                    buf.append(" or ");                        
+                    buf.append(" or ");
                 }
-                toInListSql(sqlQuery, buf, columnKey, predList);                
+                toInListSql(sqlQuery, buf, columnKey, predList);
             }
         }
-            
-        buf.append(")");            
+
+        buf.append(")");
     }
-    
+
     protected String getOp() {
         return "or";
     }

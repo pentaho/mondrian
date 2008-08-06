@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -636,7 +636,7 @@ public class UdfTest extends FoodMartTestCase {
             "<UserDefinedFunction name=\"StringMult\" className=\"" +
                 StringMultUdf.class.getName() + "\"/>" + nl,
             null);
-        // The default implementation of getResultType would assume that 
+        // The default implementation of getResultType would assume that
         // StringMult(int, string) returns an int, whereas it returns a string.
         tc.assertExprReturns(
             "StringMult(5, 'foo') || 'bar'", "foofoofoofoofoobar");
@@ -648,7 +648,7 @@ public class UdfTest extends FoodMartTestCase {
      * in this case, HierarchyType(dimension=Time, hierarchy=unknown).
      *
      * <p>Also tests applying a UDF to arguments of coercible type. In this
-     * case, applies f(member,dimension) to args(member,hierarchy). 
+     * case, applies f(member,dimension) to args(member,hierarchy).
      */
     public void testAnotherMemberFun() {
         final TestContext tc = TestContext.create(
@@ -675,7 +675,7 @@ public class UdfTest extends FoodMartTestCase {
                 "Row #0: 409,035.59" + nl);
     }
 
-    
+
     public void testCachingCurrentDate() {
         assertQueryReturns(
             "SELECT {filter([Time].[Month].Members, " +
@@ -685,12 +685,12 @@ public class UdfTest extends FoodMartTestCase {
             "{}" + nl +
             "Axis #1:" + nl +
             "{[Time].[1998].[Q4].[12]}" + nl +
-            "Row #0: " + nl);        
+            "Row #0: " + nl);
     }
-    
+
     // ~ Inner classes --------------------------------------------------------
 
-    
+
     /**
      * A simple user-defined function which adds one to its argument.
      */
@@ -860,4 +860,4 @@ public class UdfTest extends FoodMartTestCase {
     }
 }
 
-// UdfTest.java
+// End UdfTest.java

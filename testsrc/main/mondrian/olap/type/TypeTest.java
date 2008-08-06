@@ -45,7 +45,7 @@ import java.util.ArrayList;
 public class TypeTest extends TestCase {
 
     TestContext testContext = null;
-    
+
     protected void setUp() throws Exception {
         testContext = TestContext.instance();
     }
@@ -242,7 +242,7 @@ public class TypeTest extends TestCase {
 
                 }
 
-                
+
 
                 final int fromCategory = TypeUtil.typeToCategory(fromType);
 

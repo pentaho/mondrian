@@ -2,7 +2,7 @@
  // This software is subject to the terms of the Common Public License
  // Agreement, available at the following URL:
  // http://www.opensource.org/licenses/cpl.html.
- // Copyright (C) 2007-2007 Julian Hyde
+ // Copyright (C) 2007-2008 Julian Hyde
  // All Rights Reserved.
  // You must accept the terms of that agreement to use this software.
  */
@@ -20,7 +20,7 @@ import java.text.*;
 /**
  * Implementations of functions in the Visual Basic for Applications (VBA)
  * specification.
- * 
+ *
  * @author jhyde
  * @version $Id$
  * @since Dec 31, 2007
@@ -28,7 +28,7 @@ import java.text.*;
 public class Vba {
     private static final long MILLIS_IN_A_DAY = 24 * 60 * 60 * 1000;
 
-    private static final DateFormatSymbols DATE_FORMAT_SYMBOLS 
+    private static final DateFormatSymbols DATE_FORMAT_SYMBOLS
                             = new DateFormatSymbols(Locale.getDefault());
 
     // Conversion
@@ -317,8 +317,8 @@ public class Vba {
             interval.add(calendar, (int) floor);
             final long floorMillis = calendar.getTimeInMillis();
 
-            final long amount = 
-                (long) 
+            final long amount =
+                (long)
                     (((double) (ceilMillis - floorMillis)) * (number - floor));
             calendar
                     .add(Calendar.DAY_OF_YEAR, (int) (amount / MILLIS_IN_A_DAY));
@@ -657,7 +657,7 @@ public class Vba {
         return iPmt(rate, per, nPer, PV, 0);
     }
 
-    
+
     @FunctionName("IPmt")
     @Signature("IPmt(rate, per, nper, pv[, fv[, type]])")
     @Description("Returns a Double specifying the interest payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
@@ -666,7 +666,7 @@ public class Vba {
         return iPmt(rate, per, nPer, PV, fv, false);
     }
 
-    
+
     @FunctionName("IPmt")
     @Signature("IPmt(rate, per, nper, pv[, fv[, type]])")
     @Description("Returns a Double specifying the interest payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
@@ -674,7 +674,7 @@ public class Vba {
             double fv, boolean due) {
         double pmtVal = pmt(rate, nPer, PV, fv, due);
         double pValm1 = PV - pV(rate, per - 1, pmtVal, fv, due);
-        return -pValm1 * rate; 
+        return -pValm1 * rate;
     }
 
     @FunctionName("IRR")
@@ -684,28 +684,28 @@ public class Vba {
         return IRR(valueArray, 0.10);
     }
 
-    
+
     @FunctionName("IRR")
     @Signature("IRR(values()[, guess])")
     @Description("Returns a Double specifying the internal rate of return for a series of periodic cash flows (payments and receipts).")
     public static double IRR(double[] valueArray, double guess) {
-        
+
         // calc pV of stream (sum of pV's for valueArray) ((1 + guess) ^ index)
         double minGuess = 0.0;
         double maxGuess = 1.0;
-        
+
         // i'm not certain
         int r = 1;
         if (valueArray[0] > 0) {
             r = -1;
         }
-        
+
         for (int i = 0; i < 30; i++) {
             // first calculate overall return based on guess
             double totalPv = 0;
             for (int j = 0; j < valueArray.length; j++) {
                 totalPv += valueArray[j] / Math.pow(1.0 + guess, j);
-            }           
+            }
             if ((maxGuess - minGuess) < 0.0000001) {
                 return guess;
             } else if (totalPv * r < 0) {
@@ -734,11 +734,11 @@ public class Vba {
             } else {
                 fiNPV += valueArray[j] / Math.pow(1.0 + financeRate, j);
             }
-        }  
-        
-        double ratio = (-reNPV * Math.pow(1 + reinvestRate, valueArray.length)) / 
+        }
+
+        double ratio = (-reNPV * Math.pow(1 + reinvestRate, valueArray.length)) /
         (fiNPV * (1 + financeRate));
-        
+
         return Math.pow( ratio, 1.0 / (valueArray.length - 1)) - 1.0;
 
     }
@@ -782,7 +782,7 @@ public class Vba {
     public static double pPmt(double rate, double per, double nPer, double PV) {
         return pPmt(rate, per, nPer, PV, 0);
     }
-    
+
     @FunctionName("PPmt")
     @Signature("PPmt(rate, per, nper, pv[, fv[, type]])")
     @Description("Returns a Double specifying the principal payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
@@ -790,7 +790,7 @@ public class Vba {
             double fv) {
         return pPmt(rate, per, nPer, PV, fv, false);
     }
-    
+
     @FunctionName("PPmt")
     @Signature("PPmt(rate, per, nper, pv[, fv[, type]])")
     @Description("Returns a Double specifying the principal payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
@@ -822,7 +822,7 @@ public class Vba {
             return -((nper * pmt) + fv);
         } else {
             double r1 = rate + 1;
-            return 
+            return
                 (((1 - Math.pow(r1, nper)) / rate) * (due ? r1 : 1) * pmt - fv)
                     / Math.pow(r1, nper);
         }
@@ -1002,7 +1002,7 @@ public class Vba {
         // Object An object
         // Unknown An object whose type is unknown
         // Nothing Object variable that doesn't refer to an object
-        
+
         if (varName == null) {
             return "NULL";
         } else {
@@ -1268,7 +1268,7 @@ public class Vba {
     @Description("Returns an expression formatted as a date or time.")
     public static String formatDateTime(Date date) {
         return formatDateTime(date, 0);
-        
+
     }
 
     @FunctionName("FormatDateTime")
@@ -1293,13 +1293,13 @@ public class Vba {
             // computer's regional settings.
             case 2:
                 return DateFormat.getDateInstance(DateFormat.SHORT).format(date);
-                
+
             // vbLongTime, 3
             // Display a time using the time format specified in your computer's
             // regional settings.
             case 3:
                 return DateFormat.getTimeInstance(DateFormat.LONG).format(date);
-                
+
             // vbShortTime, 4
             // Display a time using the 24-hour format (hh:mm).
             case 4:
@@ -1309,7 +1309,7 @@ public class Vba {
             // Display a date and/or time. If there is a date part, display it as a
             // short date. If there is a time part, display it as a long time. If
             // present, both parts are displayed.
-                
+
             // todo: how do we determine if there is a "time part" in java?
 
             case 0:
@@ -1327,7 +1327,7 @@ public class Vba {
     // @Description("Returns a Variant (String) containing an expression
     // formatted according to instructions contained in a format expression.")
 
-    
+
     @FunctionName("FormatNumber")
     @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
@@ -1338,52 +1338,52 @@ public class Vba {
     @FunctionName("FormatNumber")
     @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
-    public static String formatNumber(Object expression, 
+    public static String formatNumber(Object expression,
             int numDigitsAfterDecimal) {
         return formatNumber(expression, numDigitsAfterDecimal, -1);
     }
-    
+
     @FunctionName("FormatNumber")
     @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
     public static String formatNumber(
-            Object expression, 
-            int numDigitsAfterDecimal, 
-            int includeLeadingDigit) 
+            Object expression,
+            int numDigitsAfterDecimal,
+            int includeLeadingDigit)
     {
-        return formatNumber(expression, numDigitsAfterDecimal, 
+        return formatNumber(expression, numDigitsAfterDecimal,
                 includeLeadingDigit, -1);
     }
-    
+
     @FunctionName("FormatNumber")
     @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
     public static String formatNumber(
-            Object expression, 
-            int numDigitsAfterDecimal, 
+            Object expression,
+            int numDigitsAfterDecimal,
             int includeLeadingDigit,
-            int useParensForNegativeNumbers) 
+            int useParensForNegativeNumbers)
     {
-        return formatNumber(expression, numDigitsAfterDecimal, 
+        return formatNumber(expression, numDigitsAfterDecimal,
                 includeLeadingDigit, useParensForNegativeNumbers, -1);
     }
-    
+
     @FunctionName("FormatNumber")
     @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
     public static String formatNumber(
-            Object expression, 
+            Object expression,
             int numDigitsAfterDecimal /* default -1 */,
             int includeLeadingDigit /* default usedefault */,
             int useParensForNegativeNumbers /* default UseDefault */,
-            int groupDigits /* default UseDefault */) 
+            int groupDigits /* default UseDefault */)
     {
         NumberFormat format = NumberFormat.getNumberInstance();
         if (numDigitsAfterDecimal != -1) {
             format.setMaximumFractionDigits(numDigitsAfterDecimal);
             format.setMinimumFractionDigits(numDigitsAfterDecimal);
         }
-        
+
         if (includeLeadingDigit != -1) {
             if (includeLeadingDigit != 0) {
                 // true
@@ -1392,24 +1392,24 @@ public class Vba {
                 format.setMinimumIntegerDigits(0);
             }
         }
-        
+
         if (useParensForNegativeNumbers != -1) {
             if (useParensForNegativeNumbers != 0) {
-                DecimalFormat dformat = (DecimalFormat)format; 
+                DecimalFormat dformat = (DecimalFormat)format;
                 dformat.setNegativePrefix("(");
                 dformat.setNegativeSuffix(")");
             } else {
-                DecimalFormat dformat = (DecimalFormat)format; 
+                DecimalFormat dformat = (DecimalFormat)format;
                 dformat.setNegativePrefix(
                         "" + dformat.getDecimalFormatSymbols().getMinusSign());
                 dformat.setNegativeSuffix("");
             }
         }
-        
+
         if (groupDigits != -1) {
             format.setGroupingUsed(groupDigits != 0);
         }
-        
+
         return format.format(expression);
     }
 
@@ -1419,7 +1419,7 @@ public class Vba {
     public static String formatPercent(Object expression) {
         return formatPercent(expression, -1);
     }
-    
+
     @FunctionName("FormatPercent")
     @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
@@ -1428,9 +1428,9 @@ public class Vba {
             Object expression, int numDigitsAfterDecimal /* default -1 */
         ) {
         return formatPercent(expression, numDigitsAfterDecimal, -1);
-        
+
     }
-    
+
     @FunctionName("FormatPercent")
     @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
@@ -1439,11 +1439,11 @@ public class Vba {
             Object expression, int numDigitsAfterDecimal /* default -1 */,
             int includeLeadingDigit /* default UseDefault */
     ) {
-        return formatPercent(expression, numDigitsAfterDecimal, 
+        return formatPercent(expression, numDigitsAfterDecimal,
                 includeLeadingDigit, -1);
-        
+
     }
-    
+
     @FunctionName("FormatPercent")
     @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
@@ -1453,10 +1453,10 @@ public class Vba {
             int includeLeadingDigit /* default UseDefault */,
             int useParensForNegativeNumbers /* default UseDefault */
         ) {
-        return formatPercent(expression, numDigitsAfterDecimal, 
+        return formatPercent(expression, numDigitsAfterDecimal,
                 includeLeadingDigit, useParensForNegativeNumbers, -1);
     }
-    
+
     @FunctionName("FormatPercent")
     @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
@@ -1471,7 +1471,7 @@ public class Vba {
             format.setMaximumFractionDigits(numDigitsAfterDecimal);
             format.setMinimumFractionDigits(numDigitsAfterDecimal);
         }
-        
+
         if (includeLeadingDigit != -1) {
             if (includeLeadingDigit != 0) {
                 // true
@@ -1480,29 +1480,29 @@ public class Vba {
                 format.setMinimumIntegerDigits(0);
             }
         }
-        
+
         if (useParensForNegativeNumbers != -1) {
             if (useParensForNegativeNumbers != 0) {
-                DecimalFormat dformat = (DecimalFormat)format; 
+                DecimalFormat dformat = (DecimalFormat)format;
                 dformat.setNegativePrefix("(");
                 dformat.setNegativeSuffix(
-                        "" + dformat.getDecimalFormatSymbols().getPercent() + 
+                        "" + dformat.getDecimalFormatSymbols().getPercent() +
                         ")");
             } else {
-                DecimalFormat dformat = (DecimalFormat)format; 
+                DecimalFormat dformat = (DecimalFormat)format;
                 dformat.setNegativePrefix(
                         "" + dformat.getDecimalFormatSymbols().getMinusSign());
                 dformat.setNegativeSuffix(
                         "" + dformat.getDecimalFormatSymbols().getPercent());
             }
         }
-        
+
         if (groupDigits != -1) {
             format.setGroupingUsed(groupDigits != 0);
         }
-        
+
         return format.format(expression);
-        
+
     }
 
     // instr is already implemented in BuiltinFunTable... defer
@@ -1654,10 +1654,10 @@ public class Vba {
 
     /**
      * Returns an instance of {@link DateFormatSymbols} for the current locale.
-     * 
+     *
      * <p>
      * Todo: inherit locale from connection.
-     * 
+     *
      * @return a DateFormatSymbols object
      */
     private static DateFormatSymbols getDateFormatSymbols() {
@@ -1771,7 +1771,7 @@ public class Vba {
     public static int strComp(String string1, String string2) {
         return strComp(string1, string2, 0);
     }
-    
+
     @FunctionName("StrComp")
     @Signature("StrComp(string1, string2[, compare])")
     @Description("Returns a Variant (Integer) indicating the result of a string comparison.")
@@ -1826,7 +1826,7 @@ public class Vba {
     }
 
     // ucase is already implemented in BuiltinFunTable... defer
-    
+
     // public String uCase$(String string)
 
 //    @FunctionName("UCase")

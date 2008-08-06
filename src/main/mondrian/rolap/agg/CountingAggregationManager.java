@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,7 +16,7 @@ import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapAggregationManager.PinSet;
 
 /**
- * This class adds to {@link AggregationManager} counters for 
+ * This class adds to {@link AggregationManager} counters for
  * aggregation cache hit and miss. It should only be used for testing
  * purpose due to potential performance regression by the
  * introduction of synchronized blocks.
@@ -27,7 +27,7 @@ import mondrian.rolap.RolapAggregationManager.PinSet;
 public class CountingAggregationManager extends AggregationManager {
     private SynchronizedCounter requestCount;
     private SynchronizedCounter missCount;
-    
+
     CountingAggregationManager() {
         super();
         requestCount = new SynchronizedCounter();
@@ -57,35 +57,35 @@ public class CountingAggregationManager extends AggregationManager {
         }
         return obj;
     }
-    
+
     /**
      * Returns total number of cache requests.
-     * 
+     *
      * @return an integer represents value of request counter
      */
     public int getRequestCount() {
         return requestCount.value();
     }
-    
+
     /**
      * Returns number of cache misses.
-     * 
+     *
      * @return an integer represents value of cache miss counter
      */
     public int getMissCount() {
         return missCount.value();
     }
-    
+
     /**
      * Returns the cache hit ratio.
-     * 
+     *
      * @return a double value represent hit ratio
      */
     public double getHitRatio() {
-        return ((double) requestCount.value() - missCount.value()) / 
+        return ((double) requestCount.value() - missCount.value()) /
             requestCount.value();
     }
-    
+
     /**
      * Resets both counters to zero
      *
@@ -94,18 +94,18 @@ public class CountingAggregationManager extends AggregationManager {
         requestCount.reset();
         missCount.reset();
     }
-    
+
     private class SynchronizedCounter {
         private int c = 0;
-        
+
         public synchronized void increment() {
             c++;
         }
-        
+
         public synchronized void reset() {
             c = 0;
         }
-        
+
         public synchronized int value() {
             return c;
         }

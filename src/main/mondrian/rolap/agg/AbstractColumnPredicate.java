@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2007 Julian Hyde and others
+// Copyright (C) 2006-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -39,7 +39,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
     protected AbstractColumnPredicate(RolapStar.Column constrainedColumn) {
         this.constrainedColumn = constrainedColumn;
         /*
-         * Check if contraintedColumns are null. 
+         * Check if contraintedColumns are null.
          * (Example: FastBatchingCellReader.testAggregateDistinctCount5()).
          */
         if (constrainedColumn != null && constrainedColumn.getTable() != null) {
@@ -71,7 +71,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
     public BitKey getConstrainedColumnBitKey() {
         return constrainedColumnBitKey;
     }
-    
+
     public boolean evaluate(List<Object> valueList) {
         assert valueList.size() == 1;
         return evaluate(valueList.get(0));

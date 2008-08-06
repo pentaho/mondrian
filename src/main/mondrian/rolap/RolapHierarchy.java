@@ -445,15 +445,15 @@ public class RolapHierarchy extends HierarchyBase {
         final boolean failIfExists = false;
         MondrianDef.RelationOrJoin subRelation = null;
         if (table != null) {
-        	// Suppose relation is
-        	//   (((A join B) join C) join D)
-        	// and the fact table is
-        	//   F
-        	// and the table to add is C. We want to make the expression
-        	//   F left join ((A join B) join C).
-        	// Search for the smallest subset of the relation which
-        	// joins with C.
-        	subRelation = lookupRelationSubset(getRelation(), table);
+            // Suppose relation is
+            //   (((A join B) join C) join D)
+            // and the fact table is
+            //   F
+            // and the table to add is C. We want to make the expression
+            //   F left join ((A join B) join C).
+            // Search for the smallest subset of the relation which
+            // joins with C.
+            subRelation = lookupRelationSubset(getRelation(), table);
         }
 
         if (subRelation == null) {

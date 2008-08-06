@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -654,9 +654,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
             requestType, request, "${response}", props, TestContext.instance());
     }
 
-    /** 
+    /**
      * This test returns the same result as testExecuteCrossjoin above
-     * except that the Role used disables accessing 
+     * except that the Role used disables accessing
      * [Customers].[All Customers].[Mexico].
      */
     public void testExecuteCrossjoinRole() throws Exception {
@@ -771,7 +771,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         Role role = new RR();
 
         Properties props = getDefaultRequestProperties(requestType);
-        doTestInline(requestType, request, "${response}", 
+        doTestInline(requestType, request, "${response}",
             props, TestContext.instance(), role);
     }
 

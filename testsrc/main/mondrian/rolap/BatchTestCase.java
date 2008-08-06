@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -191,9 +191,9 @@ public class BatchTestCase extends FoodMartTestCase {
             if (!pattern.hasDialect(d)) {
                 continue;
             }
-            
+
             patternFound = true;
-            
+
             clearCache(cube);
 
             String sql = sqlPattern.getSql();
@@ -229,25 +229,25 @@ public class BatchTestCase extends FoodMartTestCase {
             }
             if (bomb == null) {
                 fail("expected query [" + sql + "] did not occur");
-            }            
+            }
             TestContext.assertEqualsVerbose(
                 replaceQuotes(sql),
                 replaceQuotes(bomb.sql));
         }
-        
+
         /*
          * Print warning message that no pattern was specified for the current dialect.
          */
         if (!patternFound) {
             String warnDialect =
                 MondrianProperties.instance().WarnIfNoPatternForDialect.get();
-            
+
             if (warnDialect.equals(d.toString())) {
                 System.out.println(
-                    "[No expected sqls found for dialect \"" + 
+                    "[No expected sqls found for dialect \"" +
                     sqlDialect.toString() +
                     "\" and test not run]"
-                );                    
+                );
             }
         }
     }
@@ -311,14 +311,14 @@ public class BatchTestCase extends FoodMartTestCase {
         boolean clearCache) {
         assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, false, clearCache);
     }
-    
+
     /**
-     * During MDX query parse and execution, checks that the query results 
+     * During MDX query parse and execution, checks that the query results
      * (or does not result) in a particular SQL statement being generated.
      *
-     * <p>Parses and executes the MDX query once for each SQL 
-     * pattern in the current dialect. If there are multiple patterns, runs the 
-     * MDX query multiple times, and expects to see each SQL statement appear. 
+     * <p>Parses and executes the MDX query once for each SQL
+     * pattern in the current dialect. If there are multiple patterns, runs the
+     * MDX query multiple times, and expects to see each SQL statement appear.
      * If there are no patterns in this dialect, the test trivially succeeds.
      *
      * @param testContext non-default test context if required
@@ -326,7 +326,7 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param patterns Set of patterns
      * @param negative false to assert if SQL is generated;
      *                 true to assert if SQL is NOT generated
-     * @param bypassSchemaCache whether to grab a new connection and bypass the 
+     * @param bypassSchemaCache whether to grab a new connection and bypass the
      *        schema cache before parsing the MDX query
      * @param clearCache whether to clear cache before executing the MDX query
      */
@@ -345,7 +345,7 @@ public class BatchTestCase extends FoodMartTestCase {
         // comparing all queries at the end.)
         SqlQuery.Dialect dialect = testContext.getDialect();
         SqlPattern.Dialect d = SqlPattern.Dialect.get(dialect);
-        boolean patternFound = false;        
+        boolean patternFound = false;
         for (SqlPattern sqlPattern : patterns) {
             if (!sqlPattern.hasDialect(d)) {
                 // If the dialect is not one in the pattern set, skip the
@@ -355,7 +355,7 @@ public class BatchTestCase extends FoodMartTestCase {
             }
 
             patternFound = true;
-            
+
             String sql = sqlPattern.getSql();
             String trigger = sqlPattern.getTriggerSql();
 
@@ -403,25 +403,25 @@ public class BatchTestCase extends FoodMartTestCase {
                 assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
             }
         }
-        
+
         /*
          * Print warning message that no pattern was specified for the current dialect.
          */
         if (!patternFound) {
             String warnDialect =
                 MondrianProperties.instance().WarnIfNoPatternForDialect.get();
-            
+
             if (warnDialect.equals(d.toString())) {
                 System.out.println(
-                    "[No expected sqls found for dialect \"" + 
+                    "[No expected sqls found for dialect \"" +
                     dialect.toString() +
                     "\" and test not run]"
-                );                    
+                );
             }
         }
     }
-    
-    
+
+
     private void clearCache(RolapCube cube) {
         // Clear the cache for the Sales cube, so the query runs as if
         // for the first time. (TODO: Cleaner way to do this.)
@@ -457,10 +457,10 @@ public class BatchTestCase extends FoodMartTestCase {
         final String table, final String column, final String value)
     {
         return createRequest(
-            cube, measure, 
+            cube, measure,
             new String[]{table}, new String[]{column}, new String[]{value});
     }
-    
+
     CellRequest createRequest(
         final String cube, final String measureName,
         final String[] tables, final String[] columns, final String[] values)
@@ -489,11 +489,11 @@ public class BatchTestCase extends FoodMartTestCase {
         CellRequestConstraint aggConstraint)
     {
         return createRequest(
-            cube, measure, 
+            cube, measure,
             new String[]{table}, new String[]{column}, new String[]{value},
             aggConstraint);
     }
-    
+
     CellRequest createRequest(
         final String cube, final String measureName,
         final String[] tables, final String[] columns, final String[] values,
@@ -501,17 +501,17 @@ public class BatchTestCase extends FoodMartTestCase {
     {
         RolapStar.Measure starMeasure = getMeasure(cube, measureName);
 
-        CellRequest request = 
+        CellRequest request =
             createRequest(cube, measureName, tables, columns, values);
         final RolapStar star = starMeasure.getStar();
 
         request.addAggregateList(
             aggConstraint.getBitKey(star),
             aggConstraint.toPredicate(star));
-        
+
         return request;
     }
-    
+
     static CellRequestConstraint makeConstraintYearQuarterMonth(
         List<String[]> values) {
         String[] aggConstraintTables =
@@ -519,19 +519,19 @@ public class BatchTestCase extends FoodMartTestCase {
         String[] aggConstraintColumns =
             new String[] { "the_year", "quarter", "month_of_year" };
         List<String[]> aggConstraintValues = new ArrayList<String[]>();
-        
+
         for (String[] value : values) {
             assert (value.length == 3);
             aggConstraintValues.add(value);
         }
-        
+
         CellRequestConstraint aggConstraint =
             new CellRequestConstraint(
                 aggConstraintTables, aggConstraintColumns, aggConstraintValues);
 
         return aggConstraint;
     }
-    
+
     static CellRequestConstraint makeConstraintCountryState(
         List<String[]> values) {
         String[] aggConstraintTables =
@@ -539,12 +539,12 @@ public class BatchTestCase extends FoodMartTestCase {
         String[] aggConstraintColumns =
             new String[] { "store_country", "store_state"};
         List<String[]> aggConstraintValues = new ArrayList<String[]>();
-        
+
         for (String[] value : values) {
             assert (value.length == 2);
             aggConstraintValues.add(value);
         }
-        
+
         CellRequestConstraint aggConstraint =
             new CellRequestConstraint(
                 aggConstraintTables, aggConstraintColumns, aggConstraintValues);
@@ -559,12 +559,12 @@ public class BatchTestCase extends FoodMartTestCase {
         String[] aggConstraintColumns =
             new String[] { "product_family", "product_department"};
         List<String[]> aggConstraintValues = new ArrayList<String[]>();
-        
+
         for (String[] value : values) {
             assert (value.length == 2);
             aggConstraintValues.add(value);
         }
-        
+
         CellRequestConstraint aggConstraint =
             new CellRequestConstraint(
                 aggConstraintTables, aggConstraintColumns, aggConstraintValues);
@@ -630,24 +630,24 @@ public class BatchTestCase extends FoodMartTestCase {
             }
         }
     }
-    
+
     static class CellRequestConstraint {
         String[] tables;
         String[] columns;
         List<String[]> valueList;
         CellRequestConstraint(
-            String[] tables, 
-            String[] columns, 
+            String[] tables,
+            String[] columns,
             List<String[]> valueList) {
             this.tables = tables;
             this.columns = columns;
             this.valueList = valueList;
         }
-        
+
         BitKey getBitKey(RolapStar star) {
             return star.getBitKey(tables, columns);
         }
-        
+
         StarPredicate toPredicate(RolapStar star) {
             RolapStar.Column starColumn[] = new RolapStar.Column[tables.length];
             for (int i = 0; i < tables.length; i++) {
@@ -655,7 +655,7 @@ public class BatchTestCase extends FoodMartTestCase {
                 String column = columns[i];
                 starColumn[i] = star.lookupColumn(table, column);
             }
-            
+
             List<StarPredicate> orPredList = new ArrayList<StarPredicate>();
             for (String[] values : valueList) {
                 assert (values.length == tables.length);
@@ -666,7 +666,7 @@ public class BatchTestCase extends FoodMartTestCase {
                 }
                 final StarPredicate predicate =
                     andPredList.size() == 1
-                        ? andPredList.get(0) 
+                        ? andPredList.get(0)
                         : new AndPredicate(andPredList);
                 orPredList.add(predicate);
             }

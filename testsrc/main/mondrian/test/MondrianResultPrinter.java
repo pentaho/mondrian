@@ -28,11 +28,11 @@ import junit.runner.BaseTestRunner;
 public class MondrianResultPrinter implements TestListener {
     PrintStream fWriter;
     int fStarted= 0;
-    
+
     public MondrianResultPrinter(PrintStream writer) {
         fWriter= writer;
     }
-    
+
     /* API for use by textui.TestRunner
      */
 
@@ -47,22 +47,22 @@ public class MondrianResultPrinter implements TestListener {
         getWriter().println();
         getWriter().println("<RETURN> to continue");
     }
-    
-    /* Internal methods 
+
+    /* Internal methods
      */
 
     protected void printHeader() {
         getWriter().println();
     }
-    
+
     protected void printErrors(TestResult result) {
         printDefects(result.errors(), result.errorCount(), "error");
     }
-    
+
     protected void printFailures(TestResult result) {
         printDefects(result.failures(), result.failureCount(), "failure");
     }
-    
+
     protected void printDefects(Enumeration booBoos, int count, String type) {
         if (count == 0) return;
         if (count == 1)
@@ -73,7 +73,7 @@ public class MondrianResultPrinter implements TestListener {
             printDefect((TestFailure) booBoos.nextElement(), i);
         }
     }
-    
+
     public void printDefect(TestFailure booBoo, int count) { // only public for testing purposes
         printDefectHeader(booBoo, count);
         printDefectTrace(booBoo);
@@ -98,7 +98,7 @@ public class MondrianResultPrinter implements TestListener {
         } else {
             getWriter().println();
             getWriter().println("FAILURES!!!");
-            getWriter().println("Tests run: "+result.runCount()+ 
+            getWriter().println("Tests run: "+result.runCount()+
                          ",  Failures: "+result.failureCount()+
                          ",  Errors: "+result.errorCount());
         }
@@ -150,3 +150,5 @@ public class MondrianResultPrinter implements TestListener {
     }
 
 }
+
+// End MondrianResultPrinter.java

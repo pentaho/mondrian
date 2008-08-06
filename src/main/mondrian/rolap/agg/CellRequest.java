@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -42,7 +42,7 @@ public class CellRequest {
     /*
      * Array of column values;
      * Not used to represent the compound members along one or more dimensions.
-     */    
+     */
     private Object[] singleValues;
 
     /**
@@ -64,7 +64,7 @@ public class CellRequest {
      * fulfill the query.
      */
     private final BitKey constrainedColumnsBitKey;
-    
+
     /**
      * Map from BitKey (representing a group of columns that forms a
      * compound key) to StarPredicate (representing the predicate
@@ -157,21 +157,21 @@ public class CellRequest {
             this.columnPredicateList.add(predicate);
         }
     }
-    
+
     /**
      * Add compound member (formed via aggregate function) constraint to the
      * Cell.
-     * 
+     *
      * @param compoundBitKey
      * @param compoundPredicate
      */
     public void addAggregateList(
         BitKey compoundBitKey,
-        StarPredicate compoundPredicate) 
+        StarPredicate compoundPredicate)
     {
         compoundPredicateMap.put(compoundBitKey, compoundPredicate);
     }
-    
+
     public RolapStar.Measure getMeasure() {
         return measure;
     }
@@ -201,7 +201,7 @@ public class CellRequest {
     public Map<BitKey, StarPredicate> getCompoundPredicateMap() {
         return compoundPredicateMap;
     }
-    
+
     /**
      * Builds the {@link #columnsCache} and reorders the
      * {@link #columnPredicateList}

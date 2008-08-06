@@ -81,7 +81,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
             // we need to make sure all the levels join with each fact table;
             // otherwise, it doesn't make sense to do the processing
             // natively, as you'll end up with cartesian product joins!
-            // for each rolap cube, make sure there is a base cube level 
+            // for each rolap cube, make sure there is a base cube level
             // equivalent
             for (RolapCube baseCube : baseCubes) {
                 for (Level level : levels) {
@@ -91,7 +91,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
                     }
                 }
             }
-                        
+
             query.setBaseCubes(baseCubeList);
         }
         return true;
@@ -146,11 +146,11 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         RolapStoredMeasure measure,
         Set<RolapCube> baseCubes,
         List<RolapCube> baseCubeList
-        ) 
+        )
     {
         RolapCube baseCube = measure.getCube();
         if (baseCubes.add(baseCube)) {
-        	baseCubeList.add(baseCube);
+            baseCubeList.add(baseCube);
         }
     }
 
@@ -163,7 +163,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     private static void findMeasures(
         Exp exp,
         Set<RolapCube> baseCubes,
-        List<RolapCube> baseCubeList) 
+        List<RolapCube> baseCubeList)
     {
         if (exp instanceof MemberExpr) {
             MemberExpr memberExpr = (MemberExpr) exp;
@@ -282,7 +282,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         SqlQuery sqlQuery,
         RolapCube baseCube,
         AggStar aggStar,
-        RolapLevel level) 
+        RolapLevel level)
     {
         if (!isJoinRequired()) {
             return;

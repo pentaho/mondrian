@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -153,7 +153,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
             SqlStatement createExecuteSql(
                 GroupingSetsList groupingSetsList,
-                List<StarPredicate> compoundPredicateList)                
+                List<StarPredicate> compoundPredicateList)
             {
                 return null;
             }
@@ -737,3 +737,5 @@ public class SegmentLoaderTest extends BatchTestCase {
         return data;
     }
 }
+
+// End SegmentLoaderTest.java

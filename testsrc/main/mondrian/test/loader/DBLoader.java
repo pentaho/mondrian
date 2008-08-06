@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde
+// Copyright (C) 2004-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -190,13 +190,13 @@ public abstract class DBLoader {
     // suffixes of output files
     public static final String DROP_TABLE_INDEX_PROP =
             "mondrian.test.loader.drop.table.index.suffix";
-    public static final String DROP_TABLE_INDEX_SUFFIX_DEFAULT = 
+    public static final String DROP_TABLE_INDEX_SUFFIX_DEFAULT =
             "dropindex.sql";
     public static final String CREATE_TABLE_INDEX_PROP =
             "mondrian.test.loader.create.table.index.suffix";
-    public static final String CREATE_TABLE_INDEX_SUFFIX_DEFAULT = 
+    public static final String CREATE_TABLE_INDEX_SUFFIX_DEFAULT =
             "createindex.sql";
-    
+
     public static final String DROP_TABLE_PROP =
             "mondrian.test.loader.drop.table.suffix";
     public static final String DROP_TABLE_SUFFIX_DEFAULT = "drop.sql";
@@ -1432,3 +1432,5 @@ e.printStackTrace();
 
     }
 }
+
+// End DBLoader.java

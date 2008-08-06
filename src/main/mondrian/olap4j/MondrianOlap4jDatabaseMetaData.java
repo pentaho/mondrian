@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -633,7 +633,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
 
         List<String> headerList =
             Arrays.asList("TABLE_CAT");
-        List<List<Object>> rowList = 
+        List<List<Object>> rowList =
             Collections.singletonList(
                 Arrays.asList((Object) olap4jCatalog.getName()));
         return olap4jConnection.factory.newFixedResultSet(
@@ -977,7 +977,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         String schemaPattern,
         String cubeNamePattern,
         String dimensionNamePattern,
-        String hierarchyNamePattern) 
+        String hierarchyNamePattern)
         throws OlapException
     {
         return getMetadata(

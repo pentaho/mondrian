@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -742,7 +742,7 @@ RME TODO
              * <p>The measure name must be of the form
              * <blockquote><code>[Measures].[measure name]</code></blockquote>
              *
-             * <p>This method checks that is of length 2, starts 
+             * <p>This method checks that is of length 2, starts
              * with "Measures" and the "measure name" exists.
              */
             public void validate(final MessageRecorder msgRecorder) {

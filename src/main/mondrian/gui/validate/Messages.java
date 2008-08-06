@@ -2,7 +2,7 @@ package mondrian.gui.validate;
 
 /**
  * Message provider. Extracted interface from <code>mondrian.gui.I18n</code>.
- * 
+ *
  * @author mlowery
  */
 public interface Messages {
@@ -10,7 +10,7 @@ public interface Messages {
      * Returns the string with given key.
      * @param stringID key
      * @param defaultValue default if key does not exist
-     * @return message 
+     * @return message
      */
     String getString(String stringID, String defaultValue);
 
@@ -24,3 +24,5 @@ public interface Messages {
     String getFormattedString(String stringID, String defaultValue,
                     Object[] args);
 }
+
+// End Messages.java

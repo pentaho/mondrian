@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2002 Kana Software, Inc.
-// Copyright (C) 2004-2007 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -69,10 +69,10 @@ class ExistsFunDef extends FunDefBase
                     if (leftDims.contains(d)) {
                         idxmap[i] = leftDims.indexOf(d);
                     } else {
-                    	return Collections.EMPTY_LIST;
+                        return Collections.EMPTY_LIST;
                     }
                 }
-                
+
                 for (Object  leftObject : left) {
                     if (leftObject instanceof Object[]) { // leftObject is a tuple
                         boolean exist = true;

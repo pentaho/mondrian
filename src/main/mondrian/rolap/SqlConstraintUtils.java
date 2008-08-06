@@ -885,7 +885,7 @@ public class SqlConstraintUtils {
         int maxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         SqlQuery.Dialect dialect = sqlQuery.getDialect();
-        
+
         String condition = "";
         boolean firstLevel = true;
         for (Collection<RolapMember> c = members;

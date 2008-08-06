@@ -185,7 +185,7 @@ public class TypeUtil {
 
     /**
      * Converts a {@link Type} value to a {@link Category} ordinal.
-     * 
+     *
      * @param type Type
      * @return category ordinal
      */
@@ -391,7 +391,7 @@ public class TypeUtil {
         case Category.Symbol:
             return false;
         case Category.Null:
-        	// now null supports members as well as scalars; but scalar is
+            // now null supports members as well as scalars; but scalar is
             // preferred
             if (Category.isScalar(to)) {
                 return true;

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
  */
@@ -26,19 +26,19 @@ import java.util.ArrayList;
  */
 public class SqlQueryTest extends BatchTestCase {
     private String origWarnIfNoPatternForDialect;
-    
+
     private MondrianProperties prop = MondrianProperties.instance();
 
     protected void setUp() throws Exception {
         super.setUp();
         origWarnIfNoPatternForDialect = prop.WarnIfNoPatternForDialect.get();
-     
+
         /*
          * This test warns of missing sql patterns for
-         * 
+         *
          * ACCESS
          * MYSQL
-         * 
+         *
          */
         final SqlQuery.Dialect dialect = getTestContext().getDialect();
         if (prop.WarnIfNoPatternForDialect.get().equals("ANY") ||
@@ -51,7 +51,7 @@ public class SqlQueryTest extends BatchTestCase {
              * if the test chooses to warn regardless of the dialect.
              */
             prop.WarnIfNoPatternForDialect.set("NONE");
-            
+
         }
     }
 
@@ -118,11 +118,11 @@ public class SqlQueryTest extends BatchTestCase {
             // only check sql pattern when aggregate tables are not used.
             return;
         }
-        
+
         String mdx =
             "select {[Time].[1997].[Q1],[Time].[1997].[Q2]," +
             "[Time].[1997].[Q3]} on 0 from sales";
-        
+
         String accessSql =
             "select `time_by_day`.`the_year` as `c0`, " +
             "`time_by_day`.`quarter` as `c1`, " +
@@ -133,7 +133,7 @@ public class SqlQueryTest extends BatchTestCase {
             "`time_by_day`.`time_id` and " +
             "`time_by_day`.`the_year` = 1997 group by " +
             "`time_by_day`.`the_year`, `time_by_day`.`quarter`";
-        
+
         String mysqlSql =
                 "select " +
                 "`time_by_day`.`the_year` as `c0`, `time_by_day`.`quarter` as `c1`, " +
@@ -144,7 +144,7 @@ public class SqlQueryTest extends BatchTestCase {
                 "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and " +
                 "`time_by_day`.`the_year` = 1997 " +
                 "group by `time_by_day`.`the_year`, `time_by_day`.`quarter`";
-        
+
         SqlPattern[] sqlPatterns =
             new SqlPattern[]{
                 new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
@@ -153,7 +153,7 @@ public class SqlQueryTest extends BatchTestCase {
         assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
     }
 
-    public void testPredicatesAreNotOptimizedWhenPropertyIsFalse() {        
+    public void testPredicatesAreNotOptimizedWhenPropertyIsFalse() {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             // Sql pattner will be different if using aggregate tables.
             // This test cover predicate generation so it's sufficient to
@@ -203,10 +203,10 @@ public class SqlQueryTest extends BatchTestCase {
             // only check sql pattern when aggregate tables are not used.
             return;
         }
-        
+
         String mdx = "select {[Time].[1997].[Q1],[Time].[1997].[Q2]," +
         "[Time].[1997].[Q3],[Time].[1997].[Q4]} on 0 from sales";
-        
+
         String accessSql = "select `time_by_day`.`the_year` as `c0`, " +
         "`time_by_day`.`quarter` as `c1`, " +
         "sum(`sales_fact_1997`.`unit_sales`) as `m0` from " +

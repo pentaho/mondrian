@@ -5,7 +5,7 @@ import mondrian.gui.validate.TreeModel;
 
 /**
  * Implementation of <code>TreeModel</code> for Workbench.
- * 
+ *
  * @author mlowery
  */
 public class WorkbenchTreeModel implements TreeModel {
@@ -30,3 +30,5 @@ public class WorkbenchTreeModel implements TreeModel {
     }
 
 }
+
+// End WorkbenchTreeModel.java

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -43,7 +43,7 @@ class ParallelPeriodFunDef extends FunDefBase {
             // With no args, the default implementation cannot
             // guess the hierarchy, so we supply the Time
             // dimension.
-            Dimension defaultTimeDimension = 
+            Dimension defaultTimeDimension =
                 validator.getQuery().getCube().getTimeDimension();
             if (defaultTimeDimension == null) {
                 throw MondrianResource.instance().
@@ -135,7 +135,7 @@ class ParallelPeriodFunDef extends FunDefBase {
         }
 
         if (lagValue == Integer.MIN_VALUE) {
-            // bump up lagValue by one 
+            // bump up lagValue by one
             // otherwise -lagValue(used in the getleadMember call below)is out of range
             // because Integer.MAX_VALUE == -(Integer.MIN_VALUE + 1)
             lagValue +=  1;

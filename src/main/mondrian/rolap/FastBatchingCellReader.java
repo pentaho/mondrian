@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -87,11 +87,11 @@ public class FastBatchingCellReader implements CellReader {
     public Object get(RolapEvaluator evaluator) {
         final CellRequest request =
             RolapAggregationManager.makeRequest(evaluator);
-        
+
         if (request == null || request.isUnsatisfiable()) {
             return Util.nullValue; // request not satisfiable.
         }
-        
+
         // Try to retrieve a cell and simultaneously pin the segment which
         // contains it.
         final Object o = aggMgr.getCellFromCache(request, pinnedSegments);
@@ -424,7 +424,7 @@ public class FastBatchingCellReader implements CellReader {
         public BitKey getConstrainedColumnsBitKey() {
             return batchKey.getConstrainedColumnsBitKey();
         }
-        
+
         public final void loadAggregation() {
             GroupingSetsCollector collectorWithGroupingSetsTurnedOff =
                 new GroupingSetsCollector(false);
@@ -496,7 +496,7 @@ public class FastBatchingCellReader implements CellReader {
                         measures, columns,
                         batchKey,
                         predicates,
-                        pinnedSegments, groupingSetsCollector);    
+                        pinnedSegments, groupingSetsCollector);
             }
 
             if (BATCH_LOGGER.isDebugEnabled()) {
@@ -740,7 +740,7 @@ public class FastBatchingCellReader implements CellReader {
 
         private boolean hasNormalMeasures() {
             return getDistinctMeasureCount(measuresList) !=  measuresList.size();
-        }        
+        }
 
         private boolean hasSameMeasureList(Batch other) {
             return (this.measuresList.size() == other.measuresList.size() &&
@@ -797,7 +797,7 @@ public class FastBatchingCellReader implements CellReader {
         boolean haveSameStarAndAggregation(Batch other) {
             boolean rollup[] = {false};
             boolean otherRollup[] = {false};
-            
+
             boolean hasSameAggregation = getAgg(rollup) == other.getAgg(otherRollup);
             boolean hasSameRollupOption = rollup[0] == otherRollup[0];
 

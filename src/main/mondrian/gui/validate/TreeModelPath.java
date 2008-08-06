@@ -2,7 +2,7 @@ package mondrian.gui.validate;
 
 /**
  * A generalization of <code>javax.swing.tree.TreePath</code>.
- * 
+ *
  * @author mlowery
  */
 public interface TreeModelPath {
@@ -21,3 +21,5 @@ public interface TreeModelPath {
      */
     boolean isEmpty();
 }
+
+// End TreeModelPath.java

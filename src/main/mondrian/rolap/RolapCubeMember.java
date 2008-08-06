@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -28,10 +28,10 @@ import mondrian.olap.SchemaReader;
 
 /**
  * RolapCubeMember wraps RolapMembers and binds them to a specific cube.
- * RolapCubeMember wraps or overrides RolapMember methods that directly 
+ * RolapCubeMember wraps or overrides RolapMember methods that directly
  * reference the wrapped Member.  Methods that only contain calls to other
  * methods do not need wrapped.
- * 
+ *
  * @author Will Gorman (wgorman@pentaho.org)
  * @version $Id$
  */
@@ -48,7 +48,7 @@ public class RolapCubeMember extends RolapMember {
     public RolapCubeMember(RolapCubeMember parent, RolapMember member,
             RolapCubeLevel level, RolapCube cube) {
         super();
-        
+
         this.parentMember = parent;
         this.rolapMember = member;
         this.rolapLevel = level;
@@ -65,12 +65,12 @@ public class RolapCubeMember extends RolapMember {
                 rolapAllMemberCubeName = member.getName();
             } else {
                 // special case if we're dealing with a closure
-                String replacement = 
+                String replacement =
                     level.getHierarchy().getName().replaceAll("\\$", "\\\\\\$");
-                
+
                 // convert string to regular expression
                 String memberLevelName = member.getLevel().getHierarchy().getName().replaceAll("\\.", "\\\\.");
-                
+
                 rolapAllMemberCubeName = member.getName().replaceAll(
                         memberLevelName,
                        replacement);
@@ -145,7 +145,7 @@ public class RolapCubeMember extends RolapMember {
 
     public boolean equals(Object o) {
         return (o == this)
-               || ((o instanceof RolapCubeMember) 
+               || ((o instanceof RolapCubeMember)
                    && equals((RolapCubeMember) o));
     }
 
@@ -197,7 +197,7 @@ public class RolapCubeMember extends RolapMember {
     }
 
     void setOrderKey(Comparable orderKey) {
-        // this should never be called 
+        // this should never be called
         throw new UnsupportedOperationException();
     }
 
@@ -255,10 +255,10 @@ public class RolapCubeMember extends RolapMember {
                 return parentMember == null ? null : parentMember
                         .getUniqueName();
             case Property.CHILDREN_CARDINALITY_ORDINAL:
-                // because rolapcalculated member overrides this property, 
+                // because rolapcalculated member overrides this property,
                 // we need to make sure it gets called
                 if (rolapMember instanceof RolapCalculatedMember) {
-                    return 
+                    return
                         rolapMember.getPropertyValue(propertyName, matchCase);
                 } else {
                     return super.getPropertyValue(propertyName, matchCase);
@@ -279,7 +279,7 @@ public class RolapCubeMember extends RolapMember {
         return rolapMember.getSolveOrder();
     }
 
-    protected Object getPropertyFromMap(String propertyName, 
+    protected Object getPropertyFromMap(String propertyName,
             boolean matchCase) {
         return rolapMember.getPropertyFromMap(propertyName, matchCase);
     }
@@ -305,7 +305,7 @@ public class RolapCubeMember extends RolapMember {
     }
 
     // this method is overridden to make sure that any HierarchyExpr returns
-    // the cube hierarchy vs. shared hierarchy.  this is the case for  
+    // the cube hierarchy vs. shared hierarchy.  this is the case for
     // SqlMemberSource.RolapParentChildMemberNoClosure
     public Exp getExpression() {
         Exp exp = rolapMember.getExpression();
@@ -327,11 +327,10 @@ public class RolapCubeMember extends RolapMember {
 
     public OlapElement lookupChild(SchemaReader schemaReader,
             Id.Segment childName, MatchType matchType) {
-        return 
+        return
             schemaReader.lookupMemberChildByName(this, childName, matchType);
     }
 
 }
 
 // End RolapCubeMember.java
- 

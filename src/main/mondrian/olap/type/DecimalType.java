@@ -62,7 +62,7 @@ public class DecimalType extends NumericType {
 
     /**
      * Returns the number of digits to the right of the decimal point.
-     * 
+     *
      * @return scale of this type
      */
     public int getScale() {

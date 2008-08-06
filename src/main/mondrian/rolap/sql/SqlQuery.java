@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1336,14 +1336,14 @@ public class SqlQuery {
         /**
          * Returns whether this Dialect has performant support of distinct SQL
          * measures in the same query.
-         * 
+         *
          * @return whether this dialect supports multiple count(distinct subquery)
          * measures in one query.
          */
         public boolean allowsMultipleDistinctSqlMeasures() {
             return allowsMultipleCountDistinct() && !isLucidDB();
         }
-        
+
         /**
          * Generates a SQL statement to represent an inline dataset.
          *
@@ -1556,21 +1556,21 @@ public class SqlQuery {
          * If Double values need to include additional exponent in its string
          * represenation. This is to make sure that Double literals will be
          * interpreted as doubles by LucidDB.
-         * 
+         *
          * @param value Double value to generate string for
          * @param valueString java string representation for this value.
          * @return whether an additional exponent "E0" needs to be appended
-         * 
+         *
          */
         private boolean needsExponent(Object value, String valueString) {
-            if (isLucidDB() && 
+            if (isLucidDB() &&
                 value instanceof Double &&
                 !valueString.contains("E")) {
                 return true;
             }
             return false;
         }
-        
+
         /**
          * Appends to a buffer a value quoted for its type.
          */

@@ -167,7 +167,7 @@ public class RolapConnectionTest extends TestCase {
         Util.PropertyList properties,
         IllegalArgumentException e)
     {
-        // Workaround Java bug #6504538 (see http://bugs.sun.com) with synopsis 
+        // Workaround Java bug #6504538 (see http://bugs.sun.com) with synopsis
         // "DriverManager.getConnection throws IllegalArgumentException".
         if (System.getProperties().getProperty("java.version").startsWith("1.6.")) {
             properties.remove("jdbc.charSet");
@@ -249,7 +249,7 @@ public class RolapConnectionTest extends TestCase {
         } else {
             System.out.println(properties);
         }
-        
+
         try {
             DriverManager.getConnection(
                 properties,

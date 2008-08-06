@@ -82,3 +82,5 @@ public class XmlaException extends MondrianException {
     }
 }
 
+// End XmlaException.java
+

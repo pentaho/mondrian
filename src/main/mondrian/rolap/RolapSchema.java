@@ -351,15 +351,15 @@ public class RolapSchema implements Schema {
         }
 
         aggTableManager.initialize();
-	    setSchemaLoadDate();
+        setSchemaLoadDate();
     }
 
-	private void setSchemaLoadDate() {
-		schemaLoadDate = new Date();
-	}
+    private void setSchemaLoadDate() {
+        schemaLoadDate = new Date();
+    }
 
-	public Date getSchemaLoadDate() {
-		return schemaLoadDate;
+    public Date getSchemaLoadDate() {
+        return schemaLoadDate;
     }
 
     public List<Exception> getWarnings() {

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde and others.
+// Copyright (C) 2004-2008 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -303,18 +303,18 @@ public class ParserTest extends FoodMartTestCase {
      */
     public void testMultiplication() {
         Parser p = new Parser();
-        final String mdx = 
+        final String mdx =
             wrapExpr("([Measures].[Unit Sales] * [Measures].[Store Cost] * [Measures].[Store Sales])");
 
         try {
-            final Query query = 
+            final Query query =
                 p.parseInternal(getConnection(), mdx, false, funTable, false, false);
             query.resolve();
         } catch(Throwable e) {
             fail(e.getMessage());
         }
     }
-    
+
     public void testBangFunction() {
         // Parser accepts '<id> [! <id>] *' as a function name, but ignores
         // all but last name.

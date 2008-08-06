@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -68,7 +68,7 @@ public class AndPredicate extends ListPredicate {
     }
 
     public BitKey checkInList(SqlQuery sqlQuery, BitKey inListLHSBitKey) {
-        
+
         // AND predicate by itself is not using IN list; when it is
         // one of the children to an OR predicate, then using IN list
         // is helpful. The later is checked by passing in a bitmap that
@@ -80,7 +80,7 @@ public class AndPredicate extends ListPredicate {
         // might still be translated to IN.
         // For example, neither of the two AND conditions below(part of an OR list)
         // can be translated using IN list, covering all the levels
-        // 
+        //
         //  (null, null, San Francisco)
         //  (null, null, New York)
         //
@@ -99,20 +99,20 @@ public class AndPredicate extends ListPredicate {
         // part of an IN list.
         //
         // This is very similar to the logic in SqlConstraintUtil.generateMultiValueInExpr().
-        // The only difference being that the predicates here are all "flattened" so the 
+        // The only difference being that the predicates here are all "flattened" so the
         // hierarchy information is no longer available to guide the grouping of predicates
         // with common parents. So some optimization possible in generateMultiValueInExpr()
         // is not tried here, as they require implementing "longest common prefix" algorithm
         // which is an overkill.
         BitKey inListRHSBitKey = inListLHSBitKey.copy();
-        
+
         if (!columnBitKey.equals(inListLHSBitKey) ||
-            (children.size() > 1 && 
+            (children.size() > 1 &&
              !sqlQuery.getDialect().supportsMultiValueInExpr())) {
             inListRHSBitKey.clear();
         } else {
             for (StarPredicate predicate : children) {
-                // If any predicate requires comparison to null value, cannot use 
+                // If any predicate requires comparison to null value, cannot use
                 // IN list for this predicate.
                 if (predicate instanceof ValueColumnPredicate) {
                     ValueColumnPredicate columnPred = ((ValueColumnPredicate) predicate);
@@ -120,8 +120,8 @@ public class AndPredicate extends ListPredicate {
                         // This column predicate cannot be translated to IN
                         inListRHSBitKey.clear(
                             columnPred.getConstrainedColumn().getBitPosition());
-                    } 
-                    // else 
+                    }
+                    // else
                     // do nothing because this column predicate can be translated to IN
                 } else {
                     inListRHSBitKey.clear();
@@ -131,14 +131,14 @@ public class AndPredicate extends ListPredicate {
         }
         return inListRHSBitKey;
     }
-    
+
     /*
      * Generate value list for this predicate to be used in an IN-list
      * sql predicate.
-     * 
+     *
      * The values in a multi-column IN list predicates are generated in the
      * same order, based on the bit position from the columnBitKey.
-     * 
+     *
      */
     public void toInListSql(SqlQuery sqlQuery, StringBuilder buf, BitKey inListRHSBitKey) {
         boolean firstValue = true;
@@ -147,9 +147,9 @@ public class AndPredicate extends ListPredicate {
          * Arranging children according to the bit position. This is required
          * as RHS of IN list needs to list the column values in the same order.
          */
-        Set<ValueColumnPredicate> sortedPredicates = 
+        Set<ValueColumnPredicate> sortedPredicates =
             new TreeSet<ValueColumnPredicate>();
-        
+
         for (StarPredicate predicate : children) {
             // inListPossible() checks gaurantees that predicate is of type
             // ValueColumnPredicate
@@ -159,7 +159,7 @@ public class AndPredicate extends ListPredicate {
                 sortedPredicates.add((ValueColumnPredicate)predicate);
             }
         }
-        
+
         for (ValueColumnPredicate predicate : sortedPredicates) {
             if (firstValue) {
                 firstValue = false;
@@ -167,12 +167,12 @@ public class AndPredicate extends ListPredicate {
                 buf.append(", ");
             }
             sqlQuery.getDialect().quote(
-                buf, predicate.getValue(), 
-                predicate.getConstrainedColumn().getDatatype());            
+                buf, predicate.getValue(),
+                predicate.getConstrainedColumn().getDatatype());
         }
         buf.append(")");
     }
-        
+
     protected String getOp() {
         return "and";
     }

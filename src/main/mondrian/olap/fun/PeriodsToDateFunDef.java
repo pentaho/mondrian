@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -46,7 +46,7 @@ class PeriodsToDateFunDef extends FunDefBase {
         if (args.length == 0) {
             // With no args, the default implementation cannot
             // guess the hierarchy.
-            Dimension defaultTimeDimension = 
+            Dimension defaultTimeDimension =
                 validator.getQuery().getCube().getTimeDimension();
             if (defaultTimeDimension == null) {
                 throw MondrianResource.instance().
@@ -76,7 +76,7 @@ class PeriodsToDateFunDef extends FunDefBase {
                 null;
         final Dimension timeDimension = compiler
                 .getEvaluator().getCube().getTimeDimension();
-        
+
         return new AbstractListCalc(call, new Calc[] {levelCalc, memberCalc}) {
             public List evaluateList(Evaluator evaluator) {
                 final Member member;

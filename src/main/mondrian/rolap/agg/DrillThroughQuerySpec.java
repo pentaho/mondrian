@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -39,7 +39,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         int tmpMaxColumnNameLength =
             getStar().getSqlQueryDialect().getMaxColumnNameLength();
         if (tmpMaxColumnNameLength == 0) {
-            // From java.sql.DatabaseMetaData: "a result of zero means that 
+            // From java.sql.DatabaseMetaData: "a result of zero means that
             // there is no limit or the limit is not known"
             maxColumnNameLength = Integer.MAX_VALUE;
         } else {

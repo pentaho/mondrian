@@ -399,7 +399,7 @@ public class AbstractExpCompiler implements ExpCompiler {
          *
          * @param calc Compiled expression to compute default value of
          * parameter
-         * 
+         *
          * @see #getDefaultValueCalc()
          */
         private void setDefaultValueCalc(Calc calc) {
@@ -424,4 +424,4 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 }
 
-// End AbtractExpCompiler.java
+// End AbstractExpCompiler.java

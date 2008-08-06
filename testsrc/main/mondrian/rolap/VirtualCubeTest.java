@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -145,112 +145,112 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     /**
-     * verifies the cartesion join sql does not appear
+     * Verifies the cartesian join sql does not appear.
      */
-    public void testCartesionJoinSqlDoesNotOccur() {
-    	
-    	// only test on mysql dialect
-    	if (!getTestContext().getDialect().isMySQL()) {
-    		return;
-    	}
-    	
-    	String mdxQuery = 
-    		"select " +
-    		"{ [measures].[store sales], [measures].[warehouse sales] } on 0, " +
-  		  	"non empty { [product].[product family].members } on 1 " +
-  		  	"from [warehouse and sales] " +
-  		  	"where [store].[all stores].[usa].[or]";
-    	
-    	String expectedSql = 
-  			"select "+
-  			"`product_class`.`product_family` as `c0` " +
-  			"from " +
-  			"`product` as `product`, " +
-  			"`product_class` as `product_class`, " +
-  			"`inventory_fact_1997` as `inventory_fact_1997` " +
-  			"where " +
-  			"`product`.`product_class_id` = `product_class`.`product_class_id` " +
-  			"and `inventory_fact_1997`.`product_id` = `product`.`product_id` " +
-  			"group by " +
-  			"`product_class`.`product_family` " +
-  			"union " +
-  			"select " +
-  			"`product_class`.`product_family` as `c0` " +
-  			"from " +
-  			"`product` as `product`, " +
-  			"`product_class` as `product_class`, " +
-  			"`sales_fact_1997` as `sales_fact_1997`, " +
-  			"`store` as `store` " +
-  			"where " +
-  			"`product`.`product_class_id` = `product_class`.`product_class_id` " +
-  			"and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
-  			"and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
-  			"and `store`.`store_state` = 'OR' " +
-  			"group by " +
-  			"`product_class`.`product_family` " +
-  			"order by " +
-  			"ISNULL(1), 1 ASC";
-    	
-    	SqlPattern[] patterns =
+    public void testCartesianJoinSqlDoesNotOccur() {
+
+        // only test on mysql dialect
+        if (!getTestContext().getDialect().isMySQL()) {
+            return;
+        }
+
+        String mdxQuery =
+            "select " +
+            "{ [measures].[store sales], [measures].[warehouse sales] } on 0, " +
+            "non empty { [product].[product family].members } on 1 " +
+            "from [warehouse and sales] " +
+            "where [store].[all stores].[usa].[or]";
+
+        String expectedSql =
+            "select "+
+            "`product_class`.`product_family` as `c0` " +
+            "from " +
+            "`product` as `product`, " +
+            "`product_class` as `product_class`, " +
+            "`inventory_fact_1997` as `inventory_fact_1997` " +
+            "where " +
+            "`product`.`product_class_id` = `product_class`.`product_class_id` " +
+            "and `inventory_fact_1997`.`product_id` = `product`.`product_id` " +
+            "group by " +
+            "`product_class`.`product_family` " +
+            "union " +
+            "select " +
+            "`product_class`.`product_family` as `c0` " +
+            "from " +
+            "`product` as `product`, " +
+            "`product_class` as `product_class`, " +
+            "`sales_fact_1997` as `sales_fact_1997`, " +
+            "`store` as `store` " +
+            "where " +
+            "`product`.`product_class_id` = `product_class`.`product_class_id` " +
+            "and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
+            "and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
+            "and `store`.`store_state` = 'OR' " +
+            "group by " +
+            "`product_class`.`product_family` " +
+            "order by " +
+            "ISNULL(1), 1 ASC";
+
+        SqlPattern[] patterns =
         new SqlPattern[] {
             new SqlPattern(SqlPattern.Dialect.MYSQL, expectedSql, expectedSql)
         };
 
-    	assertQuerySql(mdxQuery, patterns, true);
+        assertQuerySql(mdxQuery, patterns, true);
     }
 
     public void testCartesianJoin() {
       // these examples caused cartesian joins to occur, a fix in SqlTupleReader
-    	// was made and now these queries run normally.
+        // was made and now these queries run normally.
       TestContext testContext = createContextWithNonDefaultAllMember();
 
       testContext.assertQueryReturns(
-      		"select " +
-      		"{ [measures].[store sales], [measures].[warehouse sales] } on 0, " +
-      		"non empty { [product].[product family].members } on 1 " +
-      		"from [warehouse and sales] " +
-      		"where [store].[all stores].[usa].[or]",
-        	fold(
-            	"Axis #0:\n" +
-            	"{[Store].[All Stores].[USA].[OR]}\n" +
-            	"Axis #1:\n" +
-            	"{[Measures].[Store Sales]}\n" +
-            	"{[Measures].[Warehouse Sales]}\n" +
-            	"Axis #2:\n" +
-            	"{[Product].[All Products].[Drink]}\n" +
-            	"{[Product].[All Products].[Food]}\n" +
-            	"{[Product].[All Products].[Non-Consumable]}\n" +
-            	"Row #0: 12,137.29\n" +
-            	"Row #0: 3,986.32\n" +
-            	"Row #1: 102,564.67\n" +
-            	"Row #1: 26,496.483\n" +
-            	"Row #2: 27,575.11\n" +
-            	"Row #2: 8,352.25\n"));
-      
+            "select " +
+            "{ [measures].[store sales], [measures].[warehouse sales] } on 0, " +
+            "non empty { [product].[product family].members } on 1 " +
+            "from [warehouse and sales] " +
+            "where [store].[all stores].[usa].[or]",
+            fold(
+                "Axis #0:\n" +
+                "{[Store].[All Stores].[USA].[OR]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Store Sales]}\n" +
+                "{[Measures].[Warehouse Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Drink]}\n" +
+                "{[Product].[All Products].[Food]}\n" +
+                "{[Product].[All Products].[Non-Consumable]}\n" +
+                "Row #0: 12,137.29\n" +
+                "Row #0: 3,986.32\n" +
+                "Row #1: 102,564.67\n" +
+                "Row #1: 26,496.483\n" +
+                "Row #2: 27,575.11\n" +
+                "Row #2: 8,352.25\n"));
+
       testContext.assertQueryReturns(
-      		"select " +
-      		"{ [measures].[warehouse sales], [measures].[store sales] } on 0, " +
-      		"non empty { [product].[product family].members } on 1 " +
-      		"from [warehouse and sales] " +
-      		"where [store].[all stores].[usa].[or]",
-        	fold(
-            	"Axis #0:\n" +
-            	"{[Store].[All Stores].[USA].[OR]}\n" +
-            	"Axis #1:\n" +
-            	"{[Measures].[Warehouse Sales]}\n" +
-            	"{[Measures].[Store Sales]}\n" +            	
-            	"Axis #2:\n" +
-            	"{[Product].[All Products].[Drink]}\n" +
-            	"{[Product].[All Products].[Food]}\n" +
-            	"{[Product].[All Products].[Non-Consumable]}\n" +
-            	"Row #0: 3,986.32\n" +
-            	"Row #0: 12,137.29\n" +
-            	"Row #1: 26,496.483\n" +
-            	"Row #1: 102,564.67\n" +
-            	"Row #2: 8,352.25\n" +
-            	"Row #2: 27,575.11\n"));
+            "select " +
+            "{ [measures].[warehouse sales], [measures].[store sales] } on 0, " +
+            "non empty { [product].[product family].members } on 1 " +
+            "from [warehouse and sales] " +
+            "where [store].[all stores].[usa].[or]",
+            fold(
+                "Axis #0:\n" +
+                "{[Store].[All Stores].[USA].[OR]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Warehouse Sales]}\n" +
+                "{[Measures].[Store Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Drink]}\n" +
+                "{[Product].[All Products].[Food]}\n" +
+                "{[Product].[All Products].[Non-Consumable]}\n" +
+                "Row #0: 3,986.32\n" +
+                "Row #0: 12,137.29\n" +
+                "Row #1: 26,496.483\n" +
+                "Row #1: 102,564.67\n" +
+                "Row #2: 8,352.25\n" +
+                "Row #2: 27,575.11\n"));
     }
-    
+
     /**
      * Query a virtual cube that contains a non-conforming dimension that
      * does not have ALL as its default member.
@@ -907,12 +907,12 @@ public class VirtualCubeTest extends BatchTestCase {
     public void testNativeSetCaching() {
         /*
          * Only need to run this against one db to verify caching
-         * behavior is correct. 
-         */ 
+         * behavior is correct.
+         */
         if (!getTestContext().getDialect().isDerby()) {
             return;
         }
-        
+
         if (!MondrianProperties.instance().EnableNativeCrossJoin.get() &&
             !MondrianProperties.instance().EnableNativeNonEmpty.get()) {
             // Only run the tests if either native CrossJoin or native NonEmpty
@@ -1036,12 +1036,12 @@ public class VirtualCubeTest extends BatchTestCase {
                     + "</VirtualCube>",
                 null, null, null);
         /*
-         * This test case does not actually reject the dimension constraint from an 
+         * This test case does not actually reject the dimension constraint from an
          * unrelated base cube. The reason is that the constraint contains an AllLevel
-         * member. Even though semantically constraining Cells using an non-existent 
+         * member. Even though semantically constraining Cells using an non-existent
          * dimension perhaps does not make sense; however, in the case where the constraint
          * contains AllLevel member, the constraint can be considered "always true".
-         * 
+         *
          * See the next test case for a constraint that does not contain AllLevel member
          * and hence cannot be satisfied. The cell should be empty.
          */
@@ -1056,7 +1056,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "Row #0: 5,581\n"));
     }
 
-    
+
     public void testBug1778358a() {
         final TestContext testContext =
             TestContext.create(null, null,

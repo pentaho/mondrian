@@ -3,6 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2007 JasperSoft
+// Copyright (C) 2008-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 
@@ -26,9 +27,9 @@ public class I18n {
     private ResourceBundle languageBundle = null;
 
     private static String defaultIcon = "nopic";
-    
+
     public static Vector<LanguageChangedListener> languageChangedListeners = null;
-    
+
     static {
         languageChangedListeners = new Vector<LanguageChangedListener>();
     }
@@ -36,7 +37,7 @@ public class I18n {
     public static void addOnLanguageChangedListener(LanguageChangedListener listener) {
         languageChangedListeners.add( listener );
     }
-    
+
     public I18n(ResourceBundle guiBundle, ResourceBundle languageBundle) {
         this.guiBundle = guiBundle;
         this.languageBundle = languageBundle;
@@ -45,11 +46,11 @@ public class I18n {
 
     public static List getListOfAvailableLanguages(Class cl) {
         java.util.List<Locale> supportedLocales = new ArrayList<Locale>();
-        
+
         try {
             Set names = getResourcesInPackage( cl, cl.getName() );
             Iterator it = names.iterator();
-            
+
             while( it.hasNext() ) {
                 String n = (String) it.next();
 
@@ -112,7 +113,7 @@ public class I18n {
 
         // Sort the list. Probably should use the current locale when getting the
         // DisplayLanguage so the sort order is correct for the user.
-        
+
         Collections.sort( supportedLocales, new Comparator<Object>() {
             public int compare(Object lhs, Object rhs) {
                 String ls = ((Locale)lhs).getDisplayLanguage();
@@ -154,15 +155,15 @@ public class I18n {
             }
 
             ClassLoader cl = coreClass.getClassLoader();
-            
+
             Enumeration dirEnum = cl.getResources( localPackageName );
-            
+
             Set<String> names = new HashSet<String>();
 
             // Loop CLASSPATH directories
             while( dirEnum.hasMoreElements() ) {
                     URL resUrl = (URL) dirEnum.nextElement();
-                   
+
                     // Pointing to filesystem directory
                     if ( resUrl.getProtocol().equals("file") ) {
                         try {
@@ -179,7 +180,7 @@ public class I18n {
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
-                        
+
                             // Pointing to Jar file
                     } else if ( resUrl.getProtocol().equals("jar") ) {
                             JarURLConnection jconn = (JarURLConnection) resUrl.openConnection();
@@ -256,7 +257,7 @@ public class I18n {
             return guiBundle.getString(defaultIcon);
         }
     }
-    
+
     /**
      * Retreive a resource string using the current locale.
      * @param stringID The resource string identifier
@@ -326,3 +327,5 @@ public class I18n {
         return "";
     }
 }
+
+// End I18n.java

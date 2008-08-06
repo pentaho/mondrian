@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -334,7 +334,7 @@ public class Aggregation {
         Arrays.sort(indexes, comparator);
 
         // Eliminate constraints one by one, until the constrained cell count
-        // became half of the unconstrained cell count. We can not have an 
+        // became half of the unconstrained cell count. We can not have an
         // absolute value here, because its
         // very different if we fetch data for 2 years or 10 years (5 times
         // more means 5 times slower). So a relative comparison is ok here

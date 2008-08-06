@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -91,7 +91,7 @@ public class VbaTest extends TestCase {
     }
 
     public void testInt() {
-        // if negative, Int() returns the closest number less than or 
+        // if negative, Int() returns the closest number less than or
         // equal to the number.
         assertEquals(1, Vba.int_(1));
         assertEquals(1, Vba.int_(1.4));
@@ -113,7 +113,7 @@ public class VbaTest extends TestCase {
     }
 
     public void testFix() {
-        // if negative, Fix() returns the closest number greater than or 
+        // if negative, Fix() returns the closest number greater than or
         // equal to the number.
         assertEquals(1, Vba.fix(1));
         assertEquals(1, Vba.fix(1.4));
@@ -134,7 +134,7 @@ public class VbaTest extends TestCase {
         }
     }
 
-    
+
     public void testCDbl() {
         assertEquals(1.0, Vba.cDbl(1));
         assertEquals(1.4, Vba.cDbl(1.4));
@@ -154,7 +154,7 @@ public class VbaTest extends TestCase {
             assertMessage(e, "NumberFormatException");
         }
     }
-    
+
     public void testHex() {
         assertEquals("0", Vba.hex(0));
         assertEquals("1", Vba.hex(1));
@@ -170,7 +170,7 @@ public class VbaTest extends TestCase {
             assertMessage(e, "Invalid parameter.");
         }
     }
-    
+
     public void testOct() {
         assertEquals("0", Vba.oct(0));
         assertEquals("1", Vba.oct(1));
@@ -186,7 +186,7 @@ public class VbaTest extends TestCase {
             assertMessage(e, "Invalid parameter.");
         }
     }
-    
+
     public void testStr() {
         assertEquals(" 0", Vba.str(0));
         assertEquals(" 1", Vba.str(1));
@@ -204,7 +204,7 @@ public class VbaTest extends TestCase {
             assertMessage(e, "Invalid parameter.");
         }
     }
-    
+
     public void testVal() {
         assertEquals(-1615198.0, Vba.val(" -  1615 198th Street N.E."));
         assertEquals(1615198.0, Vba.val(" 1615 198th Street N.E."));
@@ -213,7 +213,7 @@ public class VbaTest extends TestCase {
         assertEquals((double)0xffff, Vba.val("&HFFFF"));
         assertEquals(668.0, Vba.val("&O1234"));
     }
-    
+
     public void testCDate() throws ParseException {
         Date date = new Date();
         assertEquals(date, Vba.cDate(date));
@@ -221,17 +221,17 @@ public class VbaTest extends TestCase {
         // CInt rounds to the nearest even number
         try {
             assertEquals(
-                    DateFormat.getDateInstance().parse("Jan 12, 1952"), 
+                    DateFormat.getDateInstance().parse("Jan 12, 1952"),
                     Vba.cDate("Jan 12, 1952"));
             assertEquals(
-                    DateFormat.getDateInstance().parse("October 19, 1962"), 
+                    DateFormat.getDateInstance().parse("October 19, 1962"),
                     Vba.cDate("October 19, 1962"));
             assertEquals(
-                    DateFormat.getTimeInstance().parse("4:35:47 PM"), 
+                    DateFormat.getTimeInstance().parse("4:35:47 PM"),
                     Vba.cDate("4:35:47 PM"));
             assertEquals(
                     DateFormat.getDateTimeInstance().parse(
-                            "October 19, 1962 4:35:47 PM"), 
+                            "October 19, 1962 4:35:47 PM"),
                     Vba.cDate("October 19, 1962 4:35:47 PM"));
         } catch (ParseException e) {
             e.printStackTrace();
@@ -245,7 +245,7 @@ public class VbaTest extends TestCase {
             assertTrue(e.getMessage().indexOf("Jan, 1952") >= 0);
         }
     }
-    
+
     public void testIsDate() throws ParseException {
         // CInt rounds to the nearest even number
         assertFalse(Vba.isDate(null));
@@ -256,7 +256,7 @@ public class VbaTest extends TestCase {
         assertTrue(Vba.isDate("October 19, 1962 4:35:47 PM"));
         assertFalse(Vba.isDate("Jan, 1952"));
     }
-    
+
     // DateTime
 
     public void testDateAdd() {
@@ -393,13 +393,13 @@ public class VbaTest extends TestCase {
             // in EST, this string is "4:35:47 PM EST"
             assertTrue(datestr.startsWith("4:35:47 PM"));
             assertEquals("4:35 PM", Vba.formatDateTime(date, 4));
-        
+
         } catch (ParseException e) {
             e.printStackTrace();
             fail();
         }
     }
-    
+
     public void testDateValue() {
         Date date = new Date();
         final Date date1 = Vba.dateValue(date);
@@ -486,15 +486,15 @@ public class VbaTest extends TestCase {
     public void testYear() {
         assertEquals(2008, Vba.year(SAMPLE_DATE));
     }
-    
+
     public void testFormatNumber() {
         assertEquals("1", Vba.formatNumber(1.0));
         assertEquals("1.0", Vba.formatNumber(1.0, 1));
-        
+
         assertEquals("0.1", Vba.formatNumber(0.1, -1, -1));
         assertEquals(".1", Vba.formatNumber(0.1, -1, 0));
         assertEquals("0.1", Vba.formatNumber(0.1, -1, 1));
-        
+
         assertEquals("-1",  Vba.formatNumber(-1, -1, 1, -1));
         assertEquals("-1",  Vba.formatNumber(-1, -1, 1,  0));
         assertEquals("(1)", Vba.formatNumber(-1, -1, 1,  1));
@@ -507,7 +507,7 @@ public class VbaTest extends TestCase {
         assertEquals("1000.0",  Vba.formatNumber(1000.0,  1, -1, -1,  0));
         assertEquals("1,000.0", Vba.formatNumber(1000.0,  1, -1, -1,  1));
     }
-    
+
     public void testFormatPercent() {
         assertEquals("100%", Vba.formatPercent(1.0));
         assertEquals("100.0%", Vba.formatPercent(1.0, 1));
@@ -516,11 +516,11 @@ public class VbaTest extends TestCase {
         assertEquals(".1%", Vba.formatPercent(0.001, 1, 0));
         assertEquals("0.1%", Vba.formatPercent(0.001, 1, 1));
 
-        
+
         assertEquals("11%", Vba.formatPercent(0.111, -1));
         assertEquals("11%", Vba.formatPercent(0.111, 0));
         assertEquals("11.100%", Vba.formatPercent(0.111, 3));
-        
+
         assertEquals("-100%",  Vba.formatPercent(-1, -1, 1, -1));
         assertEquals("-100%",  Vba.formatPercent(-1, -1, 1,  0));
         assertEquals("(100%)", Vba.formatPercent(-1, -1, 1,  1));
@@ -533,7 +533,7 @@ public class VbaTest extends TestCase {
         assertEquals("100000.0%",  Vba.formatPercent(1000.0,  1, -1, -1,  0));
         assertEquals("100,000.0%", Vba.formatPercent(1000.0,  1, -1, -1,  1));
     }
-    
+
     public void testFormatCurrency() {
         assertEquals("$1.00", Vba.formatCurrency(1.0));
         assertEquals("$0.00", Vba.formatCurrency(0.0));
@@ -544,11 +544,11 @@ public class VbaTest extends TestCase {
         // todo: still need to implement parens customization
         // assertEquals("-$0.10", Vba.formatCurrency(-0.10, -1, -1, -1));
         assertEquals("($0.10)", Vba.formatCurrency(-0.10, -1, -1, 0));
-        
+
         assertEquals("$1,000.00", Vba.formatCurrency(1000.0, -1, -1, 0, 0));
         assertEquals("$1000.00", Vba.formatCurrency(1000.0, -1, -1, 0, -1));
     }
-    
+
     public void testTypeName() {
         assertEquals("Double", Vba.typeName(1.0));
         assertEquals("Integer", Vba.typeName(1));
@@ -798,10 +798,10 @@ public class VbaTest extends TestCase {
         result = Vba.dDB(cost, salvage, life, period+2, factor);
         assertEquals(60.0, result);
         result = Vba.dDB(cost, salvage, life, period+3, factor);
-        assertEquals(80.0, result);        
-        
+        assertEquals(80.0, result);
+
     }
-    
+
     public void testRate() {
         double nPer, pmt, PV, fv, guess, result;
         boolean type = false;
@@ -811,70 +811,70 @@ public class VbaTest extends TestCase {
         fv = 0;
         guess = 0.10 / 12;
         result = Vba.rate(nPer, pmt, PV, fv, type, guess);
-        
+
         // compare rate to pV calculation
         double expRate = 0.0083333;
         double expPV = Vba.pV(expRate, 12 * 30, -877.57, 0, false);
         result = Vba.rate(12 * 30, -877.57, expPV, 0, false, 0.10 / 12);
         assertTrue(Math.abs(expRate - result) < 0.0000001);
-        
+
         // compare rate to fV calculation
         double expFV = Vba.fV(expRate, 12, -100, 0, false);
         result = Vba.rate(12, -100, 0, expFV, false, 0.10 / 12);
         assertTrue(Math.abs(expRate - result) < 0.0000001);
     }
-    
+
     public void testIRR() {
         double vals[] = {-1000, 50, 50, 50, 50, 50, 1050};
         assertTrue(Math.abs(0.05 - Vba.IRR(vals, 0.1)) < 0.0000001);
-        
+
         vals = new double[] {-1000, 200, 200, 200, 200, 200, 200};
         assertTrue(Math.abs(0.05471796 - Vba.IRR(vals, 0.1)) < 0.0000001);
-        
-        // what happens if the numbers are inversed? this may not be 
+
+        // what happens if the numbers are inversed? this may not be
         // accurate
 
         vals = new double[] {1000, -200, -200, -200, -200, -200, -200};
         assertTrue(Math.abs(0.05471796 - Vba.IRR(vals, 0.1)) < 0.0000001);
     }
-    
+
     public void testMIRR() {
         double vals[] = {-1000, 50, 50, 50, 50, 50, 1050};
         assertTrue(Math.abs(0.05 - Vba.MIRR(vals, 0.05, 0.05)) < 0.0000001);
-        
+
         vals = new double[] {-1000, 200, 200, 200, 200, 200, 200};
         assertTrue(Math.abs(0.05263266 - Vba.MIRR(vals, 0.05, 0.05)) < 0.0000001);
 
         vals = new double[] {-1000, 200, 200, 200, 200, 200, 200};
         assertTrue(Math.abs(0.04490701 - Vba.MIRR(vals, 0.06, 0.04)) < 0.0000001);
 
-        
-        
+
+
     }
-    
+
     public void testIPmt() {
         assertEquals(-10000.0, Vba.iPmt(0.10, 1, 30, 100000, 0, false));
         assertEquals(-2185.473324557822, Vba.iPmt(0.10, 15, 30, 100000, 0, false));
         assertEquals(-60.79248252633988, Vba.iPmt(0.10, 30, 30, 100000, 0, false));
     }
-    
+
     public void testPPmt() {
         assertEquals(-607.9248252633897, Vba.pPmt(0.10, 1, 30, 100000, 0, false));
         assertEquals(-8422.451500705567, Vba.pPmt(0.10, 15, 30, 100000, 0, false));
         assertEquals(-10547.13234273705, Vba.pPmt(0.10, 30, 30, 100000, 0, false));
-        
+
         // verify that pmt, ipmt, and ppmt add up
         double pmt = Vba.pmt(0.10, 30, 100000, 0, false);
         double ipmt = Vba.iPmt(0.10, 15, 30, 100000, 0, false);
         double ppmt = Vba.pPmt(0.10, 15, 30, 100000, 0, false);
         assertTrue(Math.abs(pmt -(ipmt + ppmt)) < 0.0000001);
     }
-    
+
     public void testSLN() {
         assertEquals(18.0, Vba.sLN(100, 10, 5));
         assertEquals(Double.POSITIVE_INFINITY, Vba.sLN(100, 10, 0));
     }
-    
+
     public void testSYD() {
         assertEquals(300.0, Vba.sYD(1000, 100, 5, 5));
         assertEquals(240.0, Vba.sYD(1000, 100, 4, 5));
@@ -882,11 +882,11 @@ public class VbaTest extends TestCase {
         assertEquals(120.0, Vba.sYD(1000, 100, 2, 5));
         assertEquals(60.0, Vba.sYD(1000, 100, 1, 5));
     }
-    
+
     public void testInStrRev() {
-        assertEquals(32, Vba.inStrRev("the quick brown fox jumps over the lazy dog", 
+        assertEquals(32, Vba.inStrRev("the quick brown fox jumps over the lazy dog",
                 "the"));
-        assertEquals(1, Vba.inStrRev("the quick brown fox jumps over the lazy dog", 
+        assertEquals(1, Vba.inStrRev("the quick brown fox jumps over the lazy dog",
                 "the", 16));
         try {
             Vba.inStrRev("the quick brown fox jumps over the lazy dog", "the", 0);
@@ -895,13 +895,13 @@ public class VbaTest extends TestCase {
             assertTrue(e.getMessage().indexOf("-1 or a location") >= 0);
         }
     }
-    
+
     public void testStrComp() {
         assertEquals(-1, Vba.strComp("a", "b", 0));
         assertEquals(0, Vba.strComp("a", "a", 0));
         assertEquals(1, Vba.strComp("b", "a", 0));
     }
-    
+
     public void testNper() {
         double f, r, y, p, x, n;
         boolean t;

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -51,7 +51,7 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testFemaleCustomerCount() {
-        CellRequest request = 
+        CellRequest request =
             createRequest("Sales", "[Measures].[Customer Count]", "customer", "gender", "F");
         final RolapAggregationManager aggMan = AggregationManager.instance();
         FastBatchingCellReader fbcr =
@@ -71,45 +71,45 @@ public class TestAggregationManager extends BatchTestCase {
 
         List<String[]> Q2M5 = new ArrayList<String[]> ();
         Q2M5.add(new String[] {"1997", "Q2", "5"});
-        
+
         List<String[]> Q1M1Q2M5 = new ArrayList<String[]> ();
         Q1M1Q2M5.add(new String[] {"1997", "Q1", "1"});
         Q1M1Q2M5.add(new String[] {"1997", "Q2", "5"});
 
-        CellRequest request1 = 
+        CellRequest request1 =
             createRequest(
-                "Sales", "[Measures].[Customer Count]", 
-                "customer", "gender", "F", 
+                "Sales", "[Measures].[Customer Count]",
+                "customer", "gender", "F",
                 makeConstraintYearQuarterMonth(Q1M1));
-        
-        CellRequest request2 = 
+
+        CellRequest request2 =
             createRequest(
-                "Sales", "[Measures].[Customer Count]", 
-                "customer", "gender", "F", 
+                "Sales", "[Measures].[Customer Count]",
+                "customer", "gender", "F",
                 makeConstraintYearQuarterMonth(Q2M5));
 
-        CellRequest request3 = 
+        CellRequest request3 =
             createRequest(
-                "Sales", "[Measures].[Customer Count]", 
-                "customer", "gender", "F", 
+                "Sales", "[Measures].[Customer Count]",
+                "customer", "gender", "F",
                 makeConstraintYearQuarterMonth(Q1M1Q2M5));
 
         final RolapAggregationManager aggMan = AggregationManager.instance();
-        
+
         Object value = aggMan.getCellFromCache(request1);
         assertNull(value); // before load, the cell is not found
-        
+
         FastBatchingCellReader fbcr =
                 new FastBatchingCellReader(getCube("Sales"));
         fbcr.recordCellRequest(request1);
         fbcr.recordCellRequest(request2);
         fbcr.recordCellRequest(request3);
         fbcr.loadAggregations();
-        
+
         value = aggMan.getCellFromCache(request1); // after load, cell is found
         assertTrue(value instanceof Number);
         assertEquals(694, ((Number) value).intValue());
-        
+
         value = aggMan.getCellFromCache(request2); // after load, cell is found
         assertTrue(value instanceof Number);
         assertEquals(672, ((Number) value).intValue());
@@ -313,9 +313,9 @@ public class TestAggregationManager extends BatchTestCase {
                 "from [Sales]";
         SqlPattern[] patterns;
         String accessMysqlSql, derbySql;
-        
+
         /*
-         * Note: the following aggregate loading sqls contain no 
+         * Note: the following aggregate loading sqls contain no
          * references to the parent level column "store_country".
          */
         if (MondrianProperties.instance().UseAggregates.get() &&
@@ -343,8 +343,8 @@ public class TestAggregationManager extends BatchTestCase {
                 "\"store\".\"store_state\" in ('CA', 'OR') and " +
                 "\"agg_c_14_sales_fact_1997\".\"the_year\" = 1997 " +
                 "group by " +
-                "\"store\".\"store_state\", \"agg_c_14_sales_fact_1997\".\"the_year\"";            
-            
+                "\"store\".\"store_state\", \"agg_c_14_sales_fact_1997\".\"the_year\"";
+
             patterns = new SqlPattern[] {
                 new SqlPattern(
                     Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
@@ -363,7 +363,7 @@ public class TestAggregationManager extends BatchTestCase {
                 " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
                 " and `time_by_day`.`the_year` = 1997 " +
                 "group by `store`.`store_state`, `time_by_day`.`the_year`";
-                
+
             derbySql =
                 "select \"store\".\"store_state\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", " +
                 "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
@@ -377,12 +377,12 @@ public class TestAggregationManager extends BatchTestCase {
                 "\"time_by_day\".\"the_year\" = 1997 " +
                 "group by " +
                 "\"store\".\"store_state\", \"time_by_day\".\"the_year\"";
-                        
+
             patterns = new SqlPattern[] {
                 new SqlPattern(
                     Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
                     accessMysqlSql, 50),
-                new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql)                
+                new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql)
             };
         }
         assertQuerySql(mdxQuery, patterns);
@@ -420,7 +420,7 @@ public class TestAggregationManager extends BatchTestCase {
             "From [Sales] " +
             "Where ([Store].[*FILTER_MEMBER], [Product].[*FILTER_MEMBER])";
 
-        String derbySql = 
+        String derbySql =
             "select " +
             "\"store\".\"store_country\" as \"c0\", " +
             "\"time_by_day\".\"the_year\" as \"c1\", " +
@@ -466,7 +466,7 @@ public class TestAggregationManager extends BatchTestCase {
             "from `store` as `store` " +
             "where `store`.`store_type` = 'Supermarket' " +
             "group by `store`.`store_type`";
-        
+
         String derbySql =
             "select " +
             "\"store\".\"store_type\" as \"c0\", " +
@@ -476,7 +476,7 @@ public class TestAggregationManager extends BatchTestCase {
             "where " +
             "\"store\".\"store_type\" = 'Supermarket' " +
             "group by \"store\".\"store_type\"";
-        
+
         SqlPattern[] patterns = {
             new SqlPattern(
                 Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
@@ -512,7 +512,7 @@ public class TestAggregationManager extends BatchTestCase {
             "`time_by_day`.`quarter` = 'Q1'" +
             ") as `dummyname` " +
             "group by `d0`, `d1`";
-        
+
         String mysqlSql =
             "select" +
             " `time_by_day`.`the_year` as `c0`," +
@@ -525,7 +525,7 @@ public class TestAggregationManager extends BatchTestCase {
             " and `time_by_day`.`quarter` = 'Q1' " +
             "group by `time_by_day`.`the_year`," +
             " `time_by_day`.`quarter`";
-        
+
         String derbySql =
             "select " +
             "\"time_by_day\".\"the_year\" as \"c0\", " +
@@ -539,7 +539,7 @@ public class TestAggregationManager extends BatchTestCase {
             "\"time_by_day\".\"the_year\" = 1997 and " +
             "\"time_by_day\".\"quarter\" = 'Q1' " +
             "group by \"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\"";
-                
+
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, 26),
             new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, 26),
@@ -572,14 +572,14 @@ public class TestAggregationManager extends BatchTestCase {
             "`agg_c_10_sales_fact_1997`.`the_year` = 1997 and " +
             "`agg_c_10_sales_fact_1997`.`quarter` = 'Q1' and " +
             "`agg_c_10_sales_fact_1997`.`month_of_year` = 1";
-            
+
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, 26)};
 
         assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
-    public void testCountDistinctCannotRollup() {            
+    public void testCountDistinctCannotRollup() {
         // Summary "agg_g_ms_pcat_sales_fact_1997" doesn't match,
         // because we'd need to roll-up the distinct-count measure over
         // "month_of_year".
@@ -718,7 +718,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         assertRequestSql(new CellRequest[]{request}, patterns);
     }
-    
+
     /**
      * As above, but we rollup [Marital Status] but not [Gender].
      */
@@ -766,28 +766,28 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     /*
-     * Test that cells with the same compound member constraints are 
+     * Test that cells with the same compound member constraints are
      * loaded in one Sql statement.
-     * 
+     *
      * Cells [Food] and [Drink] have the same constraint:
-     * 
+     *
      *  {[1997].[Q1].[1], [1997].[Q3].[7]}
      */
     public void testCountDistinctBatchLoading() {
         List<String[]> compoundMembers = new ArrayList<String[]>();
         compoundMembers.add(new String[] {"1997", "Q1", "1"});
         compoundMembers.add(new String[] {"1997", "Q3", "7"});
-        
-        CellRequestConstraint aggConstraint = 
+
+        CellRequestConstraint aggConstraint =
             makeConstraintYearQuarterMonth(compoundMembers);
-        
+
         CellRequest request1 = createRequest(
             "Sales", "[Measures].[Customer Count]",
             new String[] {"product_class"},
             new String[] {"product_family"},
             new String[] {"Food"},
             aggConstraint);
-        
+
         CellRequest request2 = createRequest(
             "Sales", "[Measures].[Customer Count]",
             new String[] {"product_class"},
@@ -806,7 +806,7 @@ public class TestAggregationManager extends BatchTestCase {
             "(((`time_by_day`.`the_year`, `time_by_day`.`quarter`, `time_by_day`.`month_of_year`) " +
             "in ((1997, 'Q1', 1), (1997, 'Q3', 7)))) " +
             "group by `product_class`.`product_family`";
-        
+
         String derbySql =
             "select \"product_class\".\"product_family\" as \"c0\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
@@ -818,8 +818,8 @@ public class TestAggregationManager extends BatchTestCase {
             "((\"time_by_day\".\"the_year\" = 1997 and \"time_by_day\".\"quarter\" = 'Q1' and \"time_by_day\".\"month_of_year\" = 1) or " +
             "(\"time_by_day\".\"the_year\" = 1997 and \"time_by_day\".\"quarter\" = 'Q3' and \"time_by_day\".\"month_of_year\" = 7)) " +
             "group by \"product_class\".\"product_family\"";
-        
-        
+
+
         SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql),
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql)
@@ -827,7 +827,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         assertRequestSql(new CellRequest[]{request1, request2}, patterns);
     }
-    
+
     /**
      * Tests that an aggregate table is used to speed up a
      * <code>&lt;Member&gt;.Children</code> expression.
@@ -928,7 +928,7 @@ public class TestAggregationManager extends BatchTestCase {
                 "{[Measures].[Unit Sales]}\n" +
                 "Axis #2:\n"));
     }
-    
+
     /**
      *  Test that once fetched, column cardinality can be shared between different
      *  queries using the same connection.
@@ -941,7 +941,7 @@ public class TestAggregationManager extends BatchTestCase {
             "NonEmptyCrossJoin(" +
             "[Product].[Product Family].Members, " +
             "[Gender].[Gender].Members) on rows " +
-            "from [Sales]";         
+            "from [Sales]";
 
         String query2 =
             "select " +
@@ -959,27 +959,27 @@ public class TestAggregationManager extends BatchTestCase {
             "select " +
             "count(distinct `product_class`.`product_family`) as `c0` " +
             "from `product_class` as `product_class`";
-        
+
         SqlPattern[] patterns =
             new SqlPattern[] {
                 new SqlPattern(SqlPattern.Dialect.DERBY, cardinalitySqlDerby, cardinalitySqlDerby),
                 new SqlPattern(SqlPattern.Dialect.MYSQL, cardinalitySqlMySql, cardinalitySqlMySql)
             };
-        
+
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);
 
         // This MDX gets the [Product].[Product Family] cardinality from the DB.
         context.executeQuery(query1);
-        
+
         // This MDX should be able to reuse the cardinality for
         // [Product].[Product Family]; and should not issue a SQL to fetch
         // that from DB again.
         assertQuerySqlOrNot(context, query2, patterns, true, false, false);
     }
-    
+
     public void testKeyExpressionCardinalityCache() {
-        String storeDim1 = 
+        String storeDim1 =
             "<Dimension name=\"Store1\">\n" +
             "  <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n" +
             "  <Table name=\"store\"/>\n" +
@@ -1004,8 +1004,8 @@ public class TestAggregationManager extends BatchTestCase {
             "    </Level>\n" +
             "  </Hierarchy>\n" +
             "</Dimension>\n";
-        
-        String storeDim2 = 
+
+        String storeDim2 =
             "<Dimension name=\"Store2\">\n" +
             "  <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n" +
             "  <Table name=\"store_ragged\"/>\n" +
@@ -1038,35 +1038,35 @@ public class TestAggregationManager extends BatchTestCase {
             "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
             "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
             "</Cube>\n";
-        
+
         String salesCube2 =
             "<Cube name=\"Sales2\" defaultMeasure=\"Unit Sales\">\n" +
             "  <Table name=\"sales_fact_1997\" />\n" +
             "  <DimensionUsage name=\"Store2\" source=\"Store2\" foreignKey=\"store_id\"/>\n" +
             "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
             "</Cube>\n";
-        
+
         String query =
             "select {[Measures].[Unit Sales]} ON COLUMNS, {[Store1].members} ON ROWS FROM [Sales1]";
-         
+
         String query1 =
             "select {[Measures].[Store Sales]} ON COLUMNS, {[Store1].members} ON ROWS FROM [Sales1]";
 
         String query2 =
             "select {[Measures].[Unit Sales]} ON COLUMNS, {[Store2].members} ON ROWS FROM [Sales2]";
-        
+
         String cardinalitySqlDerby1 =
             "select count(distinct \"store_country\") from \"store\" as \"store\"";
 
         String cardinalitySqlMySql1 =
             "select count(distinct `store_country`) as `c0` from `store` as `store`";
-        
+
         String cardinalitySqlDerby2 =
             "select count(distinct \"store_country\") from \"store_ragged\" as \"store_ragged\"";
 
         String cardinalitySqlMySql2 =
             "select count(distinct `store_country`) as `c0` from `store_ragged` as `store_ragged`";
-        
+
         SqlPattern[] patterns1 =
             new SqlPattern[] {
                 new SqlPattern(SqlPattern.Dialect.DERBY, cardinalitySqlDerby1, cardinalitySqlDerby1),
@@ -1090,14 +1090,14 @@ public class TestAggregationManager extends BatchTestCase {
 
         // This query causes "store"."store_country" cardinality to be retrieved.
         testContext.executeQuery(query);
-        
+
         // Query1 will find the "store"."store_country" cardinality in cache.
         assertQuerySqlOrNot(testContext, query1, patterns1, true, false, false);
 
         // Query2 again will not find the "store_ragged"."store_country" cardinality in cache.
         assertQuerySqlOrNot(testContext, query2, patterns2, false, false, false);
     }
-    
+
     /*
      * Test that using compound member constrant disables using AggregateTable
      */
@@ -1106,7 +1106,7 @@ public class TestAggregationManager extends BatchTestCase {
                 MondrianProperties.instance().ReadAggregates.get())) {
             return;
         }
-        
+
         // Request has granularity
         //  [Product].[Category]
         // and the compound constraint on
@@ -1124,15 +1124,15 @@ public class TestAggregationManager extends BatchTestCase {
         //
         // Note ideally we should also test that non distinct measures could be loaded from
         // Aggregate table; however, the testing framework here uses CellRequest directly
-        // which causes any compound constraint to be kept separately. This will cause 
+        // which causes any compound constraint to be kept separately. This will cause
         // Aggregate tables not to be used.
         // CellRequest generated by the code form MDX will in this case not separate out the
-        // compound constraint from the "regular" constraints and Aggregate tables can still 
+        // compound constraint from the "regular" constraints and Aggregate tables can still
         // be used.
 
         List<String[]> compoundMembers = new ArrayList<String[]> ();
         compoundMembers.add(new String[] {"1997", "Q1", "1"});
-        
+
         CellRequest request = createRequest(
             "Sales", "[Measures].[Customer Count]",
             new String[] { "product_class", "product_class", "product_class" },
@@ -1168,7 +1168,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         assertRequestSql(new CellRequest[]{request}, patterns);
     }
-    
+
 }
 
 // End TestAggregationManager.java

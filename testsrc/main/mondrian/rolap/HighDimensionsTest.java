@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -105,15 +105,19 @@ public class HighDimensionsTest extends FoodMartTestCase {
      * Executes query test trying to [Promotions].[Promotion Name] elements
      * into an axis from the results.
      */
-    private void execHighCardTest(final String queryString, final int axisIndex,
-            final String highDimensionName, final String results) 
-            throws Exception {
+    private void execHighCardTest(
+        final String queryString,
+        final int axisIndex,
+        final String highDimensionName,
+        final String results)
+        throws Exception
+    {
         final int old = MondrianProperties.instance()
                     .ResultLimit.get();
         try {
             MondrianProperties.instance().ResultLimit.set(40);
             final TestContext testContext = TestContext.createSubstitutingCube(
-                    "Sales Ragged", 
+                    "Sales Ragged",
                     "<Dimension name=\"Promotions\" highCardinality=\"true\" "
                     + "foreignKey=\"promotion_id\">"
                         + "<Hierarchy hasAll=\"true\" "
@@ -134,7 +138,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
 
             final List<SoftReference> softReferences =
                     new ArrayList<SoftReference>();
-            // Tests results aren't got from database before this point 
+            // Tests results aren't got from database before this point
             int ii = 0;
             for(final Position o : result.getAxes()[axisIndex].getPositions()) {
                 assertNotNull(o.get(0));
@@ -145,7 +149,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             assertEquals(buffer.toString(), results);
             buffer = null;
 
-            // Tests that really results over ResultLimit are erased from 
+            // Tests that really results over ResultLimit are erased from
             // memory
             final List overloader = new ArrayList();
             try {
@@ -213,7 +217,6 @@ public class HighDimensionsTest extends FoodMartTestCase {
                 + "[Promotions].[All Promotions].[Savings Galore]"
                 + "[Promotions].[All Promotions].[Shelf Clearing Days]"
                 + "[Promotions].[All Promotions].[Shelf Emptiers]";
- 
 
     private static final String nonEmptyHighCardResults =
                 "[Promotions].[All Promotions].[Bag Stuffers]"
@@ -324,3 +327,5 @@ public class HighDimensionsTest extends FoodMartTestCase {
                 + "[Promotions].[All Promotions].[No Promotion]"
                 + "[Promotions].[All Promotions].[Price Savers]";
 }
+
+// End HighDimensionsTest.java

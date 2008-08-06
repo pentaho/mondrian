@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -72,12 +72,12 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "<Dimension name=\"EmployeeSnowFlake\" foreignKey=\"employee_id\">" +
             "<Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"" +
             "    primaryKey=\"employee_id\" primaryKeyTable=\"employee\">" +
-            "  <Join leftKey=\"store_id\"" +  
+            "  <Join leftKey=\"store_id\"" +
             "    rightAlias=\"store\" rightKey=\"store_id\">" +
             "    <Table name=\"employee\"/>" +
             "    <Table name=\"store\"/>" +
             "  </Join>" +
-            "  <Level name=\"Employee Stores\" table=\"store\"" + 
+            "  <Level name=\"Employee Stores\" table=\"store\"" +
             "      column=\"store_id\" uniqueMembers=\"true\"/>" +
             "  <Level name=\"Employee Id\" type=\"Numeric\" table=\"employee\" uniqueMembers=\"true\"" +
             "      column=\"employee_id\" parentColumn=\"supervisor_id\"" +
@@ -107,7 +107,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "<Dimension name=\"SharedEmployee\">" +
             "<Hierarchy hasAll=\"true\"" +
             "    primaryKey=\"employee_id\" primaryKeyTable=\"employee\">" +
-            "  <Join leftKey=\"store_id\"" +  
+            "  <Join leftKey=\"store_id\"" +
             "    rightAlias=\"store\" rightKey=\"store_id\">" +
             "    <Table name=\"employee\"/>" +
             "    <Table name=\"store\"/>" +
@@ -127,7 +127,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "  </Level>" +
             "</Hierarchy>" +
             "</Dimension>";
-        
+
         String cube =
             "<Cube name=\"EmployeeSharedClosureCube\">\n" +
             "  <Table name=\"salary\" alias=\"salary_closure\" />\n" +
@@ -143,13 +143,13 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "  <Measure name=\"Org Salary\" column=\"salary_paid\" aggregator=\"sum\""+
             "      formatString=\"Currency\"/>"+
             "   <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\""+
-            "    formatString=\"#,#\"/>" + 
+            "    formatString=\"#,#\"/>" +
             "</Cube>";
-        
-        
+
+
         return TestContext.create(sharedClosureDimension, cube, null, null, null, null);
     }
-    
+
     /**
      * Returns a TestContext in which the "HR" cube contains an extra dimension,
      * "EmployeesNonClosure", which is a joined parent child hierarchy with no
@@ -159,25 +159,25 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     private TestContext getEmpNonClosureTestContext() {
         return TestContext.createSubstitutingCube(
             "HR",
-            "<Dimension name=\"EmployeesNonClosure\" foreignKey=\"employee_id\">" + 
-            "<Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"" + 
-            "    primaryKey=\"employee_id\">" + 
-            "  <Table name=\"employee\"/>" + 
-            "  <Level name=\"Employee Id\" type=\"Numeric\" uniqueMembers=\"true\"" + 
-            "      column=\"employee_id\" parentColumn=\"supervisor_id\"" + 
-            "      nameColumn=\"full_name\" nullParentValue=\"0\">" + 
-            "    <Property name=\"Marital Status\" column=\"marital_status\"/>" + 
-            "    <Property name=\"Position Title\" column=\"position_title\"/>" + 
-            "    <Property name=\"Gender\" column=\"gender\"/>" + 
-            "    <Property name=\"Salary\" column=\"salary\"/>" + 
-            "    <Property name=\"Education Level\" column=\"education_level\"/>" + 
-            "    <Property name=\"Management Role\" column=\"management_role\"/>" + 
-            "  </Level>" + 
-            "</Hierarchy>" + 
+            "<Dimension name=\"EmployeesNonClosure\" foreignKey=\"employee_id\">" +
+            "<Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"" +
+            "    primaryKey=\"employee_id\">" +
+            "  <Table name=\"employee\"/>" +
+            "  <Level name=\"Employee Id\" type=\"Numeric\" uniqueMembers=\"true\"" +
+            "      column=\"employee_id\" parentColumn=\"supervisor_id\"" +
+            "      nameColumn=\"full_name\" nullParentValue=\"0\">" +
+            "    <Property name=\"Marital Status\" column=\"marital_status\"/>" +
+            "    <Property name=\"Position Title\" column=\"position_title\"/>" +
+            "    <Property name=\"Gender\" column=\"gender\"/>" +
+            "    <Property name=\"Salary\" column=\"salary\"/>" +
+            "    <Property name=\"Education Level\" column=\"education_level\"/>" +
+            "    <Property name=\"Management Role\" column=\"management_role\"/>" +
+            "  </Level>" +
+            "</Hierarchy>" +
             "</Dimension>",
             null);
     }
-    
+
     /**
      * Tests snow flake closure combination.
      * bug #1675125 - now fixed.
@@ -204,7 +204,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     public void testSharedClosureParentChildHierarchy() {
-        TestContext context = getEmpSharedClosureTestContext(); 
+        TestContext context = getEmpSharedClosureTestContext();
         context.assertQueryReturns(
                 "Select " +
                 "{[SharedEmployee].[All SharedEmployees].[Sheri Nowmer].[Derrick Whelply].children} on columns " + // [SharedEmployee].[Sheri Nowmer].children
@@ -220,12 +220,12 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                         "Row #0: $29,121.55\n" +
                         "Row #0: $35,487.69\n"));
     }
-    
+
     /**
      * Test case for bug #1708327
      */
     public void _testNonClosureParentChildHierarchy() {
-        
+
         getEmpNonClosureTestContext().assertQueryReturns(
                 "Select " +
                 "{[EmployeesNonClosure].[Sheri Nowmer].children} on columns," +
@@ -252,7 +252,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Row #0: $577.80\n");
     }
 
-    
+
     public void testAll() {
         assertQueryReturns(
             "select {[Measures].[Org Salary], [Measures].[Count]} on columns,\n" +

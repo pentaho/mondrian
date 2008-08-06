@@ -1007,14 +1007,14 @@ public class MondrianProperties extends TriggerableProperties {
      * Warehouse Sales gets eliminated and is ignored in the aggregate value.
      * <blockquote>
      * <p>                                        [Store Sales] + [Warehouse Sales]
-     * SUM({Product.members * Gender.members})	        7,913,333.82
+     * SUM({Product.members * Gender.members})    7,913,333.82
      * </blockquote>
      * <p>With mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension=false
      * Warehouse Sales with Gender All level member contributes to the aggregate
      * value.
      * <blockquote>
      * <p>                                        [Store Sales] + [Warehouse Sales]
-     * SUM({Product.members * Gender.members})	        9,290,730.03
+     * SUM({Product.members * Gender.members})    9,290,730.03
      * </blockquote>
      * <p>On a report where Gender M, F and All members exist a user will see a
      * large aggregated value compared to the aggregated value that can be

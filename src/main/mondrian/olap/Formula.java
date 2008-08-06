@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -162,7 +162,7 @@ public class Formula extends QueryPart {
             OlapElement mdxElement = q.getCube();
             final SchemaReader schemaReader = q.getSchemaReader(true);
             for (int i = 0; i < id.getSegments().size(); i++) {
-            	Id.Segment segment = id.getSegments().get(i);
+                Id.Segment segment = id.getSegments().get(i);
                 OlapElement parent = mdxElement;
                 mdxElement = null;
                 // BCHOW: The last segment of the id is the name of the calculated member
@@ -170,7 +170,7 @@ public class Formula extends QueryPart {
                 // unnecessarily executing SQL and loading children into cache.
                 if (i != id.getSegments().size() - 1)
                     mdxElement = schemaReader.getElementChild(parent, segment);
-                
+
                 // Don't try to look up the member which the formula is
                 // defining. We would only find one if the member is overriding
                 // a member at the cube or schema level, and we don't want to
@@ -257,7 +257,7 @@ public class Formula extends QueryPart {
     public Id getIdentifier() {
         return id;
     }
-    
+
     /** Returns this formula's name. */
     public String getName() {
         return (isMember)

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -34,7 +34,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
      * List of column predicates.
      */
     private final List<StarColumnPredicate> children;
-    
+
     /**
      * Hash map of children predicates, keyed off of the hash code of each
      * child.  Each entry in the map is a list of predicates matching that
@@ -46,7 +46,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
      * Pre-computed hash code for this list column predicate
      */
     private int hashValue;
-    
+
     /**
      * Creates a ListColumnPredicate
      *
@@ -115,11 +115,11 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
     }
 
     public boolean equalConstraint(StarPredicate that) {
-        boolean isEqual = 
+        boolean isEqual =
             that instanceof ListColumnPredicate &&
             getConstrainedColumnBitKey().equals(
                 that.getConstrainedColumnBitKey());
-        
+
         if (isEqual) {
             ListColumnPredicate thatPred = (ListColumnPredicate) that;
             if (getPredicates().size() != thatPred.getPredicates().size()) {
@@ -141,7 +141,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
                         childrenHashMap.put(key, predList);
                     }
                 }
-                
+
                 // Loop through thatPred's children predicates.  There needs
                 // to be a matching entry in the hash map for each child
                 // predicate.
@@ -168,7 +168,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
         }
         return isEqual;
     }
-    
+
     public void describe(StringBuilder buf) {
         buf.append("={");
         for (int j = 0; j < children.size(); j++) {

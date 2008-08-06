@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -116,7 +116,7 @@ public class RolapStar {
     /**
      * Holds all requests of aggregations per thread.
      */
-    private final ThreadLocal<List<AggregationKey>> 
+    private final ThreadLocal<List<AggregationKey>>
         localAggregationRequests =
             new ThreadLocal<List<AggregationKey>>() {
             protected List<AggregationKey> initialValue() {
@@ -169,11 +169,11 @@ public class RolapStar {
         this.factNode = new StarNetworkNode(null, factTable.alias, null, null, null);
 
         this.sharedAggregations = new HashMap<AggregationKey, Aggregation>();
-        
+
         this.pendingAggregations = new HashMap<AggregationKey, Aggregation>();
 
         this.aggregationRequests = new ArrayList<AggregationKey>();
-        
+
         clearAggStarList();
 
         this.sqlQueryDialect = schema.getDialect();
@@ -336,7 +336,7 @@ public class RolapStar {
                             ? ((MondrianDef.Relation) left).getAlias()
                             : null,
                         join.leftKey,
-                        left, 
+                        left,
                         right instanceof MondrianDef.Relation
                             ? ((MondrianDef.Relation) right).getAlias()
                             : null,
@@ -768,7 +768,7 @@ public class RolapStar {
             localAggregationRequests.get().clear();
         }
     }
-    
+
     /** For testing purposes only.  */
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -817,7 +817,7 @@ public class RolapStar {
         }
         return bitKey;
     }
-    
+
     /**
      * Returns a list of all aliases used in this star.
      */

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -43,14 +43,14 @@ import mondrian.rolap.agg.Aggregation;
  */
 
 public class DataSourceChangeListenerImpl implements DataSourceChangeListener {
-	
+
     /** Creates a new instance of DataSourceChangeListenerImpl */
     public DataSourceChangeListenerImpl() {
     }
 
 
     public synchronized boolean isHierarchyChanged(RolapHierarchy hierarchy) {
-    	return false;
+        return false;
     }
 
     public synchronized boolean isAggregationChanged(Aggregation aggregation) {

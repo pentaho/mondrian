@@ -62,8 +62,12 @@ class RolapDimension extends DimensionBase {
 
     private final Schema schema;
 
-    RolapDimension(Schema schema, String name, DimensionType dimensionType,
-    		final boolean highCardinality) {
+    RolapDimension(
+        Schema schema,
+        String name,
+        DimensionType dimensionType,
+        final boolean highCardinality)
+    {
         // todo: recognition of a time dimension should be improved
         // allow multiple time dimensions
         super(name, dimensionType, highCardinality);
@@ -76,12 +80,17 @@ class RolapDimension extends DimensionBase {
      *
      * @pre schema != null
      */
-    RolapDimension(RolapSchema schema,
-                   RolapCube cube,
-                   MondrianDef.Dimension xmlDimension,
-                   MondrianDef.CubeDimension xmlCubeDimension) {
-        this(schema, xmlDimension.name, xmlDimension.getDimensionType(),
-        		xmlDimension.highCardinality);
+    RolapDimension(
+        RolapSchema schema,
+        RolapCube cube,
+        MondrianDef.Dimension xmlDimension,
+        MondrianDef.CubeDimension xmlCubeDimension)
+    {
+        this(
+            schema,
+            xmlDimension.name,
+            xmlDimension.getDimensionType(),
+            xmlDimension.highCardinality);
 
         Util.assertPrecondition(schema != null);
 

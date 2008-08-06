@@ -5,7 +5,7 @@ import mondrian.gui.validate.JDBCValidator;
 
 /**
  * Implementation of <code>JDBCValidator</code> for Workbench.
- * 
+ *
  * @author mlowery
  */
 public class WorkbenchJDBCValidator implements JDBCValidator {
@@ -36,3 +36,5 @@ public class WorkbenchJDBCValidator implements JDBCValidator {
     }
 
 }
+
+// End WorkbenchJDBCValidator.java

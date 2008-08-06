@@ -871,7 +871,7 @@ public class Util extends XOMUtil {
         int bestMatch = -1;
         int k = -1;
         for (Member rootMember : rootMembers) {
-        	++k;
+            ++k;
             int rc;
             // when searching on the ALL hierarchy, match must be exact
             if (matchType == MatchType.EXACT || hierarchy.hasAll()) {
@@ -2326,12 +2326,12 @@ public class Util extends XOMUtil {
     /**
      * Check the resultSize against the result limit setting. Throws
      * LimitExceededDuringCrossjoin exception if limit exceeded.
-     * 
+     *
      * When it is called from RolapNativeSet.checkCrossJoin(), it is only
-     * possible to check the known input size, because the final CJ result 
+     * possible to check the known input size, because the final CJ result
      * will come from the DB(and will be checked against the limit when
      * fetching from the JDBC result set, in SqlTupleReader.prepareTuples())
-     * 
+     *
      * @param resultSize
      * @throws ResourceLimitExceededException
      */
@@ -2351,8 +2351,8 @@ public class Util extends XOMUtil {
         if (resultSize > Integer.MAX_VALUE) {
             throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
                 resultSize, Integer.MAX_VALUE);
-        }        
-    }    
+        }
+    }
 }
 
 // End Util.java

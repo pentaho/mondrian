@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -46,7 +46,7 @@ public class ConcurrentValidatingQueryRunner extends Thread {
     private ConcurrentMdxTest concurrentMdxTest = new ConcurrentMdxTest();
 
     private FoodMartTestCase.QueryAndResult[] mdxQueries;
-    
+
     // mutex to isolate sections that run MDX and sections that flush cache
     // tests fail intermittenly if this mutex is removed
     private static Object lock = new Object();
@@ -54,7 +54,7 @@ public class ConcurrentValidatingQueryRunner extends Thread {
     /**
      * Runs concurrent queries without flushing cache. This constructor provides backward
      * compatibilty for usage in {@link ConcurrentMdxTest}.
-     * 
+     *
      * @param numSeconds Running time
      * @param useRandomQuery If set to <code>true</code>, the runner will
      *        pick a random query from the set. If set to <code>false</code>,
@@ -72,7 +72,7 @@ public class ConcurrentValidatingQueryRunner extends Thread {
 
     /**
      * Runs concurrent queries with random cache flush.
-     * 
+     *
      * @param numSeconds Running time
      * @param useRandomQuery If set to <code>true</code>, the runner will
      *        pick a random query from the set. If set to <code>false</code>,
@@ -113,18 +113,18 @@ public class ConcurrentValidatingQueryRunner extends Thread {
                         queryIndex = mRunCount %
                                 mdxQueries.length;
                     }
-                    
+
                     mRunCount++;
-                    
+
                     synchronized (lock) {
                     // flush a random region of cache
-                    if (mRandomCacheFlush && 
+                    if (mRandomCacheFlush &&
                         (Math.random() < mRandomFlushFrequency)) {
                         flushRandomRegionOfCache();
                     }
-                    
+
                     // flush the whole schema
-                    if (mRandomCacheFlush && 
+                    if (mRandomCacheFlush &&
                         (Math.random() < mRandomFlushFrequency)) {
                         flushSchema();
                     }
@@ -135,7 +135,7 @@ public class ConcurrentValidatingQueryRunner extends Thread {
                         mdxQueries[queryIndex].result);
                     mSuccessCount++;
                     } //end sync block
-                    
+
                 } catch (Exception e) {
                     mExceptions.add(
                             new Exception("Exception occurred in iteration " +
@@ -155,7 +155,7 @@ public class ConcurrentValidatingQueryRunner extends Thread {
 
     /**
      * Prints result of this test run.
-     * 
+     *
      * @param out
      */
     private void report(PrintStream out) {
@@ -164,7 +164,7 @@ public class ConcurrentValidatingQueryRunner extends Thread {
                 threadName, mRunCount, mSuccessCount, mStopTime - mStartTime);
 
         out.println(message);
-        
+
         for (Object throwable : mExceptions) {
             if (throwable instanceof Exception) {
                 ((Exception) throwable).printStackTrace(out);
@@ -178,7 +178,7 @@ public class ConcurrentValidatingQueryRunner extends Thread {
      * Creates and runs concurrent threads of tests without flushing cache.
      * This method provides backward compatibilty for usage in
      * {@link ConcurrentMdxTest}.
-     * 
+     *
      * @param numThreads Number of concurrent threads
      * @param runTimeInSeconds Running Time
      * @param randomQueries Whether to pick queries in random or in sequence
@@ -201,7 +201,7 @@ public class ConcurrentValidatingQueryRunner extends Thread {
 
     /**
      * Creates and runs concurrent threads of tests with random cache flush.
-     * 
+     *
      * @param numThreads Number of concurrent threads
      * @param runTimeInSeconds Running Time
      * @param randomQueries Whether to pick queries in random or in sequence
@@ -249,28 +249,28 @@ public class ConcurrentValidatingQueryRunner extends Thread {
         }
         return allExceptions;
     }
-    
+
     /**
      * Flushes the whole schema.
      *
      */
     private void flushSchema() {
-        Connection connection = 
+        Connection connection =
             concurrentMdxTest.getConnection();
         CacheControl cacheControl =
             connection.getCacheControl(null);
-        
+
         Cube salesCube = connection.getSchema().lookupCube("Sales", true);
         CacheControl.CellRegion measuresRegion =
             cacheControl.createMeasuresRegion(salesCube);
         cacheControl.flush(measuresRegion);
-        
+
         Cube whsalesCube = connection.getSchema().lookupCube("Warehouse and Sales", true);
         measuresRegion =
             cacheControl.createMeasuresRegion(whsalesCube);
         cacheControl.flush(measuresRegion);
     }
-    
+
     /**
      * Flushes a random region of cache. This is not truly random yet; the method
      * pick one of the three US states to be flushed.
@@ -278,8 +278,8 @@ public class ConcurrentValidatingQueryRunner extends Thread {
      */
     private void flushRandomRegionOfCache() {
         // todo: more dimensions for randomizing
-        
-        Connection connection = 
+
+        Connection connection =
             concurrentMdxTest.getConnection();
         CacheControl cacheControl =
             connection.getCacheControl(null);
@@ -299,16 +299,16 @@ public class ConcurrentValidatingQueryRunner extends Thread {
             String[] tsegments =
                 new String[] {"Time", "1997"};
             Id tid = new Id(Id.Segment.toList(tsegments));
-        
+
             Member memberTime97 =
                 schemaReader.getMemberByUniqueName(tid.getSegments(), false);
             CacheControl.CellRegion regionTime97 =
                 cacheControl.createMemberRegion(
                     memberTime97, true);
-        
+
             String[] states = {"CA", "OR", "WA"};
             int idx = (int) (Math.random() * states.length);
-        
+
             String[] ssegments =
                 new String[] {"Customers", "All Customers", "USA", states[idx]};
             Id sid = new Id(Id.Segment.toList(ssegments));
@@ -318,17 +318,19 @@ public class ConcurrentValidatingQueryRunner extends Thread {
             CacheControl.CellRegion regionCustomerState =
                 cacheControl.createMemberRegion(
                     memberCustomerState, true);
-        
+
             CacheControl.CellRegion region97State =
                 cacheControl.createCrossjoinRegion(
                     measuresRegion,
                     regionTime97,
-                    regionCustomerState);        
-        
-            cacheControl.flush(region97State);        
+                    regionCustomerState);
+
+            cacheControl.flush(region97State);
         } catch (Exception e) {
             // do nothing when a wrong region was picked
             // don't throw exception
         }
     }
 }
+
+// End ConcurrentValidatingQueryRunner.java

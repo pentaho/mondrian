@@ -30,7 +30,7 @@ import mondrian.test.SqlPattern;
 public class GroupingSetQueryTest extends BatchTestCase {
 
     private MondrianProperties prop = MondrianProperties.instance();
-    
+
     private static final String cubeNameSales2 = "Sales 2";
     private static final String measureStoreSales = "[Measures].[Store Sales]";
     private static final String fieldNameMaritalStatus = "marital_status";
@@ -48,15 +48,15 @@ public class GroupingSetQueryTest extends BatchTestCase {
         useGroupingSets = prop.EnableGroupingSets.get();
         formattedSql = prop.GenerateFormattedSql.get();
         origWarnIfNoPatternForDialect = prop.WarnIfNoPatternForDialect.get();
-        
+
         prop.GenerateFormattedSql.set(false);
-        
+
         /*
          * This test warns of missing sql patterns for
-         * 
+         *
          * ACCESS
          * ORACLE
-         * 
+         *
          */
         final SqlQuery.Dialect dialect = getTestContext().getDialect();
         if (prop.WarnIfNoPatternForDialect.get().equals("ANY") ||
@@ -301,7 +301,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
     public void testGroupingSetForASummaryCanBeGroupedWith2DetailBatch() {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             return;
-        }        
+        }
         prop.EnableGroupingSets.set(true);
         CellRequest request1 = createRequest(cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
@@ -619,7 +619,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 + "select {\n"
                 + "          store.[store name].members,\n"
                 + "         store.allbutwallawalla,\n"
-                + "         store.[all stores]} on 0,\n" 
+                + "         store.[all stores]} on 0,\n"
                 + "  {measures.[customer count]} on 1\n"
                 + "from sales",
             fold("Axis #0:\n" +

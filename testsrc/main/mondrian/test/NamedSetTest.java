@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -716,7 +716,7 @@ public class NamedSetTest extends FoodMartTestCase {
             null,
             null,
             "<NamedSet name=\"Bad\" formula=\"{[Store].[USA].[WA].Children}}\"/>",
-            null, 
+            null,
             null);
         tc.assertThrows(
                 "SELECT {[Measures].[Store Sales]} on columns,\n" +

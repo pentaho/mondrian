@@ -113,26 +113,26 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /*
-     * Tests that ParallelPeriod with Aggregate function works 
+     * Tests that ParallelPeriod with Aggregate function works
      */
     public void testParallelPeriodWithSlicer() {
         String query =
-            "With " + 
+            "With " +
             "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Product])' " +
-            "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0], [Measures].[*FORMATTED_MEASURE_1]}' " + 
-            "Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q2].[6]}' " + 
-            "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' " + 
-            "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink],[Product].[All Products].[Food]}' " + 
-            "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' " + 
-            "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Customer Count]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 " + 
+            "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0], [Measures].[*FORMATTED_MEASURE_1]}' " +
+            "Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q2].[6]}' " +
+            "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' " +
+            "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink],[Product].[All Products].[Food]}' " +
+            "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' " +
+            "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Customer Count]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 " +
             "Member [Measures].[*FORMATTED_MEASURE_1] as " +
-            "'([Measures].[Customer Count], ParallelPeriod([Time].[Quarter], 1, [Time].currentMember))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200 " + 
-            "Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-300 " + 
+            "'([Measures].[Customer Count], ParallelPeriod([Time].[Quarter], 1, [Time].currentMember))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200 " +
+            "Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-300 " +
             "Select " +
-            "[*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Time].CurrentMember)}) on rows " + 
-            "From [Sales] " + 
+            "[*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Time].CurrentMember)}) on rows " +
+            "From [Sales] " +
             "Where ([Product].[*FILTER_MEMBER])";
-        
+
         String result =
             "Axis #0:\n" +
             "{[Product].[*FILTER_MEMBER]}\n" +
@@ -143,10 +143,10 @@ public class FunctionTest extends FoodMartTestCase {
             "{[Time].[1997].[Q2].[6]}\n" +
             "Row #0: 1,314\n" +
             "Row #0: 1,447\n";
-        
+
         assertQueryReturns(query, fold(result));
     }
-    
+
     public void testNumericLiteral() {
         assertExprReturns("2", "2");
         if (false) {
@@ -1815,7 +1815,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Store].[All Stores].[USA].[OR]\n" +
                     "[Store].[All Stores].[USA].[CA]"));
     }
-    
+
     public void testDrilldownMember() {
 
         // Expect all children of USA
@@ -2520,7 +2520,7 @@ public class FunctionTest extends FoodMartTestCase {
         // same result as max
         assertExprReturns("Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 100)", "263,793.22");
         // varying points between value #0 (0th percentile) and value #1 (50th
-        // percentile) of the 3 values 
+        // percentile) of the 3 values
         assertExprReturns("Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 20)", "152,411.53");
         assertExprReturns("Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 25)", "154,945.15");
         assertExprReturns("Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 30)", "157,478.76");
@@ -4811,7 +4811,7 @@ public class FunctionTest extends FoodMartTestCase {
             assertExprReturns("NULL/1", "");
             assertExprReturns("NULL/NULL", "");
             assertExprReturns("1/NULL", "Infinity");
-            
+
             // when NullOrZeroDenominatorProducesNull is set to true
             MondrianProperties.instance().NullDenominatorProducesNull.set(true);
 
@@ -4822,7 +4822,7 @@ public class FunctionTest extends FoodMartTestCase {
             assertExprReturns("NULL/1", "");
             assertExprReturns("NULL/NULL", "");
             assertExprReturns("1/NULL", "");
-            
+
         } finally {
             MondrianProperties.instance().NullDenominatorProducesNull.
             set(origNullDenominatorProducesNull);
@@ -5348,14 +5348,14 @@ public class FunctionTest extends FoodMartTestCase {
      * Tests that the Hierarchize function works correctly when applied to
      * a level whose ordering is determined by an 'ordinal' property.
      * TODO: fix this test (bug 1220787)
-     * 
+     *
      * WG: Note that this is disabled right now due to its impact on other
      * tests later on within the test suite, specifically XMLA tests that
      * return a list of cubes.  We could run this test after XMLA, or clear
      * out the cache to solve this.
      */
     public void testHierarchizeOrdinal() {
-        
+
         TestContext context = getTestContext("[Sales_Hierarchize]");
         final Connection connection = context.getFoodMartConnection();
         connection.getSchema().createCube(
@@ -5444,8 +5444,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Month_Alphabetical].[11]\n" +
                     "[Month_Alphabetical].[10]\n" +
                     "[Month_Alphabetical].[9]"));
-        
-        // clear the cache so that future tests don't fail that expect a 
+
+        // clear the cache so that future tests don't fail that expect a
         // specific set of cubes
         connection.getCacheControl(null).flushSchemaCache();
     }
@@ -5546,15 +5546,15 @@ public class FunctionTest extends FoodMartTestCase {
                 "order(filter([Product].children, [Measures].[Unit Sales] > 1000), ([Gender].[M], [Measures].[Store Sales]))",
                 "{}(Sublist(ContextCalc([Measures].[Store Sales], Order(Filter(Children(CurrentMember([Product])), >(MemberValueCalc([Measures].[Unit Sales]), 1000.0)), MemberValueCalc([Gender].[All Gender].[M]), ASC))))");
     }
-    
-    
+
+
     /**
      * This test case verifies that the order function works with a defined member.
      * See this forum post for additional information:
-     * http://forums.pentaho.org/showthread.php?p=179473#post179473 
+     * http://forums.pentaho.org/showthread.php?p=179473#post179473
      */
     public void testOrderWithMember() {
-        assertQueryReturns("with member [Measures].[Product Name Length] as 'LEN([Product].CurrentMember.Name)'\n" + 
+        assertQueryReturns("with member [Measures].[Product Name Length] as 'LEN([Product].CurrentMember.Name)'\n" +
                            "select {[Measures].[Product Name Length]} ON COLUMNS,\n" +
                            "Order([Product].[All Products].Children, [Measures].[Product Name Length], BASC) ON ROWS\n" +
                            "from [Sales]",
@@ -5572,20 +5572,20 @@ public class FunctionTest extends FoodMartTestCase {
                                    "Row #2: 14\n"));
 
     }
-    
+
     /**
      * test case for bug # 1797159, Potential MDX Order Non Empty Problem
      *
      */
     public void testOrderNonEmpty() {
         assertQueryReturns(
-                "select NON EMPTY [Gender].Members ON COLUMNS,\n" + 
-                "NON EMPTY Order([Product].[All Products].[Drink].Children,\n" + 
+                "select NON EMPTY [Gender].Members ON COLUMNS,\n" +
+                "NON EMPTY Order([Product].[All Products].[Drink].Children,\n" +
                 "[Gender].[All Gender].[F], ASC) ON ROWS\n" +
-                "from [Sales]\n" + 
-                "where ([Customers].[All Customers].[USA].[CA].[San Francisco],\n" + 
+                "from [Sales]\n" +
+                "where ([Customers].[All Customers].[USA].[CA].[San Francisco],\n" +
                 " [Time].[1997])",
-                
+
             fold(
             "Axis #0:\n" +
             "{[Customers].[All Customers].[USA].[CA].[San Francisco], [Time].[1997]}\n" +
@@ -8131,7 +8131,7 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
     public void testBug1881739() {
         assertExprReturns("LEFT(\"TEST\", LEN(\"TEST\"))", "TEST");
     }
-    
+
     /**
      * Test for Bug #1732824, Cube getTimeDimension use when Cube has no Time dimension
      */
@@ -8148,12 +8148,12 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
 
     public void testFilterCalcSlicer() {
         assertQueryReturns(
-                "with member [Time].[Date Range] as \n" + 
-                "'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q3]})'\n" + 
-                "select\n" + 
-                "{[Measures].[Unit Sales],[Measures].[Store Cost],\n" + 
-                "[Measures].[Store Sales]} ON columns,\n" + 
-                "NON EMPTY Filter ([Store].[Store State].members,\n" + 
+                "with member [Time].[Date Range] as \n" +
+                "'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q3]})'\n" +
+                "select\n" +
+                "{[Measures].[Unit Sales],[Measures].[Store Cost],\n" +
+                "[Measures].[Store Sales]} ON columns,\n" +
+                "NON EMPTY Filter ([Store].[Store State].members,\n" +
                 "[Measures].[Store Cost] > 75000) ON rows\n" +
                 "from [Sales] where [Time].[Date Range]",
                 fold(
@@ -8171,12 +8171,12 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
 
         );
         assertQueryReturns(
-                "with member [Time].[Date Range] as \n" + 
-                "'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q3]})'\n" + 
-                "select\n" + 
-                "{[Measures].[Unit Sales],[Measures].[Store Cost],\n" + 
-                "[Measures].[Store Sales]} ON columns,\n" + 
-                "NON EMPTY Order ( Filter ([Store].[Store State].members,\n" + 
+                "with member [Time].[Date Range] as \n" +
+                "'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q3]})'\n" +
+                "select\n" +
+                "{[Measures].[Unit Sales],[Measures].[Store Cost],\n" +
+                "[Measures].[Store Sales]} ON columns,\n" +
+                "NON EMPTY Order ( Filter ([Store].[Store State].members,\n" +
                 "[Measures].[Store Cost] > 100),[Measures].[Store Cost], DESC) ON rows\n" +
                 "from [Sales] where [Time].[Date Range]",
                 fold(
@@ -8202,7 +8202,7 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
 
         );
     }
-    
+
     public void testExistsMembersAll() {
         assertQueryReturns(
                 "select exists(\n" +

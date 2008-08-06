@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -44,34 +44,34 @@ class RangeFunDef extends FunDefBase {
                 "ixmm");
     }
 
-    
+
     /**
      * return two membercalc objects, substituting null's with the hierarchy
      * null member of the other expression.
-     * 
+     *
      * @param exp0 first expression
      * @param exp1 second expression
-     * 
+     *
      * @return two member calcs
      */
     private MemberCalc[] compileMembers(Exp exp0, Exp exp1, ExpCompiler compiler) {
         MemberCalc[] members = new MemberCalc[2];
-        
+
         if (exp0.getType() instanceof NullType) {
             members[0] = null;
         } else {
             members[0] = compiler.compileMember(exp0);
         }
-        
+
         if (exp1.getType() instanceof NullType) {
             members[1] = null;
         } else {
             members[1] = compiler.compileMember(exp1);
         }
-        
+
         // replace any null types with hierachy null member
         // if both objects are null, throw exception
-        
+
         if (members[0]== null && members[1] == null) {
             throw MondrianResource.instance().TwoNullsNotSupported.ex();
         } else if (members[0] == null) {
@@ -81,10 +81,10 @@ class RangeFunDef extends FunDefBase {
             Member nullMember = ((RolapMember)members[0].evaluate(null)).getHierarchy().getNullMember();
             members[1] = (MemberCalc)ConstantCalc.constantMember(nullMember);
         }
-        
+
         return members;
     }
-    
+
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
         final MemberCalc[] memberCalcs = compileMembers(call.getArg(0), call.getArg(1), compiler);
         return new AbstractListCalc(call, new Calc[] {memberCalcs[0], memberCalcs[1]}) {

@@ -53,9 +53,9 @@ public class Main extends TestSuite {
     /*
      * Scratch area to store information on the emerging test suite.
      */
-    private static Map<TestSuite, String> testSuiteInfo = 
+    private static Map<TestSuite, String> testSuiteInfo =
         new HashMap<TestSuite, String>();
-    
+
     /**
      * Entry point to run test suite from the command line.
      *
@@ -100,7 +100,7 @@ public class Main extends TestSuite {
              */
             return;
         }
-        
+
         if (properties.Warmup.get()) {
             System.out.println("Starting warmup run...");
             MondrianTestRunner runner = new MondrianTestRunner();
@@ -289,15 +289,15 @@ public class Main extends TestSuite {
             Pattern testPattern = Pattern.compile(testName);
             suite = copySuite(suite,  testPattern);
         }
-        
+
         String testInfo = testSuiteInfo.get(suite);
-        
+
         if (testInfo != null && testInfo.length() > 0) {
             System.out.println(testInfo);
         } else {
             System.out.println("No tests to run. Check mondrian.properties setting.");
         }
-        
+
         System.out.flush();
         return suite;
     }
@@ -323,7 +323,7 @@ public class Main extends TestSuite {
      * @return copy of test suite
      * @throws Exception on error
      */
-    private static TestSuite copySuite(TestSuite suite, Pattern testPattern) 
+    private static TestSuite copySuite(TestSuite suite, Pattern testPattern)
         throws Exception
     {
         TestSuite newSuite = new TestSuite(suite.getName());
@@ -348,7 +348,7 @@ public class Main extends TestSuite {
         }
         return newSuite;
     }
-    
+
     private static void addTest(
         TestSuite suite,
         Class<? extends TestCase> testClass) throws Exception
@@ -366,32 +366,32 @@ public class Main extends TestSuite {
     {
         Method method = testClass.getMethod(testMethod);
         Object o = method.invoke(null);
-        int startTestCount = suite.countTestCases();        
+        int startTestCount = suite.countTestCases();
         suite.addTest((Test) o);
         int endTestCount = suite.countTestCases();
         printTestInfo(suite, testClass.getName(), startTestCount, endTestCount);
     }
-    
+
     private static void addTest(
         TestSuite suite,
         Test tests,
         String testClassName) throws Exception
     {
-        int startTestCount = suite.countTestCases();        
+        int startTestCount = suite.countTestCases();
         suite.addTest(tests);
         int endTestCount = suite.countTestCases();
         printTestInfo(suite, testClassName, startTestCount, endTestCount);
     }
-    
+
     private static void printTestInfo(
         TestSuite suite, String testClassName, int startCount, int endCount) {
         String testInfo = testSuiteInfo.get(suite);
-        String newTestInfo = 
+        String newTestInfo =
             "[" + startCount + " - " + endCount + "] : " + testClassName + "\n";
         if (testInfo == null) {
-            testInfo = newTestInfo;            
+            testInfo = newTestInfo;
         } else {
-            testInfo += newTestInfo;                        
+            testInfo += newTestInfo;
         }
         testSuiteInfo.put(suite, testInfo);
     }

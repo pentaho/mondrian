@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -35,7 +35,7 @@ class SetBase extends OlapElementBase implements NamedSet {
     SetBase(String name, Exp exp) {
         this.name = name;
         this.exp = exp;
-        this.uniqueName = "[" + name + "]";        
+        this.uniqueName = "[" + name + "]";
     }
 
     public Object clone() {

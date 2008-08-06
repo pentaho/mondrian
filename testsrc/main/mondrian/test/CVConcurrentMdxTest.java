@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -63,13 +63,13 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
         suiteList.add(QueryAllTest.suite());
         testList.add(MultiDimTest.class);
         suiteList.add(MultiDimTest.suite());
-        
+
         // sanity check
         assertTrue(sanityCheck(suiteList));
-        
+
         // generate list of queries and results
         QueryAndResult[] queryList = generateQueryArray(testList);
-        
+
         assertTrue(ConcurrentValidatingQueryRunner.runTest(
             3, 100, true, true, true, queryList).size() == 0);
     }
@@ -92,17 +92,17 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
         suiteList.add(QueryAllVCTest.suite());
         testList.add(MultiDimVCTest.class);
         suiteList.add(MultiDimVCTest.suite());
-        
+
         // sanity check
         assertTrue(sanityCheck(suiteList));
-        
+
         // generate list of queries and results
         QueryAndResult[] queryList = generateQueryArray(testList);
-        
+
         assertTrue(ConcurrentValidatingQueryRunner.runTest(
             3, 100, true, true, true, queryList).size() == 0);
     }
-    
+
     public void testConcurrentCVQueriesInRandomOrder() {
         props.DisableCaching.set(false);
         props.UseAggregates.set(false);
@@ -124,11 +124,11 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
 
         // generate list of queries and results
         QueryAndResult[] queryList = generateQueryArray(testList);
-        
+
         assertTrue(ConcurrentValidatingQueryRunner.runTest(
             3, 100, true, true, true, queryList).size() == 0);
     }
-    
+
     protected void tearDown() throws Exception {
         super.tearDown();
     }
@@ -145,19 +145,19 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
      */
     private boolean sanityCheck(List<TestSuite> suiteList) {
         TestSuite suite = new TestSuite();
-        
+
         for (int i = 0; i < suiteList.size(); i++) {
             suite.addTest(suiteList.get(i));
         }
-        
+
         TestResult tres = new TestResult();
         suite.run(tres);
-        
+
         return tres.wasSuccessful();
     }
-    
+
     /**
-     * Generates an array of QueryAndResult objects from the list of 
+     * Generates an array of QueryAndResult objects from the list of
      * test classes
      * @param testList list of test classes
      * @return array of QueryAndResult
@@ -165,21 +165,21 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
     private QueryAndResult[] generateQueryArray(List<Class> testList) {
         List<QueryAndResult> queryList = new ArrayList<QueryAndResult>();
         for (int i = 0; i < testList.size(); i++) {
-            Class testClass = testList.get(i);       
+            Class testClass = testList.get(i);
             Class[] types = new Class[] { String.class };
             try {
                 Constructor cons = testClass.getConstructor(types);
                 Object[] args = new Object[] { "" };
                 Test newCon = (Test) cons.newInstance(args);
-                DiffRepository diffRepos = 
+                DiffRepository diffRepos =
                     ((ClearViewBase) newCon).getDiffRepos();
-                
+
                 List<String> testCaseNames = diffRepos.getTestCaseNames();
                 for (int j = 0; j < testCaseNames.size(); j++) {
                     String testCaseName = testCaseNames.get(j);
                     String query = diffRepos.get(testCaseName, "mdx");
                     String result = diffRepos.get(testCaseName, "result");
-                    
+
                     // current limitation: only run queries if
                     // calculated members are not specified
                     if (diffRepos.get(testCaseName, "calculatedMembers")

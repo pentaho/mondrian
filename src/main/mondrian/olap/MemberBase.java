@@ -90,9 +90,9 @@ public abstract class MemberBase
     }
 
     protected MemberBase() {
-    	this.level = null;
+        this.level = null;
         this.flags = 0;
-    	this.parentUniqueName = null;
+        this.parentUniqueName = null;
     }
 
     public String getQualifiedName() {

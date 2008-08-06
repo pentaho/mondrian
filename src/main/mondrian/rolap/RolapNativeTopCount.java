@@ -36,7 +36,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
         boolean ascending;
 
         public TopCountConstraint(
-            CrossJoinArg[] args, RolapEvaluator evaluator, 
+            CrossJoinArg[] args, RolapEvaluator evaluator,
             String orderByExpr, boolean ascending) {
             super(args, evaluator, true);
             this.orderByExpr = orderByExpr;
@@ -50,7 +50,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
         protected boolean isJoinRequired() {
             return true;
         }
-        
+
         public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
             if (orderByExpr != null) {
                 Dialect dialect = sqlQuery.getDialect();
@@ -81,7 +81,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
 
     NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
         boolean ascending;
-        
+
         if (!isEnabled())
             return null;
         if (!TopCountConstraint.isValidContext(evaluator)) {
@@ -132,7 +132,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
         LOGGER.debug("using native topcount");
         evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
 
-        TupleConstraint constraint = 
+        TupleConstraint constraint =
             new TopCountConstraint(cargs, evaluator, orderByExpr, ascending);
         SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);
         sev.setMaxRows(count);

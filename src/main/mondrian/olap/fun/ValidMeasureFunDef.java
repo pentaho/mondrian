@@ -70,8 +70,8 @@ public class ValidMeasureFunDef extends FunDefBase
                 memberList = new ArrayList<Member>(1);
                 memberList.add(((MemberCalc) calc).evaluateMember(evaluator));
             } else {
-            	final Member[] tupleMembers =
-            		((TupleCalc)calc).evaluateTuple(evaluator);
+                final Member[] tupleMembers =
+                    ((TupleCalc)calc).evaluateTuple(evaluator);
                 memberList = Arrays.asList(tupleMembers);
             }
             RolapCube baseCube = null;

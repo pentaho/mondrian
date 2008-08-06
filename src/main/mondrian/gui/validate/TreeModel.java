@@ -2,7 +2,7 @@ package mondrian.gui.validate;
 
 /**
  * A generalization of a <code>javax.swing.tree.TreeModel</code>.
- * 
+ *
  * @author mlowery
  */
 public interface TreeModel {
@@ -21,3 +21,5 @@ public interface TreeModel {
      */
     Object getRoot();
 }
+
+// End TreeModel.java

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
@@ -87,7 +87,7 @@ public class Workbench extends javax.swing.JFrame {
 
     private Properties workbenchProperties;
     private static ResourceBundle workbenchResourceBundle = null;
-    
+
     private I18n resourceConverter = null;
 
     private static int newSchema = 1;
@@ -104,7 +104,7 @@ public class Workbench extends javax.swing.JFrame {
 
         guiResourceBundle = ResourceBundle.getBundle(GUIResourceName, Locale.getDefault(), myClassLoader);
         textResourceBundle = ResourceBundle.getBundle(TextResourceName, Locale.getDefault(), myClassLoader);
-        
+
         resourceConverter = new I18n(guiResourceBundle, textResourceBundle);
 
         // Setting User home directory
@@ -115,7 +115,7 @@ public class Workbench extends javax.swing.JFrame {
         initDataSource();
         initComponents();
         loadMenubarPlugins();
-        
+
         ImageIcon icon = new javax.swing.ImageIcon(myClassLoader.getResource(resourceConverter.getGUIReference("cube")));
 
         this.setIconImage(icon.getImage());
@@ -144,25 +144,25 @@ public class Workbench extends javax.swing.JFrame {
 
     /**
      * returns the value of a workbench property
-     * 
+     *
      * @param key key to lookup
      * @return the value
      */
     public String getWorkbenchProperty(String key) {
         return workbenchProperties.getProperty(key);
     }
-    
+
     /**
      * set a workbench property.  Note that this does not save the property,
      * a call to storeWorkbenchProperties is required.
-     * 
-     * @param key property key 
+     *
+     * @param key property key
      * @param value property value
      */
     public void setWorkbenchProperty(String key, String value) {
         workbenchProperties.setProperty(key, value);
     }
-    
+
     /**
      * save properties
      */
@@ -172,8 +172,8 @@ public class Workbench extends javax.swing.JFrame {
         try {
             if (dir.exists()) {
                 if (!dir.isDirectory() ) {
-                    JOptionPane.showMessageDialog( this, 
-                            getResourceConverter().getFormattedString("workbench.user.home.not.directory", 
+                    JOptionPane.showMessageDialog( this,
+                            getResourceConverter().getFormattedString("workbench.user.home.not.directory",
                                         "{0} is not a directory!\nPlease rename this file and retry to save configuration!", new String[] {WORKBENCH_USER_HOME_DIR}),
                                         "", JOptionPane.ERROR_MESSAGE);
                     return;
@@ -184,8 +184,8 @@ public class Workbench extends javax.swing.JFrame {
             }
         } catch (Exception ex) {
             LOGGER.error("storeWorkbenchProperties: mkdirs", ex);
-            JOptionPane.showMessageDialog( this, 
-                    getResourceConverter().getFormattedString("workbench.user.home.exception", 
+            JOptionPane.showMessageDialog( this,
+                    getResourceConverter().getFormattedString("workbench.user.home.exception",
                             "An error is occurred creating workbench configuration directory:\n{0}\nError is: {1}",
                                 new String[] {WORKBENCH_USER_HOME_DIR, ex.getLocalizedMessage()}),
                             "", JOptionPane.ERROR_MESSAGE);
@@ -198,8 +198,8 @@ public class Workbench extends javax.swing.JFrame {
             workbenchProperties.store(out, "Workbench configuration");
         } catch (Exception e) {
             LOGGER.error("storeWorkbenchProperties: store", e);
-            JOptionPane.showMessageDialog( this, 
-                    getResourceConverter().getFormattedString("workbench.save.configuration", 
+            JOptionPane.showMessageDialog( this,
+                    getResourceConverter().getFormattedString("workbench.save.configuration",
                             "An error is occurred creating workbench configuration file:\n{0}\nError is: {1}",
                             new String[] {WORKBENCH_CONFIG_FILE, e.getLocalizedMessage()}),
                             "", JOptionPane.ERROR_MESSAGE);
@@ -355,7 +355,7 @@ public class Workbench extends javax.swing.JFrame {
 
 
 
-        
+
         toolbarOpenButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(resourceConverter.getGUIReference("open"))));
         toolbarOpenButton.setToolTipText(getResourceConverter().getString("workbench.toolbar.open","Open"));
         //toolbarOpenButton.setToolTipText("Open");
@@ -367,7 +367,7 @@ public class Workbench extends javax.swing.JFrame {
 
         jToolBar1.add(toolbarOpenButton);
 
-        
+
         toolbarSaveButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(resourceConverter.getGUIReference("save"))));
         toolbarSaveButton.setToolTipText(getResourceConverter().getString("workbench.toolbar.save","Save"));
         toolbarSaveButton.addActionListener(new java.awt.event.ActionListener() {
@@ -611,15 +611,15 @@ public class Workbench extends javax.swing.JFrame {
     }
 
     /**
-     * this method loads any available menubar plugins based on 
-     * 
+     * this method loads any available menubar plugins based on
+     *
      */
     private void loadMenubarPlugins() {
         // render any plugins
         InputStream pluginStream = null;
         try {
             Properties props = new Properties();
-            pluginStream = 
+            pluginStream =
                 getClass().getResourceAsStream("/workbench_plugins.properties");
             if (pluginStream != null) {
                 props.load(pluginStream);
@@ -627,7 +627,7 @@ public class Workbench extends javax.swing.JFrame {
                     String keystr = (String)key;
                     if (keystr.startsWith("workbench.menu-plugin")) {
                         String val = props.getProperty(keystr);
-                        WorkbenchMenubarPlugin plugin = 
+                        WorkbenchMenubarPlugin plugin =
                             (WorkbenchMenubarPlugin)Class.forName(val).newInstance();
                         plugin.setWorkbench(this);
                         plugin.addItemsToMenubar(menuBar);
@@ -644,8 +644,8 @@ public class Workbench extends javax.swing.JFrame {
             } catch (Exception e) {}
         }
     }
-    
-    
+
+
     /**
      * @return the workbenchResourceBundle
      */
@@ -789,8 +789,8 @@ public class Workbench extends javax.swing.JFrame {
         if (se.isDirty()) {
             JMenuItem schemaMenuItem = (JMenuItem) schemaWindowMap.get(desktopPane.getSelectedFrame());
             int answer = JOptionPane.showConfirmDialog(null,
-                    getResourceConverter().getFormattedString("workbench.saveSchemaOnClose.alert", 
-                            "Save changes to {0}?", 
+                    getResourceConverter().getFormattedString("workbench.saveSchemaOnClose.alert",
+                            "Save changes to {0}?",
                                 new String[] { se.getSchemaFile().toString() }),
                                 getResourceConverter().getString("workbench.saveSchemaOnClose.title","Schema"), JOptionPane.YES_NO_CANCEL_OPTION);
             switch(answer) { //   yes=0 ;no=1 ;cancel=2
@@ -908,15 +908,15 @@ public class Workbench extends javax.swing.JFrame {
             }
 
             JInternalFrame jf = new JInternalFrame();
-            jf.setTitle(getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.title", 
-                    "JDBC Explorer - {0}", 
+            jf.setTitle(getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.title",
+                    "JDBC Explorer - {0}",
                     new String[] { jdbcConnectionUrl }));
             //jf.setTitle("JDBC Explorer - " + this.jdbcConnectionUrl);
 
             Class.forName(jdbcDriverClassName);
 
             java.sql.Connection conn = null;
-            
+
             if (jdbcUsername != null && jdbcUsername.length() > 0 &&
                 jdbcPassword != null && jdbcPassword.length() > 0) {
                 conn = java.sql.DriverManager.getConnection(jdbcConnectionUrl, jdbcUsername, jdbcPassword);
@@ -924,7 +924,7 @@ public class Workbench extends javax.swing.JFrame {
 
                 conn = java.sql.DriverManager.getConnection(jdbcConnectionUrl);
             }
-            
+
             JDBCExplorer jdbce = new JDBCExplorer(conn);
 
             jf.getContentPane().add(jdbce);
@@ -939,10 +939,10 @@ public class Workbench extends javax.swing.JFrame {
 
             jf.show();
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, 
-                    getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.exception", 
-                            "Database connection not successful.\n{0}", 
-                            new String[] { ex.getLocalizedMessage() }), 
+            JOptionPane.showMessageDialog(this,
+                    getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.exception",
+                            "Database connection not successful.\n{0}",
+                            new String[] { ex.getLocalizedMessage() }),
                             getResourceConverter().getString("workbench.new.JDBCExplorer.exception.title", "Database Connection Error") , JOptionPane.ERROR_MESSAGE);
             LOGGER.error("newJDBCExplorerMenuItemActionPerformed", ex);
         }
@@ -1016,8 +1016,8 @@ public class Workbench extends javax.swing.JFrame {
 
         // create mdx menu item
         final javax.swing.JMenuItem queryMenuItem = new javax.swing.JMenuItem();
-        queryMenuItem.setText(getResourceConverter().getFormattedString("workbench.new.MDXQuery.menuitem", 
-                "{0} MDX", 
+        queryMenuItem.setText(getResourceConverter().getFormattedString("workbench.new.MDXQuery.menuitem",
+                "{0} MDX",
                 new String[] { Integer.toString(windowMenuMapIndex) }));
         queryMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1061,7 +1061,7 @@ public class Workbench extends javax.swing.JFrame {
         if (schemaMenuItem != null) {
             qp.initConnection(schemaMenuItem.getText());
         } else {
-            JOptionPane.showMessageDialog(this,getResourceConverter().getString("workbench.new.MDXQuery.no.selection", "No Mondrian connection. Select a Schema to connect."), 
+            JOptionPane.showMessageDialog(this,getResourceConverter().getString("workbench.new.MDXQuery.no.selection", "No Mondrian connection. Select a Schema to connect."),
                     getResourceConverter().getString("workbench.new.MDXQuery.no.selection.title", "Alert"), JOptionPane.WARNING_MESSAGE);
         }
     }
@@ -1078,22 +1078,22 @@ public class Workbench extends javax.swing.JFrame {
 
     /**
      * returns the currently selected schema explorer object
-     * 
+     *
      * @return current schema explorer object
      */
     public SchemaExplorer getCurrentSchemaExplorer() {
         JInternalFrame jf = desktopPane.getSelectedFrame();
         if (jf != null &&
-            jf.getContentPane().getComponentCount() > 0 && 
+            jf.getContentPane().getComponentCount() > 0 &&
             jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
             return (SchemaExplorer) jf.getContentPane().getComponent(0);
         }
         return null;
     }
-    
+
     private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         JInternalFrame jf = desktopPane.getSelectedFrame();
-        
+
         if (jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
             SchemaExplorer se = (SchemaExplorer) jf.getContentPane().getComponent(0);
             java.io.File schemaFile = se.getSchemaFile();
@@ -1109,9 +1109,9 @@ public class Workbench extends javax.swing.JFrame {
                 try {
                     schemaFile = jfc.getSelectedFile();
                     if (!oldSchemaFile.equals(schemaFile) && schemaFile.exists()) {  //new file already exists, check for overwrite
-                        int answer = JOptionPane.showConfirmDialog(null, 
-                                getResourceConverter().getFormattedString("workbench.saveAs.schema.confirm", 
-                                        "{0} schema file already exists. Do you want to replace it?", 
+                        int answer = JOptionPane.showConfirmDialog(null,
+                                getResourceConverter().getFormattedString("workbench.saveAs.schema.confirm",
+                                        "{0} schema file already exists. Do you want to replace it?",
                                         new String[] { schemaFile.getAbsolutePath() }),
                                         getResourceConverter().getString("workbench.saveAs.schema.confirm.title", "Save As"), JOptionPane.YES_NO_OPTION);
                         if (answer == 1) { //  no=1 ; yes=0
@@ -1134,7 +1134,7 @@ public class Workbench extends javax.swing.JFrame {
                     se.setSchemaFile(schemaFile);
                     se.setTitle();  //sets title of iframe
                     setLastUsed(jfc.getSelectedFile().getName(), jfc.getSelectedFile().toURI().toURL().toString());
-                    
+
                     // update menu item with new file name, then update catalog list for mdx queries
                     JMenuItem sMenuItem = (JMenuItem) schemaWindowMap.get(jf);
                     String mtexttokens[] = sMenuItem.getText().split(" ");
@@ -1161,12 +1161,12 @@ public class Workbench extends javax.swing.JFrame {
 
     public void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         JInternalFrame jf = desktopPane.getSelectedFrame();
-        
+
         // Don't save if nothing there
         if (jf == null || jf.getContentPane() == null) {
             return;
         }
-        
+
         if (jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
             SchemaExplorer se = (SchemaExplorer) jf.getContentPane().getComponent(0);
 
@@ -1302,18 +1302,18 @@ public class Workbench extends javax.swing.JFrame {
                 }
                 // check if schema file exists
                 if (! file.exists()) {
-                    JOptionPane.showMessageDialog(this, 
-                            getResourceConverter().getFormattedString("workbench.open.schema.not.found", 
-                                    "{0} File not found.", 
+                    JOptionPane.showMessageDialog(this,
+                            getResourceConverter().getFormattedString("workbench.open.schema.not.found",
+                                    "{0} File not found.",
                                     new String[] { file.getAbsolutePath() }),
                                     getResourceConverter().getString("workbench.open.schema.not.found.title", "Alert"), JOptionPane.WARNING_MESSAGE);
                     return;
                 }
                 // check if file is writable
                 if (! file.canWrite()) {
-                    JOptionPane.showMessageDialog(this, 
-                            getResourceConverter().getFormattedString("workbench.open.schema.not.writeable", 
-                                    "{0} is not writeable.", 
+                    JOptionPane.showMessageDialog(this,
+                            getResourceConverter().getFormattedString("workbench.open.schema.not.writeable",
+                                    "{0} is not writeable.",
                                     new String[] { file.getAbsolutePath() }),
                                     getResourceConverter().getString("workbench.open.schema.not.found.writeable", "Alert"), JOptionPane.WARNING_MESSAGE);
                     return;
@@ -1342,8 +1342,8 @@ public class Workbench extends javax.swing.JFrame {
             }
 
             final JInternalFrame schemaFrame = new JInternalFrame();
-            schemaFrame.setTitle(getResourceConverter().getFormattedString("workbench.open.schema.title", 
-                    "Schema - {0}", 
+            schemaFrame.setTitle(getResourceConverter().getFormattedString("workbench.open.schema.title",
+                    "Schema - {0}",
                     new String[] { file.getName() }));
             //schemaFrame.setTitle("Schema - " + file.getName());
 
@@ -1354,8 +1354,8 @@ public class Workbench extends javax.swing.JFrame {
             String errorOpening = ((SchemaExplorer) schemaFrame.getContentPane().getComponent(0)).getErrMsg() ;
             if (errorOpening != null) {
                 JOptionPane.showMessageDialog(this,
-                        getResourceConverter().getFormattedString("workbench.open.schema.error", 
-                                "Error opening schema - {0}.", 
+                        getResourceConverter().getFormattedString("workbench.open.schema.error",
+                                "Error opening schema - {0}.",
                                 new String[] { errorOpening }),
                                 getResourceConverter().getString("workbench.open.schema.error.title", "Error"), JOptionPane.ERROR_MESSAGE);
                 schemaFrame.setClosed(true);
@@ -1375,9 +1375,9 @@ public class Workbench extends javax.swing.JFrame {
 
             // display jdbc connection status warning, if connection is uncsuccessful
             if (jdbcMetaData.getErrMsg() != null) {
-                JOptionPane.showMessageDialog(this, 
-                        getResourceConverter().getFormattedString("workbench.open.schema.jdbc.error", 
-                                "Database connection could not be done.\n{0}\nAll validations related to database will be ignored.", 
+                JOptionPane.showMessageDialog(this,
+                        getResourceConverter().getFormattedString("workbench.open.schema.jdbc.error",
+                                "Database connection could not be done.\n{0}\nAll validations related to database will be ignored.",
                                 new String[] { jdbcMetaData.getErrMsg() }),
                                 getResourceConverter().getString("workbench.open.schema.jdbc.error.title", "Alert"), JOptionPane.WARNING_MESSAGE);
             }
@@ -1540,8 +1540,8 @@ public class Workbench extends javax.swing.JFrame {
         try {
             return getWorkbenchResourceBundle().getString(titleName);
         } catch (MissingResourceException e) {
-            return getResourceConverter().getFormattedString("workbench.tooltip.error", 
-                    "No help available for {0}", 
+            return getResourceConverter().getFormattedString("workbench.tooltip.error",
+                    "No help available for {0}",
                     new String[] { titleName });
         }
     }

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde
+// Copyright (C) 2004-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -96,7 +96,7 @@ public class MondrianFoodMartLoader {
     private static final String dateFormatString = "yyyy-MM-dd";
     private static final String oracleDateFormatString = "YYYY-MM-DD";
     private static final DateFormat dateFormatter = new SimpleDateFormat(dateFormatString);
-    
+
     private String jdbcDrivers;
     private String jdbcURL;
     private String userName;

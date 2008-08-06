@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -204,19 +204,19 @@ public class AggStar {
         this.columns = new AggStar.Table.Column[star.getColumnCount()];
     }
 
-    /** 
-     * Get the fact table. 
-     * 
+    /**
+     * Get the fact table.
+     *
      * @return the fact table
      */
     public AggStar.FactTable getFactTable() {
         return aggTable;
     }
 
-    /** 
+    /**
      * Find a table by name (alias) that is a descendant of the base
-     * fact table. 
-     * 
+     * fact table.
+     *
      * @param name the table to find
      * @return the table or null
      */
@@ -432,21 +432,21 @@ public class AggStar {
             }
 
             /**
-             * Return the left join expression. 
+             * Return the left join expression.
              */
             public MondrianDef.Expression getLeft() {
                 return this.left;
             }
 
-            /** 
-             * Return the left join expression as string. 
+            /**
+             * Return the left join expression as string.
              */
             public String getLeft(final SqlQuery query) {
                 return this.left.getExpression(query);
             }
 
-            /** 
-             * Return the right join expression. 
+            /**
+             * Return the right join expression.
              */
             public MondrianDef.Expression getRight() {
                 return this.right;
@@ -730,9 +730,9 @@ public class AggStar {
             return children;
         }
 
-        /** 
-         * Find descendant of fact table with given name or return null. 
-         * 
+        /**
+         * Find descendant of fact table with given name or return null.
+         *
          * @param name the child table name (alias).
          * @return the child table or null.
          */

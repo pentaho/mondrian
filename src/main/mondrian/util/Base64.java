@@ -710,7 +710,7 @@ public class Base64
         {
             bytes = s.getBytes();
         }   // end catch
-		//</change>
+        //</change>
 
         // Decode
         bytes = decode( bytes, 0, bytes.length );
@@ -1448,4 +1448,6 @@ public class Base64
     }   // end inner class OutputStream
 
 
-}   // end class Base64
+}
+
+// End Base64.java

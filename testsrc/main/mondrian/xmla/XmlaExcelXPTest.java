@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -379,8 +379,8 @@ System.out.println("requestText="+requestText);
     }
 
     protected String getOutFileName(String nos) {
-		return "excel_XP_" + nos + "_out.xml";
-	}
+        return "excel_XP_" + nos + "_out.xml";
+    }
 }
 
 // End XmlaExcelXPTest.java

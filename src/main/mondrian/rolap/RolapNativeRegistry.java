@@ -25,14 +25,14 @@ public class RolapNativeRegistry extends RolapNative {
 
     public RolapNativeRegistry() {
         super.setEnabled(true);
-        
+
         /*
          * Mondrian functions which might be evaluated natively.
          */
         register("NonEmptyCrossJoin".toUpperCase(), new RolapNativeCrossJoin());
         register("CrossJoin".toUpperCase(), new RolapNativeCrossJoin());
         register("TopCount".toUpperCase(), new RolapNativeTopCount());
-        register("Filter".toUpperCase(), new RolapNativeFilter());        
+        register("Filter".toUpperCase(), new RolapNativeFilter());
     }
 
     /**
@@ -45,15 +45,15 @@ public class RolapNativeRegistry extends RolapNative {
         if (!isEnabled()) {
             return null;
         }
-        
+
         RolapNative rn = nativeEvaluatorMap.get(fun.getName().toUpperCase());
-        
+
         if (rn == null) {
             return null;
         }
 
         NativeEvaluator ne = rn.createEvaluator(evaluator, fun, args);
-        
+
         if (ne != null) {
             if (listener != null) {
                 NativeEvent e = new NativeEvent(this, ne);
@@ -62,7 +62,7 @@ public class RolapNativeRegistry extends RolapNative {
         }
         return ne;
     }
-    
+
     public void register(String funName, RolapNative rn) {
         nativeEvaluatorMap.put(funName, rn);
     }

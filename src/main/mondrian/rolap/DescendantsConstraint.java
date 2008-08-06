@@ -49,7 +49,7 @@ class DescendantsConstraint implements TupleConstraint {
     public void addLevelConstraint(
         SqlQuery sqlQuery,
         RolapCube baseCube,
-        AggStar aggStar, 
+        AggStar aggStar,
         RolapLevel level)
     {
         mcc.addLevelConstraint(sqlQuery, baseCube, aggStar, level);

@@ -295,7 +295,7 @@ public class RolapCube extends CubeBase {
         this.measuresHierarchy.setDefaultMember(defaultMeasure);
         init(xmlCube.dimensions);
         init(xmlCube, measureList);
-        
+
         setMeasuresHierarchyMemberReader(
             new CacheMemberReader(
                 new MeasureMemberSource(this.measuresHierarchy, measureList)));
@@ -303,12 +303,12 @@ public class RolapCube extends CubeBase {
         checkOrdinals(xmlCube.name, measureList);
         loadAggGroup(xmlCube);
     }
-    
+
     /**
      * this method makes sure that the schemaReader cache is invalidated.
      * problems can occur if the measure hierarchy member reader is out
      * of sync with the cache.
-     * 
+     *
      * @param memberReader new member reader for measures hierarchy
      */
     private void setMeasuresHierarchyMemberReader(MemberReader memberReader) {

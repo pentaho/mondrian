@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde and others
+// Copyright (C) 2003-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -18,8 +18,8 @@ import mondrian.olap.Member;
 public class MemberHelper {
     private final Object mObject;
     public MemberHelper(Object entry) {
-        if ((entry == null) || 
-            (entry instanceof Member) || 
+        if ((entry == null) ||
+            (entry instanceof Member) ||
             (entry instanceof Member[])) {
 
             mObject = entry;
@@ -41,7 +41,7 @@ public class MemberHelper {
             return mh.mObject == null;
         } else if (mh.mObject instanceof Member && mObject instanceof Member) {
             return ((Member)mObject).equals(mh.mObject);
-        } else if (mh.mObject instanceof Member[] && 
+        } else if (mh.mObject instanceof Member[] &&
             mObject instanceof Member[]) {
 
             Member[] array1 = (Member[])mh.mObject;
@@ -81,3 +81,5 @@ public class MemberHelper {
         }
     }
 }
+
+// End MemberHelper.java

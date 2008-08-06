@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -552,7 +552,7 @@ way too noisy
                 String s = prefix + "<li><b>" + columnName + "</b> "
                     + type
                     + (columnDefinition.nullable
-                    ? " (may be <code>null</code>)" 
+                    ? " (may be <code>null</code>)"
                     : "")
                     + " => " + columnDefinition.description
                     + "</li>";

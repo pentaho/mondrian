@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -66,11 +66,11 @@ public abstract class ConnectionBase implements Connection {
     /**
      * Parses a query, with specified function table and the mode for strict
      * validation(if true then invalid members are not ignored).
-     * 
+     *
      * <p>This method is only used in testing and by clients that need to
      * support customized parser behavior. That is why this method is not part
      * of the Connection interface.
-     * 
+     *
      * @param query MDX query that requires special parsing
      * @param funTable Customized function table to use in parsing
      * @param strictValidation If true, do not ignore invalid members
@@ -104,19 +104,19 @@ public abstract class ConnectionBase implements Connection {
                     exception);
         }
     }
-    
+
     private Query parseQuery(String query, FunTable cftab, boolean load,
         boolean strictValidation) {
         Parser parser = new Parser();
         boolean debug = false;
         final FunTable funTable;
-        
+
         if (cftab == null) {
             funTable = getSchema().getFunTable();
         } else {
             funTable = cftab;
         }
-        
+
         if (getLogger().isDebugEnabled()) {
             //debug = true;
             StringBuilder buf = new StringBuilder(256);
@@ -124,7 +124,7 @@ public abstract class ConnectionBase implements Connection {
             buf.append(query);
             getLogger().debug(buf.toString());
         }
-        
+
         try {
             Query q =
                 parser.parseInternal(this, query, debug, funTable, load,

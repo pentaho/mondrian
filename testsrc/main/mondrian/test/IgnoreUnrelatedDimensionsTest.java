@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -64,7 +64,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
     protected void tearDown() throws Exception {
         prop.EnableNonEmptyOnAllAxis.set(originalNonEmptyFlag);
     }
-    
+
     public TestContext getTestContext() {
         final TestContext testContext =
             TestContext.create(null, null,
@@ -337,7 +337,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             "'IIF([Measures].CURRENTMEMBER IS [Measures].[Total Sales],\n" +
             "[Warehouse].[All Warehouses],\n" +
             "[Warehouse].[All Warehouses])'\n" +
-            "MEMBER [Product].[AggSP1_2] AS\n" + 
+            "MEMBER [Product].[AggSP1_2] AS\n" +
             "'IIF([Measures].CURRENTMEMBER IS [Measures].[Total Sales],\n" +
             "([Warehouse].[All Warehouses]),\n" +
             "([Warehouse].[All Warehouses]))'\n" +
@@ -361,3 +361,5 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
     }
 
 }
+
+// End IgnoreUnrelatedDimensionsTest.java

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -68,14 +68,14 @@ public class ValueColumnPredicate
 
     public int compareTo(Object o) {
         ValueColumnPredicate that = (ValueColumnPredicate) o;
-        int columnBitKeyComp = 
+        int columnBitKeyComp =
             getConstrainedColumnBitKey().compareTo(that.getConstrainedColumnBitKey());
 
         // First compare the column bitkeys.
         if (columnBitKeyComp != 0) {
             return columnBitKeyComp;
         }
-        
+
         if (this.value instanceof Comparable &&
             that.value instanceof Comparable &&
             this.value.getClass() == that.value.getClass()) {
@@ -92,7 +92,7 @@ public class ValueColumnPredicate
             return false;
         }
         final ValueColumnPredicate that = (ValueColumnPredicate) other;
-        int columnBitKeyComp = 
+        int columnBitKeyComp =
             getConstrainedColumnBitKey().compareTo(that.getConstrainedColumnBitKey());
 
         // First compare the column bitkeys.
@@ -109,11 +109,11 @@ public class ValueColumnPredicate
 
     public int hashCode() {
         int hashCode = getConstrainedColumnBitKey().hashCode();
-        
+
         if (value != null) {
             hashCode = hashCode ^ value.hashCode();
         }
-        
+
         return hashCode;
     }
 
@@ -162,7 +162,7 @@ public class ValueColumnPredicate
             sqlQuery.getDialect().quote(buf, key, column.getDatatype());
         }
     }
-    
+
     public BitKey checkInList(BitKey inListLHSBitKey) {
         // ValueColumn predicate by itself is not using IN list; when it is
         // one of the children to an OR predicate, then using IN list
@@ -175,14 +175,14 @@ public class ValueColumnPredicate
             value == RolapUtil.sqlNullValue) {
             inListRHSBitKey.clear();
         }
-        
+
         return inListRHSBitKey;
     }
-    
+
     public void toInListSql(SqlQuery sqlQuery, StringBuilder buf) {
         sqlQuery.getDialect().quote(
-            buf, value, getConstrainedColumn().getDatatype());        
-    }    
+            buf, value, getConstrainedColumn().getDatatype());
+    }
 }
 
 // End ValueColumnPredicate.java

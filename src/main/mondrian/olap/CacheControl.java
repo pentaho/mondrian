@@ -145,7 +145,7 @@ public interface CacheControl {
 
     /**
      * Forms the cartesian product of two or more cell regions.
-     * @param regions the operands 
+     * @param regions the operands
      * @return the cartesian product of the operands
      */
     CellRegion createCrossjoinRegion(CellRegion... regions);
@@ -263,14 +263,14 @@ public interface CacheControl {
     /**
      * Builds a compound command which is executed atomically.
      *
-     * @param cmds a list of the component commands 
+     * @param cmds a list of the component commands
      * @return the compound command
      */
     MemberEditCommand createCompoundCommand(List<MemberEditCommand> cmds);
 
     /**
      * Builds a compound command which is executed atomically.
-     * @param cmds the component commands 
+     * @param cmds the component commands
      * @return the compound command
      */
     MemberEditCommand createCompoundCommand(MemberEditCommand... cmds);
@@ -328,7 +328,7 @@ public interface CacheControl {
         Member loc) throws IllegalArgumentException;
 
     // commands to change member properties
-        
+
     /**
      * Creates a command to change one property of a member.
      *

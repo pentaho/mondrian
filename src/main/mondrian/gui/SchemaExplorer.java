@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -85,7 +85,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
     public SchemaExplorer(Workbench workbench, File f, JDBCMetaData jdbcMetaData, boolean newFile, JInternalFrame parentIFrame) {
         this(workbench);
-        
+
         alert = getResourceConverter().getString("schemaExplorer.alert.title","Alert");
 
         //====XML editor
@@ -105,10 +105,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         jPanelXML.setMaximumSize(jPanel1.getMaximumSize());
         jPanelXML.setPreferredSize(jPanel1.getPreferredSize());
 
-        databaseLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.database.text", 
-                "Database - {0} ({1})", 
+        databaseLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.database.text",
+                "Database - {0} ({1})",
                     new String[] { jdbcMetaData.getDbCatalogName(), jdbcMetaData.getDatabaseProductName() }));
-        
+
         try {
             Parser xmlParser = XOMUtil.createDefaultParser();
             this.schemaFile = f;
@@ -147,10 +147,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     schema.virtualCubes = new MondrianGuiDef.VirtualCube[0];
 
                     LOGGER.error("Exception  : Schema file parsing failed."+ex.getMessage(), ex);
-                    errMsg = getResourceConverter().getFormattedString("schemaExplorer.parsing.error", 
-                            "Parsing Error: Could not open file {0}\n{1}", 
+                    errMsg = getResourceConverter().getFormattedString("schemaExplorer.parsing.error",
+                            "Parsing Error: Could not open file {0}\n{1}",
                                 new String[] { schemaFile.toString(), ex.getLocalizedMessage() });
-                    
+
                 }
             }
             setTitle(); // sets title of i frame with schema name and file name
@@ -938,7 +938,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Cube)) {
-            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeNotSelected.alert","Cube not selected."), 
+            JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeNotSelected.alert","Cube not selected."),
                     alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -2657,18 +2657,18 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         } else if (o instanceof MondrianGuiDef.Dimension) {
             pNames = DEF_DIMENSION;
             if (po instanceof MondrianGuiDef.Schema) {
-                targetLabel.setText(getResourceConverter().getString("common.sharedDimension.title", 
+                targetLabel.setText(getResourceConverter().getString("common.sharedDimension.title",
                         "Shared Dimension"));
             } else {
-                targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.dimensionElementParent.title", 
-                        "Dimension for {0} {1}", 
+                targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.dimensionElementParent.title",
+                        "Dimension for {0} {1}",
                             new String[] { elementName, parentName }));
             }
             ((MondrianGuiDef.Dimension) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.DimensionUsage) {
             pNames = DEF_DIMENSION_USAGE;
-            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.dimensionUsageForElement.title", 
-                    "Dimension Usage for {0} {1}", 
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.dimensionUsageForElement.title",
+                    "Dimension Usage for {0} {1}",
                         new String[] { elementName, parentName }));
             //targetLabel.setText(LBL_DIMENSION_USAGE + " for " + elementName + " " +
             //        parentName);
@@ -2699,8 +2699,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             ((MondrianGuiDef.ExpressionView) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Hierarchy) {
             pNames = DEF_HIERARCHY;
-            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.hierarchyElementParent.title", 
-                    "Hierarchy for {0} {1}", 
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.hierarchyElementParent.title",
+                    "Hierarchy for {0} {1}",
                         new String[] { elementName, parentName }));
             ((MondrianGuiDef.Hierarchy) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Join) {
@@ -2716,27 +2716,27 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                         targetLabel.setText(getResourceConverter().getString("common.rightJoin.title","Right : " + LBL_JOIN));
                 }
             } else {
-                targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.generalJoinForElement.title", 
-                        "Join for {0} {1}", 
+                targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.generalJoinForElement.title",
+                        "Join for {0} {1}",
                             new String[] { elementName, parentName }));
             }
             ((MondrianGuiDef.Join) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Level) {
             pNames = DEF_LEVEL;
-            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.levelForElement.title", 
-                    "Level for {0} {1}", 
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.levelForElement.title",
+                    "Level for {0} {1}",
                         new String[] { elementName, parentName }));
             ((MondrianGuiDef.Level) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Measure) {
             pNames = DEF_MEASURE;
-            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.measureForElement.title", 
-                    "Measure for {0} {1}", 
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.measureForElement.title",
+                    "Measure for {0} {1}",
                         new String[] { elementName, parentName }));
             ((MondrianGuiDef.Measure) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.CalculatedMember) {
             pNames = DEF_CALCULATED_MEMBER;
-            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.calculatedMemberForElement.title", 
-                    "Calculated Member for {0} {1}", 
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.calculatedMemberForElement.title",
+                    "Calculated Member for {0} {1}",
                         new String[] { elementName, parentName }));
             ((MondrianGuiDef.CalculatedMember) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.CalculatedMemberProperty) {
@@ -2744,14 +2744,14 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             targetLabel.setText(getResourceConverter().getString("common.calculatedMemberProperty.title",LBL_CALCULATED_MEMBER_PROPERTY));
         } else if (o instanceof MondrianGuiDef.NamedSet) {
             pNames = DEF_NAMED_SET;
-            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.namedSetForElement.title", 
-                    "Named Set for {0} {1}", 
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.namedSetForElement.title",
+                    "Named Set for {0} {1}",
                         new String[] { elementName, parentName }));
             ((MondrianGuiDef.NamedSet) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.UserDefinedFunction) {
             pNames = DEF_USER_DEFINED_FUNCTION;
-            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.userDefinedFunctionForElement.title", 
-                    "User Defined Function for {0} {1}", 
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.userDefinedFunctionForElement.title",
+                    "User Defined Function for {0} {1}",
                         new String[] { elementName, parentName }));
             ((MondrianGuiDef.UserDefinedFunction) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.MemberReaderParameter) {
@@ -2775,8 +2775,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             ((MondrianGuiDef.SQL) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.Table) {
             pNames = DEF_TABLE;
-            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.tableForElement.title", 
-                    "Table for {0} {1}", 
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.tableForElement.title",
+                    "Table for {0} {1}",
                         new String[] { elementName, parentName }));
             ((MondrianGuiDef.Table) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.AggName) {
@@ -2818,8 +2818,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         } else if (o instanceof MondrianGuiDef.Role) {
             pNames = DEF_ROLE;
-            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.roleElementParent.title", 
-                    "Role for {0} {1}", 
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.roleElementParent.title",
+                    "Role for {0} {1}",
                         new String[] { elementName, parentName }));
             ((MondrianGuiDef.Role) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.SchemaGrant) {
@@ -2845,14 +2845,14 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         } else if (o instanceof MondrianGuiDef.VirtualCube) {
             pNames = DEF_VIRTUAL_CUBE;
-            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.virtualCubeElementParent.title", 
-                    "Virtual Cube for {0} {1}", 
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.virtualCubeElementParent.title",
+                    "Virtual Cube for {0} {1}",
                         new String[] { elementName, parentName }));
             ((MondrianGuiDef.VirtualCube) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.VirtualCubeDimension) {
             pNames = DEF_VIRTUAL_CUBE_DIMENSION;
-            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.virtualCubeDimensionElementParent.title", 
-                    "Virtual Cube Dimension for {0} {1}", 
+            targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.virtualCubeDimensionElementParent.title",
+                    "Virtual Cube Dimension for {0} {1}",
                         new String[] { elementName, parentName }));
             ((MondrianGuiDef.VirtualCubeDimension) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.VirtualCubeMeasure) {
@@ -3324,8 +3324,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         // sets the title of Internal Frame within which this schema explorer is displayed.
         // The title includes schema name and schema file name
 
-        parentIFrame.setTitle(getResourceConverter().getFormattedString("schemaExplorer.frame.title", 
-                "Schema - {0} ({1}){2}", 
+        parentIFrame.setTitle(getResourceConverter().getFormattedString("schemaExplorer.frame.title",
+                "Schema - {0} ({1}){2}",
                     new String[] { schema.name, schemaFile.getName(), isDirty()?"*":"" }));
 
         parentIFrame.setToolTipText(schemaFile.toString());

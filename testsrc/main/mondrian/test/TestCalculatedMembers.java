@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -996,26 +996,26 @@ public class TestCalculatedMembers extends BatchTestCase {
                 + "select {[Measures].[My Tuple]} on 0 from [Sales]",
             desiredResult);
     }
-    
+
     public void testCreateCalculatedMember() {
         // REVIEW: What is the purpose of this test?
-    	String query = "WITH MEMBER [Product].[Calculated Member] as 'AGGREGATE({})'\n"
+        String query = "WITH MEMBER [Product].[Calculated Member] as 'AGGREGATE({})'\n"
             + "SELECT {[Measures].[Unit Sales]} on 0\n"
-            + "FROM [Sales]\n" 
+            + "FROM [Sales]\n"
             + "WHERE ([Product].[Calculated Member])";
-    	
-		String derbySQL = 
-			"select \"product_class\".\"product_family\" from \"product\" as \"product\", \"product_class\" as \"product_class\" where \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and UPPER(\"product_class\".\"product_family\") = UPPER('Calculated Member') group by \"product_class\".\"product_family\" order by \"product_class\".\"product_family\" ASC";
-    	
-		String mysqlSQL = 
-			"select `product_class`.`product_family` as `c0` from `product` as `product`, `product_class` as `product_class` where `product`.`product_class_id` = `product_class`.`product_class_id` and UPPER(`product_class`.`product_family`) = UPPER('Calculated Member') group by `product_class`.`product_family` order by ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
 
-		SqlPattern[] patterns = {
+        String derbySQL =
+            "select \"product_class\".\"product_family\" from \"product\" as \"product\", \"product_class\" as \"product_class\" where \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and UPPER(\"product_class\".\"product_family\") = UPPER('Calculated Member') group by \"product_class\".\"product_family\" order by \"product_class\".\"product_family\" ASC";
+
+        String mysqlSQL =
+            "select `product_class`.`product_family` as `c0` from `product` as `product`, `product_class` as `product_class` where `product`.`product_class_id` = `product_class`.`product_class_id` and UPPER(`product_class`.`product_family`) = UPPER('Calculated Member') group by `product_class`.`product_family` order by ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+
+        SqlPattern[] patterns = {
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySQL, derbySQL),
             new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSQL, mysqlSQL)
         };
-    	
-    	assertQuerySqlOrNot(this.getTestContext(), query, patterns, true, true, true);
+
+        assertQuerySqlOrNot(this.getTestContext(), query, patterns, true, true, true);
     }
 
     /**
@@ -1044,7 +1044,7 @@ public class TestCalculatedMembers extends BatchTestCase {
                 "Row #2: 97,126\n" +
                 "Row #2: 135,215\n"));
     }
-    
+
     /**
      * Test that if a filter is associated with input to a cal member with lower solve order;
      * the filter computation uses the context that contains the other cal members(those with
@@ -1072,9 +1072,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             "NonEmptyCrossJoin({[Education Level].[*CTX_MEMBER_SEL~SUM]},{[Product].[*CTX_MEMBER_SEL~SUM]})," +
             "Generate([*METRIC_CJ_SET], {([Education Level].CurrentMember,[Product].CurrentMember)})) on rows " +
             "From [Sales]";
-        String result = 
+        String result =
             "Axis #0:\n" +
-            "{}\n" +        
+            "{}\n" +
             "Axis #1:\n" +
             "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
             "Axis #2:\n" +
@@ -1086,10 +1086,10 @@ public class TestCalculatedMembers extends BatchTestCase {
             "Row #1: 49,365\n" +
             "Row #2: 13,051\n" +
             "Row #3: 11,255\n";
-        
+
         assertQueryReturns(mdx, fold(result));
     }
-    
+
     /**
      * Test that if a filter is associated with input to a cal member with higher solve order;
      * the filter computation ignores the other cal members.
@@ -1116,9 +1116,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             "NonEmptyCrossJoin({[Education Level].[*CTX_MEMBER_SEL~SUM]},{[Product].[*CTX_MEMBER_SEL~SUM]})," +
             "Generate([*METRIC_CJ_SET], {([Education Level].CurrentMember,[Product].CurrentMember)})) on rows " +
             "From [Sales]";
-        String result = 
+        String result =
             "Axis #0:\n" +
-            "{}\n" +        
+            "{}\n" +
             "Axis #1:\n" +
             "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
             "Axis #2:\n" +
@@ -1130,7 +1130,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             "Row #1: 49,365\n" +
             "Row #2: 13,051\n" +
             "Row #3: 11,255\n";
-        
+
         assertQueryReturns(mdx, fold(result));
     }
 
@@ -1156,7 +1156,7 @@ public class TestCalculatedMembers extends BatchTestCase {
                 "{[Product].[Test]}\n" +
                 "Row #0: 191,940\n")
         );
-        
+
         assertQueryReturns(
             "with member [Product].[Food].[Test] as '[Product].[Food]' " +
             "select {[Measures].[Unit Sales]} on columns, " +
@@ -1172,7 +1172,7 @@ public class TestCalculatedMembers extends BatchTestCase {
                     "Row #0: 191,940\n")
         );
     }
-    
+
     /**
      * test case for bug #1801069, Issues with calculated members
      * verify that the calculated member [Product].[Test]
@@ -1209,8 +1209,8 @@ public class TestCalculatedMembers extends BatchTestCase {
 
     public void testCalculatedMemberMSASCompatibility() {
         assertQueryReturns(
-                "with " + 
-                "member gender.calculated as 'gender.m' " + 
+                "with " +
+                "member gender.calculated as 'gender.m' " +
                 "member  gender.[All Gender].calculated as 'gender.m' " +
                 "member measures.countChildren as 'gender.calculated.children.Count' " +
                 "member measures.parentIsAll as 'gender.calculated.Parent IS gender.[All Gender]' " +

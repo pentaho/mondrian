@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -319,7 +319,7 @@ if (DEBUG) {
         }
 
         Document gotDoc = XmlUtil.parse(bytes);
-	    String gotStr = XmlUtil.toString(replaceLastSchemaUpdateDate(gotDoc), true);
+        String gotStr = XmlUtil.toString(replaceLastSchemaUpdateDate(gotDoc), true);
         String expectedStr = XmlUtil.toString(replaceLastSchemaUpdateDate(expectedDoc), true);
 if (DEBUG) {
 System.out.println("GOT:\n"+gotStr);
@@ -358,4 +358,4 @@ System.out.println("requestText="+requestText);
 
 }
 
-// XmlaExcel2000Test.java
+// End XmlaExcel2000Test.java

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -210,7 +210,7 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                     (target instanceof MondrianGuiDef.Level && pName.equals("parentColumn")) ||
                     (target instanceof MondrianGuiDef.Level && pName.equals("captionColumn")) ||
                     (target instanceof MondrianGuiDef.Closure && pName.equals("parentColumn")) ||
-                    (target instanceof MondrianGuiDef.Closure && pName.equals("childColumn")) ||                    
+                    (target instanceof MondrianGuiDef.Closure && pName.equals("childColumn")) ||
                     (target instanceof MondrianGuiDef.Property && pName.equals("column"))
                     )  {
                 // updating all column values
@@ -225,8 +225,8 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                 && (! (target instanceof MondrianGuiDef.Table))
                 && (! aValue.equals(target.getClass().getField(propertyNames[rowIndex]).get(target)))
                 && duplicateName(aValue) ) {
-                    setErrorMsg(workbench.getResourceConverter().getFormattedString("propertyTableModel.duplicateValue.error", 
-                            "Error setting name property. {0} already exists", 
+                    setErrorMsg(workbench.getResourceConverter().getFormattedString("propertyTableModel.duplicateValue.error",
+                            "Error setting name property. {0} already exists",
                                 new String[] { aValue.toString() }));
                 } else {
                     Field f = target.getClass().getField(propertyNames[rowIndex]);

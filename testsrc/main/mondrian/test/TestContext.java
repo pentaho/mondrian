@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -403,7 +403,7 @@ public class TestContext {
         String memberDefs) {
         return getFoodMartSchemaSubstitutingCube(cubeName, dimensionDefs, memberDefs, null);
     }
-    
+
     /**
      * Returns a the XML of the foodmart schema, adding dimension definitions
      * to the definition of a given cube.
@@ -449,7 +449,7 @@ public class TestContext {
                 memberDefs +
                 s.substring(i);
         }
-        
+
         if(namedSetDefs !=null) {
             int i = s.indexOf("<NamedSet", h);
             if (i < 0 || i > end) {
@@ -1071,7 +1071,7 @@ public class TestContext {
                 connectProperties.get(RolapConnectionProperties.JdbcUser.name()),
                 connectProperties.get(RolapConnectionProperties.JdbcPassword.name()));
             stmt = jdbcConn.createStatement();
-            
+
             if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
                 StringBuffer sqllog = new StringBuffer();
                 sqllog.append("mondrian.test.TestContext: executing sql [");
@@ -1091,7 +1091,7 @@ public class TestContext {
             final long execMs = time - startTime;
             Util.addDatabaseTime(execMs);
             String status = ", exec " + execMs + " ms";
-            
+
             RolapUtil.SQL_LOGGER.debug(status);
 
             int rows = 0;
@@ -1237,7 +1237,7 @@ public class TestContext {
                 final String schema = getFoodMartSchema(
                     parameterDefs, cubeDefs, virtualCubeDefs, namedSetDefs,
                     udfDefs, roleDefs);
-                Util.PropertyList properties = 
+                Util.PropertyList properties =
                     super.getFoodMartConnectionProperties();
                 properties.put(
                     RolapConnectionProperties.CatalogContent.name(),
@@ -1295,8 +1295,8 @@ public class TestContext {
     {
         return createSubstitutingCube(cubeName, dimensionDefs, memberDefs, null);
     }
-        
-    
+
+
     /**
      * Creates a TestContext, adding hierarchy and calculated member definitions
      * to a cube definition.

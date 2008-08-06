@@ -546,16 +546,16 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         int origResultLimit =
             MondrianProperties.instance().ResultLimit.get();
-            
+
         MondrianProperties.instance().ExpandNonNative.set(true);
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
         MondrianProperties.instance().ResultLimit.set(2);
-        
+
         try {
             executeQuery(query);
             fail("Expected error did not occur");
         } catch (Throwable e) {
-            String expectedErrorMsg = 
+            String expectedErrorMsg =
                 "Mondrian Error:Size of CrossJoin result (3) exceeded limit (2)";
             assertEquals(expectedErrorMsg, e.getMessage());
         } finally {
@@ -564,7 +564,7 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().ResultLimit.set(origResultLimit);
         }
     }
-    
+
     /**
      * Verify that the presence of All member in all the inputs disables native
      * evaluation, even when ExpandNonNative is true.
@@ -766,10 +766,10 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().EnableNativeCrossJoin.get();
         MondrianProperties.instance().ExpandNonNative.set(true);
         MondrianProperties.instance().EnableNativeCrossJoin.set(true);
-        
+
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
-        boolean requestFreshConnection = true;        
+        boolean requestFreshConnection = true;
         checkNative(0, 6, query, fold(result), requestFreshConnection);
 
         MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
@@ -924,7 +924,7 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().ExpandNonNative.get();
 
         MondrianProperties.instance().ExpandNonNative.set(true);
-        
+
         String query =
             "With " +
             "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],[*BASE_MEMBERS_Product])' " +
@@ -938,16 +938,16 @@ public class NonEmptyTest extends BatchTestCase {
             "[*BASE_MEMBERS_Measures] on columns, " +
             "Non Empty Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember,[Product].CurrentMember)}) on rows " +
             "From [Sales]";
-        
+
         String result =
             "Axis #0:\n" +
             "{}\n" +
             "Axis #1:\n" +
             "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
             "Axis #2:\n";
-        
+
         boolean requestFreshConnection = true;
-        
+
         try {
             // Query should return empty result.
             checkNative(0, 0, fold(query), result, requestFreshConnection);
@@ -957,12 +957,12 @@ public class NonEmptyTest extends BatchTestCase {
     }
     public void testExpandWithTwoEmptyInputs() {
         getConnection().getCacheControl(null).flushSchemaCache();
-    	
+
         boolean origExpandNonNative =
             MondrianProperties.instance().ExpandNonNative.get();
 
         MondrianProperties.instance().ExpandNonNative.set(true);
-        
+
         String query =
             "With " +
             "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],[*BASE_MEMBERS_Product])' " +
@@ -976,14 +976,14 @@ public class NonEmptyTest extends BatchTestCase {
             "[*BASE_MEMBERS_Measures] on columns, " +
             "Non Empty Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember,[Product].CurrentMember)}) on rows " +
             "From [Sales]";
-        
+
         String result =
             "Axis #0:\n" +
             "{}\n" +
             "Axis #1:\n" +
             "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
             "Axis #2:\n";
-                
+
         try {
             // Query should return empty result.
             checkNotNative(0, fold(query), result);
@@ -992,7 +992,7 @@ public class NonEmptyTest extends BatchTestCase {
         }
     }
 
-    
+
     /**
      * Verify that native MemberLists inputs are subject to SQL constriant
      * limitation. If mondrian.rolap.maxConstraints is set too low, native
@@ -1860,15 +1860,15 @@ public class NonEmptyTest extends BatchTestCase {
      *
      */
     public void testNonEmptyCrossJoinList() {
-    	boolean oldEnableNativeCJ = MondrianProperties.instance().EnableNativeCrossJoin.get();
-    	MondrianProperties.instance().EnableNativeCrossJoin.set(false);
-    	boolean oldEnableNativeNonEmpty = MondrianProperties.instance().EnableNativeNonEmpty.get();
-    	MondrianProperties.instance().EnableNativeNonEmpty.set(false);
+        boolean oldEnableNativeCJ = MondrianProperties.instance().EnableNativeCrossJoin.get();
+        MondrianProperties.instance().EnableNativeCrossJoin.set(false);
+        boolean oldEnableNativeNonEmpty = MondrianProperties.instance().EnableNativeNonEmpty.get();
+        MondrianProperties.instance().EnableNativeNonEmpty.set(false);
 
-    	executeQuery("select non empty CrossJoin([Customers].[Name].Members, {[Promotions].[All Promotions].[Fantastic Discounts]}) ON COLUMNS FROM [Sales]");
+        executeQuery("select non empty CrossJoin([Customers].[Name].Members, {[Promotions].[All Promotions].[Fantastic Discounts]}) ON COLUMNS FROM [Sales]");
 
-    	MondrianProperties.instance().EnableNativeCrossJoin.set(oldEnableNativeCJ);
-    	MondrianProperties.instance().EnableNativeNonEmpty.set(oldEnableNativeNonEmpty);
+        MondrianProperties.instance().EnableNativeCrossJoin.set(oldEnableNativeCJ);
+        MondrianProperties.instance().EnableNativeNonEmpty.set(oldEnableNativeNonEmpty);
     }
 
     /**

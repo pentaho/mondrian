@@ -161,8 +161,9 @@ public class RolapNativeSql {
             if (measure.isCalculated()) {
                 return null; // ??
             }
-            if (!saveStoredMeasure(measure))
-            	return null;
+            if (!saveStoredMeasure(measure)) {
+                return null;
+            }
             String exprInner = measure.getMondrianDefExpression().getExpression(sqlQuery);
             String expr = measure.getAggregator().getExpression(exprInner);
             if (dialect.isDB2()) {
@@ -171,7 +172,7 @@ public class RolapNativeSql {
             return expr;
         }
 
-		public String toString() {
+        public String toString() {
             return "StoredMeasureSqlCompiler";
         }
     }

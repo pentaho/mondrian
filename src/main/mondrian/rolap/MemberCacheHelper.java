@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -24,26 +24,26 @@ import java.util.*;
 
 /**
  * Encapsulation of member caching.
- * 
+ *
  * @author Will Gorman (wgorman@pentaho.org)
  * @version $Id$
  */
 public class MemberCacheHelper implements MemberCache {
-        
+
     private final SqlConstraintFactory sqlConstraintFactory =
         SqlConstraintFactory.instance();
-    
+
     /** maps a parent member to a list of its children */
-    final SmartMemberListCache<RolapMember, List<RolapMember>> 
+    final SmartMemberListCache<RolapMember, List<RolapMember>>
         mapMemberToChildren;
 
     /** a cache for alle members to ensure uniqueness */
     SmartCache<Object, RolapMember> mapKeyToMember;
     RolapHierarchy rolapHierarchy;
     DataSourceChangeListener changeListener;
-    
+
     /** maps a level to its members */
-    final SmartMemberListCache<RolapLevel, List<RolapMember>> 
+    final SmartMemberListCache<RolapLevel, List<RolapMember>>
         mapLevelToMembers;
 
     /**
@@ -55,13 +55,13 @@ public class MemberCacheHelper implements MemberCache {
         this.rolapHierarchy = rolapHierarchy;
         this.mapLevelToMembers =
             new SmartMemberListCache<RolapLevel, List<RolapMember>>();
-        this.mapKeyToMember = 
+        this.mapKeyToMember =
             new SoftSmartCache<Object, RolapMember>();
         this.mapMemberToChildren =
             new SmartMemberListCache<RolapMember, List<RolapMember>>();
-        
+
         if (rolapHierarchy != null) {
-            changeListener = 
+            changeListener =
                 rolapHierarchy.getRolapSchema().getDataSourceChangeListener();
         } else {
             changeListener = null;
@@ -86,7 +86,7 @@ public class MemberCacheHelper implements MemberCache {
     public synchronized Object putMember(Object key, RolapMember value) {
         return mapKeyToMember.put(key, value);
     }
-    
+
     // implement MemberCache
     public Object makeKey(RolapMember parent, Object key) {
         return new MemberKey(parent, key);
@@ -97,7 +97,7 @@ public class MemberCacheHelper implements MemberCache {
     public synchronized RolapMember getMember(Object key) {
         return getMember(key, true);
     }
-    
+
     public synchronized void checkCacheStatus() {
         if (changeListener != null) {
             if (changeListener.isHierarchyChanged(rolapHierarchy)) {
@@ -105,10 +105,10 @@ public class MemberCacheHelper implements MemberCache {
             }
         }
     }
-    
+
     /**
      * ???
-     * 
+     *
      * @param level
      * @param constraint
      * @param members
@@ -127,7 +127,7 @@ public class MemberCacheHelper implements MemberCache {
         MemberChildrenConstraint constraint)
     {
         if (constraint == null) {
-            constraint = 
+            constraint =
                 sqlConstraintFactory.getMemberChildrenConstraint(null);
         }
         return mapMemberToChildren.get(member, constraint);
@@ -160,13 +160,13 @@ public class MemberCacheHelper implements MemberCache {
         mapKeyToMember.clear();
         mapLevelToMembers.clear();
     }
-    
+
     public DataSourceChangeListener getChangeListener() {
         return changeListener;
     }
 
     public void setChangeListener(DataSourceChangeListener listener) {
-        changeListener = listener;            
+        changeListener = listener;
     }
 
     public boolean isMutable()

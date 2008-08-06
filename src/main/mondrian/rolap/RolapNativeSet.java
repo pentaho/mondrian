@@ -42,7 +42,7 @@ public abstract class RolapNativeSet extends RolapNative {
 
     private SmartCache<Object, List<List<RolapMember>>> cache =
         new SoftSmartCache<Object, List<List<RolapMember>>>();
-    
+
     /**
      * Returns whether certain member types(e.g. calculated members) should
      * disable native SQL evaluation for expressions containing them.
@@ -227,7 +227,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 // be natively evaluated.
                 return;
             }
-            
+
             RolapHierarchy hierarchy = level.getHierarchy();
             MemberReader mr = schemaReader.getMemberReader(hierarchy);
             MemberBuilder mb = mr.getMemberBuilder();
@@ -311,7 +311,7 @@ public abstract class RolapNativeSet extends RolapNative {
                     sqlQuery, baseCube, null, member, true);
             }
         }
-        
+
         public boolean isPreferInterpreter(boolean joinArg) {
             return false;
         }
@@ -378,11 +378,11 @@ public abstract class RolapNativeSet extends RolapNative {
          * <p>If restrictMemberTypes is set, then the resulting argument could
          * contain calculated members. The newly created CrossJoinArg is marked
          * appropriately for special handling downstream.
-         * 
+         *
          * <p>If restrictMemberTypes is false, then the resulting argument
-         * contains non-calculated members of the same level (after filtering 
+         * contains non-calculated members of the same level (after filtering
          * out any null members).
-         * 
+         *
          * @param evaluator the current evaluator
          * @param args members in the list
          * @param restrictMemberTypes whether calculated members are allowed
@@ -399,19 +399,19 @@ public abstract class RolapNativeSet extends RolapNative {
             if (!isArgSizeSupported(evaluator, args.size())) {
                 return null;
             }
-            
+
             RolapLevel level = null;
             RolapLevel nullLevel = null;
             boolean hasCalcMembers = false;
             boolean hasNonCalcMembers = false;
-            
+
             // Crossjoin Arg is an empty member list.
             // This is used to push down the constant "false" condition to the
             // native evaluator.
             if (args.size() == 0) {
                 hasNonCalcMembers = true;
             }
-            boolean hasAllMember = false;            
+            boolean hasAllMember = false;
             int nNullMembers = 0;
             try {
                 for (RolapMember m : args) {
@@ -462,7 +462,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 // fail anyway
                 level = nullLevel;
             }
-            
+
             // level will be null for an empty CJ input that is pushed down
             // to the native evaluator.
             // This case is not treated as a non-native input.
@@ -509,18 +509,19 @@ public abstract class RolapNativeSet extends RolapNative {
                 sqlQuery, baseCube, null,
                 members, restrictMemberTypes, true);
         }
-        
-        // Return true if the input CJ arg is empty.
-        // This is used to selectively push down empty input arg into the 
-        // native evaluator.        
+
+        /**
+         * Returns whether the input CJ arg is empty.
+         *
+         * <p>This is used to selectively push down empty input arg into the
+         * native evaluator.
+         *
+         * @return whether the input CJ arg is empty
+         */
         public boolean isEmptyCrossJoinArg() {
-        	boolean isEmpty = false;
-        	 if (level == null && members.size() == 0) {
-        		 isEmpty = true;
-        	 }
-        	 return isEmpty;
+            return (level == null && members.size() == 0);
         }
-        
+
         public boolean hasCalcMembers() {
             return hasCalcMembers;
         }
@@ -702,7 +703,7 @@ public abstract class RolapNativeSet extends RolapNative {
             argSize > MondrianProperties.instance().MaxConstraints.get()) {
             argSizeNotSupported = true;
         }
-        
+
         return (!argSizeNotSupported);
     }
 
@@ -713,25 +714,25 @@ public abstract class RolapNativeSet extends RolapNative {
      * @return an {@link CrossJoinArg} instance describing the enumeration,
      *    or null if <code>fun</code> represents something else.
      */
-    protected CrossJoinArg checkEnumeration(RolapEvaluator evaluator, 
+    protected CrossJoinArg checkEnumeration(RolapEvaluator evaluator,
         FunDef fun, Exp[] args) {
         // Return null if not the expected funciton name or input size.
         if (!"{}".equalsIgnoreCase(fun.getName()) ||
             !isArgSizeSupported(evaluator, args.length)) {
             return null;
         }
-        
+
         List<RolapMember> memberList = new ArrayList<RolapMember>();
         for (int i = 0; i < args.length; ++i) {
             if (!(args[i] instanceof MemberExpr) ||
-                ((MemberExpr) args[i]).getMember().isCalculated()) {	
+                ((MemberExpr) args[i]).getMember().isCalculated()) {
                 // also returns null if any member is calculated
                 return null;
             }
             memberList.add((RolapMember)
                 (((MemberExpr)args[i]).getMember()));
         }
-        
+
         return MemberListCrossJoinArg.create(evaluator, memberList, restrictMemberTypes());
     }
 
@@ -796,7 +797,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 if (list1 != null) {
                     Util.checkCJResultLimit(list1.size());
                 }
-                
+
                 CrossJoinArg arg =
                     MemberListCrossJoinArg.create(evaluator, list1, restrictMemberTypes());
                 if (arg != null) {

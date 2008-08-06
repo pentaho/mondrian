@@ -79,7 +79,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         RolapCube cube = evaluator.getCube();
 
         CrossJoinArg[] cargs = checkCrossJoin(evaluator, fun, args);
-        
+
         if (cargs == null) {
             // Something in the arguments to the crossjoin prevented
             // native evaluation; may need to alert
@@ -89,9 +89,9 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
                 "arguments not supported");
             return null;
         }
-        
+
         // check if all CrossJoinArgs are "All" members or Calc members
-        // "All" members do not have relational expression, and Calc members 
+        // "All" members do not have relational expression, and Calc members
         // in the input could produce incorrect results.
         //
         // If NECJ only has AllMembers, or if there is at least one CalcMember,
@@ -131,7 +131,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         }
 
         List<RolapLevel> levels = new ArrayList<RolapLevel>();
-        
+
         for (int i = 0; i < cargs.length; i++) {
             RolapLevel level = cargs[i].getLevel();
             if (level != null) {
@@ -176,7 +176,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         // (otherwise, that outer context would be incorrectly intersected
         // with the constraints from the inputs).
         evaluator = evaluator.push();
-        
+
         Member[] evalMembers = evaluator.getMembers().clone();
         for (RolapLevel level : levels) {
             RolapHierarchy hierarchy = level.getHierarchy();

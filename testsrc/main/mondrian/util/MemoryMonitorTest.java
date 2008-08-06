@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde and others
+// Copyright (C) 2006-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -115,7 +115,7 @@ Does not work without the notify on add feature.
             // less than or equal to the lowest JVM memory usage.
             mm.addListener(listener, 0);
             if (! listener.wasNotified) {
-	        fail("Listener callback not called");
+                fail("Listener callback not called");
             }
         } finally {
             mm.removeListener(listener);
@@ -155,7 +155,7 @@ Does not work without the notify on add feature.
                 }
             }
             if (! listener.wasNotified) {
-	        fail("Listener callback not called");
+                fail("Listener callback not called");
             }
         } finally {
             mm.removeListener(listener);
@@ -188,12 +188,12 @@ Does not work without the notify on add feature.
             mm.addListener(listener, 2 * percentage + currentPercentage);
             byte[] bytes = new byte[(int) (1.5 * delta)];
             if (listener.wasNotified) {
-	        fail("Listener callback was called");
+                fail("Listener callback was called");
             }
             mm.updateListenerThreshold(listener,
                         percentage + currentPercentage);
             if (! listener.wasNotified) {
-	        fail("Listener callback was not called");
+                fail("Listener callback was not called");
             }
 
         } finally {

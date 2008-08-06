@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -518,7 +518,7 @@ public class AccessControlTest extends FoodMartTestCase {
      * Access [Store].[All Stores] implicitly as it is the default member
      * of the [Stores] hierarchy.
      */
-    public void testRollupPolicyAllAsDefault() { 
+    public void testRollupPolicyAllAsDefault() {
         rollupTestContext.assertExprReturns("([Store])", "192,025");
     }
 

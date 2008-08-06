@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -178,7 +178,7 @@ public class QueryAxis extends QueryPart {
     public void setOrdered(boolean ordered) {
         this.ordered = ordered;
     }
-    
+
     /**
      * Returns the expression which is used to compute the value of this axis.
      */

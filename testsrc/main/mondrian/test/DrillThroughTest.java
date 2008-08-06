@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -39,7 +39,7 @@ public class DrillThroughTest extends FoodMartTestCase {
     }
 
     // ~ Tests ================================================================
-    
+
     public void testTrivalCalcMemberDrillThrough() throws Exception {
         Result result = executeQuery(
             "WITH MEMBER [Measures].[Formatted Unit Sales]" +
@@ -120,9 +120,9 @@ public class DrillThroughTest extends FoodMartTestCase {
         getTestContext().assertSqlEquals(expectedSql, sql, 7978);
 
         assertEquals(calcCell.getDrillThroughCount(), 7978);
-        
+
     }
-    
+
 
     public void testDrillThrough() throws Exception {
         Result result = executeQuery(

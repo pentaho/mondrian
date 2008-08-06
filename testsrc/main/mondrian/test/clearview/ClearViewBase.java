@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -43,7 +43,7 @@ public abstract class ClearViewBase extends BatchTestCase {
     public ClearViewBase() {
         super();
     }
-    
+
     public ClearViewBase(String name) {
         super(name);
     }
@@ -55,17 +55,17 @@ public abstract class ClearViewBase extends BatchTestCase {
         DiffRepository diffRepos = getDiffRepos();
         diffRepos.setCurrentTestCaseName(getName());
     }
-    
+
     // implement TestCase
     protected void tearDown() throws Exception {
         DiffRepository diffRepos = getDiffRepos();
         diffRepos.setCurrentTestCaseName(null);
     }
-    
+
     // implement TestCase
     public static TestSuite constructSuite(
         DiffRepository diffRepos,
-        Class clazz) 
+        Class clazz)
     {
         TestSuite suite = new TestSuite();
         Class[] types = new Class[] { String.class };
@@ -86,21 +86,21 @@ public abstract class ClearViewBase extends BatchTestCase {
     protected void runTest() throws Exception {
         DiffRepository diffRepos = getDiffRepos();
         TestContext testContext = getTestContext();
-        
+
         // add calculated member to a cube if specified in the xml file
         String cubeName = diffRepos.expand(null, "${modifiedCubeName}").trim();
-        if (! (cubeName.equals("") 
+        if (! (cubeName.equals("")
             || cubeName.equals("${modifiedCubeName}")))
         {
             String calculatedMembers = diffRepos.expand(
                 null, "${calculatedMembers}");
-            if (! (calculatedMembers.equals("") 
+            if (! (calculatedMembers.equals("")
                 || calculatedMembers.equals("${calculatedMembers}")))
             {
                 testContext = testContext.createSubstitutingCube(
-                    cubeName, 
-                    null, 
-                    calculatedMembers);    
+                    cubeName,
+                    null,
+                    calculatedMembers);
             }
         }
 
@@ -109,7 +109,7 @@ public abstract class ClearViewBase extends BatchTestCase {
         boolean origExpandNonNative =
             MondrianProperties.instance().ExpandNonNative.get();
         MondrianProperties.instance().ExpandNonNative.set(true);
-        
+
         try {
             String mdx = diffRepos.expand(null, "${mdx}");
             String result = Util.nl + testContext.toString(
@@ -119,47 +119,47 @@ public abstract class ClearViewBase extends BatchTestCase {
             MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         }
     }
-    
-    protected void assertQuerySql(boolean flushCache) 
+
+    protected void assertQuerySql(boolean flushCache)
         throws Exception
     {
         DiffRepository diffRepos = getDiffRepos();
-        
+
         if (buildSqlPatternArray() == null) {
             return;
         }
-        
+
         super.assertQuerySqlOrNot(
             getTestContext(),
-            diffRepos.expand(null, "${mdx}"), 
+            diffRepos.expand(null, "${mdx}"),
             buildSqlPatternArray(),
             false,
             false,
             flushCache);
     }
-    
-    protected void assertNoQuerySql(boolean flushCache) 
+
+    protected void assertNoQuerySql(boolean flushCache)
         throws Exception
     {
         DiffRepository diffRepos = getDiffRepos();
-        
+
         if (buildSqlPatternArray() == null) {
             return;
         }
-        
+
         super.assertQuerySqlOrNot(
             getTestContext(),
-            diffRepos.expand(null, "${mdx}"), 
+            diffRepos.expand(null, "${mdx}"),
             buildSqlPatternArray(),
             true,
             false,
             flushCache);
     }
-    
+
     private SqlPattern[] buildSqlPatternArray() {
         DiffRepository diffRepos = getDiffRepos();
         SqlQuery.Dialect d = getTestContext().getDialect();
-        SqlPattern.Dialect dialect = SqlPattern.Dialect.get(d); 
+        SqlPattern.Dialect dialect = SqlPattern.Dialect.get(d);
         String testCaseName = getName();
         String sql = diffRepos.get(
             testCaseName, "expectedSql", dialect.name());

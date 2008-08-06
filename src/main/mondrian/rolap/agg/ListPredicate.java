@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -37,17 +37,17 @@ public abstract class ListPredicate implements StarPredicate {
      * hash code.
      */
     private HashMap<Integer, List<StarPredicate>> childrenHashMap;
-    
+
     /**
      * Pre-computed hash code for this list column predicate
      */
     private int hashValue;
-    
+
     protected final List<RolapStar.Column> columns =
         new ArrayList<RolapStar.Column>();
 
     protected BitKey columnBitKey;
-    
+
     protected ListPredicate(List<StarPredicate> predicateList) {
         columnBitKey = null;
         childrenHashMap = null;
@@ -81,7 +81,7 @@ public abstract class ListPredicate implements StarPredicate {
     public List<StarPredicate> getChildren() {
         return children;
     }
-    
+
     public int hashCode() {
         // Don't use the default list hashcode because we want a hash code
         // that's not order dependent
@@ -97,14 +97,14 @@ public abstract class ListPredicate implements StarPredicate {
         }
         return hashValue;
     }
-    
+
     public boolean equalConstraint(StarPredicate that) {
-        boolean isEqual = 
+        boolean isEqual =
             that instanceof ListPredicate &&
             getConstrainedColumnBitKey().equals(
                 that.getConstrainedColumnBitKey());
-        
-        if (isEqual) {        
+
+        if (isEqual) {
             ListPredicate thatPred = (ListPredicate) that;
             if (getOp() != thatPred.getOp() ||
                 getChildren().size() != thatPred.getChildren().size()) {
@@ -127,7 +127,7 @@ public abstract class ListPredicate implements StarPredicate {
                         childrenHashMap.put(key, predList);
                     }
                 }
-                
+
                 // Loop through thatPred's children predicates.  There needs
                 // to be a matching entry in the hash map for each child
                 // predicate.
@@ -154,7 +154,7 @@ public abstract class ListPredicate implements StarPredicate {
         }
 
         return isEqual;
-        
+
     }
 
     public StarPredicate minus(StarPredicate predicate) {

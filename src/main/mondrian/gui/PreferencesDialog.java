@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
@@ -84,10 +84,10 @@ public class PreferencesDialog extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        
-        // Set the url text field to 50 to drive the width of the dialog 
+
+        // Set the url text field to 50 to drive the width of the dialog
         urlTextField = new javax.swing.JTextField(50);
-        
+
         usernameTextField = new javax.swing.JTextField();
         passwordTextField = new javax.swing.JTextField();
         driverClassTextField = new javax.swing.JTextField();
@@ -139,7 +139,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(jLabel4, gridBagConstraints);
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;

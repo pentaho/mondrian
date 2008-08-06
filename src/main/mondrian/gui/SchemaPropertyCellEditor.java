@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -37,9 +37,9 @@ import javax.swing.text.JTextComponent;
  */
 public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEditor {
     Workbench workbench;
-    
+
     ArrayList listeners;
-    
+
     JTextField stringEditor;
     JCheckBox booleanEditor;
     JTextField integerEditor;
@@ -69,7 +69,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
     public SchemaPropertyCellEditor(Workbench workbench) {
 
         this.workbench = workbench;
-        
+
         noSelect = getResourceConverter().getString("schemaPropertyCellEditor.noSelection",
                 "-- No Selection --");
 
@@ -143,7 +143,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
 
         relationRenderer = new JPanel();
 
-        relationList = new JComboBox( new String[] {getResourceConverter().getString("schemaPropertyCellEditor.join","Join"), 
+        relationList = new JComboBox( new String[] {getResourceConverter().getString("schemaPropertyCellEditor.join","Join"),
                                                     getResourceConverter().getString("schemaPropertyCellEditor.table","Table")} );
         relationList.setMaximumSize(stringEditor.getMaximumSize());
         relationTable = new JTable();
@@ -382,7 +382,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
                 (targetClassz == MondrianGuiDef.Level.class && propertyName.equals("ordinalColumn")) ||
                 (targetClassz == MondrianGuiDef.Level.class && propertyName.equals("captionColumn")) ||
                 (targetClassz == MondrianGuiDef.Closure.class && propertyName.equals("parentColumn")) ||
-                (targetClassz == MondrianGuiDef.Closure.class && propertyName.equals("childColumn")) ||                
+                (targetClassz == MondrianGuiDef.Closure.class && propertyName.equals("childColumn")) ||
                 (targetClassz == MondrianGuiDef.Property.class && propertyName.equals("column"))
                 ) {
             MondrianGuiDef.Level lProps;
@@ -398,7 +398,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
                 allcols  = jdbcMetaData.getAllColumns(null, lTable);
             } else {
                 allcols  = jdbcMetaData.getAllColumns(selectedFactTableSchema, null);
-            }            
+            }
             ComboBoxModel cAllcols = new DefaultComboBoxModel(allcols);
 
             listEditor.setEditable(true);
@@ -429,16 +429,16 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             Vector allcols;
             allcols  = jdbcMetaData.getAllColumns(null, null);
             ComboBoxModel cAllcols = new DefaultComboBoxModel(allcols);
-            
+
             listEditor.setEditable(true);
             listEditor.setToolTipText(null);
             listEditor.removeActionListener(al);
-            
+
             listEditor.setModel(cAllcols);
             listEditor.setSelectedItem((String)value);
             listEditorValue = (String)value;
             activeEditor= listEditor;
-            
+
         } else if (targetClassz == MondrianGuiDef.Table.class && propertyName.equals("schema")) {
             Vector allschemas  = jdbcMetaData.getAllSchemas();
             ComboBoxModel cAllschemas = new DefaultComboBoxModel(allschemas);
@@ -527,7 +527,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             return null;
         } else if (value.getClass() == MondrianGuiDef.RelationOrJoin.class) {
             // REVIEW: I don't think this code will ever be executed, because
-            // class RelationOrJoin is abstract. 
+            // class RelationOrJoin is abstract.
             SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor(workbench);
             tableEditor.setDefaultEditor(Object.class, spce);
             SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
@@ -996,7 +996,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
         }
         return hlevels;
     }
-    
+
     private I18n getResourceConverter() {
         return workbench.getResourceConverter();
     }

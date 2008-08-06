@@ -1133,9 +1133,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 Member parent = member.getParentMember();
                 final SchemaReader schemaReader = evaluator.getSchemaReader();
                 if (parent == null) {
-                	return schemaReader.getHierarchyRootMembers(
-                            member.getHierarchy());
-                	
+                    return schemaReader.getHierarchyRootMembers(
+                        member.getHierarchy());
                 } else {
                     return schemaReader.getMemberChildren(parent);
                 }

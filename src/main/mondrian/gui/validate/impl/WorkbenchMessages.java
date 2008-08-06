@@ -5,7 +5,7 @@ import mondrian.gui.validate.Messages;
 
 /**
  * Implementation of <code>Messages</code> for Workbench.
- * 
+ *
  * @author mlowery
  */
 public class WorkbenchMessages implements Messages {
@@ -27,3 +27,5 @@ public class WorkbenchMessages implements Messages {
     }
 
 }
+
+// End WorkbenchMessages.java

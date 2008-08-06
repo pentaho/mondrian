@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -57,27 +57,27 @@ public class AggregationKey
         this.star = request.getMeasure().getStar();
         compoundPredicateMap = request.getCompoundPredicateMap();
     }
-    
+
     public int hashCode() {
-        int retCode = 
+        int retCode =
             constrainedColumnsBitKey.hashCode() ^ star.hashCode();
         if (compoundPredicateMap != null) {
             for (BitKey bitKey : compoundPredicateMap.keySet()) {
                 retCode ^= bitKey.hashCode();
             }
         }
-        return retCode; 
+        return retCode;
     }
 
     public boolean hasSameCompoundPredicate(AggregationKey otherKey) {
         boolean isEqual = false;
-        if (compoundPredicateMap.size() == 
+        if (compoundPredicateMap.size() ==
                 otherKey.compoundPredicateMap.size()) {
             isEqual = true;
             for (BitKey bitKey : compoundPredicateMap.keySet()) {
-                StarPredicate thisPred = 
+                StarPredicate thisPred =
                     compoundPredicateMap.get(bitKey);
-                StarPredicate otherPred = 
+                StarPredicate otherPred =
                     otherKey.compoundPredicateMap.get(bitKey);
                 if (thisPred == null || otherPred == null ||
                     !thisPred.equalConstraint(otherPred)) {
@@ -86,14 +86,14 @@ public class AggregationKey
                 }
             }
         }
-        return isEqual;        
+        return isEqual;
     }
-    
+
     public boolean equals(Object other) {
         if (other instanceof AggregationKey) {
             AggregationKey otherKey = (AggregationKey) other;
-            if (constrainedColumnsBitKey.equals(otherKey.constrainedColumnsBitKey) && 
-                star.equals(otherKey.star) && 
+            if (constrainedColumnsBitKey.equals(otherKey.constrainedColumnsBitKey) &&
+                star.equals(otherKey.star) &&
                 hasSameCompoundPredicate(otherKey)) {
                 return true;
             }
@@ -102,20 +102,20 @@ public class AggregationKey
     }
 
     public String toString() {
-        return 
-            star.getFactTable().getTableName() + " " + 
+        return
+            star.getFactTable().getTableName() + " " +
             constrainedColumnsBitKey.toString() + "\n" +
             compoundPredicateMap.toString();
     }
-    
+
     public BitKey getConstrainedColumnsBitKey() {
         return constrainedColumnsBitKey;
     }
-    
+
     public RolapStar getStar() {
         return star;
     }
-    
+
     /**
      * Get the set of compound predicates
      * @return list of predicates
@@ -123,7 +123,7 @@ public class AggregationKey
     public List<StarPredicate> getCompoundPredicateList() {
         return (new ArrayList<StarPredicate>(compoundPredicateMap.values()));
     }
-    
+
 }
 
 // End AggregationKey.java

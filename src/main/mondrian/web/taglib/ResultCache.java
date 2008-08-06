@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -64,12 +64,12 @@ public class ResultCache implements HttpSessionBindingListener {
     }
 
     public void parse(String mdx) {
-    	if (connection != null) {
-	        query = connection.parseQuery(mdx);
-	        setDirty();
-    	} else {
-    		LOGGER.error("null connection");
-    	}
+        if (connection != null) {
+            query = connection.parseQuery(mdx);
+            setDirty();
+        } else {
+            LOGGER.error("null connection");
+        }
     }
 
     public Result getResult() {
@@ -140,9 +140,9 @@ public class ResultCache implements HttpSessionBindingListener {
      * close connection
      */
     public void valueUnbound(HttpSessionBindingEvent ev) {
-    	if (connection != null) {
-    		connection.close();
-    	}
+        if (connection != null) {
+            connection.close();
+        }
     }
 
 
