@@ -17,7 +17,7 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.TupleType;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Definition of the <code>TopCount</code> and <code>BottomCount</code>
@@ -83,27 +83,85 @@ class TopBottomCountFunDef extends FunDefBase {
 
                 List list = listCalc.evaluateList(evaluator);
                 int n = integerCalc.evaluateInteger(evaluator);
-// RME
-if (n == mondrian.olap.fun.FunUtil.IntegerNull) {
-    return new java.util.ArrayList();
-}
-                if (orderCalc != null) {
-                    if (arity == 1) {
-                        sortMembers(
-                            evaluator.push(),
-                            (List<Member>) list,
-                            orderCalc, top, true);
+
+                if (n == mondrian.olap.fun.FunUtil.IntegerNull) {
+                    return new java.util.ArrayList();
+                }
+
+                if(orderCalc != null) {
+                    if(list.isEmpty()) return list;
+                    final Object trial = list.get(0);
+                    boolean highCard = false;
+                    if(trial instanceof Member) {
+                        if(((Member) trial).getHierarchy().getDimension()
+                                .isHighCardinality()) {
+                            highCard = true;
+                        }
                     } else {
-                        sortTuples(
-                            evaluator.push(),
-                            (List<mondrian.olap.Member[]>) list,
-                            orderCalc, top, true, arity);
+                        final Member[] trials = (Member[]) trial;
+                        for(int i=0; i<trials.length; i++) {
+                            if(trials[i].getHierarchy().getDimension()
+                                    .isHighCardinality()) {
+                                break;
+                            }
+                        }
+                    }
+
+                    if(highCard) {
+                        final List l2 = new ArrayList();
+                        final Iterator iterator = list.iterator();
+                        for(int i=0; i<n+1 && iterator.hasNext(); i++) {
+                            final Object o = iterator.next();
+                            l2.add(o);
+                        }
+                        final Evaluator eval = evaluator.push();
+                        if(arity == 1) {
+                            for(;;) {
+                                sortMembers(
+                                    eval,
+                                    (List<Member>) l2,
+                                    orderCalc, top, true);
+                                l2.remove(l2.size()-1);
+                                if(!iterator.hasNext()) break;
+                                l2.add(iterator.next());
+                            }
+                            return l2;
+                        } else {
+                            for(;;) {
+                                sortTuples(
+                                    eval,
+                                    (List<mondrian.olap.Member[]>) l2,
+                                    orderCalc, top, true, arity);
+                                l2.remove(l2.size()-1);
+                                if(!iterator.hasNext()) break;
+                                l2.add(iterator.next());
+                            }
+                            return l2;
+                        }
+                    } else {
+                        if (arity == 1) {
+                            sortMembers(
+                                evaluator.push(),
+                                (List<Member>) list,
+                                orderCalc, top, true);
+                        } else {
+                            sortTuples(
+                                evaluator.push(),
+                                (List<mondrian.olap.Member[]>) list,
+                                orderCalc, top, true, arity);
+                        }
+                        if (n < list.size()) {
+                            list = list.subList(0, n);
+                        }
+                        return list;
+                    }
+                } else {
+                    if(list instanceof AbstractList && list.size()<n) {
+                        return list;
+                    } else {
+                        return list.subList(0, n);
                     }
                 }
-                if (n < list.size()) {
-                    list = list.subList(0, n);
-                }
-                return list;
             }
 
             public boolean dependsOn(Dimension dimension) {
