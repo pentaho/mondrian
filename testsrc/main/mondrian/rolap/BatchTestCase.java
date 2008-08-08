@@ -42,16 +42,18 @@ public class BatchTestCase extends FoodMartTestCase {
     protected final String fieldProductFamily = "product_family";
     protected final String fieldProductDepartment = "product_department";
     protected final String[] fieldValuesYear = {"1997"};
-    protected final String[] fieldValuesProductFamily =
-        {"Food", "Non-Consumable", "Drink"};
-    protected final String[] fieldValueProductDepartment =
-        {"Alcoholic Beverages", "Baked Goods", "Baking Goods",
+    protected final String[] fieldValuesProductFamily = {
+        "Food", "Non-Consumable", "Drink"
+    };
+    protected final String[] fieldValueProductDepartment = {
+        "Alcoholic Beverages", "Baked Goods", "Baking Goods",
          "Beverages", "Breakfast Foods", "Canned Foods",
         "Canned Products","Carousel", "Checkout", "Dairy",
         "Deli", "Eggs", "Frozen Foods", "Health and Hygiene",
         "Household", "Meat", "Packaged Foods", "Periodicals",
         "Produce", "Seafood", "Snack Foods", "Snacks",
-        "Starchy Foods"};
+        "Starchy Foods"
+    };
     protected final String[] fieldValuesGender = {"M", "F"};
     protected final String cubeNameSales = "Sales";
     protected final String measureUnitSales = "[Measures].[Unit Sales]";
@@ -246,8 +248,7 @@ public class BatchTestCase extends FoodMartTestCase {
                 System.out.println(
                     "[No expected sqls found for dialect \"" +
                     sqlDialect.toString() +
-                    "\" and test not run]"
-                );
+                    "\" and test not run]");
             }
         }
     }
@@ -415,8 +416,7 @@ public class BatchTestCase extends FoodMartTestCase {
                 System.out.println(
                     "[No expected sqls found for dialect \"" +
                     dialect.toString() +
-                    "\" and test not run]"
-                );
+                    "\" and test not run]");
             }
         }
     }

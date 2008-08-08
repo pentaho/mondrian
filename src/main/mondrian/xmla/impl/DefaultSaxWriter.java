@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2006 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -79,7 +79,7 @@ public class DefaultSaxWriter implements SaxWriter {
 
     private void _startElement(
             String namespaceURI, String localName,
-            String qName, Attributes atts){
+            String qName, Attributes atts) {
         _checkTag();
         if (indent > 0) {
             writer.println();
@@ -104,7 +104,7 @@ public class DefaultSaxWriter implements SaxWriter {
     }
 
     private void _endElement(
-            String namespaceURI, String localName, String qName){
+            String namespaceURI, String localName, String qName) {
         indent--;
         if (state == STATE_IN_TAG) {
             writer.write("/>");
@@ -161,7 +161,7 @@ public class DefaultSaxWriter implements SaxWriter {
         endElement();
     }
 
-    public void startElement(String tagName){
+    public void startElement(String tagName) {
         _startElement(null, null, tagName, EmptyAttributes);
         stack.push(tagName);
     }

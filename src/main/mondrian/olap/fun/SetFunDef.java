@@ -445,7 +445,7 @@ public class SetFunDef extends FunDefBase {
                                     iterCalc.evaluateMemberIterable(evaluator);
                                 currentIterator = iter.iterator();
                             }
-                            while(true) {
+                            while (true) {
                                 boolean b = currentIterator.hasNext();
                                 while (! b) {
                                     if (index >= iterCalcs.length) {

@@ -105,9 +105,11 @@ public class SqlTupleReader implements TupleReader {
             // members[i] is the current member of level#i, and siblings[i]
             // is the current member of level#i plus its siblings
             members = new ArrayList<RolapMember>();
-            for(int i=0; i<levels.length; i++) members.add(null);
+            for (int i = 0; i < levels.length; i++) {
+                members.add(null);
+            }
             siblings = new ArrayList<List<RolapMember>>();
-            for(int i=0; i<levels.length+1; i++) {
+            for (int i = 0; i < levels.length + 1; i++) {
                 siblings.add(new ArrayList<RolapMember>());
             }
         }
@@ -387,7 +389,7 @@ public class SqlTupleReader implements TupleReader {
                     // with each of the list of members corresponding to
                     // the enumerated targets
                     int firstEnumTarget = 0;
-                    for ( ; firstEnumTarget < targets.size();
+                    for (; firstEnumTarget < targets.size();
                         firstEnumTarget++)
                     {
                         if (targets.get(firstEnumTarget).srcMembers != null) {

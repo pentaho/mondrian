@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -275,7 +275,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         protected IllegalArgumentException createException(BitKey bitKey) {
             final String msg = (bitKey == null)
                 ? "Null BitKey"
-                : "Bad BitKey type: " +bitKey.getClass().getName();
+                : "Bad BitKey type: " + bitKey.getClass().getName();
             return new IllegalArgumentException(msg);
         }
     }
@@ -487,9 +487,9 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                     } else if (p == 0) {
                         pos++;
                     } else {
-                        pos += (p+1);
+                        pos += (p + 1);
                     }
-                    bits = bits >>> (p+1);
+                    bits = bits >>> (p + 1);
                     return true;
                 }
                 public Integer next() {
@@ -777,9 +777,9 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                         } else if (p == 0) {
                             pos++;
                         } else {
-                            pos += (p+1);
+                            pos += (p + 1);
                         }
-                        bits0 = bits0 >>> (p+1);
+                        bits0 = bits0 >>> (p + 1);
                         return true;
                     } else {
                         if (pos < 63) {
@@ -810,9 +810,9 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                         } else if (p == 63) {
                             pos++;
                         } else {
-                            pos += (p+1);
+                            pos += (p + 1);
                         }
-                        bits1 = bits1 >>> (p+1);
+                        bits1 = bits1 >>> (p + 1);
                         return true;
                     }
                 }
@@ -895,7 +895,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         private long[] bits;
 
         private Big(int size) {
-            bits = new long[chunkCount(size+1)];
+            bits = new long[chunkCount(size + 1)];
         }
         private Big(Big big) {
             bits = (long[]) big.bits.clone();
@@ -1151,9 +1151,9 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                         } else if (p == 0) {
                             pos++;
                         } else {
-                            pos += (p+1);
+                            pos += (p + 1);
                         }
-                        bits[index] = bits[index] >>> (p+1);
+                        bits[index] = bits[index] >>> (p + 1);
                         return true;
                     }
                     return false;
@@ -1226,7 +1226,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         }
         public int hashCode() {
             long h = 1234;
-            for (int i = bits.length; --i >= 0; ) {
+            for (int i = bits.length; --i >= 0;) {
                 h ^= bits[i] * (i + 1);
             }
             return (int)((h >> 32) ^ h);
@@ -1234,7 +1234,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         public String toString() {
             StringBuilder buf = new StringBuilder(64);
             buf.append("0x");
-            int start = bits.length*64 -1;
+            int start = bits.length * 64 - 1;
             for (int i = start; i >= 0; i--) {
                 buf.append((get(i)) ? '1' : '0');
             }

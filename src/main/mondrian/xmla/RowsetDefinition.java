@@ -3115,7 +3115,9 @@ TODO: see above
             row.set(TableName.name, tableName);
             row.set(TableType.name, "SYSTEM TABLE");
             row.set(Description.name, desc);
-            if (false) row.set(DateModified.name, dateModified);
+            if (false) {
+                row.set(DateModified.name, dateModified);
+            }
             addRow(row, rows);
         }
 
@@ -3872,7 +3874,7 @@ TODO: see above
             // large data set total for Orders cube 0m42.923s
             Hierarchy firstHierarchy = dimension.getHierarchies()[0];
             Level[] levels = firstHierarchy.getLevels();
-            Level lastLevel = levels[levels.length-1];
+            Level lastLevel = levels[levels.length - 1];
 
 
 
@@ -3885,8 +3887,8 @@ TODO: see above
             */
 
             // Added by TWI to returned cached row numbers
-            int n=schemaReader.getLevelCardinality(lastLevel, true, true);
-            row.set(DimensionCardinality.name, n+1);
+            int n = schemaReader.getLevelCardinality(lastLevel, true, true);
+            row.set(DimensionCardinality.name, n + 1);
 
             // TODO: I think that this is just the dimension name
             row.set(DefaultHierarchy.name, dimension.getUniqueName());
@@ -3914,9 +3916,9 @@ TODO: see above
     }
 
     static int getDimensionType(Dimension dim) {
-        if (dim.isMeasures())
+        if (dim.isMeasures()) {
             return MdschemaDimensionsRowset.MD_DIMTYPE_MEASURE;
-        else if (DimensionType.TimeDimension.equals(dim.getDimensionType())) {
+        } else if (DimensionType.TimeDimension.equals(dim.getDimensionType())) {
             return MdschemaDimensionsRowset.MD_DIMTYPE_TIME;
         } else {
             return MdschemaDimensionsRowset.MD_DIMTYPE_OTHER;
@@ -4895,16 +4897,16 @@ TODO: see above
 
             if (level instanceof RolapLevel) {
                 RolapLevel rl = (RolapLevel) level;
-                row.set(LevelUniqueSettings.name,
+                row.set(
+                    LevelUniqueSettings.name,
                     (rl.isUnique() ? 1 : 0) +
-                        (rl.isAll() ? 2 : 0)
-                );
+                        (rl.isAll() ? 2 : 0));
             } else {
                 // can not access unique member attribute
                 // this is the best we can do.
-                row.set(LevelUniqueSettings.name,
-                    (level.isAll() ? 2 : 0)
-                );
+                row.set(
+                    LevelUniqueSettings.name,
+                    (level.isAll() ? 2 : 0));
             }
             row.set(LevelIsVisible.name, true);
             row.set(Description.name, desc);
@@ -5588,8 +5590,7 @@ TODO: see above
                 int levelNumber = getRestrictionValueAsInt(LevelNumber);
                 if (levelNumber == -1) {
                     LOGGER.warn("RowsetDefinition.populateHierarchy: " +
-                        "LevelNumber invalid"
-                    );
+                        "LevelNumber invalid");
                     return;
                 }
                 Level[] levels = hierarchy.getLevels();
@@ -5601,8 +5602,7 @@ TODO: see above
                         levels.length +
                         ") for hierarchy \"" +
                         hierarchy.getUniqueName() +
-                        "\""
-                    );
+                        "\"");
                     return;
                 }
 
@@ -5962,7 +5962,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
 
         // RME: this is used as part of the depth first setting of ordinals
         int setOrdinals(int ordinal, Member parent, Member[][] membersArray, int depth) {
-            boolean nextLevelExists = (depth+1 < membersArray.length);
+            boolean nextLevelExists = (depth + 1 < membersArray.length);
             Member[] members = membersArray[depth];
             for (int i = 0; i < members.length; i++) {
                 Member member = members[i];
@@ -5970,7 +5970,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                     ((RolapMember) member).setOrdinal(ordinal++);
                     if (nextLevelExists) {
                         ordinal =
-                            setOrdinals(ordinal, member, membersArray, depth+1);
+                            setOrdinals(ordinal, member, membersArray, depth + 1);
                     }
                 }
             }

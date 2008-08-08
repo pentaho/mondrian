@@ -453,7 +453,7 @@ public abstract class RolapNativeSet extends RolapNative {
                         return null;
                     }
                 }
-            } catch(ClassCastException cce) {
+            } catch (ClassCastException cce) {
                 return null;
             }
             if (level == null) {

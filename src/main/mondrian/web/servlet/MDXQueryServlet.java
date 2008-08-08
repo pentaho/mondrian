@@ -90,15 +90,15 @@ public class MDXQueryServlet extends HttpServlet {
 
             List<Position> columns = result.getAxes()[0].getPositions();
             List<Position> rows = null;
-            if( result.getAxes().length == 2 )
+            if (result.getAxes().length == 2)
                 rows = result.getAxes()[1].getPositions();
 
             int columnWidth = columns.get(0).size();
             int rowWidth = 0;
-            if( result.getAxes().length == 2 )
+            if (result.getAxes().length == 2)
                     rowWidth = result.getAxes()[1].getPositions().get(0).size();
 
-            for (int j=0; j<columnWidth; j++) {
+            for (int j = 0; j < columnWidth; j++) {
                 html.append("<tr>");
 
                 // if it has more than 1 dimension
@@ -130,7 +130,7 @@ public class MDXQueryServlet extends HttpServlet {
                 }
 
                 // Print the column headings.
-                for (int i=0; i<columns.size(); i++) {
+                for (int i = 0; i < columns.size(); i++) {
                     Position position = columns.get(i);
                     //Member member = columns[i].getMember(j);
                     Member member = position.get(j);
@@ -148,21 +148,21 @@ public class MDXQueryServlet extends HttpServlet {
             }
             //if is two axes, show
             if (result.getAxes().length > 1) {
-                for (int i=0; i<rows.size(); i++) {
+                for (int i = 0; i < rows.size(); i++) {
                     html.append("<tr>");
                     final Position row = rows.get(i);
                     for (Member member : row) {
                         html.append("<td nowrap class='rowheading'>").append(
                             member.getUniqueName()).append("</td>");
                     }
-                    for (int j=0; j<columns.size(); j++) {
+                    for (int j = 0; j < columns.size(); j++) {
                         showCell(html,result.getCell(new int[]{j,i}));
                     }
                     html.append("</tr>");
                 }
             } else {
                 html.append("<tr>");
-                for (int i=0; i<columns.size(); i++) {
+                for (int i = 0; i < columns.size(); i++) {
                     showCell(html,result.getCell(new int[]{i}));
                 }
                 html.append("</tr>");
@@ -186,7 +186,7 @@ public class MDXQueryServlet extends HttpServlet {
         getServletContext().getRequestDispatcher("/adhoc.jsp").include(request, response);
     }
 
-    private void showCell( StringBuffer out, Cell cell) {
+    private void showCell(StringBuffer out, Cell cell) {
         out.append("<td class='cell'>").append(cell.getFormattedValue()).append(
             "</td>");
     }

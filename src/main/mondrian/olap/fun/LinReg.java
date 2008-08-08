@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2006 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -35,7 +35,7 @@ import java.util.List;
  * <h2>Correlation coefficient</h2>
  * <p><i>Correlation coefficient</i></p>
  *
- * <p>The correlation coefficient, r, ranges from -1 to +1. The
+ * <p>The correlation coefficient, r, ranges from -1 to  + 1. The
  * nonparametric Spearman correlation coefficient, abbreviated rs, has
  * the same range.</p>
  *
@@ -231,7 +231,7 @@ public abstract class LinReg extends FunDefBase {
                 + " and an intercept of " + intercept
                 + ". That is, y="
                 + intercept
-                + (slope>0.0 ? " +" : " ")
+                + (slope > 0.0 ? " +" : " ")
                 + slope
                 + " * x.";
         }
@@ -373,7 +373,7 @@ public abstract class LinReg extends FunDefBase {
         SetWrapper swX = sws[1];
 
         if (swY.errorCount > 0) {
-debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
+debug("LinReg.process","ERROR error(s) count ="  + swY.errorCount);
             // TODO: throw exception
             return null;
         } else if (swY.v.size() == 0) {
@@ -423,13 +423,13 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
             double error = yf - y;
 
             sumErr += error;
-            sumErrSquared += error*error;
+            sumErrSquared += error * error;
 
             sumY += y;
-            sumSquaredY += (y*y);
+            sumSquaredY += (y * y);
 
             sumYF =+ yf;
-            sumSquaredYF =+ (yf*yf);
+            sumSquaredYF =+ (yf * yf);
         }
 
 
@@ -442,19 +442,19 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
         // http://home.ubalt.edu/ntsbarsh/Business-stat/opre504.htm
         // s2 = SSE/(n-2) = sum (y - yf)2 /(n-2)
         if (n > 2) {
-            double variance = sumErrSquared / (n-2);
+            double variance = sumErrSquared / (n - 2);
 
             value.setVariance(variance);
         }
 
         // R2
         // R2 = 1 - (SSE/SST)
-        // SSE = sum square error = Sum( (error-MSE)*(error-MSE) )
-        // MSE = mean error = Sum( error )/n
-        // SST = sum square y diff = Sum( (y-MST)*(y-MST) )
-        // MST = mean y = Sum( y )/n
-        double MSE = sumErr/n;
-        double MST = sumY/n;
+        // SSE = sum square error = Sum((error-MSE)*(error-MSE))
+        // MSE = mean error = Sum(error)/n
+        // SST = sum square y diff = Sum((y-MST)*(y-MST))
+        // MST = mean y = Sum(y)/n
+        double MSE = sumErr / n;
+        double MST = sumY / n;
         double SSE = 0.0;
         double SST = 0.0;
         ity = value.ys.iterator();
@@ -478,7 +478,7 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
             SST += (y - MST)*(y - MST);
         }
         if (SST != 0.0) {
-            double rSquared =  1 - (SSE/SST);
+            double rSquared =  1 - (SSE / SST);
 
             value.setRSquared(rSquared);
         }
@@ -496,8 +496,8 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
         double sumXX = 0.0;
         double sumXY = 0.0;
 
-debug("LinReg.linearReg","ylist.size()=" +ylist.size());
-debug("LinReg.linearReg","xlist.size()=" +xlist.size());
+debug("LinReg.linearReg","ylist.size()=" + ylist.size());
+debug("LinReg.linearReg","xlist.size()=" + xlist.size());
         int n = 0;
         for (int i = 0; i < size; i++) {
             Object yo = ylist.get(i);
@@ -509,26 +509,26 @@ debug("LinReg.linearReg","xlist.size()=" +xlist.size());
             double y = ((Double) yo).doubleValue();
             double x = ((Double) xo).doubleValue();
 
-debug("LinReg.linearReg"," " +i+ " (" +x+ "," +y+ ")");
+debug("LinReg.linearReg"," " + i + " (" + x + "," + y + ")");
             sumX += x;
             sumY += y;
-            sumXX += x*x;
-            sumXY += x*y;
+            sumXX += x * x;
+            sumXY += x * y;
         }
 
         double xMean = sumX / n;
         double yMean = sumY / n;
 
-debug("LinReg.linearReg", "yMean=" +yMean);
-debug("LinReg.linearReg", "(n*sumXX - sumX*sumX)=" +(n*sumXX - sumX*sumX));
+debug("LinReg.linearReg", "yMean=" + yMean);
+debug("LinReg.linearReg", "(n*sumXX - sumX*sumX)=" + (n * sumXX - sumX * sumX));
         // The regression line is the line that minimizes the variance of the
         // errors. The mean error is zero; so, this means that it minimizes the
         // sum of the squares errors.
-        double slope = (n*sumXY - sumX*sumY) / (n*sumXX - sumX*sumX);
-        double intercept = yMean - slope*xMean;
+        double slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        double intercept = yMean - slope * xMean;
 
         LinReg.Value value = new LinReg.Value(intercept, slope, xlist, ylist);
-debug("LinReg.linearReg","value=" +value);
+debug("LinReg.linearReg","value=" + value);
 
         return value;
     }

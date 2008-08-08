@@ -466,7 +466,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     public void testFoo() {
         assertQueryReturns(
                 "WITH SET [NonEmptyEmployees] AS 'FILTER(DESCENDANTS([Employees].[All Employees], 10, LEAVES),\n" +
-                "  NOT ISEMPTY( [Measures].[Employee Salary]) )'\n" +
+                "  NOT ISEMPTY([Measures].[Employee Salary]))'\n" +
                 "SELECT { [Measures].[Employee Salary], [Measures].[Number of Employees] } ON COLUMNS,\n" +
                 "  BOTTOMCOUNT([NonEmptyEmployees], 10, [Measures].[Employee Salary]) ON ROWS\n" +
                 "FROM HR\n" +
@@ -514,12 +514,12 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      */
     public void testBar() {
         assertQueryReturns(
-                "with set [Leaves] as 'Descendants([Employees].[All Employees], 15, LEAVES )'\n" +
-                " set [Parents] as 'Generate( [Leaves], {[Employees].CurrentMember.Parent} )'\n" +
-                " set [FirstParents] as 'Filter( [Parents], \n" +
-                "Count( Descendants( [Employees].CurrentMember, 2 )) = 0 )'\n" +
+                "with set [Leaves] as 'Descendants([Employees].[All Employees], 15, LEAVES)'\n" +
+                " set [Parents] as 'Generate([Leaves], {[Employees].CurrentMember.Parent})'\n" +
+                " set [FirstParents] as 'Filter([Parents], \n" +
+                "Count(Descendants( [Employees].CurrentMember, 2)) = 0 )'\n" +
                 "select {[Measures].[Number of Employees]} on Columns,\n" +
-                "  TopCount( [FirstParents], 10, [Measures].[Number of Employees]) on Rows\n" +
+                "  TopCount([FirstParents], 10, [Measures].[Number of Employees]) on Rows\n" +
                 "from HR",
             fold("Axis #0:\n" +
                 "{}\n" +

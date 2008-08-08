@@ -356,7 +356,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         "select {[Measures].[Unit Sales]} ON COLUMNS," + nl +
         "Hierarchize(Union(Union(Union({[Store].[All Stores]}, [Store].[All Stores].Children), [Store].[All Stores].[USA].Children), [Store].[All Stores].[USA].[CA].Children)) ON ROWS" + nl +
         "from [Sales]" + nl +
-        "where [Time].[Date Range]" );
+        "where [Time].[Date Range]");
 
         //String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(true);
         String sql = result.getCell(new int[] {0, 6}).getDrillThroughSQL(true);

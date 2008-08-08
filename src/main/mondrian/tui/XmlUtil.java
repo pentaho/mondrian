@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -433,7 +433,7 @@ public class XmlUtil {
                 throw new RuntimeException(errorStr, t);
             }
         } else {
-            System.out.println("errorHandler=" +errorHandler);
+            System.out.println("errorHandler=" + errorHandler);
         }
     }
 
@@ -766,7 +766,7 @@ public class XmlUtil {
                     writer.write(LINE_SEP);
                 }
             } else {
-                writer.write("node class = " +node.getClass().getName());
+                writer.write("node class = " + node.getClass().getName());
                 if (prettyPrint) {
                     writer.write(LINE_SEP);
                 } else {
@@ -837,7 +837,7 @@ public class XmlUtil {
         String version = getXercesVersion();
         int index = version.indexOf(' ');
         return (index == -1)
-            ? "0.0.0" : version.substring(index+1);
+            ? "0.0.0" : version.substring(index + 1);
     }
 
     private static int[] versionNumbers = null;
@@ -856,11 +856,11 @@ public class XmlUtil {
             int index = verNumStr.indexOf('.');
             verNums[0] = Integer.parseInt(verNumStr.substring(0, index));
 
-            verNumStr = verNumStr.substring(index+1);
+            verNumStr = verNumStr.substring(index + 1);
             index = verNumStr.indexOf('.');
             verNums[1] = Integer.parseInt(verNumStr.substring(0, index));
 
-            verNumStr = verNumStr.substring(index+1);
+            verNumStr = verNumStr.substring(index + 1);
             verNums[2] = Integer.parseInt(verNumStr);
 
             versionNumbers = verNums;
@@ -1064,7 +1064,8 @@ public class XmlUtil {
     }
 
 
-    private XmlUtil() {}
+    private XmlUtil() {
+    }
 }
 
 // End XmlUtil.java

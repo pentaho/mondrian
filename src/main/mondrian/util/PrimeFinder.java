@@ -168,7 +168,8 @@ final class PrimeFinder {
     /**
      * Makes this class non instantiable.
      */
-    private PrimeFinder() {}
+    private PrimeFinder() {
+    }
 
     /**
      * Returns a prime number which is <code>&gt;= desiredCapacity</code> and
@@ -206,33 +207,33 @@ final class PrimeFinder {
      */
     protected static void statistics(int from, int to, PrintWriter pw) {
         // check that primes contain no accidental errors
-        for (int i=0; i<primeCapacities.length-1; i++) {
-            if (primeCapacities[i] >= primeCapacities[i+1]) {
-                throw new RuntimeException("primes are unsorted or contain duplicates; detected at "+i+"@"+primeCapacities[i]);
+        for (int i = 0; i < primeCapacities.length - 1; i++) {
+            if (primeCapacities[i] >= primeCapacities[i + 1]) {
+                throw new RuntimeException("primes are unsorted or contain duplicates; detected at " + i + "@" + primeCapacities[i]);
             }
         }
 
         double accDeviation = 0.0;
         double maxDeviation = - 1.0;
 
-        for (int i=from; i<=to; i++) {
+        for (int i = from; i <= to; i++) {
             int primeCapacity = nextPrime(i);
             //System.out.println(primeCapacity);
             double deviation = (primeCapacity - i) / (double)i;
 
             if (deviation > maxDeviation) {
                 maxDeviation = deviation;
-                pw.println("new maxdev @"+i+"@dev="+maxDeviation);
+                pw.println("new maxdev @" + i + "@dev=" + maxDeviation);
             }
 
             accDeviation += deviation;
         }
         long width = 1 + (long)to - (long)from;
 
-        double meanDeviation = accDeviation/width;
-        pw.println("Statistics for ["+ from + ","+to+"] are as follows");
-        pw.println("meanDeviation = "+(float)meanDeviation*100+" %");
-        pw.println("maxDeviation = "+(float)maxDeviation*100+" %");
+        double meanDeviation = accDeviation / width;
+        pw.println("Statistics for [" + from + "," + to + "] are as follows");
+        pw.println("meanDeviation = " + (float)meanDeviation * 100 + " %");
+        pw.println("maxDeviation = " + (float)maxDeviation * 100 + " %");
     }
 }
 

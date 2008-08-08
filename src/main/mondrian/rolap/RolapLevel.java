@@ -240,7 +240,7 @@ public class RolapLevel extends LevelBase {
         return captionExp;
     }
 
-    public boolean hasCaptionColumn(){
+    public boolean hasCaptionColumn() {
         return captionExp != null;
     }
 

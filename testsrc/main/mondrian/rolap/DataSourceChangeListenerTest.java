@@ -479,7 +479,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             }
         }
         if (failures != 0) {
-            TestCase.fail(failures + " threads failed\n"+messages);
+            TestCase.fail(failures + " threads failed\n" + messages);
         }
     }
 

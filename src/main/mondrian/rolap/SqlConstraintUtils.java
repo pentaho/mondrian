@@ -127,7 +127,7 @@ public class SqlConstraintUtils {
      * <pre>
      *   select NON EMPTY crossjoin(
      *     {[Time].[1998]}, [Customer].[All].children
-     *   ) on columns
+     *  ) on columns
      *   from [sales]
      * </pre>
      * the <code>[Customer].[All].children</code> is evaluated with the default
@@ -454,7 +454,7 @@ public class SqlConstraintUtils {
 
             // First generate ANDs for all members in the parent lineage of this parent-children group
             boolean firstLevel = true;
-            for (RolapMember gp = p; gp!= null; gp = gp.getParentMember()) {
+            for (RolapMember gp = p; gp != null; gp = gp.getParentMember()) {
                 if (gp.isAll()) {
                     // Ignore All member
                     // Get the next parent

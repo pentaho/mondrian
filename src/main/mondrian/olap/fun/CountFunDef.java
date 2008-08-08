@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -42,9 +42,9 @@ class CountFunDef extends AbstractAggregateFunDef {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final Calc calc = compiler.compileAs(call.getArg(0),
-            null, ResultStyle.ITERABLE_ANY
-        );
+        final Calc calc =
+            compiler.compileAs(
+                call.getArg(0), null, ResultStyle.ITERABLE_ANY);
         final boolean includeEmpty =
                 call.getArgCount() < 2 ||
                 ((Literal) call.getArg(1)).getValue().equals(
@@ -124,7 +124,7 @@ class CountFunDef extends AbstractAggregateFunDef {
                 // COUNT(<set>, EXCLUDEEMPTY) depends only on the
                 // dimensions that <Set> depends on, plus all
                 // dimensions not masked by the set.
-                if (memberListCalc.getType().usesDimension(dimension, true) ) {
+                if (memberListCalc.getType().usesDimension(dimension, true)) {
                     return false;
                 }
                 return true;

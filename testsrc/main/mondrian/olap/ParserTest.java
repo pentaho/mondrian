@@ -171,7 +171,7 @@ public class ParserTest extends FoodMartTestCase {
         Exp rowsSetExpr = axes[1].getSet();
         assertNotNull("Row tuples", rowsSetExpr);
 
-        fun = (UnresolvedFunCall ) rowsSetExpr;
+        fun = (UnresolvedFunCall) rowsSetExpr;
         id = ((Id) (fun.getArgs()[0])).getElement(0);
         assertEquals("Correct member on axis", "axis1mbr", id.name);
     }
@@ -310,7 +310,7 @@ public class ParserTest extends FoodMartTestCase {
             final Query query =
                 p.parseInternal(getConnection(), mdx, false, funTable, false, false);
             query.resolve();
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             fail(e.getMessage());
         }
     }

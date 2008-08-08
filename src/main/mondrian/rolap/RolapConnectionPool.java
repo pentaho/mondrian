@@ -92,8 +92,7 @@ class RolapConnectionPool {
                 60000, // time between eviction runs (millis)
                 5, // number to test on eviction run
                 30000, // min evictable idle time (millis)
-                true // test while idle
-                );
+                true); // test while idle
 
             // create a PoolableConnectionFactory
             AbandonedConfig abandonedConfig = new AbandonedConfig();
@@ -123,8 +122,8 @@ class RolapConnectionPool {
                     true,
                     // AbandonedConfig object configures how to handle abandoned
                     // connections
-                    abandonedConfig
-            );
+                    abandonedConfig);
+
             // "poolableConnectionFactory" has registered itself with
             // "connectionPool", somehow, so we don't need the value any more.
             Util.discard(poolableConnectionFactory);

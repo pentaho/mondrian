@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -44,8 +44,7 @@ public class ScheduleTest extends TestCase {
     static void assertEquals(Calendar c1, Calendar c2) {
         if (c1 == null || c2 == null) {
             assertEquals((Object) c1, (Object) c2);
-        }
-        else {
+        } else {
             // do the checks on 'smaller' objects -- otherwise the
             // failure message is too long to see in the debugger
             assertEquals(c1.getTimeZone(), c2.getTimeZone());
@@ -56,8 +55,7 @@ public class ScheduleTest extends TestCase {
     static void assertEquals(Date expected, Calendar actual) {
         if (expected == null || actual == null) {
             assertEquals((Object) expected, (Object) actual);
-        }
-        else {
+        } else {
             assertEquals(expected, actual.getTime());
         }
     }
@@ -70,8 +68,7 @@ public class ScheduleTest extends TestCase {
     static void assertEquals(Calendar expected, Date actual) {
         if (expected == null || actual == null) {
             assertEquals((Object) expected, (Object) actual);
-        }
-        else {
+        } else {
             assertEquals(expected.getTime(), actual);
         }
     }
@@ -193,21 +190,18 @@ public class ScheduleTest extends TestCase {
         boolean failed = false;
         try {
             Schedule.createWeekly(null, null, gmtTz, time0827, 1, 0);
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             failed = true;
         }
         assertTrue(failed);
     }
 
-    public void testWeeklyBadBitmapFails
-            () {
+    public void testWeeklyBadBitmapFails() {
         boolean failed = false;
         try {
             int period = 1;
             Schedule.createWeekly(null, null, gmtTz, time0827, period, (1 << 8));
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             failed = true;
         }
         assertTrue(failed);

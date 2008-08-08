@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -102,7 +102,7 @@ class ExplicitRecognizer extends Recognizer {
                     getTableDef().getMeasures())
                 {
                     // Column name match is case insensitive
-                    if(measure.getColumnName().equalsIgnoreCase(aggColumnName)){
+                    if (measure.getColumnName().equalsIgnoreCase(aggColumnName)) {
                         String name = measure.getName();
                         List<Id.Segment> parts = Util.parseIdentifier(name);
                         String nameLast = parts.get(parts.size() - 1).name;
@@ -126,7 +126,7 @@ class ExplicitRecognizer extends Recognizer {
             // foreign key.
             for (Iterator<JdbcSchema.Table.Column.Usage> it =
                      dbFactTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);
-                 it.hasNext(); ) {
+                 it.hasNext();) {
                 JdbcSchema.Table.Column.Usage factUsage = it.next();
                 JdbcSchema.Table.Column factColumn = factUsage.getColumn();
 

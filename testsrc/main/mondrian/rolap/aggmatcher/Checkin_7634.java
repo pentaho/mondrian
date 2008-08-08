@@ -39,7 +39,7 @@ public class Checkin_7634 extends CsvDBTestCase {
     }
     protected void setUp() throws Exception {
         super.setUp();
-        crossJoinSize= MondrianProperties.instance().CrossJoinOptimizerSize.get();
+        crossJoinSize = MondrianProperties.instance().CrossJoinOptimizerSize.get();
 
     }
     protected void tearDown() throws Exception {
@@ -55,7 +55,7 @@ public class Checkin_7634 extends CsvDBTestCase {
         " NON EMPTY Crossjoin("+
         " {[Geography].[All Regions].Children},"+
         " {[Product].[All Products].Children}"+
-        " ) ON ROWS"+
+        ") ON ROWS"+
         " from [Checkin_7634]";
 
 

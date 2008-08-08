@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde and others
+// Copyright (C) 2007-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -122,7 +122,7 @@ public class ObjectPool<T> {
         // * 1.2 because open addressing's performance
         // exponentially degrades beyond that point
         // so that even rehashing the table can take very long
-        int newCapacity = nextPrime((int)(1 + 1.2*size()));
+        int newCapacity = nextPrime((int)(1 + 1.2 * size()));
         if (values.length > newCapacity) {
             rehash(newCapacity);
         }
@@ -157,7 +157,7 @@ public class ObjectPool<T> {
         }
 
         if (this.distinct > this.highWaterMark) {
-            int newCapacity = chooseGrowCapacity(this.distinct+1,
+            int newCapacity = chooseGrowCapacity(this.distinct + 1,
                                                  this.minLoadFactor,
                                                  this.maxLoadFactor);
             rehash(newCapacity);
@@ -174,7 +174,7 @@ public class ObjectPool<T> {
 
         if (this.freeEntries < 1) {
             //delta
-            int newCapacity = chooseGrowCapacity(this.distinct+1,
+            int newCapacity = chooseGrowCapacity(this.distinct + 1,
                                                  this.minLoadFactor,
                                                  this.maxLoadFactor);
              rehash(newCapacity);
@@ -210,22 +210,22 @@ public class ObjectPool<T> {
 
 
     protected int chooseGrowCapacity(int size, double minLoad, double maxLoad) {
-        return nextPrime(Math.max(size+1,
-            (int) ((4*size / (3*minLoad+maxLoad)))));
+        return nextPrime(Math.max(size + 1,
+            (int) ((4 * size / (3 * minLoad + maxLoad)))));
     }
     protected final int chooseHighWaterMark(int capacity, double maxLoad) {
         //makes sure there is always at least one FREE slot
-        return Math.min(capacity-2, (int) (capacity * maxLoad));
+        return Math.min(capacity - 2, (int) (capacity * maxLoad));
     }
     protected final int chooseLowWaterMark(int capacity, double minLoad) {
         return (int) (capacity * minLoad);
     }
 /*
     protected int chooseMeanCapacity(int size, double minLoad, double maxLoad) {
-        return nextPrime(Math.max(size+1, (int) ((2*size/(minLoad+maxLoad)))));
+        return nextPrime(Math.max(size + 1, (int) ((2*size/(minLoad+maxLoad)))));
     }
     protected int chooseShrinkCapacity(int size, double minLoad, double maxLoad) {
-        return nextPrime(Math.max(size+1, (int) ((4*size/(minLoad+3*maxLoad)))));
+        return nextPrime(Math.max(size + 1, (int) ((4*size/(minLoad+3*maxLoad)))));
     }
 */
 
@@ -245,16 +245,16 @@ public class ObjectPool<T> {
         }
         if (minLoadFactor < 0.0 || minLoadFactor >= 1.0) {
             throw new IllegalArgumentException(
-                "Illegal minLoadFactor: "+ minLoadFactor);
+                "Illegal minLoadFactor: " + minLoadFactor);
         }
         if (maxLoadFactor <= 0.0 || maxLoadFactor >= 1.0) {
             throw new IllegalArgumentException(
-                "Illegal maxLoadFactor: "+ maxLoadFactor);
+                "Illegal maxLoadFactor: " + maxLoadFactor);
         }
         if (minLoadFactor >= maxLoadFactor) {
             throw new IllegalArgumentException(
-                "Illegal minLoadFactor: "+ minLoadFactor+
-                " and maxLoadFactor: "+ maxLoadFactor);
+                "Illegal minLoadFactor: " + minLoadFactor +
+                " and maxLoadFactor: " + maxLoadFactor);
         }
         capacity = nextPrime(capacity);
 
@@ -299,7 +299,7 @@ public class ObjectPool<T> {
 
         // double hashing,
         // see http://www.eece.unm.edu/faculty/heileman/hash/node4.html
-        int decrement = hash % (length-2);
+        int decrement = hash % (length - 2);
 
         //int decrement = (hash / length) % length;
         if (decrement == 0) {
@@ -321,7 +321,7 @@ public class ObjectPool<T> {
         // return a negative number identifying the slot.
         // not already contained, should be inserted at slot i.
         // return a number >= 0 identifying the slot.
-        return (v != null) ? -i-1 : i;
+        return (v != null) ? -i - 1 : i;
     }
 
     protected void rehash(int newCapacity) {
@@ -334,12 +334,12 @@ public class ObjectPool<T> {
         this.highWaterMark = chooseHighWaterMark(newCapacity,this.maxLoadFactor);
 
         this.values = newValues;
-        this.freeEntries = newCapacity-this.distinct; // delta
+        this.freeEntries = newCapacity - this.distinct; // delta
         for (int i = oldCapacity ; i-- > 0 ;) {
             T v = oldValues[i];
             if (v != null) {
                 int index = indexOfInsertion(v);
-                newValues[index]=v;
+                newValues[index] = v;
             }
         }
     }

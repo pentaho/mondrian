@@ -132,8 +132,8 @@ public class QueryPanel extends javax.swing.JPanel {
 
         schemaScrollPane1 = new javax.swing.JScrollPane();
         schemaLabel = new javax.swing.JLabel();
-        schemaList = new JComboBox( new String[] {getResourceConverter().getString("common.join.title","Join"),
-                                                    getResourceConverter().getString("common.table.title","Table")} );
+        schemaList = new JComboBox(new String[] {getResourceConverter().getString("common.join.title","Join"),
+                                                    getResourceConverter().getString("common.table.title","Table")});
         //schemaScrollPane1.setViewportView(schemaList);
         schemaPanel = new JPanel();
         //schemaPanel.setLayout(new BorderLayout(25,0));
@@ -214,7 +214,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, getResourceConverter().getString("queryPanel.noConnection.alert","No Mondrian connection. Select a Schema to connect."),
                         getResourceConverter().getString("common.alertDialog.title","Alert"), JOptionPane.WARNING_MESSAGE);
                 return;
-            }//common.alertDialog.title
+            } //common.alertDialog.title
             Query q = connection.parseQuery(queryTextPane.getText());
             Result r = connection.execute(q);
 
@@ -244,7 +244,7 @@ public class QueryPanel extends javax.swing.JPanel {
             resultTextPane.setText(os.toString());
         }
 
-    }//GEN-LAST:T://event_executeButtonActionPerformed
+    } //GEN-LAST:T://event_executeButtonActionPerformed
 
 
     private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -313,7 +313,7 @@ public class QueryPanel extends javax.swing.JPanel {
                         getResourceConverter().getString("common.errorDialog.title","Error"), JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception ex) {
-            LOGGER.error("Exception: "+ex.getMessage(), ex);
+            LOGGER.error("Exception: " + ex.getMessage(), ex);
             JOptionPane.showMessageDialog(this, getResourceConverter().getFormattedString("queryPanel.unsuccessfulConnection.exception",
                     "Mondrian connection could not be done for - {0}",
                     new String[] { sfile == null ? getResourceConverter().getString("queryPanel.selectedSchema.alert","selected Schema") : sfile.getName() }),

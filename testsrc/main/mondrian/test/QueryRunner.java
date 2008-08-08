@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -81,9 +81,9 @@ public class QueryRunner extends Thread {
         "   member [Product].[All Products].[Drink].[Percent of Alcoholic Drinks] as '[Product].[All Products].[Drink].[Alcoholic Beverages]/[Product].[All Products].[Drink]', format = '#.00%'" + nl +
         "select" + nl +
         "   { [Product].[All Products].[Drink].[Percent of Alcoholic Drinks] } on columns," + nl +
-        "   order([Customers].[All Customers].[USA].[WA].Children, [Product].[All Products].[Drink].[Percent of Alcoholic Drinks],BDESC ) on rows" + nl +
+        "   order([Customers].[All Customers].[USA].[WA].Children, [Product].[All Products].[Drink].[Percent of Alcoholic Drinks],BDESC) on rows" + nl +
         "from Sales" + nl +
-        "where ( [Measures].[Unit Sales] )",
+        "where ([Measures].[Unit Sales])",
 
         // mdx sample #7
         "with member [Measures].[Accumulated Sales] as 'Sum(YTD(),[Measures].[Store Sales])'" + nl +
@@ -233,8 +233,7 @@ public class QueryRunner extends Thread {
                 try {
                     if (mRandomQueries) {
                         queryIndex = (int)(Math.random() * Queries.length);
-                    }
-                    else {
+                    } else {
                         queryIndex = mRunCount % Queries.length;
                     }
 
@@ -251,8 +250,7 @@ public class QueryRunner extends Thread {
                 }
             }
             mStopTime = System.currentTimeMillis();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             mExceptions.add(e);
         }
     }
@@ -283,8 +281,7 @@ public class QueryRunner extends Thread {
         for (int idx = 0; idx < runners.length; idx++) {
             try {
                 runners[idx].join();
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
@@ -299,8 +296,7 @@ public class QueryRunner extends Thread {
             System.err.println("usage: QueryRunner numThreads seconds randomQueries");
 
             return;
-        }
-        else {
+        } else {
             runTest(
                 Integer.parseInt(args[0]),
                 Integer.parseInt(args[1]),

@@ -125,7 +125,7 @@ public class RolapCubeLevel extends RolapLevel {
             // with the new aliased name
             return exp;
         }
-        throw new RuntimeException("conversion of Class "+ exp.getClass() +
+        throw new RuntimeException("conversion of Class " + exp.getClass() +
                                     " unsupported at this time");
     }
 

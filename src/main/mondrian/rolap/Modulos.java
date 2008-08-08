@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -64,11 +64,11 @@ public interface Modulos {
     public abstract class Base implements Modulos {
         protected final int[] modulos;
         protected Base(final Axis[] axes) {
-            this.modulos = new int[axes.length+1];
+            this.modulos = new int[axes.length + 1];
             this.modulos[0] = 1;
         }
         protected Base(final int[] lengths) {
-            this.modulos = new int[lengths.length+1];
+            this.modulos = new int[lengths.length + 1];
             this.modulos[0] = 1;
         }
         public abstract int[] getCellPos(int cellOrdinal);

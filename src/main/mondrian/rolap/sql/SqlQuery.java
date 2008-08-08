@@ -865,10 +865,10 @@ public class SqlQuery {
             // DEUKA "05.01.0000 V5R1m0" is ok
             String[] version_release = productVersion.split("\\.", 3);
             /*
-            if ( version_release.length > 2 &&
+            if (version_release.length > 2 &&
                 "04".compareTo(version_release[0]) > 0 ||
                 ("04".compareTo(version_release[0]) == 0
-                && "03".compareTo(version_release[1]) >= 0) )
+                && "03".compareTo(version_release[1]) >= 0))
                 return true;
             */
             // assume, that version <= 04 is "old"
@@ -972,7 +972,7 @@ public class SqlQuery {
             if (k > 0) {
                 // qualified
                 String val1 = Util.replace(val.substring(0,k), q, q + q);
-                String val2 = Util.replace(val.substring(k+1), q, q + q);
+                String val2 = Util.replace(val.substring(k + 1), q, q + q);
                 buf.append(q);
                 buf.append(val1);
                 buf.append(q);

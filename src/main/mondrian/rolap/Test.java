@@ -89,13 +89,22 @@ public class Test {
             connection.commit();
         } finally {
             if (statement2 != null) {
-                try {statement2.close();} catch (java.sql.SQLException e) {}
+                try {
+                    statement2.close();
+                } catch (java.sql.SQLException e) {
+                }
             }
             if (statement != null) {
-                try {statement.close();} catch (java.sql.SQLException e) {}
+                try {
+                    statement.close();
+                } catch (java.sql.SQLException e) {
+                }
             }
             if (connection != null) {
-                try {connection.close();} catch (java.sql.SQLException e) {}
+                try {
+                    connection.close();
+                } catch (java.sql.SQLException e) {
+                }
             }
         }
     }

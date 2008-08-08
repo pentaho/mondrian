@@ -605,7 +605,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
         try {
             assertQuerySql(testContext, query, patterns);
-        } catch(Throwable t) {
+        } catch (Throwable t) {
             patterns =
                 new SqlPattern[] {
                     new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
@@ -681,7 +681,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
         try {
             assertQuerySql(testContext, query, patterns);
-        } catch(Throwable t) {
+        } catch (Throwable t) {
             patterns =
                 new SqlPattern[] {
                     new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
@@ -1350,8 +1350,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         props.EnableGroupingSets.set(true);
         try {
             assertQueryReturns("WITH " +
-            "MEMBER GENDER.AGG AS 'AGGREGATE( { GENDER.[F] } )' " +
-            "MEMBER GENDER.AGG2 AS 'AGGREGATE( { GENDER.[M] } )' " +
+            "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F] })' " +
+            "MEMBER GENDER.AGG2 AS 'AGGREGATE({ GENDER.[M] })' " +
             "SELECT " +
             "{ MEASURES.[CUSTOMER COUNT], MEASURES.[UNIT SALES] } ON 0, " +
             "{ GENDER.AGG, GENDER.AGG2 } ON 1 \n" +
@@ -1379,7 +1379,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         props.EnableGroupingSets.set(true);
         try {
             assertQueryReturns("WITH " +
-            "MEMBER GENDER.AGG AS 'AGGREGATE( { GENDER.[F], GENDER.[M] } )' " +
+            "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F], GENDER.[M] })' " +
             "SELECT " +
             "{MEASURES.[CUSTOMER COUNT]} ON 0, " +
             "{GENDER.AGG } ON 1 " +

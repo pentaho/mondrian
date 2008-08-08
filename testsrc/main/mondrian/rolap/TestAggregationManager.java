@@ -140,8 +140,7 @@ public class TestAggregationManager extends BatchTestCase {
                 "from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` " +
                 "where `agg_g_ms_pcat_sales_fact_1997`.`gender` = 'F' " +
                 "group by `agg_g_ms_pcat_sales_fact_1997`.`gender`",
-                26
-            )
+                26)
         };
 
         assertRequestSql(new CellRequest[]{request}, patterns);
@@ -167,8 +166,7 @@ public class TestAggregationManager extends BatchTestCase {
                 "where `agg_l_03_sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
                 "and `customer`.`gender` = 'F' " +
                 "group by `customer`.`gender`",
-                26
-            )
+                26)
         };
 
         assertRequestSql(new CellRequest[]{request}, patterns);
@@ -215,8 +213,7 @@ public class TestAggregationManager extends BatchTestCase {
                 "and `agg_l_05_sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
                 "group by `store`.`store_state`, " +
                 "`customer`.`gender`",
-                29
-            )
+                29)
         };
 
         assertRequestSql(requests, patterns);
@@ -257,8 +254,7 @@ public class TestAggregationManager extends BatchTestCase {
                 " and `agg_l_05_sales_fact_1997`.`store_id` = `store`.`store_id`" +
                 " and `store`.`store_state` in ('CA', 'OR') " +
                 "group by `customer`.`gender`, `store`.`store_state`",
-                26
-            )
+                26)
         };
 
         assertRequestSql(requests, patterns);

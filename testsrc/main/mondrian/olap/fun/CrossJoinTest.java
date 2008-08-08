@@ -46,13 +46,13 @@ public class CrossJoinTest extends FoodMartTestCase {
         new TestMember("D"),
     };
     static Member[][] m3 = new Member[][] {
-        { new TestMember("k"), new TestMember("l") },
-        { new TestMember("m"), new TestMember("n") },
+        new Member[] { new TestMember("k"), new TestMember("l") },
+        new Member[] { new TestMember("m"), new TestMember("n") },
     };
     static Member[][] m4 = new Member[][] {
-        { new TestMember("U"), new TestMember("V") },
-        { new TestMember("W"), new TestMember("X") },
-        { new TestMember("Y"), new TestMember("Z") },
+        new Member[] { new TestMember("U"), new TestMember("V") },
+        new Member[] { new TestMember("W"), new TestMember("X") },
+        new Member[] { new TestMember("Y"), new TestMember("Z") },
     };
 
     static final Comparator<Member[]> memberComparator =

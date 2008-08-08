@@ -35,7 +35,7 @@ public class I18n {
     }
 
     public static void addOnLanguageChangedListener(LanguageChangedListener listener) {
-        languageChangedListeners.add( listener );
+        languageChangedListeners.add(listener);
     }
 
     public I18n(ResourceBundle guiBundle, ResourceBundle languageBundle) {
@@ -48,10 +48,10 @@ public class I18n {
         java.util.List<Locale> supportedLocales = new ArrayList<Locale>();
 
         try {
-            Set names = getResourcesInPackage( cl, cl.getName() );
+            Set names = getResourcesInPackage(cl, cl.getName());
             Iterator it = names.iterator();
 
-            while( it.hasNext() ) {
+            while (it.hasNext()) {
                 String n = (String) it.next();
 
                 // From
@@ -61,17 +61,17 @@ public class I18n {
                 // To
                 // 'en' OR 'en_UK_' OR even en_UK_Brighton dialect
 
-                String lang = n.substring( n.lastIndexOf('/')+1 );
+                String lang = n.substring(n.lastIndexOf('/') + 1);
 
                 // only accept resources with extension '.properties'
-                if ( lang.indexOf(".properties") < 0 ) {
+                if (lang.indexOf(".properties") < 0) {
                     continue;
                 }
 
-                lang = lang.substring(0, lang.indexOf(".properties") );
+                lang = lang.substring(0, lang.indexOf(".properties"));
 
-                StringTokenizer tokenizer = new StringTokenizer( lang, "_");
-                if ( tokenizer.countTokens() <=  1 ) {
+                StringTokenizer tokenizer = new StringTokenizer(lang, "_");
+                if (tokenizer.countTokens() <=  1) {
                     continue;
                 }
 
@@ -80,7 +80,7 @@ public class I18n {
                 String variant  = "";
 
                 int i = 0;
-                while (tokenizer.hasMoreTokens() ) {
+                while (tokenizer.hasMoreTokens()) {
                     String token = tokenizer.nextToken();
 
                     switch (i) {
@@ -103,33 +103,36 @@ public class I18n {
 
                 }
 
-                Locale model = new Locale( language, country, variant );
-                supportedLocales.add( model );
+                Locale model = new Locale(language, country, variant);
+                supportedLocales.add(model);
 
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             LOGGER.error("getListOfAvailableLanguages", e);
         }
 
         // Sort the list. Probably should use the current locale when getting the
         // DisplayLanguage so the sort order is correct for the user.
 
-        Collections.sort( supportedLocales, new Comparator<Object>() {
-            public int compare(Object lhs, Object rhs) {
-                String ls = ((Locale)lhs).getDisplayLanguage();
-                String rs = ((Locale)rhs).getDisplayLanguage();
+        Collections.sort(
+            supportedLocales,
+            new Comparator<Object>() {
+                public int compare(Object lhs, Object rhs) {
+                    String ls = ((Locale)lhs).getDisplayLanguage();
+                    String rs = ((Locale)rhs).getDisplayLanguage();
 
-                // TODO this is not very nice - We should introduce a MyLocale
-                if (ls.equals("pap")) {
-                    ls = "Papiamentu";
-                }
-                if (rs.equals("pap")) {
-                    rs = "Papiamentu";
-                }
+                    // TODO this is not very nice - We should introduce a MyLocale
+                    if (ls.equals("pap")) {
+                        ls = "Papiamentu";
+                    }
+                    if (rs.equals("pap")) {
+                        rs = "Papiamentu";
+                    }
 
-                return ls.compareTo( rs );
+                    return ls.compareTo(rs);
+                }
             }
-        });
+        );
 
         return supportedLocales;
     }
@@ -147,72 +150,75 @@ public class I18n {
      * @return A Set of Strings for each resouce in the package.
      */
     public static Set getResourcesInPackage(Class coreClass, String packageName) throws IOException {
-            String localPackageName;
-            if( packageName.endsWith("/") ) {
-                    localPackageName = packageName;
-            } else {
-                    localPackageName = packageName + '/';
-            }
+        String localPackageName;
+        if (packageName.endsWith("/")) {
+            localPackageName = packageName;
+        } else {
+            localPackageName = packageName + '/';
+        }
 
-            ClassLoader cl = coreClass.getClassLoader();
+        ClassLoader cl = coreClass.getClassLoader();
 
-            Enumeration dirEnum = cl.getResources( localPackageName );
+        Enumeration dirEnum = cl.getResources(localPackageName);
 
-            Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<String>();
 
-            // Loop CLASSPATH directories
-            while( dirEnum.hasMoreElements() ) {
-                    URL resUrl = (URL) dirEnum.nextElement();
+        // Loop CLASSPATH directories
+        while (dirEnum.hasMoreElements()) {
+            URL resUrl = (URL) dirEnum.nextElement();
 
-                    // Pointing to filesystem directory
-                    if ( resUrl.getProtocol().equals("file") ) {
-                        try {
-                          File dir = new File( resUrl.getFile() );
-                            File[] files = dir.listFiles();
-                            if ( files != null ) {
-                                    for( int i=0; i<files.length; i++ ) {
-                                            File file = files[i];
-                                            if ( file.isDirectory() )
-                                                    continue;
-                                            names.add( localPackageName + file.getName() );
-                                    }
+            // Pointing to filesystem directory
+            if (resUrl.getProtocol().equals("file")) {
+                try {
+                    File dir = new File(resUrl.getFile());
+                    File[] files = dir.listFiles();
+                    if (files != null) {
+                        for (int i = 0; i < files.length; i++) {
+                            File file = files[i];
+                            if (file.isDirectory()) {
+                                continue;
                             }
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
+                            names.add(localPackageName + file.getName());
                         }
-
-                            // Pointing to Jar file
-                    } else if ( resUrl.getProtocol().equals("jar") ) {
-                            JarURLConnection jconn = (JarURLConnection) resUrl.openConnection();
-                            JarFile jfile = jconn.getJarFile();
-                            Enumeration entryEnum = jfile.entries();
-                            while( entryEnum.hasMoreElements() ) {
-                                    JarEntry entry = (JarEntry) entryEnum.nextElement();
-                                    String entryName = entry.getName();
-                                    // Exclude our own directory
-                                    if ( entryName.equals(localPackageName) )
-                                            continue;
-                                    String parentDirName = entryName.substring( 0, entryName.lastIndexOf('/')+1 );
-                                    if ( ! parentDirName.equals(localPackageName) )
-                                            continue;
-                                    names.add( entryName );
-                            }
-                    } else {
-                            // Invalid classpath entry
                     }
-            }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
 
-            return names;
+                // Pointing to Jar file
+            } else if (resUrl.getProtocol().equals("jar")) {
+                JarURLConnection jconn = (JarURLConnection) resUrl.openConnection();
+                JarFile jfile = jconn.getJarFile();
+                Enumeration entryEnum = jfile.entries();
+                while (entryEnum.hasMoreElements()) {
+                    JarEntry entry = (JarEntry) entryEnum.nextElement();
+                    String entryName = entry.getName();
+                    // Exclude our own directory
+                    if (entryName.equals(localPackageName)) {
+                        continue;
+                    }
+                    String parentDirName = entryName.substring(0, entryName.lastIndexOf('/') + 1);
+                    if (! parentDirName.equals(localPackageName)) {
+                        continue;
+                    }
+                    names.add(entryName);
+                }
+            } else {
+                // Invalid classpath entry
+            }
+        }
+
+        return names;
     }
 
 
-    public void setCurrentLocale( String language ) {
+    public void setCurrentLocale(String language) {
         setCurrentLocale(language, null);
     }
 
-    public void setCurrentLocale( String language, String country ) {
+    public void setCurrentLocale(String language, String country) {
         if (language != null && !language.equals("")) {
-            if(country != null && !country.equals("")) {
+            if (country != null && !country.equals("")) {
                 setCurrentLocale(new Locale(language, country));
             } else {
                 setCurrentLocale(new Locale(language));
@@ -222,7 +228,7 @@ public class I18n {
         }
     }
 
-    public void setCurrentLocale( Locale locale ) {
+    public void setCurrentLocale(Locale locale) {
         currentLocale = locale;
         languageBundle = null;
 
@@ -264,7 +270,7 @@ public class I18n {
      * @return The locale specific string
      */
     public String getString(String stringID) {
-        return getString(stringID, getCurrentLocale() );
+        return getString(stringID, getCurrentLocale());
     }
 
     /**
@@ -274,7 +280,7 @@ public class I18n {
      * @return The locale specific string
      */
     public String getString(String stringID, String defaultValue) {
-        return getString(stringID, getCurrentLocale(), defaultValue );
+        return getString(stringID, getCurrentLocale(), defaultValue);
     }
 
     /**
@@ -286,7 +292,7 @@ public class I18n {
      */
     public String getFormattedString(String stringID, String defaultValue, Object[] args)
     {
-        String pattern = getString(stringID, getCurrentLocale(), defaultValue );
+        String pattern = getString(stringID, getCurrentLocale(), defaultValue);
         MessageFormat mf = new java.text.MessageFormat(pattern, getCurrentLocale());
         return mf.format(args);
     }
@@ -316,7 +322,7 @@ public class I18n {
             }
             return languageBundle.getString(stringID);
         } catch (MissingResourceException ex) {
-            LOGGER.error("Can't find the translation for key = " + stringID +": using default (" + defaultValue + ")", ex);
+            LOGGER.error("Can't find the translation for key = " + stringID + ": using default (" + defaultValue + ")", ex);
         } catch (Exception ex) {
             LOGGER.error("Exception loading stringID = " + stringID, ex);
         }

@@ -188,7 +188,9 @@ public class TestMember implements Member {
             throw new UnsupportedOperationException();
         }
 
-        public boolean isHighCardinality() { return false; }
+        public boolean isHighCardinality() {
+            return false;
+        }
 
         public String getUniqueName() {
             throw new UnsupportedOperationException();

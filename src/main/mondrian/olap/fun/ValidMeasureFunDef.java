@@ -121,7 +121,7 @@ public class ValidMeasureFunDef extends FunDefBase
             Member[] currentMembers = evaluator.getMembers();
             List<Member> calculatedMembers = new ArrayList<Member>();
             for (Member currentMember : currentMembers) {
-                if(currentMember.isCalculated()){
+                if (currentMember.isCalculated()) {
                     calculatedMembers.add(currentMember);
                 }
             }

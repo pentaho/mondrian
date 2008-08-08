@@ -222,7 +222,9 @@ public abstract class RolapAggregationManager {
             }
         } else {
             for (int i = 1; i < members.length; i++) {
-                if(!(members[i] instanceof RolapCubeMember)) continue;
+                if (!(members[i] instanceof RolapCubeMember)) {
+                    continue;
+                }
                 RolapCubeMember member = (RolapCubeMember) members[i];
                 final RolapCubeLevel level = member.getLevel();
                 final boolean needToReturnNull =
@@ -336,7 +338,7 @@ public abstract class RolapAggregationManager {
     {
         // The more generalized aggregation as aggregating over tuples.
         // The special case is a tuple defined by only one member.
-        int unsatisfiableTupleCount=0;
+        int unsatisfiableTupleCount = 0;
         for (RolapMember[] aggregation : aggregationList) {
             boolean isTuple;
             if (aggregation.length > 0 &&
@@ -747,7 +749,8 @@ public abstract class RolapAggregationManager {
      * A set of segments which are pinned for a short duration as a result of a
      * cache inquiry.
      */
-    public interface PinSet {}
+    public interface PinSet {
+    }
 }
 
 // End RolapAggregationManager.java

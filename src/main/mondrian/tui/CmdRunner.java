@@ -297,7 +297,7 @@ public class CmdRunner {
         int category = TypeUtil.typeToCategory(param.getType());
         String name = param.getName();
         String value = CmdRunner.paraNameValues.get(name);
-        debug("loadParameter: name=" +name+ ", value=" + value);
+        debug("loadParameter: name=" + name + ", value=" + value);
         if (value == null) {
             return;
         }
@@ -357,13 +357,13 @@ public class CmdRunner {
         String trimmed = value.trim();
         int len = trimmed.length();
         if (trimmed.charAt(0) == '"' && trimmed.charAt(len - 1) == '"') {
-            debug("parseParameter. STRING_TYPE: " +trimmed);
+            debug("parseParameter. STRING_TYPE: " + trimmed);
             return new Expr(
                 trimmed.substring(1, trimmed.length() - 1),
                 Expr.Type.STRING);
         }
         if (trimmed.charAt(0) == '\'' && trimmed.charAt(len - 1) == '\'') {
-            debug("parseParameter. STRING_TYPE: " +trimmed);
+            debug("parseParameter. STRING_TYPE: " + trimmed);
             return new Expr(
                 trimmed.substring(1, trimmed.length() - 1),
                 Expr.Type.STRING);
@@ -377,11 +377,11 @@ public class CmdRunner {
             // nothing to do, should be member
         }
         if (number != null) {
-            debug("parseParameter. NUMERIC_TYPE: " +number);
+            debug("parseParameter. NUMERIC_TYPE: " + number);
             return new Expr(number, Expr.Type.NUMERIC);
         }
 
-        debug("parseParameter. MEMBER_TYPE: " +trimmed);
+        debug("parseParameter. MEMBER_TYPE: " + trimmed);
         Query query = this.connection.parseQuery(this.mdxCmd);
         // dont have to execute
         //this.connection.execute(query);
@@ -603,7 +603,7 @@ public class CmdRunner {
 
     public void makeConnectString() {
         String connectString = CmdRunner.getConnectStringProperty();
-        debug("CmdRunner.makeConnectString: connectString="+connectString);
+        debug("CmdRunner.makeConnectString: connectString=" + connectString);
 
         Util.PropertyList connectProperties;
         if (connectString == null || connectString.equals("")) {
@@ -618,7 +618,7 @@ public class CmdRunner {
         // override jdbc url
         String jdbcURL = CmdRunner.getJdbcURLProperty();
 
-        debug("CmdRunner.makeConnectString: jdbcURL="+jdbcURL);
+        debug("CmdRunner.makeConnectString: jdbcURL=" + jdbcURL);
 
         if (jdbcURL != null) {
             // add jdbc url to connect string
@@ -628,7 +628,7 @@ public class CmdRunner {
         // override jdbc drivers
         String jdbcDrivers = CmdRunner.getJdbcDriversProperty();
 
-        debug("CmdRunner.makeConnectString: jdbcDrivers="+jdbcDrivers);
+        debug("CmdRunner.makeConnectString: jdbcDrivers=" + jdbcDrivers);
         if (jdbcDrivers != null) {
             // add jdbc drivers to connect string
             connectProperties.put(RolapConnectionProperties.JdbcDrivers.name(), jdbcDrivers);
@@ -637,7 +637,7 @@ public class CmdRunner {
         // override catalog url
         String catalogURL = CmdRunner.getCatalogURLProperty();
 
-        debug("CmdRunner.makeConnectString: catalogURL="+catalogURL);
+        debug("CmdRunner.makeConnectString: catalogURL=" + catalogURL);
 
         if (catalogURL != null) {
             // add catalog url to connect string
@@ -647,7 +647,7 @@ public class CmdRunner {
         // override JDBC user
         String jdbcUser = CmdRunner.getJdbcUserProperty();
 
-        debug("CmdRunner.makeConnectString: jdbcUser="+jdbcUser);
+        debug("CmdRunner.makeConnectString: jdbcUser=" + jdbcUser);
 
         if (jdbcUser != null) {
             // add user to connect string
@@ -657,7 +657,7 @@ public class CmdRunner {
         // override JDBC password
         String jdbcPassword = CmdRunner.getJdbcPasswordProperty();
 
-        debug("CmdRunner.makeConnectString: jdbcPassword="+jdbcPassword);
+        debug("CmdRunner.makeConnectString: jdbcPassword=" + jdbcPassword);
 
         if (jdbcPassword != null) {
             // add password to connect string
@@ -668,7 +668,7 @@ public class CmdRunner {
             connectProperties.put(RolapConnectionProperties.Role.name(), options.roleName);
         }
 
-        debug("CmdRunner.makeConnectString: connectProperties="+connectProperties);
+        debug("CmdRunner.makeConnectString: connectProperties=" + connectProperties);
 
         this.connectString = connectProperties.toString();
     }
@@ -794,7 +794,7 @@ public class CmdRunner {
         boolean inMdxCmd = false;
         String resultString = null;
 
-        for(;;) {
+        for (;;) {
             if (resultString != null) {
                 printResults(resultString);
                 printQueryTime();
@@ -825,7 +825,7 @@ public class CmdRunner {
             if (line != null) {
                 line = line.trim();
             }
-            debug("line="+line);
+            debug("line=" + line);
 
             if (! inMdxCmd) {
                 // If not in the middle of reading an mdx query and
@@ -876,13 +876,13 @@ public class CmdRunner {
             if ((line == null) ||
                     ((line.length() == 1) &&
                     ((line.charAt(0) == EXECUTE_CHAR) ||
-                        (line.charAt(0) == CANCEL_CHAR)) )) {
+                        (line.charAt(0) == CANCEL_CHAR)))) {
 
                 // If EXECUTE_CHAR, then execute, otherwise its the
                 // CANCEL_CHAR and simply empty buffer.
                 if ((line == null) || (line.charAt(0) == EXECUTE_CHAR)) {
                     String mdxCmd = buf.toString().trim();
-                    debug("mdxCmd=\""+mdxCmd+"\"");
+                    debug("mdxCmd=\"" + mdxCmd + "\"");
                     resultString = executeMdxCmd(mdxCmd);
                 }
 
@@ -920,7 +920,7 @@ public class CmdRunner {
     }
     protected void printQueryTime() {
         if (options.timeQueries && (queryTime != -1)) {
-            out.println("time[" +queryTime+ "ms]");
+            out.println("time[" + queryTime +  "ms]");
             out.flush();
             queryTime = -1;
         }
@@ -944,7 +944,7 @@ public class CmdRunner {
         StringBuilder buf = new StringBuilder(128);
         StringBuilder line = new StringBuilder(128);
         int offset;
-        int i=getLine(reader, line);
+        int i = getLine(reader, line);
         boolean inName = false;
 
         for (offset = 0; offset < line.length(); offset++) {
@@ -974,9 +974,9 @@ public class CmdRunner {
                         String startComment = commentDelim[x][0];
                         boolean foundCommentStart = true;
                         for (int j = 1;
-                            j+offset < line.length() && j < startComment.length();
+                            j + offset < line.length() && j < startComment.length();
                                 j++) {
-                            if (line.charAt(j+offset) != startComment.charAt(j)) {
+                            if (line.charAt(j + offset) != startComment.charAt(j)) {
                                 foundCommentStart = false;
                             }
                         }
@@ -1059,7 +1059,7 @@ public class CmdRunner {
             int i)
             throws IOException {
 
-        String delim=line.substring(offset, offset + 1);
+        String delim = line.substring(offset, offset + 1);
         return readBlock(reader, line, offset, delim, delim, true, true, buf, i);
     }
 
@@ -1082,7 +1082,7 @@ public class CmdRunner {
             int i)
             throws IOException {
 
-        int depth=1;
+        int depth = 1;
         if (addToBuf) {
             buf.append(startDelim);
         }
@@ -1098,17 +1098,15 @@ public class CmdRunner {
                 if (--depth == 0) {
                      break;
                 }
-            }
             // check for nested block
-            else if (allowNestedComments &&
+            } else if (allowNestedComments &&
                      line.substring(offset).startsWith(startDelim)) {
                 if (addToBuf) {
                     buf.append(startDelim);
                 }
                 offset += startDelim.length();
                 depth++;
-            }
-            else if (offset < line.length()) {
+            } else if (offset < line.length()) {
                 // not at the end of line, so eat the next char
                 char c = line.charAt(offset++);
                 if (allowEscape && c == ESCAPE_CHAR) {
@@ -1122,12 +1120,10 @@ public class CmdRunner {
                         }
                         offset++;
                     }
-                }
-                else if (addToBuf) {
+                } else if (addToBuf) {
                     buf.append(c);
                 }
-            }
-            else {
+            } else {
                 // finished a line; read in the next one and continue
                 if (i == -1) {
                     break;
@@ -2123,19 +2119,19 @@ public class CmdRunner {
         } else {
 
             String cubeName = m.group(1);
-            String expression = mdxCmd.substring(cubeName.length()+1);
+            String expression = mdxCmd.substring(cubeName.length() + 1);
 
             if (cubeName.charAt(0) == '"') {
-                cubeName = cubeName.substring(1, cubeName.length()-1);
+                cubeName = cubeName.substring(1, cubeName.length() - 1);
             } else if (cubeName.charAt(0) == '\'') {
-                cubeName = cubeName.substring(1, cubeName.length()-1);
+                cubeName = cubeName.substring(1, cubeName.length() - 1);
             } else if (cubeName.charAt(0) == '[') {
-                cubeName = cubeName.substring(1, cubeName.length()-1);
+                cubeName = cubeName.substring(1, cubeName.length() - 1);
             }
 
             int len = expression.length();
             if (expression.charAt(0) == '"') {
-                if (expression.charAt(len-1) != '"') {
+                if (expression.charAt(len - 1) != '"') {
                     buf.append("Missing end '\"' in expression:");
                     buf.append(nl);
                     buf.append(expression);
@@ -2143,10 +2139,10 @@ public class CmdRunner {
                     setError(msg);
                     return msg;
                 }
-                expression = expression.substring(1, len-1);
+                expression = expression.substring(1, len - 1);
 
             } else if (expression.charAt(0) == '\'') {
-                if (expression.charAt(len-1) != '\'') {
+                if (expression.charAt(len - 1) != '\'') {
                     buf.append("Missing end \"'\" in expression:");
                     buf.append(nl);
                     buf.append(expression);
@@ -2154,7 +2150,7 @@ public class CmdRunner {
                     setError(msg);
                     return msg;
                 }
-                expression = expression.substring(1, len-1);
+                expression = expression.substring(1, len - 1);
             }
 
             Cube cube = getCube(cubeName);
@@ -2188,7 +2184,7 @@ public class CmdRunner {
                             return msg;
                         }
                         while (index != -1) {
-                            if (expression.charAt(index-1) != '\\') {
+                            if (expression.charAt(index - 1) != '\\') {
                                 // error
                                 buf.append("Non-escaped \"'\" in expression:");
                                 buf.append(nl);
@@ -2197,7 +2193,7 @@ public class CmdRunner {
                                 setError(msg);
                                 return msg;
                             }
-                            start = index+1;
+                            start = index + 1;
                             index = expression.indexOf('\'', start);
                         }
                     }
@@ -2348,8 +2344,8 @@ public class CmdRunner {
     private static void setDefaultCommentState() {
         allowNestedComments = mondrian.olap.Scanner.getNestedCommentsState();
         String[][] scannerCommentsDelimiters = mondrian.olap.Scanner.getCommentDelimiters();
-        commentDelim = new String[scannerCommentsDelimiters.length+1][2];
-        commentStartChars = new char[scannerCommentsDelimiters.length+1];
+        commentDelim = new String[scannerCommentsDelimiters.length + 1][2];
+        commentStartChars = new char[scannerCommentsDelimiters.length + 1];
 
 
         // CmdRunner has extra delimiter; # to end of line
@@ -2362,7 +2358,7 @@ public class CmdRunner {
         for (int x = 0; x < scannerCommentsDelimiters.length; x++) {
             commentDelim[x + 1][0] = scannerCommentsDelimiters[x][0];
             commentDelim[x + 1][1] = scannerCommentsDelimiters[x][1];
-            commentStartChars[x + 1] = commentDelim[x+1][0].charAt(0);
+            commentStartChars[x + 1] = commentDelim[x + 1][0].charAt(0);
         }
     }
 

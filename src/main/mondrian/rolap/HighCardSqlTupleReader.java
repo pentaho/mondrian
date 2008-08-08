@@ -118,7 +118,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
             int currPartialResultIdx = 0;
             if (execQuery) {
                 this.moreRows = resultSet.next();
-                if(this.moreRows) {
+                if (this.moreRows) {
                     ++stmt.rowCount;
                 }
             } else {
@@ -133,9 +133,12 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
             // source as having "no more rows")
             readNextTuple();
             readNextTuple();
-        } catch(SQLException sqle) {
-            if(stmt!=null) stmt.handle(sqle);
-            else throw Util.newError(sqle, message);
+        } catch (SQLException sqle) {
+            if (stmt != null) {
+                stmt.handle(sqle);
+            } else {
+                throw Util.newError(sqle, message);
+            }
         }
     }
 

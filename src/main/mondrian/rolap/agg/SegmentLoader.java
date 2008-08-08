@@ -513,7 +513,7 @@ public class SegmentLoader {
                                 }
                             }
                         }
-                    );
+                   );
                 axisValueSets[i] = set;
             } else {
                 assert Comparable.class.isAssignableFrom(Boolean.class);

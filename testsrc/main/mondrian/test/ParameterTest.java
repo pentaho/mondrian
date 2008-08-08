@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -76,9 +76,7 @@ public class ParameterTest extends FoodMartTestCase {
           "{}" + nl +
           "Axis #1:" + nl +
           "{[Measures].[X]}" + nl +
-          "Row #0: 565238" + nl
-
-      );
+          "Row #0: 565238" + nl);
     }
 
     public void testParameterInFormatString_Bug1584439() {

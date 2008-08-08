@@ -83,8 +83,7 @@ public class MemberHelperTest extends TestCase {
         try {
             new MemberHelper("blah");
             fail("Should not be able to create a MemberHelper with a string");
-        }
-        catch(IllegalArgumentException iae) {
+        } catch (IllegalArgumentException iae) {
         }
     }
 

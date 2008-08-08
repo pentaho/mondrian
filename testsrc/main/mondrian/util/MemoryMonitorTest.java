@@ -46,7 +46,7 @@ public class MemoryMonitorTest extends FoodMartTestCase {
         final int nosOfChunks = 1000;
         long maxMemory = mm.getMaxMemory();
         long usedMemory = mm.getUsedMemory();
-        long delta = (maxMemory-usedMemory)/nosOfChunks;
+        long delta = (maxMemory - usedMemory) / nosOfChunks;
         if (delta == 0) {
             // delta has to be greater than zero so pick 1k
             delta = 1024;
@@ -142,7 +142,7 @@ Does not work without the notify on add feature.
         long maxMemory = mm.getMaxMemory();
         long usedMemory = mm.getUsedMemory();
         int currentPercentage = convertThresholdToPercentage(usedMemory, maxMemory);
-        int delta = (int) (maxMemory - usedMemory)/10;
+        int delta = (int) (maxMemory - usedMemory) / 10;
         int percentage = convertThresholdToPercentage(delta, maxMemory);
         try {
             byte[][] bytes = new byte[10][];
@@ -251,7 +251,7 @@ Does not work without the notify on add feature.
             "[Measures].[Customer Count] \n" +
             "} \n" +
             "ON COLUMNS, \n" +
-            "Crossjoin( \n" +
+            "Crossjoin(\n" +
             "  Descendants([Store].[All Stores]), \n" +
             "  Descendants([Product].[All Products]) \n" +
             ") \n" +
@@ -296,7 +296,7 @@ Does not work without the notify on add feature.
 
 
 
-            byte[] bytes = new byte[(int) ((buf>0) ? buf : 0)];
+            byte[] bytes = new byte[(int) ((buf > 0) ? buf : 0)];
 
             mm.addListener(listener);
             // Check to see if we have been notified.

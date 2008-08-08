@@ -259,7 +259,7 @@ public interface SchemaReader {
     /**
      * Compares a pair of {@link Member}s according to their order in a prefix
      * traversal. (that is, it
-     * is an ancestor or a earlier ), is a sibling, or comes later in a prefix
+     * is an ancestor or a earlier), is a sibling, or comes later in a prefix
      * traversal.
      * @return A negative integer if <code>m1</code> is an ancestor, an earlier
      *   sibling of an ancestor, or a descendent of an earlier sibling, of

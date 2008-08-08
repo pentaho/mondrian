@@ -52,14 +52,14 @@ public class NullMemberRepresentationTest extends FoodMartTestCase {
     public void testItemMemberWithCustomNullMemberRepresentation()
             throws IOException {
         assertExprReturns("[Time].[1997].Children.Item(6).UniqueName",
-                "[Time].["+ getNullMemberRepresentation() + "]");
+                "[Time].[" + getNullMemberRepresentation() + "]");
         assertExprReturns("[Time].[1997].Children.Item(-1).UniqueName",
-                "[Time].["+ getNullMemberRepresentation() + "]");
+                "[Time].[" + getNullMemberRepresentation() + "]");
     }
 
     public void testNullMemberWithCustomRepresentation() throws IOException {
         assertExprReturns("[Gender].[All Gender].Parent.UniqueName",
-                "[Gender].["+ getNullMemberRepresentation() + "]");
+                "[Gender].[" + getNullMemberRepresentation() + "]");
 
         assertExprReturns("[Gender].[All Gender].Parent.Name",
                 getNullMemberRepresentation());

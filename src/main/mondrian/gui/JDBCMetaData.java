@@ -80,12 +80,13 @@ public class JDBCMetaData {
     }
 
     /* Creates a database connection and initializes the meta data details */
-    public String initConnection(){
+    public String initConnection() {
         LOGGER.debug("JDBCMetaData: initConnection");
 
         try {
             if (jdbcDriverClassName == null || jdbcDriverClassName.trim().length() == 0 ||
-                    jdbcConnectionUrl == null|| jdbcConnectionUrl.trim().length() == 0) {
+                jdbcConnectionUrl == null || jdbcConnectionUrl.trim().length() == 0)
+            {
                 errMsg = getResourceConverter().getFormattedString("jdbcMetaData.blank.exception",
                         "Driver={0}\nConnection URL={1}\nUse Preferences to set Database Connection parameters first and then open a Schema",
                         new String[] { jdbcDriverClassName, jdbcConnectionUrl });
@@ -109,7 +110,7 @@ public class JDBCMetaData {
             db.productVersion   = md.getDatabaseProductVersion();
             db.catalogName      = conn.getCatalog();
 
-            LOGGER.debug("Catalog name = "+db.catalogName);
+            LOGGER.debug("Catalog name = " + db.catalogName);
             /*
             ResultSet rsd = md.getSchemas();
             while (rsd.next())
@@ -131,7 +132,7 @@ public class JDBCMetaData {
             return null;
         } catch (Exception e) {
             errMsg = e.getClass().getSimpleName() + " : " + e.getLocalizedMessage();
-            LOGGER.error("Database connection exception : "+errMsg, e);
+            LOGGER.error("Database connection exception : " + errMsg, e);
             return errMsg;
             //e.printStackTrace();
         }
@@ -147,20 +148,20 @@ public class JDBCMetaData {
     }
 
     /* set all schemas in the currently connected database */
-    private void setAllSchemas(){
+    private void setAllSchemas() {
         LOGGER.debug("JDBCMetaData: setAllSchemas");
 
         ResultSet rs = null;
         boolean gotSchema = false;
 
-        try{
+        try {
             rs = md.getSchemas();
             /*
             if (true)
             throw new Exception("Schema concept not found in database");
              */
 
-            while(rs.next()) {
+            while (rs.next()) {
                 DbSchema dbs = new DbSchema();
                 dbs.name = rs.getString("TABLE_SCHEM");
                 LOGGER.debug("JDBCMetaData: setAllTables - " + dbs.name);
@@ -170,7 +171,7 @@ public class JDBCMetaData {
             }
             rs.close();
         } catch (Exception e) {
-            LOGGER.debug("Exception : Database does not support schemas."+e.getMessage());
+            LOGGER.debug("Exception : Database does not support schemas." + e.getMessage());
         }
 
         if (!gotSchema) {
@@ -183,13 +184,13 @@ public class JDBCMetaData {
     }
 
     /* set all tables in the currently connected database */
-    private void setAllTables(DbSchema dbs){
+    private void setAllTables(DbSchema dbs) {
         LOGGER.debug("JDBCMetaData: Loading schema: '" + dbs.name + "'");
         ResultSet rs = null;
         try {
             // Tables and views can be used
             rs = md.getTables(null, dbs.name, null, new String[]{"TABLE", "VIEW"});
-            while(rs.next()) {
+            while (rs.next()) {
                 String tbname = rs.getString("TABLE_NAME");
                 DbTable dbt;
 
@@ -201,7 +202,7 @@ public class JDBCMetaData {
                     dbt = new FactTable();
                     do  {
                         ((FactTable) dbt).addFks(rs_fks.getString("FKCOLUMN_NAME"),rs_fks.getString("pktable_name"));
-                    } while(rs_fks.next());
+                    } while (rs_fks.next());
 
                 } else {
                     dbt = new DbTable();
@@ -224,9 +225,9 @@ public class JDBCMetaData {
     /* get the Primary key name for a given table name
      * This key may be a  composite key made of multiple columns.
      */
-    private void setPKey(DbTable dbt){
+    private void setPKey(DbTable dbt) {
         ResultSet rs = null;
-        try{
+        try {
             rs = md.getPrimaryKeys(null, dbt.schemaName, dbt.name);
             /*
             while(rs.next()) {
@@ -244,11 +245,11 @@ public class JDBCMetaData {
     }
 
     /* get all columns for a given table name */
-    private void setColumns(DbTable dbt){
+    private void setColumns(DbTable dbt) {
         ResultSet rs = null;
-        try{
+        try {
             rs = md.getColumns(null, dbt.schemaName, dbt.name, null);
-            while(rs.next()) {
+            while (rs.next()) {
                 dbt.addColsDataType(rs.getString("COLUMN_NAME"), rs.getString("DATA_TYPE"));
             }
             rs.close();
@@ -361,7 +362,7 @@ public class JDBCMetaData {
                     }
                     for (int j = 0; j < cols.size(); j++) {
                         String col = cols.get(j);
-                        allcols.add(tab + "->"+ col);
+                        allcols.add(tab + "->" + col);
                     }
                 }
             return allcols;
@@ -372,7 +373,7 @@ public class JDBCMetaData {
 
     // get column data type of given table and its col
     public int getColumnDataType(String schemaName, String tableName, String colName) {
-        if (tableName == null || colName==null) {
+        if (tableName == null || colName == null) {
             return -1;
         } else {
             return db.getColumnDataType(schemaName, tableName, colName);
@@ -405,8 +406,9 @@ public class JDBCMetaData {
         String s = "somita->namita";
         String [] p = s.split("->");
         if (LOGGER.isDebugEnabled()) {
-            if (p.length >=2)
-                LOGGER.debug("p0="+p[0]+", p1="+p[1]);
+            if (p.length >= 2) {
+                LOGGER.debug("p0=" + p[0] + ", p1=" + p[1]);
+            }
         }
     }
 
@@ -752,7 +754,7 @@ public class JDBCMetaData {
         /** ordered collection, allows duplicates and null */
         final List<DbTable> tables = new ArrayList<DbTable>();
 
-        private void addDbTable(DbTable dbt){
+        private void addDbTable(DbTable dbt) {
             tables.add(dbt);
         }
     }

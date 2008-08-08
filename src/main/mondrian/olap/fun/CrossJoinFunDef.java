@@ -592,7 +592,7 @@ public class CrossJoinFunDef extends FunDefBase {
         protected Member[] makeNext(Object o1, Object o2) {
             Member m1 = (Member) o1;
             Member[] ma2 = (Member[]) o2;
-            Member[] ma = new Member[ma2.length+1];
+            Member[] ma = new Member[ma2.length + 1];
             ma[0] = m1;
             System.arraycopy(ma2, 0, ma, 1, ma2.length);
             return ma;
@@ -608,7 +608,7 @@ public class CrossJoinFunDef extends FunDefBase {
         protected Member[] makeNext(Object o1, Object o2) {
             Member[] ma1 = (Member[]) o1;
             Member m2 = (Member) o2;
-            Member[] ma = new Member[ma1.length+1];
+            Member[] ma = new Member[ma1.length + 1];
             System.arraycopy(ma1, 0, ma, 0, ma1.length);
             ma[ma1.length] = m2;
             return ma;
@@ -624,7 +624,7 @@ public class CrossJoinFunDef extends FunDefBase {
         protected Member[] makeNext(Object o1, Object o2) {
             Member[] ma1 = (Member[]) o1;
             Member[] ma2 = (Member[]) o2;
-            Member[] ma = new Member[ma1.length+ma2.length];
+            Member[] ma = new Member[ma1.length + ma2.length];
             System.arraycopy(ma1, 0, ma, 0, ma1.length);
             System.arraycopy(ma2, 0, ma, ma1.length, ma2.length);
             return ma;
@@ -1067,8 +1067,7 @@ public class CrossJoinFunDef extends FunDefBase {
                     new DummyExp(new SetType(type)),
                     new Exp[] {exp},
                     compiler,
-                    ResultStyle.LIST_MUTABLELIST
-            );
+                    ResultStyle.LIST_MUTABLELIST);
         }
     }
 
@@ -1197,7 +1196,8 @@ public class CrossJoinFunDef extends FunDefBase {
             // immutable.
             //
             class Outer extends BaseImmutableList {
-                Outer() {}
+                Outer() {
+                }
                 public int size() {
                     return size;
                 }
@@ -1223,7 +1223,7 @@ public class CrossJoinFunDef extends FunDefBase {
                             return Outer.this.get(index + this.fromIndex);
                         }
                         public List<Member[]> subList(int fromIndex, int toIndex) {
-                            return new Inner(this.fromIndex+fromIndex, this.fromIndex+toIndex);
+                            return new Inner(this.fromIndex + fromIndex, this.fromIndex + toIndex);
                         }
                     }
                     return new Inner(fromIndex, toIndex);
@@ -1243,7 +1243,8 @@ public class CrossJoinFunDef extends FunDefBase {
             final int len2 = ((Member[])l2.get(0)).length;
             final int size = (l1.size() * l2.size());
             class Outer extends BaseImmutableList {
-                Outer() {}
+                Outer() {
+                }
                 public int size() {
                     return size;
                 }
@@ -1272,7 +1273,7 @@ public class CrossJoinFunDef extends FunDefBase {
                             return Outer.this.get(index + this.fromIndex);
                         }
                         public List<Member[]> subList(int fromIndex, int toIndex) {
-                            return new Inner(this.fromIndex+fromIndex, this.fromIndex+toIndex);
+                            return new Inner(this.fromIndex + fromIndex, this.fromIndex + toIndex);
                         }
                     }
                     return new Inner(fromIndex, toIndex);
@@ -1291,7 +1292,8 @@ public class CrossJoinFunDef extends FunDefBase {
             final int len1 = ((Member[])l1.get(0)).length;
             final int size = (l1.size() * l2.size());
             class Outer extends BaseImmutableList {
-                Outer() {}
+                Outer() {
+                }
                 public int size() {
                     return size;
                 }
@@ -1320,7 +1322,7 @@ public class CrossJoinFunDef extends FunDefBase {
                             return Outer.this.get(index + this.fromIndex);
                         }
                         public List<Member[]> subList(int fromIndex, int toIndex) {
-                            return new Inner(this.fromIndex+fromIndex, this.fromIndex+toIndex);
+                            return new Inner(this.fromIndex + fromIndex, this.fromIndex + toIndex);
                         }
                     }
                     return new Inner(fromIndex, toIndex);
@@ -1341,7 +1343,8 @@ public class CrossJoinFunDef extends FunDefBase {
             final int size = (l1.size() * l2.size());
 
             class Outer extends BaseImmutableList {
-                Outer() {}
+                Outer() {
+                }
                 public int size() {
                     return size;
                 }
@@ -1370,7 +1373,7 @@ public class CrossJoinFunDef extends FunDefBase {
                             return Outer.this.get(index + this.fromIndex);
                         }
                         public List<Member[]> subList(int fromIndex, int toIndex) {
-                            return new Inner(this.fromIndex+fromIndex, this.fromIndex+toIndex);
+                            return new Inner(this.fromIndex + fromIndex, this.fromIndex + toIndex);
                         }
                     }
                     return new Inner(fromIndex, toIndex);
@@ -1484,7 +1487,7 @@ public class CrossJoinFunDef extends FunDefBase {
                     }
                     lastRet = -1;
                     //expectedModCount = modCount;
-                } catch(IndexOutOfBoundsException e) {
+                } catch (IndexOutOfBoundsException e) {
                     throw new ConcurrentModificationException();
                 }
             }
@@ -1501,7 +1504,7 @@ public class CrossJoinFunDef extends FunDefBase {
                 }
                 try {
                     CrossJoinFunDef.BaseMutableList.this.set(lastRet, o);
-                } catch(IndexOutOfBoundsException e) {
+                } catch (IndexOutOfBoundsException e) {
                     throw new ConcurrentModificationException();
                 }
             }
@@ -1705,7 +1708,7 @@ public class CrossJoinFunDef extends FunDefBase {
             int x = 0;
             for (int i = 0; i < size1; i++) {
                 Member[] ma1 = l1.get(i);
-                int ii = i*size2;
+                int ii = i * size2;
                 for (int j = 0; j < size2; j++) {
                     for (int k = 0; k < len1; k++) {
                         Member m1 = ma1[k];
@@ -1838,7 +1841,7 @@ public class CrossJoinFunDef extends FunDefBase {
             // but internally is:
             //  A,B,C,a,b,A,B,C,c,d,A,B,C,e,f,D,E,F,a,b,D,E,F,c,d,D,E,F,e,d
             return new BaseMutableList(members) {
-                int size = members.size()/totalLen;
+                int size = members.size() / totalLen;
                 public int size() {
                     return size;
                 }
@@ -2215,7 +2218,7 @@ public class CrossJoinFunDef extends FunDefBase {
         // Get all of the Measures
         final Query query = evaluator.getQuery();
 
-        final String measureSetKey = "MEASURE_SET-"+ctag;
+        final String measureSetKey = "MEASURE_SET-" + ctag;
         Set<Member> measureSet =
                 (Set<Member>) query.getEvalCache(measureSetKey);
         // If not in query cache, then create and place into cache.
@@ -2244,11 +2247,11 @@ public class CrossJoinFunDef extends FunDefBase {
             query.putEvalCache(measureSetKey, measureSet);
         }
 
-        final String allMemberListKey = "ALL_MEMBER_LIST-"+ctag;
+        final String allMemberListKey = "ALL_MEMBER_LIST-" + ctag;
         List<Member> allMemberList =
                 (List<Member>) query.getEvalCache(allMemberListKey);
 
-        final String nonAllMembersKey = "NON_ALL_MEMBERS-"+ctag;
+        final String nonAllMembersKey = "NON_ALL_MEMBERS-" + ctag;
         Member[][] nonAllMembers =
             (Member[][]) query.getEvalCache(nonAllMembersKey);
         if (nonAllMembers == null) {
@@ -2380,7 +2383,7 @@ public class CrossJoinFunDef extends FunDefBase {
         if (list.get(0) instanceof Member[]) {
             for (Member[] ms : ((List<Member[]>) list)) {
                 evaluator.setContext(ms);
-                if (checkData(nonAllMembers, nonAllMembers.length-1,
+                if (checkData(nonAllMembers, nonAllMembers.length - 1,
                             measureSet, evaluator)) {
                     result.add((T) ms);
                 }
@@ -2388,7 +2391,7 @@ public class CrossJoinFunDef extends FunDefBase {
         } else {
             for (Member m : ((List<Member>) list)) {
                 evaluator.setContext(m);
-                if (checkData(nonAllMembers, nonAllMembers.length-1,
+                if (checkData(nonAllMembers, nonAllMembers.length - 1,
                             measureSet, evaluator)) {
                     result.add((T) m);
                 }
@@ -2442,7 +2445,7 @@ public class CrossJoinFunDef extends FunDefBase {
             boolean found = false;
             for (Member m : nonAllMembers[cnt]) {
                 evaluator.setContext(m);
-                if (checkData(nonAllMembers, cnt-1, measureSet, evaluator)) {
+                if (checkData(nonAllMembers, cnt - 1, measureSet, evaluator)) {
                     found = true;
                 }
             }

@@ -437,7 +437,7 @@ public class AggGen {
             }
             c = getColumn(jt, rname);
             if (c == null) {
-                getLogger().warn("Can not find column: " +rname);
+                getLogger().warn("Can not find column: "  + rname);
                 break;
             }
             // NOTE: this creates a new usage for the fact table

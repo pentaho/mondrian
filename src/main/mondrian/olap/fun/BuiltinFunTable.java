@@ -65,7 +65,10 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Dummy function representing the empty expression",
                 Syntax.Empty,
                 Category.Empty,
-                new int[0]) {});
+                new int[0]) {
+
+            }
+        );
 
         // first char: p=Property, m=Method, i=Infix, P=Prefix
         // 2nd:
@@ -830,7 +833,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         if (super.dependsOn(dimension)) {
                             return true;
                         }
-                        if (memberCalc.getType().usesDimension(dimension, true) ) {
+                        if (memberCalc.getType().usesDimension(dimension, true)) {
                             return false;
                         }
                         return true;

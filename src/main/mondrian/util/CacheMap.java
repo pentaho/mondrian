@@ -65,19 +65,27 @@ public class CacheMap<S, T> implements Map<S, T> {
 
     public Set entrySet() {
         final Set<Map.Entry<S,T>> set = new HashSet<Map.Entry<S,T>>();
-        for(final Map.Entry<S, Pair<S,T>> entry : this.map.entrySet()) {
+        for (final Map.Entry<S, Pair<S,T>> entry : this.map.entrySet()) {
             set.add(new Map.Entry<S,T>() {
                         public boolean equals(Object s) {
-                            if(s instanceof Map.Entry) {
+                            if (s instanceof Map.Entry) {
                                 return ((Map.Entry) s).getKey().equals(
                                                 entry.getKey())
                                         && ((Map.Entry) s).getValue().equals(
                                                 entry.getValue().value);
-                            } else return false;
+                            } else {
+                                return false;
+                            }
                         }
-                        public S getKey() { return entry.getKey(); }
-                        public T getValue() { return entry.getValue().value; }
-                        public int hashCode() { return entry.hashCode(); }
+                        public S getKey() {
+                            return entry.getKey();
+                        }
+                        public T getValue() {
+                            return entry.getValue().value;
+                        }
+                        public int hashCode() {
+                            return entry.hashCode();
+                        }
                         public T setValue(final T x) {
                             return entry.setValue(new Pair<S,T>(
                                     x, new LinkedNode(head, entry.getKey())))
@@ -90,15 +98,17 @@ public class CacheMap<S, T> implements Map<S, T> {
 
     public T get(final Object key) {
         final Pair<S,T> pair = map.get(key);
-        if(pair!=null) {
+        if (pair != null) {
             final LinkedNode<S> node = pair.getNode();
-            if(node==null) {
+            if (node == null) {
                 map.remove(key);
                 return null;
             }
             node.moveTo(head);
             return pair.value;
-        } else return null;
+        } else {
+            return null;
+        }
     }
 
     public boolean isEmpty() {
@@ -112,12 +122,15 @@ public class CacheMap<S, T> implements Map<S, T> {
     public T put(final S key, final T value) {
         final Pair<S, T> pair = new Pair<S,T>(value, new LinkedNode(head, key));
         final Pair<S, T> obj = map.put(key, pair);
-        if(map.size() > maxSize) {
+        if (map.size() > maxSize) {
             tail.getPrevious().remove();
             map.remove(key);
         }
-        if(obj!=null) return obj.value;
-        else return null;
+        if (obj != null) {
+            return obj.value;
+        } else {
+            return null;
+        }
     }
 
     public void putAll(final Map t) {
@@ -126,7 +139,9 @@ public class CacheMap<S, T> implements Map<S, T> {
 
     public T remove(final Object key) {
         final Pair<S,T> pair = map.get(key);
-        if(pair==null) return null;
+        if (pair == null) {
+            return null;
+        }
         pair.getNode().remove();
         return map.remove(key).value;
     }
@@ -137,7 +152,7 @@ public class CacheMap<S, T> implements Map<S, T> {
 
     public Collection<T> values() {
         final List<T> vals = new ArrayList<T>();
-        for(final Pair<S,T> pair : map.values()) {
+        for (final Pair<S,T> pair : map.values()) {
             vals.add(pair.value);
         }
         return vals;
@@ -171,11 +186,13 @@ public class CacheMap<S, T> implements Map<S, T> {
             this.node = new WeakReference<LinkedNode<S>>(node);
             this.value = value;
         }
+
         private LinkedNode<S> getNode() {
             return node.get();
         }
+
         public boolean equals(final Object o) {
-            return o!=null && o.equals(this.value);
+            return o != null && o.equals(this.value);
         }
     }
 
@@ -193,8 +210,12 @@ public class CacheMap<S, T> implements Map<S, T> {
         }
 
         public void remove() {
-            if(this.prev!=null) this.prev.next = this.next;
-            if(this.next!=null) this.next.prev = this.prev;
+            if (this.prev != null) {
+                this.prev.next = this.next;
+            }
+            if (this.next != null) {
+                this.next.prev = this.prev;
+            }
         }
 
         public void moveTo(final LinkedNode<S> prev) {
@@ -207,25 +228,33 @@ public class CacheMap<S, T> implements Map<S, T> {
         }
 
         public String toString() {
-            if(this.next!=null) {
-                if(key!=null) {
+            if (this.next != null) {
+                if (key != null) {
                     return key.toString() + ", " + this.next.toString();
                 } else {
                     return "<null>, " + this.next.toString();
                 }
             } else {
-                if(key!=null) return key.toString();
-                else return "<null>";
+                if (key != null) {
+                    return key.toString();
+                } else {
+                    return "<null>";
+                }
             }
         }
 
         private void insertAfter(final LinkedNode<S> prev) {
-            if(prev!=null) this.next = prev.next;
-            else this.prev = null;
+            if (prev != null) {
+                this.next = prev.next;
+            } else {
+                this.prev = null;
+            }
             this.prev = prev;
 
-            if(prev!=null) {
-                if(prev.next!=null) prev.next.prev = this;
+            if (prev != null) {
+                if (prev.next != null) {
+                    prev.next.prev = this;
+                }
                 prev.next = this;
             }
         }

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2006 Julian Hyde and others.
+// Copyright (C) 2005-2008 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -56,10 +56,10 @@ public class DefaultRuleTest extends TestCase {
        rules.validate(msgRecorder);
        if (msgRecorder.hasErrors()) {
            LOGGER.error("HAS ERRORS");
-            for (Iterator it = msgRecorder.getErrorEntries(); it.hasNext(); ) {
+            for (Iterator it = msgRecorder.getErrorEntries(); it.hasNext();) {
                 ListRecorder.Entry e = (ListRecorder.Entry) it.next();
-                LOGGER.error("context=" +e.getContext());
-                LOGGER.error("message=" +e.getMessage());
+                LOGGER.error("context=" + e.getContext());
+                LOGGER.error("message=" + e.getMessage());
             }
        }
     }
@@ -69,15 +69,14 @@ public class DefaultRuleTest extends TestCase {
     private Recognizer.Matcher getTableMatcher(String tag, String tableName) {
         DefaultDef.AggRule rule = getAggRule(tag);
         if (rule == null) {
-            LOGGER.info("rule == null for tag=" +tag);
+            LOGGER.info("rule == null for tag=" + tag);
         }
         DefaultDef.TableMatch tableMatch = rule.getTableMatch();
         if (tableMatch == null) {
             LOGGER.info("tableMatch == null for tag="
             +tag
             + ", tableName="
-            + tableName
-            );
+            + tableName);
         }
         return tableMatch.getMatcher(tableName);
     }
@@ -147,7 +146,7 @@ public class DefaultRuleTest extends TestCase {
         doNotMatch(matcher, factTableName);
         doNotMatch(matcher, "agg__" + factTableName);
         doNotMatch(matcher, "agg_" + factTableName);
-        doNotMatch(matcher, factTableName+"_agg");
+        doNotMatch(matcher, factTableName + "_agg");
         doNotMatch(matcher, "agg_10_Mytable");
     }
     public void testTableNameBBBB() {
@@ -168,7 +167,7 @@ public class DefaultRuleTest extends TestCase {
     public void testTableNameCCCCBAD() {
         final String tag = "cccc";
         final String basename = "WAREHOUSE";
-        final String factTableName = "RF_" +basename+ "_TABLE";
+        final String factTableName = "RF_" + basename + "_TABLE";
 
         // Note that the "basename" and not the fact table name is
         // being used. The Matcher that is return will not match anything
@@ -181,13 +180,13 @@ public class DefaultRuleTest extends TestCase {
         doNotMatch(matcher, factTableName);
         doNotMatch(matcher, "agg__" + basename);
         doNotMatch(matcher, "agg_" + basename);
-        doNotMatch(matcher, basename+"_agg");
+        doNotMatch(matcher, basename + "_agg");
         doNotMatch(matcher, "agg_10_Mytable");
     }
     public void testTableNameCCCCGOOD() {
         final String tag = "cccc";
         final String basename = "WAREHOUSE";
-        final String factTableName = "RF_" +basename+ "_TABLE";
+        final String factTableName = "RF_" + basename + "_TABLE";
 
         Recognizer.Matcher matcher = getTableMatcher(tag, factTableName);
 
@@ -197,7 +196,7 @@ public class DefaultRuleTest extends TestCase {
         doNotMatch(matcher, factTableName);
         doNotMatch(matcher, "agg__" + basename);
         doNotMatch(matcher, "agg_" + basename);
-        doNotMatch(matcher, basename+"_agg");
+        doNotMatch(matcher, basename + "_agg");
         doNotMatch(matcher, "agg_10_Mytable");
     }
 
@@ -383,10 +382,10 @@ public class DefaultRuleTest extends TestCase {
     //
     //
     private void doMatch(Recognizer.Matcher matcher, String s) {
-        assertTrue("Recognizer.Matcher: " +s, matcher.matches(s));
+        assertTrue("Recognizer.Matcher: " + s, matcher.matches(s));
     }
     private void doNotMatch(Recognizer.Matcher matcher, String s) {
-        assertTrue("Recognizer.Matcher: " +s, ! matcher.matches(s));
+        assertTrue("Recognizer.Matcher: " + s, !matcher.matches(s));
     }
     //
     //////////////////////////////////////////////////////////////////////////

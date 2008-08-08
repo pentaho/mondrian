@@ -889,7 +889,8 @@ public class FastBatchingCellReader implements CellReader {
     private static class BatchComparator implements Comparator<Batch> {
         static final BatchComparator instance = new BatchComparator();
 
-        private BatchComparator() {}
+        private BatchComparator() {
+        }
 
         public int compare(
             Batch o1, Batch o2) {
@@ -936,7 +937,8 @@ public class FastBatchingCellReader implements CellReader {
         static final ValueColumnConstraintComparator instance =
             new ValueColumnConstraintComparator();
 
-        private ValueColumnConstraintComparator() {}
+        private ValueColumnConstraintComparator() {
+        }
 
         public int compare(
             ValueColumnPredicate o1,

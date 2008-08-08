@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -81,7 +81,7 @@ class AggQuerySpec {
 
         // this should never happen
         if (column == null) {
-            LOGGER.error("column null for bitPos="+bitPos);
+            LOGGER.error("column null for bitPos=" + bitPos);
         }
         return column;
     }

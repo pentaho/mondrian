@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2006 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -57,7 +57,7 @@ public class SimpleTestRunner {
 
         Class cls = Class.forName(classname);
 
-        Constructor cons = cls.getConstructor(new Class[] { String.class} );
+        Constructor cons = cls.getConstructor(new Class[] { String.class});
         return (TestCase) cons.newInstance(new Object[] { methodname });
 
     }
@@ -112,14 +112,14 @@ public class SimpleTestRunner {
                 }
                 //testcase.runBare();
                 junit.framework.TestResult tr = testcase.run();
-                System.out.println("Test Class: " +classname);
-                System.out.println("  Method : " +methodname);
-                System.out.println("  Error Count : " +tr.errorCount());
+                System.out.println("Test Class: " + classname);
+                System.out.println("  Method : " + methodname);
+                System.out.println("  Error Count : " + tr.errorCount());
                 if (tr.errorCount() != 0) {
                     Enumeration e = tr.errors();
                     outputErrorInfo(e, quiet);
                 }
-                System.out.println("  Failure Count : " +tr.failureCount());
+                System.out.println("  Failure Count : " + tr.failureCount());
                 if (tr.failureCount() != 0) {
                     Enumeration e = tr.failures();
                     outputErrorInfo(e, quiet);
@@ -127,7 +127,7 @@ public class SimpleTestRunner {
                 testcase = null;
             }
         }
-        if ( ! explicitMethods) {
+        if (! explicitMethods) {
             if (classname == null) {
                 usage("Must supply TestCase classname");
             }
@@ -151,14 +151,14 @@ public class SimpleTestRunner {
                 TestResult tr = new TestResult();
 
                 suite.run(tr);
-                System.out.println("Test Class: " +classname);
-                System.out.println("  Method Count : " +tr.runCount());
-                System.out.println("  Error Count : " +tr.errorCount());
+                System.out.println("Test Class: " + classname);
+                System.out.println("  Method Count : " + tr.runCount());
+                System.out.println("  Error Count : " + tr.errorCount());
                 if (tr.errorCount() != 0) {
                     Enumeration e = tr.errors();
                     outputErrorInfo(e, quiet);
                 }
-                System.out.println("  Failure Count : " +tr.failureCount());
+                System.out.println("  Failure Count : " + tr.failureCount());
                 if (tr.failureCount() != 0) {
                     Enumeration e = tr.failures();
                     outputErrorInfo(e, quiet);

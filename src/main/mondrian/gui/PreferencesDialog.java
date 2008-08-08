@@ -219,23 +219,23 @@ public class PreferencesDialog extends javax.swing.JDialog {
         getContentPane().add(acceptButton, gridBagConstraints);
 
         pack();
-    }//GEN-END:initComponents
+    } //GEN-END:initComponents
 
     private void acceptButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptButtonActionPerformed
         accepted = true;
         hide();
-    }//GEN-LAST:event_acceptButtonActionPerformed
+    } //GEN-LAST:event_acceptButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         accepted = false;
         hide();
-    }//GEN-LAST:event_cancelButtonActionPerformed
+    } //GEN-LAST:event_cancelButtonActionPerformed
 
     /** Closes the dialog */
     private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
         setVisible(false);
         dispose();
-    }//GEN-LAST:event_closeDialog
+    } //GEN-LAST:event_closeDialog
 
     /**
      * @param args the command line arguments

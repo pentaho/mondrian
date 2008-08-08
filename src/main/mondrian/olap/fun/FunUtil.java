@@ -375,7 +375,7 @@ public class FunUtil extends Util {
             Calc exp,
             List<Member[]> members) {
         // RME
-        evaluator= evaluator.push();
+        evaluator = evaluator.push();
 
         assert exp.getType() instanceof ScalarType;
         Map<Object, Object> mapMemberToValue = new HashMap<Object, Object>();
@@ -1350,7 +1350,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             m = m.getParentMember();
         }
         // If m == null, then "level" was lower than member's level.
-        // periodsToDate( [Time].[Quarter], [Time].[1997] is valid,
+        // periodsToDate([Time].[Quarter], [Time].[1997] is valid,
         //  but will return an empty List
         List<Member> members = new ArrayList<Member>();
         if (m != null) {
@@ -1781,7 +1781,8 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         Exp[] args)
     {
         final int[] argCategories = ExpBase.getTypes(args);
-        return new FunDefBase(resolver, returnCategory, argCategories) {};
+        return new FunDefBase(resolver, returnCategory, argCategories) {
+        };
     }
 
     public static List<Member> getNonEmptyMemberChildren(
@@ -2027,7 +2028,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         public int compare(Member[] a1, Member[] a2) {
             int c = comparator.compare(a1, a2);
             logger.debug(
-                "compare {" + toString(a1)+ "}, {" + toString(a2) +
+                "compare {" + toString(a1) + "}, {" + toString(a2) +
                     "} yields " + c);
             return c;
         }
@@ -2190,7 +2191,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
 
         public int compare(T o1, T o2) {
             int c = comparator.compare(o1, o2);
-            return -c;
+            return - c;
         }
     }
 

@@ -78,8 +78,8 @@ public class ResultLoader {
             }
         } else {
             int firstEnumTarget = 0;
-            for(;firstEnumTarget<targets.size(); firstEnumTarget++) {
-                if(targets.get(firstEnumTarget).getSrcMembers()!=null) {
+            for (; firstEnumTarget < targets.size(); firstEnumTarget++) {
+                if (targets.get(firstEnumTarget).getSrcMembers() != null) {
                     break;
                 }
             }

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -37,7 +37,8 @@ public class RoleImpl implements Role {
     /**
      * Creates a role with no permissions.
      */
-    public RoleImpl() {}
+    public RoleImpl() {
+    }
 
     protected RoleImpl clone() {
         RoleImpl role = new RoleImpl();
@@ -388,7 +389,7 @@ public class RoleImpl implements Role {
             this.topLevel = (topLevel == null)
                     ? levels[0] : topLevel;
             this.bottomLevel = (bottomLevel == null)
-                    ? levels[levels.length-1] : bottomLevel;
+                    ? levels[levels.length - 1] : bottomLevel;
             assert rollupPolicy != null;
             this.rollupPolicy = rollupPolicy;
         }

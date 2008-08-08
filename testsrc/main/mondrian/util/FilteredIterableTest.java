@@ -37,7 +37,7 @@ public class FilteredIterableTest extends FoodMartTestCase {
 
     public void testEmptyList() throws Exception {
         final List<Integer> base = new ArrayList<Integer>();
-        for(int i=0; i<10; i++) {
+        for (int i = 0; i < 10; i++) {
             base.add(i);
         }
 
@@ -47,7 +47,7 @@ public class FilteredIterableTest extends FoodMartTestCase {
                         return false;
                     }
                 });
-        for(final Integer x : empty) {
+        for (final Integer x : empty) {
             fail("All elements should have been filtered");
         }
     }
@@ -55,24 +55,24 @@ public class FilteredIterableTest extends FoodMartTestCase {
 
     public void testGetter() throws Exception {
         final List<Integer> base = new ArrayList<Integer>();
-        for(int i=0; i<10; i++) {
+        for (int i = 0; i < 10; i++) {
             base.add(i);
         }
 
         final List<Integer> empty = new FilteredIterableList<Integer>(
                 base, new FilteredIterableList.Filter<Integer>() {
                     public boolean accept(final Integer i) {
-                        return i<2;
+                        return i < 2;
                     }
                 });
-        for(int i=0; i<2; i++) {
+        for (int i = 0; i < 2; i++) {
             assertEquals(new Integer(i), empty.get(i));
         }
     }
 
     public void test2Elements() throws Exception {
         final List<Integer> base = new ArrayList<Integer>();
-        for(int i=0; i<2; i++) {
+        for (int i = 0; i < 2; i++) {
             base.add(i);
         }
 
@@ -85,7 +85,7 @@ public class FilteredIterableTest extends FoodMartTestCase {
         assertFalse(identical.isEmpty());
         assertNotNull(identical.get(0));
         int k = 0;
-        for(final Integer i : identical) {
+        for (final Integer i : identical) {
             assertEquals(i, identical.get(k));
             k++;
         }

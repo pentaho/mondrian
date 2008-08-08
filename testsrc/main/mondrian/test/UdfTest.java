@@ -99,9 +99,9 @@ public class UdfTest extends FoodMartTestCase {
                 "SELECT {[Measures].[Last Unit Sales]} ON COLUMNS," + nl +
                 " CrossJoin(" + nl +
                 "  {[Time].[1997], [Time].[1997].[Q1], [Time].[1997].[Q1].Children}," + nl +
-                "  {[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].children} ) ON ROWS" + nl +
+                "  {[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].children}) ON ROWS" + nl +
                 "FROM [Sales]" + nl +
-                "WHERE ( [Store].[All Stores].[USA].[OR].[Portland].[Store 11] )",
+                "WHERE ([Store].[All Stores].[USA].[OR].[Portland].[Store 11])",
                 fold(
                     "Axis #0:\n" +
                     "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n" +

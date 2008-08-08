@@ -105,7 +105,7 @@ public class MondrianTestRunner extends BaseTestRunner {
               }
            }
        }
-       );
+      );
         */
 
         final long startTime = System.currentTimeMillis();

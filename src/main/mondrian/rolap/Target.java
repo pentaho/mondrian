@@ -66,11 +66,25 @@ public class Target {
         this.srcMembers = srcMembers;
     }
 
-    public List<RolapMember> getSrcMembers() { return this.srcMembers; }
-    public RolapMember getCurrMember() { return this.currMember; }
-    public void removeCurrMember() { this.currMember = null; }
-    public void setCurrMember(final RolapMember m) { this.currMember = m; }
-    public void add(final RolapMember member) { this.list.add(member); }
+    public List<RolapMember> getSrcMembers() {
+        return this.srcMembers;
+    }
+
+    public RolapMember getCurrMember() {
+        return this.currMember;
+    }
+
+    public void removeCurrMember() {
+        this.currMember = null;
+    }
+
+    public void setCurrMember(final RolapMember m) {
+        this.currMember = m;
+    }
+
+    public void add(final RolapMember member) {
+        this.list.add(member);
+    }
 
     public void open() {
         levels = (RolapLevel[]) level.getHierarchy().getLevels();
@@ -80,9 +94,11 @@ public class Target {
         // members[i] is the current member of level#i, and siblings[i]
         // is the current member of level#i plus its siblings
         members = new ArrayList<RolapMember>();
-        for(int i=0; i<levels.length; i++) members.add(null);
+        for (int i = 0; i < levels.length; i++) {
+            members.add(null);
+        }
         siblings = new ArrayList<List<RolapMember>>();
-        for(int i=0; i<levels.length+1; i++) {
+        for (int i = 0; i < levels.length + 1; i++) {
             siblings.add(new ArrayList<RolapMember>());
         }
     }
@@ -151,7 +167,7 @@ public class Target {
     }
 
     public List<RolapMember> close() {
-        final boolean asList = this.constraint.getEvaluator()!=null
+        final boolean asList = this.constraint.getEvaluator() != null
                 && this.constraint.getEvaluator().getQuery().getResultStyle()
                     == ResultStyle.LIST;
         final int limit = MondrianProperties.instance().ResultLimit.get();
@@ -166,11 +182,11 @@ public class Target {
              * Performs a load of the whole result set.
              */
             public int size() {
-                while(this.moreRows) {
+                while (this.moreRows) {
                     this.moreRows = sqlTupleReader.readNextTuple();
-                    if(limit>0 && !asList && list.size()>limit) {
-System.out.println("Target: 199, Ouch! Toooo big array..." + this.hashCode());
-new Throwable().printStackTrace();
+                    if (limit > 0 && !asList && list.size() > limit) {
+                        System.out.println("Target: 199, Ouch! Toooo big array..." + this.hashCode());
+                        new Throwable().printStackTrace();
                     }
                 }
 
@@ -178,24 +194,26 @@ new Throwable().printStackTrace();
             }
 
             public RolapMember get(final int idx) {
-                if(asList) return list.get(idx);
+                if (asList) {
+                    return list.get(idx);
+                }
 
-                if(idx==0 && this.firstMemberAssigned) {
+                if (idx == 0 && this.firstMemberAssigned) {
                     return this.first;
                 }
                 int index = idx - offset;
 
-                if(0<limit && index<0) {
+                if (0 < limit && index < 0) {
                     // Cannot send NoSuchElementException since its intercepted
                     // by AbstractSequentialList to identify out of bounds.
                     throw new RuntimeException("Element " + idx
                             + " has been forgotten");
                 }
 
-                while(index>=list.size() && this.moreRows) {
+                while (index >= list.size() && this.moreRows) {
                     this.moreRows = sqlTupleReader.readNextTuple();
-                    if(!asList && limit>0 && list.size()>limit) {
-                        while(list.size()>limit) {
+                    if (!asList && limit > 0 && list.size() > limit) {
+                        while (list.size() > limit) {
                             index--;
                             offset++;
                             ((LinkedList) list).removeFirst();
@@ -203,22 +221,28 @@ new Throwable().printStackTrace();
                     }
                 }
 
-                if(idx==0) {
+                if (idx == 0) {
                     this.firstMemberAssigned = true;
                     this.first = list.get(index);
                     return this.first;
-                } else return list.get(index);
+                } else {
+                    return list.get(index);
+                }
             }
+
             public RolapMember set(final int i, final RolapMember e) {
-                if(asList) {
+                if (asList) {
                     return list.set(i, e);
-                } else throw new UnsupportedOperationException();
+                } else {
+                    throw new UnsupportedOperationException();
+                }
             }
+
             public boolean isEmpty() {
                 try {
                     get(0);
                     return false;
-                } catch(IndexOutOfBoundsException e) {
+                } catch (IndexOutOfBoundsException e) {
                     return true;
                 }
             }
@@ -227,29 +251,33 @@ new Throwable().printStackTrace();
                 return Target.this.hashCode();
             }
 
-
             public Iterator<RolapMember> iterator() {
                 return new Iterator<RolapMember>() {
-                        private int cursor = 0;
-                        public boolean hasNext() {
-                            try {
-                                get(cursor);
-                                return true;
-                            } catch(IndexOutOfBoundsException ioobe) {
-                                return false;
-                            }
+                    private int cursor = 0;
+
+                    public boolean hasNext() {
+                        try {
+                            get(cursor);
+                            return true;
+                        } catch (IndexOutOfBoundsException ioobe) {
+                            return false;
                         }
-                        public RolapMember next() {
-                            return get(cursor++);
-                        }
-                        public void remove() {
-                            throw new UnsupportedOperationException();
-                        }
-                    };
+                    }
+
+                    public RolapMember next() {
+                        return get(cursor++);
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
             }
         };
 
-        if(asList) l.size();
+        if (asList) {
+            l.size();
+        }
 
         return l;
 

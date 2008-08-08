@@ -45,15 +45,19 @@ public class FilteredIterableList<T> extends AbstractSequentialList<T> {
     }
 
     public T get(final int index) {
-        if(this.plainList!=null) return this.plainList.get(index);
+        if (this.plainList != null) {
+            return this.plainList.get(index);
+        }
 
         final T t = cached.get(index);
-        if(t!=null) {
+        if (t != null) {
             return cached.get(index);
         } else {
-            if(index!=this.lastGetIndex || index<0) {
+            if (index != this.lastGetIndex || index < 0) {
                 this.lastGet = super.get(index);
-                if(this.lastGet==null) throw new IndexOutOfBoundsException();
+                if (this.lastGet == null) {
+                    throw new IndexOutOfBoundsException();
+                }
                 this.lastGetIndex = index;
             }
             cached.put(index, this.lastGet);
@@ -85,9 +89,9 @@ public class FilteredIterableList<T> extends AbstractSequentialList<T> {
                     private int idx = 0;
                     private T nxt = first;
                     private void postNext() {
-                        while(it.hasNext()) {
+                        while (it.hasNext()) {
                             final T n = it.next();
-                            if(filter.accept(n)) {
+                            if (filter.accept(n)) {
                                 nxt = n;
                                 return;
                             }
@@ -100,7 +104,7 @@ public class FilteredIterableList<T> extends AbstractSequentialList<T> {
                     public T next() {
                         idx++;
                         final T n = nxt;
-                        cached.put(idx-1, n);
+                        cached.put(idx - 1, n);
                         postNext();
                         return n;
                     }
@@ -143,7 +147,7 @@ public class FilteredIterableList<T> extends AbstractSequentialList<T> {
     }
 
     public boolean isEmpty() {
-        return this.plainList!=null ? this.plainList.isEmpty() : this.isEmpty;
+        return this.plainList != null ? this.plainList.isEmpty() : this.isEmpty;
     }
 
     public int size() {
@@ -165,10 +169,10 @@ public class FilteredIterableList<T> extends AbstractSequentialList<T> {
     }
 
     public Object[] toArray() {
-        if(this.plainList==null) {
+        if (this.plainList == null) {
             final List<T> tmpPlainList = new ArrayList<T>();
             int size = 0;
-            for(final Iterator<T> it = this.listIterator(0); it.hasNext(); ) {
+            for (final Iterator<T> it = this.listIterator(0); it.hasNext();) {
                 tmpPlainList.add(it.next());
                 size++;
             }

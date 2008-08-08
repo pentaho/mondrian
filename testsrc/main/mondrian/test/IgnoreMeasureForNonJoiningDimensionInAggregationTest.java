@@ -256,10 +256,7 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest extends FoodMa
                 "Row #2: 196,770.89\n"+
                 "Row #3: 196,770.89\n"+
                 "Row #4: 196,770.89\n"+
-                "Row #5: 196,770.89\n"
-
-            )
-        );
+                "Row #5: 196,770.89\n"));
     }
 
     public void testNoTotalsForCompoundMeasureWithNonJoiningDimAtAllLevel() {
@@ -322,7 +319,7 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest extends FoodMa
     }
 
     // base cube is null for calc measure
-    public void testGetMeasureCubeForCalcMeasureDoesNotThrowCastException(){
+    public void testGetMeasureCubeForCalcMeasureDoesNotThrowCastException() {
         getTestContext().assertQueryReturns(
             "WITH MEMBER [Measures].[My Profit] AS " +
             "'Measures.[Profit]', SOLVE_ORDER = 3000 " +

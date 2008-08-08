@@ -99,7 +99,7 @@ public class XmlaTests extends FoodMartTestCase {
                                 valueType, value, isDecimal);
 
         dataType = "Integer";
-        inputValue = new Long((long)XmlaHandler.XSD_INT_MAX_INCLUSIVE+1);
+        inputValue = new Long((long)XmlaHandler.XSD_INT_MAX_INCLUSIVE + 1);
         valueType = XmlaHandler.XSD_LONG;
         value = inputValue;
         isDecimal = false;
@@ -109,7 +109,7 @@ public class XmlaTests extends FoodMartTestCase {
                                 valueType, value, isDecimal);
 
         dataType = "Integer";
-        inputValue = new Long((long)XmlaHandler.XSD_INT_MIN_INCLUSIVE-1);
+        inputValue = new Long((long)XmlaHandler.XSD_INT_MIN_INCLUSIVE - 1);
         valueType = XmlaHandler.XSD_LONG;
         value = inputValue;
         isDecimal = false;

@@ -27,10 +27,10 @@ import junit.runner.BaseTestRunner;
 
 public class MondrianResultPrinter implements TestListener {
     PrintStream fWriter;
-    int fStarted= 0;
+    int fStarted = 0;
 
     public MondrianResultPrinter(PrintStream writer) {
-        fWriter= writer;
+        fWriter = writer;
     }
 
     /* API for use by textui.TestRunner
@@ -64,12 +64,15 @@ public class MondrianResultPrinter implements TestListener {
     }
 
     protected void printDefects(Enumeration booBoos, int count, String type) {
-        if (count == 0) return;
-        if (count == 1)
+        if (count == 0) {
+            return;
+        }
+        if (count == 1) {
             getWriter().println("There was " + count + " " + type + ":");
-        else
+        } else {
             getWriter().println("There were " + count + " " + type + "s:");
-        for (int i= 1; booBoos.hasMoreElements(); i++) {
+        }
+        for (int i = 1; booBoos.hasMoreElements(); i++) {
             printDefect((TestFailure) booBoos.nextElement(), i);
         }
     }
@@ -98,12 +101,12 @@ public class MondrianResultPrinter implements TestListener {
         } else {
             getWriter().println();
             getWriter().println("FAILURES!!!");
-            getWriter().println("Tests run: "+result.runCount()+
-                         ",  Failures: "+result.failureCount()+
-                         ",  Errors: "+result.errorCount());
+            getWriter().println("Tests run: " + result.runCount() +
+                         ",  Failures: " + result.failureCount() +
+                         ",  Errors: " + result.errorCount());
         }
         getWriter().println();
-        getWriter().println("Time: "+elapsedTimeAsString(runTime));
+        getWriter().println("Time: " + elapsedTimeAsString(runTime));
     }
 
 
@@ -112,7 +115,7 @@ public class MondrianResultPrinter implements TestListener {
      * Duplicated from BaseTestRunner. Fix it.
      */
     protected String elapsedTimeAsString(long runTime) {
-        return NumberFormat.getInstance().format((double)runTime/1000);
+        return NumberFormat.getInstance().format((double)runTime / 1000);
     }
 
     public PrintStream getWriter() {

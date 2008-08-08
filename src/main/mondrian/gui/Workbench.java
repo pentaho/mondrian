@@ -92,7 +92,7 @@ public class Workbench extends javax.swing.JFrame {
 
     private static int newSchema = 1;
 
-    private String openFile=null;
+    private String openFile = null;
 
     private Map schemaWindowMap = new HashMap();    // map of schema frames and its menu items (JInternalFrame -> JMenuItem)
     private Vector mdxWindows = new Vector();
@@ -171,20 +171,19 @@ public class Workbench extends javax.swing.JFrame {
         File dir = new File(WORKBENCH_USER_HOME_DIR);
         try {
             if (dir.exists()) {
-                if (!dir.isDirectory() ) {
-                    JOptionPane.showMessageDialog( this,
+                if (!dir.isDirectory()) {
+                    JOptionPane.showMessageDialog(this,
                             getResourceConverter().getFormattedString("workbench.user.home.not.directory",
                                         "{0} is not a directory!\nPlease rename this file and retry to save configuration!", new String[] {WORKBENCH_USER_HOME_DIR}),
                                         "", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-            }
-            else {
+            } else {
                 dir.mkdirs();
             }
         } catch (Exception ex) {
             LOGGER.error("storeWorkbenchProperties: mkdirs", ex);
-            JOptionPane.showMessageDialog( this,
+            JOptionPane.showMessageDialog(this,
                     getResourceConverter().getFormattedString("workbench.user.home.exception",
                             "An error is occurred creating workbench configuration directory:\n{0}\nError is: {1}",
                                 new String[] {WORKBENCH_USER_HOME_DIR, ex.getLocalizedMessage()}),
@@ -198,7 +197,7 @@ public class Workbench extends javax.swing.JFrame {
             workbenchProperties.store(out, "Workbench configuration");
         } catch (Exception e) {
             LOGGER.error("storeWorkbenchProperties: store", e);
-            JOptionPane.showMessageDialog( this,
+            JOptionPane.showMessageDialog(this,
                     getResourceConverter().getFormattedString("workbench.save.configuration",
                             "An error is occurred creating workbench configuration file:\n{0}\nError is: {1}",
                             new String[] {WORKBENCH_CONFIG_FILE, e.getLocalizedMessage()}),
@@ -320,7 +319,7 @@ public class Workbench extends javax.swing.JFrame {
 
         jPanel2.setLayout(new java.awt.BorderLayout());
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        jPanel2.setMaximumSize(new java.awt.Dimension(50, 28) ); // old width=18
+        jPanel2.setMaximumSize(new java.awt.Dimension(50, 28)); // old width=18
 
         toolbarNewButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(resourceConverter.getGUIReference("new"))));
         toolbarNewButton.setToolTipText(getResourceConverter().getString("workbench.toolbar.new","New"));
@@ -641,7 +640,8 @@ public class Workbench extends javax.swing.JFrame {
                 if (pluginStream != null) {
                     pluginStream.close();
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         }
     }
 
@@ -671,9 +671,9 @@ public class Workbench extends javax.swing.JFrame {
         Dimension dsize = desktopPane.getSize();
         int desktopW = (int) dsize.getWidth();
         int desktopH = (int) dsize.getHeight();
-        int darea =  (int) (desktopW*desktopH);
+        int darea =  (int) (desktopW * desktopH);
 
-        double eacharea= darea/(schemaWindowMap.size()+mdxWindows.size());
+        double eacharea = darea / (schemaWindowMap.size() + mdxWindows.size());
         int wh = (int) Math.sqrt(eacharea);
 
         Iterator []its = new Iterator[2];
@@ -681,11 +681,11 @@ public class Workbench extends javax.swing.JFrame {
         its[0] = schemaWindowMap.keySet().iterator();   // keys = schemaframes
         its[1] = mdxWindows.iterator();
 
-        JInternalFrame sf=null;
-        int x=0, y=0;
+        JInternalFrame sf = null;
+        int x = 0, y = 0;
 
         try {
-            for (int i=0; i<its.length; i++) {
+            for (int i = 0; i < its.length; i++) {
                 Iterator it = its[i];
                 while (it.hasNext()) {
                     sf = (JInternalFrame) it.next();
@@ -695,13 +695,13 @@ public class Workbench extends javax.swing.JFrame {
                         } else {
                             sf.setMaximum(false);
                             sf.moveToFront();
-                            if ((x >= desktopW) || (((desktopW-x)*wh) < (eacharea/2))) {
+                            if ((x >= desktopW) || (((desktopW - x) * wh) < (eacharea / 2))) {
                                 // move to next row of windows
-                                y+=wh;
-                                x=0;
+                                y += wh;
+                                x = 0;
                             }
-                            int sfwidth  = ((x+wh) < desktopW ? wh : desktopW-x);
-                            int sfheight = ((y+wh) < desktopH ? wh : desktopH-y);
+                            int sfwidth  = ((x + wh) < desktopW ? wh : desktopW - x);
+                            int sfheight = ((y + wh) < desktopH ? wh : desktopH - y);
                             sf.setBounds(x, y, sfwidth, sfheight);
                             x += sfwidth;
                         }
@@ -720,10 +720,10 @@ public class Workbench extends javax.swing.JFrame {
         its[0] = schemaWindowMap.keySet().iterator();   // keys = schemaframes
         its[1] = mdxWindows.iterator();
         int sfi = 1;
-        JInternalFrame sf=null;
+        JInternalFrame sf = null;
 
         try {
-            for (int i=0; i<its.length; i++) {
+            for (int i = 0; i < its.length; i++) {
                 Iterator it = its[i];
                 while (it.hasNext()) {
                     sf = (JInternalFrame) it.next();
@@ -732,7 +732,7 @@ public class Workbench extends javax.swing.JFrame {
                             //sf.setIcon(false);
                         } else {
                             sf.setMaximum(false);
-                            sf.setLocation(30*sfi, 30*sfi);
+                            sf.setLocation(30 * sfi, 30 * sfi);
                             sf.moveToFront();
                             sf.setSelected(true);
                             sfi++;
@@ -755,11 +755,11 @@ public class Workbench extends javax.swing.JFrame {
         Object [][] its = new Object[2][];  // initialize row dimension
         its[0] = schemaWindowMap.keySet().toArray();   // keys = schemaframes
         its[1] = mdxWindows.toArray();
-        JInternalFrame sf=null;
+        JInternalFrame sf = null;
 
         try {
-            for (int i=0; i<its.length; i++) {
-                for (int j=0; j<its[i].length; j++) {
+            for (int i = 0; i < its.length; i++) {
+                for (int j = 0; j < its[i].length; j++) {
                     sf = (JInternalFrame) its[i][j];
                     if (sf != null) {
                         if (sf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
@@ -827,7 +827,7 @@ public class Workbench extends javax.swing.JFrame {
         JInternalFrame sf;
 
         try {
-            for (int i=0; i<its.length; i++) {
+            for (int i = 0; i < its.length; i++) {
                 Iterator it = its[i];
                 while (it.hasNext()) {
                     sf = (JInternalFrame) it.next();
@@ -854,7 +854,7 @@ public class Workbench extends javax.swing.JFrame {
         JInternalFrame sf;
 
         try {
-            for (int i=0; i<its.length; i++) {
+            for (int i = 0; i < its.length; i++) {
                 Iterator it = its[i];
                 while (it.hasNext()) {
                     sf = (JInternalFrame) it.next();
@@ -886,8 +886,8 @@ public class Workbench extends javax.swing.JFrame {
             Dimension screenSize = this.getSize();
             int aboutW = 400;
             int aboutH = 300;
-            int width = (screenSize.width / 2) - (aboutW/2);
-            int height = (screenSize.height / 2) - (aboutH/2) - 100; ;
+            int width = (screenSize.width / 2) - (aboutW / 2);
+            int height = (screenSize.height / 2) - (aboutH / 2) - 100;
             jf.setBounds(width, height, aboutW, aboutH);
             jf.setClosable(true);
 
@@ -904,7 +904,7 @@ public class Workbench extends javax.swing.JFrame {
         try {
             if (jdbcDriverClassName == null || jdbcDriverClassName.trim().length() == 0 ||
                     jdbcConnectionUrl == null || jdbcConnectionUrl.trim().length() == 0) {
-                throw new Exception("Driver="+this.jdbcDriverClassName+"\nConnection Url="+this.jdbcConnectionUrl);
+                throw new Exception("Driver=" + this.jdbcDriverClassName + "\nConnection Url=" + this.jdbcConnectionUrl);
             }
 
             JInternalFrame jf = new JInternalFrame();
@@ -980,7 +980,7 @@ public class Workbench extends javax.swing.JFrame {
         File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
         File outputFile;
         do  {
-            outputFile = new File(defaultDir, "Schema"+ newSchema++ +".xml");
+            outputFile = new File(defaultDir, "Schema" + newSchema++ + ".xml");
         } while (outputFile.exists());
 
         openSchemaFrame(outputFile, true);
@@ -1006,7 +1006,7 @@ public class Workbench extends javax.swing.JFrame {
         jf.show();
         try {
             jf.setSelected(true);
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             // do nothing
             LOGGER.error("newQueryMenuItemActionPerformed.setSelected", ex);
         }
@@ -1098,7 +1098,7 @@ public class Workbench extends javax.swing.JFrame {
             SchemaExplorer se = (SchemaExplorer) jf.getContentPane().getComponent(0);
             java.io.File schemaFile = se.getSchemaFile();
             java.io.File oldSchemaFile = schemaFile;
-            java.io.File suggSchemaFile = new File(schemaFile, se.getSchema().name.trim()+".xml");
+            java.io.File suggSchemaFile = new File(schemaFile, se.getSchema().name.trim() + ".xml");
             MondrianGuiDef.Schema schema = se.getSchema();
             JFileChooser jfc = new JFileChooser();
             MondrianProperties.instance();
@@ -1138,7 +1138,7 @@ public class Workbench extends javax.swing.JFrame {
                     // update menu item with new file name, then update catalog list for mdx queries
                     JMenuItem sMenuItem = (JMenuItem) schemaWindowMap.get(jf);
                     String mtexttokens[] = sMenuItem.getText().split(" ");
-                    sMenuItem.setText(mtexttokens[0]+" "+se.getSchemaFile().getName());
+                    sMenuItem.setText(mtexttokens[0] + " " + se.getSchemaFile().getName());
                     updateMDXCatalogList(); // schema menu item updated, now update mdx query windows with updated catallog list
                 } catch (Exception ex) {
                     LOGGER.error(ex);
@@ -1150,7 +1150,7 @@ public class Workbench extends javax.swing.JFrame {
     private void viewXMLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         JInternalFrame jf = desktopPane.getSelectedFrame();
         boolean oldValue = viewXMLMenuItem.getState();
-        if (jf!=null && jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
+        if (jf != null && jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
             SchemaExplorer se = (SchemaExplorer) jf.getContentPane().getComponent(0);
             // call schema explorer's view xml event and update the workbench's view menu accordingly'
             ((JCheckBoxMenuItem) evt.getSource()).setSelected(se.editMode(evt));
@@ -1205,20 +1205,20 @@ public class Workbench extends javax.swing.JFrame {
         String propname = null;
         String lastUsed = "lastUsed";
         String lastUsedUrl = "lastUsedUrl";
-        for( int i=1; i<=4; i++) {
-            propname = lastUsed+i;
+        for (int i = 1; i <= 4; i++) {
+            propname = lastUsed + i;
             luName = workbenchProperties.getProperty(propname) ;
 
-            if ( luName != null && luName.equals(name)) {
-                match=i;
+            if (luName != null && luName.equals(name)) {
+                match = i;
                 break;
             }
         }
 
-        for(int i=match; i>1; i--) {
-            if (workbenchProperties.getProperty(lastUsed+(i-1)) != null) {
-                workbenchProperties.setProperty(lastUsed+i, workbenchProperties.getProperty(lastUsed+(i-1)));
-                workbenchProperties.setProperty(lastUsedUrl+i, workbenchProperties.getProperty(lastUsedUrl+(i-1)));
+        for (int i = match; i > 1; i--) {
+            if (workbenchProperties.getProperty(lastUsed + (i - 1)) != null) {
+                workbenchProperties.setProperty(lastUsed + i, workbenchProperties.getProperty(lastUsed + (i - 1)));
+                workbenchProperties.setProperty(lastUsedUrl + i, workbenchProperties.getProperty(lastUsedUrl + (i - 1)));
             }
         }
 
@@ -1230,21 +1230,30 @@ public class Workbench extends javax.swing.JFrame {
 
     private void updateLastUsedMenu() {
         if (workbenchProperties.getProperty(LAST_USED1) == null) {
-            jSeparator2.setVisible(false); } else {
+            jSeparator2.setVisible(false);
+        } else {
             jSeparator2.setVisible(true); }
 
         if (workbenchProperties.getProperty(LAST_USED1) != null) {
-            lastUsed1MenuItem.setVisible(true);} else {
-            lastUsed1MenuItem.setVisible(false); }
+            lastUsed1MenuItem.setVisible(true);
+        } else {
+            lastUsed1MenuItem.setVisible(false);
+        }
         if (workbenchProperties.getProperty(LAST_USED2) != null) {
-            lastUsed2MenuItem.setVisible(true); } else {
-            lastUsed2MenuItem.setVisible(false); }
+            lastUsed2MenuItem.setVisible(true);
+        } else {
+            lastUsed2MenuItem.setVisible(false);
+        }
         if (workbenchProperties.getProperty(LAST_USED3) != null) {
-            lastUsed3MenuItem.setVisible(true); } else {
-            lastUsed3MenuItem.setVisible(false); }
+            lastUsed3MenuItem.setVisible(true);
+        } else {
+            lastUsed3MenuItem.setVisible(false);
+        }
         if (workbenchProperties.getProperty(LAST_USED4) != null) {
-            lastUsed4MenuItem.setVisible(true); } else {
-            lastUsed4MenuItem.setVisible(false); }
+            lastUsed4MenuItem.setVisible(true);
+        } else {
+            lastUsed4MenuItem.setVisible(false);
+        }
 
         lastUsed1MenuItem.setText(workbenchProperties.getProperty(LAST_USED1));
         lastUsed2MenuItem.setText(workbenchProperties.getProperty(LAST_USED2));
@@ -1383,7 +1392,7 @@ public class Workbench extends javax.swing.JFrame {
             }
 
             final javax.swing.JMenuItem schemaMenuItem = new javax.swing.JMenuItem();
-            schemaMenuItem.setText(windowMenuMapIndex++ + " " +file.getName());
+            schemaMenuItem.setText(windowMenuMapIndex++ + " "  + file.getName());
             schemaMenuItem.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     try {
@@ -1502,7 +1511,7 @@ public class Workbench extends javax.swing.JFrame {
                 try {
                     elem.setSelected(true); // make the schema file active
                     return true;
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     schemaWindowMap.remove(elem); // remove file from map as schema frame does not exist
                     break;
                 }
@@ -1529,7 +1538,7 @@ public class Workbench extends javax.swing.JFrame {
      * need to.
      */
     private void parseArgs(String args[]) {
-        for (int argNum=0; argNum < args.length; argNum++) {
+        for (int argNum = 0; argNum < args.length; argNum++) {
             if (args[argNum].startsWith("-f=")) {
                 openFile = args[argNum].substring(3);
             }
@@ -1556,7 +1565,7 @@ public class Workbench extends javax.swing.JFrame {
             w.setSize(800, 600);
             // if user specified a file to open, do so now.
             if (w.openFile != null) {
-                File f= new File(w.openFile);
+                File f = new File(w.openFile);
                 if (f.canRead()) {
                     w.openSchemaFrame(f.getAbsoluteFile(), false); // parameter to indicate this is a new or existing catalog file
                 }

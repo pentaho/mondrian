@@ -72,7 +72,7 @@ public class RolapMember extends MemberBase {
         } finally {
             if (LOGGER.isDebugEnabled()) {
                 long end = System.currentTimeMillis();
-                LOGGER.debug("RolapMember.getAllMembers: time=" +(end-start));
+                LOGGER.debug("RolapMember.getAllMembers: time=" + (end - start));
             }
         }
     }
@@ -166,7 +166,7 @@ public class RolapMember extends MemberBase {
         } finally {
             if (LOGGER.isDebugEnabled()) {
                 long end = System.currentTimeMillis();
-                LOGGER.debug("RolapMember.setOrdinals: time=" +(end-start));
+                LOGGER.debug("RolapMember.setOrdinals: time=" + (end - start));
             }
         }
     }
@@ -264,7 +264,7 @@ public class RolapMember extends MemberBase {
         } finally {
             if (LOGGER.isDebugEnabled()) {
                 long end = System.currentTimeMillis();
-                LOGGER.debug("RolapMember.setOrdinalsTopDown: time=" +(end-start));
+                LOGGER.debug("RolapMember.setOrdinalsTopDown: time=" + (end - start));
             }
         }
     }
@@ -770,7 +770,7 @@ public class RolapMember extends MemberBase {
             }
         }
         PropertyFormatter pf;
-        if (prop!=null && (pf = prop.getFormatter()) != null) {
+        if (prop != null && (pf = prop.getFormatter()) != null) {
             return pf.formatProperty(this, propertyName,
                 getPropertyValue(propertyName));
         }

@@ -674,7 +674,7 @@ public class Vba {
             double fv, boolean due) {
         double pmtVal = pmt(rate, nPer, PV, fv, due);
         double pValm1 = PV - pV(rate, per - 1, pmtVal, fv, due);
-        return -pValm1 * rate;
+        return - pValm1 * rate;
     }
 
     @FunctionName("IRR")
@@ -736,10 +736,10 @@ public class Vba {
             }
         }
 
-        double ratio = (-reNPV * Math.pow(1 + reinvestRate, valueArray.length)) /
+        double ratio = (- reNPV * Math.pow(1 + reinvestRate, valueArray.length)) /
         (fiNPV * (1 + financeRate));
 
-        return Math.pow( ratio, 1.0 / (valueArray.length - 1)) - 1.0;
+        return Math.pow(ratio, 1.0 / (valueArray.length - 1)) - 1.0;
 
     }
 
@@ -1425,8 +1425,7 @@ public class Vba {
     @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
     public static String formatPercent(
             // todo: impl & test
-            Object expression, int numDigitsAfterDecimal /* default -1 */
-        ) {
+            Object expression, int numDigitsAfterDecimal /* default -1 */) {
         return formatPercent(expression, numDigitsAfterDecimal, -1);
 
     }
@@ -1437,8 +1436,7 @@ public class Vba {
     public static String formatPercent(
             // todo: impl & test
             Object expression, int numDigitsAfterDecimal /* default -1 */,
-            int includeLeadingDigit /* default UseDefault */
-    ) {
+            int includeLeadingDigit /* default UseDefault */) {
         return formatPercent(expression, numDigitsAfterDecimal,
                 includeLeadingDigit, -1);
 
@@ -1451,8 +1449,7 @@ public class Vba {
             // todo: impl & test
             Object expression, int numDigitsAfterDecimal /* default -1 */,
             int includeLeadingDigit /* default UseDefault */,
-            int useParensForNegativeNumbers /* default UseDefault */
-        ) {
+            int useParensForNegativeNumbers /* default UseDefault */) {
         return formatPercent(expression, numDigitsAfterDecimal,
                 includeLeadingDigit, useParensForNegativeNumbers, -1);
     }

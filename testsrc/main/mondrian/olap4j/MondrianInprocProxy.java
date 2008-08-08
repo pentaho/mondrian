@@ -80,7 +80,7 @@ public class MondrianInprocProxy
                     return get(url, request);
                 }
             }
-        );
+       );
     }
 
     public String getEncodingCharsetName() {

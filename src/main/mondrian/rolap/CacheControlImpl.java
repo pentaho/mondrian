@@ -466,7 +466,7 @@ public class CacheControlImpl implements CacheControl {
                         flushMember(member, cellRegionList);
                     }
                 }
-            );
+           );
             // STUB: flush the set: another visitor
 
             // finally, flush cells now invalid
@@ -623,7 +623,7 @@ public class CacheControlImpl implements CacheControl {
                         rangeMemberSet.descendants);
                 }
             }
-        );
+       );
     }
 
     public void execute(MemberEditCommand cmd) {

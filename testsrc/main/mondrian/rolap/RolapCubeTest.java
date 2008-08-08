@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde and others
+// Copyright (C) 2007-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,21 +29,21 @@ import java.util.ArrayList;
  */
 public class RolapCubeTest extends FoodMartTestCase {
 
-    public void testProcessFormatStringAttributeToIgnoreNullFormatString(){
+    public void testProcessFormatStringAttributeToIgnoreNullFormatString() {
         RolapCube cube = (RolapCube) getConnection().getSchema().lookupCube("Sales", false);
         StringBuilder builder = new StringBuilder();
         cube.processFormatStringAttribute(new MondrianDef.CalculatedMember(), builder);
         assertEquals(0, builder.length());
     }
 
-    public void testProcessFormatStringAttribute(){
+    public void testProcessFormatStringAttribute() {
         RolapCube cube = (RolapCube) getConnection().getSchema().lookupCube("Sales", false);
         StringBuilder builder = new StringBuilder();
         MondrianDef.CalculatedMember xmlCalcMember = new MondrianDef.CalculatedMember();
         String format = "FORMAT";
         xmlCalcMember.formatString = format;
         cube.processFormatStringAttribute(xmlCalcMember, builder);
-        assertEquals(","+ Util.nl+"FORMAT_STRING = \""+format+"\"", builder.toString());
+        assertEquals("," + Util.nl + "FORMAT_STRING = \"" + format + "\"", builder.toString());
     }
 
     public void testGetCalculatedMembersWithNoRole() {
@@ -65,8 +65,7 @@ public class RolapCubeTest extends FoodMartTestCase {
 
             assertCalculatedMemberExists(expectedCalculatedMembers,
                 calculatedMembers);
-        }
-        finally {
+        } finally {
             connection.close();
         }
     }
@@ -92,8 +91,7 @@ public class RolapCubeTest extends FoodMartTestCase {
 
             assertCalculatedMemberExists(expectedCalculatedMembers,
                 calculatedMembers);
-        }
-        finally {
+        } finally {
             connection.close();
         }
     }
@@ -121,8 +119,7 @@ public class RolapCubeTest extends FoodMartTestCase {
 
             assertCalculatedMemberExists(expectedCalculatedMembers,
                 calculatedMembers);
-        }
-        finally {
+        } finally {
             connection.close();
         }
     }
@@ -161,8 +158,7 @@ public class RolapCubeTest extends FoodMartTestCase {
                     getDimensionWithName("Gender",
                         salesCube.getDimensions()).getHierarchy());
             assertEquals(0, calculatedMembers.size());
-        }
-        finally {
+        } finally {
             connection.close();
         }
     }
@@ -203,8 +199,7 @@ public class RolapCubeTest extends FoodMartTestCase {
                         salesCube.getDimensions()).
                             getHierarchy().getLevels()[0]);
             assertEquals(0, calculatedMembers.size());
-        }
-        finally {
+        } finally {
             connection.close();
         }
     }
@@ -237,8 +232,7 @@ public class RolapCubeTest extends FoodMartTestCase {
                 salesCube.nonJoiningDimensions(members.toArray(new Member[0]));
             assertFalse(nonJoiningDims.contains(storeDim));
             assertTrue(nonJoiningDims.contains(warehouseDim));
-        }
-        finally {
+        } finally {
             connection.close();
         }
     }
@@ -282,8 +276,7 @@ public class RolapCubeTest extends FoodMartTestCase {
                 warehouseMembersCanadaMexicoUsa(readerWarehouseAndSales);
             Dimension warehouseDim = warehouseMembers.get(0).getDimension();
             assertFalse(storeDim3.equals(warehouseDim));
-        }
-        finally {
+        } finally {
             connection1.close();
             connection2.close();
         }
@@ -303,8 +296,7 @@ public class RolapCubeTest extends FoodMartTestCase {
             "Sales",
             null,
             nonAccessibleMember +
-            accessibleMember
-        );
+            accessibleMember);
         return testContext.withRole("California manager");
     }
 

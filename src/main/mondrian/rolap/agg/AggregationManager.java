@@ -344,7 +344,7 @@ public class AggregationManager extends RolapAggregationManager {
                     buf.append(Util.nl);
                     for (Iterator columnIter =
                             aggStar.getFactTable().getColumns().iterator();
-                         columnIter.hasNext(); ) {
+                         columnIter.hasNext();) {
                         AggStar.Table.Column column =
                                 (AggStar.Table.Column) columnIter.next();
                         buf.append("   ");

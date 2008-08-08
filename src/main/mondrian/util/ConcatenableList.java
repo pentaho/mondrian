@@ -17,7 +17,7 @@ import java.util.*;
  * @since december, 2007
  */
 public class ConcatenableList<T> extends AbstractList<T> {
-    private static int nextHashCode=1000;
+    private static int nextHashCode = 1000;
     private final List<List<T>> lists;
     private List<T> plainList;
     private final int hashCode = nextHashCode++;
@@ -37,10 +37,10 @@ public class ConcatenableList<T> extends AbstractList<T> {
      * access advantages.
      */
     public Object[] toArray() {
-        if(this.plainList==null) {
+        if (this.plainList == null) {
             this.plainList = new ArrayList<T>();
-            for(final List<T> list : lists) {
-                for(final T t : list) {
+            for (final List<T> list : lists) {
+                for (final T t : list) {
                     this.plainList.add(t);
                 }
             }
@@ -49,21 +49,23 @@ public class ConcatenableList<T> extends AbstractList<T> {
     }
 
     public boolean addAll(final Collection<? extends T> collection) {
-        if(this.plainList==null) {
+        if (this.plainList == null) {
             final List<T> list = (List<T>) collection;
             return this.lists.add(list);
         } else {
-            for(final T e : collection) this.plainList.add(e);
+            for (final T e : collection) {
+                this.plainList.add(e);
+            }
             return true;
         }
     }
 
     public T get(final int index) {
-        if(this.plainList==null) {
-            if(index==0) {
+        if (this.plainList == null) {
+            if (index == 0) {
                 this.getIterator = this.iterator();
                 this.previousIndex = index;
-                if(this.getIterator.hasNext()) {
+                if (this.getIterator.hasNext()) {
                     this.previousElement = this.getIterator.next();
                     return this.previousElement;
                 } else {
@@ -72,9 +74,9 @@ public class ConcatenableList<T> extends AbstractList<T> {
                     throw new IndexOutOfBoundsException("Index " + index
                             + " out of concatenable list range");
                 }
-            } else if(this.previousIndex+1==index && this.getIterator!=null) {
+            } else if (this.previousIndex + 1 == index && this.getIterator != null) {
                 this.previousIndex = index;
-                if(this.getIterator.hasNext()) {
+                if (this.getIterator.hasNext()) {
                     this.prePreviousElement = this.previousElement;
                     this.previousElement = this.getIterator.next();
                     return this.previousElement;
@@ -84,20 +86,20 @@ public class ConcatenableList<T> extends AbstractList<T> {
                     throw new IndexOutOfBoundsException("Index " + index
                             + " out of concatenable list range");
                 }
-            } else if(this.previousIndex==index) {
+            } else if (this.previousIndex == index) {
                 return this.previousElement;
-            } else if(this.previousIndex-1==index) {
+            } else if (this.previousIndex - 1 == index) {
                 return this.prePreviousElement;
             } else {
                 this.previousIndex = -200;
                 this.getIterator = null;
                 final Iterator<T> it = this.iterator();
-                if(!it.hasNext()) {
+                if (!it.hasNext()) {
                     throw new IndexOutOfBoundsException("Index " + index
                             + " out of concatenable list range");
                 }
-                for(int i=0; i<index; i++) {
-                    if(!it.hasNext()) {
+                for (int i = 0; i < index; i++) {
+                    if (!it.hasNext()) {
                         throw new IndexOutOfBoundsException("Index " + index
                             + " out of concatenable list range");
                     }
@@ -119,7 +121,7 @@ public class ConcatenableList<T> extends AbstractList<T> {
      * Adds elements at the end of the list.
      */
     public boolean add(final T t) {
-        if(this.plainList==null) {
+        if (this.plainList == null) {
             return this.addAll(Collections.singletonList(t));
         } else {
             return this.plainList.add(t);
@@ -130,7 +132,7 @@ public class ConcatenableList<T> extends AbstractList<T> {
      * Adds elements at the middle of the list.
      */
     public void add(final int index, final T t) {
-        if(this.plainList==null) {
+        if (this.plainList == null) {
             throw new UnsupportedOperationException();
         } else {
             this.plainList.add(index, t);
@@ -143,7 +145,7 @@ public class ConcatenableList<T> extends AbstractList<T> {
      * Burnt method!
      */
     public T set(final int index, final T t) {
-        if(this.plainList==null) {
+        if (this.plainList == null) {
             throw new UnsupportedOperationException();
         } else {
             return this.plainList.set(index, t);
@@ -151,39 +153,48 @@ public class ConcatenableList<T> extends AbstractList<T> {
     }
 
     public int size() {
-        if(this.plainList==null) {
+        if (this.plainList == null) {
             int size = 0;
-            for(final List<T> list : lists) size+=list.size();
+            for (final List<T> list : lists) {
+                size += list.size();
+            }
             return size;
-        } else return this.plainList.size();
+        } else {
+            return this.plainList.size();
+        }
     }
 
     public Iterator<T> iterator() {
-        if(this.plainList==null) {
+        if (this.plainList == null) {
             return new Iterator<T>() {
                 private final Iterator<List<T>> listsIt=lists.iterator();
                 private Iterator<T> currentListIt;
 
                 public boolean hasNext() {
-                    if(currentListIt==null) {
-                        if(listsIt.hasNext()) {
+                    if (currentListIt == null) {
+                        if (listsIt.hasNext()) {
                             currentListIt = listsIt.next().iterator();
-                        } else return false;
+                        } else {
+                            return false;
+                        }
                     }
 
-                    if(currentListIt.hasNext()) {
+                    if (currentListIt.hasNext()) {
                         return true;
                     } else {
-                        if(listsIt.hasNext()) {
+                        if (listsIt.hasNext()) {
                             currentListIt = listsIt.next().iterator();
                             return currentListIt.hasNext();
-                        } else return false;
+                        } else {
+                            return false;
+                        }
                     }
                 }
 
                 public T next() {
-                    if(currentListIt.hasNext()) return currentListIt.next();
-                    else {
+                    if (currentListIt.hasNext()) {
+                        return currentListIt.next();
+                    } else {
                         currentListIt = listsIt.next().iterator();
                         return currentListIt.next();
                     }
@@ -199,10 +210,17 @@ public class ConcatenableList<T> extends AbstractList<T> {
     }
 
     public boolean isEmpty() {
-        if(this.plainList!=null) return this.plainList.isEmpty();
-        if(this.lists.isEmpty()) return true;
-        else {
-            for(final List<T> l : lists) if(!l.isEmpty()) return false;
+        if (this.plainList != null) {
+            return this.plainList.isEmpty();
+        }
+        if (this.lists.isEmpty()) {
+            return true;
+        } else {
+            for (final List<T> l : lists) {
+                if (!l.isEmpty()) {
+                    return false;
+                }
+            }
             return true;
         }
     }

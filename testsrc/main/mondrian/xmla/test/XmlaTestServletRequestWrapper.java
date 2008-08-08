@@ -64,7 +64,7 @@ public class XmlaTestServletRequestWrapper extends HttpServletRequestWrapper {
         /*
          * Strip the XML premable if it is there
          */
-        if (soapRequest.indexOf("<?") == 0 ) {
+        if (soapRequest.indexOf("<?") == 0) {
             soapRequest = soapRequest.substring(soapRequest.indexOf("?>") + 2);
         }
 

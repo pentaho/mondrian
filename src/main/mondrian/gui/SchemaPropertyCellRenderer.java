@@ -65,7 +65,7 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
         listRenderer.setRenderer(new ListRenderer(listRenderer.getRenderer()));
 
         /*
-        relationListRenderer = new JComboBox( new String[] {"Join", "Table"} );
+        relationListRenderer = new JComboBox(new String[] {"Join", "Table"});
         relationListRenderer.setMaximumSize(stringRenderer.getMaximumSize());
         relationListRenderer.setFont(Font.decode("Dialog"));
         relationListRenderer.setBackground(Color.white);
@@ -73,8 +73,8 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
         relationRenderer = new JPanel();
 
         rlPanel = new JPanel();
-        relationList = new JComboBox( new String[] {workbench.getResourceConverter().getString("schemaPropertyCellRenderer.join","Join"),
-                                                    workbench.getResourceConverter().getString("schemaPropertyCellRenderer.table","Table")} );
+        relationList = new JComboBox(new String[] {workbench.getResourceConverter().getString("schemaPropertyCellRenderer.join","Join"),
+                                                    workbench.getResourceConverter().getString("schemaPropertyCellRenderer.table","Table")});
         relationList.setMaximumSize(new Dimension(55,22));
         relationList.setPreferredSize(new Dimension(55,22));
         relationList.setMinimumSize(new Dimension(55,22));
@@ -233,8 +233,7 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 return null;
             }
 
-        }
-        else {
+        } else {
             if (value instanceof String) {
                 // use data from workbenchInfo.properties as tooltip when available
                 PropertyTableModel tableModel = (PropertyTableModel) table.getModel();
@@ -286,8 +285,8 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
             TableCellRenderer renderer = relationTable.getCellRenderer(i, 1);
             Component comp = renderer.getTableCellRendererComponent(relationTable, relationTable.getValueAt(i, 1), false, false, i, 1);
             try {
-                int height=0;
-                int width=0;
+                int height = 0;
+                int width = 0;
                 if (comp != null) {
                     height = comp.getMaximumSize().height;
                     width = comp.getMaximumSize().width;
@@ -295,9 +294,9 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 }
 
                 value = relationTable.getValueAt(i, 1);
-                if ( value instanceof MondrianGuiDef.RelationOrJoin) {
+                if (value instanceof MondrianGuiDef.RelationOrJoin) {
                     tableH += comp.getPreferredSize().height;
-                    tableW = Math.max(tableW, comp.getPreferredSize().width +stringRenderer.getMaximumSize().width);
+                    tableW = Math.max(tableW, comp.getPreferredSize().width + stringRenderer.getMaximumSize().width);
                 } else if (value == null) {
                     tableH += stringRenderer.getMaximumSize().height;
                     tableW = Math.max(tableW, stringRenderer.getMaximumSize().width * 2);

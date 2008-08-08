@@ -124,7 +124,7 @@ public abstract class RolapAxis implements Axis {
             }
             public Member get(int index) {
                 throw new IndexOutOfBoundsException(
-                        "Index: "+index+", Size: 0");
+                        "Index: " + index + ", Size: 0");
             }
         }
     }
@@ -246,7 +246,7 @@ public abstract class RolapAxis implements Axis {
             public Member get(int index) {
                 if (index != 0) {
                     throw new IndexOutOfBoundsException(
-                        "Index: "+index+", Size: 1");
+                        "Index: " + index + ", Size: 1");
                 }
                 return member;
             }
@@ -298,7 +298,7 @@ public abstract class RolapAxis implements Axis {
             public Member get(int index) {
                 if (index != 0) {
                     throw new IndexOutOfBoundsException(
-                        "Index: "+index+", Size: 1");
+                        "Index: " + index + ", Size: 1");
                 }
                 return list.get(offset);
             }
@@ -363,7 +363,7 @@ public abstract class RolapAxis implements Axis {
             public Member get(int index) {
                 if (index != 0) {
                     throw new IndexOutOfBoundsException(
-                        "Index: "+index+", Size: 1");
+                        "Index: " + index + ", Size: 1");
                 }
                 return list.get(offset);
             }

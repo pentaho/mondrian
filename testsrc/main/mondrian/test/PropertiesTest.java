@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -161,11 +161,11 @@ public class PropertiesTest extends FoodMartTestCase {
      */
     public void testPropertiesMDX() {
         Result result = executeQuery(
-            "SELECT {[Customers].[All Customers].[USA].[CA]} DIMENSION PROPERTIES "+nl+
-                " CATALOG_NAME, SCHEMA_NAME, CUBE_NAME, DIMENSION_UNIQUE_NAME, " + nl +
-                " HIERARCHY_UNIQUE_NAME, LEVEL_UNIQUE_NAME, LEVEL_NUMBER, MEMBER_UNIQUE_NAME, " + nl +
-                " MEMBER_NAME, MEMBER_TYPE, MEMBER_GUID, MEMBER_CAPTION, MEMBER_ORDINAL, CHILDREN_CARDINALITY," + nl +
-                " PARENT_LEVEL, PARENT_UNIQUE_NAME, PARENT_COUNT, DESCRIPTION ON COLUMNS" + nl +
+            "SELECT {[Customers].[All Customers].[USA].[CA]} DIMENSION PROPERTIES \n" +
+                " CATALOG_NAME, SCHEMA_NAME, CUBE_NAME, DIMENSION_UNIQUE_NAME, \n" +
+                " HIERARCHY_UNIQUE_NAME, LEVEL_UNIQUE_NAME, LEVEL_NUMBER, MEMBER_UNIQUE_NAME, \n" +
+                " MEMBER_NAME, MEMBER_TYPE, MEMBER_GUID, MEMBER_CAPTION, MEMBER_ORDINAL, CHILDREN_CARDINALITY,\n" +
+                " PARENT_LEVEL, PARENT_UNIQUE_NAME, PARENT_COUNT, DESCRIPTION ON COLUMNS\n" +
                 "FROM [Sales]");
         QueryAxis[] axes = result.getQuery().getAxes();
         Id[] axesProperties = axes[0].getDimensionProperties();
@@ -199,9 +199,9 @@ public class PropertiesTest extends FoodMartTestCase {
     public void testMandatoryCellProperties() {
         Connection connection = getConnection();
         Query salesCube = connection.parseQuery(
-                "select " + nl +
-                " {[Measures].[Store Sales], [Measures].[Unit Sales]} on columns, " + nl +
-                " {[Gender].members} on rows " + nl +
+                "select \n" +
+                " {[Measures].[Store Sales], [Measures].[Unit Sales]} on columns, \n" +
+                " {[Gender].members} on rows \n" +
                 "from [Sales]");
         Result result = connection.execute(salesCube);
         int x = 1;

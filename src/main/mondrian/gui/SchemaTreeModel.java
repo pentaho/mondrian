@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -55,16 +55,16 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.Cube) {
             MondrianGuiDef.Cube c = (MondrianGuiDef.Cube)parent;
             //return children in this order: fact table, dimensions, measures, calculatedMembers, namedSets
-            if (1>index) {
+            if (1 > index) {
                 return c.fact;
-            } else if (1+ c.dimensions.length > index) {
-                return c.dimensions[index -1 ];
-            } else if (1+ c.measures.length + c.dimensions.length > index) {
-                return c.measures[index - c.dimensions.length -1];
-            } else if (1+ c.calculatedMembers.length + c.measures.length + c.dimensions.length > index) {
-                return c.calculatedMembers[index - c.dimensions.length - c.measures.length -1];
-            } else if (1+ c.namedSets.length + c.calculatedMembers.length + c.measures.length + c.dimensions.length > index) {
-                return c.namedSets[index - c.dimensions.length - c.measures.length - c.calculatedMembers.length -1];
+            } else if (1 + c.dimensions.length > index) {
+                return c.dimensions[index - 1 ];
+            } else if (1 + c.measures.length + c.dimensions.length > index) {
+                return c.measures[index - c.dimensions.length - 1];
+            } else if (1 + c.calculatedMembers.length + c.measures.length + c.dimensions.length > index) {
+                return c.calculatedMembers[index - c.dimensions.length - c.measures.length - 1];
+            } else if (1 + c.namedSets.length + c.calculatedMembers.length + c.measures.length + c.dimensions.length > index) {
+                return c.namedSets[index - c.dimensions.length - c.measures.length - c.calculatedMembers.length - 1];
             }
         } else if (parent instanceof MondrianGuiDef.Dimension) {
             MondrianGuiDef.Dimension d = (MondrianGuiDef.Dimension)parent;
@@ -91,9 +91,9 @@ public class SchemaTreeModel extends DefaultTreeModel {
             }
         } else if (parent instanceof MondrianGuiDef.Join) {
             MondrianGuiDef.Join j = (MondrianGuiDef.Join)parent;
-            if (index==0) {
+            if (index == 0) {
                 return j.left;
-            } else if (index==1) {
+            } else if (index == 1) {
                 return j.right;
             }
         } else if (parent instanceof MondrianGuiDef.Level) {
@@ -193,7 +193,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             } else if (fc + t.levels.length + t.measures.length + t.foreignKeys.length + t.ignoreColumns.length > index) {
                 return t.levels[index - t.ignoreColumns.length - t.foreignKeys.length - t.measures.length - fc];
             } else if (t instanceof MondrianGuiDef.AggPattern) {
-                if ( ((MondrianGuiDef.AggPattern) t).excludes.length  + t.levels.length + t.measures.length + t.foreignKeys.length + t.ignoreColumns.length + fc > index) {
+                if (((MondrianGuiDef.AggPattern) t).excludes.length  + t.levels.length + t.measures.length + t.foreignKeys.length + t.ignoreColumns.length + fc > index) {
                     return ((MondrianGuiDef.AggPattern) t).excludes[index - t.ignoreColumns.length - t.foreignKeys.length - t.measures.length - t.levels.length - fc];
                 }
             }
@@ -264,87 +264,170 @@ public class SchemaTreeModel extends DefaultTreeModel {
         int childCount = 0;
         if (parent instanceof MondrianGuiDef.Cube) {
             MondrianGuiDef.Cube c = (MondrianGuiDef.Cube)parent;
-            if( c.fact != null) {childCount += 1; }
-            if( c.dimensions != null ) {childCount += c.dimensions.length;}
-            if( c.measures != null ) { childCount += c.measures.length;}
-            if( c.calculatedMembers != null ) {childCount += c.calculatedMembers.length;}
-            if( c.namedSets != null ) {childCount += c.namedSets.length;}
+            if (c.fact != null) {
+                childCount += 1;
+            }
+            if (c.dimensions != null) {
+                childCount += c.dimensions.length;
+            }
+            if (c.measures != null) {
+                childCount += c.measures.length;
+            }
+            if (c.calculatedMembers != null) {
+                childCount += c.calculatedMembers.length;
+            }
+            if (c.namedSets != null) {
+                childCount += c.namedSets.length;
+            }
         } else if (parent instanceof MondrianGuiDef.Dimension) {
             MondrianGuiDef.Dimension d = (MondrianGuiDef.Dimension)parent;
-            if( d.hierarchies != null ) {childCount += d.hierarchies.length;}
+            if (d.hierarchies != null) {
+                childCount += d.hierarchies.length;
+            }
         } else if (parent instanceof MondrianGuiDef.ExpressionView) {
             MondrianGuiDef.ExpressionView ev = (MondrianGuiDef.ExpressionView)parent;
-            if( ev.expressions != null ) {childCount = ev.expressions.length;}
-
+            if (ev.expressions != null) {
+                childCount = ev.expressions.length;
+            }
         } else if (parent instanceof MondrianGuiDef.Hierarchy) {
             MondrianGuiDef.Hierarchy h = (MondrianGuiDef.Hierarchy)parent;
-            if( h.memberReaderParameters != null ) {childCount += h.memberReaderParameters.length;}
-            if( h.levels != null ) {childCount += h.levels.length;}
-            if(h.relation != null) {childCount += 1;}
+            if (h.memberReaderParameters != null) {
+                childCount += h.memberReaderParameters.length;
+            }
+            if (h.levels != null) {
+                childCount += h.levels.length;
+            }
+            if (h.relation != null) {
+                childCount += 1;
+            }
         } else if (parent instanceof MondrianGuiDef.Join) {
             //MondrianGuiDef.Join j = (MondrianGuiDef.Join)parent;
             childCount += 2;
         } else if (parent instanceof MondrianGuiDef.Table) {
             MondrianGuiDef.Table h = (MondrianGuiDef.Table)parent;
-            if( h.aggTables != null ) {childCount += h.aggTables.length;}
-            if( h.aggExcludes != null ) {childCount += h.aggExcludes.length;}
+            if (h.aggTables != null) {
+                childCount += h.aggTables.length;
+            }
+            if (h.aggExcludes != null) {
+                childCount += h.aggExcludes.length;
+            }
         } else if (parent instanceof MondrianGuiDef.AggTable) {
             MondrianGuiDef.AggTable h = (MondrianGuiDef.AggTable)parent;
-            if( h.factcount != null ) {childCount += 1;}
-            if( h.ignoreColumns != null ) {childCount += h.ignoreColumns.length;}
-            if( h.foreignKeys != null ) {childCount += h.foreignKeys.length;}
-            if( h.measures != null ) {childCount += h.measures.length;}
-            if( h.levels != null ) {childCount += h.levels.length;}
+            if (h.factcount != null) {
+                childCount += 1;
+            }
+            if (h.ignoreColumns != null) {
+                childCount += h.ignoreColumns.length;
+            }
+            if (h.foreignKeys != null) {
+                childCount += h.foreignKeys.length;
+            }
+            if (h.measures != null) {
+                childCount += h.measures.length;
+            }
+            if (h.levels != null) {
+                childCount += h.levels.length;
+            }
             if (parent instanceof MondrianGuiDef.AggPattern) {
-                if( ((MondrianGuiDef.AggPattern)h).excludes != null ) {childCount += ((MondrianGuiDef.AggPattern)h).excludes.length;}
+                if (((MondrianGuiDef.AggPattern)h).excludes != null) {
+                    childCount += ((MondrianGuiDef.AggPattern)h).excludes.length;
+                }
             }
         } else if (parent instanceof MondrianGuiDef.Level) {
             MondrianGuiDef.Level l = (MondrianGuiDef.Level)parent;
-            if( l.properties != null ) {childCount = l.properties.length;}
-            if(l.keyExp != null) {childCount += 1;}
-            if(l.nameExp != null) {childCount += 1;}
-            if(l.ordinalExp != null) {childCount += 1;}
-            if(l.parentExp != null) {childCount += 1;}
-            if(l.closure != null) {childCount += 1;}
+            if (l.properties != null) {
+                childCount = l.properties.length;
+            }
+            if (l.keyExp != null) {
+                childCount += 1;
+            }
+            if (l.nameExp != null) {
+                childCount += 1;
+            }
+            if (l.ordinalExp != null) {
+                childCount += 1;
+            }
+            if (l.parentExp != null) {
+                childCount += 1;
+            }
+            if (l.closure != null) {
+                childCount += 1;
+            }
         } else if (parent instanceof MondrianGuiDef.CalculatedMember) {
             MondrianGuiDef.CalculatedMember l = (MondrianGuiDef.CalculatedMember)parent;
-            if( l.memberProperties != null ) {childCount = l.memberProperties.length;}
+            if (l.memberProperties != null) {
+                childCount = l.memberProperties.length;
+            }
         } else if (parent instanceof MondrianGuiDef.Schema) {
             //return children in this order: cubes,  dimensions, namedSets, userDefinedFunctions, virtual cubes, roles
             MondrianGuiDef.Schema s = (MondrianGuiDef.Schema)parent;
-            if( s.cubes != null ) {childCount += s.cubes.length;}
-            if( s.dimensions != null ) {childCount += s.dimensions.length;}
-            if( s.namedSets != null ) {childCount += s.namedSets.length;}
-            if( s.userDefinedFunctions != null ) {childCount += s.userDefinedFunctions.length;}
-            if( s.virtualCubes != null ) {childCount += s.virtualCubes.length;}
-            if( s.roles != null ) {childCount += s.roles.length;}
+            if (s.cubes != null) {
+                childCount += s.cubes.length;
+            }
+            if (s.dimensions != null) {
+                childCount += s.dimensions.length;
+            }
+            if (s.namedSets != null) {
+                childCount += s.namedSets.length;
+            }
+            if (s.userDefinedFunctions != null) {
+                childCount += s.userDefinedFunctions.length;
+            }
+            if (s.virtualCubes != null) {
+                childCount += s.virtualCubes.length;
+            }
+            if (s.roles != null) {
+                childCount += s.roles.length;
+            }
         } else if (parent instanceof MondrianGuiDef.View) {
             MondrianGuiDef.View v = (MondrianGuiDef.View)parent;
-            if( v.selects != null ) {childCount += v.selects.length;}
+            if (v.selects != null) {
+                childCount += v.selects.length;
+            }
         } else if (parent instanceof MondrianGuiDef.VirtualCube) {
             MondrianGuiDef.VirtualCube c = (MondrianGuiDef.VirtualCube)parent;
-            if( c.dimensions != null ) {childCount += c.dimensions.length;}
-            if( c.measures != null ) {childCount += c.measures.length;}
-            if( c.calculatedMembers != null ) {childCount += c.calculatedMembers.length;}
+            if (c.dimensions != null) {
+                childCount += c.dimensions.length;
+            }
+            if (c.measures != null) {
+                childCount += c.measures.length;
+            }
+            if (c.calculatedMembers != null) {
+                childCount += c.calculatedMembers.length;
+            }
         } else if (parent instanceof MondrianGuiDef.Role) {
             MondrianGuiDef.Role c = (MondrianGuiDef.Role)parent;
-            if( c.schemaGrants != null ) {childCount += c.schemaGrants.length;}
+            if (c.schemaGrants != null) {
+                childCount += c.schemaGrants.length;
+            }
         } else if (parent instanceof MondrianGuiDef.SchemaGrant) {
             MondrianGuiDef.SchemaGrant c = (MondrianGuiDef.SchemaGrant)parent;
-            if( c.cubeGrants != null ) {childCount += c.cubeGrants.length;}
+            if (c.cubeGrants != null) {
+                childCount += c.cubeGrants.length;
+            }
         } else if (parent instanceof MondrianGuiDef.CubeGrant) {
             MondrianGuiDef.CubeGrant c = (MondrianGuiDef.CubeGrant)parent;
-            if( c.dimensionGrants != null ) {childCount += c.dimensionGrants.length;}
-            if( c.hierarchyGrants != null ) {childCount += c.hierarchyGrants.length;}
+            if (c.dimensionGrants != null) {
+                childCount += c.dimensionGrants.length;
+            }
+            if (c.hierarchyGrants != null) {
+                childCount += c.hierarchyGrants.length;
+            }
         } else if (parent instanceof MondrianGuiDef.HierarchyGrant) {
             MondrianGuiDef.HierarchyGrant c = (MondrianGuiDef.HierarchyGrant)parent;
-            if( c.memberGrants != null ) {childCount += c.memberGrants.length;}
+            if (c.memberGrants != null) {
+                childCount += c.memberGrants.length;
+            }
         } else if (parent instanceof MondrianGuiDef.Closure) {
             MondrianGuiDef.Closure c = (MondrianGuiDef.Closure)parent;
-            if( c.table != null ) {childCount += 1;}
+            if (c.table != null) {
+                childCount += 1;
+            }
         } else if (parent instanceof MondrianGuiDef.Measure) {
             MondrianGuiDef.Measure m = (MondrianGuiDef.Measure)parent;
-            if(m.measureExp != null) {childCount += 1;}
+            if (m.measureExp != null) {
+                childCount += 1;
+            }
         }
         return childCount;
     }
@@ -370,35 +453,35 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.CubeDimension) {
-                for (int i=0; i<c.dimensions.length; i++) {
-                    if (c.dimensions[i].equals(child) && (c.dimensions[i]==child) ) {
+                for (int i = 0; i < c.dimensions.length; i++) {
+                    if (c.dimensions[i].equals(child) && (c.dimensions[i] == child)) {
                         // check equality of parent class attributes
                         MondrianGuiDef.CubeDimension match = (MondrianGuiDef.CubeDimension) c.dimensions[i];
                         MondrianGuiDef.CubeDimension d = (MondrianGuiDef.CubeDimension) child;
-                        if ( ((match.name== null && d.name==null) || ( match.name != null && match.name.equals(d.name) )) &&
-                                ((match.caption== null && d.caption==null) || ( match.caption != null && match.caption.equals(d.name) )) &&
-                                ((match.foreignKey== null && d.foreignKey==null) || ( match.foreignKey != null && match.name.equals(d.foreignKey) )) ) {
-                            return i +1;
+                        if (((match.name == null && d.name == null) || (match.name != null && match.name.equals(d.name))) &&
+                                ((match.caption == null && d.caption == null) || (match.caption != null && match.caption.equals(d.name))) &&
+                                ((match.foreignKey == null && d.foreignKey == null) || (match.foreignKey != null && match.name.equals(d.foreignKey)))) {
+                            return i  + 1;
                         }
                     }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.Measure) {
-                for (int i=0; i<c.measures.length; i++) {
+                for (int i = 0; i < c.measures.length; i++) {
                     if (c.measures[i].equals(child)) {
-                        return i + c.dimensions.length +1;}
+                        return i + c.dimensions.length  + 1;}
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.CalculatedMember) {
-                for (int i=0; i<c.calculatedMembers.length; i++) {
+                for (int i = 0; i < c.calculatedMembers.length; i++) {
                     if (c.calculatedMembers[i].equals(child)) {
-                        return i + c.measures.length + c.dimensions.length +1;}
+                        return i + c.measures.length + c.dimensions.length  + 1;}
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.NamedSet) {
-                for (int i=0; i<c.namedSets.length; i++) {
+                for (int i = 0; i < c.namedSets.length; i++) {
                     if (c.namedSets[i].equals(child)) {
-                        return i + c.calculatedMembers.length + c.measures.length + c.dimensions.length +1;}
+                        return i + c.calculatedMembers.length + c.measures.length + c.dimensions.length  + 1;}
                 }
                 return -1;
             } else {
@@ -407,9 +490,10 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.Dimension) {
             MondrianGuiDef.Dimension d = (MondrianGuiDef.Dimension)parent;
             if (child instanceof MondrianGuiDef.Hierarchy) {
-                for (int i=0; i<d.hierarchies.length; i++) {
-                    if (d.hierarchies[i].equals(child) && (d.hierarchies[i]==child)) {
-                        return i;}
+                for (int i = 0; i < d.hierarchies.length; i++) {
+                    if (d.hierarchies[i].equals(child) && (d.hierarchies[i] == child)) {
+                        return i;
+                    }
                 }
                 return -1;
             } else {
@@ -418,10 +502,11 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.ExpressionView) {
             MondrianGuiDef.ExpressionView ev = (MondrianGuiDef.ExpressionView)parent;
             if (child instanceof MondrianGuiDef.SQL) {
-                for (int i=0; i<ev.expressions.length; i++) {
+                for (int i = 0; i < ev.expressions.length; i++) {
                     // if (ev.expressions[i].equals(child)) {
                     if (ev.expressions[i] == child) {  // object reference is equal
-                        return i;}
+                        return i;
+                    }
                 }
                 return -1;
             } else {
@@ -430,19 +515,21 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.Hierarchy) {
             MondrianGuiDef.Hierarchy h = (MondrianGuiDef.Hierarchy)parent;
             if (child instanceof MondrianGuiDef.Level) {
-                for (int i=0; i<h.levels.length; i++) {
+                for (int i = 0; i < h.levels.length; i++) {
                     if (h.levels[i].equals(child)) {
-                        return i;}
+                        return i;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.MemberReaderParameter) {
-                for (int i=0; i<h.memberReaderParameters.length; i++) {
+                for (int i = 0; i < h.memberReaderParameters.length; i++) {
                     if (h.memberReaderParameters[i].equals(child)) {
-                        return i + h.levels.length;}
+                        return i + h.levels.length;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.RelationOrJoin) {
-                if (h.relation.equals(child) && (h.relation == child) ) {
+                if (h.relation.equals(child) && (h.relation == child)) {
                     return h.levels.length + h.memberReaderParameters.length; }
                 return -1;
             } else {
@@ -455,7 +542,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 counter = l.properties.length;
             }
             if (child instanceof MondrianGuiDef.Property) {
-                for (int i=0; i<l.properties.length; i++) {
+                for (int i = 0; i < l.properties.length; i++) {
                     if (l.properties[i].equals(child)) {
                         return i;
                     }
@@ -468,28 +555,36 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 }
                 return -1;
             }
-            if (l.keyExp != null) { counter += 1; }
+            if (l.keyExp != null) {
+                counter += 1;
+            }
             if (child instanceof MondrianGuiDef.NameExpression) {
                 if (child.equals(l.nameExp)) {
                     return counter;
                 }
                 return -1;
             }
-            if (l.nameExp != null) { counter += 1; }
+            if (l.nameExp != null) {
+                counter += 1;
+            }
             if (child instanceof MondrianGuiDef.OrdinalExpression) {
                 if (child.equals(l.ordinalExp)) {
                     return counter;
                 }
                 return -1;
             }
-            if (l.ordinalExp != null) { counter += 1; }
+            if (l.ordinalExp != null) {
+                counter += 1;
+            }
             if (child instanceof MondrianGuiDef.ParentExpression) {
                 if (child.equals(l.parentExp)) {
                     return counter;
                 }
                 return -1;
             }
-            if (l.parentExp != null) { counter += 1; }
+            if (l.parentExp != null) {
+                counter += 1;
+            }
             if (child instanceof MondrianGuiDef.Closure) {
                 if (child.equals(l.closure)) {
                     return counter;
@@ -513,15 +608,17 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.Table) {
             MondrianGuiDef.Table l = (MondrianGuiDef.Table)parent;
             if (child instanceof MondrianGuiDef.AggTable) {
-                for (int i=0; i<l.aggTables.length; i++) {
+                for (int i = 0; i < l.aggTables.length; i++) {
                     if (l.aggTables[i].equals(child)) {
-                        return i;}
+                        return i;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.AggExclude) {
-                for (int i=0; i<l.aggExcludes.length; i++) {
+                for (int i = 0; i < l.aggExcludes.length; i++) {
                     if (l.aggExcludes[i].equals(child)) {
-                        return i + l.aggTables.length;}
+                        return i + l.aggTables.length;
+                    }
                 }
                 return -1;
             } else {
@@ -535,34 +632,39 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.AggIgnoreColumn) {
-                for (int i=0; i<l.ignoreColumns.length; i++) {
+                for (int i = 0; i < l.ignoreColumns.length; i++) {
                     if (l.ignoreColumns[i].equals(child)) {
-                        return i;}
+                        return i;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.AggForeignKey) {
-                for (int i=0; i<l.foreignKeys.length; i++) {
+                for (int i = 0; i < l.foreignKeys.length; i++) {
                     if (l.foreignKeys[i].equals(child)) {
-                        return i + l.ignoreColumns.length;}
+                        return i + l.ignoreColumns.length;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.AggMeasure) {
-                for (int i=0; i<l.measures.length; i++) {
+                for (int i = 0; i < l.measures.length; i++) {
                     if (l.measures[i].equals(child)) {
-                        return i + l.ignoreColumns.length + l.foreignKeys.length;}
+                        return i + l.ignoreColumns.length + l.foreignKeys.length;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.AggLevel) {
-                for (int i=0; i<l.levels.length; i++) {
+                for (int i = 0; i < l.levels.length; i++) {
                     if (l.levels[i].equals(child)) {
-                        return i + l.ignoreColumns.length + l.foreignKeys.length + l.measures.length;}
+                        return i + l.ignoreColumns.length + l.foreignKeys.length + l.measures.length;
+                    }
                 }
                 return -1;
             } else if (parent instanceof MondrianGuiDef.AggPattern &&
                     child instanceof MondrianGuiDef.AggExclude) {
-                for (int i=0; i<((MondrianGuiDef.AggPattern)l).excludes.length; i++) {
+                for (int i = 0; i < ((MondrianGuiDef.AggPattern)l).excludes.length; i++) {
                     if (((MondrianGuiDef.AggPattern)l).excludes[i].equals(child)) {
-                        return i + l.ignoreColumns.length + l.foreignKeys.length + l.measures.length + l.levels.length;}
+                        return i + l.ignoreColumns.length + l.foreignKeys.length + l.measures.length + l.levels.length;
+                    }
                 }
                 return -1;
             } else {
@@ -571,9 +673,10 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.CalculatedMember) {
             MondrianGuiDef.CalculatedMember l = (MondrianGuiDef.CalculatedMember)parent;
             if (child instanceof MondrianGuiDef.CalculatedMemberProperty) {
-                for (int i=0; i<l.memberProperties.length; i++) {
+                for (int i = 0; i < l.memberProperties.length; i++) {
                     if (l.memberProperties[i].equals(child)) {
-                        return i;}
+                        return i;
+                    }
                 }
                 return -1;
             } else {
@@ -593,39 +696,45 @@ public class SchemaTreeModel extends DefaultTreeModel {
             MondrianGuiDef.Schema s = (MondrianGuiDef.Schema)parent;
             //return children in this order: cubes, virtual cubes, dimensions
             if (child instanceof MondrianGuiDef.Cube) {
-                for (int i=0; i<s.cubes.length; i++) {
+                for (int i = 0; i < s.cubes.length; i++) {
                     if (s.cubes[i].equals(child)) {
-                        return i;}
+                        return i;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.Dimension) {
-                for (int i=0; i<s.dimensions.length; i++) {
+                for (int i = 0; i < s.dimensions.length; i++) {
                     if (s.dimensions[i].equals(child)) {
-                        return i + s.cubes.length ;}
+                        return i + s.cubes.length;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.NamedSet) {
-                for (int i=0; i<s.namedSets.length; i++) {
+                for (int i = 0; i < s.namedSets.length; i++) {
                     if (s.namedSets[i].equals(child)) {
-                        return i + s.cubes.length + s.dimensions.length;}
+                        return i + s.cubes.length + s.dimensions.length;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.UserDefinedFunction) {
-                for (int i=0; i<s.userDefinedFunctions.length; i++) {
+                for (int i = 0; i < s.userDefinedFunctions.length; i++) {
                     if (s.userDefinedFunctions[i].equals(child)) {
-                        return i + s.cubes.length + s.dimensions.length + s.namedSets.length;}
+                        return i + s.cubes.length + s.dimensions.length + s.namedSets.length;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.VirtualCube) {
-                for (int i=0; i<s.virtualCubes.length; i++) {
+                for (int i = 0; i < s.virtualCubes.length; i++) {
                     if (s.virtualCubes[i].equals(child)) {
-                        return i + s.cubes.length + s.dimensions.length + s.namedSets.length + s.userDefinedFunctions.length;}
+                        return i + s.cubes.length + s.dimensions.length + s.namedSets.length + s.userDefinedFunctions.length;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.Role) {
-                for (int i=0; i<s.roles.length; i++) {
+                for (int i = 0; i < s.roles.length; i++) {
                     if (s.roles[i].equals(child)) {
-                        return i + s.cubes.length + s.dimensions.length + s.namedSets.length + s.userDefinedFunctions.length + s.virtualCubes.length;}
+                        return i + s.cubes.length + s.dimensions.length + s.namedSets.length + s.userDefinedFunctions.length + s.virtualCubes.length;
+                    }
                 }
                 return -1;
             } else {
@@ -634,7 +743,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.View) {
             MondrianGuiDef.View v = (MondrianGuiDef.View)parent;
             if (child instanceof MondrianGuiDef.SQL) {
-                for (int i=0; i<v.selects.length; i++) {
+                for (int i = 0; i < v.selects.length; i++) {
                     if (v.selects[i].equals(child)) {
                         return i;
                     }
@@ -645,21 +754,24 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.VirtualCube) {
             MondrianGuiDef.VirtualCube c = (MondrianGuiDef.VirtualCube)parent;
             if (child instanceof MondrianGuiDef.VirtualCubeDimension) {
-                for (int i=0; i<c.dimensions.length; i++) {
+                for (int i = 0; i < c.dimensions.length; i++) {
                     if (c.dimensions[i].equals(child)) {
-                        return i;}
+                        return i;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.VirtualCubeMeasure) {
-                for (int i=0; i<c.measures.length; i++) {
+                for (int i = 0; i < c.measures.length; i++) {
                     if (c.measures[i].equals(child)) {
-                        return i + c.dimensions.length;}
+                        return i + c.dimensions.length;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.CalculatedMember) {
-                for (int i=0; i<c.calculatedMembers.length; i++) {
+                for (int i = 0; i < c.calculatedMembers.length; i++) {
                     if (c.calculatedMembers[i].equals(child)) {
-                        return i + c.dimensions.length + c.measures.length;}
+                        return i + c.dimensions.length + c.measures.length;
+                    }
                 }
                 return -1;
             } else {
@@ -674,9 +786,10 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.Role) {
             MondrianGuiDef.Role c = (MondrianGuiDef.Role)parent;
             if (child instanceof MondrianGuiDef.SchemaGrant) {
-                for (int i=0; i<c.schemaGrants.length; i++) {
+                for (int i = 0; i < c.schemaGrants.length; i++) {
                     if (c.schemaGrants[i].equals(child)) {
-                        return i;}
+                        return i;
+                    }
                 }
                 return -1;
             } else {
@@ -685,9 +798,10 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.SchemaGrant) {
             MondrianGuiDef.SchemaGrant c = (MondrianGuiDef.SchemaGrant)parent;
             if (child instanceof MondrianGuiDef.CubeGrant) {
-                for (int i=0; i<c.cubeGrants.length; i++) {
+                for (int i = 0; i < c.cubeGrants.length; i++) {
                     if (c.cubeGrants[i].equals(child)) {
-                        return i;}
+                        return i;
+                    }
                 }
                 return -1;
             } else {
@@ -696,15 +810,17 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.CubeGrant) {
             MondrianGuiDef.CubeGrant c = (MondrianGuiDef.CubeGrant)parent;
             if (child instanceof MondrianGuiDef.DimensionGrant) {
-                for (int i=0; i<c.dimensionGrants.length; i++) {
+                for (int i = 0; i < c.dimensionGrants.length; i++) {
                     if (c.dimensionGrants[i].equals(child)) {
-                        return i;}
+                        return i;
+                    }
                 }
                 return -1;
             } else if (child instanceof MondrianGuiDef.HierarchyGrant) {
-                for (int i=0; i<c.hierarchyGrants.length; i++) {
+                for (int i = 0; i < c.hierarchyGrants.length; i++) {
                     if (c.hierarchyGrants[i].equals(child)) {
-                        return i + c.dimensionGrants.length ;}
+                        return i + c.dimensionGrants.length ;
+                    }
                 }
                 return -1;
             } else {
@@ -713,9 +829,10 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.HierarchyGrant) {
             MondrianGuiDef.HierarchyGrant c = (MondrianGuiDef.HierarchyGrant)parent;
             if (child instanceof MondrianGuiDef.MemberGrant) {
-                for (int i=0; i<c.memberGrants.length; i++) {
+                for (int i = 0; i < c.memberGrants.length; i++) {
                     if (c.memberGrants[i].equals(child)) {
-                        return i;}
+                        return i;
+                    }
                 }
                 return -1;
             } else {
@@ -725,7 +842,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             MondrianGuiDef.Closure c = (MondrianGuiDef.Closure)parent;
             if (child instanceof MondrianGuiDef.Table) {
                 return 0;
-            }  else {
+            } else {
                 return -1;
             }
         } else {

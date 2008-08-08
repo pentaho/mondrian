@@ -364,7 +364,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             while (members.size() > 0) {
                 Iterator<Member> iterator = members.iterator();
                 Member first = iterator.next();
-                if(first.isAll()){
+                if (first.isAll()) {
                     optimizedMembers.clear();
                     optimizedMembers.add(first);
                     return optimizedMembers;
@@ -375,7 +375,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 Member firstParentMember = first.getParentMember();
                 while (iterator.hasNext()) {
                     Member current =  iterator.next();
-                    if(current.isAll()){
+                    if (current.isAll()) {
                         optimizedMembers.clear();
                         optimizedMembers.add(current);
                         return optimizedMembers;
@@ -384,7 +384,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     Member currentParentMember = current.getParentMember();
                     if (firstParentMember == null &&
                         currentParentMember == null ||
-                        (firstParentMember!= null &&
+                        (firstParentMember != null &&
                         firstParentMember.equals(currentParentMember))) {
                         membersToBeOptimized.add(current);
                         iterator.remove();

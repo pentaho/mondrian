@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde, Cincom Systems, Inc.
+// Copyright (C) 2006-2008 Julian Hyde, Cincom Systems, Inc.
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
@@ -73,7 +73,7 @@ public class JTreeUpdater implements TreeExpansionListener, TreeSelectionListene
 
         // remove all ancestors of eventpath from expandedpaths set.
         Object[] paths = expandedTreePaths.toArray();
-        for (int i=0; i<paths.length; i++) {
+        for (int i = 0; i < paths.length; i++) {
             TreePath path = (TreePath) paths[i];
 
             // path is a descendant of event path if path contains all componennts that make eventpath
@@ -95,7 +95,7 @@ public class JTreeUpdater implements TreeExpansionListener, TreeSelectionListene
 
         // remove all descendants from expandedpaths set.
         Object[] paths = expandedTreePaths.toArray();
-        for (int i=0; i<paths.length; i++) {
+        for (int i = 0; i < paths.length; i++) {
             TreePath path = (TreePath) paths[i];
 
             // path is a descendant of event path if path contains all componennts that make eventpath

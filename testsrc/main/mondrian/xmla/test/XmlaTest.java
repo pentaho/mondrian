@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -110,7 +110,7 @@ public class XmlaTest extends TestCase {
     private Element ignoreLastUpdateDate(Element element) {
         NodeList elements = element.getElementsByTagName("LAST_SCHEMA_UPDATE");
         for (int i = elements.getLength(); i > 0; i--) {
-            removeNode(elements.item(i-1));
+            removeNode(elements.item(i - 1));
         }
         return element;
     }

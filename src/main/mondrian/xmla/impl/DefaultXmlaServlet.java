@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -291,8 +291,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
                             MUST_UNDERSTAND_FAULT_FC,
                             HSH_MUST_UNDERSTAND_CODE,
                             HSH_MUST_UNDERSTAND_FAULT_FS,
-                            new RuntimeException(msg)
-                            );
+                            new RuntimeException(msg));
                     }
 
                     StringBuilder buf = new StringBuilder(100);
@@ -383,8 +382,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
                     CLIENT_FAULT_FC,
                     HSB_BAD_SOAP_BODY_CODE,
                     HSB_BAD_SOAP_BODY_FAULT_FS,
-                    new RuntimeException(msg)
-                    );
+                    new RuntimeException(msg));
             }
 
             Element xmlaReqElem = (dreqs.length == 0 ? ereqs[0] : dreqs[0]);
@@ -568,7 +566,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
                     rch.close();
                 }
                 outputStream.flush();
-            } catch(IOException ioe) {
+            } catch (IOException ioe) {
                 LOGGER.error("Damn exception when transferring bytes over sockets", ioe);
             }
         } catch (XmlaException xex) {
@@ -640,7 +638,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
         try {
             SaxWriter writer = new DefaultSaxWriter(osBuf, encoding);
             writer.startDocument();
-            writer.startElement(SOAP_PREFIX +":Fault");
+            writer.startElement(SOAP_PREFIX + ":Fault");
 
             // The faultcode element is intended for use by software to provide
             // an algorithmic mechanism for identifying the fault. The faultcode
@@ -672,8 +670,8 @@ public class DefaultXmlaServlet extends XmlaServlet {
             // header entries.
             if (phase != Phase.PROCESS_HEADER) {
                 writer.startElement("detail");
-                writer.startElement(FAULT_NS_PREFIX +":error", new String[] {
-                        "xmlns:" +FAULT_NS_PREFIX, MONDRIAN_NAMESPACE
+                writer.startElement(FAULT_NS_PREFIX + ":error", new String[] {
+                        "xmlns:" + FAULT_NS_PREFIX, MONDRIAN_NAMESPACE
                 });
                 writer.startElement("code");
                 writer.characters(code);

@@ -450,7 +450,7 @@ public class TestContext {
                 s.substring(i);
         }
 
-        if(namedSetDefs !=null) {
+        if (namedSetDefs != null) {
             int i = s.indexOf("<NamedSet", h);
             if (i < 0 || i > end) {
                 i = end;
@@ -1010,7 +1010,7 @@ public class TestContext {
         final String search = "fname \\+ ' ' \\+ lname";
         final SqlQuery.Dialect dialect = getDialect();
         if (dialect.isMySQL()) {
-            // Mysql would generate "CONCAT( ... )"
+            // Mysql would generate "CONCAT(...)"
             sql = sql.replaceAll(
                     search,
                     "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)");
@@ -1401,7 +1401,8 @@ public class TestContext {
                         "true");
                     return propertyList;
                 }
-            }.getFoodMartConnection();
+            }
+            .getFoodMartConnection();
         return connection.getSchema().getWarnings();
     }
 

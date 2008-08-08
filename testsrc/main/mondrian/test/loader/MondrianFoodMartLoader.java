@@ -412,7 +412,7 @@ public class MondrianFoodMartLoader {
                     }
                 }
                 // Split the up the line. For example,
-                //   INSERT INTO `foo` ( `column1`,`column2` ) VALUES (1, 'bar');
+                //   INSERT INTO `foo` (`column1`,`column2`) VALUES (1, 'bar');
                 // would yield
                 //   tableName = "foo"
                 //   columnNames = " `column1`,`column2` "
@@ -469,9 +469,9 @@ public class MondrianFoodMartLoader {
                     .append(quotedTableName)
                     .append(" (")
                     .append(quotedColumnNames)
-                    .append(" ) VALUES(")
+                    .append(") VALUES(")
                     .append(getMassagedValues(orderedColumns, values))
-                    .append(" )");
+                    .append(")");
 
                 line = massagedLine.toString();
 
@@ -752,7 +752,7 @@ public class MondrianFoodMartLoader {
 
         buf.append("INSERT INTO ")
             .append(quoteId(name))
-            .append(" ( ");
+            .append(" (");
         for (int i = 0; i < columns.length; i++) {
             Column column = columns[i];
             if (i > 0) {
@@ -760,7 +760,7 @@ public class MondrianFoodMartLoader {
             }
             buf.append(quoteId(column.name));
         }
-        buf.append(" ) VALUES(");
+        buf.append(") VALUES(");
         for (int i = 0; i < columns.length; i++) {
             Column column = columns[i];
             if (i > 0) {
@@ -768,7 +768,7 @@ public class MondrianFoodMartLoader {
             }
             buf.append(columnValue(rs, column));
         }
-        buf.append(" )");
+        buf.append(")");
         return buf.toString();
     }
 

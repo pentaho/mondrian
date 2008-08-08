@@ -144,11 +144,9 @@ public class ConcurrentValidatingQueryRunner extends Thread {
                 }
             }
             mStopTime = System.currentTimeMillis();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             mExceptions.add(e);
-        }
-        catch (Error e) {
+        } catch (Error e) {
             mExceptions.add(e);
         }
     }

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2006 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -310,7 +310,8 @@ class Enumeration {
         Visual("DBPROPVAL_VISUAL_MODE_VISUAL", 1, "Visual totals are enabled."),
         Original("DBPROPVAL_VISUAL_MODE_ORIGINAL", 2, "Visual totals are not enabled.");
 
-        VisualMode(String name2, int ordinal2, String description) {}
+        VisualMode(String name2, int ordinal2, String description) {
+        }
 
         static final Enumeration enumeration =
             new Enumeration(

@@ -317,7 +317,7 @@ public class RolapSchema implements Schema {
                         getLogger().debug("RolapSchema.load: content: \n"
                             +buf.toString());
                     } catch (java.io.IOException ex) {
-                        getLogger().debug("RolapSchema.load: ex=" +ex);
+                        getLogger().debug("RolapSchema.load: ex=" + ex);
                     }
                 }
 
@@ -860,7 +860,7 @@ public class RolapSchema implements Schema {
             // implies there is not MD5 based caching, but, as with the previous
             // implementation, if the catalog string is in the connectInfo
             // object as catalog content then it is used.
-            if ( ! Util.isEmpty(dynProcName)) {
+            if (! Util.isEmpty(dynProcName)) {
                 assert catalogStr == null;
 
                 try {
@@ -1103,7 +1103,7 @@ public class RolapSchema implements Schema {
         synchronized Iterator<RolapSchema> getRolapSchemas() {
             List<RolapSchema> list = new ArrayList<RolapSchema>();
             for (Iterator<SoftReference<RolapSchema>> it =
-                mapUrlToSchema.values().iterator(); it.hasNext(); )
+                mapUrlToSchema.values().iterator(); it.hasNext();)
             {
                 SoftReference<RolapSchema> ref = it.next();
                 RolapSchema schema = ref.get();
@@ -1446,7 +1446,9 @@ System.out.println("RolapSchema.getSharedHierarchy: "+
             if (reader == null) {
                 reader = createMemberReader(hierarchy, memberReaderClass);
                 // share, for other uses of the same shared hierarchy
-                if (false) mapSharedHierarchyToReader.put(sharedName, reader);
+                if (false) {
+                    mapSharedHierarchyToReader.put(sharedName, reader);
+                }
 /*
 System.out.println("RolapSchema.createMemberReader: "+
 "add to sharedHierName->Hier map"+
@@ -1520,7 +1522,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
                     "while instantiating member reader '" + memberReaderClass);
         } else {
             SqlMemberSource source = new SqlMemberSource(hierarchy);
-            if(hierarchy.getDimension().isHighCardinality()) {
+            if (hierarchy.getDimension().isHighCardinality()) {
                 LOGGER.debug("High cardinality for "
                         + hierarchy.getDimension());
                 return new NoCacheMemberReader(source);
@@ -1554,7 +1556,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         String dataSourceChangeListenerStr = connectInfo.get(
             RolapConnectionProperties.DataSourceChangeListener.name());
 
-        if ( ! Util.isEmpty(dataSourceChangeListenerStr)) {
+        if (! Util.isEmpty(dataSourceChangeListenerStr)) {
             try {
 
                 Class<?> clazz = Class.forName(dataSourceChangeListenerStr);

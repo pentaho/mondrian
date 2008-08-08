@@ -67,7 +67,7 @@ public class ObjectPoolTest extends TestCase {
         String[] ss2 = genStringsArray(nos);
         for (int i = 0; i < nos; i++) {
             String s = strings.add(ss2[i]);
-            assertEquals("string not equal: " +s, s, ss2[i]);
+            assertEquals("string not equal: " + s, s, ss2[i]);
             // REVIEW jvs 16-Jan-2008:  This failed for me when
             // I ran with a 1GB JVM heap size on JDK 1.5, probably
             // because of interning (I tried changing genStringsList to add a
@@ -114,7 +114,7 @@ public class ObjectPoolTest extends TestCase {
         KeyValue[] kv2 = genKeyValueArray(nos);
         for (int i = 0; i < nos; i++) {
             KeyValue kv = op.add(kv2[i]);
-            assertEquals("KeyValue not equal: " +kv, kv, kv2[i]);
+            assertEquals("KeyValue not equal: " + kv, kv, kv2[i]);
             assertFalse("same object", (kv == kv2[i]));
         }
 

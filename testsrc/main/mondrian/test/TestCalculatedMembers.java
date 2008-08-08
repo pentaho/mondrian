@@ -434,7 +434,7 @@ public class TestCalculatedMembers extends BatchTestCase {
                     "  FORMAT_STRING=IIf([Measures].[Foo] < .3, \"|0.0|style=red\",\"0.0\")\n" +
                     "SELECT {[Store].[USA].[WA].children} on columns\n" +
                     "FROM Sales\n" +
-                    "WHERE ( [Time].[1997].[Q4].[12],\n" +
+                    "WHERE ([Time].[1997].[Q4].[12],\n" +
                     " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n" +
                     " [Measures].[Foo])"),
                 fold(
@@ -1154,8 +1154,7 @@ public class TestCalculatedMembers extends BatchTestCase {
                 "{[Measures].[Unit Sales]}\n" +
                 "Axis #2:\n" +
                 "{[Product].[Test]}\n" +
-                "Row #0: 191,940\n")
-        );
+                "Row #0: 191,940\n"));
 
         assertQueryReturns(
             "with member [Product].[Food].[Test] as '[Product].[Food]' " +
@@ -1169,8 +1168,7 @@ public class TestCalculatedMembers extends BatchTestCase {
                     "{[Measures].[Unit Sales]}\n" +
                     "Axis #2:\n" +
                     "{[Product].[All Products].[Food].[Test]}\n" +
-                    "Row #0: 191,940\n")
-        );
+                    "Row #0: 191,940\n"));
     }
 
     /**
@@ -1190,8 +1188,7 @@ public class TestCalculatedMembers extends BatchTestCase {
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Unit Sales]}\n" +
-                "Axis #2:\n")
-        );
+                "Axis #2:\n"));
         assertQueryReturns(
                 "with member [Product].[Food].[Test] as '[Product].[Food]' " +
                 "select {[Measures].[Unit Sales]} on columns, " +
@@ -1202,9 +1199,7 @@ public class TestCalculatedMembers extends BatchTestCase {
                     "{}\n" +
                     "Axis #1:\n" +
                     "{[Measures].[Unit Sales]}\n" +
-                    "Axis #2:\n")
-            );
-
+                    "Axis #2:\n"));
     }
 
     public void testCalculatedMemberMSASCompatibility() {

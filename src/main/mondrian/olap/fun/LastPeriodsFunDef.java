@@ -132,7 +132,7 @@ class LastPeriodsFunDef extends FunDefBase {
         Member endMember;
         if (indexValue > 0) {
             startMember = evaluator.getSchemaReader()
-                .getLeadMember(member, -(indexValue-1));
+                .getLeadMember(member, - (indexValue - 1));
             endMember = member;
             if (startMember.isNull()) {
                 List<Member> members = evaluator.getSchemaReader()
@@ -142,7 +142,7 @@ class LastPeriodsFunDef extends FunDefBase {
         } else {
             startMember = member;
             endMember = evaluator.getSchemaReader()
-                .getLeadMember(member, -(indexValue+1));
+                .getLeadMember(member, -(indexValue + 1));
             if (endMember.isNull()) {
                 List<Member> members = evaluator.getSchemaReader()
                     .getLevelMembers(member.getLevel(), false);

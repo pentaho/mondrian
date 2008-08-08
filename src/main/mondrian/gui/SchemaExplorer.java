@@ -129,12 +129,12 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                 String sname = schemaFile.getName();
                 int ext = sname.indexOf(".");
                 if (ext != -1) {
-                    schema.name = "New "+sname.substring(0,ext);
+                    schema.name = "New " + sname.substring(0, ext);
                 }
             } else {
                 try {
                     schema = new MondrianGuiDef.Schema(xmlParser.parse(schemaFile.toURL()));
-                } catch(XOMException ex) {
+                } catch (XOMException ex) {
                     // parsing error of the schema file causes default tree of colors etc. to be displayed in schema explorer
                     // initialize the schema to display an empty schema if you want to show schema explorer for file
                     // where parsing failed.
@@ -146,7 +146,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     schema.userDefinedFunctions = new MondrianGuiDef.UserDefinedFunction[0];
                     schema.virtualCubes = new MondrianGuiDef.VirtualCube[0];
 
-                    LOGGER.error("Exception  : Schema file parsing failed."+ex.getMessage(), ex);
+                    LOGGER.error("Exception  : Schema file parsing failed." + ex.getMessage(), ex);
                     errMsg = getResourceConverter().getFormattedString("schemaExplorer.parsing.error",
                             "Parsing Error: Could not open file {0}\n{1}",
                                 new String[] { schemaFile.toString(), ex.getLocalizedMessage() });
@@ -164,8 +164,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
             //            getResourceConverter().getString("schemaExplorer.hierarchy.select.title","Select Join or Table Hierarchy");
 
-            JComboBox listEditor = new JComboBox( new String[] {getResourceConverter().getString("schemaExplorer.hierarchy.select.join","Join"),
-                                                                getResourceConverter().getString("schemaExplorer.hierarchy.select.table", "Table")} );
+            JComboBox listEditor = new JComboBox(new String[] {getResourceConverter().getString("schemaExplorer.hierarchy.select.join","Join"),
+                                                                getResourceConverter().getString("schemaExplorer.hierarchy.select.table", "Table")});
             listEditor.setToolTipText(getResourceConverter().getString("schemaExplorer.hierarchy.select.title","Select Join or Table Hierarchy"));
             listEditor.setPreferredSize(new java.awt.Dimension(listEditor.getPreferredSize().width, 24)); //Do not remove this
 
@@ -245,7 +245,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
                 if (columnIndex == 0) {
                     AWTEvent currentEvent = EventQueue.getCurrentEvent();
-                    if(currentEvent instanceof KeyEvent) {
+                    if (currentEvent instanceof KeyEvent) {
                         KeyEvent ke = (KeyEvent)currentEvent;
                         int kcode = ke.getKeyCode();
                         if (kcode == KeyEvent.VK_TAB) {
@@ -283,8 +283,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         tree = new JTree() {
             public String getToolTipText(MouseEvent evt) {
-                String toggleMsg = getResourceConverter().getString("schemaExplorer.hierarchy.toggle","Double click to display Join/Table selection");
-                if (getRowForLocation(evt.getX(), evt.getY()) == -1) return null;
+                String toggleMsg = getResourceConverter().getString("schemaExplorer.hierarchy.toggle", "Double click to display Join/Table selection");
+                if (getRowForLocation(evt.getX(), evt.getY()) == -1) {
+                    return null;
+                }
                 TreePath curPath = getPathForLocation(evt.getX(), evt.getY());
                 Object o = curPath.getLastPathComponent();
                 if (o instanceof MondrianGuiDef.Join) {
@@ -928,7 +930,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Cube) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -959,8 +961,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         cube.measures[cube.measures.length - 1] = measure;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -975,9 +977,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Table) {
-                    if (((parentIndex-1) >=0) && (tpath.getPathComponent(parentIndex-1) instanceof MondrianGuiDef.Cube)) {
+                    if (((parentIndex - 1) >= 0) && (tpath.getPathComponent(parentIndex - 1) instanceof MondrianGuiDef.Cube)) {
                         path = tpath.getPathComponent(parentIndex);
                         break;
                     }
@@ -1013,8 +1015,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         factTable.aggTables[factTable.aggTables.length - 1] = aggname;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1029,9 +1031,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Table) {
-                    if (((parentIndex-1) >=0) && (tpath.getPathComponent(parentIndex-1) instanceof MondrianGuiDef.Cube)) {
+                    if (((parentIndex - 1) >=0) && (tpath.getPathComponent(parentIndex - 1) instanceof MondrianGuiDef.Cube)) {
                         path = tpath.getPathComponent(parentIndex);
                         break;
                     }
@@ -1065,8 +1067,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         factTable.aggTables[factTable.aggTables.length - 1] = aggname;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1081,10 +1083,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 // aggexcludes can be added to cube fact table or
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Table) {
-                    if (((parentIndex-1) >=0) && (tpath.getPathComponent(parentIndex-1) instanceof MondrianGuiDef.Cube)) {
+                    if (((parentIndex - 1) >= 0) && (tpath.getPathComponent(parentIndex - 1) instanceof MondrianGuiDef.Cube)) {
                         path = tpath.getPathComponent(parentIndex);
                         break;
                     }
@@ -1127,8 +1129,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             parent.excludes[parent.excludes.length - 1] = aggexclude;
         }
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1143,7 +1145,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.AggTable) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -1170,9 +1172,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         aggTable.ignoreColumns[aggTable.ignoreColumns.length - 1] = aggicol;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
-            parentPathObjs[i] = tpath.getPathComponent(i) ;
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
+            parentPathObjs[i] = tpath.getPathComponent(i);
         }
         TreePath parentPath = new TreePath(parentPathObjs);
         tree.setSelectionPath(parentPath.pathByAddingChild(aggicol));
@@ -1186,7 +1188,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.AggTable) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -1212,8 +1214,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         aggTable.foreignKeys[aggTable.foreignKeys.length - 1] = aggfkey;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1228,7 +1230,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.AggTable) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -1254,8 +1256,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         aggTable.measures[aggTable.measures.length - 1] = aggmeasure;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1270,7 +1272,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.AggTable) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -1295,8 +1297,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         aggTable.levels[aggTable.levels.length - 1] = agglevel;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1311,7 +1313,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.AggTable) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -1319,8 +1321,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             }
 
         }
-        if ( ! ((path instanceof MondrianGuiDef.AggName) ||
-                (path instanceof MondrianGuiDef.AggPattern) )) {
+        if (! ((path instanceof MondrianGuiDef.AggName) ||
+                (path instanceof MondrianGuiDef.AggPattern))) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.aggregateTableOrAggPatternNotSelected.alert","Aggregate Table or Aggregate Pattern not selected."),
                     alert, JOptionPane.WARNING_MESSAGE);
             return;
@@ -1337,8 +1339,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             aggPattern.factcount = new MondrianGuiDef.AggFactCount();
         }
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1353,7 +1355,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.VirtualCube) {
                     //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
@@ -1386,8 +1388,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         cube.measures[cube.measures.length - 1] = measure;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1402,9 +1404,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         Object path = null;
         int parentIndex = -1;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
-                if ( (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Cube) ||
-                        (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.VirtualCube)   ) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
+                if ((tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Cube) ||
+                        (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.VirtualCube)) {
                     //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
                     //System.out.println("Cube name ="+((MondrianGuiDef.Cube) path).name);
@@ -1413,7 +1415,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             }
 
         }
-        if ( ! ((path instanceof MondrianGuiDef.Cube) || (path instanceof MondrianGuiDef.VirtualCube) )) {
+        if (! ((path instanceof MondrianGuiDef.Cube) || (path instanceof MondrianGuiDef.VirtualCube))) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeOrVirtualCubeNotSelected.alert","Cube or Virtual Cube not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -1432,7 +1434,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         calcmember.dimension = "Measures";
         calcmember.visible = Boolean.TRUE;  // default value
         calcmember.formatString = "";
-        calcmember.formula="";
+        calcmember.formula = "";
         calcmember.formulaElement = new MondrianGuiDef.Formula();
         calcmember.memberProperties = new MondrianGuiDef.CalculatedMemberProperty[0];
 
@@ -1456,8 +1458,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         }
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1482,7 +1484,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                 ((Workbench) o).getViewXMLMenuItem().setSelected(editModeXML);
                 break;
             }
-            o= o.getParent();
+            o = o.getParent();
         }
         return isEditModeXML();
     }
@@ -1501,10 +1503,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         Object grandparent = null;
         boolean grandparentAsSibling = false;
 
-        for(int i=tpath.getPathCount()-1-1; i>=0;i--) {
+        for (int i = tpath.getPathCount() - 1 - 1; i >= 0; i--) {
             parent = tpath.getPathComponent(i);   // get parent path
-            if (tpath.getPathCount()-3 > 0) {
-                grandparent = tpath.getPathComponent(i-1);   // get parent path
+            if (tpath.getPathCount() - 3 > 0) {
+                grandparent = tpath.getPathComponent(i - 1);   // get parent path
             }
             break;
         }
@@ -1517,13 +1519,13 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         Field[] fs = parent.getClass().getFields();
         for (int i = 0; i < fs.length; i++) {
-            if (fs[i].getType().isArray() && (fs[i].getType().getComponentType().isInstance(child) )) {
+            if (fs[i].getType().isArray() && (fs[i].getType().getComponentType().isInstance(child))) {
                 try {
                     Object parentArr = fs[i].get(parent); // get the parent's array of child objects
                     int parentArrLen = Array.getLength(parentArr);
-                    Object newArr = Array.newInstance(fs[i].getType().getComponentType(), parentArrLen-1);
+                    Object newArr = Array.newInstance(fs[i].getType().getComponentType(), parentArrLen - 1);
                     tofind = true;
-                    for (int k=0, m=0; k < parentArrLen; k++) {
+                    for (int k = 0, m = 0; k < parentArrLen; k++) {
                         Object match = Array.get(parentArr, k);
 
                         if (tofind && match.equals(child)) {
@@ -1532,26 +1534,26 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                                 MondrianGuiDef.CubeDimension matchDim = (MondrianGuiDef.CubeDimension) match;
                                 MondrianGuiDef.CubeDimension childDim = (MondrianGuiDef.CubeDimension) child;
 
-                                if ( ((matchDim.name== null && childDim.name==null) || ( matchDim.name != null && matchDim.name.equals(childDim.name) )) &&
-                                        ((matchDim.caption== null && childDim.caption==null) || ( matchDim.caption != null && matchDim.caption.equals(childDim.caption) )) &&
-                                        ((matchDim.foreignKey== null && childDim.foreignKey==null) || ( matchDim.foreignKey != null && matchDim.foreignKey.equals(childDim.foreignKey) )) ) {
+                                if (((matchDim.name == null && childDim.name == null) || (matchDim.name != null && matchDim.name.equals(childDim.name))) &&
+                                        ((matchDim.caption == null && childDim.caption == null) || (matchDim.caption != null && matchDim.caption.equals(childDim.caption))) &&
+                                        ((matchDim.foreignKey == null && childDim.foreignKey == null) || (matchDim.foreignKey != null && matchDim.foreignKey.equals(childDim.foreignKey)))) {
                                     tofind = false;
-                                    if (k+1 < parentArrLen) {
-                                        nextSibling = Array.get(parentArr, k+1);
+                                    if (k + 1 < parentArrLen) {
+                                        nextSibling = Array.get(parentArr, k + 1);
                                     }
-                                    if(k-1 >= 0) {
-                                        prevSibling = Array.get(parentArr, k-1);
+                                    if (k - 1 >= 0) {
+                                        prevSibling = Array.get(parentArr, k - 1);
                                     }
                                     continue;
                                 }
                             } else {
                                 // other cases require no such check
                                 tofind = false;
-                                if (k+1 < parentArrLen) {
-                                    nextSibling = Array.get(parentArr, k+1);
+                                if (k + 1 < parentArrLen) {
+                                    nextSibling = Array.get(parentArr, k + 1);
                                 }
-                                if(k-1 >= 0) {
-                                    prevSibling = Array.get(parentArr, k-1);
+                                if (k - 1 >= 0) {
+                                    prevSibling = Array.get(parentArr, k - 1);
                                 }
                                 continue;
 
@@ -1562,9 +1564,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     // after deletion check before the saving the new array in parent
                     // check for min 1 SQL object(child)  in (parent) expression  for (grandparent) level
                     // if 1 or more, save the newarray in parent, otherwise delete parent from grandparent
-                    if ( (child instanceof MondrianGuiDef.SQL) &&
+                    if ((child instanceof MondrianGuiDef.SQL) &&
                             (parent instanceof MondrianGuiDef.ExpressionView) &&
-                            (Array.getLength(newArr) < 1) ) {
+                            (Array.getLength(newArr) < 1)) {
                         if (parent instanceof MondrianGuiDef.KeyExpression) {
                             ((MondrianGuiDef.Level)grandparent).keyExp = null;
                         } else if (parent instanceof MondrianGuiDef.NameExpression) {
@@ -1581,20 +1583,19 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                         fs[i].set(parent, newArr);
                     }
 
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     // field not found
                 }
                 break;
-            } else if  ( fs[i].getType().isInstance(child) ) {  // parent's field is an instanceof child object'
+            } else if  (fs[i].getType().isInstance(child)) {  // parent's field is an instanceof child object'
                 try {
                     if (parent instanceof MondrianGuiDef.Join ||
                         (parent instanceof MondrianGuiDef.Cube && child instanceof MondrianGuiDef.RelationOrJoin) ||
-                        (parent instanceof MondrianGuiDef.Closure && child instanceof MondrianGuiDef.RelationOrJoin)
-                        ) {
+                        (parent instanceof MondrianGuiDef.Closure && child instanceof MondrianGuiDef.RelationOrJoin)) {
                         // do not delete if deleting left or right table of a join
                         // do not delete table of cube or closure
                     } else {
-                        if (fs[i].get(parent)==child) {
+                        if (fs[i].get(parent) == child) {
                             fs[i].set(parent, null);
                             break;
                         }
@@ -1614,9 +1615,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         if (nextSibling != null) {
             tree.setSelectionPath(tpath.getParentPath().pathByAddingChild(nextSibling));
-        } else if(prevSibling != null) {
+        } else if (prevSibling != null) {
             tree.setSelectionPath(tpath.getParentPath().pathByAddingChild(prevSibling));
-        } else if (grandparentAsSibling){
+        } else if (grandparentAsSibling) {
             tree.setSelectionPath(tpath.getParentPath().getParentPath());
         } else {
             tree.setSelectionPath(tpath.getParentPath());
@@ -1632,10 +1633,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         Object path = null;
         int parentIndex = -1;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0; parentIndex--) {
-
-                if ( (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Cube) ||
-                        (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Schema) ) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
+                if ((tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Cube) ||
+                        (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Schema)) {
                     path =  tpath.getPathComponent(parentIndex);
                     break;
                 }
@@ -1643,7 +1643,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
 
         //Object path = tree.getSelectionPath().getLastPathComponent();
-        if ( ! ((path instanceof MondrianGuiDef.Cube) || (path instanceof MondrianGuiDef.Schema) )) {
+        if (! ((path instanceof MondrianGuiDef.Cube) || (path instanceof MondrianGuiDef.Schema))) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeOrSchemaNotSelected.alert","Cube or Schema not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -1687,8 +1687,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             schema.dimensions[schema.dimensions.length - 1] = dimension;
         }
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1704,8 +1704,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         Object path = null;
         int parentIndex = -1;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0; parentIndex--) {
-                if ( tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.VirtualCube ) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
+                if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.VirtualCube) {
                     path =  tpath.getPathComponent(parentIndex);
                     break;
                 }
@@ -1713,7 +1713,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
 
         //Object path = tree.getSelectionPath().getLastPathComponent();
-        if ( ! (path instanceof MondrianGuiDef.VirtualCube  )) {
+        if (! (path instanceof MondrianGuiDef.VirtualCube)) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.virtualCubeNotSelected.alert","Virtual Cube not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -1732,8 +1732,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         cube.dimensions[cube.dimensions.length - 1] = dimension;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1745,7 +1745,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     private String getNewName(String preName, Object[] objs) {
         boolean exists = true;
 
-        String newName = "", objName = "", workName = preName.trim()+ " " ;
+        String newName = "", objName = "", workName = preName.trim() + " ";
 
         if (objs != null) {
             int objNo = objs.length;
@@ -1754,7 +1754,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                 while (exists) {
                     newName = workName + objNo++;
                     exists = false;
-                    for(int i = 0; i < objs.length; i++) {
+                    for (int i = 0; i < objs.length; i++) {
                         objName  = (String) f.get(objs[i]);
                         if (newName.equals(objName)) {
                             exists = true;
@@ -1775,9 +1775,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0; parentIndex--) {
-                if ( (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Cube) ||
-                        (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Schema) ) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
+                if ((tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Cube) ||
+                        (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Schema)) {
                     path =  tpath.getPathComponent(parentIndex);
                     break;
                 }
@@ -1785,7 +1785,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
 
         //Object path = tree.getSelectionPath().getLastPathComponent();
-        if ( ! ((path instanceof MondrianGuiDef.Cube) || (path instanceof MondrianGuiDef.Schema) )) {
+        if (! ((path instanceof MondrianGuiDef.Cube) || (path instanceof MondrianGuiDef.Schema))) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeOrSchemaNotSelected.alert","Cube or Schema not selected."), alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -1802,7 +1802,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         MondrianGuiDef.NamedSet namedset = new MondrianGuiDef.NamedSet();
         namedset.name = "";
-        namedset.formula="";
+        namedset.formula = "";
         namedset.formulaElement = new MondrianGuiDef.Formula();
 
         //add cube to schema
@@ -1825,8 +1825,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             schema.namedSets[schema.namedSets.length - 1] = namedset;
         }
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1841,7 +1841,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Cube) {
                     //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
@@ -1871,8 +1871,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         cube.dimensions[cube.dimensions.length - 1] = dimension;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1887,7 +1887,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Role) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -1915,8 +1915,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         role.schemaGrants[role.schemaGrants.length - 1] = schemaGrant;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1931,7 +1931,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.SchemaGrant) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -1950,7 +1950,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         MondrianGuiDef.CubeGrant cubeGrant = new MondrianGuiDef.CubeGrant();
         cubeGrant.access = ""; //get unique name //"New Dimension Usage" + cube.dimensions.length;
         cubeGrant.dimensionGrants = new MondrianGuiDef.DimensionGrant[0];
-        cubeGrant.hierarchyGrants= new MondrianGuiDef.HierarchyGrant[0];
+        cubeGrant.hierarchyGrants = new MondrianGuiDef.HierarchyGrant[0];
 
         //add cube to schema
         NodeDef[] temp = schemaGrant.cubeGrants;
@@ -1960,8 +1960,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         schemaGrant.cubeGrants[schemaGrant.cubeGrants.length - 1] = cubeGrant;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -1976,7 +1976,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.CubeGrant) {
                     //System.out.println("==== path element "+i+" ="+tpath.getPathComponent(i).getClass().toString());
                     path = tpath.getPathComponent(parentIndex);
@@ -2005,8 +2005,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         cubeGrant.dimensionGrants[cubeGrant.dimensionGrants.length - 1] = dimeGrant;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2021,7 +2021,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.CubeGrant) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2049,8 +2049,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         cubeGrant.hierarchyGrants[cubeGrant.hierarchyGrants.length - 1] = hieGrant;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2065,7 +2065,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.HierarchyGrant) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2092,8 +2092,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         hieGrant.memberGrants[hieGrant.memberGrants.length - 1] = memberGrant;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2112,7 +2112,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Hierarchy) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2141,8 +2141,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         hierarchy.levels[hierarchy.levels.length - 1] = level;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2157,7 +2157,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.ExpressionView) {  // parent could also be MondrianGuiDef.Expression
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2174,7 +2174,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         MondrianGuiDef.ExpressionView expview = (MondrianGuiDef.ExpressionView) path;
 
         MondrianGuiDef.SQL sql = new MondrianGuiDef.SQL();
-        sql.dialect="generic";
+        sql.dialect = "generic";
         //add sql to ExpressionView
         NodeDef[] temp = expview.expressions;
         expview.expressions = new MondrianGuiDef.SQL[temp.length + 1];
@@ -2183,8 +2183,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         expview.expressions[expview.expressions.length - 1] = sql;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2200,7 +2200,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Level) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2223,8 +2223,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         keyExp.expressions[0].cdata = "";
         level.keyExp = keyExp;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2238,7 +2238,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Level) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2260,8 +2260,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         nameExp.expressions[0].cdata = "";
         level.nameExp = nameExp;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2275,7 +2275,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Level) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2297,8 +2297,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         ordinalExp.expressions[0].cdata = "";
         level.ordinalExp = ordinalExp;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2312,7 +2312,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Level) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2334,8 +2334,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         parentExp.expressions[0].cdata = "";
         level.parentExp = parentExp;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2349,7 +2349,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Measure) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2371,8 +2371,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         measureExp.expressions[0].cdata = "";
         measure.measureExp = measureExp;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2386,7 +2386,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Hierarchy) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2407,8 +2407,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         //add relation to hierarchy
         hierarchy.relation = relation;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2423,7 +2423,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Dimension) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2455,8 +2455,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         dimension.hierarchies[dimension.hierarchies.length - 1] = hierarchy;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2474,7 +2474,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Level) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2507,8 +2507,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         level.properties[level.properties.length - 1] = property;
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2526,7 +2526,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         int parentIndex = -1;
         Object path = null;
         if (tpath != null) {
-            for(parentIndex=tpath.getPathCount()-1; parentIndex>=0;parentIndex--) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Level) {
                     path = tpath.getPathComponent(parentIndex);
                     break;
@@ -2549,8 +2549,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             level.closure = closure;
         }
 
-        Object [] parentPathObjs = new Object[parentIndex+1];
-        for(int i=0; i <= parentIndex; i++) {
+        Object [] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
             parentPathObjs[i] = tpath.getPathComponent(i) ;
         }
         TreePath parentPath = new TreePath(parentPathObjs);
@@ -2602,9 +2602,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         String selectedFactTable = null;
         String selectedFactTableSchema = null;
 
-        for(int i=e.getPath().getPathCount()-1; i>=0;i--) {
+        for (int i = e.getPath().getPathCount() - 1; i >= 0; i--) {
             Object comp = e.getPath().getPathComponent(i);
-            if ( comp instanceof MondrianGuiDef.Cube &&  ((MondrianGuiDef.Cube) comp).fact != null ) {
+            if (comp instanceof MondrianGuiDef.Cube &&  ((MondrianGuiDef.Cube) comp).fact != null) {
                 selectedFactTable = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) comp).fact).name;
                 selectedFactTableSchema = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) comp).fact).schema;
             }
@@ -2644,8 +2644,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         String[] pNames = DEF_DEFAULT;
 
-        validStatusLabel.setText( renderer.invalid(tree, e.getPath(), o) );
-        validStatusLabel2.setText( validStatusLabel.getText() );
+        validStatusLabel.setText(renderer.invalid(tree, e.getPath(), o));
+        validStatusLabel2.setText(validStatusLabel.getText());
 
         if (o instanceof MondrianGuiDef.Column) {
             pNames = DEF_COLUMN;
@@ -2866,7 +2866,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         //jEditorPaneXML.setText(sxml.toString());  // removed because it caused the scrollbar for new element selected to reach at the end.
         try {
             jEditorPaneXML.read(new StringReader(sxml.toString()),null);
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             //
         }
         targetLabel2.setText(targetLabel.getText());
@@ -2878,7 +2878,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         // generate a list of pre-existing names of siblings in parent component for checking unique names
         Object parent = null;
-        for(int i=e.getPath().getPathCount()-1-1; i>=0;i--) {
+        for (int i = e.getPath().getPathCount() - 1 - 1; i >= 0; i--) {
             parent = e.getPath().getPathComponent(i);   // get parent path
             break;
         }
@@ -2887,7 +2887,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             Field[] fs = parent.getClass().getFields();
             ArrayList<Object> names = new ArrayList<Object>();
             for (int i = 0; i < fs.length; i++) {
-                if (fs[i].getType().isArray() && (fs[i].getType().getComponentType().isInstance(o) )) {
+                if (fs[i].getType().isArray() && (fs[i].getType().getComponentType().isInstance(o))) {
                     // selected schema object is an instance of parent's field (an array).
                     //System.out.println("parent Field type="+fs[i].getType().getComponentType());
                     //System.out.println("parent Field name="+fs[i].getName());
@@ -2900,7 +2900,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                             names.add(vname);
                         }
                         ptm.setNames(names);
-                    } catch(Exception ex) {
+                    } catch (Exception ex) {
                         //name field dosen't exist, skip parent object.
                     }
                     break;
@@ -3028,8 +3028,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     } else if (pathSelected instanceof MondrianGuiDef.KeyExpression ||
                             pathSelected instanceof MondrianGuiDef.NameExpression ||
                             pathSelected instanceof MondrianGuiDef.OrdinalExpression ||
-                            pathSelected instanceof MondrianGuiDef.ParentExpression
-                            ) {
+                            pathSelected instanceof MondrianGuiDef.ParentExpression) {
                         jPopupMenu.add(addSQL);
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
@@ -3109,7 +3108,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                         jPopupMenu.add(addMemberGrant);
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
-                    } else  {
+                    } else {
                         jPopupMenu.add(delete);
                     } /* else {
                         return;
@@ -3337,7 +3336,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
     public Object getParentObject() {
         TreePath tPath = tree.getSelectionPath();
-        if ( (tPath != null) && (tPath.getParentPath() != null) ) {
+        if ((tPath != null) && (tPath.getParentPath() != null)) {
             return tPath.getParentPath().getLastPathComponent();
         }
         return null;

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -109,11 +109,11 @@ public class AggTableManager {
             // print just Star table alias and AggStar table names
             StringBuilder buf = new StringBuilder(1024);
             buf.append(Util.nl);
-            for (Iterator it = getStars(); it.hasNext(); ) {
+            for (Iterator it = getStars(); it.hasNext();) {
                 RolapStar star = (RolapStar) it.next();
                 buf.append(star.getFactTable().getAlias());
                 buf.append(Util.nl);
-                for (Iterator ait = star.getAggStars(); ait.hasNext(); ) {
+                for (Iterator ait = star.getAggStars(); ait.hasNext();) {
                     AggStar aggStar = (AggStar) ait.next();
                     buf.append("    ");
                     buf.append(aggStar.getFactTable().getName());

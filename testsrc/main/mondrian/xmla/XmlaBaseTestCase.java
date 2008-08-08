@@ -57,7 +57,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     public static final String DATA_SOURCE_INFO_PROP = "data.source.info";
     public static final String DATA_SOURCE_INFO = "MondrianFoodMart";// catalog
     public static final String CATALOG_PROP     = "catalog";
-    public static final String CATALOG_NAME_PROP= "catalog.name";
+    public static final String CATALOG_NAME_PROP = "catalog.name";
     public static final String CATALOG          = "FoodMart";// cube
     public static final String CUBE_NAME_PROP   = "cube.name";
     public static final String SALES_CUBE       = "Sales";// format
@@ -131,7 +131,7 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
 
     protected Document replaceLastSchemaUpdateDate(Document doc) {
         NodeList elements = doc.getElementsByTagName(LAST_SCHEMA_UPDATE_NODE_NAME);
-        if(elements.getLength() ==0){
+        if (elements.getLength() ==0) {
             return doc;
         }
 
@@ -349,7 +349,7 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
             soapRequestText, Util.toMap(props));
 
 if (DEBUG) {
-System.out.println("XmlaBaseTestCase.doTests: soapRequestText="+soapRequestText);
+System.out.println("XmlaBaseTestCase.doTests: soapRequestText=" + soapRequestText);
 }
         Document soapReqDoc = XmlUtil.parseString(soapRequestText);
 
@@ -360,7 +360,7 @@ System.out.println("XmlaBaseTestCase.doTests: soapRequestText="+soapRequestText)
             XmlaSupport.processXmla(xmlaReqDoc, connectString, catalogNameUrls, role);
         String response = new String(bytes);
 if (DEBUG) {
-System.out.println("XmlaBaseTestCase.doTests: xmla response="+response);
+System.out.println("XmlaBaseTestCase.doTests: xmla response=" + response);
 }
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
@@ -390,7 +390,7 @@ if (DEBUG) {
         }
         response = new String(bytes);
 if (DEBUG) {
-System.out.println("XmlaBaseTestCase.doTests: soap response="+response);
+System.out.println("XmlaBaseTestCase.doTests: soap response=" + response);
 }
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
@@ -406,8 +406,8 @@ if (DEBUG) {
         if (expectedDoc != null) {
             String expectedStr = XmlUtil.toString(expectedDoc, true);
 if (DEBUG) {
-System.out.println("XmlaBaseTestCase.doTests: GOT:\n"+gotStr);
-System.out.println("XmlaBaseTestCase.doTests: EXPECTED:\n"+expectedStr);
+System.out.println("XmlaBaseTestCase.doTests: GOT:\n" + gotStr);
+System.out.println("XmlaBaseTestCase.doTests: EXPECTED:\n" + expectedStr);
 System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
 }
             try {
@@ -433,7 +433,7 @@ System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
     private Document ignoreLastUpdateDate(Document document) {
         NodeList elements = document.getElementsByTagName("LAST_SCHEMA_UPDATE");
         for (int i = elements.getLength(); i > 0; i--) {
-            removeNode(elements.item(i-1));
+            removeNode(elements.item(i - 1));
         }
         return document;
     }

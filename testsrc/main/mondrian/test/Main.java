@@ -203,7 +203,9 @@ public class Main extends TestSuite {
             addTest(suite, ScheduleTest.class);
             addTest(suite, UtilTestCase.class);
             addTest(suite, SortTest.class);
-            if (isRunOnce()) addTest(suite, TestAggregationManager.class);
+            if (isRunOnce()) {
+                addTest(suite, TestAggregationManager.class);
+            }
             addTest(suite, VirtualCubeTest.class);
             addTest(suite, ParameterTest.class);
             addTest(suite, AccessControlTest.class);
@@ -219,7 +221,9 @@ public class Main extends TestSuite {
             addTest(suite, XmlaTests.class);
             addTest(suite, DynamicDatasourceXmlaServletTest.class);
             addTest(suite, XmlaTest.class, "suite");
-            if (isRunOnce()) addTest(suite, TestCalculatedMembers.class);
+            if (isRunOnce()) {
+                addTest(suite, TestCalculatedMembers.class);
+            }
             addTest(suite, RaggedHierarchyTest.class);
             addTest(suite, NonEmptyPropertyForAllAxisTest.class);
             addTest(suite, InlineTableTest.class);

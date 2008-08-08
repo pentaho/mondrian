@@ -817,7 +817,7 @@ public class RolapHierarchy extends HierarchyBase {
      * @param defaultMember Default member
      */
     public void setDefaultMember(Member defaultMember) {
-        if (defaultMember != null){
+        if (defaultMember != null) {
             this.defaultMember = defaultMember;
         }
     }

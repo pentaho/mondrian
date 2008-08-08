@@ -288,7 +288,7 @@ public abstract class MemberBase
         return null;
     }
 
-    public String getPropertyFormattedValue(String propertyName){
+    public String getPropertyFormattedValue(String propertyName) {
         return getPropertyValue(propertyName).toString();
     }
 }

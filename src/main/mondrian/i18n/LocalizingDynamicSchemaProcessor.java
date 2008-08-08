@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -69,7 +69,7 @@ public class LocalizingDynamicSchemaProcessor
         String [] localePropFilename = new String[localeType];
         String [] localeTokens = locale.split("\\_");
         int index = localeType;
-        for (int i = 0; i <localeType;i++) {
+        for (int i = 0; i < localeType; i++) {
             //"en_GB" -> [en][GB]  first
             String catName = "";
             /*
@@ -81,7 +81,7 @@ public class LocalizingDynamicSchemaProcessor
                 catName += "_" + localeTokens[j];
             }
             localePropFilename[--index] = localizedPropFileBase + catName +
-                    "." + tokens[tokens.length-1];
+                    "." + tokens[tokens.length - 1];
         }
         boolean fileExists = false;
         File file = null;
@@ -91,8 +91,7 @@ public class LocalizingDynamicSchemaProcessor
                 LOGGER.debug("populate: file=" +
                         file.getAbsolutePath() +
                         " exists=" +
-                        file.exists()
-                        );
+                        file.exists());
             }
             if (!file.exists()) {
                 LOGGER.warn("Mondrian: Warning: file '"
@@ -116,7 +115,7 @@ public class LocalizingDynamicSchemaProcessor
                         + "' could not be loaded ("
                         + e
                         + ")");
-            } catch (java.io.IOException e){
+            } catch (java.io.IOException e) {
                 LOGGER.error("Mondrian: locale file '"
                         + file.getAbsolutePath()
                         + "' could not be loaded ("
@@ -167,13 +166,13 @@ public class LocalizingDynamicSchemaProcessor
 
             try {
                 String intlProperty = i8n.getString(key);
-                if (intlProperty!=null){
+                if (intlProperty != null) {
                     match.appendReplacement(intlSchema, intlProperty);
                 }
-            } catch (java.util.MissingResourceException e){
-                LOGGER.error("Missing resource for key ["+key+"]",e);
-            } catch (java.lang.NullPointerException e){
-                LOGGER.error("missing resource key at substring("+start+","+end+")",e);
+            } catch (java.util.MissingResourceException e) {
+                LOGGER.error("Missing resource for key [" + key + "]",e);
+            } catch (java.lang.NullPointerException e) {
+                LOGGER.error("missing resource key at substring(" + start + "," + end + ")", e);
             }
         }
         match.appendTail(intlSchema);
@@ -215,7 +214,7 @@ public class LocalizingDynamicSchemaProcessor
                 localeType = FULL_LOCALE;
             }
         } else {
-            if (locale.length()==2){
+            if (locale.length() == 2) {
             //make sure that the language field is valid since that is all that was provided
                 if (languages.contains(locale.substring(0, 2))) {
                     localeType = LANG_LOCALE;

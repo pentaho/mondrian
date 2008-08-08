@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -243,8 +243,7 @@ abstract class Recognizer {
             if (nosMeasures == 0) {
                 String msg = mres.NoMeasureColumns.str(
                         aggTable.getName(),
-                        dbFactTable.getName()
-                    );
+                        dbFactTable.getName());
                 msgRecorder.reportError(msg);
 
                 returnValue = false;
@@ -276,7 +275,7 @@ abstract class Recognizer {
 
             for (Iterator<JdbcSchema.Table.Column.Usage> mit =
                     factColumn.getUsages(JdbcSchema.UsageType.MEASURE);
-                    mit.hasNext(); ) {
+                    mit.hasNext();) {
                 JdbcSchema.Table.Column.Usage factUsage = mit.next();
                 if (factUsage.getAggregator() == RolapAggregator.Avg) {
                     avgFactUsage = factUsage;
@@ -291,7 +290,7 @@ abstract class Recognizer {
                 int seenCount = 0;
                 for (Iterator<JdbcSchema.Table.Column.Usage> mit =
                     aggTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);
-                        mit.hasNext(); ) {
+                        mit.hasNext();) {
 
                     JdbcSchema.Table.Column.Usage aggUsage = mit.next();
                     if (aggUsage.rMeasure == avgFactUsage.rMeasure) {
@@ -387,7 +386,7 @@ abstract class Recognizer {
 
             for (Iterator<JdbcSchema.Table.Column.Usage> it =
                 dbFactTable.getColumnUsages(JdbcSchema.UsageType.FOREIGN_KEY);
-                    it.hasNext(); ) {
+                    it.hasNext();) {
 
                 JdbcSchema.Table.Column.Usage factUsage = it.next();
 
@@ -398,8 +397,7 @@ abstract class Recognizer {
                             aggTable.getName(),
                             dbFactTable.getName(),
                             matchCount,
-                            factUsage.getColumn().getName()
-                        );
+                            factUsage.getColumn().getName());
                     msgRecorder.reportError(msg);
 
                     returnValue = false;
@@ -547,7 +545,7 @@ abstract class Recognizer {
     private void printNotSeenForeignKeys(List notSeenForeignKeys) {
         LOGGER.debug("Recognizer.printNotSeenForeignKeys: "
             + aggTable.getName());
-        for (Iterator it = notSeenForeignKeys.iterator(); it.hasNext(); ) {
+        for (Iterator it = notSeenForeignKeys.iterator(); it.hasNext();) {
             JdbcSchema.Table.Column.Usage usage =
                 (JdbcSchema.Table.Column.Usage) it.next();
             LOGGER.debug("  " + usage.getColumn().getName());
@@ -614,7 +612,7 @@ abstract class Recognizer {
             // same table and column
             for (Iterator<JdbcSchema.Table.Column.Usage> uit =
                 aggColumn.getUsages(JdbcSchema.UsageType.LEVEL);
-                    uit.hasNext(); ) {
+                    uit.hasNext();) {
                 JdbcSchema.Table.Column.Usage aggUsage = uit.next();
 
                 MondrianDef.Relation rel = hierarchyUsage.getJoinTable();
@@ -750,8 +748,7 @@ abstract class Recognizer {
                 String msg = mres.AggUnknownColumn.str(
                     aggTable.getName(),
                     dbFactTable.getName(),
-                    aggColumn.getName()
-                );
+                    aggColumn.getName());
                 unusedColumnMsgs.put(aggColumn.getName(), msg);
             }
         }

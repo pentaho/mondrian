@@ -378,9 +378,9 @@ public class Formula extends QueryPart {
                 if (number == null) {
                     return null;
                 } else if (number instanceof Integer) {
-                    return -number.intValue();
+                    return - number.intValue();
                 } else {
-                    return -number.doubleValue();
+                    return - number.doubleValue();
                 }
             }
         }
@@ -485,7 +485,7 @@ public class Formula extends QueryPart {
             returnFormula(member);
             if (member.isCalculated()
                     && member instanceof RolapCalculatedMember
-                    && !hasCyclicReference(memberExpr)){
+                    && !hasCyclicReference(memberExpr)) {
 
                 Formula formula = ((RolapCalculatedMember) member).getFormula();
                 formula.accept(validator);
@@ -509,7 +509,7 @@ public class Formula extends QueryPart {
         private boolean hasCyclicReference(Exp expr, List<MemberExpr> expList) {
             if (expr instanceof MemberExpr) {
                 MemberExpr memberExpr = (MemberExpr) expr;
-                if(expList.contains(expr)){
+                if (expList.contains(expr)) {
                     return true;
                 }
                 expList.add(memberExpr);
@@ -524,7 +524,7 @@ public class Formula extends QueryPart {
                 FunCall funCall = (FunCall) expr;
                 Exp[] exps = funCall.getArgs();
                 for (int i = 0; i < exps.length; i++) {
-                    if(hasCyclicReference(exps[i], cloneForEachBranch(expList))) {
+                    if (hasCyclicReference(exps[i], cloneForEachBranch(expList))) {
                         return true;
                     }
                 }

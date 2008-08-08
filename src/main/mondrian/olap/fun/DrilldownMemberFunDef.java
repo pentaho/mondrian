@@ -105,7 +105,7 @@ class DrilldownMemberFunDef extends FunDefBase {
                     Object objNew;
                     if (tuple == null) {
                         objNew = member;
-                    }  else {
+                    } else {
                         Member[] members = tuple.clone();
                         members[k] = member;
                         objNew = members;

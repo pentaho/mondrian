@@ -1,5 +1,5 @@
 /*
-// $Id$Id: //open/mondrian/src/main/mondrian/rolap/RolapCubeUsages.java#3 $
+// $Id$Id: //open/mondrian/src/main/mondrian/rolap/RolapCubeUsages.java#4 $
  */
 
 public class RolapCubeUsages {
@@ -10,11 +10,11 @@ public class RolapCubeUsages {
     }
 
     public boolean shouldIgnoreUnrelatedDimensions(String baseCubeName) {
-        if(cubeUsages==null || cubeUsages.cubeUsages == null){
+        if (cubeUsages == null || cubeUsages.cubeUsages == null) {
             return false;
         }
         for (MondrianDef.CubeUsage usage : cubeUsages.cubeUsages) {
-            if(usage.cubeName.equals(baseCubeName)
+            if (usage.cubeName.equals(baseCubeName)
                 && Boolean.TRUE.equals(usage.ignoreUnrelatedDimensions)) {
                 return true;
             }

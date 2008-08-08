@@ -68,7 +68,7 @@ public class RolapStar {
                         // CacheControl.flush(CellRegion)
                         for (Iterator<RolapSchema> itSchemas =
                             RolapSchema.getRolapSchemas();
-                             itSchemas.hasNext(); )
+                             itSchemas.hasNext();)
                         {
                             RolapSchema schema1 = itSchemas.next();
                             for (RolapStar star : schema1.getStars()) {
@@ -78,7 +78,7 @@ public class RolapStar {
                     }
                 }
             }
-        );
+       );
     }
 
 
@@ -965,7 +965,7 @@ public class RolapStar {
                         o2.getConstrainedColumnsBitKey());
                 }
             }
-        );
+       );
 
         for (Aggregation aggregation : aggregationList) {
             aggregation.print(pw);

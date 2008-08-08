@@ -111,7 +111,7 @@ public class TraversalList<T> extends UnsupportedList<T[]> {
     public List<T[]> subList(final int first, final int last) {
         return new AbstractList<T[]>() {
             public T[] get(int index) {
-                return TraversalList.this.get(index+first);
+                return TraversalList.this.get(index + first);
             }
             public int size() {
                 return last - first;

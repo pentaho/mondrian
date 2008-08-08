@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -460,7 +460,7 @@ public abstract class XmlaServlet extends HttpServlet
                     Util.toMap(System.getProperties()));
                 if (LOGGER.isDebugEnabled()) {
                     String msg = "XmlaServlet.makeDataSources: " +
-                            "paramValue="+paramValue;
+                            "paramValue=" + paramValue;
                     LOGGER.debug(msg);
                 }
                 // is the parameter a valid URL
@@ -492,7 +492,7 @@ public abstract class XmlaServlet extends HttpServlet
 
         if (LOGGER.isDebugEnabled()) {
             String msg = "XmlaServlet.makeDataSources: " +
-                    "dataSourcesConfigUrl="+dataSourcesConfigUrl;
+                    "dataSourcesConfigUrl=" + dataSourcesConfigUrl;
             LOGGER.debug(msg);
         }
         // don't try to parse a null
@@ -510,7 +510,7 @@ public abstract class XmlaServlet extends HttpServlet
             int len2 = ds2.length;
 
             DataSourcesConfig.DataSource[] tmp =
-                new DataSourcesConfig.DataSource[len1+len2];
+                new DataSourcesConfig.DataSource[len1 + len2];
 
             System.arraycopy(ds1, 0, tmp, 0, len1);
             System.arraycopy(ds2, 0, tmp, len1, len2);
@@ -557,7 +557,7 @@ public abstract class XmlaServlet extends HttpServlet
 
         if (LOGGER.isDebugEnabled()) {
             String msg = "XmlaServlet.parseDataSources: " +
-                    "dataSources="+dataSourcesConfigString;
+                    "dataSources=" + dataSourcesConfigString;
             LOGGER.debug(msg);
         }
             final Parser parser = XOMUtil.createDefaultParser();

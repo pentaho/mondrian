@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -195,7 +195,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
                     tuples[j].getDimension())) {
                     final Hierarchy hierarchy =
                         tuples[j].getDimension().getHierarchy();
-                    if(hierarchy.hasAll()){
+                    if (hierarchy.hasAll()) {
                         tuples[j] = hierarchy.getAllMember();
                     } else {
                         tuples[j] = hierarchy.getDefaultMember();
@@ -223,7 +223,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
     private static List tuplesAsList(Set tuples) {
         List results = new ArrayList(tuples.size());
         for (Object tuple : tuples) {
-            if (tuple instanceof MemberArray){
+            if (tuple instanceof MemberArray) {
                 results.add(((MemberArray) tuple).memberArray);
             } else {
                 results.add(tuple);

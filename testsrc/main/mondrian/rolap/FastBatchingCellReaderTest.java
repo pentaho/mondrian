@@ -784,10 +784,11 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 createBatch(fbcr,
                         new String[]{tableTime, tableTime, tableTime},
                         new String[]{fieldYear, "quarter", "month_of_year"},
-                        new String[][]{fieldValuesYear, {"Q1", "Q2", "Q3",
-                                "Q4"},
-                                {"1", "2", "3", "4", "5", "6", "7", "8",
-                                        "9", "10", "11", "12"}},
+                        new String[][]{
+                            fieldValuesYear,
+                            new String[] {"Q1", "Q2", "Q3", "Q4"},
+                            new String[] {"1", "2", "3", "4", "5", "6", "7", "8",
+                                          "9", "10", "11", "12"}},
                         cubeNameSales,
                         measureUnitSales);
 
@@ -875,23 +876,39 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 
         FastBatchingCellReader.Batch firstBatch =
-            createBatch(fbcr,
-                new String[]{tableTime, tableProductClass,
-                    tableProductClass}, new String[]{fieldYear,
-                fieldProductFamily, fieldProductDepartment},
-                new String[][]{fieldValuesYear,
-                    {"Food"},
-                    fieldValueProductDepartment}, cubeNameSales,
+            createBatch(
+                fbcr,
+                new String[] {
+                    tableTime,
+                    tableProductClass,
+                    tableProductClass},
+                new String[]{
+                    fieldYear,
+                    fieldProductFamily,
+                    fieldProductDepartment},
+                new String[][] {
+                    fieldValuesYear,
+                    new String[] {"Food"},
+                    fieldValueProductDepartment},
+                cubeNameSales,
                 "[Measures].[Customer Count]");
 
         FastBatchingCellReader.Batch secondBatch =
-            createBatch(fbcr,
-                new String[]{tableTime, tableProductClass,
-                    tableProductClass}, new String[]{fieldYear,
-                fieldProductFamily, fieldProductDepartment},
-                new String[][]{fieldValuesYear,
-                    {"Drink"},
-                    fieldValueProductDepartment}, cubeNameSales,
+            createBatch(
+                fbcr,
+                new String[]{
+                    tableTime,
+                    tableProductClass,
+                    tableProductClass},
+                new String[]{
+                    fieldYear,
+                    fieldProductFamily,
+                    fieldProductDepartment},
+                new String[][]{
+                    fieldValuesYear,
+                    new String[] {"Drink"},
+                    fieldValueProductDepartment},
+                cubeNameSales,
                 "[Measures].[Customer Count]");
 
         assertFalse(firstBatch.canBatch(secondBatch));

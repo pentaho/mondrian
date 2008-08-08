@@ -793,11 +793,11 @@ public class VbaTest extends TestCase {
         factor = 2;
         result = Vba.dDB(cost, salvage, life, period, factor);
         assertEquals(20.0, result);
-        result = Vba.dDB(cost, salvage, life, period+1, factor);
+        result = Vba.dDB(cost, salvage, life, period + 1, factor);
         assertEquals(40.0, result);
-        result = Vba.dDB(cost, salvage, life, period+2, factor);
+        result = Vba.dDB(cost, salvage, life, period + 2, factor);
         assertEquals(60.0, result);
-        result = Vba.dDB(cost, salvage, life, period+3, factor);
+        result = Vba.dDB(cost, salvage, life, period + 3, factor);
         assertEquals(80.0, result);
 
     }

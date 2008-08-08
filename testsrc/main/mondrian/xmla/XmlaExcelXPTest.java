@@ -274,8 +274,7 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
     public void doTest(
             MockHttpServletRequest req,
             String nos,
-            Properties props
-            ) throws Exception {
+            Properties props) throws Exception {
         String requestText = generateRequestString(nos, props);
 
         MockHttpServletResponse res = new MockHttpServletResponse();
@@ -311,10 +310,10 @@ System.out.println("Got CONTINUE");
                 validate(bytes, expectedDoc);
 
             } else {
-                fail("Bad status code: " +statusCode);
+                fail("Bad status code: " + statusCode);
             }
         } else {
-            fail("Bad status code: " +statusCode);
+            fail("Bad status code: " + statusCode);
 
         }
     }
@@ -335,7 +334,7 @@ System.out.println("Got CONTINUE");
             throws Exception {
 if (DEBUG) {
         String response = new String(bytes);
-        System.out.println("response="+response);
+        System.out.println("response=" + response);
 }
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
@@ -350,8 +349,8 @@ if (DEBUG) {
         String expectedStr = XmlUtil.toString(replaceLastSchemaUpdateDate(expectedDoc), true);
 
 if (DEBUG) {
-System.out.println("GOT:\n"+gotStr);
-System.out.println("EXPECTED:\n"+expectedStr);
+System.out.println("GOT:\n" + gotStr);
+System.out.println("EXPECTED:\n" + expectedStr);
 System.out.println("XXXXXXX");
 }
         gotStr = Util.maskVersion(gotStr);
@@ -362,7 +361,7 @@ System.out.println("XXXXXXX");
             throws Exception {
         String reqFileName = "excel_XP_" + nos + "_in.xml";
 if (DEBUG) {
-System.out.println("reqFileName="+reqFileName);
+System.out.println("reqFileName=" + reqFileName);
 }
         String requestText = fileToString(reqFileName);
         if (props != null) {
@@ -373,7 +372,7 @@ System.out.println("reqFileName="+reqFileName);
             requestText = Util.replaceProperties(requestText, Util.toMap(props));
         }
 if (DEBUG) {
-System.out.println("requestText="+requestText);
+System.out.println("requestText=" + requestText);
 }
         return requestText;
     }

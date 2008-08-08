@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -136,17 +136,18 @@ public class DOMBuilder {
                 Member prevMember    = prevMembers[i];
                 if (prevMember == null || !prevMember.equals(currentMember)) {
                     Element currentElem = createMemberElem("row-heading", row, currentMember);
-                    if (even)
+                    if (even) {
                         currentElem.setAttribute("style", "even");
-                    else
+                    } else {
                         currentElem.setAttribute("style", "odd");
+                    }
                     prevMembers[i] = currentMember;
                     prevElems[i] = currentElem;
                     prevSpan[i] = 1;
-                    for (int j = i + 1; j < levels; j++)
+                    for (int j = i + 1; j < levels; j++) {
                         prevMembers[j] = null;
-                }
-                else {
+                    }
+                } else {
                     Element prevElem = prevElems[i];
                     prevElem.setAttribute("style", "span");
                     prevSpan[i] += 1;
@@ -200,8 +201,7 @@ public class DOMBuilder {
                     prevSpan[rowIndex] = 1;
                     for (int j = rowIndex + 1; j < levels; j++)
                         prevMembers[j] = null;
-                }
-                else {
+                } else {
                     Element prevElem = prevElems[rowIndex];
                     prevElem.setAttribute("style", "span");
                     prevSpan[rowIndex] += 1;
@@ -343,8 +343,7 @@ public class DOMBuilder {
             OutputStream result = new ByteArrayOutputStream();
             templates.newTransformer().transform(new DOMSource(doc), new StreamResult(result));
             LOGGER.debug(result.toString());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

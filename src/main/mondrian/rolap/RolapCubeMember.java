@@ -60,8 +60,7 @@ public class RolapCubeMember extends RolapMember {
             // this is a special case ...
             // replace hierarchy name portion of all member with new name
             if (member.getLevel().getHierarchy().getName().equals(
-                    level.getHierarchy().getName()
-                    )) {
+                    level.getHierarchy().getName())) {
                 rolapAllMemberCubeName = member.getName();
             } else {
                 // special case if we're dealing with a closure

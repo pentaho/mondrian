@@ -129,7 +129,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             }
         }
 
-        if(dimension.isHighCardinality()) {
+        if (dimension.isHighCardinality()) {
             this.reader = new NoCacheRolapCubeHierarchyMemberReader();
         } else {
             this.reader = new CacheRolapCubeHierarchyMemberReader();
@@ -411,8 +411,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     this,
                     RolapCubeHierarchy.this,
                     rolapCubeCacheHelper,
-                    cacheHelper
-                    );
+                    cacheHelper);
 
             cubeSource.setCache(getMemberCache());
         }

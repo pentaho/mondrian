@@ -349,7 +349,7 @@ public class RolapUtil {
         Member bestMatch = null;
         for (Member member : members) {
             int rc;
-            if (searchName.quoting==Id.Quoting.KEY
+            if (searchName.quoting == Id.Quoting.KEY
                     && member instanceof RolapMember) {
                 if (((RolapMember) member).getKey().toString()
                         .equals(searchName.name)) {

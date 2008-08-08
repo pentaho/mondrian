@@ -117,7 +117,7 @@ public class TupleType implements Type {
     private Type commonTupleType(Type type, int[] conversionCount) {
         TupleType that = (TupleType) type;
 
-        if(this.elementTypes.length < that.elementTypes.length){
+        if (this.elementTypes.length < that.elementTypes.length) {
             return createCommonTupleType(that, conversionCount);
         }
         return that.createCommonTupleType(this, conversionCount);
@@ -133,8 +133,8 @@ public class TupleType implements Type {
                 return null;
             }
         }
-        if(elementTypes.size() < that.elementTypes.length){
-            for(int i=elementTypes.size();i< that.elementTypes.length;i++){
+        if (elementTypes.size() < that.elementTypes.length) {
+            for (int i = elementTypes.size(); i < that.elementTypes.length; i++) {
                 elementTypes.add(new ScalarType());
             }
         }

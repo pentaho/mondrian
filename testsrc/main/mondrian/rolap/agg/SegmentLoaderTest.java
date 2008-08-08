@@ -335,9 +335,10 @@ public class SegmentLoaderTest extends BatchTestCase {
         cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 1, 3, 0}));
         cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 0, 2, 1}));
         cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 1, 3, 1}));
-        Double[] unitSalesValues =
-            {368.0, 1987.0, 867.0, 473.0, 945.0, 5990.0, 2199.0,
-                6047.0};
+        Double[] unitSalesValues = {
+            368.0, 1987.0, 867.0, 473.0, 945.0, 5990.0, 2199.0,
+            6047.0
+        };
 
         Iterator<Map.Entry<CellKey, Object>> iterator =
             segment.getData().iterator();

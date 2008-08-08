@@ -141,7 +141,7 @@ public abstract class HierarchyBase
             if (oe == null) {
                 buf.append(" returning null");
             } else {
-                buf.append(" returning elementname="+oe.getName());
+                buf.append(" returning elementname=" + oe.getName());
             }
             getLogger().debug(buf.toString());
         }

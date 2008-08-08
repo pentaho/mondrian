@@ -48,11 +48,11 @@ public class HighDimensionsTest extends FoodMartTestCase {
             + "tail(intersect(necj,necj,ALL),5) on rows from sales");
         final long t0 = System.currentTimeMillis();
         Result result = connection.execute(query);
-        for(final Position o : result.getAxes()[0].getPositions()) {
+        for (final Position o : result.getAxes()[0].getPositions()) {
             assertNotNull(o.get(0));
         }
         final long t1 = System.currentTimeMillis();
-        assertTrue(t1-t0 < 60000);
+        assertTrue(t1 - t0 < 60000);
     }
 
 
@@ -140,7 +140,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
                     new ArrayList<SoftReference>();
             // Tests results aren't got from database before this point
             int ii = 0;
-            for(final Position o : result.getAxes()[axisIndex].getPositions()) {
+            for (final Position o : result.getAxes()[axisIndex].getPositions()) {
                 assertNotNull(o.get(0));
                 ii++;
                 softReferences.add(new SoftReference(o.get(0)));
@@ -153,21 +153,23 @@ public class HighDimensionsTest extends FoodMartTestCase {
             // memory
             final List overloader = new ArrayList();
             try {
-                for(;;) overloader.add(new long[99999999]);
-            } catch(OutOfMemoryError out) {
+                for (;;) {
+                    overloader.add(new long[99999999]);
+                }
+            } catch (OutOfMemoryError out) {
                 // OK, outofmemory
             }
             System.gc();
 
-            for(int i=4; i<ii-40; i++) {
+            for (int i = 4; i < ii - 40; i++) {
                 assertNull(softReferences.get(i).get());
             }
 
-            for(int i=5; i<10 && i<ii; i++) {
+            for (int i = 5; i < 10 && i < ii; i++) {
               try {
                     result.getAxes()[axisIndex].getPositions().get(0).get(0);
                     assert false;
-                } catch(RuntimeException nsee) {
+                } catch (RuntimeException nsee) {
                 }
             }
         } finally {

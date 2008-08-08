@@ -111,7 +111,7 @@ public class ExplicitRules {
             }
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(Util.nl+group);
+                LOGGER.debug(Util.nl + group);
             }
             return group;
         }
@@ -1417,7 +1417,8 @@ RME TODO
     }
 
 
-    private ExplicitRules() {}
+    private ExplicitRules() {
+    }
 }
 
 // End ExplicitRules.java

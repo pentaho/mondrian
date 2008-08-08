@@ -145,8 +145,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     private static void addMeasure(
         RolapStoredMeasure measure,
         Set<RolapCube> baseCubes,
-        List<RolapCube> baseCubeList
-        )
+        List<RolapCube> baseCubeList)
     {
         RolapCube baseCube = measure.getCube();
         if (baseCubes.add(baseCube)) {

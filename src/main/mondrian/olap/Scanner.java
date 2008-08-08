@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -56,9 +56,9 @@ public class Scanner {
      * Comment delimiters. Modify this list to support other comment styles.
      */
     private static final String[][] commentDelim = {
-        {"//", null},
-        {"--", null},
-        {"/*", "*/"}
+        new String[] {"//", null},
+        new String[] {"--", null},
+        new String[] {"/*", "*/"}
     };
 
     /**
@@ -135,11 +135,10 @@ public class Scanner {
 
         if (n == 0) {
             return nextChar;
-        }
-        else {
+        } else {
             // if the desired character not in lookahead buffer, read it in
             if (n > lastLookaheadChar - firstLookaheadChar) {
-                int len=lastLookaheadChar - firstLookaheadChar;
+                int len = lastLookaheadChar - firstLookaheadChar;
                 int t[];
 
                 // make sure we do not go off the end of the buffer
@@ -147,9 +146,8 @@ public class Scanner {
                     if (n > lookaheadChars.length) {
                         // the array is too small; make it bigger and shift
                         // everything to the beginning.
-                        t=new int[n * 2];
-                    }
-                    else {
+                        t = new int[n * 2];
+                    } else {
                         // the array is big enough, so just shift everything
                         // to the beginning of it.
                         t = lookaheadChars;
@@ -411,8 +409,7 @@ public class Scanner {
         for (;;) {
             if (nextChar == -1) {
                 return;
-            }
-            else if (checkForSymbol(endDelim)) {
+            } else if (checkForSymbol(endDelim)) {
                 // eat the end delimiter
                 for (int x = 0; x < endDelim.length(); x++) {
                     advance();
@@ -420,15 +417,13 @@ public class Scanner {
                 if (--depth == 0) {
                     return;
                 }
-            }
-            else if (allowNestedComments && checkForSymbol(startDelim)) {
+            } else if (allowNestedComments && checkForSymbol(startDelim)) {
                // eat the nested start delimiter
                 for (int x = 0; x < startDelim.length(); x++) {
                     advance();
                 }
                 depth++;
-            }
-            else {
+            } else {
                 advance();
             }
         }
@@ -499,7 +494,7 @@ public class Scanner {
                 // 1e2, 1E2, 1e-2, 1e+2.  Invalid examples include e2, 1.2.3,
                 // 1e2e3, 1e2.3.
                 //
-                // Signs preceding numbers (e.g. -1, +1E-5) are valid, but are
+                // Signs preceding numbers (e.g. -1,  + 1E-5) are valid, but are
                 // handled by the parser.
                 //
                 BigDecimal n = BigDecimalZero;

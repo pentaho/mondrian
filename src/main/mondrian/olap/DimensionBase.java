@@ -98,7 +98,7 @@ public abstract class DimensionBase
         // should not return oe "Marital Status", because he is
         // looking for level - we can check that by checking of hierarchy and
         // dimension name is the same.
-        if ((oe == null) || oe.getName().equalsIgnoreCase(getName()) ) {
+        if ((oe == null) || oe.getName().equalsIgnoreCase(getName())) {
             OlapElement oeLevel =
                 getHierarchy().lookupChild(schemaReader, s, matchType);
             if (oeLevel != null) {
@@ -116,7 +116,7 @@ public abstract class DimensionBase
             if (oe == null) {
                 buf.append(" returning null");
             } else {
-                buf.append(" returning elementname="+oe.getName());
+                buf.append(" returning elementname=" + oe.getName());
             }
             getLogger().debug(buf.toString());
         }

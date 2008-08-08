@@ -13,25 +13,22 @@ package mondrian.test.loader;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
+
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.math.BigDecimal;
+import java.sql.*;
+import java.sql.Date;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.math.BigDecimal;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.File;
-import java.io.FileWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.sql.DatabaseMetaData;
-import org.apache.log4j.*;
 
 /**
  * This is an abstract base class for the creation and load of one or more
@@ -804,7 +801,7 @@ public abstract class DBLoader {
             String indexAndColumnName = createIndexList.get(i);
             int index = indexAndColumnName.indexOf(' ');
             String indexName = indexAndColumnName.substring(0, index);
-            String columnName = indexAndColumnName.substring(index+1);
+            String columnName = indexAndColumnName.substring(index + 1);
             String quotedIndexName = quoteId(indexName.trim());
             String quotedColumnName = quoteId(columnName.trim());
             String createIndexStmt = "CREATE INDEX " +
@@ -836,17 +833,17 @@ public abstract class DBLoader {
     protected boolean makeFileWriter(Table table, String suffix)
             throws Exception {
         if (this.outputDirectory != null) {
-            String fileName = table.getName()+suffix;
+            String fileName = table.getName() + suffix;
             File file = new File(outputDirectory, fileName);
             if (file.exists()) {
                 if (this.force) {
                     if (! file.delete()) {
                         throw new Exception("Table file \"" +
-                            fileName+"\" could not be deleted");
+                            fileName + "\" could not be deleted");
                     }
                 } else {
                     throw new Exception("Table file \"" +
-                        fileName+"\" already exists"+
+                        fileName + "\" already exists" +
                         " - delete or use force flag");
                 }
             }
@@ -907,10 +904,12 @@ public abstract class DBLoader {
         if (beforeActionList.isEmpty()) {
             return;
         }
-        String suffix = System.getProperty(DROP_TABLE_INDEX_PROP,
-                            DROP_TABLE_INDEX_SUFFIX_DEFAULT);
+        String suffix =
+            System.getProperty(
+                DROP_TABLE_INDEX_PROP,
+                DROP_TABLE_INDEX_SUFFIX_DEFAULT);
         try {
-            if (makeFileWriter(table, "." + suffix )) {
+            if (makeFileWriter(table, "." + suffix)) {
                 for (String stmt : beforeActionList) {
                     writeDDL(stmt);
                 }
@@ -926,15 +925,18 @@ public abstract class DBLoader {
             closeFileWriter();
         }
     }
+
     protected void executeAfterActions(Table table) throws Exception {
         List<String> afterActionList = table.getAfterActions();
         if (afterActionList.isEmpty()) {
             return;
         }
-        String suffix = System.getProperty(CREATE_TABLE_INDEX_PROP,
-                            CREATE_TABLE_INDEX_SUFFIX_DEFAULT);
+        String suffix =
+            System.getProperty(
+                CREATE_TABLE_INDEX_PROP,
+                CREATE_TABLE_INDEX_SUFFIX_DEFAULT);
         try {
-            if (makeFileWriter(table, "." + suffix )) {
+            if (makeFileWriter(table, "." + suffix)) {
                 for (String stmt : afterActionList) {
                     writeDDL(stmt);
                 }
@@ -950,14 +952,17 @@ public abstract class DBLoader {
             closeFileWriter();
         }
     }
+
     protected boolean executeDropTableRows(Table table) throws Exception {
         try {
             Table.Controller controller = table.getController();
             if (controller.shouldDropTableRows()) {
-                String suffix = System.getProperty(DROP_TABLE_ROWS_PROP,
-                            DROP_TABLE_ROWS_SUFFIX_DEFAULT);
+                String suffix =
+                    System.getProperty(
+                        DROP_TABLE_ROWS_PROP,
+                        DROP_TABLE_ROWS_SUFFIX_DEFAULT);
                 String dropTableRowsStmt = table.getDropTableRowsStmt();
-                if (makeFileWriter(table, "." + suffix )) {
+                if (makeFileWriter(table, "." + suffix)) {
                     writeDDL(dropTableRowsStmt);
                 } else {
                     executeDDL(dropTableRowsStmt);
@@ -972,15 +977,18 @@ public abstract class DBLoader {
         }
         return false;
     }
+
     protected boolean executeDropTable(Table table) {
         // If table does not exist, that is OK
         try {
             Table.Controller controller = table.getController();
             if (controller.shouldDropTable()) {
-                String suffix = System.getProperty(DROP_TABLE_PROP,
-                                DROP_TABLE_SUFFIX_DEFAULT);
+                String suffix =
+                    System.getProperty(
+                        DROP_TABLE_PROP,
+                        DROP_TABLE_SUFFIX_DEFAULT);
                 String dropTableStmt = table.getDropTableStmt();
-                if (makeFileWriter(table, "." + suffix )) {
+                if (makeFileWriter(table, "." + suffix)) {
                     writeDDL(dropTableStmt);
                 } else {
                     executeDDL(dropTableStmt);
@@ -994,14 +1002,17 @@ public abstract class DBLoader {
         }
         return false;
     }
+
     protected boolean executeCreateTable(Table  table) {
         try {
             Table.Controller controller = table.getController();
             if (controller.createTable()) {
-                String suffix = System.getProperty(CREATE_TABLE_PROP,
-                                CREATE_TABLE_SUFFIX_DEFAULT);
+                String suffix =
+                    System.getProperty(
+                        CREATE_TABLE_PROP,
+                        CREATE_TABLE_SUFFIX_DEFAULT);
                 String ddl = table.getCreateTableStmt();
-                if (makeFileWriter(table, "." + suffix )) {
+                if (makeFileWriter(table, "." + suffix)) {
                     writeDDL(ddl);
                 } else {
                     executeDDL(ddl);
@@ -1015,12 +1026,15 @@ public abstract class DBLoader {
             closeFileWriter();
         }
     }
+
     protected int executeLoadTableRows(Table table) {
         int rowsAdded = 0;
         try {
-            String suffix = System.getProperty(LOAD_TABLE_ROWS_PROP,
-                            LOAD_TABLE_ROWS_SUFFIX_DEFAULT);
-            makeFileWriter(table, "." + suffix );
+            String suffix =
+                System.getProperty(
+                    LOAD_TABLE_ROWS_PROP,
+                    LOAD_TABLE_ROWS_SUFFIX_DEFAULT);
+            makeFileWriter(table, "." + suffix);
 
             Table.Controller controller = table.getController();
             if (controller.loadRows()) {
@@ -1059,6 +1073,7 @@ e.printStackTrace();
         }
         return rowsAdded;
     }
+
     protected String createInsertStatement(Table table, Object[] values)
             throws Exception {
 
@@ -1100,7 +1115,7 @@ e.printStackTrace();
             values = vs;
         }
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("INSERT INTO ");
         buf.append(quoteId(table.getName()));
         buf.append(" ( ");
@@ -1347,7 +1362,7 @@ e.printStackTrace();
             return "NULL";
         }
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("'");
         for (int i = 0; i < original.length(); i++) {
             char ch = original.charAt(i);
@@ -1417,6 +1432,7 @@ e.printStackTrace();
         }
         return batchSize;
     }
+
     protected void writeDDL(String ddl) throws Exception {
         LOGGER.debug(ddl);
 
@@ -1424,6 +1440,7 @@ e.printStackTrace();
         this.fileWriter.write(';');
         this.fileWriter.write(nl);
     }
+
     protected void executeDDL(String ddl) throws Exception {
         LOGGER.debug(ddl);
 

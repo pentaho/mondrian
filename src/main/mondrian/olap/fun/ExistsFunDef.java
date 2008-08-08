@@ -81,7 +81,7 @@ class ExistsFunDef extends FunDefBase
                                 Object [] leftObjs = (Object []) leftObject;
                                 Member leftMem = (Member) leftObjs[idxmap[i]];
                                 Member rightMem;
-                                if (! (rightObject instanceof Object [])){
+                                if (! (rightObject instanceof Object [])) {
                                     rightMem = (Member) rightObject;
                                 } else {
                                     Object [] rightObjs =

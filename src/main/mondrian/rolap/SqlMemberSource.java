@@ -118,8 +118,8 @@ class SqlMemberSource
                 while (resultSet.next()) {
                     ++stmt.rowCount;
                     boolean isEqual = true;
-                    for (int i = 0; i < nColumns; i++ ) {
-                        String colStr = resultSet.getString(i+1);
+                    for (int i = 0; i < nColumns; i++) {
+                        String colStr = resultSet.getString(i + 1);
                         if (!colStr.equals(colStrings[i])) {
                             isEqual = false;
                         }
@@ -295,8 +295,7 @@ class SqlMemberSource
                     // result limit exceeded, throw an exception
                     throw stmt.handle(
                         MondrianResource.instance().MemberFetchLimitExceeded.
-                        ex(limit)
-                    );
+                        ex(limit));
                 }
 
                 int column = 0;
@@ -465,7 +464,7 @@ RME is this right
 
             public mondrian.rolap.RolapMember[] toArray() {
                 final List<Member> l = new ArrayList<Member>();
-                for(final RolapMember[] tuple : tupleList) {
+                for (final RolapMember[] tuple : tupleList) {
                     l.add(tuple[0]);
                 }
                 return l.toArray(new RolapMember[l.size()]);
@@ -766,7 +765,7 @@ RME is this right
         try {
 
             int limit = MondrianProperties.instance().ResultLimit.get();
-            boolean checkCacheStatus=true;
+            boolean checkCacheStatus = true;
 
             ResultSet resultSet = stmt.getResultSet();
             while (resultSet.next()) {
@@ -783,11 +782,11 @@ RME is this right
                 }
                 Object captionValue;
                 int columnOffset;
-                if (childLevel.hasCaptionColumn()){
+                if (childLevel.hasCaptionColumn()) {
                     // The columnOffset needs to take into account
                     // the caption column if one exists
                     columnOffset = 2;
-                    captionValue=resultSet.getObject(columnOffset);
+                    captionValue = resultSet.getObject(columnOffset);
                 } else {
                     columnOffset = 1;
                     captionValue = null;

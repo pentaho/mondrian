@@ -66,7 +66,7 @@ public class RolapConnectionTest extends TestCase {
                         };
                     }
                 }
-            );
+           );
         }
     }
 
@@ -286,7 +286,7 @@ public class RolapConnectionTest extends TestCase {
                     return dataSource;
                 }
             }
-        );
+       );
 
         // Use the datasource property to connect to the database.
         // Remove user and password, because some data sources (those using
@@ -353,7 +353,7 @@ public class RolapConnectionTest extends TestCase {
                         : null;
                 }
             }
-        );
+       );
 
         // Create a property list that we will use for the actual mondrian
         // connection. Replace the original JDBC info with the data source we

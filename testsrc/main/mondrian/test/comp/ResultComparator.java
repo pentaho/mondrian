@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -334,7 +334,7 @@ class ResultComparator {
             if (!(expected == actual)) {
                 _failNotEquals(message, expected, actual);
             }
-        } else if (!(Math.abs(expected-actual) <= delta)) {
+        } else if (!(Math.abs(expected - actual) <= delta)) {
             // Because comparison with NaN always returns false
             _failNotEquals(message, expected, actual);
         }

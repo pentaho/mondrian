@@ -397,8 +397,10 @@ public class RolapResult extends ResultBase {
                 for (int i = 0; i < axes.length; i++) {
                     QueryAxis axis = query.axes[i];
                     final Calc calc = query.axisCalcs[i];
-                    Axis axisResult = evalExecute(nonAllMembers,
-                                nonAllMembers.size()-1, e, axis, calc);
+                    Axis axisResult =
+                        evalExecute(
+                            nonAllMembers,
+                            nonAllMembers.size() - 1, e, axis, calc);
 
                     if (! nonAllMembers.isEmpty()) {
                         List<Position> pl = axisResult.getPositions();
@@ -589,7 +591,7 @@ public class RolapResult extends ResultBase {
         } else {
             for (Member m : nonAllMembers.get(cnt)) {
                 evaluator.setContext(m);
-                evalLoad(nonAllMembers, cnt-1, evaluator, axis, calc, axisMembers);
+                evalLoad(nonAllMembers, cnt - 1, evaluator, axis, calc, axisMembers);
             }
         }
     }
@@ -605,7 +607,7 @@ public class RolapResult extends ResultBase {
         } else {
             for (Member m : nonAllMembers.get(cnt)) {
                 evaluator.setContext(m);
-                Axis a = evalExecute(nonAllMembers, cnt-1, evaluator, axis, calc);
+                Axis a = evalExecute(nonAllMembers, cnt - 1, evaluator, axis, calc);
                 boolean ordered = false;
                 if (axis != null) {
                     ordered = axis.isOrdered();
@@ -985,7 +987,7 @@ public class RolapResult extends ResultBase {
                 }
 
                 int pi;
-                if (pos[axisOrdinal]>positionIndex+subPositions.size() - 1
+                if (pos[axisOrdinal] > positionIndex + subPositions.size() - 1
                         && subPositions.size() == limit)
                 {
                     pi = positionIndex + subPositions.size();
@@ -1790,7 +1792,7 @@ public class RolapResult extends ResultBase {
                 return new Four();
             default:
                 throw new RuntimeException(
-                    "Creating CellInfoPool with axisLength=" +axisLength);
+                    "Creating CellInfoPool with axisLength=" + axisLength);
             }
         }
 

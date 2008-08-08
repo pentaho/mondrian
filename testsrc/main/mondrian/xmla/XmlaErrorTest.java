@@ -80,8 +80,8 @@ public class XmlaErrorTest extends XmlaBaseTestCase
             // tjones:abcd1234$$.
 
 if (DEBUG) {
-System.out.println("doAuthorization=" +doAuthorization);
-System.out.println("AUTH_TYPE=" +request.getAuthType());
+System.out.println("doAuthorization=" + doAuthorization);
+System.out.println("AUTH_TYPE=" + request.getAuthType());
 }
             if (doAuthorization) {
                 Enumeration values = request.getHeaders(AUTHORIZATION);
@@ -91,7 +91,7 @@ System.out.println("AUTH_TYPE=" +request.getAuthType());
                 }
                 String authScheme = (String) values.nextElement();
 if (DEBUG) {
-System.out.println("authScheme=" +authScheme);
+System.out.println("authScheme=" + authScheme);
 }
                 if (! values.hasMoreElements()) {
                     throw XmlaRequestCallback.Helper.authorizationException(
@@ -100,12 +100,12 @@ System.out.println("authScheme=" +authScheme);
 
                 String encoded = (String) values.nextElement();
 if (DEBUG) {
-System.out.println("encoded=" +encoded);
+System.out.println("encoded=" + encoded);
 }
                 byte[] bytes = Base64.decode(encoded);
                 String userPass = new String(bytes);
 if (DEBUG) {
-System.out.println("userPass=" +userPass);
+System.out.println("userPass=" + userPass);
 }
                 if (! authScheme.equals(HttpServletRequest.BASIC_AUTH)) {
                     throw XmlaRequestCallback.Helper.authorizationException(
@@ -114,13 +114,13 @@ System.out.println("userPass=" +userPass);
                 int index = userPass.indexOf(':');
                 if (index == -1) {
                     throw XmlaRequestCallback.Helper.authorizationException(
-                        new Exception( "Authorization: badly formed userPass in encoding: " + encoded));
+                        new Exception("Authorization: badly formed userPass in encoding: " + encoded));
                 }
                 String userid = userPass.substring(0, index);
-                String password = userPass.substring(index+1, userPass.length());
+                String password = userPass.substring(index + 1, userPass.length());
 if (DEBUG) {
-System.out.println("userid=" +userid);
-System.out.println("password=" +password);
+System.out.println("userid=" + userid);
+System.out.println("password=" + password);
 }
                 if (! isEquals(userid, XmlaErrorTest.user)) {
                     throw XmlaRequestCallback.Helper.authorizationException(
@@ -128,8 +128,7 @@ System.out.println("password=" +password);
                           "Authorization: bad userid: " +
                             userid +
                             " should be: " +
-                            XmlaErrorTest.user
-                        ));
+                            XmlaErrorTest.user));
                 }
                 if (! isEquals(password, XmlaErrorTest.password)) {
                     throw XmlaRequestCallback.Helper.authorizationException(
@@ -137,8 +136,7 @@ System.out.println("password=" +password);
                           "Authorization: bad password: " +
                             password +
                             " should be: " +
-                            XmlaErrorTest.password
-                        ));
+                            XmlaErrorTest.password));
                 }
             }
 
@@ -233,7 +231,7 @@ System.out.println("password=" +password);
         Fault(Node[] faultNodes) throws Exception {
             if (faultNodes.length < 3 || faultNodes.length > 4) {
                 throw new Exception("SOAP Fault node has " +
-                    faultNodes.length+" children");
+                    faultNodes.length + " children");
             }
             // fault code element
             Node node = faultNodes[0];
@@ -253,7 +251,7 @@ System.out.println("password=" +password);
                 faultNodes = getChildElements(node);
                 if (faultNodes.length != 1) {
                     throw new Exception("SOAP Fault detail node has " +
-                        faultNodes.length+" children");
+                        faultNodes.length + " children");
                 }
                 // error element
                 node = faultNodes[0];
@@ -261,7 +259,7 @@ System.out.println("password=" +password);
                 faultNodes = getChildElements(node);
                 if (faultNodes.length != 2) {
                     throw new Exception("SOAP Fault detail error node has " +
-                        faultNodes.length+" children");
+                        faultNodes.length + " children");
                 }
                 // error code element
                 node = faultNodes[0];
@@ -326,8 +324,7 @@ System.out.println("password=" +password);
                     " Expected " +
                     this.errorNS +
                     " but Got " +
-                    expectedFault.errorNS
-                    );
+                    expectedFault.errorNS);
             }
             if (! isEquals(this.errorCode, expectedFault.errorCode)) {
                 notSame("error.code", this.errorCode, expectedFault.errorCode);
@@ -340,8 +337,7 @@ System.out.println("password=" +password);
                 " Expected " +
                 expected +
                 " but Got " +
-                got
-                );
+                got);
         }
 
     }
@@ -889,8 +885,7 @@ System.out.println("DO IT AGAIN");
     /////////////////////////////////////////////////////////////////////////
     public void doTest(
             MockHttpServletRequest req,
-            Fault expectedFault
-            ) throws Exception {
+            Fault expectedFault) throws Exception {
 
         MockHttpServletResponse res = new MockHttpServletResponse();
         res.setCharacterEncoding("UTF-8");
@@ -926,22 +921,21 @@ System.out.println("Got CONTINUE");
                 byte[] bytes = res.toByteArray();
                 processResults(bytes, expectedFault);
             } else {
-                fail("Bad status code: " +statusCode);
+                fail("Bad status code: " + statusCode);
             }
         } else {
-            fail("Bad status code: " +statusCode);
+            fail("Bad status code: " + statusCode);
 
         }
     }
 
     public void doTest(
             String reqFileName,
-            Fault expectedFault
-            ) throws Exception {
+            Fault expectedFault) throws Exception {
 
         String requestText = fileToString(reqFileName);
 if (DEBUG) {
-System.out.println("reqFileName="+reqFileName);
+System.out.println("reqFileName=" + reqFileName);
 }
         Servlet servlet = getServlet(getTestContext());
         // do SOAP-XMLA
@@ -954,7 +948,7 @@ System.out.println("reqFileName="+reqFileName);
 
 if (DEBUG) {
 String response = new String(results);
-System.out.println("response="+response);
+System.out.println("response=" + response);
 }
         Node[] fnodes = XmlaSupport.extractFaultNodesFromSoap(results);
         if ((fnodes == null) || (fnodes.length == 0)) {
@@ -967,8 +961,8 @@ System.out.println("response="+response);
             Fault fault = new Fault(fnodes);
 
 if (DEBUG) {
-System.out.println("fault="+fault);
-System.out.println("expectedFault="+expectedFault);
+System.out.println("fault=" + fault);
+System.out.println("expectedFault=" + expectedFault);
 }
             fault.checkSame(expectedFault);
         }

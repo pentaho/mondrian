@@ -129,9 +129,9 @@ class ParallelPeriodFunDef extends FunDefBase {
         // same hierarchy.
         if (member.getHierarchy() != ancestorLevel.getHierarchy()) {
             MondrianResource.instance().FunctionMbrAndLevelHierarchyMismatch.ex(
-                    "ParallelPeriod", ancestorLevel.getHierarchy().getUniqueName(),
-                    member.getHierarchy().getUniqueName()
-            );
+                "ParallelPeriod",
+                ancestorLevel.getHierarchy().getUniqueName(),
+                member.getHierarchy().getUniqueName());
         }
 
         if (lagValue == Integer.MIN_VALUE) {

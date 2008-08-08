@@ -72,7 +72,7 @@ class RangeFunDef extends FunDefBase {
         // replace any null types with hierachy null member
         // if both objects are null, throw exception
 
-        if (members[0]== null && members[1] == null) {
+        if (members[0] == null && members[1] == null) {
             throw MondrianResource.instance().TwoNullsNotSupported.ex();
         } else if (members[0] == null) {
             Member nullMember = ((RolapMember)members[1].evaluate(null)).getHierarchy().getNullMember();

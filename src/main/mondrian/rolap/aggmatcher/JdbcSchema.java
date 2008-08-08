@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde and others
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -852,7 +852,7 @@ public class JdbcSchema {
             table.tableType = tableType;
 
             Map m = table.getColumnMap();
-            for (Iterator usageIter = getColumns(); usageIter.hasNext(); ) {
+            for (Iterator usageIter = getColumns(); usageIter.hasNext();) {
                 Column column = (Column) usageIter.next();
                 m.put(column.getName(), column.copy());
             }
@@ -864,7 +864,7 @@ public class JdbcSchema {
          * For testing ONLY
         void clearUsages() {
             this.tableUsage = UNKNOWN_TABLE_USAGE;
-            for (Iterator usageIter = getColumns(); usageIter.hasNext(); ) {
+            for (Iterator usageIter = getColumns(); usageIter.hasNext();) {
                 Column column = (Column) usageIter.next();
                 column.clearUsages();
             }
@@ -1128,7 +1128,7 @@ public class JdbcSchema {
         jdbcSchema.setCatalogName(getCatalogName());
 
         Map m = jdbcSchema.getTablesMap();
-        for (Iterator usageIter = getTables(); usageIter.hasNext(); ) {
+        for (Iterator usageIter = getTables(); usageIter.hasNext();) {
             Table table = (Table) usageIter.next();
             m.put(table.getName(), table.copy());
         }
@@ -1140,7 +1140,7 @@ public class JdbcSchema {
     /**
      * For testing ONLY
     void clearUsages() {
-        for (Iterator usageIter = getTables(); usageIter.hasNext(); ) {
+        for (Iterator usageIter = getTables(); usageIter.hasNext();) {
             Table table = (Table) usageIter.next();
             table.clearUsages();
         }

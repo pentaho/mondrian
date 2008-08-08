@@ -452,7 +452,7 @@ public class RolapEvaluator implements Evaluator {
         return newEvaluator;
     }
 
-    private void addToAggregationList(List<Member[]> list){
+    private void addToAggregationList(List<Member[]> list) {
         if (aggregationLists == null) {
             aggregationLists = new ArrayList<List<Member[]>>();
         }
@@ -1004,7 +1004,7 @@ public class RolapEvaluator implements Evaluator {
                 } else if (member.getSolveOrder() > maxSolveMember.getSolveOrder() ||
                         (member.getSolveOrder() == maxSolveMember.getSolveOrder() &&
                          member.getDimension().getOrdinal(root.cube) <
-                         maxSolveMember.getDimension().getOrdinal(root.cube))){
+                         maxSolveMember.getDimension().getOrdinal(root.cube))) {
 
                     maxSolveMember = member;
                 }
@@ -1019,7 +1019,7 @@ public class RolapEvaluator implements Evaluator {
                     if (member.getSolveOrder() > maxSolveMember.getSolveOrder() ||
                        (member.getSolveOrder() == maxSolveMember.getSolveOrder() &&
                         member.getDimension().getOrdinal(root.cube) <
-                        maxSolveMember.getDimension().getOrdinal(root.cube))){
+                        maxSolveMember.getDimension().getOrdinal(root.cube))) {
                         maxSolveMember = member;
                     }
                 }

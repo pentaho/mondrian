@@ -822,8 +822,7 @@ public class Query extends QueryPart {
             if (Util.equalName(member.getUniqueName(), memberUniqueName) ||
                 Util.equalName(
                         getUniqueNameWithoutAll(member),
-                        memberUniqueName)
-            ) {
+                        memberUniqueName)) {
                 return member;
             }
         }
@@ -895,7 +894,7 @@ public class Query extends QueryPart {
 
                 int i = 0;
                 Object parent = walker.getAncestor(i);
-                Object grandParent = walker.getAncestor(i+1);
+                Object grandParent = walker.getAncestor(i + 1);
                 while ((parent != null) && (grandParent != null)) {
                     if (grandParent instanceof Query) {
                         if (parent instanceof Axis) {
@@ -923,7 +922,7 @@ public class Query extends QueryPart {
                     }
                     ++i;
                     parent = walker.getAncestor(i);
-                    grandParent = walker.getAncestor(i+1);
+                    grandParent = walker.getAncestor(i + 1);
                 }
                 throw MondrianResource.instance().
                     MdxCalculatedFormulaUsedInQuery.ex(

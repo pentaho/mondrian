@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -55,10 +55,10 @@ public class SortTest extends FoodMartTestCase
         // NaN) whereas in Mondrian NULLs collate least (that is, before -inf).
         assertQueryReturns("with" +
             "   member [Measures].[Foo] as '\n" +
-            "      Iif( [Promotion Media].CurrentMember IS [Promotion Media].[TV], 1.0 / 0.0,\n" +
-            "         Iif( [Promotion Media].CurrentMember IS [Promotion Media].[Radio], -1.0 / 0.0,\n" +
-            "            Iif( [Promotion Media].CurrentMember IS [Promotion Media].[Bulk Mail], 0.0 / 0.0,\n" +
-            "               Iif( [Promotion Media].CurrentMember IS [Promotion Media].[Daily Paper], NULL,\n" +
+            "      Iif([Promotion Media].CurrentMember IS [Promotion Media].[TV], 1.0 / 0.0,\n" +
+            "         Iif([Promotion Media].CurrentMember IS [Promotion Media].[Radio], -1.0 / 0.0,\n" +
+            "            Iif([Promotion Media].CurrentMember IS [Promotion Media].[Bulk Mail], 0.0 / 0.0,\n" +
+            "               Iif([Promotion Media].CurrentMember IS [Promotion Media].[Daily Paper], NULL,\n" +
             "       [Measures].[Unit Sales])))) '\n" +
             "select \n" +
             "    {[Measures].[Foo]} on columns, \n" +
@@ -100,10 +100,10 @@ public class SortTest extends FoodMartTestCase
     public void testOrderAndRank() {
         assertQueryReturns("with " +
             "   member [Measures].[Foo] as '\n" +
-            "      Iif( [Promotion Media].CurrentMember IS [Promotion Media].[TV], 1.0 / 0.0,\n" +
-            "         Iif( [Promotion Media].CurrentMember IS [Promotion Media].[Radio], -1.0 / 0.0,\n" +
-            "            Iif( [Promotion Media].CurrentMember IS [Promotion Media].[Bulk Mail], 0.0 / 0.0,\n" +
-            "               Iif( [Promotion Media].CurrentMember IS [Promotion Media].[Daily Paper], NULL,\n" +
+            "      Iif([Promotion Media].CurrentMember IS [Promotion Media].[TV], 1.0 / 0.0,\n" +
+            "         Iif([Promotion Media].CurrentMember IS [Promotion Media].[Radio], -1.0 / 0.0,\n" +
+            "            Iif([Promotion Media].CurrentMember IS [Promotion Media].[Bulk Mail], 0.0 / 0.0,\n" +
+            "               Iif([Promotion Media].CurrentMember IS [Promotion Media].[Daily Paper], NULL,\n" +
             "                  [Measures].[Unit Sales])))) '\n" +
             "   member [Measures].[R] as '\n" +
             "      Rank([Promotion Media].CurrentMember, [Promotion Media].Members, [Measures].[Foo]) '\n" +

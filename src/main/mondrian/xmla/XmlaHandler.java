@@ -45,7 +45,10 @@ public class XmlaHandler implements XmlaConstants {
     private final CatalogLocator catalogLocator;
     private final String prefix;
 
-    private enum SetType { ROW_SET, MD_DATA_SET }
+    private enum SetType {
+        ROW_SET,
+        MD_DATA_SET
+    }
 
     private static final String EMPTY_ROW_SET_XML_SCHEMA =
         computeEmptyXsd(SetType.ROW_SET);
@@ -95,7 +98,7 @@ public class XmlaHandler implements XmlaConstants {
     }
 
     /**
-     * Takes a DataType String ( null, Integer, Numeric or non-null )
+     * Takes a DataType String (null, Integer, Numeric or non-null)
      * and Value Object (Integer, Double, String, other) and
      * canonicalizes them to XSD data type and corresponding object.
      * <p>
@@ -553,12 +556,12 @@ public class XmlaHandler implements XmlaConstants {
                 HSB_BAD_METHOD_CODE,
                 HSB_BAD_METHOD_FAULT_FS,
                 new IllegalArgumentException(
-                    "Unsupported XML/A method: " +method));
+                    "Unsupported XML/A method: " + method));
         }
         if (LOGGER.isDebugEnabled()) {
             long end = System.currentTimeMillis();
-            LOGGER.debug("XmlaHandler.process: time = " +(end-start));
-            LOGGER.debug("XmlaHandler.process: " +Util.printMemory());
+            LOGGER.debug("XmlaHandler.process: time = " + (end - start));
+            LOGGER.debug("XmlaHandler.process: " + Util.printMemory());
         }
     }
 
@@ -1801,16 +1804,16 @@ public class XmlaHandler implements XmlaConstants {
             writer.endElement(); // AxesInfo
             // -----------
             writer.startElement("CellInfo");
-            if (shouldReturnCellProperty(Property.VALUE.getName())){
+            if (shouldReturnCellProperty(Property.VALUE.getName())) {
                 writer.element("Value", new String[] {
                 "name", "VALUE"});
             }
-            if (shouldReturnCellProperty(Property.FORMATTED_VALUE.getName())){
+            if (shouldReturnCellProperty(Property.FORMATTED_VALUE.getName())) {
                 writer.element("FmtValue", new String[] {
                     "name", "FORMATTED_VALUE"});
             }
 
-            if (shouldReturnCellProperty(Property.FORMAT_STRING.getName())){
+            if (shouldReturnCellProperty(Property.FORMAT_STRING.getName())) {
                 writer.element("FormatString", new String[] {
                     "name", "FORMAT_STRING"});
             }
@@ -1873,7 +1876,7 @@ public class XmlaHandler implements XmlaConstants {
             values.add("name");
             values.add(hierarchy.getUniqueName() + "." +
                     Util.quoteMdxIdentifier(actualPropName));
-            if (longPropNames.get(prop) == null){
+            if (longPropNames.get(prop) == null) {
                 //Adding type attribute to the optional properties
                 values.add("type");
                 values.add(getXsdType(actualPropName));
@@ -1897,7 +1900,7 @@ public class XmlaHandler implements XmlaConstants {
 
         private String getPropertyName(String prop) {
             String actualPropertyName = longPropNames.get(prop);
-            if(actualPropertyName == null){
+            if (actualPropertyName == null) {
                 return prop;
             }
             return actualPropertyName;
@@ -2133,7 +2136,7 @@ public class XmlaHandler implements XmlaConstants {
             int[] cellOrdinal = new int[] {0};
 
             Evaluator evaluator = RolapUtil.createEvaluator(result.getQuery());
-            int axisOrdinal = axisCount-1;
+            int axisOrdinal = axisCount - 1;
             recurse(writer, pos, axisOrdinal, evaluator, cellOrdinal);
 
             writer.endElement(); // CellData
@@ -2739,7 +2742,7 @@ public class XmlaHandler implements XmlaConstants {
         if (!DataSourcesConfig.DataSource.AUTH_MODE_UNAUTHENTICATED
             .equalsIgnoreCase(
                 ds.getAuthenticationMode()) &&
-            (role == null) && (roleName == null) )
+            (role == null) && (roleName == null))
         {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
@@ -2762,13 +2765,13 @@ public class XmlaHandler implements XmlaConstants {
             conn.setRole(role);
         }
 
-if (LOGGER.isDebugEnabled()) {
-if (conn == null) {
-LOGGER.debug("XmlaHandler.getConnection: returning connection null");
-} else {
-LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
-}
-}
+        if (LOGGER.isDebugEnabled()) {
+            if (conn == null) {
+                LOGGER.debug("XmlaHandler.getConnection: returning connection null");
+            } else {
+                LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
+            }
+        }
         return conn;
     }
 

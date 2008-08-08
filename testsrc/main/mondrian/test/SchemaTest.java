@@ -70,7 +70,7 @@ public class SchemaTest extends FoodMartTestCase {
 
     // Tests follow...
 
-    public void testSolveOrderInCalculatedMember(){
+    public void testSolveOrderInCalculatedMember() {
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",null,"<CalculatedMember\n" +
             "      name=\"QuantumProfit\"\n" +
@@ -275,8 +275,7 @@ public class SchemaTest extends FoodMartTestCase {
                     "{[Yearly Income].[All Yearly Incomes].[$10K - $30K]}\n" +
                     "Axis #2:\n" +
                     "{[Yearly Income2].[All Yearly Income2s].[$150K +]}\n" +
-                    "Row #0: 918\n")
-        );
+                    "Row #0: 918\n"));
 
         testContext.assertQueryReturns(
             "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,\n" +
@@ -887,8 +886,7 @@ public class SchemaTest extends FoodMartTestCase {
                     "{[StoreB].[All StoreBs].[USA]}\n" +
                     "Axis #2:\n" +
                     "{[StoreA].[All StoreAs].[USA]}\n" +
-                    "Row #0: 10,425\n")
-         );
+                    "Row #0: 10,425\n"));
     }
 
     /**

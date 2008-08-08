@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2007 Julian Hyde
+// Copyright (C) 2004-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -30,21 +30,21 @@ import java.util.regex.Pattern;
  * csv_file: table_definitions
  * table_definitions: (table_definition)+
  * table_definition: actions table_name column_names column_types
- *          ( file_name or nos_of_rows or rows )
+ *          (file_name or nos_of_rows or rows)
  * actions: (action)*
- * action: '##' ( ActionBefore: | ActionAfter: ) action_type
+ * action: '##' (ActionBefore: | ActionAfter:) action_type
  * action_type: DropIndex index_name | CreateIndex index_name column_name
  * table_name: '##' TableName: table_name
- * column_names: '##' ColumnNames: column_name ( ',' column_name )*
- * column_types: '##' ColumnTypes: column_types ( '.' column_types )*
+ * column_names: '##' ColumnNames: column_name (',' column_name)*
+ * column_types: '##' ColumnTypes: column_types ('.' column_types)*
  * file_name:'##' FileName: relative_filename ?
  * nos_of_rows:'##' NosOfRows: number
- * column_types: type ( ':' null )
+ * column_types: type (':' null)
  * type: "INTEGER" "DECIMAL(*,*)" "SMALLINT"
  *       "VARCHAR(*)" "REAL" "BOOLEAN"
  *       "BIGINT" "DATE" "TIMESTAMP"
  *  rows: (row)*
- *  row: value ( ',' value )*
+ *  row: value (',' value)*
  *
  *  if FileName is given, then
  *      there is no NosOfRows
@@ -203,19 +203,19 @@ public class CsvDBLoader extends DBLoader {
         }
         public Iterator<Row> iterator() {
             return new Iterator<Row>() {
-String[] line;
+                String[] line;
                 public boolean hasNext() {
                     try {
                         boolean hasNext =
                             CsvLoaderRowStream.this.csvloader.hasNextLine();
                         if (! hasNext) {
                             CsvLoaderRowStream.this.csvloader.close();
-} else {
-line = CsvLoaderRowStream.this.csvloader.nextLine();
-// remove comment lines
-if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
-    return hasNext();
-}
+                        } else {
+                            line = CsvLoaderRowStream.this.csvloader.nextLine();
+                            // remove comment lines
+                            if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
+                                return hasNext();
+                            }
                         }
                         return hasNext;
                     } catch (IOException ex) {
@@ -230,7 +230,8 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                         CsvLoaderRowStream.this.csvloader.nextLine());
 */
                 }
-                public void remove() { }
+                public void remove() {
+                }
             };
         }
     }
@@ -304,11 +305,11 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                     int index = value0.indexOf(ACTION_BEFORE_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index+ACTION_BEFORE_TAG.length());
+                                index + ACTION_BEFORE_TAG.length());
                         if (s.length() == 0) {
                             String msg = "CSV File parse Error: " +
                                 " no action before sql" +
-                                ", linenos " +lineNos;
+                                ", linenos "  + lineNos;
                             throw new IOException(msg);
                         }
                         s = s.trim();
@@ -317,7 +318,7 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                             String msg = "CSV File parse Error: " +
                                 " unknown before action" +
                                 s +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         // get index name
@@ -327,10 +328,10 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                             String msg = "CSV File parse Error: " +
                                 " no index name in before action" +
                                 s +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
-                        s = s.substring(index+1);
+                        s = s.substring(index + 1);
                         s = s.trim();
                         beforeActionList.add(s);
                         continue;
@@ -339,11 +340,11 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                     index = value0.indexOf(ACTION_AFTER_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index+ACTION_AFTER_TAG.length());
+                                index + ACTION_AFTER_TAG.length());
                         if (s.length() == 0) {
                             String msg = "CSV File parse Error: " +
                                 " no action after sql" +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         s = s.trim();
@@ -352,7 +353,7 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                             String msg = "CSV File parse Error: " +
                                 " unknown before action" +
                                 s +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         // get index name
@@ -362,11 +363,11 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                             String msg = "CSV File parse Error: " +
                                 " no index_name/column_name in after action" +
                                 s +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         // CreateIndex index_name column_name
-                        s = s.substring(index+1);
+                        s = s.substring(index + 1);
                         s = s.trim();
                         index = s.indexOf(' ');
                         // just check that there is a space and
@@ -376,7 +377,7 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                                 " no column_name after index_name "+
                                 "in after action" +
                                 s +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         afterActionList.add(s);
@@ -386,11 +387,11 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                     index = value0.indexOf(TABLE_NAME_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index+TABLE_NAME_TAG.length());
+                                index + TABLE_NAME_TAG.length());
                         if (s.length() == 0) {
                             String msg = "CSV File parse Error: " +
                                 " no table name" +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         s = s.trim();
@@ -400,7 +401,7 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                                 s +
                                 "\" while processing table name \"" +
                                 tableName +
-                                "\", linenos " +lineNos;
+                                "\", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         tableName = s;
@@ -409,17 +410,17 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                     index = value0.indexOf(COLUMN_NAMES_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index+COLUMN_NAMES_TAG.length());
+                                index + COLUMN_NAMES_TAG.length());
                         if (s.length() == 0) {
                             String msg = "CSV File parse Error: " +
                                 " no column names" +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         if (tableName == null) {
                             String msg = "CSV File parse Error: " +
                                 " no table name for columns " +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         values[0] = s.trim();
@@ -429,17 +430,17 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                     index = value0.indexOf(COLUMN_TYPES_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index+COLUMN_TYPES_TAG.length());
+                                index + COLUMN_TYPES_TAG.length());
                         if (s.length() == 0) {
                             String msg = "CSV File parse Error: " +
                                 " no column types" +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         if (columnNames == null) {
                             String msg = "CSV File parse Error: " +
                                 " no column names for columns types" +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         values[0] = s.trim();
@@ -452,7 +453,7 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                                 "\" does not equal " +
                                 " number of column types \"" +
                                 columnTypes.length +
-                                "\", linenos " +lineNos;
+                                "\", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         continue;
@@ -463,17 +464,17 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                     index = value0.indexOf(FILE_NAME_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index+FILE_NAME_TAG.length());
+                                index + FILE_NAME_TAG.length());
                         if (s.length() == 0) {
                             String msg = "CSV File parse Error: " +
                                 " no file name " +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         if (columnTypes == null) {
                             String msg = "CSV File parse Error: " +
                                 " no column types for file name" +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         fileName = s.trim();
@@ -482,17 +483,17 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                     index = value0.indexOf(NOS_OF_ROWS_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index+NOS_OF_ROWS_TAG.length());
+                                index + NOS_OF_ROWS_TAG.length());
                         if (s.length() == 0) {
                             String msg = "CSV File parse Error: " +
                                 " no number of rows" +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         if (columnTypes == null) {
                             String msg = "CSV File parse Error: " +
                                 " no column types for file name" +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         nosOfRowsStr = Integer.parseInt(s.trim());
@@ -507,19 +508,19 @@ if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
                         if (tableName == null) {
                             String msg = "CSV File parse Error: " +
                                 " no table name before rows" +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         if (columnNames == null) {
                             String msg = "CSV File parse Error: " +
                                 " no column names before rows" +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                         if (columnTypes == null) {
                             String msg = "CSV File parse Error: " +
                                 " no column types before rows" +
-                                ", linenos " +lineNos;
+                                ", linenos " + lineNos;
                             throw new IOException(msg);
                         }
                     }
@@ -607,7 +608,7 @@ if (value0.startsWith("# ")) {
             Type type;
             boolean nullsAllowed = false;
             if (index != -1) {
-                String nullString = columnType.substring(index+1).trim();
+                String nullString = columnType.substring(index + 1).trim();
                 if (nullString.equalsIgnoreCase("NULL")) {
                     nullsAllowed = true;
                 } else {
@@ -616,7 +617,7 @@ if (value0.startsWith("# ")) {
                         columnType +
                         "\" expecting \"null\" not \"" +
                         nullString +
-                        "\", linenos " +lineNos;
+                        "\", linenos " + lineNos;
                     throw new IOException(msg);
                 }
                 columnType = columnType.substring(0,index).trim();
@@ -633,7 +634,7 @@ if (value0.startsWith("# ")) {
                 String msg = "CSV File parse Error: " +
                     " no type found for type name \"" +
                     columnType +
-                    "\", linenos " +lineNos;
+                    "\", linenos " + lineNos;
                 throw new IOException(msg);
             }
             Column column = new Column(columnName, type, nullsAllowed);
@@ -666,10 +667,10 @@ if (value0.startsWith("# ")) {
     protected static File checkDirectory(String dirName) throws Exception {
         File dir = new File(dirName);
         if (! dir.exists()) {
-            throw new Exception("The directory \""+dirName+"\" does not exist");
+            throw new Exception("The directory \"" + dirName + "\" does not exist");
         }
         if (! dir.isDirectory()) {
-            throw new Exception("The file \""+dirName+"\" is not a directory");
+            throw new Exception("The file \"" + dirName + "\" is not a directory");
         }
         return dir;
     }
@@ -771,7 +772,7 @@ if (value0.startsWith("# ")) {
                 }
                 arg = args[i];
                 if (arg.startsWith("-")) {
-                    usage("Bad argument for -p: " +arg);
+                    usage("Bad argument for -p: " + arg);
                 }
                 propFile = arg;
 
@@ -783,7 +784,7 @@ if (value0.startsWith("# ")) {
                 }
                 arg = args[i];
                 if (arg.startsWith("-")) {
-                    usage("Bad argument for -jdbcDrivers: " +arg);
+                    usage("Bad argument for -jdbcDrivers: " + arg);
                 }
                 jdbcDrivers = arg;
 
@@ -795,7 +796,7 @@ if (value0.startsWith("# ")) {
                 }
                 arg = args[i];
                 if (arg.startsWith("-")) {
-                    usage("Bad argument for -jdbcURL: " +arg);
+                    usage("Bad argument for -jdbcURL: " + arg);
                 }
                 jdbcURL = arg;
 
@@ -807,7 +808,7 @@ if (value0.startsWith("# ")) {
                 }
                 arg = args[i];
                 if (arg.startsWith("-")) {
-                    usage("Bad argument for -user: " +arg);
+                    usage("Bad argument for -user: " + arg);
                 }
                 user = arg;
 
@@ -819,7 +820,7 @@ if (value0.startsWith("# ")) {
                 }
                 arg = args[i];
                 if (arg.startsWith("-")) {
-                    usage("Bad argument for -password: " +arg);
+                    usage("Bad argument for -password: " + arg);
                 }
                 password = arg;
 
@@ -831,7 +832,7 @@ if (value0.startsWith("# ")) {
                 }
                 arg = args[i];
                 if (arg.startsWith("-")) {
-                    usage("Bad argument for -batchSize: " +arg);
+                    usage("Bad argument for -batchSize: " + arg);
                 }
                 batchSizeStr = arg;
 
@@ -843,7 +844,7 @@ if (value0.startsWith("# ")) {
                 }
                 arg = args[i];
                 if (arg.startsWith("-")) {
-                    usage("Bad argument for -outputDirectory: " +arg);
+                    usage("Bad argument for -outputDirectory: " + arg);
                 }
                 outputDirectory = arg;
 
@@ -855,7 +856,7 @@ if (value0.startsWith("# ")) {
                 }
                 arg = args[i];
                 if (arg.startsWith("-")) {
-                    usage("Bad argument for -inputDirectory: " +arg);
+                    usage("Bad argument for -inputDirectory: " + arg);
                 }
                 inputDirectory = arg;
 
@@ -867,12 +868,12 @@ if (value0.startsWith("# ")) {
                 }
                 arg = args[i];
                 if (arg.startsWith("-")) {
-                    usage("Bad argument for -regex: " +arg);
+                    usage("Bad argument for -regex: " + arg);
                 }
                 regex = arg;
 
             } else if (arg.startsWith("-")) {
-                usage("Bad option : " +arg);
+                usage("Bad option : " + arg);
             } else {
                 File file = new File(arg);
                 if (! file.exists()) {

@@ -1016,7 +1016,7 @@ public class XmlaSupport {
         }
         String dataStr = XmlUtil.toString(dataDoc, false);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: dataDoc:\n="+dataStr);
+            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: dataDoc:\n=" + dataStr);
         }
         if (! (dataDoc instanceof Document)) {
             LOGGER.warn("XmlaSupport.validateEmbeddedSchema: dataDoc not Document");
@@ -1036,7 +1036,7 @@ public class XmlaSupport {
         }
         String schemaStr = XmlUtil.toString(schemaDoc, false);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: schemaDoc:\n="+schemaStr);
+            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: schemaDoc:\n=" + schemaStr);
         }
         if (! (schemaDoc instanceof Document)) {
             LOGGER.warn("XmlaSupport.validateEmbeddedSchema: schemaDoc not Document");
@@ -1095,7 +1095,8 @@ public class XmlaSupport {
     }
 
 
-    private XmlaSupport() {}
+    private XmlaSupport() {
+    }
 }
 
 // End XmlaSupport.java

@@ -68,7 +68,7 @@ import org.apache.log4j.*;
  *    double quotes: "" ""
  *    single quotes: '  '
  *    bracket: i     [ ]
- *    parenthesis:   ( )
+ *    parenthesis:   ()
  *    braces:        { }
  *    chevrons:      < >
  * </pre></blockquote>
@@ -107,12 +107,12 @@ public class CsvLoader {
     private String[] columns;
 
     public CsvLoader(InputStream in, String charset)
-            throws UnsupportedEncodingException{
+            throws UnsupportedEncodingException {
         this(new InputStreamReader(in, charset));
     }
     public CsvLoader(InputStream in, char separator,
                 boolean includesHeader, String charset)
-            throws UnsupportedEncodingException{
+            throws UnsupportedEncodingException {
         this(new InputStreamReader(in, charset), separator, includesHeader);
     }
     public CsvLoader(InputStream in) {
@@ -331,7 +331,7 @@ public class CsvLoader {
             if (this.inComment) {
                 buf.append("comment=true: ");
             }
-            for (int i=0; i < columns.length; i++) {
+            for (int i = 0; i < columns.length; i++) {
                 String column = columns[i];
                 if (i > 0) {
                     buf.append(", ");
@@ -352,7 +352,7 @@ public class CsvLoader {
         char separator = DEFAULT_SEPARATOR;
         for (int cnt = 0; cnt < args.length; cnt++) {
             String filename = args[cnt];
-            System.out.println("FileName:" +filename);
+            System.out.println("FileName:" + filename);
 
             CsvLoader csvLoader = new CsvLoader(filename);
 
@@ -361,7 +361,7 @@ public class CsvLoader {
             System.out.print("  ");
             for (int i = 0; i < columnNames.length; i++) {
                 System.out.print(columnNames[i]);
-                if (i+1 < columnNames.length) {
+                if (i + 1 < columnNames.length) {
                     System.out.print(separator);
                 }
             }
@@ -373,7 +373,7 @@ public class CsvLoader {
                 String[] columns = csvLoader.nextLine();
                 for (int i = 0; i < columns.length; i++) {
                     System.out.print(columns[i]);
-                    if (i+1 < columns.length) {
+                    if (i + 1 < columns.length) {
                         System.out.print(separator);
                     }
                 }

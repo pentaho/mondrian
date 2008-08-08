@@ -367,7 +367,7 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     public void _testSharedObjectsInGrantMappingsBug() {
-        new TestContext() {
+        final TestContext testContext = new TestContext() {
             public Connection getConnection() {
                 boolean mustGet = true;
                 Connection connection = super.getConnection();
@@ -375,16 +375,17 @@ public class AccessControlTest extends FoodMartTestCase {
                 Cube salesCube = schema.lookupCube("Sales", mustGet);
                 Cube warehouseCube = schema.lookupCube("Warehouse", mustGet);
                 Hierarchy measuresInSales = salesCube.lookupHierarchy(
-                        new Id.Segment("Measures", Id.Quoting.UNQUOTED), false);
+                    new Id.Segment("Measures", Id.Quoting.UNQUOTED), false);
                 Hierarchy storeInWarehouse = warehouseCube.lookupHierarchy(
-                        new Id.Segment("Store", Id.Quoting.UNQUOTED), false);
+                    new Id.Segment("Store", Id.Quoting.UNQUOTED), false);
 
                 RoleImpl role = new RoleImpl();
                 role.grant(schema, Access.NONE);
                 role.grant(salesCube, Access.NONE);
                 // For using hierarchy Measures in #assertExprThrows
                 Role.RollupPolicy rollupPolicy = Role.RollupPolicy.FULL;
-                role.grant(measuresInSales, Access.ALL, null, null, rollupPolicy);
+                role.grant(
+                    measuresInSales, Access.ALL, null, null, rollupPolicy);
                 role.grant(warehouseCube, Access.NONE);
                 role.grant(storeInWarehouse.getDimension(), Access.ALL);
 
@@ -392,8 +393,11 @@ public class AccessControlTest extends FoodMartTestCase {
                 connection.setRole(role);
                 return connection;
             }
+        };
         // Looking up default member on dimension Store in cube Sales should fail.
-        }.assertExprThrows("[Store].DefaultMember", "'[Store]' not found in cube 'Sales'");
+        testContext.assertExprThrows(
+            "[Store].DefaultMember",
+            "'[Store]' not found in cube 'Sales'");
     }
 
     public void testNoAccessToCube() {

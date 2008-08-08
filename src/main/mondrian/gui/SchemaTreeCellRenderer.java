@@ -41,7 +41,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 
     /** Creates a new instance of SchemaTreeCellRenderer */
 
-    public SchemaTreeCellRenderer(Workbench wb, JDBCMetaData jdbcMetaData  ) {
+    public SchemaTreeCellRenderer(Workbench wb, JDBCMetaData jdbcMetaData) {
         this();
         this.workbench = wb;
         this.jdbcMetaData = jdbcMetaData;
@@ -75,7 +75,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
              * Along with this the preferred size of other objects should be set to null, so that the layout mgr can calculate the
              * preferred width in case of other objects.
              */
-            this.setPreferredSize(new java.awt.Dimension(this.getPreferredSize().width+1, 25)); //Do not remove this
+            this.setPreferredSize(new java.awt.Dimension(this.getPreferredSize().width + 1, 25)); //Do not remove this
         } else if (value instanceof MondrianGuiDef.DimensionUsage)      {
             super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("dimensionUsage"))));
             setText(invalidFlag, ((MondrianGuiDef.CubeDimension) value).name);
@@ -99,7 +99,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
             setText(invalidFlag, workbench.getResourceConverter().getString("common.hierarchy.title","Hierarchy"));
             //setText(((MondrianGuiDef.Hierarchy) value).name);    // hierarchies do not have names
             super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("hierarchy"))));
-            this.setPreferredSize(new java.awt.Dimension(this.getPreferredSize().width+1, 25)); //Do not remove this
+            this.setPreferredSize(new java.awt.Dimension(this.getPreferredSize().width + 1, 25)); //Do not remove this
 
         } else if ((value instanceof MondrianGuiDef.RelationOrJoin) ||
             // REVIEW: '||' is superfluous - a Table is always a RelationOrJoin
@@ -132,7 +132,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
             }
             // REVIEW: Need to deal with InlineTable and View here
             this.getPreferredSize();
-            this.setPreferredSize(new Dimension(this.getPreferredSize().width+35, 24)); //Do not remove this
+            this.setPreferredSize(new Dimension(this.getPreferredSize().width + 35, 24)); //Do not remove this
             //this.setSize(new Dimension(this.getPreferredSize().width, 24)); //Do not remove this
             //this.setPreferredSize(new Dimension(170, 24)); //Do not remove this
             //setText("Relation");
@@ -149,7 +149,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
              * Along with this the preferred size of other objects should be set to null, so that the layout mgr can calculate the
              * preferred width in case of other objects.
              */
-            this.setPreferredSize(new java.awt.Dimension(this.getPreferredSize().width+1, 25)); //Do not remove this
+            this.setPreferredSize(new java.awt.Dimension(this.getPreferredSize().width + 1, 25)); //Do not remove this
         } else if (value instanceof MondrianGuiDef.Measure) {
 
             setText(invalidFlag, ((MondrianGuiDef.Measure) value).name);
@@ -263,7 +263,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 
     public void setText(boolean invalidFlag, String myText) {
         if (invalidFlag) {
-            myText = "<html><FONT COLOR=RED><b>x</b></FONT><FONT COLOR="+ getForeground().hashCode()+">"+myText+"</FONT></html>";
+            myText = "<html><FONT COLOR=RED><b>x</b></FONT><FONT COLOR=" + getForeground().hashCode() + ">" + myText + "</FONT></html>";
         }
         setText(myText);
     }

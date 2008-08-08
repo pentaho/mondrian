@@ -121,9 +121,9 @@ public class RolapCube extends CubeBase {
 
         if (getLogger().isDebugEnabled()) {
             if (isVirtual()) {
-                getLogger().debug("RolapCube<init>: virtual cube=" +this.name);
+                getLogger().debug("RolapCube<init>: virtual cube="  + this.name);
             } else {
-                getLogger().debug("RolapCube<init>: cube=" +this.name);
+                getLogger().debug("RolapCube<init>: cube="  + this.name);
             }
         }
 
@@ -230,7 +230,7 @@ public class RolapCube extends CubeBase {
                     xmlMeasure.formatString, measureExp,
                 aggregator, xmlMeasure.datatype);
             measureList.add(measure);
-            if(Util.equalName(measure.getName(),xmlCube.defaultMeasure)){
+            if (Util.equalName(measure.getName(),xmlCube.defaultMeasure)) {
                 defaultMeasure = measure;
             }
 
@@ -379,7 +379,7 @@ public class RolapCube extends CubeBase {
             boolean found = false;
             for (Member cubeMeasure : cubeMeasures) {
                 if (cubeMeasure.getUniqueName().equals(xmlMeasure.name)) {
-                    if (cubeMeasure.getName().equalsIgnoreCase(xmlVirtualCube.defaultMeasure)){
+                    if (cubeMeasure.getName().equalsIgnoreCase(xmlVirtualCube.defaultMeasure)) {
                         defaultMeasure = cubeMeasure;
                     }
                     found = true;
@@ -527,9 +527,9 @@ public class RolapCube extends CubeBase {
 
         for (Formula calcMember : finalCalcMemberList) {
               if (calcMember.getName().
-                      equalsIgnoreCase(xmlVirtualCube.defaultMeasure)){
-                      this.measuresHierarchy.setDefaultMember(calcMember.getMdxMember());
-                      break;
+                  equalsIgnoreCase(xmlVirtualCube.defaultMeasure)) {
+                  this.measuresHierarchy.setDefaultMember(calcMember.getMdxMember());
+                  break;
               }
         }
 
@@ -983,7 +983,7 @@ public class RolapCube extends CubeBase {
      */
     public NamedSet[] getNamedSets() {
         NamedSet[] namedSetsArray = new NamedSet[namedSets.length];
-        for (int i=0; i < namedSets.length; i++) {
+        for (int i = 0; i < namedSets.length; i++) {
             namedSetsArray[i] = namedSets[i].getNamedSet();
         }
         return namedSetsArray;
@@ -1212,9 +1212,9 @@ public class RolapCube extends CubeBase {
         HierarchyUsage usage = new HierarchyUsage(this, hierarchy, cubeDim);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("RolapCube.createUsage: "+
-                "cube=" +getName()+
-                ", hierarchy=" +hierarchy.getName() +
-                ", usage=" +usage);
+                "cube="  + getName()+
+                ", hierarchy=" + hierarchy.getName() +
+                ", usage=" + usage);
         }
         for (HierarchyUsage hierUsage : hierarchyUsages) {
             if (hierUsage.equals(usage)) {
@@ -1224,7 +1224,7 @@ public class RolapCube extends CubeBase {
             }
         }
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug("RolapCube.createUsage: register " +usage);
+            getLogger().debug("RolapCube.createUsage: register " + usage);
         }
         this.hierarchyUsages.add(usage);
     }
@@ -1250,7 +1250,7 @@ public class RolapCube extends CubeBase {
     public synchronized HierarchyUsage[] getUsages(Hierarchy hierarchy) {
         String name = hierarchy.getName();
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug("RolapCube.getUsages: name="+name);
+            getLogger().debug("RolapCube.getUsages: name=" + name);
         }
 
         HierarchyUsage hierUsage = null;
@@ -1317,7 +1317,7 @@ public class RolapCube extends CubeBase {
      */
     private synchronized HierarchyUsage[] getUsagesBySource(String source) {
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug("RolapCube.getUsagesBySource: source="+source);
+            getLogger().debug("RolapCube.getUsagesBySource: source=" + source);
         }
 
         HierarchyUsage hierUsage = null;
@@ -2317,12 +2317,12 @@ public class RolapCube extends CubeBase {
     /**
      * Returns the the measures hierarchy.
      */
-    public Hierarchy getMeasuresHierarchy(){
+    public Hierarchy getMeasuresHierarchy() {
         return measuresHierarchy;
     }
 
     // RME
-    public List<RolapMember> getMeasuresMembers(){
+    public List<RolapMember> getMeasuresMembers() {
         return measuresHierarchy.getMemberReader().getMembers();
     }
 

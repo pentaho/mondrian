@@ -404,10 +404,10 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
                     "   { [Product].[All Products].[Drink].[Percent of Alcoholic Drinks] }" +
                     " on columns," + nl +
                     "   order([Customers].[All Customers].[USA].[WA].Children," +
-                    " [Product].[All Products].[Drink].[Percent of Alcoholic Drinks],BDESC )" +
+                    " [Product].[All Products].[Drink].[Percent of Alcoholic Drinks],BDESC)" +
                     " on rows" + nl +
                     "from Sales" + nl +
-                    "where ( [Measures].[Unit Sales] )", "Axis #0:\n" +
+                    "where ([Measures].[Unit Sales])", "Axis #0:\n" +
                     "{[Measures].[Unit Sales]}\n" +
                     "Axis #1:\n" +
                     "{[Product].[All Products].[Drink].[Percent of Alcoholic Drinks]}\n" +

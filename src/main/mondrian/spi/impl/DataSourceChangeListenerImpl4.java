@@ -63,8 +63,7 @@ public class DataSourceChangeListenerImpl4 implements DataSourceChangeListener {
         if (flushInverseFrequencyHierarchy != 0) {
             if (random.nextInt(flushInverseFrequencyHierarchy) == 0) {
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         } else {
@@ -76,8 +75,7 @@ public class DataSourceChangeListenerImpl4 implements DataSourceChangeListener {
         if (flushInverseFrequencyAggregation != 0) {
             if (random.nextInt(flushInverseFrequencyAggregation) == 0) {
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         } else {

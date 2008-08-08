@@ -184,7 +184,7 @@ public abstract class RolapSchemaReader
             }
             return list.size();
         }
-        if( !(memberReader instanceof MemberCache)) {
+        if (!(memberReader instanceof MemberCache)) {
             return -1;
         }
         List list = ((MemberCache)memberReader)

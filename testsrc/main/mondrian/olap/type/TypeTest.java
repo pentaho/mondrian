@@ -341,7 +341,7 @@ public class TypeTest extends TestCase {
         assertEquals(type1, type2);
     }
 
-    public void testCommonTypeBetweenTuplesOfDifferentSizesIsATupleType(){
+    public void testCommonTypeBetweenTuplesOfDifferentSizesIsATupleType() {
         MemberType measureMemberType =
             getMemberTypeHavingMeasureInIt(getUnitSalesMeasure());
 

@@ -112,8 +112,7 @@ public class MemberTuplePredicate implements StarPredicate {
 
     private List<RolapStar.Column> computeColumnList(
         RolapMember member,
-        RolapCube baseCube
-    )
+        RolapCube baseCube)
     {
         List<RolapStar.Column> columnList = new ArrayList<RolapStar.Column>();
         while (true) {

@@ -52,7 +52,7 @@ public class RolapNativeSql {
     }
 
     private RolapStar getStar(RolapStoredMeasure m) {
-        return ((RolapStar.Measure )m.getStarMeasure()).getStar();
+        return ((RolapStar.Measure)m.getStarMeasure()).getStar();
     }
 
     /**

@@ -111,7 +111,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             "WITH MEMBER [Measures].[Unit Sales VM] AS " +
             "'ValidMeasure([Measures].[Unit Sales])', SOLVE_ORDER = 3000 " +
             "MEMBER Gender.G AS 'AGGREGATE(CROSSJOIN({Gender.Gender.MEMBERS}," +
-            "[WAREHOUSE].[STATE PROVINCE].MEMBERS) )'" +
+            "[WAREHOUSE].[STATE PROVINCE].MEMBERS))'" +
             "SELECT " +
             "{[MEASURES].[Unit Sales VM]} ON 0," +
             "{Gender.G} ON 1 " +
@@ -126,7 +126,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
                 "Row #0: 266,773\n"));
     }
 
-    public void testVMShouldNotPushUpAggregateMemberDefinedOnNonJoiningDimension(){
+    public void testVMShouldNotPushUpAggregateMemberDefinedOnNonJoiningDimension() {
         assertQueryReturns(
             "WITH MEMBER [Measures].[Total Sales] AS " +
             "'ValidMeasure(Measures.[Warehouse Sales]) + [Measures].[Unit Sales]'," +
@@ -147,7 +147,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
                 "Row #0: 30,405.602\n"));
     }
 
-    public void testAggregateMemberDefinedOnNonJoiningDimensionWithNonAllDefaultMember(){
+    public void testAggregateMemberDefinedOnNonJoiningDimensionWithNonAllDefaultMember() {
         // Gender dim to have Gender.F as default member
         TestContext context = TestContext.create(null, cubeSales3,
             cubeWarehouseAndSales3, null, null, null);

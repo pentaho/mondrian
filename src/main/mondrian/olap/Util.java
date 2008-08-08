@@ -150,8 +150,8 @@ public class Util extends XOMUtil {
         for (int i = 0; i < st.length(); i++) {
             char c = st.charAt(i);
             if ((c == ']') &&
-                ((i+1) < st.length()) &&
-                (st.charAt(i+1) != '.')) {
+                ((i + 1) < st.length()) &&
+                (st.charAt(i + 1) != '.')) {
 
                 retString.append(']'); //escaping character
             }
@@ -164,7 +164,7 @@ public class Util extends XOMUtil {
      * Converts a string into a double-quoted string.
      */
     public static String quoteForMdx(String val) {
-        StringBuilder buf = new StringBuilder(val.length()+20);
+        StringBuilder buf = new StringBuilder(val.length() + 20);
         buf.append("\"");
 
         String s0 = replace(val, "\"", "\"\"");
@@ -338,7 +338,7 @@ public class Util extends XOMUtil {
             replace(sb, 0, find, replace);
         } else {
             for (;;) {
-                sb.append(chars, start, found-start);
+                sb.append(chars, start, found - start);
                 if (found == s.length()) {
                     break;
                 }
