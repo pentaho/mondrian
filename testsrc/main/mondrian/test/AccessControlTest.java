@@ -16,8 +16,7 @@ import mondrian.olap.*;
 import org.eigenbase.util.property.*;
 import org.eigenbase.util.property.Property;
 
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
@@ -595,7 +594,7 @@ public class AccessControlTest extends FoodMartTestCase {
                     if (member.getParentMember() == null) {
                         assertNull(accessControlledParent);
                     }
-                    final Member[] accessControlledChildren =
+                    final List<Member> accessControlledChildren =
                         schemaReader.getMemberChildren(member);
                     assertNotNull(accessControlledChildren);
                 }
