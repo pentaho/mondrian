@@ -313,7 +313,7 @@ public class SqlTupleReader implements TupleReader {
         return enumTargetCount;
     }
 
-    private void prepareTuples(
+    protected void prepareTuples(
         DataSource dataSource,
         List<List<RolapMember>> partialResult,
         List<List<RolapMember>> newPartialResult)
@@ -514,8 +514,13 @@ public class SqlTupleReader implements TupleReader {
      * @param message Message to issue on failure
      */
     private void addTargets(
-        int currEnumTargetIdx, int currTargetIdx, int nEnumTargets,
-        int[] srcMemberIdxes, ResultSet resultSet, String message) {
+        int currEnumTargetIdx,
+        int currTargetIdx,
+        int nEnumTargets,
+        int[] srcMemberIdxes,
+        ResultSet resultSet,
+        String message)
+    {
 
         // loop through the list of members for the current enum target
         Target currTarget = targets.get(currTargetIdx);

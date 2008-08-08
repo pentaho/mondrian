@@ -47,23 +47,15 @@ import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.util.FilteredIterableList;
 import mondrian.util.MemoryMonitor;
 import mondrian.util.MemoryMonitorFactory;
 import mondrian.util.Pair;
-import mondrian.rolap.agg.AggregationManager;
+
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DataSourceConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-
 import org.apache.log4j.Logger;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.*;
 
 /**
  * A <code>RolapConnection</code> is a connection to a Mondrian OLAP Server.
@@ -601,6 +593,7 @@ public class RolapConnection extends ConnectionBase {
                     result = new NonEmptyResult(result, query, i);
                 }
             }
+            /* It will not work with HighCardinality.
             if (LOGGER.isDebugEnabled()) {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
@@ -608,6 +601,7 @@ public class RolapConnection extends ConnectionBase {
                 pw.flush();
                 LOGGER.debug(sw.toString());
             }
+            */
             query.setQueryEndExecution();
             return result;
 
@@ -740,16 +734,35 @@ public class RolapConnection extends ConnectionBase {
             this.slicerAxis = underlying.getSlicerAxis();
             List<Position> positions = underlying.getAxes()[axis].getPositions();
 
-            List<Position> positionsList = new ArrayList<Position>();
-            int i = 0;
-            for (Position position: positions) {
-                if (! isEmpty(i, axis)) {
-                    map.put(positionsList.size(), i);
-                    positionsList.add(position);
+            final List<Position> positionsList;
+            try {
+                if (positions.get(0).get(0).getDimension().isHighCardinality()) {
+                    positionsList = new FilteredIterableList<Position>(
+                            positions,
+                            new FilteredIterableList.Filter<Position>() {
+                                public boolean accept(final Position p) {
+                                    return p.get(0)!=null;
+                                }
+                            }
+                    );
+                } else {
+                    positionsList = new ArrayList<Position>();
+                    int i = -1;
+                    for (Position position : positions) {
+                        ++i;
+                        if (! isEmpty(i, axis)) {
+                            map.put(positionsList.size(), i);
+                            positionsList.add(position);
+                        }
+                    }
                 }
-                i++;
+                this.axes[axis] = new RolapAxis.PositionList(positionsList);
+            } catch (IndexOutOfBoundsException ioobe) {
+                // No elements.
+                this.axes[axis] =
+                    new RolapAxis.PositionList(
+                            new ArrayList<Position>());
             }
-            this.axes[axis] = new RolapAxis.PositionList(positionsList);
         }
 
         protected Logger getLogger() {
@@ -792,11 +805,17 @@ public class RolapConnection extends ConnectionBase {
 
         // synchronized because we use 'pos'
         public synchronized Cell getCell(int[] externalPos) {
-            System.arraycopy(externalPos, 0, this.pos, 0, externalPos.length);
-            int offset = externalPos[axis];
-            int mappedOffset = mapOffsetToUnderlying(offset);
-            this.pos[axis] = mappedOffset;
-            return underlying.getCell(this.pos);
+            try {
+                System.arraycopy(externalPos, 0, this.pos, 0, externalPos.length);
+                int offset = externalPos[axis];
+                int mappedOffset = mapOffsetToUnderlying(offset);
+                this.pos[axis] = mappedOffset;
+                return underlying.getCell(this.pos);
+            } catch(NullPointerException npe) {
+                System.out.println("RolapConnection:619 please, review for "
+                        + "high cardinality...");
+                return underlying.getCell(externalPos);
+            }
         }
 
         private int mapOffsetToUnderlying(int offset) {
