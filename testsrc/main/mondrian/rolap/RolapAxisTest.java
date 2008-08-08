@@ -36,7 +36,7 @@ public class RolapAxisTest extends FoodMartTestCase {
         RolapAxis axis = new RolapAxis.MemberList(list);
         List<Position> positions = axis.getPositions();
         boolean firstTimeInner = true;
-        for (Position position: positions) {
+        for (Position position : positions) {
             if (! firstTimeInner) {
                 buf.append(',');
             }
@@ -89,7 +89,7 @@ public class RolapAxisTest extends FoodMartTestCase {
         RolapAxis axis = new RolapAxis.MemberArrayList(list);
         List<Position> positions = axis.getPositions();
         boolean firstTimeInner = true;
-        for (Position position: positions) {
+        for (Position position : positions) {
             if (! firstTimeInner) {
                 buf.append(',');
             }
@@ -132,7 +132,7 @@ public class RolapAxisTest extends FoodMartTestCase {
         RolapAxis axis = new RolapAxis.MemberIterable(list);
         List<Position> positions = axis.getPositions();
         boolean firstTimeInner = true;
-        for (Position position: positions) {
+        for (Position position : positions) {
             if (! firstTimeInner) {
                 buf.append(',');
             }
@@ -185,7 +185,7 @@ public class RolapAxisTest extends FoodMartTestCase {
         RolapAxis axis = new RolapAxis.MemberArrayIterable(list);
         List<Position> positions = axis.getPositions();
         boolean firstTimeInner = true;
-        for (Position position: positions) {
+        for (Position position : positions) {
             if (! firstTimeInner) {
                 buf.append(',');
             }
@@ -220,7 +220,7 @@ public class RolapAxisTest extends FoodMartTestCase {
         StringBuffer buf = new StringBuffer(100);
         buf.append('{');
         boolean firstTimeInner = true;
-        for (Member m: position) {
+        for (Member m : position) {
             if (! firstTimeInner) {
                 buf.append(',');
             }

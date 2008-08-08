@@ -2016,7 +2016,7 @@ public class XmlaHandler implements XmlaConstants {
             while (position != null) {
                 writer.startElement("Tuple");
                 int k = 0;
-                for (Member member: position) {
+                for (Member member : position) {
                     writeMember(
                         writer, member, prevPosition, nextPosition, k++, props);
                 }
@@ -2150,7 +2150,7 @@ public class XmlaHandler implements XmlaConstants {
                 Axis axis = result.getAxes()[axisOrdinal];
                 List<Position> positions = axis.getPositions();
                 int i = 0;
-                for (Position position: positions) {
+                for (Position position : positions) {
                     pos[axisOrdinal] = i;
                     evaluator.setContext(position);
                     recurse(writer, pos, axisOrdinal - 1, evaluator, cellOrdinal);

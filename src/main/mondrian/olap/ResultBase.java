@@ -65,7 +65,7 @@ public abstract class ResultBase implements Result {
         Axis _axis = axis < 0 ? slicerAxis : axes[axis];
         List<Position> positions = _axis.getPositions();
         int i = 0;
-        for (Position position: positions) {
+        for (Position position : positions) {
             if (axis < 0) {
                 if (i > 0) {
                     pw.print(", ");
@@ -107,10 +107,10 @@ public abstract class ResultBase implements Result {
     }
     private void printAxis(PrintWriter pw, Axis axis) {
         List<Position> positions = axis.getPositions();
-        for (Position position: positions) {
+        for (Position position : positions) {
             boolean firstTime = true;
             pw.print("{");
-            for (Member member: position) {
+            for (Member member : position) {
                 if (member.getDimension().isHighCardinality()) {
                     pw.println(" -- High cardinality dimension --}");
                     return;
@@ -142,7 +142,7 @@ public abstract class ResultBase implements Result {
             }
             List<Position> positions = axis.getPositions();
             Position position = positions.get(index);
-            for (Member member: position) {
+            for (Member member : position) {
                 if (member.getDimension() == dimension) {
                     return member;
                 }

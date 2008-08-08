@@ -869,7 +869,7 @@ public class RolapResult extends ResultBase {
         if (axisOrdinal < 0) {
             Axis axis = slicerAxis;
             List<Position> positions = axis.getPositions();
-            for (Position position: positions) {
+            for (Position position : positions) {
                 getQuery().checkCancelOrTimeout();
                 revaluator.setContext(position);
                 Object o;
@@ -1087,7 +1087,7 @@ public class RolapResult extends ResultBase {
         final Cube cube = getCube();
         for (int i = 0; i < pos.length; i++) {
             Position position = axes[i].getPositions().get(pos[i]);
-            for (Member member: position) {
+            for (Member member : position) {
                 RolapMember m = (RolapMember) member;
                 int ordinal = m.getDimension().getOrdinal(cube);
                 members[ordinal] = m;
@@ -1878,19 +1878,19 @@ public class RolapResult extends ResultBase {
         } else {
             // array of Members per position
             List<Member[]> list = new ArrayList<Member[]>();
-            for (Position p1: pl1) {
+            for (Position p1 : pl1) {
                 Member[] members = new Member[arrayLen];
                 int i = 0;
-                for (Member m1: p1) {
+                for (Member m1 : p1) {
                     members[i++] = m1;
                 }
                 list.add(members);
             }
             List<Member[]> extras = new ArrayList<Member[]>();
-            for (Position p2: pl2) {
+            for (Position p2 : pl2) {
                 int i = 0;
                 Member[] members = new Member[arrayLen];
-                for (Member m2: p2) {
+                for (Member m2 : p2) {
                     members[i++] = m2;
                 }
                 Iterator<Member[]> it1 = list.iterator();

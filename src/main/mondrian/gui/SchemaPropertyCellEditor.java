@@ -460,7 +460,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             Vector dimeTables           = new Vector(jdbcMetaData.getDimensionTables(schema, selectedFactTable));
 
             ComboBoxModel cFactTables = new DefaultComboBoxModel(factTables);   //suggestive fact tables
-            ComboBoxModel cAllTables  = new DefaultComboBoxModel((allTablesMinusFact.size() >0)?allTablesMinusFact:allTables);  // all tables of selected schema
+            ComboBoxModel cAllTables  = new DefaultComboBoxModel((allTablesMinusFact.size() > 0) ? allTablesMinusFact : allTables);  // all tables of selected schema
             ComboBoxModel cDimeTables = new DefaultComboBoxModel(dimeTables); // suggestive dimension tables based on selected fact table .
 
             listEditor.setEditable(true);

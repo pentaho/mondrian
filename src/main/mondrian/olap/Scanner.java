@@ -689,36 +689,71 @@ public class Scanner {
                     }
                 }
 
-            case ':': advance(); return makeToken(ParserSym.COLON, ":");
-            case ',': advance(); return makeToken(ParserSym.COMMA, ",");
-            case '=': advance(); return makeToken(ParserSym.EQ, "=");
+            case ':':
+                advance();
+                return makeToken(ParserSym.COLON, ":");
+            case ',':
+                advance();
+                return makeToken(ParserSym.COMMA, ",");
+            case '=':
+                advance();
+                return makeToken(ParserSym.EQ, "=");
             case '<':
                 advance();
                 switch (nextChar) {
-                case '>': advance(); return makeToken(ParserSym.NE, "<>");
-                case '=': advance(); return makeToken(ParserSym.LE, "<=");
-                default: return makeToken(ParserSym.LT, "<");
+                case '>':
+                    advance();
+                    return makeToken(ParserSym.NE, "<>");
+                case '=':
+                    advance();
+                    return makeToken(ParserSym.LE, "<=");
+                default:
+                    return makeToken(ParserSym.LT, "<");
                 }
             case '>':
                 advance();
                 switch (nextChar) {
-                case '=': advance(); return makeToken(ParserSym.GE, ">=");
-                default: return makeToken(ParserSym.GT, ">");
+                case '=':
+                    advance();
+                    return makeToken(ParserSym.GE, ">=");
+                default:
+                    return makeToken(ParserSym.GT, ">");
                 }
-            case '{': advance(); return makeToken(ParserSym.LBRACE, "{");
-            case '(': advance(); return makeToken(ParserSym.LPAREN, "(");
-            case '}': advance(); return makeToken(ParserSym.RBRACE, "}");
-            case ')': advance(); return makeToken(ParserSym.RPAREN, ")");
-            case '+': advance(); return makeToken(ParserSym.PLUS, "+");
-            case '-': advance(); return makeToken(ParserSym.MINUS, "-");
-            case '*': advance(); return makeToken(ParserSym.ASTERISK, "*");
-            case '/': advance(); return makeToken(ParserSym.SOLIDUS, "/");
-            case '!': advance(); return makeToken(ParserSym.BANG, "!");
+            case '{':
+                advance();
+                return makeToken(ParserSym.LBRACE, "{");
+            case '(':
+                advance();
+                return makeToken(ParserSym.LPAREN, "(");
+            case '}':
+                advance();
+                return makeToken(ParserSym.RBRACE, "}");
+            case ')':
+                advance();
+                return makeToken(ParserSym.RPAREN, ")");
+            case '+':
+                advance();
+                return makeToken(ParserSym.PLUS, "+");
+            case '-':
+                advance();
+                return makeToken(ParserSym.MINUS, "-");
+            case '*':
+                advance();
+                return makeToken(ParserSym.ASTERISK, "*");
+            case '/':
+                advance();
+                return makeToken(ParserSym.SOLIDUS, "/");
+            case '!':
+                advance();
+                return makeToken(ParserSym.BANG, "!");
             case '|':
                 advance();
                 switch (nextChar) {
-                case '|': advance(); return makeToken(ParserSym.CONCAT, "||");
-                default: return makeToken(ParserSym.UNKNOWN, "|");
+                case '|':
+                    advance();
+                    return makeToken(ParserSym.CONCAT, "||");
+                default:
+                    return makeToken(ParserSym.UNKNOWN, "|");
                 }
 
             case '"':

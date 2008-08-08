@@ -474,8 +474,8 @@ debug("LinReg.process","ERROR error(s) count ="  + swY.errorCount);
             double yf = dyf.doubleValue();
 
             double error = yf - y;
-            SSE += (error - MSE)*(error - MSE);
-            SST += (y - MST)*(y - MST);
+            SSE += (error - MSE) * (error - MSE);
+            SST += (y - MST) * (y - MST);
         }
         if (SST != 0.0) {
             double rSquared =  1 - (SSE / SST);

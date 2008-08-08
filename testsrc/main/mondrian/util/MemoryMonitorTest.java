@@ -336,7 +336,7 @@ Does not work without the notify on add feature.
             if (mm != null) {
                 mm.removeListener(listener);
             }
-            for (Result result: list) {
+            for (Result result : list) {
                 result.close();
             }
             MemoryMonitorFactory.clearThreadLocalClassName();

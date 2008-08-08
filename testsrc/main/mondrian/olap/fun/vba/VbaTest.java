@@ -867,7 +867,7 @@ public class VbaTest extends TestCase {
         double pmt = Vba.pmt(0.10, 30, 100000, 0, false);
         double ipmt = Vba.iPmt(0.10, 15, 30, 100000, 0, false);
         double ppmt = Vba.pPmt(0.10, 15, 30, 100000, 0, false);
-        assertTrue(Math.abs(pmt -(ipmt + ppmt)) < 0.0000001);
+        assertTrue(Math.abs(pmt - (ipmt + ppmt)) < 0.0000001);
     }
 
     public void testSLN() {

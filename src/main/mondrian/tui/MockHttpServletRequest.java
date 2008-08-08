@@ -491,7 +491,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
         List<String> headerList = headers.get(name);
 
-        return ((headerList == null) || (headerList.size() ==0))
+        return ((headerList == null) || (headerList.size() == 0))
             ? null
             : headerList.get(0);
     }

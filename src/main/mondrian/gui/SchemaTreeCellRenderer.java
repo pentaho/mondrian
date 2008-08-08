@@ -113,8 +113,12 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                     if (parent instanceof MondrianGuiDef.Join) {
                         int indexOfChild = tree.getModel().getIndexOfChild(parent, value);
                         switch (indexOfChild) {
-                            case 0: prefix = workbench.getResourceConverter().getString("common.leftPrefix.title","Left") + " "; break;
-                            case 1: prefix = workbench.getResourceConverter().getString("common.rightPrefix.title","Right") + " "; break;
+                        case 0:
+                            prefix = workbench.getResourceConverter().getString("common.leftPrefix.title","Left") + " ";
+                            break;
+                        case 1:
+                            prefix = workbench.getResourceConverter().getString("common.rightPrefix.title","Right") + " ";
+                            break;
                         }
                     }
                 }

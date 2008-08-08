@@ -175,8 +175,12 @@ public class SchemaTreeCellEditor extends javax.swing.tree.DefaultTreeCellEditor
                 } else if (parent instanceof MondrianGuiDef.Join) {
                     int indexOfChild = tree.getModel().getIndexOfChild(parent, value);
                     switch (indexOfChild) {
-                        case 0: ((MondrianGuiDef.Join) parent).left = relationObj; break;
-                        case 1: ((MondrianGuiDef.Join) parent).right = relationObj; break;
+                    case 0:
+                        ((MondrianGuiDef.Join) parent).left = relationObj;
+                        break;
+                    case 1:
+                        ((MondrianGuiDef.Join) parent).right = relationObj;
+                        break;
                     }
                 }
                 tree.setSelectionPath(parentpath.pathByAddingChild(relationObj));

@@ -2078,7 +2078,7 @@ public class CrossJoinFunDef extends FunDefBase {
         public Object visit(ResolvedFunCall funcall) {
             Exp[] exps = funcall.getArgs();
             if (exps != null) {
-                for (Exp exp: exps) {
+                for (Exp exp : exps) {
                     exp.accept(this);
                 }
             }
@@ -2239,7 +2239,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
             Formula[] formula = query.getFormulas();
             if (formula != null) {
-                for (Formula f: formula) {
+                for (Formula f : formula) {
                     f.accept(visitor);
                 }
             }

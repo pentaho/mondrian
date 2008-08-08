@@ -1033,13 +1033,12 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0; parentIndex--) {
                 if (tpath.getPathComponent(parentIndex) instanceof MondrianGuiDef.Table) {
-                    if (((parentIndex - 1) >=0) && (tpath.getPathComponent(parentIndex - 1) instanceof MondrianGuiDef.Cube)) {
+                    if (((parentIndex - 1) >= 0) && (tpath.getPathComponent(parentIndex - 1) instanceof MondrianGuiDef.Cube)) {
                         path = tpath.getPathComponent(parentIndex);
                         break;
                     }
                 }
             }
-
         }
         if (!(path instanceof MondrianGuiDef.Table)) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.tableNotSelected.alert","Table not selected."), alert, JOptionPane.WARNING_MESSAGE);
@@ -3325,7 +3324,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         parentIFrame.setTitle(getResourceConverter().getFormattedString("schemaExplorer.frame.title",
                 "Schema - {0} ({1}){2}",
-                    new String[] { schema.name, schemaFile.getName(), isDirty()?"*":"" }));
+                    new String[] { schema.name, schemaFile.getName(), isDirty() ? "*" : "" }));
 
         parentIFrame.setToolTipText(schemaFile.toString());
     }

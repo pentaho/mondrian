@@ -159,10 +159,14 @@ public class Id
 
         public String toString() {
             switch (quoting) {
-            case UNQUOTED: //return name; Disabled to pass old tests...
-            case QUOTED: return "[" + name + "]";
-            case KEY: return "&[" + name + "]";
-            default: return "UNKNOWN:" + name;
+            case UNQUOTED:
+                //return name; Disabled to pass old tests...
+            case QUOTED:
+                return "[" + name + "]";
+            case KEY:
+                return "&[" + name + "]";
+            default:
+                return "UNKNOWN:" + name;
             }
         }
 

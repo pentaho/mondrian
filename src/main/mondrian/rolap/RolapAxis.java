@@ -43,10 +43,10 @@ public abstract class RolapAxis implements Axis {
     }
     public static String toString(List<Position> pl) {
         StringBuilder buf = new StringBuilder();
-        for (Position p: pl) {
+        for (Position p : pl) {
             buf.append('{');
             boolean firstTime = true;
-            for (Member m: p) {
+            for (Member m : p) {
                 if (! firstTime) {
                     buf.append(", ");
                 }

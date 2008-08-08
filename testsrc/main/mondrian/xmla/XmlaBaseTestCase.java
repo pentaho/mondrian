@@ -131,7 +131,7 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
 
     protected Document replaceLastSchemaUpdateDate(Document doc) {
         NodeList elements = doc.getElementsByTagName(LAST_SCHEMA_UPDATE_NODE_NAME);
-        if (elements.getLength() ==0) {
+        if (elements.getLength() == 0) {
             return doc;
         }
 

@@ -1006,7 +1006,7 @@ if (! Util.Retrowoven) {
         StringBuffer buf = new StringBuffer(100);
         buf.append('{');
         int j = 0;
-        for (Object o: l) {
+        for (Object o : l) {
             if (j++ > 0) {
                 buf.append(',');
             }
@@ -1032,7 +1032,7 @@ if (! Util.Retrowoven) {
         StringBuffer buf = new StringBuffer(100);
         buf.append('[');
         boolean firstTimeInner = true;
-        for (Member m: members) {
+        for (Member m : members) {
             if (! firstTimeInner) {
                 buf.append(',');
             }

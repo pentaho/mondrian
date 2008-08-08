@@ -1167,7 +1167,7 @@ public class FunUtil extends Util {
             }
         } else {
             int retval = 0;
-            for (Object object: iterable) {
+            for (Object object : iterable) {
                 if (object instanceof Member) {
                     evaluator.setContext((Member) object);
                 } else {

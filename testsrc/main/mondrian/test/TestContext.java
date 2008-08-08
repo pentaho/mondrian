@@ -862,7 +862,7 @@ public class TestContext {
     public static String toString(List<Position> positions) {
         StringBuilder buf = new StringBuilder();
         int i = 0;
-        for (Position position: positions) {
+        for (Position position : positions) {
             if (i > 0) {
                 buf.append(nl);
             }

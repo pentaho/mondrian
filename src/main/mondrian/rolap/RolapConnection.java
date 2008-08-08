@@ -793,7 +793,7 @@ public class RolapConnection extends ConnectionBase {
             } else {
                 List<Position> positions = getAxes()[axis].getPositions();
                 int i = 0;
-                for (Position position: positions) {
+                for (Position position : positions) {
                     pos[axis] = i;
                     if (!isEmptyRecurse(fixedAxis, axis - 1)) {
                         return false;
