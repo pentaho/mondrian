@@ -155,7 +155,7 @@ public abstract class UnsupportedList<T> implements List<T> {
         public T next() {
             try {
                 T next = get(cursor);
-                lastRet = cursor +  + ;
+                lastRet = cursor++;
                 return next;
             } catch (IndexOutOfBoundsException e) {
                 System.out.println("UnsupportedList.Itr.next: cursor="  +  cursor);
