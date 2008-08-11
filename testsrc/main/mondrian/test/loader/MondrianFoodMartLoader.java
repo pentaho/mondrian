@@ -540,7 +540,7 @@ public class MondrianFoodMartLoader {
                 }
             }
 
-            assert(valuesPos + 1 == columns.length);
+            assert valuesPos + 1 == columns.length;
         }
 
         for (int i = 0; i < columns.length; i++) {

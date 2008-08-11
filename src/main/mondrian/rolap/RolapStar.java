@@ -721,7 +721,7 @@ public class RolapStar {
      */
     private void recordAggregationRequest(AggregationKey aggregationKey) {
         if (!localAggregationRequests.get().contains(aggregationKey)) {
-            synchronized(aggregationRequests) {
+            synchronized (aggregationRequests) {
                 aggregationRequests.add(aggregationKey);
             }
             // Store own request for cleanup afterwards

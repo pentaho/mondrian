@@ -191,7 +191,7 @@ class RolapDimension extends DimensionBase {
     public int getOrdinal(Cube cube) {
         // this is temporary to verify that all calls to this method are for
         // the measures dimension
-        assert(isMeasures());
+        assert isMeasures();
         return 0;
     }
 

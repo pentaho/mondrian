@@ -1274,36 +1274,36 @@ public class Vba {
     @FunctionName("FormatDateTime")
     @Signature("FormatDateTime(Date[,NamedFormat])")
     @Description("Returns an expression formatted as a date or time.")
-    public static String formatDateTime(Date date, int namedFormat /*
-                                                             * default 0,
-                                                             * GeneralDate
-                                                             */) {
+    public static String formatDateTime(
+        Date date,
+        int namedFormat /* default 0, GeneralDate */)
+    {
         // todo: test
         // todo: how do we support VB Constants? Strings or Ints?
-        switch(namedFormat) {
+        switch (namedFormat) {
             // vbLongDate, 1
             // Display a date using the long date format specified in your
             // computer's regional settings.
 
-            case 1:
-                return DateFormat.getDateInstance(DateFormat.LONG).format(date);
+        case 1:
+            return DateFormat.getDateInstance(DateFormat.LONG).format(date);
 
             // vbShortDate, 2
             // Display a date using the short date format specified in your
             // computer's regional settings.
-            case 2:
-                return DateFormat.getDateInstance(DateFormat.SHORT).format(date);
+        case 2:
+            return DateFormat.getDateInstance(DateFormat.SHORT).format(date);
 
             // vbLongTime, 3
             // Display a time using the time format specified in your computer's
             // regional settings.
-            case 3:
-                return DateFormat.getTimeInstance(DateFormat.LONG).format(date);
+        case 3:
+            return DateFormat.getTimeInstance(DateFormat.LONG).format(date);
 
             // vbShortTime, 4
             // Display a time using the 24-hour format (hh:mm).
-            case 4:
-                return DateFormat.getTimeInstance(DateFormat.SHORT).format(date);
+        case 4:
+            return DateFormat.getTimeInstance(DateFormat.SHORT).format(date);
 
             // vbGeneralDate, 0
             // Display a date and/or time. If there is a date part, display it as a
@@ -1311,11 +1311,9 @@ public class Vba {
             // present, both parts are displayed.
 
             // todo: how do we determine if there is a "time part" in java?
-
-            case 0:
-            default:
-                return DateFormat.getDateTimeInstance().format(date);
-
+        case 0:
+        default:
+            return DateFormat.getDateTimeInstance().format(date);
         }
     }
 

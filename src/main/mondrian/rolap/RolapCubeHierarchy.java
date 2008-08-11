@@ -87,7 +87,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         // re-alias names if necessary
         if (!usingCubeFact) {
             // join expressions are columns only
-            assert(usage.getJoinExp() instanceof MondrianDef.Column);
+            assert usage.getJoinExp() instanceof MondrianDef.Column;
             currentRelation =
                 parentDimension.getCube().getStar().getUniqueRelation(
                     rolapHierarchy.getRelation(),
@@ -565,7 +565,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 List<RolapMember> children,
                 MemberChildrenConstraint constraint) {
 
-            synchronized(cacheHelper) {
+            synchronized (cacheHelper) {
                 checkCacheStatus();
 
                 List<RolapMember> missed = new ArrayList<RolapMember>();

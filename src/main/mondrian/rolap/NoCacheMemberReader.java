@@ -166,7 +166,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         final List<RolapMember> children,
         final MemberChildrenConstraint constraint)
     {
-        assert(constraint != null);
+        assert constraint != null;
         LOGGER.debug("Entering getMemberChildren");
         source.getMemberChildren(parentMembers, children, constraint);
     }

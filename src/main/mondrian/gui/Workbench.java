@@ -788,12 +788,16 @@ public class Workbench extends javax.swing.JFrame {
     private int confirmFrameClose(JInternalFrame schemaFrame, SchemaExplorer se) {
         if (se.isDirty()) {
             JMenuItem schemaMenuItem = (JMenuItem) schemaWindowMap.get(desktopPane.getSelectedFrame());
-            int answer = JOptionPane.showConfirmDialog(null,
-                    getResourceConverter().getFormattedString("workbench.saveSchemaOnClose.alert",
-                            "Save changes to {0}?",
-                                new String[] { se.getSchemaFile().toString() }),
-                                getResourceConverter().getString("workbench.saveSchemaOnClose.title","Schema"), JOptionPane.YES_NO_CANCEL_OPTION);
-            switch(answer) { //   yes=0 ;no=1 ;cancel=2
+            int answer =
+                JOptionPane.showConfirmDialog(
+                    null,
+                    getResourceConverter().getFormattedString(
+                        "workbench.saveSchemaOnClose.alert",
+                        "Save changes to {0}?",
+                        new String[] { se.getSchemaFile().toString() }),
+                    getResourceConverter().getString("workbench.saveSchemaOnClose.title","Schema"),
+                    JOptionPane.YES_NO_CANCEL_OPTION);
+            switch (answer) { // yes=0; no=1; cancel=2
             case 0:
                 saveMenuItemActionPerformed(null);
                 schemaWindowMap.remove(schemaFrame); //schemaWindowMap.remove(se.getSchemaFile());

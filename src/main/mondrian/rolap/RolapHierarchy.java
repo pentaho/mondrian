@@ -114,7 +114,7 @@ public class RolapHierarchy extends HierarchyBase {
     {
         this(dimension, xmlHierarchy.name, xmlHierarchy.hasAll);
 
-        assert(!(this instanceof RolapCubeHierarchy));
+        assert !(this instanceof RolapCubeHierarchy);
 
         this.xmlHierarchy = xmlHierarchy;
         this.relation = xmlHierarchy.relation;

@@ -129,7 +129,7 @@ public class ConcurrentValidatingQueryRunner extends Thread {
                         flushSchema();
                     }
                     } // end sync block
-                    synchronized(lock) {
+                    synchronized (lock) {
                     concurrentMdxTest.assertQueryReturns(
                         mdxQueries[queryIndex].query,
                         mdxQueries[queryIndex].result);

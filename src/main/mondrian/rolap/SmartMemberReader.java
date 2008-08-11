@@ -133,7 +133,7 @@ public class SmartMemberReader implements MemberReader {
         int endOrdinal,
         TupleConstraint constraint)
     {
-        synchronized(cacheHelper) {
+        synchronized (cacheHelper) {
             checkCacheStatus();
 
             List<RolapMember> members =
@@ -176,18 +176,20 @@ public class SmartMemberReader implements MemberReader {
     }
 
     public void getMemberChildren(
-            List<RolapMember> parentMembers,
-            List<RolapMember> children) {
+        List<RolapMember> parentMembers,
+        List<RolapMember> children)
+    {
         MemberChildrenConstraint constraint =
                 sqlConstraintFactory.getMemberChildrenConstraint(null);
         getMemberChildren(parentMembers, children, constraint);
     }
 
     public void getMemberChildren(
-            List<RolapMember> parentMembers,
-            List<RolapMember> children,
-            MemberChildrenConstraint constraint) {
-        synchronized(cacheHelper) {
+        List<RolapMember> parentMembers,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint)
+    {
+        synchronized (cacheHelper) {
             checkCacheStatus();
 
             List<RolapMember> missed = new ArrayList<RolapMember>();
@@ -210,8 +212,9 @@ public class SmartMemberReader implements MemberReader {
     }
 
     public RolapMember lookupMember(
-            List<Id.Segment> uniqueNameParts,
-            boolean failIfNotFound) {
+        List<Id.Segment> uniqueNameParts,
+        boolean failIfNotFound)
+    {
         return RolapUtil.lookupMember(this, uniqueNameParts, failIfNotFound);
     }
 
@@ -313,7 +316,7 @@ public class SmartMemberReader implements MemberReader {
 
     public RolapMember getLeadMember(RolapMember member, int n) {
         // uncertain if this method needs to be synchronized
-        synchronized(cacheHelper) {
+        synchronized (cacheHelper) {
             if (n == 0 || member.isNull()) {
                 return member;
             } else {

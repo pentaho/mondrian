@@ -180,7 +180,7 @@ public class CacheHitTest extends FoodMartTestCase {
         MondrianProperties.instance().EnableCacheHitCounters.set(true);
 
         AggregationManager aggMngr = AggregationManager.instance();
-        assert(aggMngr instanceof CountingAggregationManager);
+        assert aggMngr instanceof CountingAggregationManager;
 
         ((CountingAggregationManager) aggMngr).resetCounters();
 
@@ -212,12 +212,12 @@ public class CacheHitTest extends FoodMartTestCase {
         MondrianProperties.instance().EnableCacheHitCounters.set(true);
 
         AggregationManager aggMngr = AggregationManager.instance();
-        assert(aggMngr instanceof CountingAggregationManager);
+        assert aggMngr instanceof CountingAggregationManager;
 
         ((CountingAggregationManager) aggMngr).resetCounters();
 
         for (int i = 0; i < numIter; i++) {
-            TestSuite test = (TestSuite) suite.testAt(i%suite.testCount());
+            TestSuite test = (TestSuite) suite.testAt(i % suite.testCount());
             for (int j = 0; j < test.testCount(); j++) {
                 test.testAt(j).run(tres);
             }

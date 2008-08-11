@@ -50,7 +50,7 @@ public class JTreeUpdater implements TreeExpansionListener, TreeSelectionListene
      * Call this method whenever you update the tree and needs it reloaded
      */
     public synchronized void update() {
-        synchronized(this.tree) {
+        synchronized (this.tree) {
             this.tree.removeTreeExpansionListener(this);
             this.tree.removeTreeSelectionListener(this);
 

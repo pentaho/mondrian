@@ -153,7 +153,7 @@ public class AndPredicate extends ListPredicate {
         for (StarPredicate predicate : children) {
             // inListPossible() checks gaurantees that predicate is of type
             // ValueColumnPredicate
-            assert(predicate instanceof ValueColumnPredicate);
+            assert predicate instanceof ValueColumnPredicate;
             if (inListRHSBitKey.get(
                 ((ValueColumnPredicate)predicate).getConstrainedColumn().getBitPosition())) {
                 sortedPredicates.add((ValueColumnPredicate)predicate);

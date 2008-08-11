@@ -2174,9 +2174,9 @@ static class FloatingDecimal {
         if (p < 0)
             throw new RuntimeException("Assertion botch: negative power of 5");
         if (b5p == null) {
-            b5p = new FDBigInt[ p + 1 ];
+            b5p = new FDBigInt[p + 1];
         } else if (b5p.length <= p) {
-            FDBigInt t[] = new FDBigInt[ p + 1 ];
+            FDBigInt t[] = new FDBigInt[p + 1];
             System.arraycopy(b5p, 0, t, 0, b5p.length);
             b5p = t;
         }
@@ -2202,7 +2202,7 @@ static class FloatingDecimal {
             if (r < small5pow.length) {
                 return (b5p[p] = bigq.mult(small5pow[r]));
             } else {
-                FDBigInt bigr = b5p[ r ];
+                FDBigInt bigr = b5p[r];
                 if (bigr == null)
                     bigr = big5pow(r);
                 return (b5p[p] = bigq.mult(bigr));
@@ -2254,38 +2254,38 @@ static class FloatingDecimal {
             // even easier subcase!
             // can do int arithmetic rather than long!
             int  ivalue = (int)lvalue;
-            digits = new char[ ndigits = 10 ];
+            digits = new char[ndigits = 10];
             digitno = ndigits - 1;
-            c = ivalue%10;
+            c = ivalue % 10;
             ivalue /= 10;
             while (c == 0) {
                 decExponent++;
-                c = ivalue%10;
+                c = ivalue % 10;
                 ivalue /= 10;
             }
             while (ivalue != 0) {
                 digits[digitno--] = (char)(c + '0');
                 decExponent++;
-                c = ivalue%10;
+                c = ivalue % 10;
                 ivalue /= 10;
             }
             digits[digitno] = (char)(c + '0');
         } else {
             // same algorithm as above (same bugs, too)
             // but using long arithmetic.
-            digits = new char[ ndigits = 20 ];
+            digits = new char[ndigits = 20];
             digitno = ndigits - 1;
-            c = (int)(lvalue%10L);
+            c = (int)(lvalue % 10L);
             lvalue /= 10L;
             while (c == 0) {
                 decExponent++;
-                c = (int)(lvalue%10L);
+                c = (int)(lvalue % 10L);
                 lvalue /= 10L;
             }
             while (lvalue != 0L) {
                 digits[digitno--] = (char)(c + '0');
                 decExponent++;
-                c = (int)(lvalue%10L);
+                c = (int)(lvalue % 10L);
                 lvalue /= 10;
             }
             digits[digitno] = (char)(c + '0');
@@ -2295,7 +2295,7 @@ static class FloatingDecimal {
         if (digitno == 0) {
             result = digits;
         } else {
-            result = new char[ ndigits ];
+            result = new char[ndigits];
             System.arraycopy(digits, digitno, result, 0, ndigits);
         }
         this.digits = result;
@@ -2313,7 +2313,7 @@ static class FloatingDecimal {
     private void
     roundup() {
         int i;
-        int q = digits[ i = (nDigits - 1)];
+        int q = digits[i = (nDigits - 1)];
         if (q == '9') {
             while (q == '9' && i > 0) {
                 digits[i] = '0';
@@ -2869,7 +2869,7 @@ static class FloatingDecimal {
 
     public String
     toJavaFormatString() {
-        char result[] = new char[ nDigits + 10 ];
+        char result[] = new char[nDigits + 10];
         int  i = 0;
         if (isNegative) {
             result[0] = '-';
@@ -3323,7 +3323,7 @@ static class FDBigInt {
         int s[] = data;
         if (nWords + wordcount + 1 > t.length) {
             // reallocate.
-            t = new int[ nWords + wordcount + 1 ];
+            t = new int[nWords + wordcount + 1];
         }
         int target = nWords + wordcount;
         int src    = nWords - 1;
@@ -3419,7 +3419,7 @@ static class FDBigInt {
         long p;
 
         // guess adequate size of r.
-        r = new int[ (v * ((long)data[nWords - 1] & 0xffffffffL) > 0xfffffffL) ? nWords + 1 : nWords ];
+        r = new int[(v * ((long)data[nWords - 1] & 0xffffffffL) > 0xfffffffL) ? nWords + 1 : nWords];
         p = 0L;
         for (int i = 0; i < nWords; i++) {
             p += v * ((long)data[i] & 0xffffffffL);
@@ -3441,7 +3441,7 @@ static class FDBigInt {
     public FDBigInt
     mult(FDBigInt other) {
         // crudely guess adequate size for r
-        int r[] = new int[ nWords + other.nWords ];
+        int r[] = new int[nWords + other.nWords];
         int i;
         // I think I am promised zeros...
 
@@ -3487,7 +3487,7 @@ static class FDBigInt {
             b = this.data;
             m = this.nWords;
         }
-        int r[] = new int[ n ];
+        int r[] = new int[n];
         for (i = 0; i < n; i++) {
             c += (long)a[i] & 0xffffffffL;
             if (i < m) {
@@ -3498,7 +3498,7 @@ static class FDBigInt {
         }
         if (c != 0L) {
             // oops -- carry out -- need longer result.
-            int s[] = new int[ r.length + 1 ];
+            int s[] = new int[r.length + 1];
             System.arraycopy(r, 0, s, 0, r.length);
             s[i++] = (int)c;
             return new FDBigInt(s, i);
@@ -3512,7 +3512,7 @@ static class FDBigInt {
      */
     public FDBigInt
     sub(FDBigInt other) {
-        int r[] = new int[ this.nWords ];
+        int r[] = new int[this.nWords];
         int i;
         int n = this.nWords;
         int m = other.nWords;
@@ -3675,7 +3675,7 @@ static class FDBigInt {
                 throw new RuntimeException("Assertion botch: value too big");
             }
         }
-        switch(i) {
+        switch (i) {
         case 1:
             if (data[1] < 0)
                 throw new RuntimeException("Assertion botch: value too big");

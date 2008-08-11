@@ -77,7 +77,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
             if (!findVirtualCubeBaseCubes(query, baseCubes, baseCubeList)) {
                 return false;
             }
-            assert(levels != null);
+            assert levels != null;
             // we need to make sure all the levels join with each fact table;
             // otherwise, it doesn't make sense to do the processing
             // natively, as you'll end up with cartesian product joins!

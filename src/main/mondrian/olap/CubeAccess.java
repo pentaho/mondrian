@@ -138,7 +138,7 @@ public class CubeAccess {
         if (hierarchyList.size() > 0) {
             noAccessHierarchies =
                 hierarchyList.toArray(
-                    new Hierarchy[ hierarchyList.size()]);
+                    new Hierarchy[hierarchyList.size()]);
             hasRestrictions = true;
         }
     }

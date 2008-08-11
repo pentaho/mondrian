@@ -58,7 +58,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             if (1 > index) {
                 return c.fact;
             } else if (1 + c.dimensions.length > index) {
-                return c.dimensions[index - 1 ];
+                return c.dimensions[index - 1];
             } else if (1 + c.measures.length + c.dimensions.length > index) {
                 return c.measures[index - c.dimensions.length - 1];
             } else if (1 + c.calculatedMembers.length + c.measures.length + c.dimensions.length > index) {
@@ -157,7 +157,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             if (s.cubes.length > index) {
                 return s.cubes[index];
             } else if (s.dimensions.length + s.cubes.length > index) {
-                return s.dimensions[index - s.cubes.length ];
+                return s.dimensions[index - s.cubes.length];
             } else if (s.namedSets.length + s.dimensions.length + s.cubes.length > index) {
                 return s.namedSets[index - s.cubes.length - s.dimensions.length];
             } else if (s.userDefinedFunctions.length + s.namedSets.length + s.dimensions.length + s.cubes.length > index) {
@@ -174,7 +174,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             if (t.aggTables.length > index) {
                 return t.aggTables[index];
             } else if (t.aggExcludes.length + t.aggTables.length > index) {
-                return t.aggExcludes[index - t.aggTables.length ];
+                return t.aggExcludes[index - t.aggTables.length];
             }
         } else if (parent instanceof MondrianGuiDef.AggTable) {
             MondrianGuiDef.AggTable t = (MondrianGuiDef.AggTable)parent;

@@ -68,7 +68,7 @@ public class RolapCubeDimension extends RolapDimension {
     // note that the cube is not necessary here
     public int getOrdinal(Cube cube) {
         // this is temporary to validate that internals are consistant
-        assert(cube == parent);
+        assert cube == parent;
         return cubeOrdinal;
     }
 
