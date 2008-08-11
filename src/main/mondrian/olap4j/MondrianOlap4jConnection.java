@@ -597,23 +597,31 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     private static class MondrianOlap4jMdxValidator implements MdxValidator {
-        private final OlapConnection connection;
+        private final MondrianOlap4jConnection connection;
 
         public MondrianOlap4jMdxValidator(OlapConnection connection) {
-            this.connection = connection;
+            this.connection = (MondrianOlap4jConnection) connection;
         }
 
-        public SelectNode validateSelect(SelectNode selectNode) throws OlapException {
-            StringWriter sw = new StringWriter();
-            selectNode.unparse(new ParseTreeWriter(new PrintWriter(sw)));
-            String mdx = sw.toString();
-            final MondrianOlap4jConnection olap4jConnection =
-                (MondrianOlap4jConnection) connection;
-            Query query =
-                olap4jConnection.connection
-                    .parseQuery(mdx);
-            query.resolve();
-            return olap4jConnection.toOlap4j(query);
+        public SelectNode validateSelect(SelectNode selectNode)
+            throws OlapException
+        {
+            try {
+                // A lot of mondrian's validation happens during parsing.
+                // Therefore to do effective validation, we need to go back to
+                // the MDX string. Someday we will reshape mondrian's
+                // parse/validation process to fit the olap4j model better.
+                StringWriter sw = new StringWriter();
+                selectNode.unparse(new ParseTreeWriter(new PrintWriter(sw)));
+                String mdx = sw.toString();
+                Query query =
+                    connection.connection
+                        .parseQuery(mdx);
+                query.resolve();
+                return connection.toOlap4j(query);
+            } catch (MondrianException e) {
+                throw connection.helper.createException("Validation error", e);
+            }
         }
     }
 
