@@ -23,7 +23,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.*;
 import java.util.*;
-import java.util.Date;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>
@@ -1381,7 +1380,7 @@ public class SqlQuery {
                 return generateInlineGeneric(
                     columnNames, columnTypes, valueList,
                     " from `days` where `day` = 1");
-            } else if (isMySQL() || isIngres() || isTeradata()) {
+            } else if (isMySQL() || isIngres() || isMSSQL() || isTeradata()) {
                 String fromClause = null;
                 if (isTeradata() && valueList.size() > 1) {
                     // In teradata, "SELECT 1,2" is valid but "SELECT 1,2 UNION
