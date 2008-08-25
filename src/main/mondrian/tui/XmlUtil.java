@@ -639,12 +639,14 @@ public class XmlUtil {
             return String.valueOf(b);
 
         case XPathResult.FIRST_ORDERED_NODE_TYPE:
-        case XPathResult.ANY_UNORDERED_NODE_TYPE: {
+        case XPathResult.ANY_UNORDERED_NODE_TYPE:
+        {
             Node node = xpathResult.getSingleNodeValue();
             return XmlUtil.toString(node, prettyPrint);
         }
         case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
-        case XPathResult.UNORDERED_NODE_ITERATOR_TYPE: {
+        case XPathResult.UNORDERED_NODE_ITERATOR_TYPE:
+        {
             StringBuilder buf = new StringBuilder(512);
             Node node = xpathResult.iterateNext();
             while (node != null) {
@@ -654,7 +656,8 @@ public class XmlUtil {
             return buf.toString();
         }
         case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
-        case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE: {
+        case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
+        {
             StringBuilder buf = new StringBuilder(512);
             int len = xpathResult.getSnapshotLength();
             for (int i = 0; i < len; i++) {
@@ -688,12 +691,14 @@ public class XmlUtil {
             return NULL_NODE_ARRAY;
 
         case XPathResult.FIRST_ORDERED_NODE_TYPE:
-        case XPathResult.ANY_UNORDERED_NODE_TYPE: {
+        case XPathResult.ANY_UNORDERED_NODE_TYPE:
+        {
             Node node = xpathResult.getSingleNodeValue();
             return new Node[] { node };
         }
         case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
-        case XPathResult.UNORDERED_NODE_ITERATOR_TYPE: {
+        case XPathResult.UNORDERED_NODE_ITERATOR_TYPE:
+        {
             List<Node> list = new ArrayList<Node>();
             Node node = xpathResult.iterateNext();
             while (node != null) {
@@ -703,7 +708,8 @@ public class XmlUtil {
             return (Node[]) list.toArray(NULL_NODE_ARRAY);
         }
         case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
-        case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE: {
+        case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
+        {
             int len = xpathResult.getSnapshotLength();
             Node[] nodes = new Node[len];
             for (int i = 0; i < len; i++) {

@@ -2708,11 +2708,11 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                 Object parentJoin = parentTpath.getLastPathComponent();
                 int indexOfChild = tree.getModel().getIndexOfChild(parentJoin, o);
                 switch (indexOfChild) {
-                    case 0:
-                        targetLabel.setText(getResourceConverter().getString("common.leftJoin.title","Left : " + LBL_JOIN));
-                        break;
-                    case 1:
-                        targetLabel.setText(getResourceConverter().getString("common.rightJoin.title","Right : " + LBL_JOIN));
+                case 0:
+                    targetLabel.setText(getResourceConverter().getString("common.leftJoin.title","Left : " + LBL_JOIN));
+                    break;
+                case 1:
+                    targetLabel.setText(getResourceConverter().getString("common.rightJoin.title","Right : " + LBL_JOIN));
                 }
             } else {
                 targetLabel.setText(getResourceConverter().getFormattedString("schemaExplorer.generalJoinForElement.title",

@@ -121,19 +121,20 @@ class ResultComparator {
         NodeList rowList = xmlRoot.getElementsByTagName("rows");
 
         switch (axes.length) {
-            case 0:
-            case 1:
-                Assert.assertTrue("Must be no rows", rowList.getLength() == 0);
-                break;
+        case 0:
+        case 1:
+            Assert.assertTrue("Must be no rows", rowList.getLength() == 0);
+            break;
 
-            case 2:
-                compareTuples("Row", rowList, axes[1].getPositions());
-                break;
+        case 2:
+            compareTuples("Row", rowList, axes[1].getPositions());
+            break;
 
-            default:
-                Assert.fail("Too many axes returned. " +
-                    "Expected 0, 1 or 2 but got " + axes.length);
-                break;
+        default:
+            Assert.fail(
+                "Too many axes returned. " +
+                "Expected 0, 1 or 2 but got " + axes.length);
+            break;
         }
     }
 
@@ -393,17 +394,17 @@ class ResultComparator {
         int numAxes = axes.length;
 
         switch (numAxes) {
-            case 0:
-                compareZeroAxes(expectedRows);
-                break;
+        case 0:
+            compareZeroAxes(expectedRows);
+            break;
 
-            case 1:
-                compareColumnsOnly(expectedRows, axes);
-                break;
+        case 1:
+            compareColumnsOnly(expectedRows, axes);
+            break;
 
-            case 2:
-                compareRowsAndColumns(expectedRows, axes);
-                break;
+        case 2:
+            compareRowsAndColumns(expectedRows, axes);
+            break;
         }
     }
 

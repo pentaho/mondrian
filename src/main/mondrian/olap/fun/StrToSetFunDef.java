@@ -338,7 +338,8 @@ class StrToSetFunDef extends FunDefBase {
             // which doesn't give us any hints about type.
             return new SetType(null);
 
-        case 2: {
+        case 2:
+        {
             final Type argType = args[1].getType();
             return new SetType(
                 new MemberType(
@@ -348,7 +349,8 @@ class StrToSetFunDef extends FunDefBase {
                     null));
         }
 
-        default: {
+        default:
+        {
             // This is a call to Mondrian's extended version of
             // StrToSet, of the form
             //   StrToSet(s, <Hier1>, ... , <HierN>)

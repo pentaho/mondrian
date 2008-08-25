@@ -84,23 +84,22 @@ public class I18n {
                     String token = tokenizer.nextToken();
 
                     switch (i) {
-                        case 0:
-                            //the word <application>
-                            break;
-                        case 1:
-                            language = token;
-                            break;
-                        case 2:
-                            country = token;
-                            break;
-                        case 3:
-                            variant = token;
-                            break;
-                        default:
-                            //
+                    case 0:
+                        //the word <application>
+                        break;
+                    case 1:
+                        language = token;
+                        break;
+                    case 2:
+                        country = token;
+                        break;
+                    case 3:
+                        variant = token;
+                        break;
+                    default:
+                        //
                     }
                     i++;
-
                 }
 
                 Locale model = new Locale(language, country, variant);

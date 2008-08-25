@@ -1711,11 +1711,13 @@ public class Vba {
         return _replace(expression, find, replace, 1, -1);
     }
 
-    private static String _replace(String expression, String find,
-            String replace, int start /* default 1 */, int count /*
-                                                                     * default
-                                                                     * -1
-                                                                     */) {
+    private static String _replace(
+        String expression,
+        String find,
+        String replace,
+        int start /* default 1 */,
+        int count /* default -1 */)
+    {
         final StringBuilder buf = new StringBuilder(expression);
         int i = 0;
         int pos = start - 1;
