@@ -607,26 +607,27 @@ public class SqlTupleReader implements TupleReader {
         if (virtualCube) {
             String selectString = "";
             Query query = constraint.getEvaluator().getQuery();
-            
+
             // Make fact table appear in fixed sequence
             RolapCube.CubeComparator cubeComparator = new RolapCube.CubeComparator();
             TreeSet<RolapCube> baseCubes = new TreeSet<RolapCube>(cubeComparator);
             baseCubes.addAll(query.getBaseCubes());
-            
+
             // generate sub-selects, each one joining with one of
             // the fact table referenced
             int k = -1;
             // Save the original measure in the context
             Member originalMeasure = constraint.getEvaluator().getMembers()[0];
             for (RolapCube baseCube : baseCubes) {
-            	// Use the measure from the corresponding base cube in the context
-            	// to find the correct join path to the base fact table.
-            	//
-            	// Any measure is fine since the constraint logic only uses it to find the
-            	// correct fact table to join to.
-            	Member measureInCurrentbaseCube = baseCube.getMeasures().get(0);
-            	constraint.getEvaluator().setContext(measureInCurrentbaseCube);            	
-            	
+                // Use the measure from the corresponding base cube in the
+                // context to find the correct join path to the base fact
+                // table.
+                //
+                // Any measure is fine since the constraint logic only uses it
+                // to find the correct fact table to join to.
+                Member measureInCurrentbaseCube = baseCube.getMeasures().get(0);
+                constraint.getEvaluator().setContext(measureInCurrentbaseCube);
+
                 boolean finalSelect = (++k == baseCubes.size() - 1);
                 WhichSelect whichSelect =
                     finalSelect ? WhichSelect.LAST : WhichSelect.NOT_LAST;
@@ -637,7 +638,7 @@ public class SqlTupleReader implements TupleReader {
                 }
             }
             // Restore the original measure member
-            constraint.getEvaluator().setContext(originalMeasure);            	            
+            constraint.getEvaluator().setContext(originalMeasure);
             return selectString;
         } else {
             return generateSelectForLevels(dataSource, cube, WhichSelect.ONLY);

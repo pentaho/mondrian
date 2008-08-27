@@ -1368,8 +1368,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
      */
     public void testAggregateDistinctCount4() {
         // CA and USA are overlapping members
-        final String mdxQuery = 
-        	"WITH\n" +
+        final String mdxQuery =
+            "WITH\n" +
             "  MEMBER [Store].[CA plus USA] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA]})', solve_order=1\n" +
             "  MEMBER [Time].[Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n" +
             "SELECT {[Measures].[Customer Count], [Measures].[Unit Sales]} ON COLUMNS,\n" +
@@ -1381,7 +1381,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "FROM Sales";
 
         String result =
-        	"Axis #0:\n" +
+            "Axis #0:\n" +
             "{}\n" +
             "Axis #1:\n" +
             "{[Measures].[Customer Count]}\n" +
@@ -1401,8 +1401,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "Row #3: 2,981\n" +
             "Row #3: 83,181\n" +
             "Row #4: 1,462\n" +
-            "Row #4: 29,166\n";    
-        
+            "Row #4: 29,166\n";
+
         assertQueryReturns(mdxQuery, fold(result));
     }
 
@@ -1473,8 +1473,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "ON ROWS\n" +
             "FROM Sales";
 
-        String result = 
-    		"Axis #0:\n" +
+        String result =
+            "Axis #0:\n" +
             "{}\n" +
             "Axis #1:\n" +
             "{[Measures].[Customer Count]}\n" +
@@ -1484,7 +1484,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "{[Store].[Select Region], [Time].[1997].[Q1]}\n" +
             "{[Store].[Select Region], [Time].[1997].[Q3].[7]}\n" +
             "{[Store].[Select Region], [Time].[1997].[Q4]}\n" +
-            "{[Store].[Select Region], [Time].[1997]}\n" +            
+            "{[Store].[Select Region], [Time].[1997]}\n" +
             "Row #0: 3,753\n" +
             "Row #0: 229,496\n" +
             "Row #1: 1,877\n" +
@@ -1495,7 +1495,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "Row #3: 37,789\n" +
             "Row #4: 3,753\n" +
             "Row #4: 142,407\n";
-        
+
         assertQueryReturns(mdxQuery, fold(result));
     }
 

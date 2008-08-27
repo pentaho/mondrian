@@ -188,7 +188,7 @@ public class FormatTest extends TestCase {
         checkFormat(null, new Double(-0.001), "0.##;(0.##);Nil", "Nil");
         checkFormat(null, new Double(-0.01), "0.##;(0.##);Nil", "(0.01)");
         checkFormat(null, new Double(-0.01), "0.##;(0.#);Nil", "Nil");
-        
+
         // Bug 2028127
         //checkFormat(null, new Double(-0.001), "0.##;(0.##)");
     }

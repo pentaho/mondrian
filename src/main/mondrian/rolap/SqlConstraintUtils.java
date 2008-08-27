@@ -51,9 +51,9 @@ public class SqlConstraintUtils {
         AggStar aggStar,
         Evaluator evaluator,
         boolean restrictMemberTypes) {
-    	// Add constraint using the current evaluator context
+        // Add constraint using the current evaluator context
         Member[] members = evaluator.getMembers();
-    	
+
         if (restrictMemberTypes) {
             if (containsCalculatedMember(members)) {
                 throw Util.newInternal(

@@ -580,15 +580,15 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 null);
 
         String result =
-        	"Axis #0:\n" +
-        	"{}\n" +
-        	"Axis #1:\n" +
-        	"{[Measures].[Cost Count]}\n" +
-        	"Axis #2:\n" +
-        	"{[Warehouse2].[TwoMembers]}\n" +
-        	"Row #0: 220\n";
-        
-        testContext.assertQueryReturns(query, result);        
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Cost Count]}\n" +
+            "Axis #2:\n" +
+            "{[Warehouse2].[TwoMembers]}\n" +
+            "Row #0: 220\n";
+
+        testContext.assertQueryReturns(query, result);
     }
 
     public void testMultiLevelsMixedNullNonNullChild() {
@@ -635,14 +635,14 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 null);
 
         String result =
-        	"Axis #0:\n" +
-        	"{}\n" +
-        	"Axis #1:\n" +
-        	"{[Measures].[Cost Count]}\n" +
-        	"Axis #2:\n" +
-        	"{[Warehouse2].[TwoMembers]}\n" +
-        	"Row #0: 220\n";
-        
+            "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Cost Count]}\n" +
+            "Axis #2:\n" +
+            "{[Warehouse2].[TwoMembers]}\n" +
+            "Row #0: 220\n";
+
         testContext.assertQueryReturns(query, result);
     }
 
