@@ -1283,18 +1283,6 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         //
         // (6) ([1997 Q1 Plus July], [TV])
         //     ([1997 Q1 Plus July], [radio])
-        final String accessSql = "select count(`m0`) as `c0` " +
-            "from (" +
-            "select distinct `sales_fact_1997`.`customer_id` as `m0` " +
-            "from `time_by_day` as `time_by_day`," +
-            " `sales_fact_1997` as `sales_fact_1997`," +
-            " `promotion` as `promotion` " +
-            "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-            "and ((`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997)" +
-            " or (`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997)) " +
-            "and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` " +
-            "and `promotion`.`media_type` in ('TV', 'Radio')) as `dummyname`";
-
         final String oracleSql;
         if (!isGroupingSetsSupported()) {
             oracleSql = "select " +
@@ -1366,7 +1354,6 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "\"promotion\".\"media_type\"";
 
         assertQuerySql(mdxQuery, new SqlPattern[] {
-            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
             new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql),
             new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql),
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql)
@@ -1381,57 +1368,42 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
      */
     public void testAggregateDistinctCount4() {
         // CA and USA are overlapping members
-        final String mdxQuery = "WITH\n" +
+        final String mdxQuery = 
+        	"WITH\n" +
             "  MEMBER [Store].[CA plus USA] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA]})', solve_order=1\n" +
             "  MEMBER [Time].[Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n" +
             "SELECT {[Measures].[Customer Count], [Measures].[Unit Sales]} ON COLUMNS,\n" +
-            "      {[Store].[CA plus USA]} * {[Time].[Q1 plus July]} ON ROWS\n" +
+            "      Union({[Store].[CA plus USA]} * {[Time].[Q1 plus July]}, " +
+            "      Union({[Store].[USA].[CA]} * {[Time].[Q1 plus July]}," +
+            "      Union({[Store].[USA]} * {[Time].[Q1 plus July]}," +
+            "      Union({[Store].[CA plus USA]} * {[Time].[1997].[Q1]}," +
+            "            {[Store].[CA plus USA]} * {[Time].[1997].[Q3].[7]})))) ON ROWS\n" +
             "FROM Sales";
 
-        String accessSql = "select count(`m0`) as `c0` " +
-            "from (select distinct `sales_fact_1997`.`customer_id` as `m0` from `store` as `store`, " +
-            "`sales_fact_1997` as `sales_fact_1997`, `time_by_day` as `time_by_day` " +
-            "where `sales_fact_1997`.`store_id` = `store`.`store_id` and (`store`.`store_state` = 'CA' " +
-            "or `store`.`store_country` = 'USA') and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-            "and ((`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) " +
-            "or (`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' " +
-            "and `time_by_day`.`the_year` = 1997))) as `dummyname`";
-
-        String derbySql = "select count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
-            "\"time_by_day\" as \"time_by_day\" where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-            "and (\"store\".\"store_state\" = 'CA' or \"store\".\"store_country\" = 'USA') " +
-            "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-            "and ((\"time_by_day\".\"quarter\" = 'Q1' and \"time_by_day\".\"the_year\" = 1997) " +
-            "or (\"time_by_day\".\"month_of_year\" = 7 and \"time_by_day\".\"quarter\" = 'Q3' " +
-            "and \"time_by_day\".\"the_year\" = 1997))";
-
-        final String mysqlSql = "select count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
-            "from `store` as `store`, `sales_fact_1997` as `sales_fact_1997`, " +
-            "`time_by_day` as `time_by_day` where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
-            "and (`store`.`store_state` = 'CA' or `store`.`store_country` = 'USA') " +
-            "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-            "and ((`time_by_day`.`month_of_year` = 7 and `time_by_day`.`quarter` = 'Q3' " +
-            "and `time_by_day`.`the_year` = 1997) " +
-            "or (`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997))";
-
-        assertQuerySql(mdxQuery, new SqlPattern[] {
-            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)
-        });
-
-        assertQueryReturns(
-            mdxQuery,
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Customer Count]}\n" +
-                "{[Measures].[Unit Sales]}\n" +
-                "Axis #2:\n" +
-                "{[Store].[CA plus USA], [Time].[Q1 plus July]}\n" +
-                "Row #0: 3,505\n" +
-                "Row #0: 112,347\n"));
+        String result =
+        	"Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Customer Count]}\n" +
+            "{[Measures].[Unit Sales]}\n" +
+            "Axis #2:\n" +
+            "{[Store].[CA plus USA], [Time].[Q1 plus July]}\n" +
+            "{[Store].[All Stores].[USA].[CA], [Time].[Q1 plus July]}\n" +
+            "{[Store].[All Stores].[USA], [Time].[Q1 plus July]}\n" +
+            "{[Store].[CA plus USA], [Time].[1997].[Q1]}\n" +
+            "{[Store].[CA plus USA], [Time].[1997].[Q3].[7]}\n" +
+            "Row #0: 3,505\n" +
+            "Row #0: 112,347\n" +
+            "Row #1: 1,386\n" +
+            "Row #1: 22,293\n" +
+            "Row #2: 3,505\n" +
+            "Row #2: 90,054\n" +
+            "Row #3: 2,981\n" +
+            "Row #3: 83,181\n" +
+            "Row #4: 1,462\n" +
+            "Row #4: 29,166\n";    
+        
+        assertQueryReturns(mdxQuery, fold(result));
     }
 
     /**
@@ -1493,44 +1465,38 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             " MEMBER [Time].[Select Time Period] AS " +
             " 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7], [Time].[1997].[Q4], [Time].[1997]})', solve_order=1\n" +
             "SELECT {[Measures].[Customer Count], [Measures].[Unit Sales]} ON COLUMNS,\n" +
-            "      {[Store].[Select Region]} * {[Time].[Select Time Period]} ON ROWS\n" +
+            "      Union({[Store].[Select Region]} * {[Time].[Select Time Period]}," +
+            "      Union({[Store].[Select Region]} * {[Time].[1997].[Q1]}," +
+            "      Union({[Store].[Select Region]} * {[Time].[1997].[Q3].[7]}," +
+            "      Union({[Store].[Select Region]} * {[Time].[1997].[Q4]}," +
+            "            {[Store].[Select Region]} * {[Time].[1997]})))) " +
+            "ON ROWS\n" +
             "FROM Sales";
 
-        String derbySql = "select count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", \"time_by_day\" " +
-            "as \"time_by_day\" where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-            "and (\"store\".\"store_state\" in ('CA', 'OR') or \"store\".\"store_country\" in ('Mexico', 'Canada')) " +
-            "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and (((\"time_by_day\".\"quarter\" = 'Q1' " +
-            "and \"time_by_day\".\"the_year\" = 1997) or (\"time_by_day\".\"quarter\" = 'Q4' " +
-            "and \"time_by_day\".\"the_year\" = 1997)) or (\"time_by_day\".\"month_of_year\" = 7 " +
-            "and \"time_by_day\".\"quarter\" = 'Q3' and \"time_by_day\".\"the_year\" = 1997) " +
-            "or \"time_by_day\".\"the_year\" = 1997)";
-
-        final String mysqlSql = "select count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
-            "from `store` as `store`, `sales_fact_1997` as `sales_fact_1997`, " +
-            "`time_by_day` as `time_by_day` where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
-            "and (`store`.`store_state` in ('CA', 'OR') or `store`.`store_country` in ('Mexico', 'Canada')) " +
-            "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and ((`time_by_day`.`month_of_year` = 7 " +
-            "and `time_by_day`.`quarter` = 'Q3' and `time_by_day`.`the_year` = 1997) " +
-            "or (((`time_by_day`.`the_year`, `time_by_day`.`quarter`) in ((1997, 'Q1'), (1997, 'Q4')))) " +
-            "or `time_by_day`.`the_year` = 1997)";
-
-        assertQuerySql(mdxQuery, new SqlPattern[] {
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)
-        });
-
-        assertQueryReturns(
-            mdxQuery,
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Customer Count]}\n" +
-                "{[Measures].[Unit Sales]}\n" +
-                "Axis #2:\n" +
-                "{[Store].[Select Region], [Time].[Select Time Period]}\n" +
-                "Row #0: 3,753\n" +
-                "Row #0: 229,496\n"));
+        String result = 
+    		"Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Customer Count]}\n" +
+            "{[Measures].[Unit Sales]}\n" +
+            "Axis #2:\n" +
+            "{[Store].[Select Region], [Time].[Select Time Period]}\n" +
+            "{[Store].[Select Region], [Time].[1997].[Q1]}\n" +
+            "{[Store].[Select Region], [Time].[1997].[Q3].[7]}\n" +
+            "{[Store].[Select Region], [Time].[1997].[Q4]}\n" +
+            "{[Store].[Select Region], [Time].[1997]}\n" +            
+            "Row #0: 3,753\n" +
+            "Row #0: 229,496\n" +
+            "Row #1: 1,877\n" +
+            "Row #1: 36,177\n" +
+            "Row #2: 845\n" +
+            "Row #2: 13,123\n" +
+            "Row #3: 2,073\n" +
+            "Row #3: 37,789\n" +
+            "Row #4: 3,753\n" +
+            "Row #4: 142,407\n";
+        
+        assertQueryReturns(mdxQuery, fold(result));
     }
 
     /*

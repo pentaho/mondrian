@@ -156,7 +156,7 @@ public class RolapCubeLevel extends RolapLevel {
      */
     public RolapStar.Column getBaseStarKeyColumn(RolapCube baseCube) {
         RolapStar.Column column = null;
-        if (getCube().isVirtual()) {
+        if (getCube().isVirtual() && baseCube != null) {
             RolapCubeLevel lvl = baseCube.findBaseCubeLevel(this);
             if (lvl != null) {
                 column = lvl.getStarKeyColumn();

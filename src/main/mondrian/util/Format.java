@@ -639,7 +639,7 @@ public class Format {
             fd.shift(decimalShift);
             final int formatDigitsRightOfPoint =
                     zeroesRightOfPoint + digitsRightOfPoint;
-            if (n < 0 && !shows(fd, formatDigitsRightOfPoint)) {
+            if (n == 0.0 || (n < 0 && !shows(fd, formatDigitsRightOfPoint))) {
                 // Underflow of negative number. Make it zero, so there is no
                 // '-' sign.
                 n = 0;

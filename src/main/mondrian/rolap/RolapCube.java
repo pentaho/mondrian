@@ -2585,7 +2585,7 @@ public class RolapCube extends CubeBase {
         }
     }
 
-    private static class CubeComparator implements Comparator<RolapCube>
+    public static class CubeComparator implements Comparator<RolapCube>
     {
         public int compare(RolapCube c1, RolapCube c2)
         {

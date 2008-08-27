@@ -566,24 +566,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "select {[Measures].[Cost Count]} on columns, {[Warehouse2].[TwoMembers]} on rows " +
             "from [Warehouse2]";
 
-        String necjSqlDerby =
-            "select count(distinct \"inventory_fact_1997\".\"warehouse_cost\") as \"m0\" " +
-            "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\" " +
-            "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and " +
-            "((\"warehouse\".\"warehouse_name\" = 'Freeman And Co' " +
-            "and \"warehouse\".\"wa_address1\" = '234 West Covina Pkwy' " +
-            "and \"warehouse\".\"warehouse_fax\" is null) " +
-            "or (\"warehouse\".\"warehouse_name\" = 'Jones International' " +
-            "and \"warehouse\".\"wa_address1\" = '3377 Coachman Place' " +
-            "and \"warehouse\".\"warehouse_fax\" = '971-555-6213'))";
-
-        String necjSqlMySql =
-            "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` " +
-            "from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` " +
-            "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and " +
-            "((`warehouse`.`warehouse_name` = 'Jones International' and `warehouse`.`wa_address1` = '3377 Coachman Place' and `warehouse`.`warehouse_fax` = '971-555-6213') " +
-            "or (`warehouse`.`warehouse_name` = 'Freeman And Co' and `warehouse`.`wa_address1` = '234 West Covina Pkwy' and `warehouse`.`warehouse_fax` is null))";
-
         String necjSqlMySql2 =
             "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and ((`warehouse`.`warehouse_name` = 'Freeman And Co' and `warehouse`.`wa_address1` = '234 West Covina Pkwy' and `warehouse`.`warehouse_fax` is null) or (`warehouse`.`warehouse_name` = 'Jones International' and `warehouse`.`wa_address1` = '3377 Coachman Place' and `warehouse`.`warehouse_fax` = '971-555-6213'))";
 
@@ -597,23 +579,16 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 null,
                 null);
 
-        SqlPattern[] patterns =
-            new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
-            };
-
-        try {
-            assertQuerySql(testContext, query, patterns);
-        } catch (Throwable t) {
-            patterns =
-                new SqlPattern[] {
-                    new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
-                    new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql2, necjSqlMySql2)
-                };
-
-            assertQuerySql(testContext, query, patterns);
-        }
+        String result =
+        	"Axis #0:\n" +
+        	"{}\n" +
+        	"Axis #1:\n" +
+        	"{[Measures].[Cost Count]}\n" +
+        	"Axis #2:\n" +
+        	"{[Warehouse2].[TwoMembers]}\n" +
+        	"Row #0: 220\n";
+        
+        testContext.assertQueryReturns(query, result);        
     }
 
     public void testMultiLevelsMixedNullNonNullChild() {
@@ -647,20 +622,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "select {[Measures].[Cost Count]} on columns, {[Warehouse2].[TwoMembers]} on rows " +
             "from [Warehouse2]";
 
-        String necjSqlDerby =
-            "select count(distinct \"inventory_fact_1997\".\"warehouse_cost\") as \"m0\" " +
-            "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\" " +
-            "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and " +
-            "((\"warehouse\".\"warehouse_fax\" is null and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"wa_address3\" is null) " +
-            "or (\"warehouse\".\"warehouse_fax\" = '971-555-6213' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"wa_address3\" is null))";
-
-        String necjSqlMySql =
-            "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` " +
-            "from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` " +
-            "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and " +
-            "((`warehouse`.`warehouse_fax` = '971-555-6213' and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null) " +
-            "or (`warehouse`.`warehouse_fax` is null and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null))";
-
         String necjSqlMySql2 =
             "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and ((`warehouse`.`warehouse_fax` is null and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null) or (`warehouse`.`warehouse_fax` = '971-555-6213' and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null))";
 
@@ -673,23 +634,16 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 null,
                 null);
 
-        SqlPattern[] patterns =
-            new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
-            };
-
-        try {
-            assertQuerySql(testContext, query, patterns);
-        } catch (Throwable t) {
-            patterns =
-                new SqlPattern[] {
-                    new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
-                    new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql2, necjSqlMySql2)
-            };
-
-            assertQuerySql(testContext, query, patterns);
-        }
+        String result =
+        	"Axis #0:\n" +
+        	"{}\n" +
+        	"Axis #1:\n" +
+        	"{[Measures].[Cost Count]}\n" +
+        	"Axis #2:\n" +
+        	"{[Warehouse2].[TwoMembers]}\n" +
+        	"Row #0: 220\n";
+        
+        testContext.assertQueryReturns(query, result);
     }
 
     public void testAggregationOnCJofMembersGeneratesOptimalQuery() {

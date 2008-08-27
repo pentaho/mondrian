@@ -4832,6 +4832,26 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("1 - -10.5 * 2 -3", "19");
     }
 
+    public void testNegativeZero() {
+        assertExprReturns("-0.0", "0");
+    }
+    
+    public void testNegativeZero1() {
+        assertExprReturns("-(0.0)", "0");
+    }
+    
+    public void testNegativeZeroSubtract() {
+        assertExprReturns("-0.0 - 0.0", "0");
+    }
+    
+    public void testNegativeZeroMultiply() {
+        assertExprReturns("-1 * 0", "0");
+    }
+    
+    public void testNegativeZeroDivide() {
+        assertExprReturns("-0.0 / 2", "0");
+    }
+    
     public void testStringConcat() {
         assertExprReturns(" \"foo\" || \"bar\"  ",
             "foobar");

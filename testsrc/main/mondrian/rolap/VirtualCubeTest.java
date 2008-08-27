@@ -143,113 +143,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 "Row #0: 196,770.888\n" +
                 "Row #0: 266,773\n"));
     }
-
-    /**
-     * Verifies the cartesian join sql does not appear.
-     */
-    public void testCartesianJoinSqlDoesNotOccur() {
-
-        // only test on mysql dialect
-        if (!getTestContext().getDialect().isMySQL()) {
-            return;
-        }
-
-        String mdxQuery =
-            "select " +
-            "{ [measures].[store sales], [measures].[warehouse sales] } on 0, " +
-            "non empty { [product].[product family].members } on 1 " +
-            "from [warehouse and sales] " +
-            "where [store].[all stores].[usa].[or]";
-
-        String expectedSql =
-            "select "+
-            "`product_class`.`product_family` as `c0` " +
-            "from " +
-            "`product` as `product`, " +
-            "`product_class` as `product_class`, " +
-            "`inventory_fact_1997` as `inventory_fact_1997` " +
-            "where " +
-            "`product`.`product_class_id` = `product_class`.`product_class_id` " +
-            "and `inventory_fact_1997`.`product_id` = `product`.`product_id` " +
-            "group by " +
-            "`product_class`.`product_family` " +
-            "union " +
-            "select " +
-            "`product_class`.`product_family` as `c0` " +
-            "from " +
-            "`product` as `product`, " +
-            "`product_class` as `product_class`, " +
-            "`sales_fact_1997` as `sales_fact_1997`, " +
-            "`store` as `store` " +
-            "where " +
-            "`product`.`product_class_id` = `product_class`.`product_class_id` " +
-            "and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
-            "and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
-            "and `store`.`store_state` = 'OR' " +
-            "group by " +
-            "`product_class`.`product_family` " +
-            "order by " +
-            "ISNULL(1), 1 ASC";
-
-        SqlPattern[] patterns =
-        new SqlPattern[] {
-            new SqlPattern(SqlPattern.Dialect.MYSQL, expectedSql, expectedSql)
-        };
-
-        assertQuerySql(mdxQuery, patterns, true);
-    }
-
-    public void testCartesianJoin() {
-      // these examples caused cartesian joins to occur, a fix in SqlTupleReader
-        // was made and now these queries run normally.
-      TestContext testContext = createContextWithNonDefaultAllMember();
-
-      testContext.assertQueryReturns(
-            "select " +
-            "{ [measures].[store sales], [measures].[warehouse sales] } on 0, " +
-            "non empty { [product].[product family].members } on 1 " +
-            "from [warehouse and sales] " +
-            "where [store].[all stores].[usa].[or]",
-            fold(
-                "Axis #0:\n" +
-                "{[Store].[All Stores].[USA].[OR]}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Store Sales]}\n" +
-                "{[Measures].[Warehouse Sales]}\n" +
-                "Axis #2:\n" +
-                "{[Product].[All Products].[Drink]}\n" +
-                "{[Product].[All Products].[Food]}\n" +
-                "{[Product].[All Products].[Non-Consumable]}\n" +
-                "Row #0: 12,137.29\n" +
-                "Row #0: 3,986.32\n" +
-                "Row #1: 102,564.67\n" +
-                "Row #1: 26,496.483\n" +
-                "Row #2: 27,575.11\n" +
-                "Row #2: 8,352.25\n"));
-
-      testContext.assertQueryReturns(
-            "select " +
-            "{ [measures].[warehouse sales], [measures].[store sales] } on 0, " +
-            "non empty { [product].[product family].members } on 1 " +
-            "from [warehouse and sales] " +
-            "where [store].[all stores].[usa].[or]",
-            fold(
-                "Axis #0:\n" +
-                "{[Store].[All Stores].[USA].[OR]}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Warehouse Sales]}\n" +
-                "{[Measures].[Store Sales]}\n" +
-                "Axis #2:\n" +
-                "{[Product].[All Products].[Drink]}\n" +
-                "{[Product].[All Products].[Food]}\n" +
-                "{[Product].[All Products].[Non-Consumable]}\n" +
-                "Row #0: 3,986.32\n" +
-                "Row #0: 12,137.29\n" +
-                "Row #1: 26,496.483\n" +
-                "Row #1: 102,564.67\n" +
-                "Row #2: 8,352.25\n" +
-                "Row #2: 27,575.11\n"));
-    }
+    
 
     /**
      * Query a virtual cube that contains a non-conforming dimension that
@@ -1114,6 +1008,246 @@ public class VirtualCubeTest extends BatchTestCase {
         String caption = m0.getCaption();
         assertEquals("Store Sqft Caption", caption);
     }
+    
+    /**
+     * Test that RolapCubeLevel is used correctly in the context of virtual cube.
+     */
+    public void testRolapCubeLevelInVirtualCube() {
+    	String query1 =
+    		"With " + 
+    		"Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Warehouse],[*BASE_MEMBERS_Time])' " + 
+    		"Set [*NATIVE_MEMBERS_Warehouse] as 'Generate([*NATIVE_CJ_SET], {[Warehouse].CurrentMember})' " +
+    		"Set [*BASE_MEMBERS_Warehouse] as '[Warehouse].[Country].Members' " +
+    		"Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' " + 
+    		"Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members' " +
+    		"Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Warehouse Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 " + 
+    		"Select [*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Warehouse].currentMember,[Time].currentMember)}) on rows From [Warehouse and Sales] ";
+    	
+    	String query2 =
+    		"With " + 
+    		"Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Warehouse],[*BASE_MEMBERS_Time])' " + 
+    		"Set [*NATIVE_MEMBERS_Warehouse] as 'Generate([*NATIVE_CJ_SET], {[Warehouse].CurrentMember})' " +
+    		"Set [*BASE_MEMBERS_Warehouse] as '[Warehouse].[Country].Members' " +
+    		"Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' " + 
+    		"Set [*BASE_MEMBERS_Time] as 'Filter([Time].[Month].Members,[Time].CurrentMember Not In {[Time].[1997].[Q1].[2]})' " + 
+    		"Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Warehouse Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 " + 
+    		"Select [*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Warehouse].currentMember,[Time].currentMember)}) on rows From [Warehouse and Sales]";
+    		
+    	executeQuery(query1);
+    	
+    	/* The query with the filter should now succeed without NPE */
+    	String result =
+    		"Axis #0:\n" +
+    		"{}\n" +
+    		"Axis #1:\n" +
+    		"{[Measures].[*FORMATTED_MEASURE_0]}\n" +
+    		"Axis #2:\n" +
+    		"{[Warehouse].[All Warehouses].[USA], [Time].[1997].[Q1].[1]}\n" +
+    		"{[Warehouse].[All Warehouses].[USA], [Time].[1997].[Q1].[3]}\n" +
+    		"{[Warehouse].[All Warehouses].[USA], [Time].[1997].[Q2].[4]}\n" +
+    		"{[Warehouse].[All Warehouses].[USA], [Time].[1997].[Q2].[5]}\n" +
+    		"{[Warehouse].[All Warehouses].[USA], [Time].[1997].[Q2].[6]}\n"+
+    		"{[Warehouse].[All Warehouses].[USA], [Time].[1997].[Q3].[7]}\n"+
+    		"{[Warehouse].[All Warehouses].[USA], [Time].[1997].[Q3].[8]}\n"+
+    		"{[Warehouse].[All Warehouses].[USA], [Time].[1997].[Q3].[9]}\n"+
+    		"{[Warehouse].[All Warehouses].[USA], [Time].[1997].[Q4].[10]}\n"+
+    		"{[Warehouse].[All Warehouses].[USA], [Time].[1997].[Q4].[11]}\n"+
+    		"{[Warehouse].[All Warehouses].[USA], [Time].[1997].[Q4].[12]}\n"+
+    		"Row #0: 21,762\n"+
+    		"Row #1: 13,775\n"+
+    		"Row #2: 15,938\n"+
+    		"Row #3: 15,649\n"+
+    		"Row #4: 14,629\n"+
+    		"Row #5: 18,626\n"+
+    		"Row #6: 15,833\n"+
+    		"Row #7: 21,393\n"+
+    		"Row #8: 17,100\n"+
+    		"Row #9: 15,356\n"+
+    		"Row #10: 13,948\n";
+     		
+    	assertQueryReturns(query2, fold(result));
+    }
+    
+    /*
+     * Test that the logic to apply non empty context constraint in virtual cube is correct.
+     * The joins shound't be cartesian product.
+     */    
+    public void testNonEmptyCJConstraintOnVirtualCube() {
+    	String query =
+    		"with " +
+    		"set [foo] as [Time].[Month].members " +
+    		"set [bar] as {[Store].[USA]} " +
+    		"Select {[Measures].[Warehouse Sales],[Measures].[Store Sales]} on columns, " +
+    		"nonemptycrossjoin([foo],[bar]) on rows " +
+    		"From [Warehouse and Sales] " +
+    		"Where ([Product].[All Products].[Food])";
+    	
+    	String mysqlSQL =
+    		"select " +
+    		"`time_by_day`.`the_year` as `c0`, `time_by_day`.`quarter` as `c1`, `time_by_day`.`month_of_year` as `c2`, `store`.`store_country` as `c3` " +
+    		"from " +
+    		"`time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, " +
+    		"`store` as `store`, `product_class` as `product_class`, `product` as `product` " +
+    		"where " +
+    		"`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `sales_fact_1997`.`store_id` = `store`.`store_id` and " +
+    		"`sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and " +
+    		"`product_class`.`product_family` = 'Food' and (`store`.`store_country` = 'USA') " +
+    		"group by " +
+    		"`time_by_day`.`the_year`, `time_by_day`.`quarter`, `time_by_day`.`month_of_year`, `store`.`store_country` " +
+    		"union " +
+    		"select " +
+    		"`time_by_day`.`the_year` as `c0`, `time_by_day`.`quarter` as `c1`, `time_by_day`.`month_of_year` as `c2`, `store`.`store_country` as `c3` " +
+    		"from " +
+    		"`time_by_day` as `time_by_day`, `inventory_fact_1997` as `inventory_fact_1997`, `store` as `store`, " +
+    		"`product_class` as `product_class`, `product` as `product` " +
+    		"where " +
+    		"`inventory_fact_1997`.`time_id` = `time_by_day`.`time_id` and `inventory_fact_1997`.`store_id` = `store`.`store_id` and " +
+    		"`inventory_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and " +
+    		"`product_class`.`product_family` = 'Food' and (`store`.`store_country` = 'USA') " +
+    		"group by " +
+    		"`time_by_day`.`the_year`, `time_by_day`.`quarter`, `time_by_day`.`month_of_year`, `store`.`store_country` " +
+    		"order by " +
+    		"ISNULL(1), 1 ASC, ISNULL(2), 2 ASC, ISNULL(3), 3 ASC, ISNULL(4), 4 ASC";
+    	
+    	String derbySQL =
+    		"select " +
+    		"\"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", \"time_by_day\".\"month_of_year\", \"store\".\"store_country\" " +
+    		"from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", \"store\" as \"store\", " +
+    		"\"product_class\" as \"product_class\", \"product\" as \"product\" " +
+    		"where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and " +
+    		"\"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and " +
+    		"\"product_class\".\"product_family\" = 'Food' and (\"store\".\"store_country\" = 'USA') " +
+    		"group by \"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", \"time_by_day\".\"month_of_year\", \"store\".\"store_country\" " +
+    		"union " +
+    		"select " +
+    		"\"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", \"time_by_day\".\"month_of_year\", \"store\".\"store_country\" " +
+    		"from \"time_by_day\" as \"time_by_day\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"store\" as \"store\", " +
+    		"\"product_class\" as \"product_class\", \"product\" as \"product\" " +
+    		"where \"inventory_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"inventory_fact_1997\".\"store_id\" = \"store\".\"store_id\" and " +
+    		"\"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and " +
+    		"\"product_class\".\"product_family\" = 'Food' and (\"store\".\"store_country\" = 'USA') " +
+    		"group by \"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", \"time_by_day\".\"month_of_year\", \"store\".\"store_country\" " +
+    		"order by 1 ASC, 2 ASC, 3 ASC, 4 ASC";
+    	
+        SqlPattern[] mysqlPattern =
+            new SqlPattern[] {
+                new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSQL, mysqlSQL),
+                new SqlPattern(SqlPattern.Dialect.DERBY, derbySQL, derbySQL)
+          	};
+    	
+        String result =
+        	"Axis #0:\n" +
+        	"{[Product].[All Products].[Food]}\n" +
+        	"Axis #1:\n" +
+        	"{[Measures].[Warehouse Sales]}\n" +
+        	"{[Measures].[Store Sales]}\n" +
+        	"Axis #2:\n" +
+        	"{[Time].[1997].[Q1].[1], [Store].[All Stores].[USA]}\n" +
+        	"{[Time].[1997].[Q1].[2], [Store].[All Stores].[USA]}\n" +
+        	"{[Time].[1997].[Q1].[3], [Store].[All Stores].[USA]}\n" +
+        	"{[Time].[1997].[Q2].[4], [Store].[All Stores].[USA]}\n" +
+        	"{[Time].[1997].[Q2].[5], [Store].[All Stores].[USA]}\n" +
+        	"{[Time].[1997].[Q2].[6], [Store].[All Stores].[USA]}\n" +
+        	"{[Time].[1997].[Q3].[7], [Store].[All Stores].[USA]}\n" +
+        	"{[Time].[1997].[Q3].[8], [Store].[All Stores].[USA]}\n" +
+        	"{[Time].[1997].[Q3].[9], [Store].[All Stores].[USA]}\n" +
+        	"{[Time].[1997].[Q4].[10], [Store].[All Stores].[USA]}\n" +
+        	"{[Time].[1997].[Q4].[11], [Store].[All Stores].[USA]}\n" +
+        	"{[Time].[1997].[Q4].[12], [Store].[All Stores].[USA]}\n" +
+        	"Row #0: 16,083.015\n" +
+        	"Row #0: 32,993.12\n" +
+        	"Row #1: 9,298.379\n" +
+        	"Row #1: 32,139.91\n" +
+        	"Row #2: 10,129.659\n" +
+        	"Row #2: 36,128.29\n" +
+        	"Row #3: 11,415.462\n" +
+        	"Row #3: 30,747.21\n" +
+        	"Row #4: 11,358.086\n" +
+        	"Row #4: 31,896.24\n" +
+        	"Row #5: 10,425.768\n" +
+        	"Row #5: 32,792.55\n" +
+        	"Row #6: 13,684.193\n" +
+        	"Row #6: 36,324.76\n" +
+        	"Row #7: 11,332.797\n" +
+        	"Row #7: 33,842.75\n" +
+        	"Row #8: 15,667.978\n" +
+        	"Row #8: 31,640.09\n" +
+        	"Row #9: 11,902.18\n" +
+        	"Row #9: 30,337.12\n" +
+        	"Row #10: 10,144.841\n" +
+        	"Row #10: 38,709.15\n" +
+        	"Row #11: 9,705.561\n" +
+        	"Row #11: 41,484.40\n";
+
+    	assertQuerySql(query, mysqlPattern, true);
+        assertQueryReturns(query, fold(result));    	
+    }
+
+    /*
+     * Test that the logic to apply non empty context constraint in virtual cube is correct.
+     * The joins shound't be cartesian product.
+     */    
+    public void testNonEmptyConstraintOnVirtualCubeWithCalcMeasure() {
+    	String query = 
+    		"with " +
+    		"set [bar] as {[Store].[USA]} " +
+    		"member [Measures].[CalcMeasure] as '[Measures].[Warehouse Sales] / [Measures].[Store Sales]' " +
+    		"Select " +
+    		"{[Measures].[CalcMeasure]} on columns, " +
+    		"non empty([Product].[Product Family].Members) on rows " +
+    		"From [Warehouse and Sales] " +
+    		"where [bar]";
+		
+    	String mysqlSQL = 
+    		"select `product_class`.`product_family` as `c0` " +
+    		"from `product` as `product`, `product_class` as `product_class`, `sales_fact_1997` as `sales_fact_1997`, `store` as `store` " +
+    		"where `product`.`product_class_id` = `product_class`.`product_class_id` and `sales_fact_1997`.`product_id` = `product`.`product_id` and " +
+    		"`sales_fact_1997`.`store_id` = `store`.`store_id` and `store`.`store_country` = 'USA' " +
+    		"group by `product_class`.`product_family` " +
+    		"union " +
+    		"select `product_class`.`product_family` as `c0` " +
+    		"from `product` as `product`, `product_class` as `product_class`, `inventory_fact_1997` as `inventory_fact_1997`, `store` as `store` " +
+    		"where `product`.`product_class_id` = `product_class`.`product_class_id` and `inventory_fact_1997`.`product_id` = `product`.`product_id` and " +
+    		"`inventory_fact_1997`.`store_id` = `store`.`store_id` and `store`.`store_country` = 'USA' " +
+    		"group by `product_class`.`product_family` " +
+    		"order by ISNULL(1), 1 ASC";
+    	
+    	String derbySQL = 
+    		"select \"product_class\".\"product_family\" " +
+    		"from \"product\" as \"product\", \"product_class\" as \"product_class\", \"sales_fact_1997\" as \"sales_fact_1997\", \"store\" as \"store\" " +
+    		"where \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\"" +
+    		" and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"store\".\"store_country\" = 'USA' " +
+    		"group by \"product_class\".\"product_family\" " +
+    		"union " +
+    		"select \"product_class\".\"product_family\" " +
+    		"from \"product\" as \"product\", \"product_class\" as \"product_class\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"store\" as \"store\" " +
+    		"where \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\"" +
+    		" and \"inventory_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"store\".\"store_country\" = 'USA' " +
+    		"group by \"product_class\".\"product_family\" " +
+    		"order by 1 ASC";
+
+    	String result =
+    		"Axis #0:\n" +
+    		"{[Store].[All Stores].[USA]}\n" +
+    		"Axis #1:\n" +
+    		"{[Measures].[CalcMeasure]}\n" +
+    		"Axis #2:\n" +
+    		"{[Product].[All Products].[Drink]}\n" +
+    		"{[Product].[All Products].[Food]}\n" +
+    		"{[Product].[All Products].[Non-Consumable]}\n" +
+    		"Row #0: 0.369\n" +
+    		"Row #1: 0.345\n" +
+    		"Row #2: 0.35\n";
+
+    	SqlPattern[] mysqlPattern =
+            new SqlPattern[] {
+                new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSQL, mysqlSQL),
+                new SqlPattern(SqlPattern.Dialect.DERBY, derbySQL, derbySQL)
+            };
+    	
+    	assertQuerySql(query, mysqlPattern, true);
+        assertQueryReturns(query, fold(result));    	
+    } 
 }
 
 // End VirtualCubeTest.java
