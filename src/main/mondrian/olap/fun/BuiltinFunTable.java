@@ -1089,6 +1089,7 @@ public class BuiltinFunTable extends FunTableImpl {
 
         define(XtdFunDef.MtdResolver);
         define(OrderFunDef.Resolver);
+        define(UnorderFunDef.Resolver);
         define(PeriodsToDateFunDef.Resolver);
         define(XtdFunDef.QtdResolver);
 

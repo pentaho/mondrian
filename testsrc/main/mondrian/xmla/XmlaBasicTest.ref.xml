@@ -6479,6 +6479,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>UniqueName</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Unorder</FUNCTION_NAME>
+                        <DESCRIPTION>Removes any enforced ordering from a specified set.</DESCRIPTION>
+                        <PARAMETER_LIST>Set</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Unorder</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Val</FUNCTION_NAME>
                         <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
@@ -21571,6 +21580,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>UniqueName</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Unorder</FUNCTION_NAME>
+                        <DESCRIPTION>Removes any enforced ordering from a specified set.</DESCRIPTION>
+                        <PARAMETER_LIST>Set</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Unorder</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Val</FUNCTION_NAME>

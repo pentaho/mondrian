@@ -39,7 +39,7 @@
 
 <blockquote><code>
 SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS,<br />
-  {[Product].members} ON ROWS<br />
+&nbsp;&nbsp;{[Product].members} ON ROWS<br />
 FROM [Sales]<br />
 WHERE [Time].[1997].[Q2]
 </code></blockquote>
@@ -201,6 +201,42 @@ SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS,<br />
 &nbsp;&nbsp;{[Product].CurrentMember.Children} ON ROWS<br />
 FROM [Sales]
 </code></blockquote>
+
+<!-- 
+#######################
+##  Order of Sets #####
+####################### -->
+<h3>Order of sets</h3>
+
+<p>MDX sets are ordered and may contain duplicates. (Both of these properties are
+at odds with the mathematical definition of 'set', so it would have been
+better if they were called 'lists', but we're stuck with the term 'set'.)</p>
+
+<p>For most functions that return sets, Microsoft's documentation for
+SQL Server Analysis Services 2008 (the <i>de facto</i> MDX standard)
+does not specify the order of elements in the result set, and one might
+assume that MDX server could return the results in any order and still
+comply with the standard. However, Mondrian's implementation of MDX gives
+stronger guarantees: a function's result set will be in the obvious order.</p>
+
+<p>For most functions, the definition of 'obvious' is obvious,
+so we won't spell it out in detail.
+For example, <code>Filter</code> returns elements in the same order as the set expression;
+<code>Crossjoin</code> returns the results in the order of the first set expression, then within
+that, by the second second expression. Similarly <code>Generate</code>,
+<code>Union</code>, <code>Except</code>. The sorting
+functions (<code>Order</code>, <code>TopCount</code>, <code>BottomCount</code>, <code>
+TopPercent</code>, <code>Hierarchize</code>, etc.) use a
+<a href="http://en.wikipedia.org/wiki/Sorting_algorithm#Stability">stable</a>
+sorting algorithm. Metadata methods such as <code>&lt;Hierarchy&gt;.Members</code>
+return their results in natural order.</p>
+
+<p>If you do not care about the order of results of a set expression
+(say because you are sorting the results later),
+wrap the expression the <code>Unorder</code> function,
+and mondrian may be able to use a more efficient algorithm
+that does not guarantee order.</p>
+
 <!-- 
 ########################
 ##  Function List  #####
@@ -379,6 +415,20 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Acos</code></td>
+  <td>Returns the arccosine, or inverse cosine, of a number. The arccosine is the angle whose cosine is Arg1. The returned angle is given in radians in the range 0 (zero) to pi.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Acos(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Acosh</code></td>
+  <td>Returns the inverse hyperbolic cosine of a number. Number must be greater than or equal to 1. The inverse hyperbolic cosine is the value whose hyperbolic cosine is Arg1, so Acosh(Cosh(number)) equals Arg1.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Acosh(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>AddCalculatedMembers</code></td>
   <td>Adds calculated members to a set.
     <h1>Syntax</h1>
@@ -451,6 +501,34 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Asin</code></td>
+  <td>Returns the arcsine, or inverse sine, of a number. The arcsine is the angle whose sine is Arg1. The returned angle is given in radians in the range -pi/2 to pi/2.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Asin(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Asinh</code></td>
+  <td>Returns the inverse hyperbolic sine of a number. The inverse hyperbolic sine is the value whose hyperbolic sine is Arg1, so Asinh(Sinh(number)) equals Arg1.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Asinh(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Atan2</code></td>
+  <td>Returns the arctangent, or inverse tangent, of the specified x- and y-coordinates. The arctangent is the angle from the x-axis to a line containing the origin (0, 0) and a point with coordinates (x_num, y_num). The angle is given in radians between -pi and pi, excluding -pi.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Atan2(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Atanh</code></td>
+  <td>Returns the inverse hyperbolic tangent of a number. Number must be between -1 and 1 (excluding -1 and 1).
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Atanh(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Atn</code></td>
   <td>Returns a Double specifying the arctangent of a number.
     <h1>Syntax</h1>
@@ -499,6 +577,13 @@ FROM [Sales]
   <td>Returns an expression that has been converted to a Variant of subtype Byte.
     <h1>Syntax</h1>
     &lt;Integer&gt; CByte(&lt;Value&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>CDate</code></td>
+  <td>Returns an expression that has been converted to a Variant of subtype Date.
+    <h1>Syntax</h1>
+    &lt;DateTime&gt; CDate(&lt;Value&gt;)
   </td>
 </tr>
 <tr>
@@ -625,6 +710,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Cosh</code></td>
+  <td>Returns the hyperbolic cosine of a number.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Cosh(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Count</code></td>
   <td>Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.
     <h1>Syntax</h1>
@@ -702,6 +794,20 @@ FROM [Sales]
   <td>Returns the current member along a hierarchy during an iteration.
     <h1>Syntax</h1>
     &lt;Hierarchy&gt;.CurrentMember
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DDB</code></td>
+  <td>Returns a Double specifying the depreciation of an asset for a specific time period using the double-declining balance method or some other method you specify.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; DDB(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>DDB</code></td>
+  <td>Returns a Double specifying the depreciation of an asset for a specific time period using the double-declining balance method or some other method you specify.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; DDB(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -800,6 +906,13 @@ FROM [Sales]
   <td>Returns the default member of a hierarchy.
     <h1>Syntax</h1>
     &lt;Hierarchy&gt;.DefaultMember
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Degrees</code></td>
+  <td>Converts radians to degrees.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Degrees(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -909,6 +1022,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Exists</code></td>
+  <td>Returns the the set of tuples of the first set that exist with one or more tuples of the second set.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Exists(&lt;Set&gt;, &lt;Set&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Exp</code></td>
   <td>Returns a Double specifying e (the base of natural logarithms) raised to a power.
     <h1>Syntax</h1>
@@ -973,12 +1093,138 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Fix</code></td>
+  <td>Returns the integer portion of a number. If negative, returns the negative number greater than or equal to the number.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Fix(&lt;Value&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Format</code></td>
   <td>Formats a number or date to a string.
     <h1>Syntax</h1>
     &lt;String&gt; Format(&lt;Member&gt;, &lt;String&gt;)<br/>
     &lt;String&gt; Format(&lt;Numeric Expression&gt;, &lt;String&gt;)<br/>
     &lt;String&gt; Format(&lt;DateTime&gt;, &lt;String&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatCurrency</code></td>
+  <td>Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatCurrency(&lt;Value&gt;, &lt;Integer&gt;, &lt;Integer&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatCurrency</code></td>
+  <td>Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatCurrency(&lt;Value&gt;, &lt;Integer&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatCurrency</code></td>
+  <td>Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatCurrency(&lt;Value&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatCurrency</code></td>
+  <td>Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatCurrency(&lt;Value&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatCurrency</code></td>
+  <td>Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatCurrency(&lt;Value&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatDateTime</code></td>
+  <td>Returns an expression formatted as a date or time.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatDateTime(&lt;DateTime&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatDateTime</code></td>
+  <td>Returns an expression formatted as a date or time.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatDateTime(&lt;DateTime&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatNumber</code></td>
+  <td>Returns an expression formatted as a number.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatNumber(&lt;Value&gt;, &lt;Integer&gt;, &lt;Integer&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatNumber</code></td>
+  <td>Returns an expression formatted as a number.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatNumber(&lt;Value&gt;, &lt;Integer&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatNumber</code></td>
+  <td>Returns an expression formatted as a number.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatNumber(&lt;Value&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatNumber</code></td>
+  <td>Returns an expression formatted as a number.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatNumber(&lt;Value&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatNumber</code></td>
+  <td>Returns an expression formatted as a number.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatNumber(&lt;Value&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatPercent</code></td>
+  <td>Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatPercent(&lt;Value&gt;, &lt;Integer&gt;, &lt;Integer&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatPercent</code></td>
+  <td>Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatPercent(&lt;Value&gt;, &lt;Integer&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatPercent</code></td>
+  <td>Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatPercent(&lt;Value&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatPercent</code></td>
+  <td>Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatPercent(&lt;Value&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>FormatPercent</code></td>
+  <td>Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.
+    <h1>Syntax</h1>
+    &lt;String&gt; FormatPercent(&lt;Value&gt;)
   </td>
 </tr>
 <tr>
@@ -1003,6 +1249,13 @@ FROM [Sales]
     <h1>Syntax</h1>
     &lt;Set&gt; Head(&lt;Set&gt;)<br/>
     &lt;Set&gt; Head(&lt;Set&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Hex</code></td>
+  <td>Returns a String representing the hexadecimal value of a number.
+    <h1>Syntax</h1>
+    &lt;String&gt; Hex(&lt;Value&gt;)
   </td>
 </tr>
 <tr>
@@ -1036,9 +1289,44 @@ FROM [Sales]
 </tr>
 <tr>
   <td valign=top><code>IIf</code></td>
+  <td>Returns one of two tuples determined by a logical test.
+    <h1>Syntax</h1>
+    &lt;Tuple&gt; IIf(&lt;Logical Expression&gt;, &lt;Tuple&gt;, &lt;Tuple&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IIf</code></td>
+  <td>Returns one of two dimension values determined by a logical test.
+    <h1>Syntax</h1>
+    &lt;Dimension&gt; IIf(&lt;Logical Expression&gt;, &lt;Dimension&gt;, &lt;Dimension&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IIf</code></td>
+  <td>Returns one of two hierarchy values determined by a logical test.
+    <h1>Syntax</h1>
+    &lt;Hierarchy&gt; IIf(&lt;Logical Expression&gt;, &lt;Hierarchy&gt;, &lt;Hierarchy&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IIf</code></td>
+  <td>Returns one of two level values determined by a logical test.
+    <h1>Syntax</h1>
+    &lt;Level&gt; IIf(&lt;Logical Expression&gt;, &lt;Level&gt;, &lt;Level&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IIf</code></td>
   <td>Returns boolean determined by a logical test.
     <h1>Syntax</h1>
-    &lt;Logical Expression&gt; IIf(&lt;Logical Expression&gt;, &lt;Logical Expression&gt;, &lt;Numeric Expression&gt;)
+    &lt;Logical Expression&gt; IIf(&lt;Logical Expression&gt;, &lt;Logical Expression&gt;, &lt;Logical Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IIf</code></td>
+  <td>Returns one of two member values determined by a logical test.
+    <h1>Syntax</h1>
+    &lt;Member&gt; IIf(&lt;Logical Expression&gt;, &lt;Member&gt;, &lt;Member&gt;)
   </td>
 </tr>
 <tr>
@@ -1050,9 +1338,51 @@ FROM [Sales]
 </tr>
 <tr>
   <td valign=top><code>IIf</code></td>
+  <td>Returns one of two set values determined by a logical test.
+    <h1>Syntax</h1>
+    &lt;Set&gt; IIf(&lt;Logical Expression&gt;, &lt;Set&gt;, &lt;Set&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IIf</code></td>
   <td>Returns one of two string values determined by a logical test.
     <h1>Syntax</h1>
     &lt;String&gt; IIf(&lt;Logical Expression&gt;, &lt;String&gt;, &lt;String&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IPmt</code></td>
+  <td>Returns a Double specifying the interest payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; IPmt(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Logical Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IPmt</code></td>
+  <td>Returns a Double specifying the interest payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; IPmt(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IPmt</code></td>
+  <td>Returns a Double specifying the interest payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; IPmt(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IRR</code></td>
+  <td>Returns a Double specifying the internal rate of return for a series of periodic cash flows (payments and receipts).
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; IRR(&lt;Array&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IRR</code></td>
+  <td>Returns a Double specifying the internal rate of return for a series of periodic cash flows (payments and receipts).
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; IRR(&lt;Array&gt;)
   </td>
 </tr>
 <tr>
@@ -1092,11 +1422,46 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>InStrRev</code></td>
+  <td>Returns the position of an occurrence of one string within another, from the end of string.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; InStrRev(&lt;String&gt;, &lt;String&gt;, &lt;Integer&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>InStrRev</code></td>
+  <td>Returns the position of an occurrence of one string within another, from the end of string.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; InStrRev(&lt;String&gt;, &lt;String&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>InStrRev</code></td>
+  <td>Returns the position of an occurrence of one string within another, from the end of string.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; InStrRev(&lt;String&gt;, &lt;String&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Int</code></td>
+  <td>Returns the integer portion of a number. If negative, returns the negative number less than or equal to the number.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Int(&lt;Value&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Intersect</code></td>
   <td>Returns the intersection of two input sets, optionally retaining duplicates.
     <h1>Syntax</h1>
     &lt;Set&gt; Intersect(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)<br/>
     &lt;Set&gt; Intersect(&lt;Set&gt;, &lt;Set&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>IsDate</code></td>
+  <td>Returns a Boolean value indicating whether an expression can be converted to a date..
+    <h1>Syntax</h1>
+    &lt;Logical Expression&gt; IsDate(&lt;Value&gt;)
   </td>
 </tr>
 <tr>
@@ -1265,6 +1630,20 @@ FROM [Sales]
   <td>Returns a Double specifying the natural logarithm of a number.
     <h1>Syntax</h1>
     &lt;Numeric Expression&gt; Log(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Log10</code></td>
+  <td>Returns the base-10 logarithm of a number.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Log10(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>MIRR</code></td>
+  <td>Returns a Double specifying the modified internal rate of return for a series of periodic cash flows (payments and receipts).
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; MIRR(&lt;Array&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -1440,6 +1819,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Oct</code></td>
+  <td>Returns a Variant (String) representing the octal value of a number.
+    <h1>Syntax</h1>
+    &lt;String&gt; Oct(&lt;Value&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>OpeningPeriod</code></td>
   <td>Returns the first descendant of a member at a level.
     <h1>Syntax</h1>
@@ -1461,6 +1847,27 @@ FROM [Sales]
   <td>Returns the zero-based ordinal value associated with a level.
     <h1>Syntax</h1>
     &lt;Level&gt;.Ordinal
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>PPmt</code></td>
+  <td>Returns a Double specifying the principal payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; PPmt(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Logical Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>PPmt</code></td>
+  <td>Returns a Double specifying the principal payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; PPmt(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>PPmt</code></td>
+  <td>Returns a Double specifying the principal payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; PPmt(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -1507,6 +1914,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Percentile</code></td>
+  <td>Returns the value of the tuple that is at a given percentile of a set.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Percentile(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>PeriodsToDate</code></td>
   <td>Returns a set of periods (members) from a specified level starting with the first period and ending with a specified member.
     <h1>Syntax</h1>
@@ -1516,10 +1930,24 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Pi</code></td>
+  <td>Returns the number 3.14159265358979, the mathematical constant pi, accurate to 15 digits.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Pi()
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Pmt</code></td>
   <td>Returns a Double specifying the payment for an annuity based on periodic, fixed payments and a fixed interest rate.
     <h1>Syntax</h1>
     &lt;Numeric Expression&gt; Pmt(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Logical Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Power</code></td>
+  <td>Returns the result of a number raised to a power.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Power(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -1552,6 +1980,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Radians</code></td>
+  <td>Converts degrees to radians.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Radians(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Rank</code></td>
   <td>Returns the one-based rank of a tuple in a set.
     <h1>Syntax</h1>
@@ -1559,6 +1994,34 @@ FROM [Sales]
     &lt;Integer&gt; Rank(&lt;Tuple&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
     &lt;Integer&gt; Rank(&lt;Member&gt;, &lt;Set&gt;)<br/>
     &lt;Integer&gt; Rank(&lt;Member&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Rate</code></td>
+  <td>Returns a Double specifying the interest rate per period for an annuity.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Rate(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Logical Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Rate</code></td>
+  <td>Returns a Double specifying the interest rate per period for an annuity.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Rate(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Logical Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Rate</code></td>
+  <td>Returns a Double specifying the interest rate per period for an annuity.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Rate(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Rate</code></td>
+  <td>Returns a Double specifying the interest rate per period for an annuity.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Rate(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -1611,6 +2074,20 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>SLN</code></td>
+  <td>Returns a Double specifying the straight-line depreciation of an asset for a single period.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; SLN(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>SYD</code></td>
+  <td>Returns a Double specifying the sum-of-years&#39; digits depreciation of an asset for a specified period.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; SYD(&lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Second</code></td>
   <td>Returns a Variant (Integer) specifying a whole number between 0 and 59, inclusive, representing the second of the minute.
     <h1>Syntax</h1>
@@ -1646,6 +2123,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>Sinh</code></td>
+  <td>Returns the hyperbolic sine of a number.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Sinh(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>Space</code></td>
   <td>Returns a Variant (String) consisting of the specified number of spaces.
     <h1>Syntax</h1>
@@ -1657,6 +2141,13 @@ FROM [Sales]
   <td>Returns a Double specifying the square root of a number.
     <h1>Syntax</h1>
     &lt;Numeric Expression&gt; Sqr(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>SqrtPi</code></td>
+  <td>Returns the square root of (number * pi).
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; SqrtPi(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -1689,6 +2180,27 @@ FROM [Sales]
     <h1>Syntax</h1>
     &lt;Numeric Expression&gt; StdevP(&lt;Set&gt;)<br/>
     &lt;Numeric Expression&gt; StdevP(&lt;Set&gt;, &lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Str</code></td>
+  <td>Returns a Variant (String) representation of a number.
+    <h1>Syntax</h1>
+    &lt;String&gt; Str(&lt;Value&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>StrComp</code></td>
+  <td>Returns a Variant (Integer) indicating the result of a string comparison.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; StrComp(&lt;String&gt;, &lt;String&gt;, &lt;Integer&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>StrComp</code></td>
+  <td>Returns a Variant (Integer) indicating the result of a string comparison.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; StrComp(&lt;String&gt;, &lt;String&gt;)
   </td>
 </tr>
 <tr>
@@ -1762,6 +2274,13 @@ FROM [Sales]
   <td>Returns a Double specifying the tangent of an angle.
     <h1>Syntax</h1>
     &lt;Numeric Expression&gt; Tan(&lt;Numeric Expression&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Tanh</code></td>
+  <td>Returns the hyperbolic tangent of a number.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Tanh(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -1845,6 +2364,13 @@ FROM [Sales]
   </td>
 </tr>
 <tr>
+  <td valign=top><code>TypeName</code></td>
+  <td>Returns a String that provides information about a variable.
+    <h1>Syntax</h1>
+    &lt;String&gt; TypeName(&lt;Value&gt;)
+  </td>
+</tr>
+<tr>
   <td valign=top><code>UCase</code></td>
   <td>Returns a string that has been converted to uppercase
     <h1>Syntax</h1>
@@ -1885,6 +2411,20 @@ FROM [Sales]
   <td>Returns the unique name of a member.
     <h1>Syntax</h1>
     &lt;Member&gt;.UniqueName
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Unorder</code></td>
+  <td>Removes any enforced ordering from a specified set.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Unorder(&lt;Set&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>Val</code></td>
+  <td>Returns the numbers contained in a string as a numeric value of appropriate type.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Val(&lt;String&gt;)
   </td>
 </tr>
 <tr>
@@ -2025,7 +2565,7 @@ FROM [Sales]
 <br />
 
 <p>
-    Author: Julian Hyde; last modified January 2008.<br/>
+    Author: Julian Hyde; last modified September 2008.<br/>
     Version: $Id$ (<a href="http://p4web.eigenbase.org/open/mondrian/doc/mdx.html?ac=22">log</a>)<br/>
     Copyright (C) 2005-2008 Julian Hyde
 </p>

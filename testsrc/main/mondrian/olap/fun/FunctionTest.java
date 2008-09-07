@@ -5958,6 +5958,58 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #13: 35,257\n"));
     }
 
+    public void testUnorder() {
+        assertAxisReturns(
+            "Unorder([Gender].members)",
+            fold(
+                "[Gender].[All Gender]\n" +
+                    "[Gender].[All Gender].[F]\n" +
+                    "[Gender].[All Gender].[M]"));
+        assertAxisReturns(
+            "Unorder(Order([Gender].members, -[Measures].[Unit Sales]))",
+            fold(
+                "[Gender].[All Gender]\n" +
+                    "[Gender].[All Gender].[M]\n" +
+                    "[Gender].[All Gender].[F]"));
+        assertAxisReturns(
+            "Unorder(Crossjoin([Gender].members, [Marital Status].Children))",
+            fold(
+                "{[Gender].[All Gender], [Marital Status].[All Marital Status].[M]}\n" +
+                    "{[Gender].[All Gender], [Marital Status].[All Marital Status].[S]}\n" +
+                    "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}\n" +
+                    "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}\n" +
+                    "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}\n" +
+                    "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}"));
+        assertAxisThrows(
+            "Unorder([Gender].[M])",
+            "No function matches signature 'Unorder(<Member>)'");
+        assertAxisThrows(
+            "Unorder(1 + 3)",
+            "No function matches signature 'Unorder(<Numeric Expression>)'");
+        assertAxisThrows(
+            "Unorder([Gender].[M], 1 + 3)",
+            "No function matches signature 'Unorder(<Member>, <Numeric Expression>)'");
+        assertQueryReturns(
+            "select {[Measures].[Store Sales], [Measures].[Unit Sales]} on 0,\n"
+                + "  Unorder([Gender].Members) on 1\n"
+                + "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Store Sales]}\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender]}\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[All Gender].[M]}\n" +
+                "Row #0: 565,238.13\n" +
+                "Row #0: 266,773\n" +
+                "Row #1: 280,226.21\n" +
+                "Row #1: 131,558\n" +
+                "Row #2: 285,011.92\n" +
+                "Row #2: 135,215\n"));
+    }
+
     public void testSiblingsA() {
         assertAxisReturns("{[Time].[1997].Siblings}",
                 fold(
