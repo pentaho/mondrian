@@ -87,7 +87,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         // re-alias names if necessary
         if (!usingCubeFact) {
             // join expressions are columns only
-            assert usage.getJoinExp() instanceof MondrianDef.Column;
+            assert(usage.getJoinExp() instanceof MondrianDef.Column);
             currentRelation =
                 parentDimension.getCube().getStar().getUniqueRelation(
                     rolapHierarchy.getRelation(),
@@ -129,7 +129,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             }
         }
 
-        if (dimension.isHighCardinality()) {
+        if(dimension.isHighCardinality()) {
             this.reader = new NoCacheRolapCubeHierarchyMemberReader();
         } else {
             this.reader = new CacheRolapCubeHierarchyMemberReader();
@@ -411,7 +411,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     this,
                     RolapCubeHierarchy.this,
                     rolapCubeCacheHelper,
-                    cacheHelper);
+                    cacheHelper
+                    );
 
             cubeSource.setCache(getMemberCache());
         }
@@ -565,7 +566,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 List<RolapMember> children,
                 MemberChildrenConstraint constraint) {
 
-            synchronized (cacheHelper) {
+            synchronized(cacheHelper) {
                 checkCacheStatus();
 
                 List<RolapMember> missed = new ArrayList<RolapMember>();
@@ -746,9 +747,169 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         extends NoCacheMemberReader
         implements RolapCubeHierarchyMemberReader
     {
+        /**
+         * cubeSource is passed as our member builder
+         */
+        protected final RolapCubeSqlMemberSource cubeSource;
+
+        /**
+         * this cache caches RolapCubeMembers that are light wrappers around
+         * shared and non-shared Hierarchy RolapMembers.  The inherited
+         * cacheHelper object contains non-shared hierarchy RolapMembers.
+         * non-shared hierarchy RolapMembers are created when a member lookup
+         * involves the Cube's fact table.
+         */
+        protected MemberCacheHelper rolapCubeCacheHelper;
+
         public NoCacheRolapCubeHierarchyMemberReader() {
             super(new SqlMemberSource(RolapCubeHierarchy.this));
+            rolapCubeCacheHelper =
+                new MemberNoCacheHelper();
+
+            cubeSource =
+                new RolapCubeSqlMemberSource(
+                    this,
+                    RolapCubeHierarchy.this,
+                    rolapCubeCacheHelper,
+                    new MemberNoCacheHelper()
+                    );
+
+            cubeSource.setCache(rolapCubeCacheHelper);
         }
+
+        public MemberBuilder getMemberBuilder() {
+            return this.cubeSource;
+        }
+
+        public MemberCacheHelper getRolapCubeMemberCacheHelper() {
+            return rolapCubeCacheHelper;
+        }
+
+        public List<RolapMember> getRootMembers() {
+            return getMembersInLevel(
+                        (RolapCubeLevel) getLevels()[0],
+                        0,
+                        Integer.MAX_VALUE);
+        }
+
+        private String getUniqueNameForMemberWithoutHierarchy(
+            RolapMember member)
+        {
+            String name =
+                (String) member.getPropertyValue(
+                        Property.UNIQUE_NAME_WITHOUT_HIERARCHY.getName());
+            RolapMember parent = member;
+            if (name == null) {
+                StringBuilder fullName = new StringBuilder();
+                while (parent != null) {
+                    fullName.append("[").append(parent.getName()).append("]");
+                    parent = parent.getParentMember();
+                }
+                name = fullName.toString();
+                member.setProperty(
+                        Property.UNIQUE_NAME_WITHOUT_HIERARCHY.getName(),
+                        name);
+            }
+            return name;
+        }
+
+        protected void readMemberChildren(
+            List<RolapMember> parentMembers,
+            List<RolapMember> children,
+            MemberChildrenConstraint constraint)
+        {
+            List<RolapMember> rolapChildren = new ArrayList<RolapMember>();
+            List<RolapMember> rolapParents = new ArrayList<RolapMember>();
+            Map<String, RolapCubeMember> lookup =
+                new HashMap<String, RolapCubeMember>();
+
+            // extract RolapMembers from their RolapCubeMember objects
+            // populate lookup for reconnecting parents and children
+            final List<RolapCubeMember> parentRolapCubeMemberList =
+                Util.cast(parentMembers);
+            for (RolapCubeMember member : parentRolapCubeMemberList) {
+                lookup.put(
+                    getUniqueNameForMemberWithoutHierarchy(
+                        member.getRolapMember()), member);
+                rolapParents.add(member.getRolapMember());
+            }
+
+            // get member children from shared member reader if possible,
+            // if not get them from our own source
+            boolean joinReq =
+                (constraint instanceof SqlContextConstraint)
+                && (((SqlContextConstraint)constraint).isJoinRequired() ||
+                    ((SqlContextConstraint)constraint).getEvaluator().isNonEmpty());
+            if (joinReq) {
+                super.readMemberChildren(parentMembers, rolapChildren, constraint);
+            } else {
+                rolapHierarchy.getMemberReader().getMemberChildren(
+                    rolapParents, rolapChildren, constraint);
+            }
+
+            // now lookup or create RolapCubeMember
+            for (RolapMember currMember : rolapChildren) {
+                RolapCubeMember parent =
+                    lookup.get(
+                        getUniqueNameForMemberWithoutHierarchy(
+                            currMember.getParentMember()));
+                RolapCubeLevel level =
+                    parent.getLevel().getChildLevel();
+                if (level == null) {
+                    // most likely a parent child hierarchy
+                    level = parent.getLevel();
+                }
+                RolapCubeMember newmember =
+                    lookupCubeMember(
+                        parent, currMember, level);
+                children.add(newmember);
+            }
+
+            // Put them in a temporary hash table first. Register them later,
+            // when we know their size (hence their 'cost' to the cache pool).
+            Map<RolapMember, List<RolapMember>> tempMap =
+                new HashMap<RolapMember, List<RolapMember>>();
+            for (RolapMember member1 : parentMembers) {
+                tempMap.put(member1, Collections.<RolapMember>emptyList());
+            }
+
+            // note that this stores RolapCubeMembers in our cache,
+            // which also stores RolapMembers.
+
+            for (RolapMember child : children) {
+            // todo: We could optimize here. If members.length is small, it's
+            // more efficient to drive from members, rather than hashing
+            // children.length times. We could also exploit the fact that the
+            // result is sorted by ordinal and therefore, unless the "members"
+            // contains members from different levels, children of the same
+            // member will be contiguous.
+                assert child != null : "child";
+                final RolapMember parentMember = child.getParentMember();
+            }
+        }
+
+        public void getMemberChildren(
+                List<RolapMember> parentMembers,
+                List<RolapMember> children,
+                MemberChildrenConstraint constraint) {
+
+            List<RolapMember> missed = new ArrayList<RolapMember>();
+            for (RolapMember parentMember : parentMembers) {
+                List<RolapMember> list = null;
+                if (list == null) {
+                    // the null member has no children
+                    if (!parentMember.isNull()) {
+                        missed.add(parentMember);
+                    }
+                } else {
+                    children.addAll(list);
+                }
+            }
+            if (missed.size() > 0) {
+                readMemberChildren(missed, children, constraint);
+            }
+        }
+
 
         public List<RolapMember> getMembersInLevel(
             final RolapLevel level,
@@ -756,96 +917,114 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             int endOrdinal,
             TupleConstraint constraint)
         {
-            final RolapCubeLevel cubeLevel = (RolapCubeLevel) level;
-            // if a join is required, we need to pass in the RolapCubeLevel
-            // vs. the regular level
-            boolean joinReq = (constraint instanceof SqlContextConstraint)
-            && ((SqlContextConstraint)constraint).isJoinRequired();
-            final List<RolapMember> list;
-            if (!joinReq) {
-                list =
-                    rolapHierarchy.getMemberReader().getMembersInLevel(
-                        cubeLevel.getRolapLevel(),
-                        startOrdinal, endOrdinal, constraint);
-            } else {
-                list =
-                    super.getMembersInLevel(
-                        cubeLevel, startOrdinal, endOrdinal, constraint);
-            }
-            return new UnsupportedList<RolapMember>() {
-                public RolapMember get(final int index) {
-                    return mutate(list.get(index));
+                List<RolapMember> members = null;
+
+                // if a join is required, we need to pass in the RolapCubeLevel
+                // vs. the regular level
+                boolean joinReq =
+                    (constraint instanceof SqlContextConstraint)
+                        && (((SqlContextConstraint)constraint).isJoinRequired() ||
+                        constraint.getEvaluator().isNonEmpty());
+
+                final List<RolapMember> list;
+
+                if (!joinReq) {
+                    list =
+                        rolapHierarchy.getMemberReader().getMembersInLevel(
+                            ((RolapCubeLevel) level).getRolapLevel(),
+                            startOrdinal, endOrdinal, constraint);
+                } else {
+                    list =
+                        super.getMembersInLevel(
+                            level, startOrdinal, endOrdinal, constraint);
                 }
 
-                public int size() {
-                    return list.size();
-                }
-
-                public Iterator<RolapMember> iterator() {
-                    final Iterator<RolapMember> it = list.iterator();
-                    return new Iterator<RolapMember>() {
-                        public boolean hasNext() {
-                            return it.hasNext();
-                        }
-                        public RolapMember next() {
-                            return mutate(it.next());
-                        }
-
-                        public void remove() {
-                            throw new UnsupportedOperationException();
-                        }
-                    };
-                }
-
-                private RolapMember mutate(final RolapMember member) {
-                    RolapCubeMember parent = null;
-                    if (member.getParentMember() != null) {
-                        parent =
-                            createAncestorMembers(
-                                cubeLevel.getParentLevel(),
-                                member.getParentMember());
+                return new UnsupportedList<RolapMember>() {
+                    public RolapMember get(final int index) {
+                        return mutate(list.get(index));
                     }
-                    return lookupCubeMember(
-                        parent,
-                        member,
-                        cubeLevel);
-                }
-            };
-        }
 
-        public MemberCacheHelper getRolapCubeMemberCacheHelper() {
-            return null;
-        }
+                    public int size() {
+                        return list.size();
+                    }
 
-        public RolapCubeMember lookupCubeMember(
-            final RolapCubeMember parent,
-            final RolapMember member,
-            final RolapCubeLevel level)
-        {
-            if (member.getKey() == null) {
-                if (member.isAll()) {
-                    return getAllMember();
-                }
-                throw new NullPointerException();
-            }
-            return new RolapCubeMember(
-                parent, member, level, parentDimension.getCube());
+                    public Iterator<RolapMember> iterator() {
+                        final Iterator<RolapMember> it = list.iterator();
+                        return new Iterator<RolapMember>() {
+                            public boolean hasNext() {
+                                return it.hasNext();
+                            }
+                            public RolapMember next() {
+                                return mutate(it.next());
+                            }
+
+                            public void remove() {
+                                throw new UnsupportedOperationException();
+                            }
+                        };
+                    }
+
+                    private RolapMember mutate(final RolapMember member) {
+                        RolapCubeMember parent = null;
+                        if (member.getParentMember() != null) {
+                            parent =
+                                createAncestorMembers(
+                                    (RolapCubeLevel) level.getParentLevel(),
+                                    member.getParentMember());
+                        }
+                        return lookupCubeMember(
+                            parent, member, (RolapCubeLevel) level);
+                    }
+                };
         }
 
         private RolapCubeMember createAncestorMembers(
-            final RolapCubeLevel level,
-            final RolapMember member)
+            RolapCubeLevel level,
+            RolapMember member)
         {
             RolapCubeMember parent = null;
             if (member.getParentMember() != null) {
                 parent =
                     createAncestorMembers(
-                        level.getParentLevel(),
-                        member.getParentMember());
+                        level.getParentLevel(), member.getParentMember());
             }
             return lookupCubeMember(parent, member, level);
         }
+
+        public RolapCubeMember lookupCubeMember(
+            RolapCubeMember parent,
+            RolapMember member,
+            RolapCubeLevel level) {
+                if (member.getKey() == null) {
+                    if (member.isAll()) {
+                        return getAllMember();
+                    }
+
+                    throw new NullPointerException();
+                }
+
+                RolapCubeMember cubeMember = new RolapCubeMember(
+                            parent, member, level, parentDimension.getCube());
+                return cubeMember;
+        }
+
+        public int getMemberCount() {
+            return rolapHierarchy.getMemberReader().getMemberCount();
+        }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     public static class RolapCubeSqlMemberSource extends SqlMemberSource {

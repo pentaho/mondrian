@@ -18,6 +18,7 @@ import mondrian.olap.Member;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.util.ConcatenableList;
 
 import java.util.*;
 import org.apache.log4j.Logger;
@@ -166,7 +167,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         final List<RolapMember> children,
         final MemberChildrenConstraint constraint)
     {
-        assert constraint != null;
+        assert(constraint != null);
         LOGGER.debug("Entering getMemberChildren");
         source.getMemberChildren(parentMembers, children, constraint);
     }
@@ -453,6 +454,53 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         return parentMember;
     }
 
+    /**
+     * Reads the children of <code>member</code> into <code>result</code>.
+     *
+     * @param result Children are written here, in order
+     * @param members Members whose children to read
+     * @param constraint restricts the returned members if possible (optional
+     *             optimization)
+     */
+    protected void readMemberChildren(
+        List<RolapMember> members,
+        List<RolapMember> result,
+        MemberChildrenConstraint constraint)
+    {
+        List<RolapMember> children = new ConcatenableList<RolapMember>();
+        source.getMemberChildren(members, children, constraint);
+        // Put them in a temporary hash table first. Register them later, when
+        // we know their size (hence their 'cost' to the cache pool).
+        Map<RolapMember, List<RolapMember>> tempMap =
+            new HashMap<RolapMember, List<RolapMember>>();
+        for (RolapMember member1 : members) {
+            tempMap.put(member1, Collections.EMPTY_LIST);
+        }
+        for (final RolapMember child : children) {
+            // todo: We could optimize here. If members.length is small, it's
+            // more efficient to drive from members, rather than hashing
+            // children.length times. We could also exploit the fact that the
+            // result is sorted by ordinal and therefore, unless the "members"
+            // contains members from different levels, children of the same
+            // member will be contiguous.
+            assert child != null : "child";
+            assert tempMap != null : "tempMap";
+            final RolapMember parentMember = child.getParentMember();
+            List<RolapMember> list = tempMap.get(parentMember);
+            if (list == null) {
+                // The list is null if, due to dropped constraints, we now
+                // have a children list of a member we didn't explicitly
+                // ask for it. Adding it to the cache would be viable, but
+                // let's ignore it.
+                continue;
+            } else if (list == Collections.EMPTY_LIST) {
+                list = new ArrayList<RolapMember>();
+                tempMap.put(parentMember, list);
+            }
+            ((List)list).add(child);
+            ((List)result).add(child);
+        }
+    }
 }
 
 // End NoCacheMemberReader.java
