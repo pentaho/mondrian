@@ -47,11 +47,11 @@ public class HighDimensionsTest extends FoodMartTestCase {
             + "tail(intersect(necj,necj,ALL),5) on rows from sales");
         final long t0 = System.currentTimeMillis();
         Result result = connection.execute(query);
-        for(final Position o : result.getAxes()[0].getPositions()) {
+        for (final Position o : result.getAxes()[0].getPositions()) {
             assertNotNull(o.get(0));
         }
         final long t1 = System.currentTimeMillis();
-        assertTrue(t1-t0 < 60000);
+        assertTrue(t1 - t0 < 60000);
     }
 
 
@@ -86,7 +86,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
         for(final Position o : result.getAxes()[1].getPositions()) {
             buffer.append(o.get(0));
             i++;
-            if(i==40) topcount40HighCardResults = buffer.toString();
+            if(i == 40) topcount40HighCardResults = buffer.toString();
         }
         topcount41HighCardResults = buffer.toString();
 
@@ -173,7 +173,8 @@ public class HighDimensionsTest extends FoodMartTestCase {
                     new ArrayList<SoftReference>();
             // Tests results aren't got from database before this point 
             int ii = 0;
-            for(final Position o : result.getAxes()[axisIndex].getPositions()) {
+            for (final Position o : 
+                result.getAxes()[axisIndex].getPositions()) {
                 assertNotNull(o.get(0));
                 buffer2.append(result.getCell(
                     new int[]{0, ii}).getValue().toString());
@@ -182,23 +183,23 @@ public class HighDimensionsTest extends FoodMartTestCase {
                 buffer.append(o.get(0).toString());
             }
             assertEquals(buffer.toString(), results);
-            if(results2 != null) assertEquals(buffer2.toString(), results2);
+            if (results2 != null) assertEquals(buffer2.toString(), results2);
             buffer2 = null;
             buffer = null;
 
-            if(!shouldForget) return;
+            if (!shouldForget) return;
 
             // Tests that really results over ResultLimit are erased from 
             // memory
             final List overloader = new ArrayList();
             try {
-                for(;;) overloader.add(new long[99999999]);
-            } catch(OutOfMemoryError out) {
+                for (;;) overloader.add(new long[99999999]);
+            } catch (OutOfMemoryError out) {
                 // OK, outofmemory
             }
             System.gc();
 
-            for(int i=4; i<ii-40; i++) {
+            for (int i = 4; i < ii - 40; i++) {
                 assertNull(softReferences.get(i).get());
             }
 /*

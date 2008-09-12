@@ -582,7 +582,7 @@ public class RolapConnection extends ConnectionBase {
 
             if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {
                 currId = executeCount++;
-                RolapUtil.MDX_LOGGER.debug( currId + ": " + Util.unparse(query));
+                RolapUtil.MDX_LOGGER.debug(currId + ": " + Util.unparse(query));
             }
 
             query.setQueryStartTime();
@@ -621,7 +621,7 @@ public class RolapConnection extends ConnectionBase {
         } finally {
             mm.removeListener(listener);
             if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {
-                RolapUtil.MDX_LOGGER.debug( currId + ": exec: " +
+                RolapUtil.MDX_LOGGER.debug(currId + ": exec: " +
                     (System.currentTimeMillis() - query.getQueryStartTime()) +
                     " ms");
             }
@@ -741,7 +741,7 @@ public class RolapConnection extends ConnectionBase {
                             positions,
                             new FilteredIterableList.Filter<Position>() {
                                 public boolean accept(final Position p) {
-                                    return p.get(0)!=null;
+                                    return p.get(0) != null;
                                 }
                             }
                     );
@@ -792,7 +792,7 @@ public class RolapConnection extends ConnectionBase {
             } else {
                 List<Position> positions = getAxes()[axis].getPositions();
                 int i = 0;
-                for (Position position: positions) {
+                for (Position position : positions) {
                     pos[axis] = i;
                     if (!isEmptyRecurse(fixedAxis, axis - 1)) {
                         return false;
@@ -811,7 +811,7 @@ public class RolapConnection extends ConnectionBase {
                 int mappedOffset = mapOffsetToUnderlying(offset);
                 this.pos[axis] = mappedOffset;
                 return underlying.getCell(this.pos);
-            } catch(NullPointerException npe) {
+            } catch (NullPointerException npe) {
                 return underlying.getCell(externalPos);
             }
         }

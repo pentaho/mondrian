@@ -87,7 +87,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         // re-alias names if necessary
         if (!usingCubeFact) {
             // join expressions are columns only
-            assert(usage.getJoinExp() instanceof MondrianDef.Column);
+            assert (usage.getJoinExp() instanceof MondrianDef.Column);
             currentRelation =
                 parentDimension.getCube().getStar().getUniqueRelation(
                     rolapHierarchy.getRelation(),
@@ -129,7 +129,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             }
         }
 
-        if(dimension.isHighCardinality()) {
+        if (dimension.isHighCardinality()) {
             this.reader = new NoCacheRolapCubeHierarchyMemberReader();
         } else {
             this.reader = new CacheRolapCubeHierarchyMemberReader();
@@ -407,12 +407,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 new MemberCacheHelper(RolapCubeHierarchy.this);
 
             cubeSource =
-                new RolapCubeSqlMemberSource(
-                    this,
+                new RolapCubeSqlMemberSource(this,
                     RolapCubeHierarchy.this,
                     rolapCubeCacheHelper,
-                    cacheHelper
-                    );
+                    cacheHelper);
 
             cubeSource.setCache(getMemberCache());
         }
@@ -566,7 +564,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 List<RolapMember> children,
                 MemberChildrenConstraint constraint) {
 
-            synchronized(cacheHelper) {
+            synchronized (cacheHelper) {
                 checkCacheStatus();
 
                 List<RolapMember> missed = new ArrayList<RolapMember>();
@@ -767,12 +765,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 new MemberNoCacheHelper();
 
             cubeSource =
-                new RolapCubeSqlMemberSource(
-                    this,
+                new RolapCubeSqlMemberSource(this,
                     RolapCubeHierarchy.this,
                     rolapCubeCacheHelper,
-                    new MemberNoCacheHelper()
-                    );
+                    new MemberNoCacheHelper());
 
             cubeSource.setCache(rolapCubeCacheHelper);
         }
