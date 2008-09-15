@@ -83,10 +83,12 @@ public class HighDimensionsTest extends FoodMartTestCase {
         int i = 0;
         String topcount40HighCardResults = null;
         String topcount41HighCardResults = null;
-        for(final Position o : result.getAxes()[1].getPositions()) {
+        for (final Position o : result.getAxes()[1].getPositions()) {
             buffer.append(o.get(0));
             i++;
-            if(i == 40) topcount40HighCardResults = buffer.toString();
+            if (i == 40) {
+                topcount40HighCardResults = buffer.toString();
+            }
         }
         topcount41HighCardResults = buffer.toString();
 
@@ -141,15 +143,15 @@ public class HighDimensionsTest extends FoodMartTestCase {
      * into an axis from the results.
      */
     private void execHighCardTest(final String queryString, final int axisIndex,
-            final String highDimensionName, final String results, 
-            final String results2, final boolean shouldForget) 
+            final String highDimensionName, final String results,
+            final String results2, final boolean shouldForget)
             throws Exception {
         final int old = MondrianProperties.instance()
                     .ResultLimit.get();
         try {
             MondrianProperties.instance().ResultLimit.set(40);
             final TestContext testContext = TestContext.createSubstitutingCube(
-                    "Sales Ragged", 
+                    "Sales Ragged",
                     "<Dimension name=\"Promotions\" highCardinality=\"true\" "
                     + "foreignKey=\"promotion_id\">"
                         + "<Hierarchy hasAll=\"true\" "
@@ -171,9 +173,9 @@ public class HighDimensionsTest extends FoodMartTestCase {
 
             final List<SoftReference> softReferences =
                     new ArrayList<SoftReference>();
-            // Tests results aren't got from database before this point 
+            // Tests results aren't got from database before this point
             int ii = 0;
-            for (final Position o : 
+            for (final Position o :
                 result.getAxes()[axisIndex].getPositions()) {
                 assertNotNull(o.get(0));
                 buffer2.append(result.getCell(
@@ -183,13 +185,17 @@ public class HighDimensionsTest extends FoodMartTestCase {
                 buffer.append(o.get(0).toString());
             }
             assertEquals(buffer.toString(), results);
-            if (results2 != null) assertEquals(buffer2.toString(), results2);
+            if (results2 != null) {
+                assertEquals(buffer2.toString(), results2);
+            }
             buffer2 = null;
             buffer = null;
 
-            if (!shouldForget) return;
+            if (!shouldForget) {
+                return;
+            }
 
-            // Tests that really results over ResultLimit are erased from 
+            // Tests that really results over ResultLimit are erased from
             // memory
             final List overloader = new ArrayList();
             try {
@@ -259,7 +265,6 @@ System.out.println(                    result.getAxes()[axisIndex].getPositions(
                 + "[Promotions].[All Promotions].[Savings Galore]"
                 + "[Promotions].[All Promotions].[Shelf Clearing Days]"
                 + "[Promotions].[All Promotions].[Shelf Emptiers]";
- 
     private static final String nonEmptyHighCardResults =
                 "[Promotions].[All Promotions].[Bag Stuffers]"
                 + "[Promotions].[All Promotions].[Best Savings]"
@@ -370,10 +375,10 @@ System.out.println(                    result.getAxes()[axisIndex].getPositions(
                 + "[Promotions].[All Promotions].[Price Savers]";
 
 
-    private static final String moreThan4000Cells = 
+    private static final String moreThan4000Cells =
                 "4792.0195448.04094.0";
 
-    private static final String nonEmptyCells = 
+    private static final String nonEmptyCells =
             "901.02081.01789.0932.0700.0921.04792.01219.0"
             +"781.01652.01959.0843.01638.0689.01607.0436.0"
             +"2654.0253.0899.01021.0195448.01973.0323.01624.0"
@@ -381,14 +386,14 @@ System.out.println(                    result.getAxes()[axisIndex].getPositions(
             +"2203.01446.01382.0754.02118.02628.02497.01183.0"
             +"1155.0525.02053.0335.02100.0916.0914.03145.0";
 
-    private static final String topcount40Cells = 
+    private static final String topcount40Cells =
             "195448.04792.04094.03145.02654.02628.02572.02497.0"
             +"2203.02173.02118.02100.02081.02055.02053.01973.0"
             +"1959.01789.01652.01638.01624.01607.01446.01382.0"
             +"1294.01219.01183.01155.01148.01021.0932.0921.0"
             +"916.0914.0901.0899.0843.0781.0754.0700.0";
 
-        private static final String topcount41Cells = 
+        private static final String topcount41Cells =
             "195448.04792.04094.03145.02654.02628.02572.02497.02203.0"
             + "2173.02118.02100.02081.02055.02053.01973.01959.01789.0"
             + "1652.01638.01624.01607.01446.01382.01294.01219.01183.0"
