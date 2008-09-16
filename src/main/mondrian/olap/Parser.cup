@@ -1043,12 +1043,24 @@ else_clause_opt ::=
 //             | <greater_than_or_equals_operator>
 // "IS" is not a comp_op because of conflict with "<expr> IS EMPTY"
 comp_op ::=
-        EQ {: RESULT = "="; :}
-    |   NE {: RESULT = "<>"; :}
-    |   LT {: RESULT = "<"; :}
-    |   GT {: RESULT = ">"; :}
-    |   LE {: RESULT = "<="; :}
-    |   GE {: RESULT = ">="; :}
+        EQ {:
+            RESULT = "=";
+        :}
+    |   NE {:
+            RESULT = "<>";
+        :}
+    |   LT {:
+            RESULT = "<";
+        :}
+    |   GT {:
+            RESULT = ">";
+        :}
+    |   LE {:
+            RESULT = "<=";
+        :}
+    |   GE {:
+            RESULT = ">=";
+        :}
     ;
 //
 // <equals_operator> ::= =
@@ -1256,7 +1268,9 @@ exp_list ::=
 //                         [<cell_props>]
 statement ::=
         select_statement
-    |   _VALUE_EXPRESSION expression:e {: RESULT = (QueryPart) e; :}
+    |   _VALUE_EXPRESSION expression:e {:
+            RESULT = (QueryPart) e;
+        :}
     ;
 
 select_statement ::=
@@ -1303,7 +1317,10 @@ axis_specification_list ::=
     ;
 where_clause_opt ::=
         /* empty */
-    |   WHERE slicer_specification:s {: RESULT = s; :};
+    |   WHERE slicer_specification:s {:
+            RESULT = s;
+        :}
+    ;
 cell_props_opt ::=
         /* empty */ {:
             RESULT = new LinkedList();
@@ -1449,8 +1466,12 @@ axis_specification ::=
     ;
 
 non_empty_opt ::=
-        /* empty */ {: RESULT = Boolean.FALSE; :}
-    |   NON EMPTY {: RESULT = Boolean.TRUE; :}
+        /* empty */ {:
+            RESULT = Boolean.FALSE;
+        :}
+    |   NON EMPTY {:
+            RESULT = Boolean.TRUE;
+        :}
     ;
 dim_props_opt ::=
         /* empty */
@@ -1464,17 +1485,23 @@ dim_props_opt ::=
 //               | SECTIONS
 //               | AXIS(<index>)
 axis_name ::=
-        identifier:i {: RESULT = i.name; :}
+        identifier:i {:
+            RESULT = i.name;
+        :}
     ;
 
 axis_number ::=
         NUMBER
-    |   AXIS LPAREN NUMBER:n RPAREN {: RESULT = n; :}
+    |   AXIS LPAREN NUMBER:n RPAREN {:
+            RESULT = n;
+        :}
     ;
 //
 // <dim_props> ::= [DIMENSION] PROPERTIES <property> [, <property>...]
 dim_props ::=
-    dimension_opt PROPERTIES property_list:pl {: RESULT = pl; :}
+    dimension_opt PROPERTIES property_list:pl {:
+        RESULT = pl;
+    :}
     ;
 dimension_opt ::=
     /* empty */
@@ -1506,7 +1533,9 @@ slicer_specification ::=
 //
 // <cell_props> ::= [CELL] PROPERTIES <cell_property> [, <cell_property>...]
 cell_props ::=
-        cell_opt PROPERTIES cell_property_list:p1 {: RESULT = p1; :}
+        cell_opt PROPERTIES cell_property_list:p1 {:
+            RESULT = p1;
+        :}
     ;
 cell_opt ::=
         /* empty */

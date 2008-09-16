@@ -21,12 +21,13 @@ import java.util.*;
 
 /**
  * Encapsulation of member caching for no caching.
- * 
+ *
  * @author Luis F. Canals (lcanals@tasecurity.net)
  * @version $Id$
  */
 public class MemberNoCacheHelper extends MemberCacheHelper {
     DataSourceChangeListener changeListener;
+
     public MemberNoCacheHelper() {
         super(null);
     }
@@ -44,7 +45,7 @@ public class MemberNoCacheHelper extends MemberCacheHelper {
     public Object putMember(Object key, RolapMember value) {
         return value;
     }
-    
+
     // implement MemberCache
     public Object makeKey(RolapMember parent, Object key) {
         return new MemberKey(parent, key);
@@ -55,13 +56,13 @@ public class MemberNoCacheHelper extends MemberCacheHelper {
     public synchronized RolapMember getMember(Object key) {
         return getMember(key, true);
     }
-    
+
     public void checkCacheStatus() {
     }
-    
+
     /**
      * ???
-     * 
+     *
      * @param level
      * @param constraint
      * @param members
@@ -95,7 +96,7 @@ public class MemberNoCacheHelper extends MemberCacheHelper {
     }
 
     public void setChangeListener(DataSourceChangeListener listener) {
-        changeListener = listener;            
+        changeListener = listener;
     }
 
     public boolean isMutable() {
@@ -107,7 +108,7 @@ public class MemberNoCacheHelper extends MemberCacheHelper {
     }
 
     public synchronized RolapMember removeMemberAndDescendants(Object key) {
-        return null; 
+        return null;
     }
 }
 
