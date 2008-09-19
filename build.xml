@@ -1196,7 +1196,13 @@ clean against JDK 1.6.">
       <fileset dir="${classes.dir}" includes="**/package.html"/>
       <fileset dir="${testclasses.dir}" includes="**/package.html"/>
     </delete>
+    <property name="ps" value="${path.separator}"/>
+    <!-- Javadoc gives warnings on JDK 1.5 (due to class FactoryJdbc4Impl, which
+         depends on JDBC 4.0) but succeeds with no warnings on JDK 1.6. The
+         apparent workaround, to use an embedded <fileset> element, caused more
+         problems than it solved. -->
     <javadoc
+        sourcepath="${java.dir}${ps}${javatest.dir}"
         maxmemory="1024m"
         classpathref="project.test.classpath"
         destdir="${javadoc.dir}"
@@ -1206,16 +1212,9 @@ clean against JDK 1.6.">
         author="true"
         source="1.5"
         access="${access}"
-        Windowtitle="Mondrian OLAP Server, version ${version}"
+        Windowtitle="Mondrian OLAP Engine, version ${version}"
         additionalparam="${additionalparam}"
       >
-      <fileset dir="${java.dir}">
-        <include name="**/*.java"/>
-        <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java" if="jdk16.not.present"/>
-      </fileset>
-      <fileset dir="${javatest.dir}">
-        <include name="**/*.java"/>
-      </fileset>
       <tag name="pre" description="Pre-condition:"
            scope="constructors,methods"/>
       <tag name="post" description="Post-condition:"
@@ -1249,7 +1248,8 @@ diagrams and hyperlinks to source code">
       <fileset dir="${testclasses.dir}" includes="**/package.html"/>
     </delete>
     <property name="ps" value="${path.separator}"/>
-    <javadoc sourcepath="${java.dir}"
+    <javadoc
+        sourcepath="${java.dir}"
         maxmemory="1024m"
         classpathref="project.test.classpath"
         destdir="${javadoc.dir}"
@@ -1259,7 +1259,7 @@ diagrams and hyperlinks to source code">
         author="true"
         source="1.5"
         access="package"
-        Windowtitle="Mondrian OLAP Server, version ${version}"
+        Windowtitle="Mondrian OLAP Engine, version ${version}"
         additionalparam="-linksource"
       >
       <tag name="pre" description="Pre-condition:"
