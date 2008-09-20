@@ -56,12 +56,10 @@ class PeriodsToDateFunDef extends FunDefBase {
             return new SetType(
                     MemberType.forHierarchy(hierarchy));
         }
-        final Type type = args[0].getType();
-        if (type.getDimension() == null ||
-            type.getDimension().getDimensionType() !=
-                mondrian.olap.DimensionType.TimeDimension) {
-            throw MondrianResource.instance().TimeArgNeeded.ex(getName());
-        }
+
+        // If we have at least one arg, it's a level which will
+        // tell us the type.
+
         return super.getResultType(validator, args);
     }
 

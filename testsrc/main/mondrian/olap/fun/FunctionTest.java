@@ -6553,10 +6553,6 @@ public class FunctionTest extends FoodMartTestCase {
         getTestContext().assertSetExprDependsOn(
             "PeriodsToDate([Time].[Year], [Time].[1997].[Q2].[5])", "{}");
 
-        assertAxisThrows(
-                "PeriodsToDate([Product].[Product Family])",
-                "Argument to function 'PeriodsToDate' must belong to Time hierarchy.");
-
         // two args
         assertAxisReturns(
                 "PeriodsToDate([Time].[Quarter], [Time].[1997].[Q2].[5])",

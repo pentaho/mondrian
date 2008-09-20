@@ -127,7 +127,7 @@ Row #24: 11
     <TestCase name="testSlicerStackOverflowNotContain">
         <Resource name="description">
             <![CDATA[
-Tests that we do not get a stackoverflow for non-native necj evluation with slicer members that references the necj. (We do not get stackoverflow because if a dimension is referenced in the necj, then same dimension in the slicer is ignored.)
+Tests that we do not get a stackoverflow for non-native necj evaluation with slicer members that references the necj. (We do not get stackoverflow because if a dimension is referenced in the necj, then same dimension in the slicer is ignored.)
 ]]>
         </Resource>
         <Resource name="mdx">
@@ -209,6 +209,36 @@ Axis #2:
 {[Gender].[All Gender].[M]}
 Row #0: 38,023
 Row #1: 40,576
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testPeriodstodateOnNonTimeDimension">
+        <Resource name="description">
+            <![CDATA[
+Test for sf.net bug 2118478.
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+select
+{[Measures].[Unit Sales]} on columns,
+periodstodate(
+    [Product].[Product Category],
+    [Product].[Food].[Baked Goods].[Bread].[Muffins]) on rows
+from [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]}
+{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}
+Row #0: 815
+Row #1: 3,497
 ]]>
         </Resource>
     </TestCase>
