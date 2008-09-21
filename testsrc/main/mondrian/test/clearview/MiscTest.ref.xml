@@ -137,7 +137,7 @@ With
   Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
   Set [*BASE_MEMBERS_Gender] as '[Gender].[Gender].Members'
   Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})'
-  Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Name].Members,[Product].CurrentMember.Name Not Matches ("(?i).*\QLow Fat Bologna\E.*"))'
+  Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Name].Members,[Product].CurrentMember.Name Not Matches ("(?i).*Low Fat Bologna.*"))'
   Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
   Set [*BASE_MEMBERS_Time] as '{[Time].[1997]}'
   Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'

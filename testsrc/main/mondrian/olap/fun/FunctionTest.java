@@ -6646,6 +6646,26 @@ public class FunctionTest extends FoodMartTestCase {
                 "Row #1: 45,539.69\n" +
                 "Row #1: 89,598.48\n" +
                 "Row #1: 139,628.35\n"));
+
+        assertQueryReturns(
+            "select\n" +
+            "{[Measures].[Unit Sales]} on columns,\n" +
+            "periodstodate(\n" +
+            "    [Product].[Product Category],\n" +
+            "    [Product].[Food].[Baked Goods].[Bread].[Muffins]) on rows\n" +
+            "from [Sales]\n" +
+            "", 
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]}\n" +
+                "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}\n" +
+                "Row #0: 815\n" +
+                "Row #1: 3,497\n" +
+                ""));
     }
 
     public void testSetToStr() {
