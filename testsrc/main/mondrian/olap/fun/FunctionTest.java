@@ -6654,7 +6654,7 @@ public class FunctionTest extends FoodMartTestCase {
             "    [Product].[Product Category],\n" +
             "    [Product].[Food].[Baked Goods].[Bread].[Muffins]) on rows\n" +
             "from [Sales]\n" +
-            "", 
+            "",
             fold(
                 "Axis #0:\n" +
                 "{}\n" +
