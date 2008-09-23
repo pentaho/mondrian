@@ -99,6 +99,7 @@
 #############################
 ##  1. What is a Schema #####
 ############################# -->
+
 <h3>1. What is a schema?<a name="What_is_a_schema">&nbsp;</a></h3>
 <p>A schema defines a multi-dimensional database. It contains a logical model, consisting of cubes, hierarchies, and members, and a mapping of this model onto a physical model.</p>
 <p>The logical model consists of the constructs used to write queries in MDX language: cubes, dimensions, hierarchies, levels, and members.</p>
@@ -141,7 +142,7 @@ the rest of the schema will be ignored.</p>
 <p>Let's look at the XML definition of a simple schema.</p>
 <blockquote>
 	<code>
-  		<a href="#XML_Schema">&lt;Schema&gt;</a><br>
+  		&lt;<a href="#XML_Schema">Schema</a>&gt;<br>
 			<div style="padding-left:10px">&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;</div>
 				<div style="padding-left:20px">&lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"/&gt;</div>
 				<div style="padding-left:20px">&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;</div>
@@ -336,7 +337,7 @@ between different databases is handled by specifying the dialect in the SQL tag.
   	<code>
 &lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;<br>
 &nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="customer_id"&gt;<br>
-&nbsp; &lt;<a href="#XML_Table">Table</a> name="customer"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name="customer"/&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"/&gt;<br>
 &nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
 &lt;/<a href="#XML_Dimension">Dimension</a>&gt;
@@ -347,7 +348,7 @@ between different databases is handled by specifying the dialect in the SQL tag.
 (As we shall see <a href="#The_all_member">later</a>, there is also a special level called
 <code>[(All)]</code> containing a grand total.)</p>
 
-<p>The values for the dimension come fom the <code>gender</code> column in the <code>customer</code>
+<p>The values for the dimension come from the <code>gender</code> column in the <code>customer</code>
 table. The "gender" column contains two values, 'F' and 'M', so the Gender dimension contains the members
 <code>[Gender].[F]</code> and <code>[Gender].[M]</code>.</p>
 
@@ -366,6 +367,81 @@ which is the name of a column in the fact table; the <code>&lt;Hierarchy&gt;</co
 
 <p>If the hierarchy has more than one table, you can disambiguate using the <code>primaryKeyTable</code>
 attribute. </p>
+
+<p>The <code>column</code> attribute defines the key of the level. It must be
+the name of a column in the level's table. If the key is an expression, you can 
+instead use the <code>&lt;KeyExpression&gt;</code> element inside the Level. The following is 
+equivalent to the above example:</p>
+<blockquote>
+	<p><code>&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;<br>
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="customer_id"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name="customer" /&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_KeyExpression">KeyExpression</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_SQL">SQL</a> dialect=&quot;generic&quot;&gt;customer.gender&lt;/<a href="#XML_SQL">SQL</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_KeyExpression">KeyExpression</a>&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Level">Level</a>&gt;<br>&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code></p>
+</blockquote>
+
+<p>Other attributes of <code>&lt;Level&gt;</code>, <code>&lt;Measure&gt;</code>
+and <code>&lt;Property&gt;</code> have corresponding nested elements:</p>
+
+	<table class="grayTable" id="table11" width="500">
+  		<tr>
+    		<th>Parent element</th>
+    		<th>Attribute</th>
+    		<th>Equivalent nested element</th>
+    		<th>Description</th>
+  		</tr>
+  		<tr>
+    		<td><code>&lt;<a href="#XML_Level">Level</a>&gt;</code></td>
+    		<td><code>column</code></td>
+    		<td><code>&lt;<a href="#XML_KeyExpression">KeyExpression</a>&gt;</code></td>
+    		<td>Key of level.</td>
+  		</tr>
+  		<tr>
+    		<td><code>&lt;<a href="#XML_Level">Level</a>&gt;</code></td>
+    		<td><code>nameColumn</code></td>
+    		<td><code>&lt;<a href="#XML_NameExpression">NameExpression</a>&gt;</code></td>
+    		<td>Expression which defines the name of members of this level. If 
+			not specified, the level key is used.</td>
+  		</tr>
+  		<tr>
+    		<td><code>&lt;<a href="#XML_Level">Level</a>&gt;</code></td>
+    		<td><code>ordinalColumn</code></td>
+    		<td><code>&lt;<a href="#XML_OrdinalExpression">OrdinalExpression</a>&gt;</code></td>
+    		<td>Expression which defines the order of members. If not specified, 
+			the level key is used.</td>
+  		</tr>
+  		<tr>
+    		<td><code>&lt;<a href="#XML_Level">Level</a>&gt;</code></td>
+    		<td><code>captionColumn</code></td>
+    		<td><code>&lt;<a href="#XML_CaptionExpression">CaptionExpression</a>&gt;</code></td>
+    		<td>Expression which forms the caption of members. If not specified, 
+			the level name is used.</td>
+  		</tr>
+  		<tr>
+    		<td><code>&lt;<a href="#XML_Level">Level</a>&gt;</code></td>
+    		<td><code>parentColumn</code></td>
+    		<td><code>&lt;<a href="#XML_ParentExpression">ParentExpression</a>&gt;</code></td>
+    		<td>Expression by which child members reference their parent member 
+			in a parent-child hierarchy. Not specified in a regular hierarchy.</td>
+  		</tr>
+  		<tr>
+    		<td><code>&lt;<a href="#XML_Measure">Measure</a>&gt;</code></td>
+    		<td><code>column</code></td>
+    		<td><code>&lt;<a href="#XML_MeasureExpression">MeasureExpression</a>&gt;</code></td>
+    		<td>SQL expression to calculate the value of the measure (the 
+			argument to the SQL aggregate function).</td>
+  		</tr>
+  		<tr>
+    		<td><code>&lt;<a href="#XML_Property">Property</a>&gt;</code></td>
+    		<td><code>column</code></td>
+    		<td><code>&lt;<a href="#XML_PropertyExpression">PropertyExpression</a>&gt;</code></td>
+    		<td>SQL expression to calculate the value of the property.</td>
+  		</tr>
+  		</table>
 
 <p>The <code>uniqueMembers</code> attribute is used to optimize SQL generation. If you know that the
 values of a given level column in the dimension table are unique across all the other values in that column across
@@ -1345,15 +1421,22 @@ to populate closure tables as part of the ETL process. Further details in the
 <a href="http://wiki.pentaho.org/display/EAI/Closure+Generator">Pentaho Data 
 Integration wiki</a>.</p>
 
-<p>
+<p/>
 <table cellspacing="4" border="1" style="border-collapse: collapse">
 	<tr>
 		<td>
-		<img border="0" src="http://wiki.pentaho.org/download/attachments/1050777/closure-generator-step.png" width="474" height="218"><p align="center">
-		<i>Closure Generator step in Pentaho Data Integration</i></td>
+		<img
+            border="0"
+            src="http://wiki.pentaho.org/download/attachments/1050777/closure-generator-step.png"
+            alt="Closure Generator step in Pentaho Data Integration"
+            width="474"
+            height="218">
+        <p align="center">
+		<i>Closure Generator step in Pentaho Data Integration</i>
+        </p>
+        </td>
 	</tr>
 </table>
-</p>
 
 <p>If you are not using Pentaho Data Integration, you can populate the table 
 yourself using SQL. Here is an example of a stored procedure that populates a closure table.</p>
@@ -1475,8 +1558,8 @@ name="FORMAT_STRING" value="$#,##0.00"/&gt;<br>
 &lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code>
 </blockquote>
 
-<p>Note that the <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
-&gt;</code> (not <code>&lt;<a href="#XML_Property">Property</a>&gt;</code>) element corresponds
+<p>Note that the <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>&gt;</code>
+(not <code>&lt;<a href="#XML_Property">Property</a>&gt;</code>) element corresponds
 to the <code>FORMAT_STRING = '$#,###'</code> fragment of the MDX statement. You can define
 other properties here too, but <code>FORMAT_STRING</code> is by far the most useful in practice.</p>
 
@@ -2208,14 +2291,15 @@ functionality. Both together will give full dynamic datasource and
 catalog configuration capability.</p>
 
 <p>To use DynamicDatasourceXmlaServlet, change definition of the <code>MondrianXmlaServlet</code> 
-servlet in <code>web.xml</code>:
+servlet in <code>web.xml</code>:</p>
+
 <blockquote>
   <code>
     &lt;servlet&gt;<br>
     &nbsp;&nbsp;&nbsp;&lt;servlet-name&gt;MondrianXmlaServlet&lt;/servlet-name&gt;<br>
     &nbsp;&nbsp;&nbsp;&lt;servlet-class&gt;mondrian.xmla.impl.<b>DynamicDatasourceXmlaServlet</b>&lt;/servlet-class&gt;<br>
     &nbsp;&nbsp;&nbsp; ...<br>
-    &lt;/servlet&gt;</code></blockquote></p>
+    &lt;/servlet&gt;</code></blockquote>
 
 <p>This implementation has a limitation. It requires catalog name to be unique
 across all datasources and may not work correctly otherwise.</p>
@@ -2889,8 +2973,32 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
       	<td>Level of a hierarchy.</td>
     </tr>
     <tr>
+      	<td><code>&lt;<a name="XML_KeyExpression" href="xml_schema.html#KeyExpression">KeyExpression</a>&gt;</code></td>
+      	<td>SQL expression used as key of the level, in lieu of a column.</td>
+    </tr>
+	<tr>
+      	<td><code>&lt;<a name="XML_NameExpression" href="xml_schema.html#NameExpression">NameExpression</a>&gt;</code></td>
+      	<td>SQL expression used to compute the name of a member, in lieu of <code>Level.nameColumn</code>.</td>
+    </tr>
+	<tr>
+      	<td><code>&lt;<a name="XML_CaptionExpression" href="xml_schema.html#CaptionExpression">CaptionExpression</a>&gt;</code></td>
+      	<td>SQL expression used to compute the caption of a member, in lieu of<code>Level.captionColumn</code>.</td>
+    </tr>
+	<tr>
+      	<td><code>&lt;<a name="XML_OrdinalExpression" href="xml_schema.html#OrdinalExpression">OrdinalExpression</a>&gt;</code></td>
+      	<td>SQL expression used to sort members of a level, in lieu of <code>Level.ordinalColumn</code>.</td>
+    </tr>
+	<tr>
+      	<td><code>&lt;<a name="XML_ParentExpression" href="xml_schema.html#ParentExpression">ParentExpression</a>&gt;</code></td>
+      	<td>SQL expression used to compute a measure, in lieu of <code>Level.parentColumn</code>.</td>
+    </tr>
+    <tr>
       	<td><code>&lt;<a name="XML_Property"  href="xml_schema.html#Property">Property</a>&gt;</code></td>
       	<td>Member property. The definition is against a hierarchy or level, but the property will be available to all members.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_PropertyExpression" href="xml_schema.html#PropertyExpression">PropertyExpression</a>&gt;</code></td>
+      	<td>SQL expression used to compute the value of a property, in lieu of <code>Property.column</code>.</td>
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_Measure" href="xml_schema.html#Measure">Measure</a>&gt;</code></td>
@@ -3025,7 +3133,7 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_Rows" href="xml_schema.html#Rows">Rows</a>&gt;</code></td>
-      	<td>Holder for &lt;Row&gt; elements.</td>
+      	<td>Holder for <code>&lt;Row&gt;</code> elements.</td>
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_Row" href="xml_schema.html#Row">Row</a>&gt;</code></td>
@@ -3037,7 +3145,7 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_MeasureExpression" href="xml_schema.html#MeasureExpression">MeasureExpression</a>&gt;</code></td>
-      	<td>SQL expression used to compute a measure, in lieu of a column.</td>
+      	<td>SQL expression used to compute a measure, in lieu of <code>Measure.column</code>.</td>
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_SQL" href="xml_schema.html#SQL">SQL</a>&gt;</code></td>
