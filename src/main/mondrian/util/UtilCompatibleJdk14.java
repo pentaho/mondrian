@@ -57,9 +57,9 @@ public class UtilCompatibleJdk14 implements UtilCompatible {
 
     public String quotePattern(String s) {
         int slashEIndex = s.indexOf("\\E");
-        if (slashEIndex == -1)
+        if (slashEIndex == -1) {
             return "\\Q" + s + "\\E";
-
+        }
         StringBuilder sb = new StringBuilder(s.length() * 2);
         sb.append("\\Q");
         int current = 0;

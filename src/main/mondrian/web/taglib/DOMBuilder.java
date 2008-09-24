@@ -169,16 +169,17 @@ public class DOMBuilder {
 
         Element build(int rowIndex) {
             Element row = elem("row", parent);
-            if (dimCount > 1 && rowIndex == 0)
+            if (dimCount > 1 && rowIndex == 0) {
                 buildCornerElement(row);
+            }
             build(row, rowIndex);
             return row;
         }
 
         private void build(Element row, int rowIndex) {
-            for (int i = 0; i < levels; i++)
+            for (int i = 0; i < levels; i++) {
                 prevMembers[i] = null;
-
+            }
             for (int i = 0; i < positions.size(); i++) {
                 Position position = positions.get(i);
                 //Member[] currentMembers = positions.get(i).getMembers();
@@ -187,8 +188,9 @@ public class DOMBuilder {
                     Member currentMember = position.get(j);
                     if (prevMembers[j] == null || !prevMembers[j].equals(currentMember)) {
                         prevMembers[j] = currentMember;
-                        for (int k = j + 1; k < levels; k++)
+                        for (int k = j + 1; k < levels; k++) {
                             prevMembers[j] = null;
+                        }
                     }
                 }
 
@@ -199,8 +201,9 @@ public class DOMBuilder {
                     prevMembers[rowIndex] = currentMember;
                     prevElems[rowIndex] = currentElem;
                     prevSpan[rowIndex] = 1;
-                    for (int j = rowIndex + 1; j < levels; j++)
+                    for (int j = rowIndex + 1; j < levels; j++) {
                         prevMembers[j] = null;
+                    }
                 } else {
                     Element prevElem = prevElems[rowIndex];
                     prevElem.setAttribute("style", "span");
@@ -257,8 +260,9 @@ public class DOMBuilder {
     private void buildCell(Cell cell, Element row, boolean even) {
         Element cellElem = elem("cell", row);
         String s = cell.getFormattedValue();
-        if (s == null || s.length() == 0 || s.equals("(null)"))
+        if (s == null || s.length() == 0 || s.equals("(null)")) {
             s = "\u00a0"; // &nbsp;
+        }
         cellElem.setAttribute("value", s);
         cellElem.setAttribute("style", even ? "even" : "odd");
     }

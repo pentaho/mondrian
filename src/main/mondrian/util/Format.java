@@ -2171,8 +2171,9 @@ static class FloatingDecimal {
 
     private static FDBigInt
     big5pow(int p) {
-        if (p < 0)
+        if (p < 0) {
             throw new RuntimeException("Assertion botch: negative power of 5");
+        }
         if (b5p == null) {
             b5p = new FDBigInt[p + 1];
         } else if (b5p.length <= p) {
@@ -2197,14 +2198,16 @@ static class FloatingDecimal {
             q = p >> 1;
             r = p - q;
             FDBigInt bigq =  b5p[q];
-            if (bigq == null)
-                bigq = big5pow (q);
+            if (bigq == null) {
+                bigq = big5pow(q);
+            }
             if (r < small5pow.length) {
                 return (b5p[p] = bigq.mult(small5pow[r]));
             } else {
                 FDBigInt bigr = b5p[r];
-                if (bigr == null)
+                if (bigr == null) {
                     bigr = big5pow(r);
+                }
                 return (b5p[p] = bigq.mult(bigr));
             }
         }
@@ -2235,8 +2238,9 @@ static class FloatingDecimal {
         // Discard non-significant low-order bits, while rounding,
         // up to insignificant value.
         int i;
-        for (i = 0; insignificant >= 10L; i++)
+        for (i = 0; insignificant >= 10L; i++) {
             insignificant /= 10L;
+        }
         if (i != 0) {
             long pow10 = long5pow[i] << i; // 10^i == 5^i * 2^i;
             long residue = lvalue % pow10;
@@ -2248,9 +2252,9 @@ static class FloatingDecimal {
             }
         }
         if (lvalue <= Integer.MAX_VALUE) {
-            if (lvalue <= 0L)
+            if (lvalue <= 0L) {
                 throw new RuntimeException("Assertion botch: value " + lvalue + " <= 0");
-
+            }
             // even easier subcase!
             // can do int arithmetic rather than long!
             int  ivalue = (int)lvalue;
@@ -2587,9 +2591,9 @@ static class FloatingDecimal {
          * ULP changes at power-of-two bounds) for this reason, we
          * hack M2. Hope this works.
          */
-        if (nFractBits == 1)
+        if (nFractBits == 1) {
             M2 -= 1;
-
+        }
         if (M2 < 0) {
             // oops.
             // since we cannot scale M down far enough,
@@ -3403,8 +3407,9 @@ static class FDBigInt {
                 bitcount += 1;
             }
         }
-        if (bitcount != 0)
+        if (bitcount != 0) {
             lshiftMe(bitcount);
+        }
         return bitcount;
     }
 
@@ -3530,11 +3535,14 @@ static class FDBigInt {
             }
             c >>= 32; // signed shift.
         }
-        if (c != 0L)
+        if (c != 0L) {
             throw new RuntimeException("Assertion botch: borrow out of subtract");
-        while (i < m)
-            if (other.data[i++] != 0)
+        }
+        while (i < m) {
+            if (other.data[i++] != 0) {
                 throw new RuntimeException("Assertion botch: negative result of subtract");
+            }
+        }
         return new FDBigInt(r, n - nzeros);
     }
 
@@ -3568,9 +3576,11 @@ static class FDBigInt {
         } else {
             i = this.nWords - 1;
         }
-        for (; i > 0 ; i--)
-            if (this.data[i] != other.data[i])
+        for (; i > 0 ; i--) {
+            if (this.data[i] != other.data[i]) {
                 break;
+            }
+        }
         // careful! want unsigned compare!
         // use brute force here.
         int a = this.data[i];
@@ -3659,9 +3669,9 @@ static class FDBigInt {
             data[i] = (int)p;
             p >>= 32; // SIGNED shift.
         }
-        if (p != 0L)
+        if (p != 0L) {
             throw new RuntimeException("Assertion botch: carry out of *10");
-
+        }
         return (int)q;
     }
 
@@ -3677,8 +3687,9 @@ static class FDBigInt {
         }
         switch (i) {
         case 1:
-            if (data[1] < 0)
+            if (data[1] < 0) {
                 throw new RuntimeException("Assertion botch: value too big");
+            }
             return ((long)(data[1]) << 32) | ((long)data[0] & 0xffffffffL);
         case 0:
             return ((long)data[0] & 0xffffffffL);

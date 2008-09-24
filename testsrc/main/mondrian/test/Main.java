@@ -117,8 +117,9 @@ public class Main extends TestSuite {
         runner.setVUsers(properties.VUsers.get());
         runner.setTimeLimit(properties.TimeLimit.get());
         TestResult tres = runner.doRun(test);
-        if (!tres.wasSuccessful())
+        if (!tres.wasSuccessful()) {
             System.exit(1);
+        }
     }
 
     /**

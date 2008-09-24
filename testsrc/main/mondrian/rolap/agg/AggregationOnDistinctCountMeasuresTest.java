@@ -1105,7 +1105,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         // So it is disabled for now.  Perhaps this test should be calling
         // directly into optimizeChildren like some of the tests below rather
         // than using SQL pattern verification.
-        
         SqlPattern[] patterns = {
             /*
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),

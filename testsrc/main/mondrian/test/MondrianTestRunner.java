@@ -132,8 +132,9 @@ public class MondrianTestRunner extends BaseTestRunner {
                             setStopReason("Test stopped due to errors.");
                             result.stop();
                         }
-                        if (result.shouldStop())
+                        if (result.shouldStop()) {
                             break;
+                        }
                     }
                 }
 

@@ -931,8 +931,9 @@ public abstract class RolapNativeSet extends RolapNative {
                 newEvaluator.setContext(defaultMember);
             }
         }
-        if (storedMeasure != null)
+        if (storedMeasure != null) {
             newEvaluator.setContext(storedMeasure);
+        }
         return newEvaluator;
     }
 

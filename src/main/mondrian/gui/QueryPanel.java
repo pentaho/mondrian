@@ -236,8 +236,9 @@ public class QueryPanel extends javax.swing.JPanel {
                 LOGGER.error("", e);
                 Throwable prev = e;
                 e = e.getCause();
-                if (e == prev)
-                  break;
+                if (e == prev) {
+                    break;
+                }
                 p.println();
               }
 

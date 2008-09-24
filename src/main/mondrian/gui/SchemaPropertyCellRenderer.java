@@ -268,8 +268,9 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
 
     private String generateLeftRightStr(Object value) {
         MondrianGuiDef.RelationOrJoin currentObj = (MondrianGuiDef.RelationOrJoin) value;
-        if (currentObj instanceof MondrianGuiDef.Table)
+        if (currentObj instanceof MondrianGuiDef.Table) {
             return (((MondrianGuiDef.Table) currentObj).alias == null || ((MondrianGuiDef.Table) currentObj).alias.equals("") ? ((MondrianGuiDef.Table) currentObj).name : ((MondrianGuiDef.Table) currentObj).alias);
+        }
         MondrianGuiDef.Join currentJoin = (MondrianGuiDef.Join)currentObj;
         String joinStr = "(" + generateLeftRightStr(currentJoin.left) + " <b>JOIN</b> " + generateLeftRightStr(currentJoin.right) + ")";
         //===String joinStr = " <b>JOIN</b> (<blockquote>" + generateLeftRightStr(currentJoin.left) + "<br>" + generateLeftRightStr(currentJoin.right) + "<br>)</blockquote>" ;

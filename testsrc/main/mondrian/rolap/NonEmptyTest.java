@@ -3560,8 +3560,9 @@ public class NonEmptyTest extends BatchTestCase {
 
 
     RolapEvaluator getEvaluator(Result res, int[] pos) {
-        while (res instanceof NonEmptyResult)
+        while (res instanceof NonEmptyResult) {
             res = ((NonEmptyResult) res).underlying;
+        }
         return (RolapEvaluator) ((RolapResult) res).getEvaluator(pos);
     }
 

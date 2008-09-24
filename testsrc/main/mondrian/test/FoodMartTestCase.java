@@ -353,8 +353,7 @@ public class FoodMartTestCase extends TestCase {
     private Cube cubeByName(String cubeName, Cube[] cubes) {
         Cube resultCube = null;
         for (Cube cube : cubes) {
-            if (cubeName.equals(cube.getName()))
-            {
+            if (cubeName.equals(cube.getName())) {
                 resultCube = cube;
                 break;
             }

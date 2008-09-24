@@ -50,14 +50,16 @@ public class ApplResources implements Listener.ApplicationContext {
     public Transformer getTransformer(String xsltURI, boolean useCache) {
         try {
             Templates templates = null;
-            if (useCache)
+            if (useCache) {
                 templates = (Templates)templatesCache.get(xsltURI);
+            }
             if (templates == null) {
                 TransformerFactory tf = TransformerFactory.newInstance();
                 InputStream input = context.getResourceAsStream(xsltURI);
                 templates = tf.newTemplates(new StreamSource(input));
-                if (useCache)
+                if (useCache) {
                     templatesCache.put(xsltURI, templates);
+                }
             }
             return templates.newTransformer();
         } catch (TransformerConfigurationException e) {

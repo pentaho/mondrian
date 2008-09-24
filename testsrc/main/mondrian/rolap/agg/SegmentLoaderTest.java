@@ -693,26 +693,30 @@ public class SegmentLoaderTest extends BatchTestCase {
         List<Object[]> data = new ArrayList<Object[]>();
         data.add(new Object[]{"1997", "Food", "Deli", "F", "5990", 0});
         data.add(new Object[]{"1997", "Food", "Deli", "M", "6047", 0});
-        if (incSummaryData)
+        if (incSummaryData) {
             data.add(new Object[]{"1997", "Food", "Deli", null, "12037", 1});
+        }
         data.add(
             new Object[]{"1997", "Food", "Canned_Products", "F", "867", 0});
         data.add(
             new Object[]{"1997", "Food", "Canned_Products", "M", "945", 0});
-        if (incSummaryData)
+        if (incSummaryData) {
             data.add(new Object[]{"1997", "Food", "Canned_Products", null,
                 "1812", 1});
+        }
         data.add(new Object[]{"1997", "Drink", "Dairy", "F", "1987", 0});
         data.add(new Object[]{"1997", "Drink", "Dairy", "M", "2199", 0});
-        if (incSummaryData)
+        if (incSummaryData) {
             data.add(new Object[]{"1997", "Drink", "Dairy", null, "4186", 1});
+        }
         data.add(new Object[]{"1997", "Non-Consumable", "Carousel", "F", "368",
             0});
         data.add(new Object[]{"1997", "Non-Consumable", "Carousel", "M", "473",
             0});
-        if (incSummaryData)
+        if (incSummaryData) {
             data.add(new Object[]{"1997", "Non-Consumable", "Carousel", null,
                 "841", 1});
+        }
         return data;
     }
 
@@ -731,8 +735,9 @@ public class SegmentLoaderTest extends BatchTestCase {
         List<Object[]> data = new ArrayList<Object[]>();
         data.add(new Object[]{"1997", "Food", "Deli", "F", "5990", 0});
         data.add(new Object[]{"1997", "Food", "Deli", "M", "6047", 0});
-        if (incSummaryData)
+        if (incSummaryData) {
             data.add(new Object[]{"1997", "Food", "Deli", null, "12037", 1});
+        }
         data.add(
             new Object[]{"1997", "Food", null, "F", "867", 0});
         return data;

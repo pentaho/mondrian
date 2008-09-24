@@ -82,13 +82,11 @@ public class ValidationUtils {
                 }
             }
         } else if (value instanceof MondrianGuiDef.CubeDimension) {
-            if (isEmpty(((MondrianGuiDef.CubeDimension) value).name)) //check name is not blank
-            {
+            if (isEmpty(((MondrianGuiDef.CubeDimension) value).name)) { //check name is not blank
                 return nameMustBeSet;
             }
             if (value instanceof MondrianGuiDef.DimensionUsage) {
-                if (isEmpty(((MondrianGuiDef.DimensionUsage) value).source)) //check source is not blank
-                {
+                if (isEmpty(((MondrianGuiDef.DimensionUsage) value).source)) { //check source is not blank
                     return messages.getString("schemaTreeCellRenderer.sourceMustBeSet.alert", "Source must be set");
                 }
                 // check source is name of one of dimensions of schema (shared dimensions)
@@ -358,10 +356,8 @@ public class ValidationUtils {
                 // special check for cube dimension where foreign key is blank : allowed /not allowed
                 if (value instanceof MondrianGuiDef.Dimension && cube != null
                         && ((MondrianGuiDef.Hierarchy) child).relation != null) {
-                    if (isEmpty(((MondrianGuiDef.Dimension) value).foreignKey)) //check foreignkey is not blank
-                    {
+                    if (isEmpty(((MondrianGuiDef.Dimension) value).foreignKey)) { //check foreignkey is not blank
                         // if relation is null, foreignkey must be specified
-
                         return messages.getString("schemaTreeCellRenderer.foreignKeyMustBeSet.alert",
                                 "Foreign key must be set");
                     }

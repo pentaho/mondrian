@@ -90,14 +90,14 @@ public class MDXQueryServlet extends HttpServlet {
 
             List<Position> columns = result.getAxes()[0].getPositions();
             List<Position> rows = null;
-            if (result.getAxes().length == 2)
+            if (result.getAxes().length == 2) {
                 rows = result.getAxes()[1].getPositions();
-
+            }
             int columnWidth = columns.get(0).size();
             int rowWidth = 0;
-            if (result.getAxes().length == 2)
-                    rowWidth = result.getAxes()[1].getPositions().get(0).size();
-
+            if (result.getAxes().length == 2) {
+                rowWidth = result.getAxes()[1].getPositions().get(0).size();
+            }
             for (int j = 0; j < columnWidth; j++) {
                 html.append("<tr>");
 

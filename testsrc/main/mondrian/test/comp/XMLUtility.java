@@ -60,8 +60,9 @@ class XMLUtility {
             }
 
             DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-            if (handler != null)
+            if (handler != null) {
                 documentBuilder.setErrorHandler(handler);
+            }
             return documentBuilder;
         } catch (ParserConfigurationException e) {
             return null;
@@ -93,8 +94,9 @@ class XMLUtility {
 
             serializer.serialize(document);
         } finally {
-            if (writer != null)
+            if (writer != null) {
                 writer.close();
+            }
         }
     }
 

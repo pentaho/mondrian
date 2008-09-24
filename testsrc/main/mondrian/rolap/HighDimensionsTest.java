@@ -199,7 +199,9 @@ public class HighDimensionsTest extends FoodMartTestCase {
             // memory
             final List overloader = new ArrayList();
             try {
-                for (;;) overloader.add(new long[99999999]);
+                for (;;) {
+                    overloader.add(new long[99999999]);
+                }
             } catch (OutOfMemoryError out) {
                 // OK, outofmemory
             }

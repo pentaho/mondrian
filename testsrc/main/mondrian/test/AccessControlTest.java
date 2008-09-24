@@ -1388,8 +1388,7 @@ public class AccessControlTest extends FoodMartTestCase {
         }
 
         public void reset() {
-            for (Map.Entry<Property,String> entry : originalValues.entrySet())
-            {
+            for (Map.Entry<Property,String> entry : originalValues.entrySet()) {
                 final String value = entry.getValue();
                 //noinspection StringEquality
                 if (value == NOT_SET) {

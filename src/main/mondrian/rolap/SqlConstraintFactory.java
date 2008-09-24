@@ -38,8 +38,9 @@ public class SqlConstraintFactory {
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(Evaluator context) {
-        if (!enabled || !SqlContextConstraint.isValidContext(context))
+        if (!enabled || !SqlContextConstraint.isValidContext(context)) {
             return DefaultMemberChildrenConstraint.instance();
+        }
         return new SqlContextConstraint((RolapEvaluator) context, false);
     }
 

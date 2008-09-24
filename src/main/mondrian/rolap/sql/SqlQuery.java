@@ -915,8 +915,9 @@ public class SqlQuery {
          * into upper case.
          */
         public String toUpper(String expr) {
-            if (isDB2() || isAccess())
+            if (isDB2() || isAccess()) {
                 return "UCASE(" + expr + ")";
+            }
             return "UPPER(" + expr + ")";
         }
 

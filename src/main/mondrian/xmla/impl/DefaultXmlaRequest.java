@@ -117,26 +117,30 @@ public class DefaultXmlaRequest implements XmlaRequest,
 */
 
     public String getRequestType() {
-        if (method != METHOD_DISCOVER)
+        if (method != METHOD_DISCOVER) {
             throw new IllegalStateException("Only METHOD_DISCOVER has requestType");
+        }
         return requestType;
     }
 
     public boolean isDrillThrough() {
-        if (method != METHOD_EXECUTE)
+        if (method != METHOD_EXECUTE) {
             throw new IllegalStateException("Only METHOD_EXECUTE determines drillthrough");
+        }
         return drillthrough;
     }
 
     public int drillThroughMaxRows() {
-        if (method != METHOD_EXECUTE)
+        if (method != METHOD_EXECUTE) {
             throw new IllegalStateException("Only METHOD_EXECUTE determines drillthrough");
+        }
         return maxRows;
     }
 
     public int drillThroughFirstRowset() {
-        if (method != METHOD_EXECUTE)
+        if (method != METHOD_EXECUTE) {
             throw new IllegalStateException("Only METHOD_EXECUTE determines drillthrough");
+        }
         return firstRowset;
     }
 

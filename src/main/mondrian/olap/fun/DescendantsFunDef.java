@@ -278,8 +278,7 @@ class DescendantsFunDef extends FunDefBase {
                     }
                 }
                 members = nextMembers;
-            }
-            while (members.size() > 0);
+            } while (members.size() > 0);
         } else {
             List<Member> fertileMembers = new ArrayList<Member>();
             do {
@@ -308,8 +307,7 @@ class DescendantsFunDef extends FunDefBase {
                 }
                 members =
                     schemaReader.getMemberChildren(fertileMembers, context);
-            }
-            while (members.size() > 0);
+            } while (members.size() > 0);
         }
     }
 

@@ -65,9 +65,9 @@ public class Walker implements Enumeration {
 
     private void moveToNext()
     {
-        if (stack.empty())
+        if (stack.empty()) {
             return;
-
+        }
         currentFrame = (Frame) stack.peek();
 
         // Unwind stack until we find a level we have not completed.
@@ -118,8 +118,9 @@ public class Walker implements Enumeration {
             }
             //delete the child of current member from the stack
             stack.pop();
-            if (currentFrame.parent != null)
+            if (currentFrame.parent != null) {
                 currentFrame = currentFrame.parent;
+            }
             nextElement();
         }
     }
@@ -146,8 +147,9 @@ public class Walker implements Enumeration {
     public int level()
     {
         int i = 0;
-        for (Frame f = currentFrame; f != null; f = f.parent)
+        for (Frame f = currentFrame; f != null; f = f.parent) {
             i++;
+        }
         return i;
     }
 
@@ -165,9 +167,11 @@ public class Walker implements Enumeration {
     /** returns the <code>iDepth</code>th ancestor of the current element */
     private Frame getAncestorFrame(int iDepth)
     {
-        for (Frame f = currentFrame; f != null; f = f.parent)
-            if (iDepth-- == 0)
+        for (Frame f = currentFrame; f != null; f = f.parent) {
+            if (iDepth-- == 0) {
                 return f;
+            }
+        }
         return null;
     }
 
@@ -271,8 +275,9 @@ public class Walker implements Enumeration {
         Region.walkUntil(walker, "USA");
         walker.prune();
         region = (Region) walker.nextElement(); // should be null
-        if (region == null)
+        if (region == null) {
             pw.println("null");
+        }
         pw.flush();
 
         walker = new Walker(usa);

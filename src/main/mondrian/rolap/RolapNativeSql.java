@@ -44,8 +44,9 @@ public class RolapNativeSql {
         if (storedMeasure != null) {
             RolapStar star1 = getStar(storedMeasure);
             RolapStar star2 = getStar(m);
-            if (star1 != star2)
+            if (star1 != star2) {
                 return false;
+            }
         }
         this.storedMeasure = m;
         return true;

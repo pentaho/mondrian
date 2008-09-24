@@ -168,8 +168,9 @@ public class Formula extends QueryPart {
                 // BCHOW: The last segment of the id is the name of the calculated member
                 // so no need to look for a pre-existing child.  This avoids
                 // unnecessarily executing SQL and loading children into cache.
-                if (i != id.getSegments().size() - 1)
+                if (i != id.getSegments().size() - 1) {
                     mdxElement = schemaReader.getElementChild(parent, segment);
+                }
 
                 // Don't try to look up the member which the formula is
                 // defining. We would only find one if the member is overriding
