@@ -4,7 +4,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == Copyright (C) 2005-2007 Julian Hyde
+  == Copyright (C) 2005-2008 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -98,7 +98,10 @@ more information on how to join the team.</p>
     handling is OS-specific, but MDX function implementations are typically 
     generic.</li>
     <li><b>Make sure your change adheres to the <a href="#Coding_guidelines">
-    coding guidelines</a></b>.</li>
+    coding guidelines</a></b>. Perforce will reject your change if any of the 
+	modified files have <code><a href="#The_checkFile_utility">checkFile</a></code> 
+	errors; you may find it convenient to run <code>checkFile</code> before 
+	submitting. </li>
     <li><b>If the change affects mondrian's user-visible behavior, update the 
     documentation</b>. For example, if you make a schema change, update
     <a href="schema.html">schema.html</a>.</li>
@@ -398,6 +401,37 @@ not, they should give you an idea of the code formatting policy.</p>
 
 <p><img border="0" alt="Code formatting: Spaces" src="images/code_spacing.png"></p>
 
+<h2>The checkFile utility<a name="The_checkFile_utility">&nbsp;</a></h2>
+
+<p>When you submit a change list, the perforce server enforces some basic code 
+formatting guidelines using a utility called <code>checkFile</code>. If the 
+files you are submitting do not pass the guidelines, the submission will fail 
+and indicate the lines in error.</p>
+
+<p>You may find it convenient to run the utility locally to find errors before 
+submitting. You can get it from perforce at
+<a href="http://p4web.eigenbase.org/open/util/bin/"><code>//open/util/bin/checkFile</code></a>. 
+The script requires <a href="http://www.cygwin.com">cygwin</a> to run on 
+Windows.</p>
+<p>Usage:</p>
+<blockquote>
+	<p><code>checkFile [ &lt;options&gt; ] --depotPath &lt;depotPath&gt; &lt;file&gt;<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;Checks a temporary file. depotPath is the full path of<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;the file stored in perforce, for error reporting; file<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;holds the actual file contents.<br>
+	checkFile [ &lt;options&gt; ] &lt;file&gt;...<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;Checks a list of files.<br>
+	checkFile [ &lt;options&gt; ] --opened<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;Checks all files that are opened for edit in the current<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;perforce client.<br>
+	checkFile --help<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;Prints this help.<br>
+	<br>
+	Options:<br>
+	--lenient<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;Does not apply rules to components which are not known to<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;be in compliance. The perforce trigger uses this option.</code></p>
+</blockquote>
 <h2>Learning more about Mondrian<a name="Learning_more_about_Mondrian">&nbsp;</a></h2>
 
 <h3>How Mondrian generates SQL<a name="How_Mondrian_generates_SQL">&nbsp;</a></h3>
@@ -474,10 +508,10 @@ messages in a format which Emacs can parse.</td></tr></tbody></table><p>&nbsp;</
 
 <hr noshade size="1"/>
 <p>
-    Author: Julian Hyde; last updated December, 2007.<br/>
+    Author: Julian Hyde; last updated September, 2008.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/developer.html?ac=22">log&nbsp;</a>)<br/>
-    Copyright (C) 2005-2007 Julian Hyde
+    Copyright (C) 2005-2008 Julian Hyde
 </p>
 
 <br />
