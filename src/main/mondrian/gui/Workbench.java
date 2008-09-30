@@ -1098,11 +1098,11 @@ public class Workbench extends javax.swing.JFrame {
     private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         JInternalFrame jf = desktopPane.getSelectedFrame();
 
-        if (jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
+        if (jf != null && jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
             SchemaExplorer se = (SchemaExplorer) jf.getContentPane().getComponent(0);
             java.io.File schemaFile = se.getSchemaFile();
             java.io.File oldSchemaFile = schemaFile;
-            java.io.File suggSchemaFile = new File(schemaFile, se.getSchema().name.trim() + ".xml");
+            java.io.File suggSchemaFile = new File(schemaFile == null ?  se.getSchema().name.trim() + ".xml" : schemaFile.getName());
             MondrianGuiDef.Schema schema = se.getSchema();
             JFileChooser jfc = new JFileChooser();
             MondrianProperties.instance();
