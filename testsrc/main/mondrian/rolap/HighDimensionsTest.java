@@ -210,16 +210,14 @@ public class HighDimensionsTest extends FoodMartTestCase {
             for (int i = 4; i < ii - 40; i++) {
                 assertNull(softReferences.get(i).get());
             }
-/*
-            for(int i=5; i<ii; i++) {
-              try {
-       System.out.print("Tomando " + i);
-System.out.println(                    result.getAxes()[axisIndex].getPositions().get(0).get(0));
-// assert false;
-                } catch(RuntimeException nsee) {
+            for (int i = 4; i < ii - 40; i++) {
+                try {
+                    result.getAxes()[axisIndex].getPositions().get(i).get(0);
+                    assert false;
+                } catch (RuntimeException nsee) {
+                    // Everything is ok
                 }
             }
-*/
         } finally {
             MondrianProperties.instance().ResultLimit.set(old);
         }
