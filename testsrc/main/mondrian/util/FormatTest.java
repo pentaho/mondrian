@@ -287,8 +287,17 @@ public class FormatTest extends TestCase {
         // must not decrement month by one (cuz java.util.Calendar is 0-based)
         checkFormat(null, date2, "mm/dd/yy", "09/07/10");
 
-        // must recognize "mmm"
+        // must recognize "MMM"
+        checkFormat(null, date2, "MMM/dd/yyyy", "Sep/07/2010");
+
+        // "mmm" is a synonym for "MMMM"
         checkFormat(null, date2, "mmm/dd/yyyy", "Sep/07/2010");
+
+        // must recognize "MMMM"
+        checkFormat(null, date2, "MMMM/dd/yyyy", "September/07/2010");
+
+        // "mmmm" is a synonym for "MMMM"
+        checkFormat(null, date2, "mmmm/dd/yyyy", "September/07/2010");
 
         // "mm" means minute, not month, when following "hh"
         checkFormat(null, date2, "hh/mm/ss", "06/05/04");
