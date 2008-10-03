@@ -16,8 +16,6 @@ import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,98 +32,51 @@ public class LocalizingDynamicSchemaProcessor
     implements DynamicSchemaProcessor
 {
     private static final Logger LOGGER =
-            Logger.getLogger(LocalizingDynamicSchemaProcessor.class);
+        Logger.getLogger(LocalizingDynamicSchemaProcessor.class);
 
     /** Creates a new instance of LocalizingDynamicSchemaProcessor */
     public LocalizingDynamicSchemaProcessor() {
     }
 
-    private PropertyResourceBundle i8n;
+    private ResourceBundle bundle;
 
     /**
      * Regular expression for variables.
      */
     private static final Pattern pattern = Pattern.compile("(%\\{.*?\\})");
-    private static final int INVALID_LOCALE = 1;
-    private static final int FULL_LOCALE = 3;
-    private static final int LANG_LOCALE = 2;
-    private static final Set<String> countries = Collections.unmodifiableSet(
-            new HashSet<String>(Arrays.asList(Locale.getISOCountries())));
-    private static final Set<String> languages = Collections.unmodifiableSet(
-            new HashSet<String>(Arrays.asList(Locale.getISOLanguages())));
-    private int localeType = INVALID_LOCALE;
 
+    /**
+     * Populates the bundle with the given resource.
+     *
+     * <p>The name of the property file is typically the name of a class, as
+     * per {@link ResourceBundle#getBundle(String)}. However, for backwards
+     * compatibility, the name can contain slashes (which are converted to
+     * dots) and end with ".properties" (which is removed). Therefore
+     * "com/acme/MyResource.properties" is equivalent to
+     * "com.acme.MyResource".
+     *
+     * @see MondrianProperties#LocalePropFile
+     *
+     * @param propFile The name of the property file
+     */
     void populate(String propFile) {
-        StringBuilder localizedPropFileBase = new StringBuilder();
-        String [] tokens = propFile.split("\\.");
-
-        for (int i = 0; i < tokens.length - 1; i++) {
-            if (localizedPropFileBase.length() > 0) {
-                localizedPropFileBase.append(".");
-            }
-            localizedPropFileBase.append(tokens[i]);
+        if (propFile.endsWith(".properties")) {
+            propFile =
+                propFile.substring(
+                    0,
+                    propFile.length() - ".properties".length());
         }
-
-        String [] localePropFilename = new String[localeType];
-        String [] localeTokens = locale.split("\\_");
-        int index = localeType;
-        for (int i = 0; i < localeType; i++) {
-            //"en_GB" -> [en][GB]  first
-            String catName = "";
-            /*
-             * if en_GB, then append [0]=_en_GB [1]=_en
-             * if en, then append [0]=_en
-             * if null/bad then append nothing;
-             */
-            for (int j = 0;j <= i - 1; j++) {
-                catName += "_" + localeTokens[j];
-            }
-            localePropFilename[--index] = localizedPropFileBase + catName +
-                    "." + tokens[tokens.length - 1];
-        }
-        boolean fileExists = false;
-        File file = null;
-        for (int i = 0;i < localeType && !fileExists; i++) {
-            file = new File(localePropFilename[i]);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("populate: file=" +
-                        file.getAbsolutePath() +
-                        " exists=" +
-                        file.exists());
-            }
-            if (!file.exists()) {
-                LOGGER.warn("Mondrian: Warning: file '"
-                        + file.getAbsolutePath()
-                        + "' not found - trying next default locale");
-            }
-            fileExists = file.exists();
-        }
-
-        if (fileExists) {
-            try {
-                URL url = Util.toURL(file);
-                i8n = new PropertyResourceBundle(url.openStream());
-                LOGGER.info("Mondrian: locale file '"
-                        + file.getAbsolutePath()
-                        + "' loaded");
-
-            } catch (MalformedURLException e) {
-                LOGGER.error("Mondrian: locale file '"
-                        + file.getAbsolutePath()
-                        + "' could not be loaded ("
-                        + e
-                        + ")");
-            } catch (java.io.IOException e) {
-                LOGGER.error("Mondrian: locale file '"
-                        + file.getAbsolutePath()
-                        + "' could not be loaded ("
-                        + e
-                        + ")");
-            }
-        } else {
-            LOGGER.warn("Mondrian: Warning: no suitable locale file found for locale '"
+        try {
+            bundle = ResourceBundle.getBundle(
+                propFile,
+                new Locale(locale),
+                getClass().getClassLoader());
+        } catch (Exception e) {
+            LOGGER.warn(
+                "Mondrian: Warning: no suitable locale file found for locale '"
                     + locale
-                    + "'");
+                    + "'",
+                e);
         }
     }
 
@@ -146,7 +97,7 @@ public class LocalizingDynamicSchemaProcessor
         loadProperties();
 
         String schema = super.filter(schemaUrl, connectInfo, stream);
-        if (i8n != null) {
+        if (bundle != null) {
             schema = doRegExReplacements(schema);
         }
         LOGGER.debug(schema);
@@ -165,13 +116,13 @@ public class LocalizingDynamicSchemaProcessor
             int end = match.end();
 
             try {
-                String intlProperty = i8n.getString(key);
+                String intlProperty = bundle.getString(key);
                 if (intlProperty != null) {
                     match.appendReplacement(intlSchema, intlProperty);
                 }
-            } catch (java.util.MissingResourceException e) {
+            } catch (MissingResourceException e) {
                 LOGGER.error("Missing resource for key [" + key + "]",e);
-            } catch (java.lang.NullPointerException e) {
+            } catch (NullPointerException e) {
                 LOGGER.error("missing resource key at substring(" + start + "," + end + ")", e);
             }
         }
@@ -206,21 +157,6 @@ public class LocalizingDynamicSchemaProcessor
      */
     public void setLocale(String locale) {
         this.locale = locale;
-        localeType = INVALID_LOCALE;  // if invalid/missing, default localefile will be tried.
-        // make sure that both language and country fields are valid
-        if (locale.indexOf("_") != -1 && locale.length() == 5) {
-            if (languages.contains(locale.substring(0, 2)) &&
-                    countries.contains(locale.substring(3, 5))) {
-                localeType = FULL_LOCALE;
-            }
-        } else {
-            if (locale.length() == 2) {
-            //make sure that the language field is valid since that is all that was provided
-                if (languages.contains(locale.substring(0, 2))) {
-                    localeType = LANG_LOCALE;
-                }
-            }
-        }
     }
 }
 
