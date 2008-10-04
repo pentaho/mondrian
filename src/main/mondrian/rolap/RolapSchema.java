@@ -314,8 +314,8 @@ public class RolapSchema implements Schema {
                         while ((n = in.read()) != -1) {
                             buf.append((char) n);
                         }
-                        getLogger().debug("RolapSchema.load: content: \n"
-                            +buf.toString());
+                        getLogger().debug(
+                            "RolapSchema.load: content: \n" + buf.toString());
                     } catch (java.io.IOException ex) {
                         getLogger().debug("RolapSchema.load: ex=" + ex);
                     }
@@ -324,8 +324,8 @@ public class RolapSchema implements Schema {
                 def = xmlParser.parse(fileContent.getInputStream());
             } else {
                 if (getLogger().isDebugEnabled()) {
-                    getLogger().debug("RolapSchema.load: catalogStr: \n"
-                            +catalogStr);
+                    getLogger().debug(
+                        "RolapSchema.load: catalogStr: \n" + catalogStr);
                 }
 
                 def = xmlParser.parse(catalogStr);

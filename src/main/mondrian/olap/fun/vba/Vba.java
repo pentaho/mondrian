@@ -306,6 +306,10 @@ public class Vba {
     public static Date dateAdd(String intervalName, double number, Date date) {
         Interval interval = Interval.valueOf(intervalName);
         final double floor = Math.floor(number);
+
+        // We use the local calendar here. This method will therefore return
+        // different results in different locales: it depends whether the
+        // initial date and the final date are in DST.
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         if (floor != number) {
@@ -320,10 +324,12 @@ public class Vba {
             final long amount =
                 (long)
                     (((double) (ceilMillis - floorMillis)) * (number - floor));
-            calendar
-                    .add(Calendar.DAY_OF_YEAR, (int) (amount / MILLIS_IN_A_DAY));
-            calendar
-                    .add(Calendar.MILLISECOND, (int) (amount % MILLIS_IN_A_DAY));
+            calendar.add(
+                Calendar.DAY_OF_YEAR,
+                (int) (amount / MILLIS_IN_A_DAY));
+            calendar.add(
+                Calendar.MILLISECOND, (int)
+                (amount % MILLIS_IN_A_DAY));
         } else {
             interval.add(calendar, (int) floor);
         }
@@ -1870,12 +1876,17 @@ public class Vba {
     // ~ Inner classes
 
     private enum Interval {
-        yyyy("Year", Calendar.YEAR), q("Quarter", -1), m("Month",
-                Calendar.MONTH), y("Day of year", Calendar.DAY_OF_YEAR), d(
-                "Day", Calendar.DAY_OF_MONTH), w("Weekday",
-                Calendar.DAY_OF_WEEK), ww("Week", Calendar.WEEK_OF_YEAR), h(
-                "Hour", Calendar.HOUR_OF_DAY), n("Minute", Calendar.MINUTE), s(
-                "Second", Calendar.SECOND);
+        yyyy("Year", Calendar.YEAR),
+        q("Quarter", -1),
+        m("Month", Calendar.MONTH),
+        y("Day of year", Calendar.DAY_OF_YEAR),
+        d("Day", Calendar.DAY_OF_MONTH),
+        w("Weekday", Calendar.DAY_OF_WEEK),
+        ww("Week", Calendar.WEEK_OF_YEAR),
+        h("Hour", Calendar.HOUR_OF_DAY),
+        n("Minute", Calendar.MINUTE),
+        s("Second", Calendar.SECOND);
+
         private final int dateField;
 
         Interval(String desc, int dateField) {

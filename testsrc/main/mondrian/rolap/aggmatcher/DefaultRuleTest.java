@@ -63,6 +63,7 @@ public class DefaultRuleTest extends TestCase {
             }
        }
     }
+
     protected void tearDown() throws Exception {
     }
 
@@ -73,54 +74,62 @@ public class DefaultRuleTest extends TestCase {
         }
         DefaultDef.TableMatch tableMatch = rule.getTableMatch();
         if (tableMatch == null) {
-            LOGGER.info("tableMatch == null for tag="
-            +tag
-            + ", tableName="
-            + tableName);
+            LOGGER.info(
+                "tableMatch == null for tag="
+                    + tag
+                    + ", tableName="
+                    + tableName);
         }
         return tableMatch.getMatcher(tableName);
     }
+
     private Recognizer.Matcher getFactCountMatcher(String tag) {
         DefaultDef.AggRule rule = getAggRule(tag);
         DefaultDef.FactCountMatch factTableName = rule.getFactCountMatch();
         return factTableName.getMatcher();
     }
-    private Recognizer.Matcher getForeignKeyMatcher(String tag,
-            String foreignKeyName) {
 
+    private Recognizer.Matcher getForeignKeyMatcher(
+        String tag,
+        String foreignKeyName)
+    {
         DefaultDef.AggRule rule = getAggRule(tag);
         DefaultDef.ForeignKeyMatch foreignKeyMatch = rule.getForeignKeyMatch();
         return foreignKeyMatch.getMatcher(foreignKeyName);
     }
 
 
-    private Recognizer.Matcher getLevelMatcher(String tag,
-                                              String usagePrefix,
-                                              String hierarchyName,
-                                              String levelName,
-                                              String levelColumnName) {
+    private Recognizer.Matcher getLevelMatcher(
+        String tag,
+        String usagePrefix,
+        String hierarchyName,
+        String levelName,
+        String levelColumnName)
+    {
         DefaultDef.AggRule rule = getAggRule(tag);
         Recognizer.Matcher matcher =
-            rule.getLevelMap().getMatcher(usagePrefix,
-                                          hierarchyName,
-                                          levelName,
-                                          levelColumnName);
+            rule.getLevelMap().getMatcher(
+                usagePrefix,
+                hierarchyName,
+                levelName,
+                levelColumnName);
         return matcher;
     }
 
-    private Recognizer.Matcher getMeasureMatcher(String tag,
-                                                String measureName,
-                                                String measureColumnName,
-                                                String aggregateName) {
+    private Recognizer.Matcher getMeasureMatcher(
+        String tag,
+        String measureName,
+        String measureColumnName,
+        String aggregateName)
+    {
         DefaultDef.AggRule rule = getAggRule(tag);
         Recognizer.Matcher matcher =
-            rule.getMeasureMap().getMatcher(measureName,
-                                            measureColumnName,
-                                            aggregateName);
+            rule.getMeasureMap().getMatcher(
+                measureName,
+                measureColumnName,
+                aggregateName);
         return matcher;
     }
-
-
 
     //////////////////////////////////////////////////////////////////////////
     //

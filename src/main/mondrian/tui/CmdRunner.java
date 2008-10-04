@@ -390,7 +390,7 @@ public class CmdRunner {
         OlapElement element = Util.lookup(query, Util.parseIdentifier(trimmed));
 
         debug("parseParameter. exp="
-            +((element == null) ? "null" : element.getClass().getName()));
+            + ((element == null) ? "null" : element.getClass().getName()));
 
         if (element instanceof Member) {
             Member member = (Member) element;

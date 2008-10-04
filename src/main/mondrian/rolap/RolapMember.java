@@ -438,8 +438,8 @@ public class RolapMember extends MemberBase {
                 n = Util.quoteMdxIdentifier(n);
                 this.uniqueName = Util.makeFqName(n, name);
                 if (getLogger().isDebugEnabled()) {
-                    getLogger().debug("RolapMember.makeUniqueName: uniqueName="
-                            +uniqueName);
+                    getLogger().debug(
+                        "RolapMember.makeUniqueName: uniqueName=" + uniqueName);
                 }
             }
         }
@@ -452,14 +452,13 @@ public class RolapMember extends MemberBase {
             : Util.makeFqName(parentMember, name);
     }
 
-
     public boolean isCalculatedInQuery() {
         return false;
     }
 
     public String getName() {
         final String name =
-                (String) getPropertyValue(Property.NAME.name);
+            (String) getPropertyValue(Property.NAME.name);
         return (name != null)
             ? name
             : keyToString(key);

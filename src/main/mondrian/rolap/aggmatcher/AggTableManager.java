@@ -209,9 +209,9 @@ public class AggTableManager {
 
             JdbcSchema.Table dbFactTable = db.getTable(factTableName);
             if (dbFactTable == null) {
-                msgRecorder.reportWarning("No Table found for fact name="
-                    +factTableName);
-
+                msgRecorder.reportWarning(
+                    "No Table found for fact name="
+                        + factTableName);
                 continue loop;
             }
 

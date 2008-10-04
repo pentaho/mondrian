@@ -35,6 +35,12 @@ public class VbaTest extends TestCase {
     private static final double SMALL = 1e-10d;
     private static final Date SAMPLE_DATE = sampleDate();
 
+    private static final String timeZoneName =
+        TimeZone.getDefault().getDisplayName();
+    private static final boolean isPST =
+        timeZoneName.equals("America/Los_Angeles")
+        || timeZoneName.equals("Pacific Standard Time");
+
     // Conversion functions
 
     public void testCBool() {
@@ -264,6 +270,7 @@ public class VbaTest extends TestCase {
 
         // 2008-02-01 0:00:00
         Calendar calendar = Calendar.getInstance();
+
         calendar.set(2007, 1 /* 0-based! */, 1, 0, 0, 0);
         final Date feb2007 = calendar.getTime();
         assertEquals("2007/02/01 00:00:00", feb2007);
@@ -272,7 +279,24 @@ public class VbaTest extends TestCase {
         assertEquals("2009/04/24 19:10:45", Vba.dateAdd("yyyy", 1, SAMPLE_DATE));
         assertEquals("2006/04/24 19:10:45", Vba.dateAdd("yyyy", -2, SAMPLE_DATE));
         // partial years interpolate
-        assertEquals("2010/10/24 07:10:45", Vba.dateAdd("yyyy", 2.5, SAMPLE_DATE));
+        final Date sampleDatePlusTwoPointFiveYears =
+            Vba.dateAdd("yyyy", 2.5, SAMPLE_DATE);
+        if (isPST) {
+            // Only run test in PST, because test would produce different
+            // results if start and end are not both in daylight savings time.
+            final SimpleDateFormat dateFormat =
+                new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US);
+            final String dateString =
+                dateFormat.format(
+                    sampleDatePlusTwoPointFiveYears);
+            // We allow "2010/10/24 07:10:45" for computers that have an out of
+            // date timezone database. 2010/10/24 is in daylight savings time,
+            // but was not according to the old rules.
+            assertTrue(
+                "Got " + dateString,
+                dateString.equals("2010/10/24 06:40:45")
+                    || dateString.equals("2010/10/24 07:10:45"));
+        }
         assertEquals("2009/01/24 19:10:45", Vba.dateAdd("q", 3, SAMPLE_DATE));
 
         // partial months are interesting!

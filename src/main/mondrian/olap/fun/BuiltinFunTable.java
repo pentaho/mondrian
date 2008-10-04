@@ -572,11 +572,10 @@ public class BuiltinFunTable extends FunTableImpl {
                 return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
                     public Member evaluateMember(Evaluator evaluator) {
                         Member member = memberCalc.evaluateMember(evaluator);
-                        return evaluator.getSchemaReader().getLeadMember(member, +1);
+                        return evaluator.getSchemaReader().getLeadMember(member, 1);
                     }
                 };
             }
-
         });
 
         define(OpeningClosingPeriodFunDef.OpeningPeriodResolver);

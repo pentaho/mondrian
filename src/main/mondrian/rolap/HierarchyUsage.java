@@ -203,8 +203,9 @@ public class HierarchyUsage {
             init(cube, hierarchy, null);
 
         } else {
-            getLogger().warn("HierarchyUsage<init>: Unknown cubeDim="
-                +cubeDim.getClass().getName());
+            getLogger().warn(
+                "HierarchyUsage<init>: Unknown cubeDim="
+                    + cubeDim.getClass().getName());
 
             this.kind = Kind.UNKNOWN;
 

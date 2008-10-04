@@ -413,12 +413,14 @@ public class AggStar {
             private final MondrianDef.Expression left;
             private final MondrianDef.Expression right;
 
-            private JoinCondition(final MondrianDef.Expression left,
-                                  final MondrianDef.Expression right) {
+            private JoinCondition(
+                final MondrianDef.Expression left,
+                final MondrianDef.Expression right)
+            {
                 if (!(left instanceof MondrianDef.Column)) {
                     JOIN_CONDITION_LOGGER.debug(
                         "JoinCondition.left NOT Column: "
-                        +left.getClass().getName());
+                        + left.getClass().getName());
                 }
                 this.left = left;
                 this.right = right;
