@@ -192,7 +192,7 @@ public class RoleImpl implements Role {
             }
             final Dimension[] dimensions = cubeGrant.getKey().getDimensions();
             for (Dimension dimension1 : dimensions) {
-                if (dimension1 == dimension) {
+                if (dimension1.equals(dimension)) {
                     return access;
                 }
             }

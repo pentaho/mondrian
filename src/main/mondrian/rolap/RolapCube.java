@@ -1040,15 +1040,13 @@ public class RolapCube extends CubeBase {
         if (isVirtual()) {
             return;
         }
-        List<Member> list = new ArrayList<Member>();
-        List<Member> measures = getMeasures();
-        for (Member measure : measures) {
+        List<RolapBaseCubeMeasure> storedMeasures =
+            new ArrayList<RolapBaseCubeMeasure>();
+        for (Member measure : getMeasures()) {
             if (measure instanceof RolapBaseCubeMeasure) {
-                list.add(measure);
+                storedMeasures.add((RolapBaseCubeMeasure) measure);
             }
         }
-        RolapBaseCubeMeasure[] storedMeasures =
-            list.toArray(new RolapBaseCubeMeasure[list.size()]);
 
         RolapStar star = getStar();
         RolapStar.Table table = star.getFactTable();

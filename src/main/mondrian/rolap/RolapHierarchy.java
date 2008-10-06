@@ -261,7 +261,7 @@ public class RolapHierarchy extends HierarchyBase {
     }
 
     MemberReader getMemberReader() {
-        return this.memberReader;
+        return memberReader;
     }
 
     RolapLevel newMeasuresLevel() {
@@ -543,6 +543,9 @@ public class RolapHierarchy extends HierarchyBase {
      * <p>This method may not be efficient, so the caller should take care
      * not to call it too often. A cache is a good idea.
      *
+     * @param role Role
+     * @return Member reader that implements access control
+     *
      * @pre role != null
      * @post return != null
      */
@@ -550,6 +553,7 @@ public class RolapHierarchy extends HierarchyBase {
         final Access access = role.getAccess(this);
         switch (access) {
         case NONE:
+            role.getAccess(this); // todo: remove
             throw Util.newInternal("Illegal access to members of hierarchy "
                     + this);
         case ALL:
@@ -609,7 +613,7 @@ public class RolapHierarchy extends HierarchyBase {
                         new Exp[0],
                         returnType);
                 return new LimitedRollupSubstitutingMemberReader(
-                    role, hierarchyAccess, partialExp);
+                    getMemberReader(), role, hierarchyAccess, partialExp);
 
             case HIDDEN:
                 Exp hiddenExp =
@@ -628,7 +632,7 @@ public class RolapHierarchy extends HierarchyBase {
                         new Exp[0],
                         returnType);
                 return new LimitedRollupSubstitutingMemberReader(
-                    role, hierarchyAccess, hiddenExp);
+                    getMemberReader(), role, hierarchyAccess, hiddenExp);
             default:
                 throw Util.unexpected(rollupPolicy);
             }
@@ -927,20 +931,29 @@ public class RolapHierarchy extends HierarchyBase {
      * role has limited access to the hierarchy, replaces members with
      * dummy members which evaluate to the sum of only the accessible children.
      */
-    private class LimitedRollupSubstitutingMemberReader
+    private static class LimitedRollupSubstitutingMemberReader
         extends SubstitutingMemberReader
     {
         private final Role.HierarchyAccess hierarchyAccess;
         private final Exp exp;
 
+        /**
+         * Creates a LimitedRollupSubstitutingMemberReader.
+         *
+         * @param memberReader Underlying member reader
+         * @param role Role to enforce
+         * @param hierarchyAccess Access this role has to the hierarchy
+         * @param exp Expression for hidden member
+         */
         public LimitedRollupSubstitutingMemberReader(
+            MemberReader memberReader,
             Role role,
             Role.HierarchyAccess hierarchyAccess,
             Exp exp)
         {
             super(
                 new RestrictedMemberReader(
-                    RolapHierarchy.this.getMemberReader(), role));
+                    memberReader, role));
             this.hierarchyAccess = hierarchyAccess;
             this.exp = exp;
         }

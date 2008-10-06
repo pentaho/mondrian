@@ -1399,6 +1399,59 @@ public class AccessControlTest extends FoodMartTestCase {
             }
         }
     }
+
+    /**
+     * Tests that hierarchy-level access control works on a virtual cube.
+     * See bug
+     * <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2141337&group_id=35302&atid=414613">
+     * 2141337, "Roles and virtual cubes"</a>.
+     */
+    public void testVirtualCube() {
+        TestContext testContext = TestContext.create(
+            null, null, null, null, null,
+            "<Role name=\"VCRole\">\n"
+                + "  <SchemaGrant access=\"none\">\n"
+                + "    <CubeGrant cube=\"Warehouse and Sales\" access=\"all\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\"\n"
+                + "          topLevel=\"[Store].[Store Country]\">\n"
+                + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>\n"
+                + "        <MemberGrant member=\"[Store].[USA].[CA].[Los Angeles]\" access=\"none\"/>\n"
+                + "      </HierarchyGrant>\n"
+                + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\"\n"
+                + "          topLevel=\"[Customers].[State Province]\" bottomLevel=\"[Customers].[City]\">\n"
+                + "        <MemberGrant member=\"[Customers].[USA].[CA]\" access=\"all\"/>\n"
+                + "        <MemberGrant member=\"[Customers].[USA].[CA].[Los Angeles]\" access=\"none\"/>\n"
+                + "      </HierarchyGrant>\n"
+                + "      <HierarchyGrant hierarchy=\"[Gender]\" access=\"none\"/>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>").withRole("VCRole");
+        testContext.assertQueryReturns(
+            "select [Store].Members on 0 from [Warehouse and Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[USA]}\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Alameda]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}\n" +
+                "Row #0: 159,167.84\n" +
+                "Row #0: 159,167.84\n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: 45,750.24\n" +
+                "Row #0: 45,750.24\n" +
+                "Row #0: 54,431.14\n" +
+                "Row #0: 54,431.14\n" +
+                "Row #0: 4,441.18\n" +
+                "Row #0: 4,441.18\n"));
+    }
 }
 
 // End AccessControlTest.java
