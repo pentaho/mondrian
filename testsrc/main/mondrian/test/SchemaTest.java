@@ -12,7 +12,6 @@ package mondrian.test;
 import org.apache.log4j.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.varia.LevelRangeFilter;
-import org.olap4j.OlapConnection;
 import org.olap4j.metadata.*;
 
 import mondrian.rolap.aggmatcher.AggTableManager;
@@ -22,7 +21,6 @@ import mondrian.util.Bug;
 import mondrian.olap.Member;
 import mondrian.olap.Position;
 import mondrian.olap.Cube;
-import mondrian.olap.Schema;
 
 import java.io.StringWriter;
 import java.util.List;
@@ -2152,6 +2150,110 @@ public class SchemaTest extends FoodMartTestCase {
                 "Row #0: \n" +
                 "Row #0: \n" +
                 "Row #0: \n"));
+    }
+
+    public void _testAttributeHierarchy() {
+        // from email from peter tran dated 2008/9/8
+        // TODO: schema syntax to create attribute hierarchy
+        assertQueryReturns(
+            "WITH \n"
+                + " MEMBER\n"
+                + "  Measures.SalesPerWorkingDay AS \n"
+                + "    IIF(\n"
+                + "     Count(\n"
+                + "      Filter(\n"
+                + "        Descendants(\n"
+                + "          [Date].[Calendar].CurrentMember\n"
+                + "          ,[Date].[Calendar].[Date]\n"
+                + "          ,SELF)\n"
+                + "       ,  [Date].[Day of Week].CurrentMember.Name <> \"1\"\n"
+                + "      )\n"
+                + "    ) = 0\n"
+                + "     ,NULL\n"
+                + "     ,[Measures].[Internet Sales Amount]\n"
+                + "      /\n"
+                + "       Count(\n"
+                + "         Filter(\n"
+                + "           Descendants(\n"
+                + "             [Date].[Calendar].CurrentMember\n"
+                + "             ,[Date].[Calendar].[Date]\n"
+                + "             ,SELF)\n"
+                + "          ,  [Date].[Day of Week].CurrentMember.Name <> \"1\"\n"
+                + "         )\n"
+                + "       )\n"
+                + "    )\n"
+                + "   '\n"
+                + "SELECT [Measures].[SalesPerWorkingDay]  ON 0\n"
+                + ", [Date].[Calendar].[Month].MEMBERS ON 1\n"
+                + "FROM [Adventure Works]",
+            "x");
+    }
+
+    /**
+     * Testcase for a problem which involved a slowly changing dimension.
+     * Not actually a slowly-changing dimension - we don't have such a thing in
+     * the foodmart schema - but the same structure. The dimension is a two
+     * table snowflake, and the table nearer to the fact table is not used by
+     * any level.
+     */
+    public void testScdJoin() {
+        final TestContext testContext =
+            TestContext.createSubstitutingCube(
+                "Sales",
+                "  <Dimension name=\"Product truncated\" foreignKey=\"product_id\">\n"
+                + "    <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+                + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+                + "        <Table name=\"product\"/>\n"
+                + "        <Table name=\"product_class\"/>\n"
+                + "      </Join>\n"
+                + "      <Level name=\"Product Class\" table=\"product_class\" nameColumn=\"product_subcategory\"\n"
+                + "          column=\"product_class_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n", null, null);
+        testContext.assertQueryReturns(
+            "select non empty {[Measures].[Unit Sales]} on 0,\n"
+                + " non empty Filter({[Product truncated].Members}, [Measures].[Unit Sales] > 10000) on 1\n"
+                + "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product truncated].[All Product truncateds]}\n" +
+                "{[Product truncated].[All Product truncateds].[Fresh Vegetables]}\n" +
+                "{[Product truncated].[All Product truncateds].[Fresh Fruit]}\n" +
+                "Row #0: 266,773\n" +
+                "Row #1: 20,739\n" +
+                "Row #2: 11,767\n"));
+    }
+
+    // TODO: enable this test as part of PhysicalSchema work
+    // TODO: also add a test that Table.alias, Join.leftAlias and
+    // Join.rightAlias cannot be the empty string.
+    public void _testNonUniqueAlias() {
+        final TestContext testContext =
+            TestContext.createSubstitutingCube(
+                "Sales",
+                "  <Dimension name=\"Product truncated\" foreignKey=\"product_id\">\n"
+                + "    <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+                + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+                + "        <Table name=\"product\" alias=\"product_class\"/>\n"
+                + "        <Table name=\"product_class\"/>\n"
+                + "      </Join>\n"
+                + "      <Level name=\"Product Class\" table=\"product_class\" nameColumn=\"product_subcategory\"\n"
+                + "          column=\"product_class_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n", null, null);
+        Throwable throwable = null;
+        try {
+            testContext.assertSimpleQuery();
+        } catch (Throwable e) {
+            throwable = e;
+        }
+        // neither a source column or source expression specified
+        TestContext.checkThrowable(
+            throwable,
+            "Alias not unique");
     }
 }
 

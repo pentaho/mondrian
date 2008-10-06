@@ -154,13 +154,13 @@ public class SqlConstraintUtils {
     }
 
     static List<Member> removeCalculatedMembers(List<Member> members) {
-        List<Member> result = new FilteredIterableList<Member>(members,
-                new FilteredIterableList.Filter<Member>() {
-                    public boolean accept(final Member m) {
-                        return !m.isCalculated();
-                    }
-                });
-        return result;
+        return new FilteredIterableList<Member>(
+            members,
+            new FilteredIterableList.Filter<Member>() {
+                public boolean accept(final Member m) {
+                    return !m.isCalculated();
+                }
+            });
     }
 
     public static boolean containsCalculatedMember(Member[] members) {
@@ -308,7 +308,6 @@ public class SqlConstraintUtils {
             condition += ")";
             sqlQuery.addWhere(condition);
         }
-        return;
     }
 
     private static StarColumnPredicate getColumnPredicates(
@@ -351,9 +350,11 @@ public class SqlConstraintUtils {
      * @param baseCube base cube if virtual
      * @param members list of constraining members
      * @param fromLevel lowest parent level that is unique
-     * @param restrictMemberTypes defines the behavior when calculated members are present
+     * @param restrictMemberTypes defines the behavior when calculated members
+     * are present
      *
-     * @return a non-empty String if SQL is generated for the multi-level member list.
+     * @return a non-empty String if SQL is generated for the multi-level
+     * member list.
      */
     private static String constrainMultiLevelMembers(
         SqlQuery sqlQuery,
@@ -365,18 +366,18 @@ public class SqlConstraintUtils {
         // Use LinkedHashMap so that keySet() is deterministic.
         Map<RolapMember, List<RolapMember>> parentChildrenMap =
             new LinkedHashMap<RolapMember, List<RolapMember>>();
-        String condition = "";
+        StringBuilder condition = new StringBuilder();
 
         // First try to generate IN list for all members
         if (sqlQuery.getDialect().supportsMultiValueInExpr()) {
-            condition +=
+            condition.append(
                 generateMultiValueInExpr(
                     sqlQuery,
                     baseCube,
                     members,
                     fromLevel,
                     restrictMemberTypes,
-                    parentChildrenMap);
+                    parentChildrenMap));
 
             // The members list might contain NULL values in the member levels.
             //
@@ -389,15 +390,15 @@ public class SqlConstraintUtils {
             //
             // Pick out such members to generate SQL later.
             // These members are organized in a map that maps the parant levels
-            // containing NULL to all its children members in the list. e.g. the
-            // member list above becomes the following map, after SQL is generated
-            // for [USA].[CA].[San Jose] in the call above.
+            // containing NULL to all its children members in the list. e.g.
+            // the member list above becomes the following map, after SQL is
+            // generated for [USA].[CA].[San Jose] in the call above.
             //
             //   [null].[null]->([San Francisco], [Los Angeles])
             //   [null]->([CA].[San Diego], [CA].[Sacramento])
             //
             if (parentChildrenMap.isEmpty()) {
-                return condition;
+                return condition.toString();
             }
         } else {
             // Multi-value IN list not supported
@@ -408,9 +409,9 @@ public class SqlConstraintUtils {
             //   [null].[null]->([San Francisco], [Los Angesles])
             //   [null].[CA]->([San Diego],[Sacramento])
             //
-            // The idea is to be able to "compress" the original member list into
-            // groups that can use single value IN list for part of the comparison
-            // that does not involve NULLs.
+            // The idea is to be able to "compress" the original member list
+            // into groups that can use single value IN list for part of the
+            // comparison that does not involve NULLs.
             //
             for (RolapMember m : members) {
                 if (m.isCalculated()) {
@@ -447,14 +448,16 @@ public class SqlConstraintUtils {
         // The children for each parent are turned into IN list so they
         // should not contain null.
         for (RolapMember p : parentChildrenMap.keySet()) {
+            assert p != null;
             if (!firstParent) {
-                condition += " or ";
+                condition.append(" or ");
             }
 
-            condition += "(";
+            condition.append("(");
 
-            // First generate ANDs for all members in the parent lineage of this parent-children group
-            boolean firstLevel = true;
+            // First generate ANDs for all members in the parent lineage of
+            // this parent-children group
+            int levelCount = 0;
             for (RolapMember gp = p; gp != null; gp = gp.getParentMember()) {
                 if (gp.isAll()) {
                     // Ignore All member
@@ -467,8 +470,7 @@ public class SqlConstraintUtils {
                 // add the level to the FROM clause if this is the
                 // first parent-children group we're generating sql for
                 if (firstParent) {
-                    RolapHierarchy hierarchy =
-                        (RolapHierarchy) level.getHierarchy();
+                    RolapHierarchy hierarchy = level.getHierarchy();
 
                     // this method can be called within the context of shared
                     // members, outside of the normal rolap star, therefore
@@ -490,21 +492,21 @@ public class SqlConstraintUtils {
                     }
                 }
 
-                if (!firstLevel) {
-                    condition += " and ";
-                } else {
-                    firstLevel = false;
+                if (levelCount > 0) {
+                    condition.append(" and ");
                 }
+                ++levelCount;
 
-                condition += constrainLevel(
-                    level,
-                    sqlQuery,
-                    baseCube,
-                    getColumnValue(
-                        gp.getKey(),
-                        sqlQuery.getDialect(),
-                        level.getDatatype()),
-                        false);
+                condition.append(
+                    constrainLevel(
+                        level,
+                        sqlQuery,
+                        baseCube,
+                        getColumnValue(
+                            gp.getKey(),
+                            sqlQuery.getDialect(),
+                            level.getDatatype()),
+                        false));
                 if (gp.getLevel() == fromLevel) {
                     // SQL is completely generated for this parent
                     break;
@@ -520,43 +522,44 @@ public class SqlConstraintUtils {
                 Map<RolapMember, List<RolapMember>> tmpParentChildrenMap =
                     new HashMap<RolapMember, List<RolapMember>>();
 
-                condition += " and ";
-
+                if (levelCount > 0) {
+                    condition.append(" and ");
+                }
                 RolapLevel childrenLevel =
                     (RolapLevel)(p.getLevel().getChildLevel());
 
                 if (sqlQuery.getDialect().supportsMultiValueInExpr() &&
                     childrenLevel != memberLevel) {
                     // Multi-level children and multi-value IN list supported
-                    condition +=
+                    condition.append(
                         generateMultiValueInExpr(
                             sqlQuery,
                             baseCube,
                             children,
                             childrenLevel,
                             restrictMemberTypes,
-                            tmpParentChildrenMap);
-                    assert (tmpParentChildrenMap.isEmpty());
+                            tmpParentChildrenMap));
+                    assert tmpParentChildrenMap.isEmpty();
                 } else {
                     // Can only be single level children
                     // If multi-value IN list not supported, children will be on
                     // the same level as members list. Only single value IN list
                     // needs to be generated for this case.
-                    assert (childrenLevel == memberLevel);
-                    condition +=
+                    assert childrenLevel == memberLevel;
+                    condition.append(
                         generateSingleValueInExpr(
                             sqlQuery,
                             baseCube,
                             children,
                             childrenLevel,
-                            restrictMemberTypes);
+                            restrictMemberTypes));
                 }
             }
             // SQL is complete for this parent-children group.
-            condition += ")";
+            condition.append(")");
         }
 
-        return condition;
+        return condition.toString();
     }
 
     /**
@@ -726,7 +729,7 @@ public class SqlConstraintUtils {
                 continue;
             }
             RolapLevel level = m.getLevel();
-            RolapHierarchy hierarchy = (RolapHierarchy) level.getHierarchy();
+            RolapHierarchy hierarchy = level.getHierarchy();
 
             // this method can be called within the context of shared members,
             // outside of the normal rolap star, therefore we need to
@@ -737,7 +740,7 @@ public class SqlConstraintUtils {
                 column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
             }
 
-            String columnString = null;
+            String columnString;
             if (column != null) {
                 RolapStar.Table targetTable = column.getTable();
                 hierarchy.addToFrom(sqlQuery, targetTable);
@@ -917,7 +920,7 @@ public class SqlConstraintUtils {
             }
 
             StarColumnPredicate cc = getColumnPredicates(column, c);
-            String q = null;
+            String q;
             if (column != null) {
                 RolapStar.Table targetTable = column.getTable();
                 hierarchy.addToFrom(sqlQuery, targetTable);
