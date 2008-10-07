@@ -16,6 +16,7 @@ import java.awt.Dimension;
 
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import mondrian.gui.validate.ValidationUtils;
@@ -130,8 +131,11 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                 super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("join"))));
             } else if (value instanceof MondrianGuiDef.Table) {
                 //setText(prefix+"Table: "+ ((MondrianGuiDef.Table) value).name);
+                //EC: Sets the table name to alias if present.
+                MondrianGuiDef.Table theTable = (MondrianGuiDef.Table) value;
+                String theName = (theTable.alias != null && theTable.alias.trim().length() > 0) ? theTable.alias : theTable.name;
                 setText(workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.table.title",
-                        "{0}Table: {1}", new String[] {(prefix.length() == 0 ? "" : prefix + " : "), ((MondrianGuiDef.Table) value).name}));
+                        "{0}Table: {1}", new String[] {(prefix.length() == 0 ? "" : prefix + " : "),theName}));
                 super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("table"))));
             }
             // REVIEW: Need to deal with InlineTable and View here
