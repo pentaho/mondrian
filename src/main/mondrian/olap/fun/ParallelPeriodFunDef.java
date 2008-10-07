@@ -64,8 +64,7 @@ class ParallelPeriodFunDef extends FunDefBase {
             memberCalc = compiler.compileMember(args[2]);
             break;
         case 1:
-            final Dimension dimension =
-                    args[0].getType().getHierarchy().getDimension();
+            final Dimension dimension = args[0].getType().getDimension();
             memberCalc = new DimensionCurrentMemberCalc(dimension);
             break;
         default:
@@ -76,8 +75,7 @@ class ParallelPeriodFunDef extends FunDefBase {
                 throw MondrianResource.instance().
                             NoTimeDimensionInCube.ex(getName());
             }
-            memberCalc = new DimensionCurrentMemberCalc(
-                    timeDimension);
+            memberCalc = new DimensionCurrentMemberCalc(timeDimension);
             break;
         }
 

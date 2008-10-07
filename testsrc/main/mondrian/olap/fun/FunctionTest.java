@@ -4523,6 +4523,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testParallelPeriod() {
+        getTestContext().assertSetExprDependsOn(
+            "parallelperiod([Time].CurrentMember)", "Xxx");
+
         assertAxisReturns("parallelperiod([Time].[Quarter], 1, [Time].[1998].[Q1])",
                 "[Time].[1997].[Q4]");
 

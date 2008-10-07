@@ -50,8 +50,7 @@ class OrderFunDef extends FunDefBase {
             final MemberCalc[] calcs = (MemberCalc[]) memberValueCalc.getCalcs();
             for (MemberCalc memberCalc : calcs) {
                 if (memberCalc instanceof ConstantCalc &&
-                    !listCalc.dependsOn(
-                        memberCalc.getType().getHierarchy().getDimension())) {
+                    !listCalc.dependsOn(memberCalc.getType().getDimension())) {
                     constantList.add(memberCalc);
                 } else {
                     variableList.add(memberCalc);
