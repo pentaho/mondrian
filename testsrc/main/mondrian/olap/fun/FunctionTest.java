@@ -4523,9 +4523,6 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testParallelPeriod() {
-        getTestContext().assertSetExprDependsOn(
-            "parallelperiod([Time].CurrentMember)", "Xxx");
-
         assertAxisReturns("parallelperiod([Time].[Quarter], 1, [Time].[1998].[Q1])",
                 "[Time].[1997].[Q4]");
 
@@ -4633,6 +4630,8 @@ public class FunctionTest extends FoodMartTestCase {
         String s11 = TestContext.allDimsExcept("[Gender]");
         getTestContext().assertMemberExprDependsOn(
             "ParallelPeriod([Product].[Product Family], [Gender].[M])", s11);
+        getTestContext().assertSetExprDependsOn(
+            "parallelperiod([Time].CurrentMember)", "{[Time]}");
     }
 
     public void testParallelPeriodLevelLag() {
