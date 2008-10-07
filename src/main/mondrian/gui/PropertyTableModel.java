@@ -194,8 +194,9 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                             f.set(target,aValues[1]);
                         }
                     } else {
+                        //EC: Avoids table="" to be set on schema
                         Field f = target.getClass().getField(propertyNames[rowIndex]);
-                        f.set(target,aValue);
+                        setFieldValue(f, aValue);
                     }
                 }
 
@@ -215,7 +216,9 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                 if (aValue != null) {   // split and save only if value exists
                     String[] aValues = ((String) aValue).split("->");
                     Field f = target.getClass().getField(propertyNames[rowIndex]);
-                    f.set(target, aValues[aValues.length - 1]);    // save the last value in the array from split
+                    //EC: Avoids *Column="" to be set on schema
+                    aValue = aValues[aValues.length - 1];
+                    setFieldValue(f, aValue);
                 }
 
             } else {
@@ -228,11 +231,20 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                                 new String[] { aValue.toString() }));
                 } else {
                     Field f = target.getClass().getField(propertyNames[rowIndex]);
-                    f.set(target,aValue);
+                    //EC: Avoids property to be set on schema with an empty value.
+                    setFieldValue(f, aValue);
                 }
             }
         } catch (Exception ex) {
             LOGGER.error("setValueAt(aValue, row, index)", ex);
+        }
+    }
+
+    private void setFieldValue(Field aField, Object aValue) throws IllegalAccessException {
+        if (aValue != null && aValue.toString().trim().length() == 0) {
+            aField.set(target,null);
+        } else {
+            aField.set(target,aValue);
         }
     }
 
