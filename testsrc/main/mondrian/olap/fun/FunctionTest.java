@@ -6483,6 +6483,45 @@ public class FunctionTest extends FoodMartTestCase {
         getTestContext().assertSetExprDependsOn("Ytd([Time].[1997].[Q2])", "{}");
     }
 
+    /**
+     * Testcase for
+     * <a href="https://sourceforge.net/tracker/?func=detail&atid=414613&aid=2150537&group_id=35302">
+     * bug 2150537, "error deducing type of Ytd/Qtd/Mtd functions within
+     * Generate"</a>.
+     */
+    public void testGeneratePlusXtd() {
+        assertAxisReturns(
+            "generate(\n"
+                + "  {[Time].[1997].[Q1].[2], [Time].[1997].[Q3].[7]},\n"
+                + " {Ytd( [Time].currentMember)})",
+            fold("[Time].[1997].[Q1].[1]\n" +
+            "[Time].[1997].[Q1].[2]\n" +
+            "[Time].[1997].[Q1].[3]\n" +
+            "[Time].[1997].[Q2].[4]\n" +
+            "[Time].[1997].[Q2].[5]\n" +
+            "[Time].[1997].[Q2].[6]\n" +
+            "[Time].[1997].[Q3].[7]"));
+        assertAxisReturns(
+            "generate(\n"
+                + "  {[Time].[1997].[Q1].[2], [Time].[1997].[Q3].[7]},\n"
+                + " {Ytd( [Time].currentMember)}, ALL)",
+            fold("[Time].[1997].[Q1].[1]\n" +
+            "[Time].[1997].[Q1].[2]\n" +
+            "[Time].[1997].[Q1].[1]\n" +
+            "[Time].[1997].[Q1].[2]\n" +
+            "[Time].[1997].[Q1].[3]\n" +
+            "[Time].[1997].[Q2].[4]\n" +
+            "[Time].[1997].[Q2].[5]\n" +
+            "[Time].[1997].[Q2].[6]\n" +
+            "[Time].[1997].[Q3].[7]"));
+        assertExprReturns(
+            "count(generate({[Time].[1997].[Q4].[11]}, {Qtd( [Time].currentMember)}))",
+            2, 0);
+        assertExprReturns(
+            "count(generate({[Time].[1997].[Q4].[11]}, {Mtd( [Time].currentMember)}))",
+            1, 0);
+    }
+
     public void testQtd() {
         // zero args
         assertQueryReturns(

@@ -78,8 +78,7 @@ class XtdFunDef extends FunDefBase {
             return new SetType(MemberType.forHierarchy(hierarchy));
         }
         final Type type = args[0].getType();
-        if (type.getHierarchy().getDimension()
-                .getDimensionType() !=
+        if (type.getDimension().getDimensionType() !=
                 DimensionType.TimeDimension) {
             throw MondrianResource.instance().TimeArgNeeded.ex(getName());
         }
@@ -145,7 +144,7 @@ class XtdFunDef extends FunDefBase {
         protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
             return new XtdFunDef(dummyFunDef, levelType);
         }
-    };
+    }
 }
 
 // End XtdFunDef.java
