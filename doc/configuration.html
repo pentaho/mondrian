@@ -287,7 +287,11 @@ suite of regression tests.</p>
       <td style="vertical-align: top;">string</td>
       <td style="vertical-align: top;">null<br>
       </td>
-      <td>Name of locale property file.<p>Used for the
+      <td>Name of the class whose resource bundle is to be used to for this 
+		schema. For example, if the class is <code>com.acme.MyResource</code>, 
+		mondrian will look for a resource bundle called <code>com/acme/MyResource_&lt;locale&gt;.properties</code> 
+		on the class path. (This property has a confusing name because in a 
+		previous release it actually held a file name.)<p>Used for the
       <a href="api/mondrian/rolap/DynamicSchemaProcessor.html">LocalizingDynamicSchemaProcessor</a>; see
       <a href="../schema/index.html#I18n">Internationalization</a> for more details.</td>
 

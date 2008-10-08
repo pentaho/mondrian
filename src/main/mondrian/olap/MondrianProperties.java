@@ -713,8 +713,7 @@ public class MondrianProperties extends TriggerableProperties {
     /**
      * Seed for random number generator used by some of the tests.
      *
-     *
-     * Any value besides 0 or -1 gives deterministic behavior.
+     * <p>Any value besides 0 or -1 gives deterministic behavior.
      * The default value is 1234: most users should use this.
      * Setting the seed to a different value can increase coverage, and
      * therefore may uncover new bugs.
@@ -731,7 +730,13 @@ public class MondrianProperties extends TriggerableProperties {
                     this, "mondrian.test.random.seed", 1234);
 
     /**
-     * Name of locale property file.
+     * String property that holds the
+     * name of the class whose resource bundle is to be used to for this
+     * schema. For example, if the class is {@code com.acme.MyResource},
+     * mondrian will look for a resource bundle called
+     * {@code com/acme/MyResource_<i>locale</i>.properties} on the class path.
+     * (This property has a confusing name because in a previous release it
+     * actually held a file name.)
      *
      * <p>Used for the {@link mondrian.i18n.LocalizingDynamicSchemaProcessor};
      * see <a href="{@docRoot}/../schema.html#I18n">Internationalization</a>
@@ -1130,7 +1135,7 @@ public class MondrianProperties extends TriggerableProperties {
          * <p>Compatible with Analysis Services 2005, and default behavior
          * from mondrian-3.0.4 and later.
          */
-        SCOPED;
+        SCOPED
     }
 }
 
