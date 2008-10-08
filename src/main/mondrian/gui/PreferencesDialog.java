@@ -11,7 +11,6 @@
 */
 package mondrian.gui;
 
-import java.awt.Dimension;
 
 /**
  *
@@ -25,6 +24,8 @@ public class PreferencesDialog extends javax.swing.JDialog {
     public PreferencesDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        pack();
+        setLocationRelativeTo(parent);
     }
 
     public boolean accepted() {
@@ -223,12 +224,12 @@ public class PreferencesDialog extends javax.swing.JDialog {
 
     private void acceptButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptButtonActionPerformed
         accepted = true;
-        hide();
+        setVisible(false);
     } //GEN-LAST:event_acceptButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         accepted = false;
-        hide();
+        setVisible(false);
     } //GEN-LAST:event_cancelButtonActionPerformed
 
     /** Closes the dialog */
@@ -236,14 +237,6 @@ public class PreferencesDialog extends javax.swing.JDialog {
         setVisible(false);
         dispose();
     } //GEN-LAST:event_closeDialog
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        new PreferencesDialog(new javax.swing.JFrame(), true).show();
-    }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField driverClassTextField;

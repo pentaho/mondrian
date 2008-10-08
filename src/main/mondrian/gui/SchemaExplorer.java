@@ -3404,6 +3404,25 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         }
         return theTableName;
     }
+
+    public void resetMetaData(JDBCMetaData aMetaData) {
+        //EC: Updates the JDBCMetaData in the SchemaExplorer.
+        jdbcMetaData = aMetaData;
+
+        //EC: Updates the database label.
+        String[] theArgs = { jdbcMetaData.getDbCatalogName(), jdbcMetaData.getDatabaseProductName()};
+        String theLabel = getResourceConverter().getFormattedString("schemaExplorer.database.text","Database - {0} ({1})", theArgs);
+        databaseLabel.setText(theLabel);
+
+        //EC: Updates the JDBCMetaData in the SchemaTreeCellRenderer.
+        renderer.setMetaData(aMetaData);
+
+        //EC: Updates the JDBCMetaData in the SchemaPropertyCellEditor.
+        TableCellEditor theTableCellEditor = propertyTable.getDefaultEditor(Object.class);
+        if (theTableCellEditor instanceof SchemaPropertyCellEditor) {
+            ((SchemaPropertyCellEditor) theTableCellEditor).setMetaData(aMetaData);
+        }
+    }
 }
 
 // End SchemaExplorer.java

@@ -275,6 +275,12 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
         }
         setText(myText);
     }
+
+    public void setMetaData(JDBCMetaData aMetaData) {
+        //EC: Called from the SchemaExplorer.resetMetadata(). A call to the updateUI() should be
+        //made on the owning SchemaFrame to reflect the use of the JDBCMetaData being set.
+        this.jdbcMetaData = aMetaData;
+    }
 }
 
 // End SchemaTreeCellRenderer.java

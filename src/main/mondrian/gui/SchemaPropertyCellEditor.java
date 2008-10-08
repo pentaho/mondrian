@@ -1018,6 +1018,12 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
         return workbench.getResourceConverter();
     }
 
+    public void setMetaData(JDBCMetaData aMetaData) {
+        //EC: Called from the SchemaExplorer.resetMetadata(). A call to the updateUI() should be
+        //made on the owning SchemaFrame to reflect the use of the JDBCMetaData being set.
+        this.jdbcMetaData = aMetaData;
+    }
+
     /* // Not required for time being
     class MapComboBoxModel extends DefaultComboBoxModel {
         Map objectsMap;
