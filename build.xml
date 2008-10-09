@@ -690,14 +690,23 @@ in {mondrian.foodmart.jdbcURL}.">
 
         <jvmarg line="${junit.jvmargs}"/>
 
-        <sysproperty key="log4j.configuration"
-            value="log4j.properties"/>
-        <sysproperty key="mondrian.jdbcDrivers"
-            value="${mondrian.jdbcDrivers}"/>
-        <sysproperty key="mondrian.test.connectString"
-            value="${mondrian.test.connectString}"/>
-        <sysproperty key="mondrian.test.foodmart.catalogURL"
-            value="${mondrian.foodmart.catalogURL}"/>
+      <sysproperty key="log4j.configuration"
+          value="${log4j.configuration}"/>
+      <sysproperty key="mondrian.jdbcDrivers"
+          value="${mondrian.jdbcDrivers}"/>
+      <sysproperty key="mondrian.foodmart.jdbcURL"
+          value="${mondrian.foodmart.jdbcURL}"/>
+      <sysproperty key="mondrian.test.foodmart.catalogURL"
+          value="${mondrian.foodmart.catalogURL}"/>
+      <sysproperty key="mondrian.test.connectString"
+          value="${mondrian.test.connectString}"/>
+      <sysproperty key="mondrian.test.Class"
+          value="${mondrian.test.Class}"/>
+      <sysproperty key="mondrian.test.Name"
+          value="${mondrian.test.Name}"/>
+      <!-- tests require en_US locale -->
+      <sysproperty key="user.language" value="en"/>
+      <sysproperty key="user.region" value="US"/>
 
         <formatter type="xml" />
 
