@@ -30,6 +30,7 @@ public class JDBCMetaData {
     String jdbcConnectionUrl = null; // "jdbc:postgresql://localhost:5432/hello?user=postgres&password=post"
     String jdbcUsername = null;
     String jdbcPassword = null;
+    String jdbcSchema = null;
 
     Connection conn = null;
     DatabaseMetaData md = null;
@@ -59,12 +60,15 @@ public class JDBCMetaData {
     private String errMsg = null;
     private Database db = new Database();
 
-    public JDBCMetaData(Workbench wb, String jdbcDriverClassName, String jdbcConnectionUrl, String jdbcUsername, String jdbcPassword) {
+    public JDBCMetaData(Workbench wb, String jdbcDriverClassName,
+            String jdbcConnectionUrl, String jdbcUsername,
+            String jdbcPassword, String jdbcSchema) {
         this.workbench = wb;
         this.jdbcConnectionUrl = jdbcConnectionUrl;
         this.jdbcDriverClassName = jdbcDriverClassName;
         this.jdbcUsername = jdbcUsername;
         this.jdbcPassword = jdbcPassword;
+        this.jdbcSchema = jdbcSchema;
 
         if (initConnection() == null) {
             setAllSchemas();
@@ -147,6 +151,28 @@ public class JDBCMetaData {
         }
     }
 
+    /**
+     * Check to see if the schemaName is in the list of allowed jdbc schemas
+     *
+     * @param schemaName the name of the schmea
+     *
+     * @return true if found, or if jdbcSchema is null
+     */
+    private boolean inJdbcSchemas(String schemaName) {
+        if (jdbcSchema == null || jdbcSchema.trim().length() == 0) {
+            return true;
+        }
+
+        String schemas[] = jdbcSchema.split("[,;]");
+        for (String schema : schemas) {
+            if (schema.trim().equals(schemaName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /* set all schemas in the currently connected database */
     private void setAllSchemas() {
         LOGGER.debug("JDBCMetaData: setAllSchemas");
@@ -162,12 +188,15 @@ public class JDBCMetaData {
              */
 
             while (rs.next()) {
-                DbSchema dbs = new DbSchema();
-                dbs.name = rs.getString("TABLE_SCHEM");
-                LOGGER.debug("JDBCMetaData: setAllTables - " + dbs.name);
-                setAllTables(dbs);
-                db.addDbSchema(dbs);
-                gotSchema = true;
+                String schemaName = rs.getString("TABLE_SCHEM");
+                if (inJdbcSchemas(schemaName)) {
+                    DbSchema dbs = new DbSchema();
+                    dbs.name = schemaName;
+                    LOGGER.debug("JDBCMetaData: setAllTables - " + dbs.name);
+                    setAllTables(dbs);
+                    db.addDbSchema(dbs);
+                    gotSchema = true;
+                }
             }
             rs.close();
         } catch (Exception e) {
@@ -393,6 +422,7 @@ public class JDBCMetaData {
     }
 
     public static void main(String[] args) {
+
         /*
         JDBCMetaData sb = new JDBCMetaData("org.postgresql.Driver","jdbc:postgresql://localhost:5432/testdb?user=admin&password=admin");
         System.out.println("allSchemas="+sb.allSchemas);

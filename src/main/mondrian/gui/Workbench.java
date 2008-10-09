@@ -77,6 +77,7 @@ public class Workbench extends javax.swing.JFrame {
     private String jdbcConnectionUrl;
     private String jdbcUsername;
     private String jdbcPassword;
+    private String jdbcSchema;
 
     private JDBCMetaData jdbcMetaData;
 
@@ -219,6 +220,7 @@ public class Workbench extends javax.swing.JFrame {
         jdbcConnectionUrl = workbenchProperties.getProperty("jdbcConnectionUrl");
         jdbcUsername = workbenchProperties.getProperty("jdbcUsername");
         jdbcPassword = workbenchProperties.getProperty("jdbcPassword");
+        jdbcSchema = workbenchProperties.getProperty("jdbcSchema");
     }
 
     /** This method is called from within the constructor to
@@ -958,6 +960,7 @@ public class Workbench extends javax.swing.JFrame {
         pd.setJDBCDriverClassName(jdbcDriverClassName);
         pd.setJDBCUsername(jdbcUsername);
         pd.setJDBCPassword(jdbcPassword);
+        pd.setDatabaseSchema(jdbcSchema);
 
         pd.setVisible(true);
 
@@ -966,11 +969,13 @@ public class Workbench extends javax.swing.JFrame {
             jdbcDriverClassName = pd.getJDBCDriverClassName();
             jdbcUsername = pd.getJDBCUsername();
             jdbcPassword = pd.getJDBCPassword();
+            jdbcSchema = pd.getDatabaseSchema();
 
             workbenchProperties.setProperty("jdbcDriverClassName", jdbcDriverClassName);
             workbenchProperties.setProperty("jdbcConnectionUrl", jdbcConnectionUrl);
             workbenchProperties.setProperty("jdbcUsername", jdbcUsername);
             workbenchProperties.setProperty("jdbcPassword", jdbcPassword);
+            workbenchProperties.setProperty("jdbcSchema", jdbcSchema);
             //EC: Enforces the JDBC preferences entered througout all schemas currently opened
             //in the workbench.
             resetWorkbench();
@@ -1343,7 +1348,8 @@ public class Workbench extends javax.swing.JFrame {
                     new String[] { file.getName() }));
             //schemaFrame.setTitle("Schema - " + file.getName());
 
-            jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName, jdbcConnectionUrl, jdbcUsername, jdbcPassword);
+            jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
+                    jdbcConnectionUrl, jdbcUsername, jdbcPassword, jdbcSchema);
 
             schemaFrame.getContentPane().add(new SchemaExplorer(this, file, jdbcMetaData, newFile, schemaFrame));
 
@@ -1510,7 +1516,8 @@ public class Workbench extends javax.swing.JFrame {
             SchemaExplorer theSchemaExplorer = (SchemaExplorer) theSchemaFrame.getContentPane().getComponent(0);
             File theFile = theSchemaExplorer.getSchemaFile();
             checkSchemaFile(theFile);
-            jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName, jdbcConnectionUrl, jdbcUsername, jdbcPassword);
+            jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
+                    jdbcConnectionUrl, jdbcUsername, jdbcPassword, jdbcSchema);
             theSchemaExplorer.resetMetaData(jdbcMetaData);
             theSchemaFrame.updateUI();
         }
