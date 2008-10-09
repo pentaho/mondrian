@@ -130,7 +130,7 @@ public class Main extends TestSuite {
      * @return test suite
      * @throws Exception on error
      */
-    private static Test suite() throws Exception {
+    public static Test suite() throws Exception {
         MondrianProperties properties = MondrianProperties.instance();
         String testName = properties.TestName.get();
         String testClass = properties.TestClass.get();
