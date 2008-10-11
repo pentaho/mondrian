@@ -37,6 +37,7 @@ import mondrian.rolap.sql.TupleConstraint;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
+import mondrian.spi.Dialect;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -1518,8 +1519,8 @@ public class NonEmptyTest extends BatchTestCase {
 
         SqlPattern[] patterns =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
             };
 
         assertQuerySql(query, patterns);
@@ -1598,8 +1599,8 @@ public class NonEmptyTest extends BatchTestCase {
 
         SqlPattern[] patterns =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
             };
 
         assertQuerySql(testContext, query, patterns);
@@ -1685,8 +1686,8 @@ public class NonEmptyTest extends BatchTestCase {
 
         SqlPattern[] patterns =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
             };
 
         assertQuerySql(testContext, query, patterns);
@@ -1770,8 +1771,8 @@ public class NonEmptyTest extends BatchTestCase {
 
         SqlPattern[] patterns =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
             };
 
         assertQuerySql(testContext, query, patterns);

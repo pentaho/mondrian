@@ -13,12 +13,11 @@ package mondrian.test.clearview;
 
 import mondrian.olap.*;
 import mondrian.rolap.BatchTestCase;
-import mondrian.rolap.sql.*;
-import java.util.*;
 
 import junit.framework.*;
 
 import mondrian.test.*;
+import mondrian.spi.Dialect;
 
 import java.lang.reflect.*;
 
@@ -158,8 +157,8 @@ public abstract class ClearViewBase extends BatchTestCase {
 
     private SqlPattern[] buildSqlPatternArray() {
         DiffRepository diffRepos = getDiffRepos();
-        SqlQuery.Dialect d = getTestContext().getDialect();
-        SqlPattern.Dialect dialect = SqlPattern.Dialect.get(d);
+        Dialect d = getTestContext().getDialect();
+        Dialect.DatabaseProduct dialect = d.getDatabaseProduct();
         String testCaseName = getName();
         String sql = diffRepos.get(
             testCaseName, "expectedSql", dialect.name());

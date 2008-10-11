@@ -23,10 +23,10 @@ import mondrian.olap.Member;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.RolapUtil;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
+import mondrian.spi.impl.JdbcDialectImpl;
+import mondrian.spi.Dialect;
 import mondrian.util.DelegatingInvocationHandler;
-import mondrian.olap4j.MondrianOlap4jDriver;
 
 import javax.sql.DataSource;
 import java.io.*;
@@ -915,12 +915,12 @@ public class TestContext {
         return string;
     }
 
-    public SqlQuery.Dialect getDialect() {
+    public Dialect getDialect() {
         java.sql.Connection connection = null;
         try {
             DataSource dataSource = getConnection().getDataSource();
             connection = dataSource.getConnection();
-            return SqlQuery.Dialect.create(connection.getMetaData());
+            return JdbcDialectImpl.create(connection.getMetaData());
         } catch (SQLException e) {
             throw Util.newInternal(e, "While opening connection");
         } finally {
@@ -939,7 +939,7 @@ public class TestContext {
      *
      * @return dialect of an Access persuasion
      */
-    public static SqlQuery.Dialect getFakeDialect()
+    public static Dialect getFakeDialect()
     {
         final DatabaseMetaData data =
             (DatabaseMetaData) Proxy.newProxyInstance(
@@ -965,7 +965,7 @@ public class TestContext {
                     }
                 }
             );
-        return SqlQuery.Dialect.create(data);
+        return JdbcDialectImpl.create(data);
     }
 
     /**
@@ -1008,35 +1008,44 @@ public class TestContext {
      */
     private String dialectize(String sql) {
         final String search = "fname \\+ ' ' \\+ lname";
-        final SqlQuery.Dialect dialect = getDialect();
-        if (dialect.isMySQL()) {
+        final Dialect dialect = getDialect();
+        final Dialect.DatabaseProduct databaseProduct =
+            dialect.getDatabaseProduct();
+        switch (databaseProduct) {
+        case MYSQL:
             // Mysql would generate "CONCAT(...)"
             sql = sql.replaceAll(
-                    search,
-                    "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)");
-        } else if (dialect.isPostgres()
-            || dialect.isOracle()
-            || dialect.isLucidDB()
-            || dialect.isTeradata())
-        {
+                search,
+                "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)");
+            break;
+        case POSTGRES:
+        case ORACLE:
+        case LUCIDDB:
+        case TERADATA:
             sql = sql.replaceAll(
-                    search,
-                    "`fname` || ' ' || `lname`");
-        } else if (dialect.isDerby() || dialect.isCloudscape()) {
+                search,
+                "`fname` || ' ' || `lname`");
+            break;
+        case DERBY:
             sql = sql.replaceAll(
-                    search,
-                    "`customer`.`fullname`");
-        } else if (dialect.isIngres()) {
+                search,
+                "`customer`.`fullname`");
+            break;
+        case INGRES:
             sql = sql.replaceAll(
-                    search,
-                    "fullname");
-        } else if (dialect.isDB2()) {
+                search,
+                "fullname");
+            break;
+        case DB2:
+        case DB2_AS400:
+        case DB2_OLD_AS400:
             sql = sql.replaceAll(
-                    search,
-                    "CONCAT(CONCAT(`customer`.`fname`, ' '), `customer`.`lname`)");
+                search,
+                "CONCAT(CONCAT(`customer`.`fname`, ' '), `customer`.`lname`)");
+            break;
         }
 
-        if (dialect.isOracle()) {
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
             // " + tableQualifier + "
             sql = sql.replaceAll(" =as= ", " ");
         } else {

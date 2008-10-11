@@ -19,6 +19,7 @@ import mondrian.rolap.agg.AggregationKey;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.DataSourceChangeListener;
+import mondrian.spi.Dialect;
 import mondrian.util.Bug;
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.Property;
@@ -129,7 +130,7 @@ public class RolapStar {
      */
     private int columnCount;
 
-    private final SqlQuery.Dialect sqlQueryDialect;
+    private final Dialect sqlQueryDialect;
 
     /**
      * If true, then database aggregation information is cached, otherwise
@@ -459,7 +460,7 @@ public class RolapStar {
     /**
      * Returns this RolapStar's SQL dialect.
      */
-    public SqlQuery.Dialect getSqlQueryDialect() {
+    public Dialect getSqlQueryDialect() {
         return sqlQueryDialect;
     }
 
@@ -1017,7 +1018,7 @@ public class RolapStar {
     public static class Column {
         private final Table table;
         private final MondrianDef.Expression expression;
-        private final SqlQuery.Datatype datatype;
+        private final Dialect.Datatype datatype;
         private final String name;
         /**
          * When a Column is a column, and not a Measure, the parent column
@@ -1049,7 +1050,7 @@ public class RolapStar {
             String name,
             Table table,
             MondrianDef.Expression expression,
-            SqlQuery.Datatype datatype)
+            Dialect.Datatype datatype)
         {
             this(name, table, expression, datatype, null, null, null);
         }
@@ -1058,7 +1059,7 @@ public class RolapStar {
             String name,
             Table table,
             MondrianDef.Expression expression,
-            SqlQuery.Datatype datatype,
+            Dialect.Datatype datatype,
             Column nameColumn,
             Column parentColumn,
             String usagePrefix)
@@ -1081,7 +1082,7 @@ public class RolapStar {
          *
          * @param datatype Datatype
          */
-        protected Column(SqlQuery.Datatype datatype)
+        protected Column(Dialect.Datatype datatype)
         {
             this.table = null;
             this.expression = null;
@@ -1259,7 +1260,7 @@ public class RolapStar {
         public static String createInExpr(
             final String expr,
             StarColumnPredicate predicate,
-            SqlQuery.Datatype datatype,
+            Dialect.Datatype datatype,
             SqlQuery sqlQuery)
         {
             // Sometimes a column predicate is created without a column. This
@@ -1306,7 +1307,7 @@ public class RolapStar {
             pw.print(generateExprString(sqlQuery));
         }
 
-        public SqlQuery.Datatype getDatatype() {
+        public Dialect.Datatype getDatatype() {
             return datatype;
         }
 
@@ -1317,7 +1318,7 @@ public class RolapStar {
          * @param dialect Dialect
          * @return String representation of column's datatype
          */
-        public String getDatatypeString(SqlQuery.Dialect dialect) {
+        public String getDatatypeString(Dialect dialect) {
             final SqlQuery query = new SqlQuery(dialect);
             query.addFrom(
                 table.star.factTable.relation, table.star.factTable.alias,
@@ -1383,7 +1384,7 @@ public class RolapStar {
             RolapAggregator aggregator,
             Table table,
             MondrianDef.Expression expression,
-            SqlQuery.Datatype datatype)
+            Dialect.Datatype datatype)
         {
             super(name, table, expression, datatype);
             this.cubeName = cubeName;
@@ -1667,7 +1668,7 @@ public class RolapStar {
                     level,
                     level.getName(),
                     level.getNameExp(),
-                    SqlQuery.Datatype.String,
+                    Dialect.Datatype.String,
                     null,
                     null,
                     null);
@@ -1703,7 +1704,7 @@ public class RolapStar {
                 RolapLevel level,
                 String name,
                 MondrianDef.Expression xmlExpr,
-                SqlQuery.Datatype datatype,
+                Dialect.Datatype datatype,
                 Column nameColumn,
                 Column parentColumn,
                 String usagePrefix) {

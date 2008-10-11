@@ -12,7 +12,8 @@ package mondrian.test.loader;
 
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapUtil;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.Dialect;
+import mondrian.spi.impl.JdbcDialectImpl;
 
 import org.apache.log4j.Logger;
 
@@ -423,7 +424,7 @@ public abstract class DBLoader {
             this.canBeNull = canBeNull;
         }
 
-        public void init(SqlQuery.Dialect dialect) {
+        public void init(Dialect dialect) {
             this.typeName = type.toPhysical(dialect);
         }
         public String getName() {
@@ -448,7 +449,7 @@ public abstract class DBLoader {
      *
      * Specific databases will represent this their own particular physical
      * type, for example "TINYINT(1)", "BOOLEAN" or "BIT";
-     * see {@link #toPhysical(mondrian.rolap.sql.SqlQuery.Dialect)}.
+     * see {@link #toPhysical(mondrian.spi.Dialect)}.
      */
     public static class Type {
         public static final Type Integer = new Type("INTEGER");
@@ -539,7 +540,7 @@ public abstract class DBLoader {
          * @param dialect Dialect
          * @return Physical type the dialect uses to represent this type
          */
-        public String toPhysical(SqlQuery.Dialect dialect) {
+        public String toPhysical(Dialect dialect) {
             if (this == Integer ||
                     this == Decimal ||
                     this == Smallint ||
@@ -550,42 +551,49 @@ public abstract class DBLoader {
                 return name;
             }
             if (this == Boolean) {
-                if (dialect.isPostgres()) {
+                switch (dialect.getDatabaseProduct()) {
+                case POSTGRES:
                     return name;
-                } else if (dialect.isMySQL()) {
+                case MYSQL:
                     return "TINYINT(1)";
-                } else if (dialect.isMSSQL()) {
+                case MSSQL:
                     return "BIT";
-                } else {
+                default:
                     return Smallint.name;
                 }
             }
             if (this == Bigint) {
-                if (dialect.isOracle() || dialect.isFirebird()) {
+                switch (dialect.getDatabaseProduct()) {
+                case ORACLE:
+                case FIREBIRD:
                     return "DECIMAL(15,0)";
-                } else {
+                default:
                     return name;
                 }
             }
             if (this == Date) {
-                if (dialect.isMSSQL()) {
+                switch (dialect.getDatabaseProduct()) {
+                case MSSQL:
                     return "DATETIME";
-                } else {
+                default:
                     return name;
                 }
             }
             if (this == Timestamp) {
-                if (dialect.isMSSQL() || dialect.isMySQL()) {
+                switch (dialect.getDatabaseProduct()) {
+                case MSSQL:
+                case MYSQL:
                     return "DATETIME";
-                } else if (dialect.isIngres()) {
+                case INGRES:
                     return "DATE";
-                } else {
+                default:
                     return name;
                 }
             }
             // for extra types
             if (name.startsWith("DECIMAL(")) {
-                if (dialect.isAccess()) {
+                switch (dialect.getDatabaseProduct()) {
+                case ACCESS:
                     return "CURRENCY";
                 }
                 return name;
@@ -604,7 +612,7 @@ public abstract class DBLoader {
     private File outputDirectory;
     private boolean force;
     private Writer fileWriter;
-    private SqlQuery.Dialect dialect;
+    private Dialect dialect;
     private int batchSize;
     private boolean initialize;
 
@@ -709,7 +717,7 @@ public abstract class DBLoader {
 
         LOGGER.info("Output connection is " + productName + ", " + version);
 
-        this.dialect = SqlQuery.Dialect.create(metaData);
+        this.dialect = JdbcDialectImpl.create(metaData);
         this.initialize = true;
     }
     public void setConnection(Connection connection) {
@@ -1230,16 +1238,20 @@ e.printStackTrace();
         } else if (type == Type.Timestamp) {
             if (value instanceof String) {
                 Timestamp ts = Timestamp.valueOf((String) value);
-                if (dialect.isOracle() || dialect.isLucidDB()) {
+                switch (dialect.getDatabaseProduct()) {
+                case ORACLE:
+                case LUCIDDB:
                     return "TIMESTAMP '" + ts + "'";
-                } else {
+                default:
                     return "'" + ts + "'";
                 }
             } else if (value instanceof Timestamp) {
                 Timestamp ts = (Timestamp) value;
-                if (dialect.isOracle() || dialect.isLucidDB()) {
+                switch (dialect.getDatabaseProduct()) {
+                case ORACLE:
+                case LUCIDDB:
                     return "TIMESTAMP '" + ts + "'";
-                } else {
+                default:
                     return "'" + ts + "'";
                 }
             }
@@ -1250,16 +1262,20 @@ e.printStackTrace();
         } else if (type == Type.Date) {
             if (value instanceof String) {
                 Date dt = Date.valueOf((String) value);
-                if (dialect.isOracle() || dialect.isLucidDB()) {
+                switch (dialect.getDatabaseProduct()) {
+                case ORACLE:
+                case LUCIDDB:
                     return "DATE '" + dateFormatter.format(dt) + "'";
-                } else {
+                default:
                     return "'" + dateFormatter.format(dt) + "'";
                 }
             } else if (value instanceof Date) {
                 Date dt = (Date) value;
-                if (dialect.isOracle() || dialect.isLucidDB()) {
+                switch (dialect.getDatabaseProduct()) {
+                case ORACLE:
+                case LUCIDDB:
                     return "DATE '" + dateFormatter.format(dt) + "'";
-                } else {
+                default:
                     return "'" + dateFormatter.format(dt) + "'";
                 }
             }
@@ -1304,19 +1320,16 @@ e.printStackTrace();
         } else if (type == Type.Boolean) {
             if (value instanceof String) {
                 String trimmedValue = ((String) value).trim();
-                if (!dialect.isMySQL() &&
-                        !dialect.isOracle() &&
-                        !dialect.isDB2() &&
-                        !dialect.isFirebird() &&
-                        !dialect.isMSSQL() &&
-                        !dialect.isDerby() &&
-                        !dialect.isIngres()) {
-                    if (trimmedValue.equals("1")) {
-                        return "true";
-                    } else if (trimmedValue.equals("0")) {
-                        return "false";
-                    }
-                } else {
+                switch (dialect.getDatabaseProduct()) {
+                case MYSQL:
+                case ORACLE:
+                case DB2:
+                case DB2_AS400:
+                case DB2_OLD_AS400:
+                case FIREBIRD:
+                case MSSQL:
+                case DERBY:
+                case INGRES:
                     if (trimmedValue.equals("true")) {
                         return "1";
                     } else if (trimmedValue.equals("false")) {
@@ -1325,6 +1338,12 @@ e.printStackTrace();
                         return "1";
                     } else if (trimmedValue.equals("0")) {
                         return "0";
+                    }
+                default:
+                    if (trimmedValue.equals("1")) {
+                        return "true";
+                    } else if (trimmedValue.equals("0")) {
+                        return "false";
                     }
                 }
             } else if (value instanceof Boolean) {

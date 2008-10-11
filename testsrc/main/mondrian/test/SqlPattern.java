@@ -10,7 +10,7 @@
 package mondrian.test;
 
 import mondrian.olap.Util;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.Dialect;
 
 import java.util.Set;
 
@@ -21,7 +21,7 @@ import java.util.Set;
  * <p>A pattern contains a dialect. This allows a test to run against different
  * dialects.
  *
- * @see mondrian.rolap.sql.SqlQuery.Dialect
+ * @see mondrian.spi.Dialect
  *
  * @version $Id$
  * @author jhyde
@@ -29,88 +29,91 @@ import java.util.Set;
 public class SqlPattern {
     private final String sql;
     private final String triggerSql;
-    private final Set<Dialect> dialects;
+    private final Set<Dialect.DatabaseProduct> databaseProducts;
 
     /**
      * Creates a pattern which applies to a collection of dialects
      * and is triggered by the first N characters of the expected statement.
      *
-     * @param dialects Set of dialects
+     * @param databaseProducts Set of dialects
      * @param sql SQL statement
      * @param startsWithLen Length of prefix of statement to consider
      */
     public SqlPattern(
-        Set<Dialect> dialects,
+        Set<Dialect.DatabaseProduct> databaseProducts,
         String sql,
         int startsWithLen)
     {
-        this(dialects, sql, sql.substring(0, startsWithLen));
+        this(databaseProducts, sql, sql.substring(0, startsWithLen));
     }
 
     /**
      * Creates a pattern which applies to one or more dialects
      * and is triggered by the first N characters of the expected statement.
      *
-     * @param dialect Dialect
+     * @param databaseProduct Dialect
      * @param sql SQL statement
      * @param startsWithLen Length of prefix of statement to consider
      */
     public SqlPattern(
-        Dialect dialect,
+        Dialect.DatabaseProduct databaseProduct,
         final String sql,
         final int startsWithLen)
     {
-        this(dialect, sql, sql.substring(0, startsWithLen));
+        this(databaseProduct, sql, sql.substring(0, startsWithLen));
     }
 
     /**
      * Creates a pattern which applies to one or more dialects.
      *
-     * @param dialect Dialect
+     * @param databaseProduct Dialect
      * @param sql SQL statement
      * @param triggerSql Prefix of SQL statement which triggers a match; null
      *                   means whole statement
      */
     public SqlPattern(
-        Dialect dialect,
+        Dialect.DatabaseProduct databaseProduct,
          final String sql,
          final String triggerSql)
     {
-        this(Util.enumSetOf(dialect), sql, triggerSql);
+        this(Util.enumSetOf(databaseProduct), sql, triggerSql);
     }
 
     /**
      * Creates a pattern which applies a collection of dialects.
      *
-     * @param dialects Set of dialects
+     * @param databaseProducts Set of dialects
      * @param sql SQL statement
      * @param triggerSql Prefix of SQL statement which triggers a match; null
      *                   means whole statement
      */
     public SqlPattern(
-        Set<Dialect> dialects,
+        Set<Dialect.DatabaseProduct> databaseProducts,
         String sql,
         String triggerSql)
     {
-        this.dialects = dialects;
+        this.databaseProducts = databaseProducts;
         this.sql = sql;
         this.triggerSql = triggerSql != null ? triggerSql : sql;
     }
 
-    public static SqlPattern getPattern(Dialect d, SqlPattern[] patterns) {
-        if (d == Dialect.UNKNOWN) {
+    public static SqlPattern getPattern(
+        Dialect.DatabaseProduct d,
+        SqlPattern[] patterns)
+    {
+        if (d == Dialect.DatabaseProduct.UNKNOWN) {
             return null;
         }
         for (SqlPattern pattern : patterns) {
-            if (pattern.hasDialect(d)) {
+            if (pattern.hasDatabaseProduct(d)) {
                 return pattern;
             }
         }
         return null;
     }
 
-    public boolean hasDialect(Dialect d) {
-        return dialects.contains(d);
+    public boolean hasDatabaseProduct(Dialect.DatabaseProduct databaseProduct) {
+        return databaseProducts.contains(databaseProduct);
     }
 
     public String getSql() {
@@ -119,61 +122,6 @@ public class SqlPattern {
 
     public String getTriggerSql() {
         return triggerSql;
-    }
-
-    /**
-     * SQL dialect definition.
-     */
-    public enum Dialect {
-        UNKNOWN,
-        ACCESS,
-        DERBY,
-        CLOUDSCAPE,
-        DB2,
-        AS400,
-        OLD_AS400,
-        INFORMIX,
-        MS_SQL,
-        ORACLE,
-        POSTGRES,
-        MYSQL,
-        SYBASE,
-        TERADATA,
-        LUCIDDB;
-
-        public static Dialect get(SqlQuery.Dialect dialect) {
-            if (dialect.isAccess()) {
-                return ACCESS;
-            } else if (dialect.isDerby()) {
-                return DERBY;
-            } else if (dialect.isCloudscape()) {
-                return CLOUDSCAPE;
-            } else if (dialect.isDB2()) {
-                return DB2;
-            } else if (dialect.isAS400()) {
-                return AS400;
-            } else if (dialect.isOldAS400()) {
-                return OLD_AS400;
-            } else if (dialect.isInformix()) {
-                return INFORMIX;
-            } else if (dialect.isMSSQL()) {
-                return MS_SQL;
-            } else if (dialect.isOracle()) {
-                return ORACLE;
-            } else if (dialect.isPostgres()) {
-                return POSTGRES;
-            } else if (dialect.isMySQL()) {
-                return MYSQL;
-            } else if (dialect.isSybase()) {
-                return SYBASE;
-            } else if (dialect.isTeradata()) {
-                return TERADATA;
-            } else if (dialect.isLucidDB()) {
-                return LUCIDDB;
-            } else {
-                return UNKNOWN;
-            }
-        }
     }
 }
 

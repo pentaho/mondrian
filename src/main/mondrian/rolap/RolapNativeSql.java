@@ -14,6 +14,7 @@ import java.util.List;
 import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.mdx.MemberExpr;
+import mondrian.spi.Dialect;
 
 /**
  * Creates SQL from parse tree nodes. Currently it creates the SQL that
@@ -26,7 +27,7 @@ import mondrian.mdx.MemberExpr;
 public class RolapNativeSql {
 
     private SqlQuery sqlQuery;
-    private SqlQuery.Dialect dialect;
+    private Dialect dialect;
 
     CompositeSqlCompiler numericCompiler;
     CompositeSqlCompiler booleanCompiler;
@@ -119,7 +120,8 @@ public class RolapNativeSql {
             }
             Literal literal = (Literal) exp;
             String expr = String.valueOf(literal.getValue());
-            if (dialect.isDB2()) {
+            if (dialect.getDatabaseProduct().getFamily()
+                == Dialect.DatabaseProduct.DB2) {
                 expr = "FLOAT(" + expr + ")";
             }
             return expr;
@@ -167,7 +169,8 @@ public class RolapNativeSql {
             }
             String exprInner = measure.getMondrianDefExpression().getExpression(sqlQuery);
             String expr = measure.getAggregator().getExpression(exprInner);
-            if (dialect.isDB2()) {
+            if (dialect.getDatabaseProduct().getFamily()
+                == Dialect.DatabaseProduct.DB2) {
                 expr = "FLOAT(" + expr + ")";
             }
             return expr;

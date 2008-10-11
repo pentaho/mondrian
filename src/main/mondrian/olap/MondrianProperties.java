@@ -991,7 +991,7 @@ public class MondrianProperties extends TriggerableProperties {
      *
      * <p>Ignored on databases which do not support the
      * <code>GROUPING SETS</code> construct (see
-     * {@link mondrian.rolap.sql.SqlQuery.Dialect#supportsGroupingSets}).
+     * {@link mondrian.spi.Dialect#supportsGroupingSets}).
      */
     public transient final BooleanProperty EnableGroupingSets =
             new BooleanProperty(

@@ -13,7 +13,7 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggGen;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.*;
@@ -288,7 +288,7 @@ public class FastBatchingCellReader implements CellReader {
      *
      * @return Dialect
      */
-    SqlQuery.Dialect getDialect() {
+    Dialect getDialect() {
         final RolapStar star = cube.getStar();
         if (star != null) {
             return star.getSqlQueryDialect();
@@ -448,7 +448,7 @@ public class FastBatchingCellReader implements CellReader {
 
             // If the database cannot execute "count(distinct ...)", split the
             // distinct aggregations out.
-            final SqlQuery.Dialect dialect = getDialect();
+            final Dialect dialect = getDialect();
 
             int distinctMeasureCount = getDistinctMeasureCount(measuresList);
             boolean tooManyDistinctMeasures =

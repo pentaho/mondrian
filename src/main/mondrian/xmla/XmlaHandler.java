@@ -13,9 +13,9 @@ import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.rolap.*;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.CatalogLocator;
+import mondrian.spi.Dialect;
 import mondrian.xmla.impl.DefaultSaxWriter;
 
 import org.apache.log4j.Logger;
@@ -1327,7 +1327,7 @@ public class XmlaHandler implements XmlaConstants {
                 }
                 int resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE;
                 int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
-                SqlQuery.Dialect dialect =
+                Dialect dialect =
                     ((RolapSchema) connection.getSchema()).getDialect();
                 if (!dialect.supportsResultSetConcurrency(
                     resultSetType, resultSetConcurrency)) {

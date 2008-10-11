@@ -19,6 +19,7 @@ import mondrian.rolap.sql.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.spi.Dialect;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -193,7 +194,9 @@ class SqlMemberSource
                         // generate any count and do the count
                         // distinct "manually".
                         mustCount[0] = true;
-                    } else if (sqlQuery.getDialect().isSybase()) {
+                    } else if (sqlQuery.getDialect().getDatabaseProduct()
+                        == Dialect.DatabaseProduct.SYBASE)
+                    {
                         // "select count(distinct convert(varchar, c1) +
                         // convert(varchar, c2)) from table"
                         if (columnCount == 1) {
@@ -220,8 +223,9 @@ class SqlMemberSource
                 String keyExp = level2.getKeyExp().getExpression(sqlQuery);
                 if (columnCount > 0 &&
                     !sqlQuery.getDialect().allowsCompoundCountDistinct() &&
-                    sqlQuery.getDialect().isSybase()) {
-
+                    sqlQuery.getDialect().getDatabaseProduct()
+                        == Dialect.DatabaseProduct.SYBASE)
+                {
                     keyExp = "convert(varchar, " + columnList + ")";
                 }
                 columnList += keyExp;

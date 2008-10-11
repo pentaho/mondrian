@@ -52,10 +52,8 @@ import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
-import mondrian.rolap.sql.SqlQuery;
-import mondrian.spi.UserDefinedFunction;
-import mondrian.spi.DataSourceChangeListener;
-import mondrian.spi.DynamicSchemaProcessor;
+import mondrian.spi.*;
+import mondrian.spi.impl.JdbcDialectImpl;
 
 import org.apache.log4j.Logger;
 import org.apache.commons.vfs.*;
@@ -388,9 +386,9 @@ public class RolapSchema implements Schema {
      *
      * @return dialect
      */
-    public SqlQuery.Dialect getDialect() {
+    public Dialect getDialect() {
         DataSource dataSource = getInternalConnection().getDataSource();
-        return SqlQuery.Dialect.create(dataSource);
+        return JdbcDialectImpl.create(dataSource);
     }
 
     private void load(MondrianDef.Schema xmlSchema) {

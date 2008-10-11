@@ -15,6 +15,7 @@ import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.Util;
+import mondrian.spi.Dialect;
 
 import java.util.*;
 
@@ -109,8 +110,9 @@ public abstract class AbstractQuerySpec implements QuerySpec {
 
             // some DB2 (AS400) versions throw an error, if a column alias is
             // there and *not* used in a subsequent order by/group by
-            final SqlQuery.Dialect dialect = sqlQuery.getDialect();
-            if (dialect.isAS400()) {
+            final Dialect dialect = sqlQuery.getDialect();
+            if (dialect.getDatabaseProduct()
+                == Dialect.DatabaseProduct.DB2_AS400) {
                 sqlQuery.addSelect(expr, null);
             } else {
                 sqlQuery.addSelect(expr, getColumnAlias(i));
@@ -153,7 +155,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         SqlQuery sqlQuery = newSqlQuery();
 
         int k = getDistinctMeasureCount();
-        final SqlQuery.Dialect dialect = sqlQuery.getDialect();
+        final Dialect dialect = sqlQuery.getDialect();
         if (!dialect.allowsCountDistinct() && k > 0 ||
             !dialect.allowsMultipleCountDistinct() && k > 1) {
             distinctGenerateSql(sqlQuery, countOnly);
@@ -206,7 +208,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         final SqlQuery outerSqlQuery,
         boolean countOnly)
     {
-        final SqlQuery.Dialect dialect = outerSqlQuery.getDialect();
+        final Dialect dialect = outerSqlQuery.getDialect();
         // Generate something like
         //
         //  select d0, d1, count(m0)

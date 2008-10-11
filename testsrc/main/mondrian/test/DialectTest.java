@@ -19,12 +19,13 @@ import java.sql.ResultSet;
 import java.util.*;
 
 import mondrian.olap.Util;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.Dialect;
+import mondrian.spi.impl.JdbcDialectImpl;
 
 import javax.sql.DataSource;
 
 /**
- * Unit test which checks that {@link mondrian.rolap.sql.SqlQuery.Dialect}
+ * Unit test which checks that {@link mondrian.spi.Dialect}
  * accurately represents the capabilities of the underlying database.
  *
  * <p>The existing mondrian tests, when run on various databases and drivers,
@@ -46,7 +47,7 @@ import javax.sql.DataSource;
  */
 public class DialectTest extends TestCase {
     private Connection connection;
-    private SqlQuery.Dialect dialect;
+    private Dialect dialect;
 
     public DialectTest(String name) {
         super(name);
@@ -70,9 +71,9 @@ public class DialectTest extends TestCase {
         super.tearDown();
     }
 
-    protected SqlQuery.Dialect getDialect() {
+    protected Dialect getDialect() {
         if (dialect == null) {
-            dialect = SqlQuery.Dialect.create(getDataSource());
+            dialect = JdbcDialectImpl.create(getDataSource());
         }
         return dialect;
     }
@@ -280,7 +281,7 @@ public class DialectTest extends TestCase {
 
     /**
      * Tests that the
-     * {@link mondrian.rolap.sql.SqlQuery.Dialect#supportsGroupingSets()}
+     * {@link mondrian.spi.Dialect#supportsGroupingSets()}
      * dialect property is accurate.
      */
     public void testAllowsGroupingSets() {
@@ -457,17 +458,24 @@ public class DialectTest extends TestCase {
      * @return Query or DDL statement translated into this dialect
      */
     private String dialectize(String s) {
-        if (getDialect().isAccess()) {
-            ;
-        } else if (getDialect().isMySQL()) {
+        final Dialect.DatabaseProduct databaseProduct =
+            getDialect().getDatabaseProduct();
+        switch (databaseProduct) {
+        case ACCESS:
+            break;
+        case MYSQL:
             s = s.replace('[', '`');
             s = s.replace(']', '`');
-        } else {
+            break;
+        case ORACLE:
             s = s.replace('[', '"');
             s = s.replace(']', '"');
-            if (getDialect().isOracle()) {
-                s = s.replaceAll(" as ", "");
-            }
+            s = s.replaceAll(" as ", "");
+            break;
+        default:
+            s = s.replace('[', '"');
+            s = s.replace(']', '"');
+            break;
         }
         return s;
     }

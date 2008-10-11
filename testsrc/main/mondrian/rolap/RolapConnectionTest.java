@@ -14,8 +14,8 @@ package mondrian.rolap;
 import junit.framework.TestCase;
 import mondrian.olap.*;
 import mondrian.test.TestContext;
-import mondrian.test.SqlPattern;
 import mondrian.util.Pair;
+import mondrian.spi.Dialect;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -311,7 +311,8 @@ public class RolapConnectionTest extends TestCase {
         // use the datasource property to connect to the database
         Util.PropertyList properties =
             TestContext.instance().getFoodMartConnectionProperties();
-        if (TestContext.instance().getDialect().isAccess()) {
+        final Dialect dialect = TestContext.instance().getDialect();
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS) {
             // Access doesn't accept user/password, so this test is pointless.
             return;
         }
@@ -324,9 +325,6 @@ public class RolapConnectionTest extends TestCase {
             // Can only run this test if username and password are explicit.
             return;
         }
-
-        final SqlPattern.Dialect dialect =
-            SqlPattern.Dialect.get(TestContext.instance().getDialect());
 
         // Define a data source with bogus user and password.
         properties.put(
@@ -407,7 +405,7 @@ public class RolapConnectionTest extends TestCase {
                 final String s = TestContext.getStackTrace(e);
                 assertTrue(s, s.indexOf(
                     "Error while creating SQL connection: DataSource=jndiDataSource") >= 0);
-                switch (dialect) {
+                switch (dialect.getDatabaseProduct()) {
                 case DERBY:
                     assertTrue(s, s.indexOf(
                         "Caused by: java.sql.SQLException: Schema 'BOGUSUSER' does not exist") >= 0);

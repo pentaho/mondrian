@@ -14,6 +14,7 @@ import mondrian.rolap.BatchTestCase;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 import mondrian.olap.Util;
+import mondrian.spi.Dialect;
 
 import java.util.ArrayList;
 
@@ -40,11 +41,12 @@ public class SqlQueryTest extends BatchTestCase {
          * MYSQL
          *
          */
-        final SqlQuery.Dialect dialect = getTestContext().getDialect();
-        if (prop.WarnIfNoPatternForDialect.get().equals("ANY") ||
-            (dialect.isAccess() || dialect.isMySQL())) {
+        final Dialect dialect = getTestContext().getDialect();
+        if (prop.WarnIfNoPatternForDialect.get().equals("ANY")
+            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
+            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MYSQL) {
             prop.WarnIfNoPatternForDialect.set(
-                SqlPattern.Dialect.get(dialect).toString());
+                dialect.getDatabaseProduct().toString());
         } else {
             /*
              * Do not warn unless the dialect is "ACCESS" or "MYSQL", or
@@ -60,8 +62,8 @@ public class SqlQueryTest extends BatchTestCase {
         prop.WarnIfNoPatternForDialect.set(origWarnIfNoPatternForDialect);
     }
 
-    private static String dialectize(SqlQuery.Dialect dialect, String expected) {
-        if (dialect.isOracle()) {
+    private static String dialectize(Dialect dialect, String expected) {
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
             return Util.replace(fold(expected), " =as= ", " ");
         } else {
             return Util.replace(fold(expected), " =as= ", " as ");
@@ -73,7 +75,7 @@ public class SqlQueryTest extends BatchTestCase {
             return;
         }
         for (boolean b : new boolean[]{false, true}) {
-            SqlQuery.Dialect dialect = getTestContext().getDialect();
+            Dialect dialect = getTestContext().getDialect();
             SqlQuery sqlQuery = new SqlQuery(dialect, b);
             sqlQuery.addSelect("c1");
             sqlQuery.addSelect("c2");
@@ -147,8 +149,8 @@ public class SqlQueryTest extends BatchTestCase {
 
         SqlPattern[] sqlPatterns =
             new SqlPattern[]{
-                new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
+                new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
     }
@@ -190,8 +192,8 @@ public class SqlQueryTest extends BatchTestCase {
 
         SqlPattern[] sqlPatterns =
             new SqlPattern[]{
-                new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
+                new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(false, mdx, sqlPatterns);
     }
@@ -229,8 +231,8 @@ public class SqlQueryTest extends BatchTestCase {
 
         SqlPattern[] sqlPatterns =
             new SqlPattern[]{
-                new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
+                new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
         assertSqlEqualsOptimzePredicates(false, mdx, sqlPatterns);
@@ -257,7 +259,7 @@ public class SqlQueryTest extends BatchTestCase {
         if (!isGroupingSetsSupported()) {
             return;
         }
-        final SqlQuery.Dialect dialect = getTestContext().getDialect();
+        final Dialect dialect = getTestContext().getDialect();
         for (boolean b : new boolean[]{false, true}) {
             SqlQuery sqlQuery = new SqlQuery(getTestContext().getDialect(), b);
             sqlQuery.addSelect("c1");
@@ -303,7 +305,7 @@ public class SqlQueryTest extends BatchTestCase {
         if (!isGroupingSetsSupported()) {
             return;
         }
-        final SqlQuery.Dialect dialect = getTestContext().getDialect();
+        final Dialect dialect = getTestContext().getDialect();
         for (boolean b : new boolean[]{false, true}) {
             SqlQuery sqlQuery = new SqlQuery(dialect, b);
             sqlQuery.addSelect("c0");
@@ -366,8 +368,8 @@ public class SqlQueryTest extends BatchTestCase {
      * LucidDB; therefore, this test is a no-op on other databases.
      */
     public void testDoubleInList() {
-        final SqlQuery.Dialect dialect = getTestContext().getDialect();
-        if (SqlPattern.Dialect.get(dialect) != SqlPattern.Dialect.LUCIDDB) {
+        final Dialect dialect = getTestContext().getDialect();
+        if (dialect.getDatabaseProduct() != Dialect.DatabaseProduct.LUCIDDB) {
             return;
         }
         boolean origIgnoreInvalidMembers =
@@ -456,7 +458,7 @@ public class SqlQueryTest extends BatchTestCase {
 
         patterns =
             new SqlPattern[]{
-                new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadSqlLucidDB, loadSqlLucidDB)};
+                new SqlPattern(Dialect.DatabaseProduct.LUCIDDB, loadSqlLucidDB, loadSqlLucidDB)};
         testContext =
             TestContext.create(
                 null,

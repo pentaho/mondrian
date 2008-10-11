@@ -15,8 +15,8 @@ import mondrian.olap.MondrianDef;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapStar;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
+import mondrian.spi.Dialect;
 
 import javax.sql.DataSource;
 
@@ -273,36 +273,36 @@ public class JdbcSchema {
 
     /**
      * Converts a {@link java.sql.Types} value to a
-     * {@link mondrian.rolap.sql.SqlQuery.Datatype}.
+     * {@link mondrian.spi.Dialect.Datatype}.
      *
      * @param javaType JDBC type code, as per {@link java.sql.Types}
      * @return Datatype
      */
-    public static SqlQuery.Datatype getDatatype(int javaType) {
+    public static Dialect.Datatype getDatatype(int javaType) {
         switch (javaType) {
         case Types.TINYINT:
         case Types.SMALLINT:
         case Types.INTEGER:
         case Types.BIGINT:
-            return SqlQuery.Datatype.Integer;
+            return Dialect.Datatype.Integer;
         case Types.FLOAT:
         case Types.REAL:
         case Types.DOUBLE:
         case Types.NUMERIC:
         case Types.DECIMAL:
-            return SqlQuery.Datatype.Numeric;
+            return Dialect.Datatype.Numeric;
         case Types.BOOLEAN:
-            return SqlQuery.Datatype.Boolean;
+            return Dialect.Datatype.Boolean;
         case Types.DATE:
-            return SqlQuery.Datatype.Date;
+            return Dialect.Datatype.Date;
         case Types.TIME:
-            return SqlQuery.Datatype.Time;
+            return Dialect.Datatype.Time;
         case Types.TIMESTAMP:
-            return SqlQuery.Datatype.Timestamp;
+            return Dialect.Datatype.Timestamp;
         case Types.CHAR:
         case Types.VARCHAR:
         default:
-            return SqlQuery.Datatype.String;
+            return Dialect.Datatype.String;
         }
     }
 
@@ -571,7 +571,7 @@ public class JdbcSchema {
             /**
              * Return true if this column is numeric.
              */
-            public SqlQuery.Datatype getDatatype() {
+            public Dialect.Datatype getDatatype() {
                 return JdbcSchema.getDatatype(getType());
             }
 

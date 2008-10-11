@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
+import mondrian.spi.Dialect;
 
 import java.util.List;
 
@@ -798,11 +799,10 @@ public class VirtualCubeTest extends BatchTestCase {
      * Native sets referencing different base cubes do not share the cached result.
      */
     public void testNativeSetCaching() {
-        /*
-         * Only need to run this against one db to verify caching
-         * behavior is correct.
-         */
-        if (!getTestContext().getDialect().isDerby()) {
+        // Only need to run this against one db to verify caching
+        // behavior is correct.
+        final Dialect dialect = getTestContext().getDialect();
+        if (dialect.getDatabaseProduct() != Dialect.DatabaseProduct.DERBY) {
             return;
         }
 
@@ -895,12 +895,12 @@ public class VirtualCubeTest extends BatchTestCase {
 
         SqlPattern[] patterns1 =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, derbyNecjSql1, derbyNecjSql1)
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, derbyNecjSql1, derbyNecjSql1)
             };
 
         SqlPattern[] patterns2 =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, derbyNecjSql2, derbyNecjSql2)
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, derbyNecjSql2, derbyNecjSql2)
             };
 
         // Run query 1 with cleared cache;
@@ -1130,8 +1130,8 @@ public class VirtualCubeTest extends BatchTestCase {
 
         SqlPattern[] mysqlPattern =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSQL, mysqlSQL),
-                new SqlPattern(SqlPattern.Dialect.DERBY, derbySQL, derbySQL)
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL),
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySQL, derbySQL)
             };
 
         String result =
@@ -1240,8 +1240,8 @@ public class VirtualCubeTest extends BatchTestCase {
 
         SqlPattern[] mysqlPattern =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSQL, mysqlSQL),
-                new SqlPattern(SqlPattern.Dialect.DERBY, derbySQL, derbySQL)
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL),
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySQL, derbySQL)
             };
 
         assertQuerySql(query, mysqlPattern, true);

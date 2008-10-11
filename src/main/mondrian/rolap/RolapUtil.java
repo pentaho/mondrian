@@ -24,7 +24,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import mondrian.calc.ExpCompiler;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.Dialect;
 
 import javax.sql.DataSource;
 
@@ -393,7 +393,7 @@ public class RolapUtil {
 
     public static MondrianDef.Relation convertInlineTableToRelation(
         MondrianDef.InlineTable inlineTable,
-        final SqlQuery.Dialect dialect)
+        final Dialect dialect)
     {
         MondrianDef.View view = new MondrianDef.View();
         view.alias = inlineTable.alias;

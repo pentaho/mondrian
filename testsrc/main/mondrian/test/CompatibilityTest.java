@@ -14,6 +14,7 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.Result;
 import mondrian.olap.Cell;
 import mondrian.olap.Util;
+import mondrian.spi.Dialect;
 import junit.framework.Assert;
 
 /**
@@ -207,7 +208,8 @@ public class CompatibilityTest extends FoodMartTestCase {
      * still be looked up when case sensitive is off.
      */
     public void testCaseInsensitiveNullMember() {
-        if (getTestContext().getDialect().isLucidDB()) {
+        final Dialect dialect = getTestContext().getDialect();
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB) {
             // TODO jvs 29-Nov-2006:  LucidDB is strict about
             // null literals (type can't be inferred in this context);
             // maybe enhance the inline table to use the columndef
@@ -271,7 +273,8 @@ public class CompatibilityTest extends FoodMartTestCase {
      * This will map to the #null memeber.
      */
     public void testNullNameColumn() {
-        if (getTestContext().getDialect().isLucidDB()) {
+        final Dialect dialect = getTestContext().getDialect();
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB) {
             // TODO jvs 29-Nov-2006:  See corresponding comment in
             // testCaseInsensitiveNullMember
             return;

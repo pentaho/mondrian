@@ -6,7 +6,7 @@
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
   == Copyright (C) 2001-2002 Kana Software, Inc.
-  == Copyright (C) 2001-2007 Julian Hyde and others.
+  == Copyright (C) 2001-2008 Julian Hyde and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -713,8 +713,8 @@
                 return new Column(table, properties[i].column);
             }
 
-            public SqlQuery.Datatype getDatatype() {
-                return SqlQuery.Datatype.valueOf(type);
+            public mondrian.spi.Dialect.Datatype getDatatype() {
+                return mondrian.spi.Dialect.Datatype.valueOf(type);
             }
         </Code>
     </Element>

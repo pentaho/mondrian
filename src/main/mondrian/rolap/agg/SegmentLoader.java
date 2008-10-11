@@ -39,7 +39,7 @@ public class SegmentLoader {
      * GROUP BY GROUPING SETS sql. Else if only one grouping set is passed in
      * the list data is loaded without using GROUP BY GROUPING SETS sql. If the
      * database does not support grouping sets
-     * {@link mondrian.rolap.sql.SqlQuery.Dialect#supportsGroupingSets()} then
+     * {@link mondrian.spi.Dialect#supportsGroupingSets()} then
      * grouping sets list should always have only one element in it.
      *
      * <p>For example, if list has 2 grouping sets with columns A, B, C and B, C

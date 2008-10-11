@@ -9,6 +9,8 @@
 */
 package mondrian.test;
 
+import mondrian.spi.Dialect;
+
 /**
  * <code>BasicQueryTest</code> is a test case which tests simple queries
  * against the FoodMart database.
@@ -212,8 +214,11 @@ public class InlineTableTest extends FoodMartTestCase {
             null, null, null, null);
         // Access returns date literals as timestamp values, which results in
         // extra fields when converted to a string.
+        final Dialect dialect = testContext.getDialect();
         final String extra =
-            testContext.getDialect().isAccess() ? " 00:00:00.0" : "";
+            dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
+                ? " 00:00:00.0"
+                : "";
         testContext.assertQueryReturns(
             "select {[Alternative Promotion].Members} ON COLUMNS\n"
                 + "from [" + cubeName + "] ",

@@ -16,6 +16,7 @@ import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.spi.UserDefinedFunction;
+import mondrian.spi.Dialect;
 import mondrian.util.Bug;
 import mondrian.calc.ResultStyle;
 
@@ -4852,7 +4853,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         sql = sql.replace('"', '`');
 
         String tableQualifier = "as ";
-        if (getTestContext().getDialect().isOracle()) {
+        final Dialect dialect = getTestContext().getDialect();
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
             // " + tableQualifier + "
             tableQualifier = "";
         }

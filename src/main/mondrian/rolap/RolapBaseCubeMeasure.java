@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
+import mondrian.spi.Dialect;
 
 import java.util.List;
 import java.util.Arrays;
@@ -133,14 +134,14 @@ public class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeas
         this.starMeasure = starMeasure;
     }
 
-    public SqlQuery.Datatype getDatatype() {
+    public Dialect.Datatype getDatatype() {
         Object datatype = getPropertyValue(Property.DATATYPE.name);
         try {
-            return SqlQuery.Datatype.valueOf((String) datatype);
+            return Dialect.Datatype.valueOf((String) datatype);
         } catch (ClassCastException e) {
-            return SqlQuery.Datatype.String;
+            return Dialect.Datatype.String;
         } catch (IllegalArgumentException e) {
-            return SqlQuery.Datatype.String;
+            return Dialect.Datatype.String;
         }
     }
 }

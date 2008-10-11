@@ -728,8 +728,8 @@ Revision is $Id$
                 return new Column(table, properties[i].column);
             }
 
-            public SqlQuery.Datatype getDatatype() {
-                return SqlQuery.Datatype.valueOf(type);
+            public mondrian.spi.Dialect.Datatype getDatatype() {
+                return mondrian.spi.Dialect.Datatype.valueOf(type);
             }
         </Code>
     </Element>
@@ -1588,9 +1588,11 @@ Revision is $Id$
                 this.table = table;
                 this.name = name;
             }
+
             public String getExpression(SqlQuery query) {
                 return query.getDialect().quoteIdentifier(table, name);
             }
+
             public String getGenericExpression() {
                 if (table == null) {
                     return name;
@@ -1598,6 +1600,7 @@ Revision is $Id$
                     return table + "." + name;
                 }
             }
+
             public String getColumnName() {
                 return name;
             }

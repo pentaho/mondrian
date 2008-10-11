@@ -19,6 +19,7 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapEvaluator;
+import mondrian.spi.Dialect;
 
 import java.util.*;
 
@@ -122,7 +123,8 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     // The optimization is expensive, so we only want to do it
                     // if the DBMS can't execute the query otherwise.
                     if ((rolapEvaluator != null) &&
-                        rolapEvaluator.getDialect().isAccess() &&
+                        rolapEvaluator.getDialect().getDatabaseProduct()
+                            == Dialect.DatabaseProduct.ACCESS &&
                         false) {
                         tupleList = removeOverlappingTupleEntries(tupleList);
                     }

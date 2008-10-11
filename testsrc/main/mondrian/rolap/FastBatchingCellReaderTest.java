@@ -11,12 +11,12 @@ package mondrian.rolap;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.agg.SegmentLoader;
 import mondrian.rolap.agg.GroupingSet;
 import mondrian.rolap.agg.AggregationKey;
 import mondrian.test.TestContext;
 import mondrian.test.SqlPattern;
+import mondrian.spi.Dialect;
 
 import java.util.*;
 
@@ -145,16 +145,23 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testDoesDBSupportGroupingSets() {
-        final SqlQuery.Dialect dialect = getTestContext().getDialect();
+        final Dialect dialect = getTestContext().getDialect();
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube) {
-            SqlQuery.Dialect getDialect() {
+            Dialect getDialect() {
                 return dialect;
             }
         };
-        if (dialect.isOracle() || dialect.isTeradata() || dialect.isDB2()) {
+        switch (dialect.getDatabaseProduct()) {
+        case ORACLE:
+        case TERADATA:
+        case DB2:
+        case DB2_AS400:
+        case DB2_OLD_AS400:
             assertTrue(fbcr.doesDBSupportGroupingSets());
-        } else {
+            break;
+        default:
             assertFalse(fbcr.doesDBSupportGroupingSets());
+            break;
         }
     }
 
@@ -836,7 +843,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCanBatchForBatchWithDifferentAggregationTable() {
-        if (getTestContext().getDialect().isTeradata()) {
+        final Dialect dialect = getTestContext().getDialect();
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.TERADATA) {
             // On Teradata we don't create aggregate tables, so this test will
             // fail.
             return;
@@ -981,8 +989,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testLoadDistinctSqlMeasure() {
         // Some databases cannot handle scalar subqueries inside
         // count(distinct).
-        final SqlQuery.Dialect dialect = getTestContext().getDialect();
-        switch (SqlPattern.Dialect.get(dialect)) {
+        final Dialect dialect = getTestContext().getDialect();
+        switch (dialect.getDatabaseProduct()) {
         case ORACLE:
             // Oracle gives 'feature not supported' in Express 10.2
         case ACCESS:
@@ -1020,7 +1028,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "   <Measure name=\"Store Count\" column=\"stores_id\" aggregator=\"count\" formatString=\"#,###\"/>" +
             "</Cube>";
         cube = cube.replaceAll("`", dialect.getQuoteIdentifierString());
-        if (dialect.isOracle()) {
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
             cube = cube.replaceAll(" AS ", " ");
         }
 
@@ -1156,16 +1164,16 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "group by `store`.`store_type`";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadCountDistinct_luciddb1, loadCountDistinct_luciddb1),
-            new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadCountDistinct_luciddb2, loadCountDistinct_luciddb2),
-            new SqlPattern(SqlPattern.Dialect.LUCIDDB, loadOtherAggs_luciddb, loadOtherAggs_luciddb),
+            new SqlPattern(Dialect.DatabaseProduct.LUCIDDB, loadCountDistinct_luciddb1, loadCountDistinct_luciddb1),
+            new SqlPattern(Dialect.DatabaseProduct.LUCIDDB, loadCountDistinct_luciddb2, loadCountDistinct_luciddb2),
+            new SqlPattern(Dialect.DatabaseProduct.LUCIDDB, loadOtherAggs_luciddb, loadOtherAggs_luciddb),
 
-            new SqlPattern(SqlPattern.Dialect.DERBY, loadCountDistinct_derby1, loadCountDistinct_derby1),
-            new SqlPattern(SqlPattern.Dialect.DERBY, loadCountDistinct_derby2, loadCountDistinct_derby2),
-            new SqlPattern(SqlPattern.Dialect.DERBY, loadCountDistinct_derby3, loadCountDistinct_derby3),
-            new SqlPattern(SqlPattern.Dialect.DERBY, loadOtherAggs_derby, loadOtherAggs_derby),
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, loadCountDistinct_derby1, loadCountDistinct_derby1),
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, loadCountDistinct_derby2, loadCountDistinct_derby2),
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, loadCountDistinct_derby3, loadCountDistinct_derby3),
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, loadOtherAggs_derby, loadOtherAggs_derby),
 
-            new SqlPattern(SqlPattern.Dialect.MYSQL, load_mysql, load_mysql),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, load_mysql, load_mysql),
         };
 
         assertQuerySql(testContext, query, patterns);
@@ -1354,9 +1362,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "\"promotion\".\"media_type\"";
 
         assertQuerySql(mdxQuery, new SqlPattern[] {
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oracleSql, oracleSql),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql),
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql)
+            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oracleSql, oracleSql),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql),
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
         });
     }
 
@@ -1447,8 +1455,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "group by `store`.`store_state`, `time_by_day`.`the_year`";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertQuerySql(query, patterns);
     }
@@ -1591,9 +1599,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
+            new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertQuerySql(query, patterns);
     }
@@ -1651,9 +1659,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "group by \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
+            new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertQuerySql(query, patterns);
     }
@@ -1722,8 +1730,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "\"store\".\"store_state\", \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql)};
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertQuerySql(query, patterns);
     }

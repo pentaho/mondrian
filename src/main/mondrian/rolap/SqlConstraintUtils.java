@@ -20,6 +20,7 @@ import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.util.FilteredIterableList;
+import mondrian.spi.Dialect;
 
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
@@ -602,8 +603,8 @@ public class SqlConstraintUtils {
      */
     private static String getColumnValue(
         Object key,
-        SqlQuery.Dialect dialect,
-        SqlQuery.Datatype datatype)
+        Dialect dialect,
+        Dialect.Datatype datatype)
     {
         if (key != RolapUtil.sqlNullValue) {
             return key.toString();
@@ -642,7 +643,7 @@ public class SqlConstraintUtils {
         }
 
         String columnString;
-        SqlQuery.Datatype datatype;
+        Dialect.Datatype datatype;
         if (column != null) {
             if (column.getNameColumn() == null) {
                 datatype = level.getDatatype();
@@ -650,7 +651,7 @@ public class SqlConstraintUtils {
                 column = column.getNameColumn();
                 // The schema doesn't specify the datatype of the name column, but
                 // we presume that it is a string.
-                datatype = SqlQuery.Datatype.String;
+                datatype = Dialect.Datatype.String;
             }
             columnString = column.generateExprString(query);
         } else {
@@ -661,7 +662,7 @@ public class SqlConstraintUtils {
             } else {
                 // The schema doesn't specify the datatype of the name column, but
                 // we presume that it is a string.
-                datatype = SqlQuery.Datatype.String;
+                datatype = Dialect.Datatype.String;
             }
             columnString = exp.getExpression(query);
         }
@@ -678,7 +679,7 @@ public class SqlConstraintUtils {
             final StringBuilder buf = new StringBuilder();
             query.getDialect().quote(buf, columnValue, datatype);
             String value = buf.toString();
-            if (caseSensitive && datatype == SqlQuery.Datatype.String) {
+            if (caseSensitive && datatype == Dialect.Datatype.String) {
                 // Some databases (like DB2) compare case-sensitive. We convert
                 // the value to upper-case in the DBMS (e.g. UPPER('Foo'))
                 // rather than in Java (e.g. 'FOO') in case the DBMS is running
@@ -888,7 +889,7 @@ public class SqlConstraintUtils {
     {
         int maxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
-        SqlQuery.Dialect dialect = sqlQuery.getDialect();
+        Dialect dialect = sqlQuery.getDialect();
 
         String condition = "";
         boolean firstLevel = true;

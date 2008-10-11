@@ -15,12 +15,12 @@ import org.apache.log4j.varia.LevelRangeFilter;
 import org.olap4j.metadata.*;
 
 import mondrian.rolap.aggmatcher.AggTableManager;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.*;
 import mondrian.util.Bug;
 import mondrian.olap.Member;
 import mondrian.olap.Position;
 import mondrian.olap.Cube;
+import mondrian.spi.Dialect;
 
 import java.io.StringWriter;
 import java.util.List;
@@ -2080,8 +2080,11 @@ public class SchemaTest extends FoodMartTestCase {
      * compare()", caused by binary column value.
      */
     public void testBinaryLevelKey() {
-        final SqlQuery.Dialect dialect = TestContext.instance().getDialect();
-        if (!dialect.isDerby() && !dialect.isMySQL()) {
+        switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case DERBY:
+        case MYSQL:
+            break;
+        default:
             // Not all databases support binary literals (e.g. X'AB01'). Only
             // Derby returns them as byte[] values from its JDBC driver and
             // therefore experiences bug 1963913.

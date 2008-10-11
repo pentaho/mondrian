@@ -13,8 +13,8 @@ import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.test.SqlPattern;
 import mondrian.rolap.agg.*;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.*;
+import mondrian.spi.Dialect;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -174,15 +174,16 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param patterns Set of patterns
      */
     void assertRequestSql(
-        CellRequest[] requests, SqlPattern[] patterns)
+        CellRequest[] requests,
+        SqlPattern[] patterns)
     {
         final RolapStar star = requests[0].getMeasure().getStar();
         final String cubeName = requests[0].getMeasure().getCubeName();
         final RolapCube cube = lookupCube(cubeName);
-        final SqlQuery.Dialect sqlDialect = star.getSqlQueryDialect();
-        SqlPattern.Dialect d = SqlPattern.Dialect.get(sqlDialect);
+        final Dialect sqlDialect = star.getSqlQueryDialect();
+        Dialect.DatabaseProduct d = sqlDialect.getDatabaseProduct();
         SqlPattern sqlPattern = SqlPattern.getPattern(d, patterns);
-        if (d == SqlPattern.Dialect.UNKNOWN) {
+        if (d == Dialect.DatabaseProduct.UNKNOWN) {
             // If the dialect is not one in the pattern set, do not run the
             // test. We do not print any warning message.
             return;
@@ -190,7 +191,7 @@ public class BatchTestCase extends FoodMartTestCase {
 
         boolean patternFound = false;
         for (SqlPattern pattern : patterns) {
-            if (!pattern.hasDialect(d)) {
+            if (!pattern.hasDatabaseProduct(d)) {
                 continue;
             }
 
@@ -344,11 +345,11 @@ public class BatchTestCase extends FoodMartTestCase {
         // Run the test once for each pattern in this dialect.
         // (We could optimize and run it once, collecting multiple queries, and
         // comparing all queries at the end.)
-        SqlQuery.Dialect dialect = testContext.getDialect();
-        SqlPattern.Dialect d = SqlPattern.Dialect.get(dialect);
+        Dialect dialect = testContext.getDialect();
+        Dialect.DatabaseProduct d = dialect.getDatabaseProduct();
         boolean patternFound = false;
         for (SqlPattern sqlPattern : patterns) {
-            if (!sqlPattern.hasDialect(d)) {
+            if (!sqlPattern.hasDatabaseProduct(d)) {
                 // If the dialect is not one in the pattern set, skip the
                 // test. If in the end no pattern is located, print a warning
                 // message if required.

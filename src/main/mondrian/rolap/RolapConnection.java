@@ -16,7 +16,6 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.ResultSet;
 import java.util.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
@@ -46,11 +45,12 @@ import mondrian.olap.Schema;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.AggregationManager;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.util.FilteredIterableList;
 import mondrian.util.MemoryMonitor;
 import mondrian.util.MemoryMonitorFactory;
 import mondrian.util.Pair;
+import mondrian.spi.Dialect;
+import mondrian.spi.impl.JdbcDialectImpl;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DataSourceConnectionFactory;
@@ -222,9 +222,10 @@ public class RolapConnection extends ConnectionBase {
             Statement statement = null;
             try {
                 conn = this.dataSource.getConnection();
-                SqlQuery.Dialect dialect =
-                    SqlQuery.Dialect.create(conn.getMetaData());
-                if (dialect.isDerby()) {
+                Dialect dialect =
+                    JdbcDialectImpl.create(conn.getMetaData());
+                if (dialect.getDatabaseProduct()
+                    == Dialect.DatabaseProduct.DERBY) {
                     // Derby requires a little extra prodding to do the
                     // validation to detect an error.
                     statement = conn.createStatement();

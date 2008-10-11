@@ -16,6 +16,7 @@ import mondrian.rolap.RolapStar;
 import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
 
@@ -166,10 +167,14 @@ class AggQuerySpec {
 
             // some DB2 (AS400) versions throw an error, if a column alias is
             // there and *not* used in a subsequent order by/group by
-            if (sqlQuery.getDialect().isAS400()) {
+            switch (sqlQuery.getDialect().getDatabaseProduct()) {
+            case DB2_AS400:
+            case DB2_OLD_AS400:
                 sqlQuery.addSelect(expr, null);
-            } else {
+                break;
+            default:
                 sqlQuery.addSelect(expr, getColumnAlias(i));
+                break;
             }
 
             if (rollup) {

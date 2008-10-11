@@ -16,7 +16,7 @@ import javax.sql.DataSource;
 import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
-import mondrian.rolap.sql.SqlQuery.Dialect;
+import mondrian.spi.Dialect;
 
 /**
  * Computes a TopCount in SQL.

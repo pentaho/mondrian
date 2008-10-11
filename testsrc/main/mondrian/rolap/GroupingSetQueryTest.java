@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.Set;
 
 import mondrian.rolap.agg.CellRequest;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.test.SqlPattern;
+import mondrian.spi.Dialect;
 
 /**
  * Test support for generating SQL queries with the <code>GROUPING SETS</code>
@@ -39,8 +39,10 @@ public class GroupingSetQueryTest extends BatchTestCase {
     private boolean useGroupingSets;
     private boolean formattedSql;
     private String origWarnIfNoPatternForDialect;
-    private static final Set<SqlPattern.Dialect> ORACLE_TERADATA =
-        Util.enumSetOf(SqlPattern.Dialect.ORACLE, SqlPattern.Dialect.TERADATA);
+    private static final Set<Dialect.DatabaseProduct> ORACLE_TERADATA =
+        Util.enumSetOf(
+            Dialect.DatabaseProduct.ORACLE,
+            Dialect.DatabaseProduct.TERADATA);
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -51,23 +53,19 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         prop.GenerateFormattedSql.set(false);
 
-        /*
-         * This test warns of missing sql patterns for
-         *
-         * ACCESS
-         * ORACLE
-         *
-         */
-        final SqlQuery.Dialect dialect = getTestContext().getDialect();
-        if (prop.WarnIfNoPatternForDialect.get().equals("ANY") ||
-            (dialect.isAccess() || dialect.isOracle())) {
+        // This test warns of missing sql patterns for
+        //
+        // ACCESS
+        // ORACLE
+        final Dialect dialect = getTestContext().getDialect();
+        if (prop.WarnIfNoPatternForDialect.get().equals("ANY")
+            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
+            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
             prop.WarnIfNoPatternForDialect.set(
-                SqlPattern.Dialect.get(dialect).toString());
+                dialect.getDatabaseProduct().toString());
         } else {
-            /*
-             * Do not warn unless the dialect is "ACCESS" or "ORACLE", or
-             * if the test chooses to warn regardless of the dialect.
-             */
+            // Do not warn unless the dialect is "ACCESS" or "ORACLE", or
+            // if the test chooses to warn regardless of the dialect.
             prop.WarnIfNoPatternForDialect.set("NONE");
         }
     }
@@ -121,7 +119,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
-                SqlPattern.Dialect.ACCESS,
+                Dialect.DatabaseProduct.ACCESS,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
@@ -177,7 +175,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
-                SqlPattern.Dialect.ACCESS,
+                Dialect.DatabaseProduct.ACCESS,
                 "select \"agg_g_ms_pcat_sales_fact_1997\".\"gender\" as \"c0\", " +
                     "sum(\"agg_g_ms_pcat_sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"agg_g_ms_pcat_sales_fact_1997\" as \"agg_g_ms_pcat_sales_fact_1997\" " +
@@ -223,7 +221,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
-                SqlPattern.Dialect.ACCESS,
+                Dialect.DatabaseProduct.ACCESS,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\" " +
                     "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
@@ -278,7 +276,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
-                SqlPattern.Dialect.ACCESS,
+                Dialect.DatabaseProduct.ACCESS,
                 "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
                     "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\" " +
                     "from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\" " +
@@ -344,7 +342,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         SqlPattern[] patternWithoutGsets = {
             new SqlPattern(
-                SqlPattern.Dialect.ACCESS,
+                Dialect.DatabaseProduct.ACCESS,
                 "select sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"sales_fact_1997\" as \"sales_fact_1997\"",
                 40),
@@ -408,7 +406,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
-                SqlPattern.Dialect.ACCESS,
+                Dialect.DatabaseProduct.ACCESS,
                 "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
                     "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
                     "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", " +

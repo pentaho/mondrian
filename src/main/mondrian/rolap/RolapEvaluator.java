@@ -17,9 +17,10 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.olap.fun.AggregateFunDef;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
 import mondrian.util.Format;
+import mondrian.spi.Dialect;
+import mondrian.spi.impl.JdbcDialectImpl;
 
 import org.apache.log4j.Logger;
 
@@ -240,7 +241,7 @@ public class RolapEvaluator implements Evaluator {
             new HashMap<List<Object>, Calc>();
         private final Query query;
         private final Date queryStartTime;
-        final SqlQuery.Dialect currentDialect;
+        final Dialect currentDialect;
 
         /**
          * Default members of each hierarchy, from the schema reader's
@@ -262,7 +263,8 @@ public class RolapEvaluator implements Evaluator {
                         dimension.getHierarchy()));
             }
             this.defaultMembers = list.toArray(new RolapMember[list.size()]);
-            this.currentDialect = SqlQuery.Dialect.create(schemaReader.getDataSource());
+            this.currentDialect =
+                JdbcDialectImpl.create(schemaReader.getDataSource());
         }
 
         /**
@@ -413,7 +415,7 @@ public class RolapEvaluator implements Evaluator {
         return root.getQueryStartTime();
     }
 
-    public SqlQuery.Dialect getDialect() {
+    public Dialect getDialect() {
         return root.currentDialect;
     }
 

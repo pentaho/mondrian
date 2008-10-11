@@ -16,9 +16,9 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.test.TestContext;
 import mondrian.test.SqlPattern;
+import mondrian.spi.Dialect;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Unit test for {@link AggregationManager}.
@@ -28,6 +28,11 @@ import java.util.ArrayList;
  * @version $Id$
  */
 public class TestAggregationManager extends BatchTestCase {
+    private static final Set<Dialect.DatabaseProduct> ACCESS_MYSQL =
+        Util.enumSetOf(
+            Dialect.DatabaseProduct.ACCESS,
+            Dialect.DatabaseProduct.MYSQL);
+
     public TestAggregationManager(String name) {
         super(name);
     }
@@ -134,7 +139,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
+                ACCESS_MYSQL,
                 "select `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0`," +
                 " sum(`agg_g_ms_pcat_sales_fact_1997`.`unit_sales`) as `m0` " +
                 "from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` " +
@@ -158,7 +163,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
+                ACCESS_MYSQL,
                 "select `customer`.`gender` as `c0`," +
                 " sum(`agg_l_03_sales_fact_1997`.`unit_sales`) as `m0` " +
                 "from `customer` as `customer`," +
@@ -200,7 +205,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
+                ACCESS_MYSQL,
                 "select `store`.`store_state` as `c0`," +
                 " `customer`.`gender` as `c1`," +
                 " sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0`," +
@@ -242,7 +247,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
+                ACCESS_MYSQL,
                 "select `customer`.`gender` as `c0`," +
                 " `store`.`store_state` as `c1`," +
                 " sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0`," +
@@ -343,9 +348,9 @@ public class TestAggregationManager extends BatchTestCase {
 
             patterns = new SqlPattern[] {
                 new SqlPattern(
-                    Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
+                    ACCESS_MYSQL,
                     accessMysqlSql, 50),
-                new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql)
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
             };
         } else {
             accessMysqlSql =
@@ -376,9 +381,9 @@ public class TestAggregationManager extends BatchTestCase {
 
             patterns = new SqlPattern[] {
                 new SqlPattern(
-                    Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
+                    ACCESS_MYSQL,
                     accessMysqlSql, 50),
-                new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql)
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
             };
         }
         assertQuerySql(mdxQuery, patterns);
@@ -392,11 +397,10 @@ public class TestAggregationManager extends BatchTestCase {
      */
     public void testNonEmptyCrossJoinLoneAxis() {
 
-        /*
-         * Not sure what this test is checking.
-         * For now, only run it for derby.
-         */
-        if (!getTestContext().getDialect().isDerby()) {
+        // Not sure what this test is checking.
+        // For now, only run it for derby.
+        final Dialect dialect = getTestContext().getDialect();
+        if (dialect.getDatabaseProduct() != Dialect.DatabaseProduct.DERBY) {
             return;
         }
         String mdxQuery =
@@ -440,7 +444,7 @@ public class TestAggregationManager extends BatchTestCase {
             "\"product_class\".\"product_family\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql)};
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)};
 
         // For derby, the TestAggregationManager.testNonEmptyCrossJoinLoneAxis
         // test fails if the non-empty crossjoin optimizer is used.
@@ -475,9 +479,9 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                Util.enumSetOf(SqlPattern.Dialect.ACCESS, SqlPattern.Dialect.MYSQL),
+                ACCESS_MYSQL,
                 accessMysqlSql, 26),
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql)
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
         };
 
         assertRequestSql(new CellRequest[]{request}, patterns);
@@ -537,9 +541,9 @@ public class TestAggregationManager extends BatchTestCase {
             "group by \"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, 26),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, 26),
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql)
+            new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, 26),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, 26),
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
             };
 
         assertRequestSql(new CellRequest[]{request}, patterns);
@@ -570,7 +574,7 @@ public class TestAggregationManager extends BatchTestCase {
             "`agg_c_10_sales_fact_1997`.`month_of_year` = 1";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, 26)};
+            new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, 26)};
 
         assertRequestSql(new CellRequest[]{request}, patterns);
     }
@@ -587,7 +591,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.Dialect.MYSQL,
+                Dialect.DatabaseProduct.MYSQL,
                 "select" +
                 " `time_by_day`.`the_year` as `c0`," +
                 " `time_by_day`.`quarter` as `c1`," +
@@ -608,7 +612,7 @@ public class TestAggregationManager extends BatchTestCase {
                 " `product_class`.`product_family`",
                 23),
             new SqlPattern(
-                SqlPattern.Dialect.ACCESS,
+                Dialect.DatabaseProduct.ACCESS,
                 "select" +
                 " `d0` as `c0`," +
                 " `d1` as `c1`," +
@@ -632,7 +636,7 @@ public class TestAggregationManager extends BatchTestCase {
                 "group by `d0`, `d1`, `d2`",
                 23),
              new SqlPattern(
-                 SqlPattern.Dialect.DERBY,
+                 Dialect.DatabaseProduct.DERBY,
                  "select " +
                  "\"time_by_day\".\"the_year\" as \"c0\", \"time_by_day\".\"quarter\" as \"c1\", " +
                  "\"product_class\".\"product_family\" as \"c2\", " +
@@ -688,7 +692,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                Util.enumSetOf(SqlPattern.Dialect.MYSQL, SqlPattern.Dialect.ACCESS),
+                ACCESS_MYSQL,
                 "select `agg_g_ms_pcat_sales_fact_1997`.`the_year` as `c0`," +
                 " `agg_g_ms_pcat_sales_fact_1997`.`quarter` as `c1`," +
                 " `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` as `c2`," +
@@ -731,7 +735,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                Util.enumSetOf(SqlPattern.Dialect.MYSQL, SqlPattern.Dialect.ACCESS),
+                ACCESS_MYSQL,
                 "select `agg_g_ms_pcat_sales_fact_1997`.`the_year` as `c0`," +
                 " `agg_g_ms_pcat_sales_fact_1997`.`quarter` as `c1`," +
                 " `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` as `c2`," +
@@ -817,8 +821,8 @@ public class TestAggregationManager extends BatchTestCase {
 
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql),
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql)
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql),
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
         };
 
         assertRequestSql(new CellRequest[]{request1, request2}, patterns);
@@ -838,7 +842,7 @@ public class TestAggregationManager extends BatchTestCase {
         }
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.Dialect.ACCESS,
+                Dialect.DatabaseProduct.ACCESS,
                 "select `store`.`store_country` as `c0` " +
                     "from `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`," +
                     " `store` as `store` " +
@@ -848,7 +852,7 @@ public class TestAggregationManager extends BatchTestCase {
                     "order by `store`.`store_country` ASC",
                 26),
             new SqlPattern(
-                SqlPattern.Dialect.MYSQL,
+                Dialect.DatabaseProduct.MYSQL,
                 "select `store`.`store_country` as `c0` " +
                     "from `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`," +
                     " `store` as `store` " +
@@ -958,8 +962,8 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, cardinalitySqlDerby, cardinalitySqlDerby),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, cardinalitySqlMySql, cardinalitySqlMySql)
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, cardinalitySqlDerby, cardinalitySqlDerby),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, cardinalitySqlMySql, cardinalitySqlMySql)
             };
 
         Connection conn = getTestContext().getFoodMartConnection(false);
@@ -1065,14 +1069,14 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns1 =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, cardinalitySqlDerby1, cardinalitySqlDerby1),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, cardinalitySqlMySql1, cardinalitySqlMySql1)
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, cardinalitySqlDerby1, cardinalitySqlDerby1),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, cardinalitySqlMySql1, cardinalitySqlMySql1)
             };
 
         SqlPattern[] patterns2 =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, cardinalitySqlDerby2, cardinalitySqlDerby2),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, cardinalitySqlMySql2, cardinalitySqlMySql2)
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, cardinalitySqlDerby2, cardinalitySqlDerby2),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, cardinalitySqlMySql2, cardinalitySqlMySql2)
             };
 
         TestContext testContext =
@@ -1138,7 +1142,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                Util.enumSetOf(SqlPattern.Dialect.MYSQL, SqlPattern.Dialect.ACCESS),
+                ACCESS_MYSQL,
                 "select " +
                 "`product_class`.`product_family` as `c0`, " +
                 "`product_class`.`product_department` as `c1`, " +

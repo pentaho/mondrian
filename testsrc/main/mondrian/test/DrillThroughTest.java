@@ -16,7 +16,7 @@ import mondrian.olap.*;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapLevel;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.Dialect;
 
 import javax.sql.DataSource;
 import java.sql.Statement;
@@ -468,8 +468,8 @@ public class DrillThroughTest extends FoodMartTestCase {
         final Cube cube = result.getQuery().getCube();
         RolapStar star = ((RolapCube) cube).getStar();
 
-        SqlQuery.Dialect dialect = star.getSqlQueryDialect();
-        if (dialect.isAccess()) {
+        Dialect dialect = star.getSqlQueryDialect();
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS) {
             String caseStmt =
                 " \\(case when `sales_fact_1997`.`promotion_id` = 0 then 0" +
                 " else `sales_fact_1997`.`store_sales` end\\)";
@@ -587,7 +587,8 @@ public class DrillThroughTest extends FoodMartTestCase {
      * definition".
      */
     public void testBug1438285() throws Exception {
-        if (getTestContext().getDialect().isTeradata()) {
+        final Dialect dialect = getTestContext().getDialect();
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.TERADATA) {
             // On default Teradata express instance there isn't enough spool
             // space to run this query.
             return;
@@ -702,7 +703,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             final Statement statement = connection.createStatement();
             final ResultSet resultSet = statement.executeQuery(sql);
             final int columnCount = resultSet.getMetaData().getColumnCount();
-            if (testContext.getDialect().isDerby()) {
+            final Dialect dialect = testContext.getDialect();
+            if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.DERBY) {
                 // derby counts ORDER BY columns as columns. insane!
                 assertEquals(11, columnCount);
             } else {

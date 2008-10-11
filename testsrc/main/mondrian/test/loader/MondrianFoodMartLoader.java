@@ -12,7 +12,8 @@ package mondrian.test.loader;
 import mondrian.resource.MondrianResource;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.Dialect;
+import mondrian.spi.impl.JdbcDialectImpl;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -126,7 +127,7 @@ public class MondrianFoodMartLoader {
         new HashMap<String, Column[]>();
     private final Map<String, List<UniqueConstraint>> tableConstraints =
         new HashMap<String, List<UniqueConstraint>>();
-    private SqlQuery.Dialect dialect;
+    private Dialect dialect;
 
 
     public MondrianFoodMartLoader(String[] args) {
@@ -290,12 +291,12 @@ public class MondrianFoodMartLoader {
 
         LOGGER.info("Output connection is " + productName + ", " + version);
 
-        dialect = SqlQuery.Dialect.create(metaData);
+        dialect = JdbcDialectImpl.create(metaData);
 
         if (inputBatchSize == -1) {
             // No explicit batch size was set by user, so assign a good
             // default now
-            if (dialect.isLucidDB()) {
+            if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB) {
                 // LucidDB column-store writes perform better with large batches
                 inputBatchSize = 1000;
             } else {
@@ -303,7 +304,7 @@ public class MondrianFoodMartLoader {
             }
         }
 
-        if (dialect.isLucidDB()) {
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB) {
             // LucidDB doesn't support CREATE UNIQUE INDEX, but it
             // does support standard UNIQUE constraints
             generateUniqueConstraints = true;
@@ -801,7 +802,7 @@ public class MondrianFoodMartLoader {
                 connection.setAutoCommit(false);
             }
 
-            if (dialect.isLucidDB()) {
+            if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB) {
                 // LucidDB doesn't perform well with single-row inserts,
                 // and its JDBC driver doesn't support batch writes,
                 // so collapse the batch into one big multi-row insert.
@@ -1075,10 +1076,12 @@ public class MondrianFoodMartLoader {
                 try {
                     buf.append("DROP INDEX ")
                         .append(quoteId(indexName));
-                    if (dialect.isMySQL()
-                            || dialect.isTeradata()) {
+                    switch (dialect.getDatabaseProduct()) {
+                    case MYSQL:
+                    case TERADATA:
                         buf.append(" ON ")
                             .append(quoteId(tableName));
+                        break;
                     }
                     final String deleteDDL = buf.toString();
                     executeDDL(deleteDDL);
@@ -1090,7 +1093,7 @@ public class MondrianFoodMartLoader {
             buf.setLength(0);
             buf.append(isUnique ? "CREATE UNIQUE INDEX " : "CREATE INDEX ")
                 .append(quoteId(indexName));
-            if (!dialect.isTeradata()) {
+            if (dialect.getDatabaseProduct() != Dialect.DatabaseProduct.TERADATA) {
                 buf.append(" ON ").append(quoteId(tableName));
             }
             buf.append(" (");
@@ -1102,7 +1105,7 @@ public class MondrianFoodMartLoader {
                 buf.append(quoteId(columnName));
             }
             buf.append(")");
-            if (dialect.isTeradata()) {
+            if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.TERADATA) {
                 buf.append(" ON ").append(quoteId(tableName));
             }
             final String createDDL = buf.toString();
@@ -1705,7 +1708,7 @@ public class MondrianFoodMartLoader {
     /**
      * Quote the given SQL identifier suitable for the given DBMS type.
      */
-    private String quoteId(SqlQuery.Dialect dialect, String name) {
+    private String quoteId(Dialect dialect, String name) {
         return dialect.quoteIdentifier(name);
     }
 
@@ -1803,76 +1806,82 @@ public class MondrianFoodMartLoader {
         /*
          * Output for a TIMESTAMP
          */
-        } else if (columnType.startsWith("TIMESTAMP")) {
-            Timestamp ts = (Timestamp) obj;
+        } else {
+            if (columnType.startsWith("TIMESTAMP")) {
+                Timestamp ts = (Timestamp) obj;
 
-            // REVIEW jvs 26-Nov-2006:  Is it safe to replace
-            // these with dialect.quoteTimestampLiteral, etc?
+                // REVIEW jvs 26-Nov-2006:  Is it safe to replace
+                // these with dialect.quoteTimestampLiteral, etc?
 
-            if (dialect.isOracle() || dialect.isLucidDB()) {
-                return "TIMESTAMP '" + ts + "'";
-            } else {
-                return "'" + ts + "'";
-            }
-            //return "'" + ts + "'" ;
-
-        /*
-         * Output for a DATE
-         */
-        } else if (columnType.startsWith("DATE")) {
-            Date dt = (Date) obj;
-            if (dialect.isOracle() || dialect.isLucidDB()) {
-                return "DATE '" + dateFormatter.format(dt) + "'";
-            } else {
-                return "'" + dateFormatter.format(dt) + "'";
-            }
-
-        /*
-         * Output for a FLOAT
-         */
-        } else if (columnType.startsWith(Type.Real.name)) {
-            Float result = (Float) obj;
-            return result.toString();
-
-        /*
-         * Output for a DECIMAL(length, places)
-         */
-        } else if (columnType.startsWith("DECIMAL")) {
-            final Matcher matcher = decimalDataTypeRegex.matcher(columnType);
-            if (!matcher.matches()) {
-                throw new Exception("Bad DECIMAL column type for " + columnType);
-            }
-            DecimalFormat formatter = new DecimalFormat(decimalFormat(matcher.group(1), matcher.group(2)));
-            if (obj.getClass() == Double.class) {
-                try {
-                    Double result = (Double) obj;
-                    return formatter.format(result.doubleValue());
-                } catch (ClassCastException cce) {
-                    LOGGER.error("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
-                    throw cce;
+                switch (dialect.getDatabaseProduct()) {
+                case ORACLE:
+                case LUCIDDB:
+                    return "TIMESTAMP '" + ts + "'";
+                default:
+                    return "'" + ts + "'";
                 }
-            } else {
-                // should be (obj.getClass() == BigDecimal.class)
-                try {
-                    BigDecimal result = (BigDecimal) obj;
-                    return formatter.format(result);
-                } catch (ClassCastException cce) {
-                    LOGGER.error("CCE: "  + column.name + " to BigDecimal from: " + obj.getClass().getName() + " - " + obj.toString());
-                    throw cce;
-                }
-            }
+                //return "'" + ts + "'" ;
 
-        /*
-         * Output for a BOOLEAN (Postgres) or BIT (other DBMSs)
-         */
-        } else if (columnType.startsWith("BOOLEAN") || columnType.startsWith("BIT")) {
-            Boolean result = (Boolean) obj;
-            return result.toString();
-        /*
-         * Output for a BOOLEAN - TINYINT(1) (MySQL)
-         */
-        } else if (columnType.startsWith("TINYINT(1)")) {
-            return (Boolean) obj ? "1" : "0";
+            /*
+             * Output for a DATE
+             */
+            } else if (columnType.startsWith("DATE")) {
+                Date dt = (Date) obj;
+                switch (dialect.getDatabaseProduct()) {
+                case ORACLE:
+                case LUCIDDB:
+                    return "DATE '" + dateFormatter.format(dt) + "'";
+                default:
+                    return "'" + dateFormatter.format(dt) + "'";
+                }
+
+            /*
+             * Output for a FLOAT
+             */
+            } else if (columnType.startsWith(Type.Real.name)) {
+                Float result = (Float) obj;
+                return result.toString();
+
+            /*
+             * Output for a DECIMAL(length, places)
+             */
+            } else if (columnType.startsWith("DECIMAL")) {
+                final Matcher matcher = decimalDataTypeRegex.matcher(columnType);
+                if (!matcher.matches()) {
+                    throw new Exception("Bad DECIMAL column type for " + columnType);
+                }
+                DecimalFormat formatter = new DecimalFormat(decimalFormat(matcher.group(1), matcher.group(2)));
+                if (obj.getClass() == Double.class) {
+                    try {
+                        Double result = (Double) obj;
+                        return formatter.format(result.doubleValue());
+                    } catch (ClassCastException cce) {
+                        LOGGER.error("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
+                        throw cce;
+                    }
+                } else {
+                    // should be (obj.getClass() == BigDecimal.class)
+                    try {
+                        BigDecimal result = (BigDecimal) obj;
+                        return formatter.format(result);
+                    } catch (ClassCastException cce) {
+                        LOGGER.error("CCE: "  + column.name + " to BigDecimal from: " + obj.getClass().getName() + " - " + obj.toString());
+                        throw cce;
+                    }
+                }
+
+            /*
+             * Output for a BOOLEAN (Postgres) or BIT (other DBMSs)
+             */
+            } else if (columnType.startsWith("BOOLEAN") || columnType.startsWith("BIT")) {
+                Boolean result = (Boolean) obj;
+                return result.toString();
+            /*
+             * Output for a BOOLEAN - TINYINT(1) (MySQL)
+             */
+            } else if (columnType.startsWith("TINYINT(1)")) {
+                return (Boolean) obj ? "1" : "0";
+            }
         }
         throw new Exception("Unknown column type: " + columnType + " for column: " + column.name);
     }
@@ -1887,8 +1896,11 @@ public class MondrianFoodMartLoader {
         /*
          * Output for a TIMESTAMP
          */
+        final Dialect.DatabaseProduct product = dialect.getDatabaseProduct();
         if (columnType.startsWith("TIMESTAMP")) {
-            if (dialect.isOracle() || dialect.isLucidDB()) {
+            switch (product) {
+            case ORACLE:
+            case LUCIDDB:
                 return "TIMESTAMP " + columnValue;
             }
 
@@ -1896,7 +1908,9 @@ public class MondrianFoodMartLoader {
          * Output for a DATE
          */
         } else if (columnType.startsWith("DATE")) {
-            if (dialect.isOracle() || dialect.isLucidDB()) {
+            switch (product) {
+            case ORACLE:
+            case LUCIDDB:
                 return "DATE " + columnValue;
             }
 
@@ -1905,25 +1919,30 @@ public class MondrianFoodMartLoader {
          */
         } else if (column.type == Type.Boolean) {
             String trimmedValue = columnValue.trim();
-            if (!dialect.isMySQL() &&
-                    !dialect.isOracle() &&
-                    !dialect.isDB2() &&
-                    !dialect.isFirebird() &&
-                    !dialect.isMSSQL() &&
-                    !dialect.isDerby() &&
-                    !dialect.isTeradata() &&
-                    !dialect.isIngres()) {
-                if (trimmedValue.equals("1")) {
-                    return "true";
-                } else if (trimmedValue.equals("0")) {
-                    return "false";
-                }
-            } else {
+            switch (product) {
+            case MYSQL:
+            case ORACLE:
+            case DB2:
+            case DB2_AS400:
+            case DB2_OLD_AS400:
+            case FIREBIRD:
+            case MSSQL:
+            case DERBY:
+            case TERADATA:
+            case INGRES:
                 if (trimmedValue.equals("true")) {
                     return "1";
                 } else if (trimmedValue.equals("false")) {
                     return "0";
                 }
+                break;
+            default:
+                if (trimmedValue.equals("1")) {
+                    return "true";
+                } else if (trimmedValue.equals("0")) {
+                    return "false";
+                }
+                break;
             }
         }
         return columnValue;
@@ -2009,7 +2028,7 @@ public class MondrianFoodMartLoader {
             this.constraint = nullsAllowed ? "" : "NOT NULL";
         }
 
-        public void init(SqlQuery.Dialect dialect) {
+        public void init(Dialect dialect) {
             this.typeName = type.toPhysical(dialect);
         }
     }
@@ -2030,7 +2049,7 @@ public class MondrianFoodMartLoader {
      *
      * Specific databases will represent this with their own particular physical
      * type, for example "TINYINT(1)", "BOOLEAN" or "BIT";
-     * see {@link #toPhysical(mondrian.rolap.sql.SqlQuery.Dialect)}.
+     * see {@link #toPhysical(mondrian.spi.Dialect)}.
      */
     private static class Type {
         /**
@@ -2058,7 +2077,7 @@ public class MondrianFoodMartLoader {
          * Returns the physical type which a given RDBMS (dialect) uses to
          * represent this logical type.
          */
-        String toPhysical(SqlQuery.Dialect dialect) {
+        String toPhysical(Dialect dialect) {
             if (this == Integer ||
                     this == Currency ||
                     this == Smallint ||
@@ -2069,40 +2088,45 @@ public class MondrianFoodMartLoader {
                 return name;
             }
             if (this == Boolean) {
-                if (dialect.isPostgres() || dialect.isLucidDB()) {
+                switch (dialect.getDatabaseProduct()) {
+                case POSTGRES:
+                case LUCIDDB:
                     return name;
-                } else if (dialect.isMySQL()) {
+                case MYSQL:
                     return "TINYINT(1)";
-                } else if (dialect.isMSSQL()) {
+                case MSSQL:
                     return "BIT";
-                } else {
+                default:
                     return Smallint.name;
                 }
             }
             if (this == Bigint) {
-                if (dialect.isOracle() ||
-                        dialect.isFirebird()) {
+                switch (dialect.getDatabaseProduct()) {
+                case ORACLE:
+                case FIREBIRD:
                     return "DECIMAL(15,0)";
-                } else {
+                default:
                     return name;
                 }
             }
             if (this == Date) {
-                if (dialect.isMSSQL()) {
+                switch (dialect.getDatabaseProduct()) {
+                case MSSQL:
                     return "DATETIME";
-                } else if (dialect.isIngres()) {
+                case INGRES:
                     return "INGRESDATE";
-                } else {
+                default:
                     return name;
                 }
             }
             if (this == Timestamp) {
-                if (dialect.isMSSQL() ||
-                        dialect.isMySQL()) {
+                switch (dialect.getDatabaseProduct()) {
+                case MSSQL:
+                case MYSQL:
                     return "DATETIME";
-                } else if (dialect.isIngres()) {
+                case INGRES:
                     return "INGRESDATE";
-                } else {
+                default:
                     return name;
                 }
             }

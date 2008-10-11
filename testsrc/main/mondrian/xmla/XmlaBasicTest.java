@@ -12,7 +12,7 @@ package mondrian.xmla;
 import mondrian.olap.*;
 import mondrian.test.*;
 import mondrian.tui.XmlUtil;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.Dialect;
 
 import org.w3c.dom.Document;
 
@@ -106,8 +106,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
     }
 
     protected String extractSoapResponse(
-            Document responseDoc,
-            Enumeration.Content content) {
+        Document responseDoc,
+        Enumeration.Content content)
+    {
         Document partialDoc = null;
         switch (content) {
         case None:
@@ -520,8 +521,8 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
             // Different databases have slightly different column types, which
             // results in slightly different inferred xml schema for the drill-
             // through result.
-            SqlQuery.Dialect dialect = TestContext.instance().getDialect();
-            switch (SqlPattern.Dialect.get(dialect)) {
+            Dialect dialect = TestContext.instance().getDialect();
+            switch (dialect.getDatabaseProduct()) {
             case ORACLE:
                 content = Util.replace(
                     content,

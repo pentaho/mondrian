@@ -16,6 +16,7 @@ import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 import mondrian.olap.*;
 import mondrian.rolap.BatchTestCase;
+import mondrian.spi.Dialect;
 
 /**
  * Tests the expressions used for calculated members. Please keep in sync
@@ -1011,8 +1012,8 @@ public class TestCalculatedMembers extends BatchTestCase {
             "select `product_class`.`product_family` as `c0` from `product` as `product`, `product_class` as `product_class` where `product`.`product_class_id` = `product_class`.`product_class_id` and UPPER(`product_class`.`product_family`) = UPPER('Calculated Member') group by `product_class`.`product_family` order by ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySQL, derbySQL),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSQL, mysqlSQL)
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySQL, derbySQL),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL)
         };
 
         assertQuerySqlOrNot(this.getTestContext(), query, patterns, true, true, true);

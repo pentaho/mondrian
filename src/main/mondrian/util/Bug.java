@@ -9,8 +9,9 @@
 */
 package mondrian.util;
 
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.MondrianProperties;
+import mondrian.spi.Dialect;
+
 /**
  * Holder for constants which indicate whether particular issues have been
  * fixed. Reference one of those constants in your code, and it is clear which
@@ -93,9 +94,9 @@ public class Bug {
      * @param dialect Dialect
      * @return Whether to avoid a test
      */
-    public static boolean avoidMemoryOverflow(SqlQuery.Dialect dialect) {
-        return dialect.isAccess() &&
-            MondrianProperties.instance().MemoryMonitor.get();
+    public static boolean avoidMemoryOverflow(Dialect dialect) {
+        return dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
+            && MondrianProperties.instance().MemoryMonitor.get();
     }
 }
 

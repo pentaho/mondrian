@@ -18,6 +18,7 @@ import mondrian.rolap.BatchTestCase;
 import mondrian.rolap.RolapCube;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
+import mondrian.spi.Dialect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -148,10 +149,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "group by \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql),
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSql, oraTeraSql),
-            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSql, oraTeraSql),
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql),
+            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
         };
 
         assertQuerySql(query, patterns);
@@ -206,10 +207,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "group by \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            new SqlPattern(SqlPattern.Dialect.MYSQL, mysqlSql, mysqlSql),
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSql, oraTeraSql),
-            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSql, oraTeraSql),
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql),
+            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
         };
 
         assertQuerySql(query, patterns);
@@ -438,7 +439,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "FROM [WAREHOUSE AND SALES2]";
 
         String result;
-        if (getTestContext().getDialect().isLucidDB()) {
+        final Dialect dialect = getTestContext().getDialect();
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB) {
             // LucidDB has no limit on the size of IN list
             result =
                 "Axis #0:\n" +
@@ -528,8 +530,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
         SqlPattern[] patterns =
             new SqlPattern[] {
-                new SqlPattern(SqlPattern.Dialect.DERBY, necjSqlDerby, necjSqlDerby),
-                new SqlPattern(SqlPattern.Dialect.MYSQL, necjSqlMySql, necjSqlMySql)
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
             };
 
         assertQuerySql(testContext, query, patterns);
@@ -698,8 +700,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 + "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
         }
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSql, oraTeraSql),
-            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSql, oraTeraSql),
+            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
         };
         assertQuerySql(mdxQuery,patterns);
     }
@@ -754,10 +756,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSqlForAgg, oraTeraSqlForAgg),
-            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSqlForAgg, oraTeraSqlForAgg),
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSqlForDetail, oraTeraSqlForDetail),
-            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSqlForDetail, oraTeraSqlForDetail),
+            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSqlForAgg, oraTeraSqlForAgg),
+            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSqlForAgg, oraTeraSqlForAgg),
+            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSqlForDetail, oraTeraSqlForDetail),
+            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSqlForDetail, oraTeraSqlForDetail),
         };
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
@@ -805,8 +807,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "(\"time_by_day\".\"the_year\"))";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSql, oraTeraSql),
-            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSql, oraTeraSql),
+            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
         };
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
@@ -898,10 +900,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "group by \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSqlForDetail, oraTeraSqlForDetail),
-            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSqlForDetail, oraTeraSqlForDetail),
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSqlForDistinctCountAgg, oraTeraSqlForDistinctCountAgg),
-            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSqlForDistinctCountAgg, oraTeraSqlForDistinctCountAgg),
+            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSqlForDetail, oraTeraSqlForDetail),
+            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSqlForDetail, oraTeraSqlForDetail),
+            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSqlForDistinctCountAgg, oraTeraSqlForDistinctCountAgg),
+            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSqlForDistinctCountAgg, oraTeraSqlForDistinctCountAgg),
         };
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
@@ -955,8 +957,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.ORACLE, oraTeraSql, oraTeraSql),
-            new SqlPattern(SqlPattern.Dialect.TERADATA, oraTeraSql, oraTeraSql),
+            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
         };
 
         assertQueryReturns(mdxQueryWithMembers, desiredResult);
@@ -1018,9 +1020,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "and (((\"store\".\"store_state\", \"customer\".\"gender\") in (('CA', 'F'), ('OR', 'F'), ('WA', 'F'), ('CA', 'M'), ('OR', 'M'), ('WA', 'M')))) group by \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql),
-            new SqlPattern(SqlPattern.Dialect.LUCIDDB, luciddbSql, luciddbSql),
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
+            new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+            new SqlPattern(Dialect.DatabaseProduct.LUCIDDB, luciddbSql, luciddbSql),
         };
 
         assertQuerySql(query, patterns);
@@ -1109,7 +1111,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             /*
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
             */
-            new SqlPattern(SqlPattern.Dialect.ACCESS, accessSql, accessSql)};
+            new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql)};
 
         assertQuerySql(query, patterns);
 

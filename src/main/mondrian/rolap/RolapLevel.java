@@ -14,7 +14,7 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
 import java.lang.reflect.Constructor;
@@ -46,7 +46,7 @@ public class RolapLevel extends LevelBase {
      */
     protected MondrianDef.Expression captionExp;
 
-    private final SqlQuery.Datatype datatype;
+    private final Dialect.Datatype datatype;
 
     private final int flags;
 
@@ -100,7 +100,7 @@ public class RolapLevel extends LevelBase {
         MondrianDef.Closure xmlClosure,
         RolapProperty[] properties,
         int flags,
-        SqlQuery.Datatype datatype,
+        Dialect.Datatype datatype,
         HideMemberCondition hideMemberCondition,
         LevelType levelType,
         String approxRowCount)
@@ -256,7 +256,7 @@ public class RolapLevel extends LevelBase {
         return (flags & FLAG_UNIQUE) != 0;
     }
 
-    final SqlQuery.Datatype getDatatype() {
+    final Dialect.Datatype getDatatype() {
         return datatype;
     }
 
