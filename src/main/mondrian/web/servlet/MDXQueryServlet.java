@@ -77,7 +77,7 @@ public class MDXQueryServlet extends HttpServlet {
         String queryString = request.getParameter("queryString");
         request.setAttribute("queryString", queryString);
         mondrian.olap.Connection mdxConnection = null;
-        StringBuffer html = new StringBuffer();
+        StringBuilder html = new StringBuilder();
 
         // execute the query
         try {
@@ -156,7 +156,7 @@ public class MDXQueryServlet extends HttpServlet {
                             member.getUniqueName()).append("</td>");
                     }
                     for (int j = 0; j < columns.size(); j++) {
-                        showCell(html,result.getCell(new int[]{j,i}));
+                        showCell(html, result.getCell(new int[] {j, i}));
                     }
                     html.append("</tr>");
                 }
@@ -186,10 +186,11 @@ public class MDXQueryServlet extends HttpServlet {
         getServletContext().getRequestDispatcher("/adhoc.jsp").include(request, response);
     }
 
-    private void showCell(StringBuffer out, Cell cell) {
+    private void showCell(StringBuilder out, Cell cell) {
         out.append("<td class='cell'>").append(cell.getFormattedValue()).append(
             "</td>");
     }
+
     private void processTransform(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String queryName = request.getParameter("query");
