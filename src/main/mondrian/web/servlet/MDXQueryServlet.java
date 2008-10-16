@@ -172,7 +172,7 @@ public class MDXQueryServlet extends HttpServlet {
             final String[] strings = Util.convertStackToString(e);
             html.append("Error:<pre><blockquote>");
             for (String string : strings) {
-                StringEscaper.htmlEscaper.appendEscapedString(string, html);
+                html.append(StringEscaper.htmlEscaper.escapeString(string));
             }
             html.append("</blockquote></pre>");
         } finally {

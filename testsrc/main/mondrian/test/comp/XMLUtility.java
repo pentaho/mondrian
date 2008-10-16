@@ -151,7 +151,7 @@ class XMLUtility {
 
     public static String toString(Element xmlRoot) {
         stripWhitespace(xmlRoot);
-        return XOMUtil.wrapperToXml(new W3CDOMWrapper(xmlRoot), false);
+        return XOMUtil.wrapperToXml(new W3CDOMWrapper(xmlRoot, null), false);
     }
 
     public static class UtilityErrorHandler implements ErrorHandler {
