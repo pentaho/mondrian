@@ -582,7 +582,7 @@
 </exception>
 
 <exception id="700404" name="AggLoadingExceededErrorCount">
-    <text>Too many errors, ''{0,number}'', while loading/reloadin aggregates.</text>
+    <text>Too many errors, ''{0,number}'', while loading/reloading aggregates.</text>
 </exception>
 
 <message id="7000406" name="UnknownFactTableColumn">
