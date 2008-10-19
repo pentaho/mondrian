@@ -4027,6 +4027,78 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Descendants</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            set of members at a specified level,
+                            optionally including or excluding
+                            descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Set</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            set of members at a specified level,
+                            optionally including or excluding
+                            descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Level</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            set of members at a specified level,
+                            optionally including or excluding
+                            descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Level, Symbol</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            set of members at a specified level,
+                            optionally including or excluding
+                            descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            set of members at a specified level,
+                            optionally including or excluding
+                            descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Symbol</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            set of members at a specified level,
+                            optionally including or excluding
+                            descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Empty, Symbol</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Dimension</FUNCTION_NAME>
                         <DESCRIPTION>Returns the dimension that contains a specified hierarchy.</DESCRIPTION>
                         <PARAMETER_LIST>Dimension</PARAMETER_LIST>
@@ -18915,6 +18987,78 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                             member at a specified level, optionally
                             including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Empty, Symbol</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            set of members at a specified level,
+                            optionally including or excluding
+                            descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Set</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            set of members at a specified level,
+                            optionally including or excluding
+                            descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Level</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            set of members at a specified level,
+                            optionally including or excluding
+                            descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Level, Symbol</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            set of members at a specified level,
+                            optionally including or excluding
+                            descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            set of members at a specified level,
+                            optionally including or excluding
+                            descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Symbol</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Descendants</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Descendants</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of descendants of a
+                            set of members at a specified level,
+                            optionally including or excluding
+                            descendants in other levels.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Empty, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
