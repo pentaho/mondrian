@@ -13,11 +13,11 @@ package mondrian.olap.fun;
 import java.util.*;
 
 import mondrian.olap.*;
-import mondrian.olap.type.NumericType;
-import mondrian.olap.type.NullType;
+import mondrian.olap.type.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
-import mondrian.mdx.ResolvedFunCall;
+import mondrian.mdx.*;
+import mondrian.resource.MondrianResource;
 
 /**
  * Definition of the <code>Descendants</code> MDX function.
@@ -28,7 +28,8 @@ import mondrian.mdx.ResolvedFunCall;
  */
 class DescendantsFunDef extends FunDefBase {
 
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
             "Descendants",
             "Descendants(<Member>[, <Level>[, <Desc_flag>]])",
             "Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.",
@@ -36,12 +37,59 @@ class DescendantsFunDef extends FunDefBase {
             DescendantsFunDef.class,
             Flag.getNames());
 
+    static final ReflectiveMultiResolver Resolver2 =
+        new ReflectiveMultiResolver(
+            "Descendants",
+            "Descendants(<Set>[, <Level>[, <Desc_flag>]])",
+            "Returns the set of descendants of a set of members at a specified level, optionally including or excluding descendants in other levels.",
+            new String[]{"fxx", "fxxl", "fxxly", "fxxn", "fxxny", "fxxey"},
+            DescendantsFunDef.class,
+            Flag.getNames());
+
     public DescendantsFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
-
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+        final Type type0 = call.getArg(0).getType();
+        if (type0 instanceof SetType) {
+            final SetType setType = (SetType) type0;
+            if (setType.getElementType() instanceof TupleType) {
+                throw MondrianResource.instance()
+                    .DescendantsAppliedToSetOfTuples.ex();
+            }
+
+            MemberType memberType = (MemberType) setType.getElementType();
+            final Dimension dimension = memberType.getDimension();
+            if (dimension == null) {
+                throw MondrianResource.instance().CannotDeduceTypeOfSet.ex();
+            }
+            // Convert
+            //   Descendants(<set>, <args>)
+            // into
+            //   Generate(<set>, Descendants(<dimension>.CurrentMember, <args>))
+            Exp[] descendantsArgs = call.getArgs().clone();
+            descendantsArgs[0] =
+                new UnresolvedFunCall(
+                    "CurrentMember",
+                    Syntax.Property,
+                    new Exp[] {
+                        new DimensionExpr(dimension)
+                    });
+            final ResolvedFunCall generateCall =
+                (ResolvedFunCall) compiler.getValidator().validate(
+                    new UnresolvedFunCall(
+                        "Generate",
+                        new Exp[] {
+                            call.getArg(0),
+                            new UnresolvedFunCall(
+                                "Descendants",
+                                descendantsArgs)
+                        }),
+                    false);
+            return generateCall.accept(compiler);
+        }
+
         final MemberCalc memberCalc = compiler.compileMember(call.getArg(0));
         Flag flag = Flag.SELF;
         if (call.getArgCount() == 1) {

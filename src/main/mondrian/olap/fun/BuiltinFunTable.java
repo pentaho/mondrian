@@ -916,6 +916,7 @@ public class BuiltinFunTable extends FunTableImpl {
         define(NonEmptyCrossJoinFunDef.Resolver);
         define(CrossJoinFunDef.StarResolver);
         define(DescendantsFunDef.Resolver);
+        define(DescendantsFunDef.Resolver2);
         define(DistinctFunDef.instance);
         define(DrilldownLevelFunDef.Resolver);
 

@@ -3500,6 +3500,26 @@ public class FunctionTest extends FoodMartTestCase {
                 hierarchized1997);
     }
 
+    public void testDescendantsSet() {
+        assertAxisReturns("Descendants({[Time].[1997].[Q4], [Time].[1997].[Q2]}, 1)",
+            fold("[Time].[1997].[Q4].[10]\n" +
+                "[Time].[1997].[Q4].[11]\n" +
+                "[Time].[1997].[Q4].[12]\n" +
+                "[Time].[1997].[Q2].[4]\n" +
+                "[Time].[1997].[Q2].[5]\n" +
+                "[Time].[1997].[Q2].[6]"));
+        assertAxisReturns(
+            "Descendants({[Time].[1997]}, [Time].[Month], LEAVES)",
+            months);
+    }
+
+    public void testDescendantsSetEmpty() {
+        assertAxisThrows("Descendants({}, 1)",
+            "Cannot deduce type of set");
+        assertAxisReturns("Descendants(Filter({[Time].Members}, 1=0), 1)",
+            "");
+    }
+
     public void testRange() {
         assertAxisReturns("[Time].[1997].[Q1].[2] : [Time].[1997].[Q2].[5]",
                 fold(
@@ -8259,6 +8279,17 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         assertThrows("select ParallelPeriod() on columns from [Store]", "'ParallelPeriod', no time dimension");
         assertThrows("select PeriodsToDate() on columns from [Store]", "'PeriodsToDate', no time dimension");
         assertThrows("select Mtd() on columns from [Store]", "'Mtd', no time dimension");
+    }
+
+    public void testFilterEmpty() {
+        // Unlike "Descendants(<set>, ...)", we do not need to know the precise
+        // type of the set, therefore it is OK if the set is empty.
+        assertAxisReturns(
+            "Filter({}, 1=0)",
+            "");
+        assertAxisReturns(
+            "Filter({[Time].Children}, 1=0)",
+            "");
     }
 
     public void testFilterCalcSlicer() {

@@ -9,7 +9,7 @@
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
   == (C) Copyright 2000-2002 Kana Software, Inc.
-  == (C) Copyright 2002-2007 Julian Hyde and others
+  == (C) Copyright 2002-2008 Julian Hyde and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -337,7 +337,7 @@
 </exception>
 
 <exception id="40170" name="HierarchyMustHaveForeignKey">
-    <text>Hierarchy ''{0}'' in cube ''{1}'' must have a foreign key, since it is not based on the cube's fact table.</text>
+    <text>Hierarchy ''{0}'' in cube ''{1}'' must have a foreign key, since it is not based on the cube''s fact table.</text>
 </exception>
 
 <exception id="40180" name="HierarchyInvalidForeignKey">
@@ -390,6 +390,14 @@
 
 <exception id="40310" name="UnknownRole">
     <text>Unknown role ''{0}''</text>
+</exception>
+
+<exception id="40320" name="DescendantsAppliedToSetOfTuples">
+    <text>Argument to Descendants function must be a member or set of members, not a set of tuples</text>
+</exception>
+
+<exception id="40330" name="CannotDeduceTypeOfSet">
+    <text>Cannot deduce type of set</text>
 </exception>
 
 <!-- ====================================================================== -->
@@ -582,7 +590,7 @@
 </exception>
 
 <exception id="700404" name="AggLoadingExceededErrorCount">
-    <text>Too many errors, ''{0,number}'', while loading/reloading aggregates.</text>
+    <text>Too many errors, ''{0,number}'', while loading/reloadin aggregates.</text>
 </exception>
 
 <message id="7000406" name="UnknownFactTableColumn">
