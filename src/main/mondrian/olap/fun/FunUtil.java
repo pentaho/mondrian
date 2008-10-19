@@ -18,6 +18,8 @@ import mondrian.resource.MondrianResource;
 import mondrian.calc.Calc;
 import mondrian.calc.ResultStyle;
 import mondrian.calc.DoubleCalc;
+import mondrian.calc.MemberCalc;
+import mondrian.calc.impl.*;
 import mondrian.mdx.*;
 import mondrian.rolap.RolapHierarchy;
 import mondrian.util.FilteredIterableList;
@@ -254,6 +256,7 @@ public class FunUtil extends Util {
         final Hierarchy hierarchy)
     {
         // only add accessible levels
+        ;
         for (Level level : schemaReader.getHierarchyLevels(hierarchy)) {
             addMembers(schemaReader, members, level);
         }
@@ -325,7 +328,7 @@ public class FunUtil extends Util {
      * @pre exp != null
      * @pre exp.getType() instanceof ScalarType
      */
-    static Map<Member, Object> evaluateMembers(
+    static Map<Object, Object> evaluateMembers(
         Evaluator evaluator,
         Calc exp,
         List<Member> members,
@@ -335,7 +338,7 @@ public class FunUtil extends Util {
         evaluator = evaluator.push();
 
         assert exp.getType() instanceof ScalarType;
-        Map<Member, Object> mapMemberToValue = new HashMap<Member, Object>();
+        Map<Object, Object> mapMemberToValue = new HashMap<Object, Object>();
         for (Member member : members) {
             while (true) {
                 evaluator.setContext(member);
@@ -418,6 +421,194 @@ public class FunUtil extends Util {
     }
 
     /**
+     * For each tuple/member in a list, evaluates the member value expression
+     * and populates a map from tuples/members to members
+     *
+     * @param <T> Generic type, can take a member or a tuple
+     * @param evaluator Evaluation context
+     * @param exp Expression to evaluate
+     * @param members List of members
+     * @param parentsToo If true, evaluate the expression for all ancestors
+     *            of the members as well
+     * @return the map from members or tuples to members
+     */
+    static <T> Map<Object, Object> evaluateMemberValueExps(
+        Evaluator evaluator,
+        Calc exp,
+        List<T> members,
+        boolean parentsToo)
+    {
+        MemberCalc mcalc = (MemberCalc) exp;
+        Map<Object, Object> mapMemberToMember = new HashMap<Object, Object>();
+
+        // try to optimize when exp is currentMember
+        boolean isCurrMemExp = mcalc instanceof DimensionCurrentMemberFunDef.CalcImpl;
+        int idx = -1;
+        if (isCurrMemExp) {
+            Object first = members.get(0);
+            if (first instanceof Member[]) {
+                Member[] firstMem = (Member[]) first;
+                int n = firstMem.length;
+                Dimension dim = mcalc.getType().getDimension();
+                for (int i = 0; i < n; i++) {
+                    if (dim.equals(firstMem[i].getDimension())) {
+                        idx = i;
+                        break;
+                    }
+                }
+                assert idx != -1;
+            }
+        }
+        // populate the map
+        Object obj;
+        Member result;
+        for (int i = 0, n = members.size(); i < n; i++) {
+            obj = members.get(i);
+            if (obj instanceof Member) {
+                while (true) {
+                    if (isCurrMemExp) {
+                        mapMemberToMember.put(obj, obj);
+                    } else {
+                        evaluator.setContext((Member) obj);
+                        result = mcalc.evaluateMember(evaluator);
+                        if (result == null) {
+                            result = NullMember;
+                        }
+                        mapMemberToMember.put(obj, result);
+                    }
+                    if (!parentsToo) {
+                        break;
+                    }
+                    obj = ((Member) obj).getParentMember();
+                    if (obj == null) {
+                        break;
+                    }
+                    if (mapMemberToMember.containsKey((Member) obj)) {
+                        break;
+                    }
+                }
+            } else if (obj instanceof Member[]) {
+                evaluator.setContext((Member[]) obj);
+                if (isCurrMemExp) {
+                    mapMemberToMember.put(
+                        new ArrayHolder<Member>((Member[]) obj), ((Member[]) obj)[idx]);
+                } else {
+                    // populate tuples map
+                    result = mcalc.evaluateMember(evaluator);
+                    if (result == null) {
+                        result = NullMember;
+                    }
+                    mapMemberToMember.put(
+                        new ArrayHolder<Member>((Member[]) obj), result);
+                }
+            }
+        }
+        return mapMemberToMember;
+    }
+
+    /**
+     * Populates the list of maps from tuples/members to values/members.
+     * Each member of the list corresponds to a sort key. Since it is
+     * unlikely that all sort keys will be used to compare any pair
+     * of members, prepopulate the first half only
+     *
+     * @param <T> Generic type; can be member or tuple
+     * @param listMapMemberToValue List of maps
+     * @param evaluator Evaluation context
+     * @param members List of members
+     * @param keySpecList List of sort key specifications
+     */
+    static <T> void populateMembersMap(
+        List<Map<Object, Object>> listMapMemberToValue,
+        Evaluator evaluator,
+        List<T> members,
+        List<SortKeySpec> keySpecList)
+    {
+        final int keyCount = keySpecList.size();
+        // magic number - pre-populate the map
+        // for one plus the first half of sort keys
+        final int depth = keyCount / 2 + 1;
+        Object first = members.get(0);
+        for (int i = 0; i < depth; i++) {
+            SortKeySpec sortKey = keySpecList.get(i);
+            if (sortKey.isMemberValueExp()) {
+                // get member
+                listMapMemberToValue.add(
+                    evaluateMemberValueExps(
+                        evaluator,
+                        sortKey.getKey(),
+                        members,
+                        !sortKey.getDirection().brk));
+            } else {
+                // get value
+                if (first instanceof Member) {
+                    listMapMemberToValue.add(
+                        evaluateMembers(
+                            evaluator,
+                            sortKey.getKey(),
+                            (List<Member>) members,
+                            !sortKey.getDirection().brk));
+                } else {
+                    // populate map for tuples only
+                    // meaning optimize for break hierarchy comparison only
+                    listMapMemberToValue.add(
+                        evaluateTuples(
+                            evaluator,
+                            sortKey.getKey(),
+                            (List<Member[]>) members));
+                }
+            }
+        }
+        for (int i = depth; i < keyCount; i++) {
+            listMapMemberToValue.add(new HashMap<Object, Object>());
+        }
+    }
+
+    /**
+     * Gets the value from the map or evaluates the member using the expression
+     * if the value is not ready
+     *
+     * @param member Key of the map
+     * @param exp Expression to evaluate
+     * @param evaluator Evaluation context
+     * @param mapTuples Map of members or tuples to members or cell values
+     * @return Value from the map
+     */
+    static Object getFromMapOrEvaluate(
+        Object member,
+        Calc exp,
+        Evaluator evaluator,
+        boolean isMemValExp,
+        Map<Object, Object> mapTuples)
+    {
+        Object key;
+        boolean isTuple = (member instanceof Member[]);
+        if (isTuple) {
+            key = new ArrayHolder<Member>((Member[]) member);
+        } else {
+            key = member;
+        }
+        Object val = mapTuples.get(key);
+        if (val == null) {
+            if (isTuple) {
+                evaluator.setContext((Member[]) member);
+            } else {
+                evaluator.setContext((Member) member);
+            }
+            val = exp.evaluate(evaluator);
+            if (val == null) {
+                if (isMemValExp) {
+                    val = NullMember;
+                } else {
+                    val = Util.nullValue;
+                }
+            }
+            mapTuples.put(key, val);
+        }
+        return val;
+    }
+
+    /**
      * Helper function to sortMembers a list of members according to an expression.
      *
      * <p>NOTE: This function does not preserve the contents of the validator.
@@ -433,7 +624,7 @@ public class FunUtil extends Util {
             return;
         }
         Object first = members.get(0);
-        Map<Member, Object> mapMemberToValue;
+        Map<Object, Object> mapMemberToValue;
         if (first instanceof Member) {
             final boolean parentsToo = !brk;
             mapMemberToValue = evaluateMembers(evaluator, exp, members, parentsToo);
@@ -477,6 +668,39 @@ public class FunUtil extends Util {
                 pw.println(o);
             }
             pw.flush();
+        }
+    }
+
+    /**
+     * Helper function to sortMembers a list of members according to a list
+     * of expressions and a list of sorting flags.
+     *
+     * <p>NOTE: This function does not preserve the contents of the validator.
+     */
+    public static void sortMembers(
+        Evaluator evaluator, List<Member> members, List<SortKeySpec> keySpecList)
+    {
+        if (members.isEmpty()) {
+            return;
+        }
+        Object first = members.get(0);
+        List<Map<Object, Object>> listMapMemberToValue =
+            new ArrayList<Map<Object, Object>>();
+        populateMembersMap(
+            listMapMemberToValue, evaluator, members, keySpecList);
+        if (first instanceof Member) {
+            Comparator<Member> comparator =
+                new MultiKeysMemberComparator(
+                    evaluator, keySpecList, listMapMemberToValue).wrap();
+            Collections.sort(members, comparator);
+        } else {
+            Util.assertTrue(first instanceof Member[]);
+            List<Member[]> tupleList = Util.cast(members);
+            final int arity = ((Member[]) first).length;
+            Comparator<Member[]> comparator =
+                new MultiKeysArrayComparator(
+                    evaluator, keySpecList, listMapMemberToValue, arity).wrap();
+            Collections.sort(tupleList, comparator);
         }
     }
 
@@ -1631,6 +1855,97 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         }
     }
 
+    public static int compareMembersByOrderKeys(
+        Member m1, Member m2)
+    {
+        // calculated members collate after non-calculated
+        final boolean calculated1 = m1.isCalculatedInQuery();
+        final boolean calculated2 = m2.isCalculatedInQuery();
+        if (calculated1) {
+            if (!calculated2) {
+                return 1;
+            }
+        } else {
+            if (calculated2) {
+                return -1;
+            }
+        }
+        final Comparable k1 = m1.getOrderKey();
+        final Comparable k2 = m2.getOrderKey();
+        if ((k1 != null) && (k2 != null)) {
+            return k1.compareTo(k2);
+        } else {
+            return m1.compareTo(m2);
+        }
+    }
+
+    public static int compareMembers(
+        Member m1,
+        Member m2,
+        Evaluator evaluator,
+        Calc exp,
+        boolean isMemValExp,
+        Map<Object, Object> mapMemberToValue)
+    {
+        if (isMemValExp) {
+            return FunUtil.compareMembersByOrderKeys(m1, m2);
+        } else {
+            Member old = evaluator.setContext(m1);
+            Object v1 = getFromMapOrEvaluate(
+                m1, exp, evaluator, false, mapMemberToValue);
+            Object v2 = getFromMapOrEvaluate(
+                m2, exp, evaluator, false, mapMemberToValue);
+            // important to restore the evaluator state -- and this is faster
+            // than calling evaluator.push()
+            evaluator.setContext(old);
+            return FunUtil.compareValues(v1, v2);
+        }
+    }
+
+    public static int compareMembersHierarchically(
+        Member m1,
+        Member m2,
+        Evaluator evaluator,
+        Calc exp,
+        boolean desc,
+        boolean isMemValExp,
+        Map<Object, Object> mapMemberToValue)
+    {
+        if (FunUtil.equals(m1, m2)) {
+            return 0;
+        }
+        while (true) {
+            int depth1 = m1.getDepth(),
+                    depth2 = m2.getDepth();
+            if (depth1 < depth2) {
+                m2 = m2.getParentMember();
+                if (FunUtil.equals(m1, m2)) {
+                    return -1;
+                }
+            } else if (depth1 > depth2) {
+                m1 = m1.getParentMember();
+                if (FunUtil.equals(m1, m2)) {
+                    return 1;
+                }
+            } else {
+                Member prev1 = m1, prev2 = m2;
+                m1 = m1.getParentMember();
+                m2 = m2.getParentMember();
+                if (FunUtil.equals(m1, m2)) {
+                    // including case where both parents are null
+                    int c = FunUtil.compareMembers(
+                        prev1, prev2, evaluator, exp, isMemValExp, mapMemberToValue);
+                    // skip the below compare if isMemValExp is true
+                    if ((c == 0) && !(isMemValExp)) {
+                        c = FunUtil.compareMembersByOrderKeys(
+                            prev1, prev2);
+                    }
+                    return desc ? -c : c;
+                }
+            }
+        }
+    }
+
     /**
      * Returns whether one of the members in a tuple is null.
      */
@@ -1826,7 +2141,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         final Evaluator evaluator,
         final boolean includeCalcMembers)
     {
-        List <Member> memberList =
+        List<Member> memberList =
             getNonEmptyLevelMembers(evaluator, level, includeCalcMembers);
         if (!includeCalcMembers) {
             memberList = removeCalculatedMembers(memberList);
@@ -1877,17 +2192,25 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
     private static abstract class MemberComparator implements Comparator<Member> {
         private static final Logger LOGGER =
                 Logger.getLogger(MemberComparator.class);
-        Map<Member, Object> mapMemberToValue;
+        Map<Object, Object> mapMemberToValue;
         private boolean desc;
+        Evaluator evaluator;
 
-        MemberComparator(Map<Member, Object> mapMemberToValue, boolean desc) {
+        MemberComparator(Map<Object, Object> mapMemberToValue, boolean desc) {
             this.mapMemberToValue = mapMemberToValue;
             this.desc = desc;
         }
 
+        MemberComparator(
+            Evaluator evaluator,
+            List<SortKeySpec> keySpecList)
+        {
+            this.evaluator = evaluator;
+        }
+
         Comparator<Member> wrap() {
             final MemberComparator comparator = this;
-            if (LOGGER.isDebugEnabled()) {
+            if (LOGGER.isDebugEnabled() && (mapMemberToValue != null)) {
                 return new Comparator<Member>() {
                     public int compare(Member m1, Member m2) {
                         final int c = comparator.compare(m1, m2);
@@ -1958,7 +2281,7 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             extends MemberComparator
     {
         HierarchicalMemberComparator(
-            Map<Member, Object> mapMemberToValue, boolean desc)
+            Map<Object, Object> mapMemberToValue, boolean desc)
         {
             super(mapMemberToValue, desc);
         }
@@ -1969,12 +2292,74 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
     }
 
     private static class BreakMemberComparator extends MemberComparator {
-        BreakMemberComparator(Map<Member, Object> mapMemberToValue, boolean desc) {
+        BreakMemberComparator(Map<Object, Object> mapMemberToValue, boolean desc) {
             super(mapMemberToValue, desc);
         }
 
         public final int compare(Member m1, Member m2) {
             return compareByValue(m1, m2);
+        }
+    }
+
+    private static class MultiKeysMemberComparator extends MemberComparator
+    {
+        List<SortKeySpec> keySpecList;
+        List<Map<Object, Object>> listMapMemberToValue;
+        int keySpecCount;
+
+        MultiKeysMemberComparator(
+            Evaluator evaluator,
+            List<SortKeySpec> keySpecList,
+            List<Map<Object, Object>> listMapMemberToValue)
+        {
+            super(evaluator, keySpecList);
+            this.keySpecList = keySpecList;
+            this.listMapMemberToValue = listMapMemberToValue;
+            this.keySpecCount = keySpecList.size();
+        }
+
+        public final int compare(Member m1, Member m2)
+        {
+            int c = 0;
+            for (int i = 0; i < keySpecCount; i++) {
+                SortKeySpec sortKey = keySpecList.get(i);
+                Calc exp = sortKey.key;
+                Flag flag = sortKey.direction;
+                boolean isMemValExp = sortKey.isMemberValExp;
+                Map<Object, Object> mapMemberToValue =
+                    listMapMemberToValue.get(i);
+                //this.evaluator.push(); //check if this is needed
+                Member tm1 = null, tm2 = null;
+                if (isMemValExp) {
+                    tm1 = (Member) getFromMapOrEvaluate(
+                        m1, exp, evaluator, true, mapMemberToValue);
+                    tm2 = (Member) getFromMapOrEvaluate(
+                        m2, exp, evaluator, true, mapMemberToValue);
+                }
+                if (flag.brk) {
+                    int c1 = compareMembers(
+                        isMemValExp ? tm1 : m1,
+                        isMemValExp ? tm2 : m2,
+                        evaluator,
+                        exp,
+                        isMemValExp,
+                        mapMemberToValue);
+                    c = flag.descending ? -c1 : c1;
+                } else {
+                    c = compareMembersHierarchically(
+                        isMemValExp ? tm1 : m1,
+                        isMemValExp ? tm2 : m2,
+                        evaluator,
+                        exp,
+                        flag.descending,
+                        isMemValExp,
+                        mapMemberToValue);
+                }
+                if (c != 0) {
+                    return c;
+                }
+            }
+            return c;
         }
     }
 
@@ -2041,12 +2426,19 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
     private static abstract class ArrayExpComparator
             extends ArrayComparator {
         Evaluator evaluator;
-        final Calc calc;
+        Calc calc;
 
         ArrayExpComparator(Evaluator evaluator, Calc calc, int arity) {
             super(arity);
             this.evaluator = evaluator;
             this.calc = calc;
+        }
+
+        ArrayExpComparator(
+            Evaluator evaluator,
+            int arity) {
+            super(arity);
+            this.evaluator = evaluator;
         }
     }
 
@@ -2137,6 +2529,112 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             evaluator.setContext(a2);
             Object v2 = calc.evaluate(evaluator);
             return FunUtil.compareValues(v1, v2);
+        }
+    }
+
+    private static class MultiKeysArrayComparator
+        extends ArrayExpComparator
+    {
+        List<SortKeySpec> keySpecList;
+        List<Map<Object, Object>> listMapMemberToValue;
+        int keySpecCount;
+
+        MultiKeysArrayComparator(
+            Evaluator evaluator,
+            List<SortKeySpec> keySpecList,
+            List<Map<Object, Object>> listMapMemberToValue,
+            int arity)
+        {
+            super(evaluator, arity);
+            this.keySpecList = keySpecList;
+            this.keySpecCount = keySpecList.size();
+            this.listMapMemberToValue = listMapMemberToValue;
+        }
+
+        public int compare(Member[] a1, Member[] a2) {
+            int c = 0;
+            for (int i = 0; i < keySpecCount; i++) {
+                SortKeySpec sortKey = keySpecList.get(i);
+                if (sortKey.direction.brk) {
+                    c = compareBreakHierarchy(
+                        a1,
+                        a2,
+                        sortKey.key,
+                        sortKey.direction.descending,
+                        sortKey.isMemberValExp,
+                        listMapMemberToValue.get(i));
+                } else {
+                    c = compareHierarchically(
+                        a1,
+                        a2,
+                        sortKey.key,
+                        sortKey.direction.descending,
+                        sortKey.isMemberValExp,
+                        listMapMemberToValue.get(i));
+                }
+                if (c != 0) {
+                    return c;
+                }
+            }
+            return c;
+        }
+
+        public int compareBreakHierarchy(
+            Member[] a1,
+            Member[] a2,
+            Calc exp,
+            boolean desc,
+            boolean isMemValExp,
+            Map<Object, Object> mapTupleToValue)
+        {
+            if (isMemValExp) {
+                Member m1 = (Member) getFromMapOrEvaluate(
+                    a1, exp, evaluator, true, mapTupleToValue);
+                Member m2 = (Member) getFromMapOrEvaluate(
+                    a2, exp, evaluator, true, mapTupleToValue);
+                return desc ?
+                    - compareMembersByOrderKeys(m1, m2) :
+                    compareMembersByOrderKeys(m1, m2);
+            } else {
+                Object v1 = getFromMapOrEvaluate(
+                    a1, exp, evaluator, false, mapTupleToValue);
+                Object v2 = getFromMapOrEvaluate(
+                    a2, exp, evaluator, false, mapTupleToValue);
+                return desc ?
+                    - compareValues(v1, v2) :
+                    compareValues(v1, v2);
+            }
+        }
+
+        public int compareHierarchically(
+            Member[] a1,
+            Member[] a2,
+            Calc exp,
+            boolean desc,
+            boolean isMemValExp,
+            Map<Object, Object> mapTupleToValue)
+        {
+            int c = 0;
+            if (isMemValExp) {
+                Member m1 = (Member) getFromMapOrEvaluate(
+                    a1, exp, evaluator, true, mapTupleToValue);
+                Member m2 = (Member) getFromMapOrEvaluate(
+                    a2, exp, evaluator, true, mapTupleToValue);
+                c = compareMembersHierarchically(
+                    m1, m2, evaluator, exp, desc, isMemValExp, mapTupleToValue);
+            } else {
+                for (int i = 0; i < arity; i++) {
+                    Member m1 = a1[i],
+                            m2 = a2[i];
+                    c = compareMembersHierarchically(
+                        m1, m2, evaluator, exp, desc, isMemValExp, mapTupleToValue);
+                    if (c != 0) {
+                        break;
+                    }
+                    evaluator.setContext(m1);
+                }
+            }
+            return c;
         }
     }
 
@@ -2382,6 +2880,68 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
 
         public int hashCode() {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    /**
+     * Enumeration of the flags allowed to the <code>ORDER</code> MDX function.
+     */
+    enum Flag {
+        ASC(false, false),
+        DESC(true, false),
+        BASC(false, true),
+        BDESC(true, true);
+
+        final boolean descending;
+        final boolean brk;
+
+        Flag(boolean descending, boolean brk) {
+            this.descending = descending;
+            this.brk = brk;
+        }
+
+        public static String[] getNames() {
+            List<String> names = new ArrayList<String>();
+            for (Flag flags : Flag.class.getEnumConstants()) {
+                names.add(flags.name());
+            }
+            return names.toArray(new String[names.size()]);
+        }
+    }
+
+    class SortKeySpec {
+        private Calc key;
+        private boolean isMemberValExp = true;
+        private Flag direction;
+
+        SortKeySpec(Calc key, boolean memberValExp, Flag dir) {
+            this.key = key;
+            this.isMemberValExp = memberValExp;
+            this.direction = dir;
+        }
+
+        Calc getKey() {
+            return this.key;
+        }
+
+        boolean isMemberValueExp() {
+            return this.isMemberValExp;
+        }
+
+        Flag getDirection() {
+            return this.direction;
+        }
+
+        void setKey(Calc key) {
+            this.key = key;
+        }
+
+        void setMemberValueExp(boolean m) {
+            this.isMemberValExp = m;
+        }
+
+        void setDirection(Flag dir) {
+            this.direction = dir;
         }
     }
 }

@@ -35,6 +35,8 @@ import java.util.ArrayList;
  */
 public class FunctionTest extends FoodMartTestCase {
 
+    private MondrianProperties props;
+
     private static final String months =
         fold("[Time].[1997].[Q1].[1]\n" +
             "[Time].[1997].[Q1].[2]\n" +
@@ -159,10 +161,12 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public FunctionTest() {
+        props = MondrianProperties.instance();
     }
 
     public FunctionTest(String s) {
         super(s);
+        props = MondrianProperties.instance();
     }
 
     public void testStringLiteral() {
@@ -5978,6 +5982,454 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #13: 2,938\n" +
                     "Row #13: 3,818\n" +
                     "Row #13: 35,257\n"));
+    }
+
+    public void testOrderSetEmpty() {
+        String query =
+            "select \n" +
+            "  OrderSet(" +
+            "    {}," +
+            "    [Customers].currentMember, BDESC) \n" +
+            "on 0 from [Sales]";
+
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n"));
+    }
+
+    public void testOrderOne() {
+        String query =
+            "select \n" +
+            "  OrderSet(" +
+            "    {[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}," +
+            "    [Customers].currentMember, BDESC) \n" +
+            "on 0 from [Sales]";
+
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "Row #0: 75\n"));
+    }
+
+    public void testOrderSetMemberMemberValueExpNew() {
+        String query =
+            "select \n" +
+            "  OrderSet(" +
+            "    {[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}," +
+            "    [Customers].currentMember, BDESC) \n" +
+            "on 0 from [Sales]";
+
+        boolean saved = props.CompareSiblingsByOrderKey.get();
+        props.CompareSiblingsByOrderKey.set(true);
+        Connection conn = null;
+        try {
+            // Use a fresh connection to make sure bad member ordinals haven't
+            // been assigned by previous tests.
+            conn = getTestContext().getFoodMartConnection(false);
+            TestContext context = getTestContext(conn);
+            context.assertQueryReturns(query,
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                    "{[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                    "Row #0: 33\n" +
+                    "Row #0: 75\n"));
+        } finally {
+            props.CompareSiblingsByOrderKey.set(saved);
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+
+    public void testOrderSetMemberDefaultFlag1() {
+        // flags not specified default to ASC
+        String query =
+            "with \n" +
+            "  Member [Measures].[Zero] as '0' \n" +
+            "select \n" +
+            "  OrderSet(" +
+            "    {[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}," +
+            "    [Customers].currentMember) \n" +
+            "on 0 from [Sales]";
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "Row #0: 33\n" +
+                "Row #0: 75\n"));
+    }
+
+    public void testOrderSetMemberDefaultFlag2() {
+        // flags not specified default to ASC
+        String query =
+            "with \n" +
+            "  Member [Measures].[Zero] as '0' \n" +
+            "select \n" +
+            "  OrderSet(" +
+            "    {[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}," +
+            "    [Measures].[Store Cost]) \n" +
+            "on 0 from [Sales]";
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "Row #0: 75\n" +
+                "Row #0: 33\n"));
+    }
+
+    public void testOrderSetMemberMemberValueExpHierarchy() {
+        // Santa Monica and Woodland Hills both don't have orderkey
+        // members are sorted by the order of their keys
+        String query =
+            "select \n" +
+            "  OrderSet(" +
+            "    {[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}," +
+            "    [Customers].currentMember, DESC) \n" +
+            "on 0 from [Sales]";
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "Row #0: 75\n" +
+                "Row #0: 33\n"));
+    }
+
+    public void testOrderSetMemberMultiKeysMemberValueExp1() {
+        String query =
+            "select \n" +
+            "  OrderSet(" +
+            "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel]," +
+            "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}," +
+            "    [Measures].[Unit Sales], BDESC, [Customers].currentMember, BDESC) \n" +
+            "on 0 from [Sales]";
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                "Row #0: 75\n" +
+                "Row #0: 33\n" +
+                "Row #0: 33\n"));
+    }
+
+    public void testOrderSetMemberMultiKeysMemberValueExp2() {
+        String query =
+            "select \n" +
+            "  OrderSet(" +
+            "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel]," +
+            "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}," +
+            "    [Customers].currentMember.Parent.Parent, BASC, [Customers].currentMember, BDESC) \n" +
+            "on 0 from [Sales]";
+
+        boolean saved = props.CompareSiblingsByOrderKey.get();
+        props.CompareSiblingsByOrderKey.set(true);
+        Connection conn = null;
+        try {
+            // Use a fresh connection to make sure bad member ordinals haven't
+            // been assigned by previous tests.
+            conn = getTestContext().getFoodMartConnection(false);
+            TestContext context = getTestContext(conn);
+            context.assertQueryReturns(query,
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                    "{[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                    "{[Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                    "Row #0: 33\n" +
+                    "Row #0: 75\n" +
+                    "Row #0: 33\n"));
+        } finally {
+            props.CompareSiblingsByOrderKey.set(saved);
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+
+    public void testOrderSetMemberMultiKeysMemberValueExpDepends() {
+        // should preserve order of Abe and Adeline (note second key is [Time])
+        String query =
+            "select \n" +
+            "  OrderSet(" +
+            "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel]," +
+            "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}," +
+            "    [Measures].[Unit Sales], BDESC, [Time].currentMember, BDESC) \n" +
+            "on 0 from [Sales]";
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "Row #0: 75\n" +
+                "Row #0: 33\n" +
+                "Row #0: 33\n"));
+    }
+
+    public void testOrderSetTupleSingleKeysNew() {
+        String query =
+            "with \n" +
+            "  set [NECJ] as \n" +
+            "    'NonEmptyCrossJoin( \n" +
+            "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel]," +
+            "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}," +
+            "    {[Store].[USA].[WA].[Seattle],\n" +
+            "     [Store].[USA].[CA],\n" +
+            "     [Store].[USA].[OR]})'\n" +
+            "select \n" +
+            " OrderSet([NECJ], [Customers].currentMember, BDESC) \n" +
+            "on 0 from [Sales]";
+
+        boolean saved = props.CompareSiblingsByOrderKey.get();
+        props.CompareSiblingsByOrderKey.set(true);
+        Connection conn = null;
+        try {
+            // Use a fresh connection to make sure bad member ordinals haven't
+            // been assigned by previous tests.
+            conn = getTestContext().getFoodMartConnection(false);
+            TestContext context = getTestContext(conn);
+            context.assertQueryReturns(query,
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun], [Store].[All Stores].[USA].[CA]}\n" +
+                    "{[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young], [Store].[All Stores].[USA].[CA]}\n" +
+                    "{[Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel], [Store].[All Stores].[USA].[WA].[Seattle]}\n" +
+                    "Row #0: 33\n" +
+                    "Row #0: 75\n" +
+                    "Row #0: 33\n"));
+        } finally {
+            props.CompareSiblingsByOrderKey.set(saved);
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+
+    public void testOrderSetTupleMultiKeys1() {
+        String query =
+            "with \n" +
+            "  set [NECJ] as \n" +
+            "    'NonEmptyCrossJoin( \n" +
+            "    {[Store].[USA].[CA],\n" +
+            "     [Store].[USA].[WA]},\n" +
+            "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel]," +
+            "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]})' \n" +
+            "select \n" +
+            " OrderSet([NECJ], [Store].currentMember, BDESC, [Measures].[Unit Sales], BDESC) \n" +
+            "on 0 from [Sales]";
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[USA].[WA], [Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "Row #0: 33\n" +
+                "Row #0: 75\n" +
+                "Row #0: 33\n"));
+    }
+
+    public void testOrderSetTupleMultiKeys2() {
+        String query =
+            "with \n" +
+            "  set [NECJ] as \n" +
+            "    'NonEmptyCrossJoin( \n" +
+            "    {[Store].[USA].[CA],\n" +
+            "     [Store].[USA].[WA]},\n" +
+            "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel]," +
+            "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]})' \n" +
+            "select \n" +
+            " OrderSet([NECJ], [Measures].[Unit Sales], BDESC, Ancestor([Customers].currentMember, [Customers].[Name]), BDESC) \n" +
+            "on 0 from [Sales]";
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[USA].[CA], [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "{[Store].[All Stores].[USA].[WA], [Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                "Row #0: 75\n" +
+                "Row #0: 33\n" +
+                "Row #0: 33\n"));
+    }
+
+    public void testOrderSetTupleMultiKeys3() {
+        // WA unit sales is greater than CA unit sales
+        // Santa Monica unit sales (2660) is greater that Woodland hills (2516)
+        String query =
+            "with \n" +
+            "  set [NECJ] as \n" +
+            "    'NonEmptyCrossJoin( \n" +
+            "    {[Store].[USA].[CA],\n" +
+            "     [Store].[USA].[WA]},\n" +
+            "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel]," +
+            "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]})' \n" +
+            "select \n" +
+            " OrderSet([NECJ], [Measures].[Unit Sales], DESC, Ancestor([Customers].currentMember, [Customers].[Name]), BDESC) \n" +
+            "on 0 from [Sales]";
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores].[USA].[WA], [Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "Row #0: 33\n" +
+                "Row #0: 33\n" +
+                "Row #0: 75\n"));
+    }
+
+    public void testOrderSetTupleMultiKeyswithVCube() {
+        // WA unit sales is greater than CA unit sales
+        String query =
+            "with \n" +
+            "  set [CJ] as \n" +
+            "    'CrossJoin( \n" +
+            "    {[Position].[Store Management].children},\n" +
+            "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel]," +
+            "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]})' \n" +
+            "select \n" +
+            "  [Measures].[Org Salary] on columns, \n" +
+            "  OrderSet([CJ], [Position].currentMember, BASC, Ancestor([Customers].currentMember, [Customers].[Name]), BDESC) \n" +
+            "on rows \n" +
+            "from [Sales vs HR]";
+
+        boolean saved = props.CompareSiblingsByOrderKey.get();
+        props.CompareSiblingsByOrderKey.set(true);
+        Connection conn = null;
+        try {
+            // Use a fresh connection to make sure bad member ordinals haven't
+            // been assigned by previous tests.
+            conn = getTestContext().getFoodMartConnection(false);
+            TestContext context = getTestContext(conn);
+            // a non-sense cube just to test ordering by order key
+            context = context.create(
+                null, null,
+                "<VirtualCube name=\"Sales vs HR\">\n" +
+                    "<VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\"/>\n" +
+                    "<VirtualCubeDimension cubeName=\"HR\" name=\"Position\"/>\n" +
+                    "<VirtualCubeMeasure cubeName=\"HR\" name=\"[Measures].[Org Salary]\"/>\n" +
+                    "</VirtualCube>",
+                null, null, null);
+
+            context.assertQueryReturns(query,
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Org Salary]}\n" +
+                    "Axis #2:\n" +
+                    "{[Position].[All Position].[Store Management].[Store Manager], [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                    "{[Position].[All Position].[Store Management].[Store Manager], [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                    "{[Position].[All Position].[Store Management].[Store Manager], [Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                    "{[Position].[All Position].[Store Management].[Store Assistant Manager], [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                    "{[Position].[All Position].[Store Management].[Store Assistant Manager], [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                    "{[Position].[All Position].[Store Management].[Store Assistant Manager], [Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                    "{[Position].[All Position].[Store Management].[Store Shift Supervisor], [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                    "{[Position].[All Position].[Store Management].[Store Shift Supervisor], [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                    "{[Position].[All Position].[Store Management].[Store Shift Supervisor], [Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                    "Row #0: \n" +
+                    "Row #1: \n" +
+                    "Row #2: \n" +
+                    "Row #3: \n" +
+                    "Row #4: \n" +
+                    "Row #5: \n" +
+                    "Row #6: \n" +
+                    "Row #7: \n" +
+                    "Row #8: \n"));
+        } finally {
+            props.CompareSiblingsByOrderKey.set(saved);
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+
+    public void testOrderSetConstant1() {
+        String query =
+            "select \n" +
+            "  OrderSet(" +
+            "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel]," +
+            "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}," +
+            "    [Customers].[USA], BDESC) \n" +
+            "on 0 from [Sales]";
+
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "Row #0: 33\n" +
+                "Row #0: 75\n" +
+                "Row #0: 33\n"));
+    }
+
+    public void testOrderSetDiffrentDim() {
+        String query =
+            "select \n" +
+            "  OrderSet(" +
+            "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel]," +
+            "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]," +
+            "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}," +
+            "    [Product].currentMember, BDESC, [Gender].currentMember, BDESC) \n" +
+            "on 0 from [Sales]";
+
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "Row #0: 33\n" +
+                "Row #0: 75\n" +
+                "Row #0: 33\n"));
     }
 
     public void testUnorder() {

@@ -5624,6 +5624,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Order</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>OrderSet</FUNCTION_NAME>
+                        <DESCRIPTION>Arranges members of a set,
+                            optionally preserving or breaking the hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>OrderSet</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Ordinal</FUNCTION_NAME>
                         <DESCRIPTION>Returns the zero-based ordinal value associated with a level.</DESCRIPTION>
                         <PARAMETER_LIST>Level</PARAMETER_LIST>
