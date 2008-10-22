@@ -1502,6 +1502,7 @@ xalan.jar"/>
 ${doc.dir}/**/*.pdf,
 lib/mondrian.jar,
 lib/workbench.jar,
+lib/log4j.jar,
 lib/x*.jar,
 lib/eigenbase*.jar,
 lib/commons*.jar,
