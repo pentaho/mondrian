@@ -11,7 +11,6 @@
 */
 package mondrian.gui;
 
-import java.awt.Dimension;
 
 /**
  *
@@ -25,6 +24,8 @@ public class PreferencesDialog extends javax.swing.JDialog {
     public PreferencesDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        pack();
+        setLocationRelativeTo(parent);
     }
 
     public boolean accepted() {
@@ -63,6 +64,14 @@ public class PreferencesDialog extends javax.swing.JDialog {
         return driverClassTextField.getText();
     }
 
+    public void setDatabaseSchema(String schema) {
+        this.schemaTextField.setText(schema);
+    }
+
+    public String getDatabaseSchema() {
+        return schemaTextField.getText();
+    }
+
     /**
      * @return the workbench i18n converter
      */
@@ -84,13 +93,15 @@ public class PreferencesDialog extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        
-        // Set the url text field to 50 to drive the width of the dialog 
+        jLabel5 = new javax.swing.JLabel();
+
+        // Set the url text field to 50 to drive the width of the dialog
         urlTextField = new javax.swing.JTextField(50);
         
         usernameTextField = new javax.swing.JTextField();
         passwordTextField = new javax.swing.JTextField();
         driverClassTextField = new javax.swing.JTextField();
+        schemaTextField = new javax.swing.JTextField();
         acceptButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
@@ -150,6 +161,15 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(urlTextField, gridBagConstraints);
 
+        jLabel5.setText(getResourceConverter().getString("preferences.schema.title","Schema (Optional)"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        jPanel1.add(jLabel5, gridBagConstraints);
+
         usernameTextField.setText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -169,6 +189,16 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(passwordTextField, gridBagConstraints);
+
+        schemaTextField.setText("");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        jPanel1.add(schemaTextField, gridBagConstraints);
 
         driverClassTextField.setText("org.gjt.mm.mysql.Driver");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -223,12 +253,12 @@ public class PreferencesDialog extends javax.swing.JDialog {
 
     private void acceptButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptButtonActionPerformed
         accepted = true;
-        hide();
+        setVisible(false);
     }//GEN-LAST:event_acceptButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         accepted = false;
-        hide();
+        setVisible(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     /** Closes the dialog */
@@ -237,23 +267,17 @@ public class PreferencesDialog extends javax.swing.JDialog {
         dispose();
     }//GEN-LAST:event_closeDialog
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        new PreferencesDialog(new javax.swing.JFrame(), true).show();
-    }
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField driverClassTextField;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField urlTextField;
     private javax.swing.JTextField usernameTextField;
     private javax.swing.JTextField passwordTextField;
+    private javax.swing.JTextField schemaTextField;
     private javax.swing.JButton acceptButton;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel2;

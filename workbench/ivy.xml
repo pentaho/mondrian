@@ -29,7 +29,7 @@
         <dependency org="jaxen" name="jaxen" rev="1.1.1"/>
         <dependency org="dom4j" name="dom4j" rev="1.6.1"/>
         <dependency org="junit" name="junit" rev="4.0"/>
-        <dependency org="pentaho" name="pentaho-mondrianschemaworkbench-plugins" rev="1.0"/>
+        <dependency org="pentaho" name="pentaho-mondrianschemaworkbench-plugins" rev="1.0.33395"/>
 
         <!--Exclusions-->
         <exclude org="jaxme" module="jaxme-api"/>

@@ -26,6 +26,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.TreeSet;
 import java.util.Vector;
 import javax.swing.border.*;
 import javax.swing.text.JTextComponent;
@@ -162,7 +163,8 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
         String propertyName = tableModel.getRowName(row);
         String selectedFactTable = tableModel.getFactTable();
         String selectedFactTableSchema = tableModel.getFactTableSchema();
-        listEditorValue=null;  // reset value of combo-box
+        listEditorValue = null;  // reset value of combo-box
+        Object parent = this.getParentObject();
 
         if (targetClassz == MondrianGuiDef.UserDefinedFunction.class && propertyName.equals("className")) {
             Vector udfs = getUdfs();
@@ -394,6 +396,17 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
 
             String lTable = lProps.table;
             Vector allcols;
+            //EC: Sets the corresponding columns on the selection dropdown for the specified table.
+            if (targetClassz == MondrianGuiDef.Level.class && parent != null) {
+                if (parent instanceof MondrianGuiDef.Hierarchy) {
+                    MondrianGuiDef.RelationOrJoin relation = ((MondrianGuiDef.Hierarchy) parent).relation;
+                    if (relation instanceof MondrianGuiDef.Table) {
+                        lTable = ((MondrianGuiDef.Table) relation).name;
+                    } else if (relation instanceof MondrianGuiDef.Join) {
+                        lTable = SchemaExplorer.getTableNameForAlias(relation, lTable);
+                    }
+                }
+            }
             if (lTable != null) {
                 allcols  = jdbcMetaData.getAllColumns(null, lTable);
             } else {
@@ -468,6 +481,18 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             ComboBoxModel cFactTables = new DefaultComboBoxModel(factTables);   //suggestive fact tables
             ComboBoxModel cAllTables  = new DefaultComboBoxModel((allTablesMinusFact.size() >0)?allTablesMinusFact:allTables);  // all tables of selected schema
             ComboBoxModel cDimeTables = new DefaultComboBoxModel(dimeTables); // suggestive dimension tables based on selected fact table .
+            //EC: Sets the corresponding join tables on selection dropdown when using joins.
+            if (targetClassz == MondrianGuiDef.Level.class && parent != null) {
+                if (parent instanceof MondrianGuiDef.Hierarchy) {
+                    MondrianGuiDef.RelationOrJoin relation = ((MondrianGuiDef.Hierarchy) parent).relation;
+                    if (relation instanceof MondrianGuiDef.Join) {
+                        TreeSet joinTables = new TreeSet();
+                        //EC: getTableNamesForJoin calls itself recursively and collects table names in joinTables.
+                        SchemaExplorer.getTableNamesForJoin(relation, joinTables);
+                        cAllTables  = new DefaultComboBoxModel(new Vector(joinTables));
+                    }
+                }
+            }
 
             listEditor.setEditable(true);
             listEditor.setToolTipText(null);
@@ -501,7 +526,17 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
                 listEditor.addActionListener(al);}
             listEditor.setSelectedItem((String)value);
             listEditorValue = (String)value;
-            activeEditor= listEditor;
+            activeEditor = listEditor;
+            //EC: Disables table selection when not using joins.
+            if (targetClassz == MondrianGuiDef.Level.class && propertyName.equals(SchemaExplorer.DEF_LEVEL[1]) && parent != null) {
+                if (parent instanceof MondrianGuiDef.Hierarchy) {
+                    MondrianGuiDef.RelationOrJoin relation = ((MondrianGuiDef.Hierarchy) parent).relation;
+                    if (relation instanceof MondrianGuiDef.Table) {
+                        activeEditor = stringEditor;
+                        stringEditor.setText((String)value);
+                    }
+                }
+            }
         } else if (value instanceof String) {
             activeEditor = stringEditor;
             stringEditor.setText((String)value);
@@ -852,29 +887,17 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
     }
 
     private MondrianGuiDef.Schema getSchema() {
-        SchemaExplorer se = this.getSchemaExplorer();
+        SchemaExplorer se = workbench.getCurrentSchemaExplorer();
         return (se ==null)?null:se.getSchema();
     }
 
     private Object getParentObject() {
-        SchemaExplorer se = this.getSchemaExplorer();
+        SchemaExplorer se = workbench.getCurrentSchemaExplorer();
         if (se != null) {
             Object po = se.getParentObject();
             return po;
         }
         return null;
-    }
-
-    private SchemaExplorer getSchemaExplorer() {
-        SchemaExplorer se =null;
-        for (int i = listeners.size() - 1; i >= 0; i--) {
-            CellEditorListener cel = ((CellEditorListener)listeners.get(i));
-            if (cel instanceof SchemaExplorer) {
-                se = (SchemaExplorer) cel;
-                break;
-            }
-        }
-        return se;
     }
 
     private Vector getSource() {    //shared dimensions in schema
@@ -999,6 +1022,12 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
     
     private I18n getResourceConverter() {
         return workbench.getResourceConverter();
+    }
+
+    public void setMetaData(JDBCMetaData aMetaData) {
+        //EC: Called from the SchemaExplorer.resetMetadata(). A call to the updateUI() should be
+        //made on the owning SchemaFrame to reflect the use of the JDBCMetaData being set.
+        this.jdbcMetaData = aMetaData;
     }
 
     /* // Not required for time being

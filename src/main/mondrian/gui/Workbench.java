@@ -77,6 +77,7 @@ public class Workbench extends javax.swing.JFrame {
     private String jdbcConnectionUrl;
     private String jdbcUsername;
     private String jdbcPassword;
+    private String jdbcSchema;
 
     private JDBCMetaData jdbcMetaData;
 
@@ -220,6 +221,7 @@ public class Workbench extends javax.swing.JFrame {
         jdbcConnectionUrl = workbenchProperties.getProperty("jdbcConnectionUrl");
         jdbcUsername = workbenchProperties.getProperty("jdbcUsername");
         jdbcPassword = workbenchProperties.getProperty("jdbcPassword");
+        jdbcSchema = workbenchProperties.getProperty("jdbcSchema");
     }
 
     /** This method is called from within the constructor to
@@ -954,19 +956,25 @@ public class Workbench extends javax.swing.JFrame {
         pd.setJDBCDriverClassName(jdbcDriverClassName);
         pd.setJDBCUsername(jdbcUsername);
         pd.setJDBCPassword(jdbcPassword);
+        pd.setDatabaseSchema(jdbcSchema);
 
-        pd.show();
+        pd.setVisible(true);
 
         if (pd.accepted()) {
             jdbcConnectionUrl = pd.getJDBCConnectionUrl();
             jdbcDriverClassName = pd.getJDBCDriverClassName();
             jdbcUsername = pd.getJDBCUsername();
             jdbcPassword = pd.getJDBCPassword();
+            jdbcSchema = pd.getDatabaseSchema();
 
             workbenchProperties.setProperty("jdbcDriverClassName", jdbcDriverClassName);
             workbenchProperties.setProperty("jdbcConnectionUrl", jdbcConnectionUrl);
             workbenchProperties.setProperty("jdbcUsername", jdbcUsername);
             workbenchProperties.setProperty("jdbcPassword", jdbcPassword);
+            workbenchProperties.setProperty("jdbcSchema", jdbcSchema);
+            //EC: Enforces the JDBC preferences entered througout all schemas currently opened
+            //in the workbench.
+            resetWorkbench();
         }
     }
 
@@ -1094,11 +1102,11 @@ public class Workbench extends javax.swing.JFrame {
     private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         JInternalFrame jf = desktopPane.getSelectedFrame();
         
-        if (jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
+        if (jf != null && jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
             SchemaExplorer se = (SchemaExplorer) jf.getContentPane().getComponent(0);
             java.io.File schemaFile = se.getSchemaFile();
             java.io.File oldSchemaFile = schemaFile;
-            java.io.File suggSchemaFile = new File(schemaFile, se.getSchema().name.trim()+".xml");
+            java.io.File suggSchemaFile = new File(schemaFile == null ?  se.getSchema().name.trim() + ".xml" : schemaFile.getName());
             MondrianGuiDef.Schema schema = se.getSchema();
             JFileChooser jfc = new JFileChooser();
             MondrianProperties.instance();
@@ -1318,27 +1326,7 @@ public class Workbench extends javax.swing.JFrame {
                                     getResourceConverter().getString("workbench.open.schema.not.found.writeable", "Alert"), JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                // check if schema file is valid by initiating a mondrian connection
-                try {
-                    // this connection parses the catalog file which if invalid will throw exception
-                    String connectString = "Provider=mondrian;" +
-                            "Jdbc=" + jdbcConnectionUrl + ";" +
-                                "Catalog=" + file.toURL().toString() + ";" +
-                                "JdbcDrivers=" + jdbcDriverClassName + ";";
-
-                    if (jdbcUsername != null && jdbcUsername.length() > 0) {
-                        connectString = connectString + "JdbcUser=" + jdbcUsername + ";";
-                    }
-                    if (jdbcPassword != null && jdbcPassword.length() > 0) {
-                        connectString = connectString + "JdbcPassword=" + jdbcPassword + ";";
-                    }
-
-                    DriverManager.getConnection(connectString, null);
-                } catch (Exception ex) {
-                    LOGGER.error("Exception : Schema file " + file.getAbsolutePath() + " is invalid." + ex.getMessage(), ex);
-                } catch (Error err) {
-                    LOGGER.error("Error : Schema file " + file.getAbsolutePath() + " is invalid." + err.getMessage(), err);
-                }
+                checkSchemaFile(file);
             }
 
             final JInternalFrame schemaFrame = new JInternalFrame();
@@ -1347,7 +1335,8 @@ public class Workbench extends javax.swing.JFrame {
                     new String[] { file.getName() }));
             //schemaFrame.setTitle("Schema - " + file.getName());
 
-            jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName, jdbcConnectionUrl, jdbcUsername, jdbcPassword);
+            jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
+                    jdbcConnectionUrl, jdbcUsername, jdbcPassword, jdbcSchema);
 
             schemaFrame.getContentPane().add(new SchemaExplorer(this, file, jdbcMetaData, newFile, schemaFrame));
 
@@ -1373,14 +1362,7 @@ public class Workbench extends javax.swing.JFrame {
             schemaFrame.show();
             schemaFrame.setMaximum(true);
 
-            // display jdbc connection status warning, if connection is uncsuccessful
-            if (jdbcMetaData.getErrMsg() != null) {
-                JOptionPane.showMessageDialog(this, 
-                        getResourceConverter().getFormattedString("workbench.open.schema.jdbc.error", 
-                                "Database connection could not be done.\n{0}\nAll validations related to database will be ignored.", 
-                                new String[] { jdbcMetaData.getErrMsg() }),
-                                getResourceConverter().getString("workbench.open.schema.jdbc.error.title", "Alert"), JOptionPane.WARNING_MESSAGE);
-            }
+            displayWarningOnFailedConnection();
 
             final javax.swing.JMenuItem schemaMenuItem = new javax.swing.JMenuItem();
             schemaMenuItem.setText(windowMenuMapIndex++ + " " +file.getName());
@@ -1512,6 +1494,58 @@ public class Workbench extends javax.swing.JFrame {
 
     }
 
+    private void resetWorkbench() {
+        //EC: Updates the JDBCMetaData for each SchemaExplorer contained in each Schema Frame currently opened based
+        //on the JDBC preferences entered.
+        Iterator theSchemaFrames = schemaWindowMap.keySet().iterator();
+        while (theSchemaFrames.hasNext()) {
+            JInternalFrame theSchemaFrame = (JInternalFrame) theSchemaFrames.next();
+            SchemaExplorer theSchemaExplorer = (SchemaExplorer) theSchemaFrame.getContentPane().getComponent(0);
+            File theFile = theSchemaExplorer.getSchemaFile();
+            checkSchemaFile(theFile);
+            jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
+                    jdbcConnectionUrl, jdbcUsername, jdbcPassword, jdbcSchema);
+            theSchemaExplorer.resetMetaData(jdbcMetaData);
+            theSchemaFrame.updateUI();
+        }
+        //EC: If the JDBC preferences entered then display a warning.
+        displayWarningOnFailedConnection();
+    }
+
+    private void displayWarningOnFailedConnection() {
+     // display jdbc connection status warning, if connection is uncsuccessful
+        if (jdbcMetaData != null && jdbcMetaData.getErrMsg() != null) {
+            JOptionPane.showMessageDialog(this,
+                    getResourceConverter().getFormattedString("workbench.open.schema.jdbc.error",
+                            "Database connection could not be done.\n{0}\nAll validations related to database will be ignored.",
+                            new String[] { jdbcMetaData.getErrMsg() }),
+                            getResourceConverter().getString("workbench.open.schema.jdbc.error.title", "Alert"), JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void checkSchemaFile(File file) {
+        // check if schema file is valid by initiating a mondrian connection
+        try {
+            // this connection parses the catalog file which if invalid will throw exception
+            String connectString = "Provider=mondrian;" +
+                    "Jdbc=" + jdbcConnectionUrl + ";" +
+                        "Catalog=" + file.toURL().toString() + ";" +
+                        "JdbcDrivers=" + jdbcDriverClassName + ";";
+
+            if (jdbcUsername != null && jdbcUsername.length() > 0) {
+                connectString = connectString + "JdbcUser=" + jdbcUsername + ";";
+            }
+            if (jdbcPassword != null && jdbcPassword.length() > 0) {
+                connectString = connectString + "JdbcPassword=" + jdbcPassword + ";";
+            }
+            DriverManager.getConnection(connectString, null);
+        } catch (Exception ex) {
+            LOGGER.error("Exception : Schema file " + file.getAbsolutePath() + " is invalid." + ex.getMessage(), ex);
+        } catch (Error err) {
+            LOGGER.error("Error : Schema file " + file.getAbsolutePath() + " is invalid." + err.getMessage(), err);
+        }
+    }
+
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         storeWorkbenchProperties();
@@ -1561,7 +1595,7 @@ public class Workbench extends javax.swing.JFrame {
                     w.openSchemaFrame(f.getAbsoluteFile(), false); // parameter to indicate this is a new or existing catalog file
                 }
             }
-            w.show();
+            w.setVisible(true);
         } catch (Throwable ex) {
             LOGGER.error("main", ex);
         }

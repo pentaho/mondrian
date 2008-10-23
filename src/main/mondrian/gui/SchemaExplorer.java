@@ -21,6 +21,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.Set;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -3365,6 +3366,64 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
     public I18n getResourceConverter() {
         return workbench.getResourceConverter();
+    }
+    public static void getTableNamesForJoin(MondrianGuiDef.RelationOrJoin aRelOrJoin, Set aTableNames) {
+         //EC: Loops join tree and collects table names.
+         if (aRelOrJoin instanceof MondrianGuiDef.Join) {
+             MondrianGuiDef.RelationOrJoin theRelOrJoin_L = ((MondrianGuiDef.Join) aRelOrJoin).left;
+             MondrianGuiDef.RelationOrJoin theRelOrJoin_R = ((MondrianGuiDef.Join) aRelOrJoin).right;
+             for (int i = 0 ; i < 2; i ++) { // Searches first using the Left Join and then the Right.
+                  MondrianGuiDef.RelationOrJoin theCurrentRelOrJoin =  (i == 0) ? theRelOrJoin_L : theRelOrJoin_R;
+                  if (theCurrentRelOrJoin instanceof MondrianGuiDef.Table) {
+                      MondrianGuiDef.Table theTable = ((MondrianGuiDef.Table) theCurrentRelOrJoin);
+                      String theTableName = (theTable.alias != null && theTable.alias.trim().length() > 0) ? theTable.alias : theTable.name;
+                      aTableNames.add(theTableName);
+                  } else {
+                      //calls recursively collecting all table names down the join tree.
+                      getTableNamesForJoin(theCurrentRelOrJoin, aTableNames);
+                  }
+             }
+         }
+    }
+    public static String getTableNameForAlias(MondrianGuiDef.RelationOrJoin aRelOrJoin, String anAlias) {
+        String theTableName = anAlias;
+        //EC: Loops join tree and finds the table name for an alias.
+        if (aRelOrJoin instanceof MondrianGuiDef.Join) {
+            MondrianGuiDef.RelationOrJoin theRelOrJoin_L = ((MondrianGuiDef.Join) aRelOrJoin).left;
+            MondrianGuiDef.RelationOrJoin theRelOrJoin_R = ((MondrianGuiDef.Join) aRelOrJoin).right;
+            for (int i = 0 ; i < 2; i ++) { // Searches first using the Left Join and then the Right.
+                MondrianGuiDef.RelationOrJoin theCurrentRelOrJoin =  (i == 0) ? theRelOrJoin_L : theRelOrJoin_R;
+                if (theCurrentRelOrJoin instanceof MondrianGuiDef.Table) {
+                    MondrianGuiDef.Table theTable = ((MondrianGuiDef.Table) theCurrentRelOrJoin);
+                    if (theTable.alias != null && theTable.alias.equals(anAlias)) {
+                      theTableName = theTable.name; // If the alias was found get its table name and return it.
+                    }
+                } else {
+                    //otherwise continue down the join tree.
+                   theTableName = getTableNameForAlias(theCurrentRelOrJoin, anAlias);
+                }
+            }
+        }
+        return theTableName;
+    }
+
+    public void resetMetaData(JDBCMetaData aMetaData) {
+        //EC: Updates the JDBCMetaData in the SchemaExplorer.
+        jdbcMetaData = aMetaData;
+
+        //EC: Updates the database label.
+        String[] theArgs = { jdbcMetaData.getDbCatalogName(), jdbcMetaData.getDatabaseProductName()};
+        String theLabel = getResourceConverter().getFormattedString("schemaExplorer.database.text","Database - {0} ({1})", theArgs);
+        databaseLabel.setText(theLabel);
+
+        //EC: Updates the JDBCMetaData in the SchemaTreeCellRenderer.
+        renderer.setMetaData(aMetaData);
+
+        //EC: Updates the JDBCMetaData in the SchemaPropertyCellEditor.
+        TableCellEditor theTableCellEditor = propertyTable.getDefaultEditor(Object.class);
+        if (theTableCellEditor instanceof SchemaPropertyCellEditor) {
+            ((SchemaPropertyCellEditor) theTableCellEditor).setMetaData(aMetaData);
+        }
     }
 }
 
