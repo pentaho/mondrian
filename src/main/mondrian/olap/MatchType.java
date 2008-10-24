@@ -19,12 +19,24 @@ package mondrian.olap;
  * @version $Id$
  */
 public enum MatchType {
+    /** Match the unique name exactly, do not query database for members */
+    EXACT_SCHEMA,
     /** Match the unique name exactly */
     EXACT,
     /** If no exact match, return the preceding member */
     BEFORE,
     /** If no exact match, return the next member */
     AFTER;
+
+    /**
+     * Return true if either Exact or Exact Schema value
+     * is selected.
+     *
+     * @return true if exact
+     */
+    public boolean isExact() {
+        return this == EXACT || this == EXACT_SCHEMA;
+    }
 }
 
 // End MatchType.java

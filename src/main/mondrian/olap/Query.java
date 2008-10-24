@@ -1563,8 +1563,14 @@ public class Query extends QueryPart {
             boolean failIfNotFound,
             int category)
         {
-            return lookupCompound(
-                parent, names, failIfNotFound, category, MatchType.EXACT);
+            OlapElement oe = lookupCompound(
+                parent, names, failIfNotFound, category,
+                MatchType.EXACT_SCHEMA);
+            if (oe == null) {
+                oe = lookupCompound(
+                    parent, names, failIfNotFound, category, MatchType.EXACT);
+            }
+            return oe;
         }
 
         public OlapElement lookupCompound(

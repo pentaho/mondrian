@@ -356,7 +356,7 @@ public class RolapUtil {
                     return member;
                 }
             }
-            if (matchType == MatchType.EXACT) {
+            if (matchType.isExact()) {
                 if (caseInsensitive) {
                     rc = Util.compareName(member.getName(), searchName.name);
                 } else {
@@ -385,7 +385,7 @@ public class RolapUtil {
                 }
             }
         }
-        if (matchType == MatchType.EXACT) {
+        if (matchType.isExact()) {
             return null;
         }
         return bestMatch;

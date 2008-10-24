@@ -574,7 +574,7 @@ public class Util extends XOMUtil {
             // match, then for an after match, return the first child
             // of each subsequent level; for a before match, return the
             // last child
-            if (child != null && matchType != MatchType.EXACT &&
+            if (child != null && !matchType.isExact() &&
                 !Util.equalName(child.getName(), name.name))
             {
                 Util.assertPrecondition(child instanceof Member);
@@ -857,7 +857,7 @@ public class Util extends XOMUtil {
         // a member corresponding to the name we're searching for so
         // we can use it in a hierarchical search
         Member searchMember = null;
-        if (matchType != MatchType.EXACT && !hierarchy.hasAll() &&
+        if (!matchType.isExact() && !hierarchy.hasAll() &&
             ! rootMembers.isEmpty())
         {
             searchMember =
@@ -874,7 +874,7 @@ public class Util extends XOMUtil {
             ++k;
             int rc;
             // when searching on the ALL hierarchy, match must be exact
-            if (matchType == MatchType.EXACT || hierarchy.hasAll()) {
+            if (matchType.isExact() || hierarchy.hasAll()) {
                 rc = rootMember.getName()
                         .compareToIgnoreCase(memberName.name);
             } else {
@@ -907,6 +907,11 @@ public class Util extends XOMUtil {
                 }
             }
         }
+
+        if (matchType == MatchType.EXACT_SCHEMA) {
+            return null;
+        }
+
         if (matchType != MatchType.EXACT && bestMatch != -1) {
             return rootMembers.get(bestMatch);
         }

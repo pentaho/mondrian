@@ -473,6 +473,23 @@ public class SqlQueryTest extends BatchTestCase {
         prop.IgnoreInvalidMembers.set(origIgnoreInvalidMembers);
         prop.IgnoreInvalidMembersDuringQuery.set(origIgnoreInvalidMembersDuringQuery);
     }
+
+    public void testInvalidSQLMemberLookup() {
+        String sqlMySql =
+            "select `store`.`store_type` as `c0` from `store` as `store` " +
+            "where UPPER(`store`.`store_type`) = UPPER('Time.Weekly') " +
+            "group by `store`.`store_type` " +
+            "order by ISNULL(`store`.`store_type`), `store`.`store_type` ASC";
+
+        SqlPattern[] patterns =
+            new SqlPattern[] {
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, sqlMySql, sqlMySql)
+            };
+
+        assertNoQuerySql(
+                "select {[Time.Weekly].[All Time.Weeklys]} ON COLUMNS from [Sales]",
+                patterns);
+    }
 }
 
 // End SqlQueryTest.java

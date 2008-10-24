@@ -372,7 +372,7 @@ public abstract class RolapSchemaReader
         assert !(parent instanceof RolapHierarchy.LimitedRollupMember);
         try {
             MemberChildrenConstraint constraint;
-            if (matchType == MatchType.EXACT) {
+            if (matchType.isExact()) {
                 constraint = sqlConstraintFactory.getChildByNameConstraint(
                     (RolapMember) parent, childName);
             } else {
