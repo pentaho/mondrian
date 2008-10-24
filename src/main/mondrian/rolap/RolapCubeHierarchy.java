@@ -223,8 +223,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
     {
         RolapLevel rolapLevel = ((RolapCubeLevel)level).getRolapLevel();
         if (formula == null) {
-            RolapMember member = new RolapMember(
-                (RolapMember) parent, rolapLevel, name);
+            RolapMember rolapParent = null;
+            if (parent != null) {
+                rolapParent = ((RolapCubeMember)parent).getRolapMember();
+            }
+            RolapMember member = new RolapMember(rolapParent, rolapLevel, name);
             return new RolapCubeMember((RolapCubeMember)parent, member,
                     (RolapCubeLevel)level, parentDimension.getCube());
         } else if (level.getDimension().isMeasures()) {
@@ -1052,9 +1055,13 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 int columnOffset)
                 throws SQLException {
 
+            RolapMember parent = null;
+            if (parentMember != null) {
+                parent = ((RolapCubeMember)parentMember).getRolapMember();
+            }
             RolapMember member =
                 super.makeMember(
-                    parentMember,
+                    parent,
                     ((RolapCubeLevel)childLevel).getRolapLevel(),
                     value, captionValue, parentChild, resultSet, key,
                     columnOffset);
