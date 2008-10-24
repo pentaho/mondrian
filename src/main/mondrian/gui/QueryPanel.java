@@ -40,6 +40,7 @@ import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
+import mondrian.olap.Util.PropertyList;
 
 import org.apache.log4j.Logger;
 
@@ -279,16 +280,17 @@ public class QueryPanel extends javax.swing.JPanel {
                 return;
             }
             sfile = se.getSchemaFile();
-
-            String connectString = "Provider=mondrian;" + "Jdbc=" + se.getJdbcConnectionUrl() + ";" + "Catalog=" + se.getSchemaFile().toURL().toString() + ";";
+            PropertyList list = new PropertyList();
+            list.put("Provider", "mondrian");
+            list.put("Jdbc", se.getJdbcConnectionUrl());
+            list.put("Catalog", se.getSchemaFile().toURL().toString());
             if (se.getJdbcUsername() != null && se.getJdbcUsername().length() > 0) {
-                connectString = connectString + "JdbcUser=" + se.getJdbcUsername() + ";";
+                list.put("JdbcUser", se.getJdbcUsername());
             }
             if (se.getJdbcPassword() != null && se.getJdbcPassword().length() > 0) {
-                connectString = connectString + "JdbcPassword=" + se.getJdbcPassword() + ";";
+                list.put("JdbcPassword", se.getJdbcPassword());
             }
-
-            Connection con = DriverManager.getConnection(connectString, null);
+            Connection con = DriverManager.getConnection(list, null);
             if (con != null) {
                 connection = con;
                 queryMenuItem.setText(getResourceConverter().getFormattedString("queryPanel.successfulConnection.menuItem",

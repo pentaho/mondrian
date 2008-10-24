@@ -29,6 +29,7 @@ import javax.swing.event.InternalFrameAdapter;
 import javax.swing.filechooser.FileSystemView;
 import mondrian.olap.DriverManager;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util.PropertyList;
 
 import javax.swing.*;
 
@@ -1540,18 +1541,18 @@ public class Workbench extends javax.swing.JFrame {
         // check if schema file is valid by initiating a mondrian connection
         try {
             // this connection parses the catalog file which if invalid will throw exception
-            String connectString = "Provider=mondrian;" +
-                    "Jdbc=" + jdbcConnectionUrl + ";" +
-                        "Catalog=" + file.toURL().toString() + ";" +
-                        "JdbcDrivers=" + jdbcDriverClassName + ";";
-
+            PropertyList list = new PropertyList();
+            list.put("Provider", "mondrian");
+            list.put("Jdbc", jdbcConnectionUrl);
+            list.put("Catalog", file.toURL().toString());
+            list.put("JdbcDrivers", jdbcDriverClassName);
             if (jdbcUsername != null && jdbcUsername.length() > 0) {
-                connectString = connectString + "JdbcUser=" + jdbcUsername + ";";
+                list.put("JdbcUser", jdbcUsername);
             }
             if (jdbcPassword != null && jdbcPassword.length() > 0) {
-                connectString = connectString + "JdbcPassword=" + jdbcPassword + ";";
+                list.put("JdbcPassword", jdbcPassword);
             }
-            DriverManager.getConnection(connectString, null);
+            DriverManager.getConnection(list, null);
         } catch (Exception ex) {
             LOGGER.error("Exception : Schema file " + file.getAbsolutePath() + " is invalid." + ex.getMessage(), ex);
         } catch (Error err) {
