@@ -1478,6 +1478,36 @@ the statements and how long they took to execute.  The SQL log also records the
 number of results returned in the result set.
 </p>
 
+<p>For example, to trace both MDX and SQL statements, create a file
+<code>log4j.properties</code> in the directory where you started mondrian
+with the following contents:</p>
+
+<blockquote>
+    <pre># Set root logger level to DEBUG and its only appender to MONDRIAN.
+log4j.rootLogger=WARN, MONDRIAN
+
+# MONDRIAN is set to be a ConsoleAppender.
+log4j.appender.MONDRIAN=org.apache.log4j.ConsoleAppender
+
+# MONDRIAN uses PatternLayout.
+log4j.appender.MONDRIAN.layout=org.apache.log4j.PatternLayout
+log4j.appender.MONDRIAN.layout.ConversionPattern=%-4r [%t] %-5p %c %x - %m%n
+
+# Trace MDX and SQL statements
+log4j.category.mondrian.mdx=DEBUG, MONDRIAN
+log4j.category.mondrian.sql=DEBUG, MONDRIAN</pre>
+</blockquote>
+
+<p>Then mondrian with the argument
+<code>-Dlog4j.configuration=file:log4j.properties</code> on the Java command
+line.</p>
+
+<p>Consider setting the property
+<code><a href="api/mondrian/olap/MondrianProperties.html#GenerateFormattedSql">
+mondrian.rolap.generate.formatted.sql</a>=true</code> in
+<code>mondrian.properties</code> to make the format more
+readable.</p>
+
 <hr noshade size="1"/>
 <p>
     Author: Julian Hyde; last modified January, 2008.<br/>
