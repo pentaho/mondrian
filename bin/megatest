@@ -17,26 +17,38 @@ CLEAN=clean
 # The script's path is $OPEN_DIR/mondrian/bin/megatest; deduce OPEN_DIR.
 OPEN_DIR=$(cd $(dirname $0)/../..; pwd)
 MONDRIAN_DIR=$(cd $(dirname $0)/..; pwd)
+hostname=$(uname -n)
 case $(uname) in
 CYGWIN*)
   OPEN_DIR=$(cygpath -m $OPEN_DIR)
   MONDRIAN_DIR=$(cygpath -m $MONDRIAN_DIR)
-  if [ $(uname -n) = mackerel-winxp \
+  if [ ${hostname} = mackerel-winxp \
     -a "$OPEN_DIR" = "e:/open" ]; then
     OPEN_DIR=/open
     MONDRIAN_DIR=/open/mondrian
     echo $OPEN_DIR
   fi
   ;;
+(*)
+  # Special case for Julian's machine mackerel, which dual boots into Windows
+  # and linux.
+  if [ ${hostname} = mackerel ]; then
+    hostname=mackerel-linux
+  fi
+  ;;
 esac
 
-case $(uname -n) in
+case ${hostname} in
 branston)
   databaseList="access derby oracle mysql"
   jdkList="jdk1.5 jdk1.6"
   ;;
 mackerel)
   databaseList="access derby"
+  jdkList="jdk1.4 jdk1.5 jdk1.6"
+  ;;
+mackerel-linux)
+  databaseList="derby"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 mackerel-winxp)
@@ -53,7 +65,7 @@ marmalade)
   ;;
 esac
 
-case $(uname) in
+case ${hostname} in
 CYGWIN*) export PS=';' ;;
 *) export PS=':' ;;
 esac
@@ -269,7 +281,7 @@ chooseAntHome() {
 # Returns the path of a JAVA_HOME for a given JDK version.
 chooseJavaHome() {
   jdk=$1
-  case $(uname -n) in
+  case ${hostname} in
   (mackerel)
     case $jdk in
     (jdk1.4) echo /c/j2sdk1.4.2_16 ;;
