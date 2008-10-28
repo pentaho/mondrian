@@ -293,6 +293,39 @@ public class ValidationUtils {
                             "PrimaryKey must be set for Join");
                 }
             }
+
+            MondrianGuiDef.Hierarchy hierarchy = ((MondrianGuiDef.Hierarchy) value);
+            // Validates that value in primaryKey exists in Table.
+            String pkTable = null;
+            if (hierarchy.relation instanceof MondrianGuiDef.Join) {
+                pkTable = SchemaExplorer.getTableNameForAlias(hierarchy.relation, hierarchy.primaryKeyTable);
+            } else if (hierarchy.relation instanceof MondrianGuiDef.Table) {
+                pkTable = ((MondrianGuiDef.Table) hierarchy.relation).name;
+            }
+            if (!jdbcValidator.isColExists(null, pkTable, hierarchy.primaryKey)) {
+                return messages.getFormattedString(
+                        "schemaTreeCellRenderer.columnInTableDoesNotExist.alert",
+                        "Column {0} defined in field {1} does not exist in table {2}",
+                        new String[] { isEmpty(hierarchy.primaryKey.trim()) ? "' '" : hierarchy.primaryKey, "primaryKey", pkTable });
+            }
+
+            // Validates against primaryKeyTable name on field when using Table.
+            if (hierarchy.relation instanceof MondrianGuiDef.Table) {
+                if (!isEmpty(hierarchy.primaryKeyTable)) {
+                    return messages.getString("schemaTreeCellRenderer.fieldMustBeEmpty","Table field must be empty");
+                }
+            }
+
+            // Validates that the value at primaryKeyTable corresponds to tables in joins.
+            String primaryKeyTable = hierarchy.primaryKeyTable;
+            if (!isEmpty(primaryKeyTable) && (hierarchy.relation instanceof MondrianGuiDef.Join)) {
+                TreeSet<String> joinTables = new TreeSet<String>();
+                SchemaExplorer.getTableNamesForJoin(hierarchy.relation, joinTables);
+                if (!joinTables.contains(primaryKeyTable)) {
+                    return messages.getString("schemaTreeCellRenderer.wrongTableValue",  "Table value does not correspond to any join");
+                }
+            }
+
         } else if (value instanceof MondrianGuiDef.NamedSet) {
             if (isEmpty(((MondrianGuiDef.NamedSet) value).name)) {
                 return nameMustBeSet;
@@ -441,7 +474,7 @@ public class ValidationUtils {
                 String table = l.table; // specified table for level's column'
                 //EC: If table has been changed in join then sets the table value to null to cause "tableMustBeSet" validation fail.
                 if (!isEmpty(table) && (parentHierarchy != null && parentHierarchy.relation instanceof MondrianGuiDef.Join)) {
-                    TreeSet joinTables = new TreeSet();
+                    TreeSet<String> joinTables = new TreeSet<String>();
                     SchemaExplorer.getTableNamesForJoin(parentHierarchy.relation, joinTables);
                     if (!joinTables.contains(table)) {
                         return messages.getString("schemaTreeCellRenderer.wrongTableValue",  "Table value does not correspond to any join");

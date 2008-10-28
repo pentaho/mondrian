@@ -3365,7 +3365,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     public I18n getResourceConverter() {
         return workbench.getResourceConverter();
     }
-    public static void getTableNamesForJoin(MondrianGuiDef.RelationOrJoin aRelOrJoin, Set aTableNames) {
+    public static void getTableNamesForJoin(MondrianGuiDef.RelationOrJoin aRelOrJoin, Set<String> aTableNames) {
          //EC: Loops join tree and collects table names.
          if (aRelOrJoin instanceof MondrianGuiDef.Join) {
              MondrianGuiDef.RelationOrJoin theRelOrJoin_L = ((MondrianGuiDef.Join) aRelOrJoin).left;

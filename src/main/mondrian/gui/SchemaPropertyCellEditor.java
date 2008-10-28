@@ -358,7 +358,14 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             String pkTable = hProps.primaryKeyTable;
 
             String schemaName = null;
-            Vector allcols  = jdbcMetaData.getAllColumns(schemaName, pkTable);
+            MondrianGuiDef.RelationOrJoin relation = hProps.relation;
+            if (relation instanceof MondrianGuiDef.Table) {
+                pkTable = ((MondrianGuiDef.Table) relation).name;
+            } else if (relation instanceof MondrianGuiDef.Join) {
+                pkTable = SchemaExplorer.getTableNameForAlias(hProps.relation, pkTable);
+            }
+
+            Vector<String> allcols  = jdbcMetaData.getAllColumns(schemaName, pkTable);
             String pk = jdbcMetaData.getTablePK(schemaName, pkTable);
 
             ComboBoxModel cAllcols = new DefaultComboBoxModel(allcols);
@@ -475,16 +482,20 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             ComboBoxModel cFactTables = new DefaultComboBoxModel(factTables);   //suggestive fact tables
             ComboBoxModel cAllTables  = new DefaultComboBoxModel((allTablesMinusFact.size() > 0) ? allTablesMinusFact : allTables);  // all tables of selected schema
             ComboBoxModel cDimeTables = new DefaultComboBoxModel(dimeTables); // suggestive dimension tables based on selected fact table .
+
             //EC: Sets the corresponding join tables on selection dropdown when using joins.
-            if (targetClassz == MondrianGuiDef.Level.class && parent != null) {
-                if (parent instanceof MondrianGuiDef.Hierarchy) {
-                    MondrianGuiDef.RelationOrJoin relation = ((MondrianGuiDef.Hierarchy) parent).relation;
-                    if (relation instanceof MondrianGuiDef.Join) {
-                        TreeSet joinTables = new TreeSet();
-                        //EC: getTableNamesForJoin calls itself recursively and collects table names in joinTables.
-                        SchemaExplorer.getTableNamesForJoin(relation, joinTables);
-                        cAllTables  = new DefaultComboBoxModel(new Vector(joinTables));
-                    }
+            if (targetClassz == MondrianGuiDef.Level.class || targetClassz == MondrianGuiDef.Hierarchy.class) {
+                MondrianGuiDef.RelationOrJoin relation = null;
+                if (parent != null && parent instanceof MondrianGuiDef.Hierarchy) {
+                    relation = ((MondrianGuiDef.Hierarchy) parent).relation;
+                } else {
+                    relation = ((MondrianGuiDef.Hierarchy) tableModel.target).relation;
+                }
+                if (relation instanceof MondrianGuiDef.Join) {
+                    TreeSet<String> joinTables = new TreeSet<String>();
+                    //EC: getTableNamesForJoin calls itself recursively and collects table names in joinTables.
+                    SchemaExplorer.getTableNamesForJoin(relation, joinTables);
+                    cAllTables  = new DefaultComboBoxModel(new Vector<String>(joinTables));
                 }
             }
 
@@ -522,13 +533,18 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             listEditorValue = (String)value;
             activeEditor = listEditor;
             //EC: Disables table selection when not using joins.
-            if (targetClassz == MondrianGuiDef.Level.class && propertyName.equals(SchemaExplorer.DEF_LEVEL[1]) && parent != null) {
+            if ((targetClassz == MondrianGuiDef.Level.class && propertyName.equals(SchemaExplorer.DEF_LEVEL[1]) && parent != null) ||
+                (targetClassz == MondrianGuiDef.Hierarchy.class
+                        && propertyName.equals(SchemaExplorer.DEF_HIERARCHY[7]) && parent != null)) {
+                MondrianGuiDef.RelationOrJoin relation = null;
                 if (parent instanceof MondrianGuiDef.Hierarchy) {
-                    MondrianGuiDef.RelationOrJoin relation = ((MondrianGuiDef.Hierarchy) parent).relation;
-                    if (relation instanceof MondrianGuiDef.Table) {
-                        activeEditor = stringEditor;
-                        stringEditor.setText((String)value);
-                    }
+                    relation = ((MondrianGuiDef.Hierarchy) parent).relation;
+                } else if (parent instanceof MondrianGuiDef.Dimension) {
+                    relation = ((MondrianGuiDef.Hierarchy) tableModel.target).relation;
+                }
+                if (relation instanceof MondrianGuiDef.Table) {
+                    activeEditor = stringEditor;
+                    stringEditor.setText((String)value);
                 }
             }
         } else if (value instanceof String) {
