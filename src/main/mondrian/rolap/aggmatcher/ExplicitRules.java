@@ -1227,8 +1227,8 @@ RME TODO
          */
         public boolean matches(final String tableName) {
             return (this.ignoreCase) ?
-                    this.name.equals(tableName) :
-                    this.name.equalsIgnoreCase(tableName);
+                    this.name.equalsIgnoreCase(tableName) :
+                    this.name.equals(tableName);
         }
 
         /**
