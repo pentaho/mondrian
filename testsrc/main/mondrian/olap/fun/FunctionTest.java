@@ -168,6 +168,62 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(query, fold(result));
     }
 
+    public void testParallelperiodOnLevelsString() {
+        assertQueryReturns(
+            "with member Measures.[Prev Unit Sales] as 'parallelperiod(Levels(\"[Time].[Month]\"))'\n" +
+                "select {[Measures].[Unit Sales], Measures.[Prev Unit Sales]} ON COLUMNS,\n" +
+                "[Gender].members ON ROWS\n" +
+                "from [Sales]\n" +
+                "where [Time].[1997].[Q2].[5]",
+            fold("Axis #0:\n" +
+                "{[Time].[1997].[Q2].[5]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "{[Measures].[Prev Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender]}\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[All Gender].[M]}\n" +
+                "Row #0: 21,081\n" +
+                "Row #0: 20,179\n" +
+                "Row #1: 10,536\n" +
+                "Row #1: 9,990\n" +
+                "Row #2: 10,545\n" +
+                "Row #2: 10,189\n"));
+    }
+
+    public void testParallelperiodOnStrToMember() {
+        assertQueryReturns(
+            "with member Measures.[Prev Unit Sales] as 'parallelperiod(strToMember(\"[Time].[1997].[Q2]\"))'\n" +
+                "select {[Measures].[Unit Sales], Measures.[Prev Unit Sales]} ON COLUMNS,\n" +
+                "[Gender].members ON ROWS\n" +
+                "from [Sales]\n" +
+                "where [Time].[1997].[Q2].[5]",
+            fold("Axis #0:\n" +
+            "{[Time].[1997].[Q2].[5]}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Unit Sales]}\n" +
+            "{[Measures].[Prev Unit Sales]}\n" +
+            "Axis #2:\n" +
+            "{[Gender].[All Gender]}\n" +
+            "{[Gender].[All Gender].[F]}\n" +
+            "{[Gender].[All Gender].[M]}\n" +
+            "Row #0: 21,081\n" +
+            "Row #0: 20,957\n" +
+            "Row #1: 10,536\n" +
+            "Row #1: 10,266\n" +
+            "Row #2: 10,545\n" +
+            "Row #2: 10,691\n"));
+
+        assertThrows(
+            "with member Measures.[Prev Unit Sales] as 'parallelperiod(strToMember(\"[Time].[Quarter]\"))'\n" +
+                "select {[Measures].[Unit Sales], Measures.[Prev Unit Sales]} ON COLUMNS,\n" +
+                "[Gender].members ON ROWS\n" +
+                "from [Sales]\n" +
+                "where [Time].[1997].[Q2].[5]",
+            "Cannot find MDX member '[Time].[Quarter]'. Make sure it is indeed a member and not a level or a hierarchy.");
+    }
+
     public void testNumericLiteral() {
         assertExprReturns("2", "2");
         if (false) {

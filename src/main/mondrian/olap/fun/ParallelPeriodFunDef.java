@@ -27,7 +27,8 @@ import mondrian.resource.MondrianResource;
  * @since Mar 23, 2006
  */
 class ParallelPeriodFunDef extends FunDefBase {
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
             "ParallelPeriod",
             "ParallelPeriod([<Level>[, <Numeric Expression>[, <Member>]]])",
             "Returns a member from a prior period in the same relative position as a specified member.",
@@ -58,26 +59,6 @@ class ParallelPeriodFunDef extends FunDefBase {
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         // Member defaults to [Time].currentmember
         Exp[] args = call.getArgs();
-        final MemberCalc memberCalc;
-        switch (args.length) {
-        case 3:
-            memberCalc = compiler.compileMember(args[2]);
-            break;
-        case 1:
-            final Dimension dimension = args[0].getType().getDimension();
-            memberCalc = new DimensionCurrentMemberCalc(dimension);
-            break;
-        default:
-            final Dimension timeDimension =
-                    compiler.getEvaluator().getCube()
-                    .getTimeDimension();
-            if (timeDimension == null) {
-                throw MondrianResource.instance().
-                            NoTimeDimensionInCube.ex(getName());
-            }
-            memberCalc = new DimensionCurrentMemberCalc(timeDimension);
-            break;
-        }
 
         // Numeric Expression defaults to 1.
         final IntegerCalc lagValueCalc = (args.length >= 2) ?
@@ -91,17 +72,52 @@ class ParallelPeriodFunDef extends FunDefBase {
                 compiler.compileLevel(args[0]) :
                 null;
 
-        return new AbstractMemberCalc(call, new Calc[] {memberCalc, lagValueCalc, ancestorLevelCalc}) {
+        final MemberCalc memberCalc;
+        switch (args.length) {
+        case 3:
+            memberCalc = compiler.compileMember(args[2]);
+            break;
+        case 1:
+            final Dimension dimension = args[0].getType().getDimension();
+            if (dimension != null) {
+                // For some functions, such as Levels(<string expression>),
+                // the dimension cannot be determined at compile time.
+                memberCalc = new DimensionCurrentMemberCalc(dimension);
+            } else {
+                memberCalc = null;
+            }
+            break;
+        default:
+            final Dimension timeDimension =
+                    compiler.getEvaluator().getCube()
+                    .getTimeDimension();
+            if (timeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
+            memberCalc = new DimensionCurrentMemberCalc(timeDimension);
+            break;
+        }
+
+        return new AbstractMemberCalc(
+            call,
+            new Calc[] {memberCalc, lagValueCalc, ancestorLevelCalc})
+        {
             public Member evaluateMember(Evaluator evaluator) {
-                Member member = memberCalc.evaluateMember(
-                        evaluator);
+                Member member;
                 int lagValue = lagValueCalc.evaluateInteger(
                         evaluator);
                 Level ancestorLevel;
                 if (ancestorLevelCalc != null) {
-                    ancestorLevel = ancestorLevelCalc
-                            .evaluateLevel(evaluator);
+                    ancestorLevel = ancestorLevelCalc.evaluateLevel(evaluator);
+                    if (memberCalc == null) {
+                        member =
+                            evaluator.getContext(ancestorLevel.getDimension());
+                    } else {
+                        member = memberCalc.evaluateMember(evaluator);
+                    }
                 } else {
+                    member = memberCalc.evaluateMember(evaluator);
                     Member parent = member.getParentMember();
                     if (parent == null) {
                         // This is a root member,
@@ -111,17 +127,18 @@ class ParallelPeriodFunDef extends FunDefBase {
                     }
                     ancestorLevel = parent.getLevel();
                 }
-                return parallelPeriod(member, ancestorLevel,
-                        evaluator, lagValue);
+                return parallelPeriod(
+                    member, ancestorLevel, evaluator, lagValue);
             }
         };
     }
 
     Member parallelPeriod(
-            Member member,
-            Level ancestorLevel,
-            Evaluator evaluator,
-            int lagValue) {
+        Member member,
+        Level ancestorLevel,
+        Evaluator evaluator,
+        int lagValue)
+    {
         // Now do some error checking.
         // The ancestorLevel and the member must be from the
         // same hierarchy.
@@ -140,13 +157,13 @@ class ParallelPeriodFunDef extends FunDefBase {
         }
 
         int distance = member.getLevel().getDepth() -
-                ancestorLevel.getDepth();
+            ancestorLevel.getDepth();
         Member ancestor = FunUtil.ancestor(
-                evaluator, member, distance, ancestorLevel);
+            evaluator, member, distance, ancestorLevel);
         Member inLaw = evaluator.getSchemaReader()
-                .getLeadMember(ancestor, -lagValue);
+            .getLeadMember(ancestor, -lagValue);
         return FunUtil.cousin(
-                evaluator.getSchemaReader(), member, inLaw);
+            evaluator.getSchemaReader(), member, inLaw);
     }
 }
 
