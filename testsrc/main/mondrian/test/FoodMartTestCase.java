@@ -31,11 +31,22 @@ import java.util.Arrays;
 public class FoodMartTestCase extends TestCase {
     protected static final String nl = Util.nl;
 
+    /**
+     * Access properties via this object and their values will be reset on
+     * {@link #tearDown()}.
+     */
+    protected final PropertySaver propSaver = new PropertySaver();
+
     public FoodMartTestCase(String name) {
         super(name);
     }
 
     public FoodMartTestCase() {
+    }
+
+    protected void tearDown() throws Exception {
+        // revert any properties that have been set during this test
+        propSaver.reset();
     }
 
     /**
@@ -235,7 +246,7 @@ public class FoodMartTestCase extends TestCase {
     }
 
     protected List<Member> storeMembersCAAndOR(SchemaReader salesCubeSchemaReader) {
-        return Arrays.asList(new Member[]{
+        return Arrays.asList(
             member(Id.Segment.toList("Store", "All Stores", "USA", "CA",
                 "Alameda"), salesCubeSchemaReader),
             member(Id.Segment.toList("Store", "All Stores", "USA", "CA",
@@ -253,14 +264,13 @@ public class FoodMartTestCase extends TestCase {
             member(Id.Segment.toList("Store", "All Stores", "USA", "OR",
                 "Salem"), salesCubeSchemaReader),
             member(Id.Segment.toList("Store", "All Stores", "USA", "OR",
-                "Salem", "Store 13"), salesCubeSchemaReader)
-        });
+                "Salem", "Store 13"), salesCubeSchemaReader));
     }
 
     protected List<Member> productMembersPotScrubbersPotsAndPans(
         SchemaReader salesCubeSchemaReader)
     {
-        return Arrays.asList(new Member[]{
+        return Arrays.asList(
             member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
                 "Household", "Kitchen Products", "Pot Scrubbers", "Cormorant"),
                 salesCubeSchemaReader),
@@ -284,8 +294,7 @@ public class FoodMartTestCase extends TestCase {
                 salesCubeSchemaReader),
             member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
                 "Household", "Kitchen Products", "Pots and Pans", "Sunset"),
-                salesCubeSchemaReader)
-        });
+                salesCubeSchemaReader));
     }
 
     protected List<Member> genderMembersIncludingAll(
@@ -331,23 +340,20 @@ public class FoodMartTestCase extends TestCase {
     }
 
     protected List<Member> warehouseMembersCanadaMexicoUsa(SchemaReader reader) {
-        return Arrays.asList(new Member[]{
+        return Arrays.asList(
             member(Id.Segment.toList(
                 "Warehouse", "All Warehouses", "Canada"), reader),
             member(Id.Segment.toList(
                 "Warehouse", "All Warehouses", "Mexico"), reader),
             member(Id.Segment.toList(
-                "Warehouse", "All Warehouses", "USA"), reader)
-        });
+                "Warehouse", "All Warehouses", "USA"), reader));
     }
 
     protected Cube cubeByName(Connection connection, String cubeName) {
         SchemaReader reader = connection.getSchemaReader();
 
         Cube[] cubes = reader.getCubes();
-        Cube cube =
-            cubeByName(cubeName, cubes);
-        return cube;
+        return cubeByName(cubeName, cubes);
     }
 
     private Cube cubeByName(String cubeName, Cube[] cubes) {
@@ -432,22 +438,21 @@ class TestCaseForker {
                 }
             };
         }
-        for (int i = 0; i < threads.length; i++) {
-            threads[i].start();
+        for (Thread thread : threads) {
+            thread.start();
         }
-        for (int i = 0; i < threads.length; i++) {
+        for (Thread thread : threads) {
             try {
-                threads[i].join(timeoutMs);
+                thread.join(timeoutMs);
             } catch (InterruptedException e) {
                 failures.add(
-                        Util.newInternal(
-                                e, "Interrupted after " + timeoutMs + "ms"));
+                    Util.newInternal(
+                        e, "Interrupted after " + timeoutMs + "ms"));
                 break;
             }
         }
         if (failures.size() > 0) {
-            for (int i = 0; i < failures.size(); i++) {
-                Throwable throwable = failures.get(i);
+            for (Throwable throwable : failures) {
                 throwable.printStackTrace();
             }
             TestCase.fail(failures.size() + " threads failed");

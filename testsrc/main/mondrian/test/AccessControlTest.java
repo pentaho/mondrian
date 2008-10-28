@@ -13,8 +13,6 @@ package mondrian.test;
 
 import junit.framework.Assert;
 import mondrian.olap.*;
-import org.eigenbase.util.property.*;
-import org.eigenbase.util.property.Property;
 
 import java.util.*;
 
@@ -29,7 +27,6 @@ import java.util.*;
  * @version $Id$
  */
 public class AccessControlTest extends FoodMartTestCase {
-    private final PropertySaver propertySaver = new PropertySaver();
 
     private static final String BiServer1574Role1 =
         "<Role name=\"role1\">\n"
@@ -48,12 +45,6 @@ public class AccessControlTest extends FoodMartTestCase {
 
     public AccessControlTest(String name) {
         super(name);
-    }
-
-    protected void tearDown() throws Exception {
-        // revert any properties that have been set during this test
-        propertySaver.reset();
-        super.tearDown();
     }
 
     public void testGrantDimensionNone() {
@@ -1297,16 +1288,16 @@ public class AccessControlTest extends FoodMartTestCase {
      * UnsupportedOperationException".
      */
     public void testBug2031158() {
-        propertySaver.set(propertySaver.properties.EnableNativeCrossJoin, true);
-        propertySaver.set(propertySaver.properties.EnableNativeFilter, true);
-        propertySaver.set(propertySaver.properties.EnableNativeNonEmpty, true);
-        propertySaver.set(propertySaver.properties.EnableNativeTopCount, true);
-        propertySaver.set(propertySaver.properties.ExpandNonNative, true);
+        propSaver.set(propSaver.properties.EnableNativeCrossJoin, true);
+        propSaver.set(propSaver.properties.EnableNativeFilter, true);
+        propSaver.set(propSaver.properties.EnableNativeNonEmpty, true);
+        propSaver.set(propSaver.properties.EnableNativeTopCount, true);
+        propSaver.set(propSaver.properties.ExpandNonNative, true);
 
         // Run with native enabled, then with whatever properties are set for
         // this test run.
         checkBug2031158();
-        propertySaver.reset();
+        propSaver.reset();
         checkBug2031158();
     }
 
@@ -1354,50 +1345,6 @@ public class AccessControlTest extends FoodMartTestCase {
                 "Row #4: 5723.0\n" +
                 "Row #5: 2179.0\n" +
                 "Row #5: 2025.0\n"));
-    }
-
-    /**
-     * Sets properties, and remembers them so they can be reverted at the
-     * end of the test.
-     */
-    static class PropertySaver {
-
-        public final MondrianProperties properties =
-            MondrianProperties.instance();
-
-        private final Map<Property, String> originalValues =
-            new HashMap<Property, String>();
-
-        // wacky initializer to prevent compiler from internalizing the
-        // string (we don't want it to be == other occurrences of "NOT_SET")
-        private static final String NOT_SET =
-            new StringBuffer("NOT_" + "SET").toString();
-
-        // need to implement for other kinds of property too
-        public void set(BooleanProperty property, boolean value) {
-            if (!originalValues.containsKey(property)) {
-                final String originalValue =
-                    properties.containsKey(property.getPath())
-                        ? properties.getProperty(property.getPath())
-                        : NOT_SET;
-                originalValues.put(
-                    property,
-                    originalValue);
-            }
-            property.set(value);
-        }
-
-        public void reset() {
-            for (Map.Entry<Property,String> entry : originalValues.entrySet()) {
-                final String value = entry.getValue();
-                //noinspection StringEquality
-                if (value == NOT_SET) {
-                    properties.remove(entry.getKey());
-                } else {
-                    properties.setProperty(entry.getKey().getPath(), value);
-                }
-            }
-        }
     }
 
     /**

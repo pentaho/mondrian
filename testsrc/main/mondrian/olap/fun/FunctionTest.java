@@ -35,8 +35,6 @@ import java.util.ArrayList;
  */
 public class FunctionTest extends FoodMartTestCase {
 
-    private MondrianProperties props;
-
     private static final String months =
         fold("[Time].[1997].[Q1].[1]\n" +
             "[Time].[1997].[Q1].[2]\n" +
@@ -81,6 +79,27 @@ public class FunctionTest extends FoodMartTestCase {
     private static final String NullNumericExpr = (" ([Measures].[Unit Sales]," +
             "   [Customers].[All Customers].[USA].[CA].[Bellflower], " +
             "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer])");
+
+    // ~ Constructors ----------------------------------------------------------
+
+    /**
+     * Creates a FunctionTest.
+     */
+    public FunctionTest() {
+    }
+
+    /**
+     * Creates a FucntionTest.
+     *
+     * @param s Test name
+     */
+    public FunctionTest(String s) {
+        super(s);
+    }
+
+    // ~ Methods ---------------------------------------------------------------
+
+    // ~ Test methods ----------------------------------------------------------
 
     /**
      * Tests that Integeer.MIN_VALUE(-2147483648) does not cause NPE.
@@ -158,15 +177,6 @@ public class FunctionTest extends FoodMartTestCase {
         }
         assertExprReturns("-10.0", "-10");
         getTestContext().assertExprDependsOn("1.5", "{}");
-    }
-
-    public FunctionTest() {
-        props = MondrianProperties.instance();
-    }
-
-    public FunctionTest(String s) {
-        super(s);
-        props = MondrianProperties.instance();
     }
 
     public void testStringLiteral() {
@@ -6025,8 +6035,7 @@ public class FunctionTest extends FoodMartTestCase {
             "    [Customers].currentMember, BDESC) \n" +
             "on 0 from [Sales]";
 
-        boolean saved = props.CompareSiblingsByOrderKey.get();
-        props.CompareSiblingsByOrderKey.set(true);
+        propSaver.set(MondrianProperties.instance().CompareSiblingsByOrderKey, true);
         Connection conn = null;
         try {
             // Use a fresh connection to make sure bad member ordinals haven't
@@ -6043,7 +6052,6 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 33\n" +
                     "Row #0: 75\n"));
         } finally {
-            props.CompareSiblingsByOrderKey.set(saved);
             if (conn != null) {
                 conn.close();
             }
@@ -6147,8 +6155,7 @@ public class FunctionTest extends FoodMartTestCase {
             "    [Customers].currentMember.Parent.Parent, BASC, [Customers].currentMember, BDESC) \n" +
             "on 0 from [Sales]";
 
-        boolean saved = props.CompareSiblingsByOrderKey.get();
-        props.CompareSiblingsByOrderKey.set(true);
+        propSaver.set(MondrianProperties.instance().CompareSiblingsByOrderKey, true);
         Connection conn = null;
         try {
             // Use a fresh connection to make sure bad member ordinals haven't
@@ -6167,7 +6174,6 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 75\n" +
                     "Row #0: 33\n"));
         } finally {
-            props.CompareSiblingsByOrderKey.set(saved);
             if (conn != null) {
                 conn.close();
             }
@@ -6212,8 +6218,7 @@ public class FunctionTest extends FoodMartTestCase {
             " OrderSet([NECJ], [Customers].currentMember, BDESC) \n" +
             "on 0 from [Sales]";
 
-        boolean saved = props.CompareSiblingsByOrderKey.get();
-        props.CompareSiblingsByOrderKey.set(true);
+        propSaver.set(MondrianProperties.instance().CompareSiblingsByOrderKey, true);
         Connection conn = null;
         try {
             // Use a fresh connection to make sure bad member ordinals haven't
@@ -6232,7 +6237,6 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 75\n" +
                     "Row #0: 33\n"));
         } finally {
-            props.CompareSiblingsByOrderKey.set(saved);
             if (conn != null) {
                 conn.close();
             }
@@ -6335,55 +6339,45 @@ public class FunctionTest extends FoodMartTestCase {
             "on rows \n" +
             "from [Sales vs HR]";
 
-        boolean saved = props.CompareSiblingsByOrderKey.get();
-        props.CompareSiblingsByOrderKey.set(true);
-        Connection conn = null;
-        try {
-            // Use a fresh connection to make sure bad member ordinals haven't
-            // been assigned by previous tests.
-            conn = getTestContext().getFoodMartConnection(false);
-            TestContext context = getTestContext(conn);
-            // a non-sense cube just to test ordering by order key
-            context = context.create(
-                null, null,
-                "<VirtualCube name=\"Sales vs HR\">\n" +
-                    "<VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\"/>\n" +
-                    "<VirtualCubeDimension cubeName=\"HR\" name=\"Position\"/>\n" +
-                    "<VirtualCubeMeasure cubeName=\"HR\" name=\"[Measures].[Org Salary]\"/>\n" +
-                    "</VirtualCube>",
-                null, null, null);
+        propSaver.set(MondrianProperties.instance().CompareSiblingsByOrderKey, true);
 
-            context.assertQueryReturns(query,
-                fold(
-                    "Axis #0:\n" +
-                    "{}\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Org Salary]}\n" +
-                    "Axis #2:\n" +
-                    "{[Position].[All Position].[Store Management].[Store Manager], [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
-                    "{[Position].[All Position].[Store Management].[Store Manager], [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
-                    "{[Position].[All Position].[Store Management].[Store Manager], [Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
-                    "{[Position].[All Position].[Store Management].[Store Assistant Manager], [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
-                    "{[Position].[All Position].[Store Management].[Store Assistant Manager], [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
-                    "{[Position].[All Position].[Store Management].[Store Assistant Manager], [Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
-                    "{[Position].[All Position].[Store Management].[Store Shift Supervisor], [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
-                    "{[Position].[All Position].[Store Management].[Store Shift Supervisor], [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
-                    "{[Position].[All Position].[Store Management].[Store Shift Supervisor], [Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
-                    "Row #0: \n" +
-                    "Row #1: \n" +
-                    "Row #2: \n" +
-                    "Row #3: \n" +
-                    "Row #4: \n" +
-                    "Row #5: \n" +
-                    "Row #6: \n" +
-                    "Row #7: \n" +
-                    "Row #8: \n"));
-        } finally {
-            props.CompareSiblingsByOrderKey.set(saved);
-            if (conn != null) {
-                conn.close();
-            }
-        }
+        // Use a fresh connection to make sure bad member ordinals haven't
+        // been assigned by previous tests.
+        // a non-sense cube just to test ordering by order key
+        TestContext context = TestContext.create(
+            null, null,
+            "<VirtualCube name=\"Sales vs HR\">\n" +
+                "<VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\"/>\n" +
+                "<VirtualCubeDimension cubeName=\"HR\" name=\"Position\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"HR\" name=\"[Measures].[Org Salary]\"/>\n" +
+                "</VirtualCube>",
+            null, null, null);
+
+        context.assertQueryReturns(
+            query,
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Org Salary]}\n" +
+                "Axis #2:\n" +
+                "{[Position].[All Position].[Store Management].[Store Manager], [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "{[Position].[All Position].[Store Management].[Store Manager], [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "{[Position].[All Position].[Store Management].[Store Manager], [Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                "{[Position].[All Position].[Store Management].[Store Assistant Manager], [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "{[Position].[All Position].[Store Management].[Store Assistant Manager], [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "{[Position].[All Position].[Store Management].[Store Assistant Manager], [Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                "{[Position].[All Position].[Store Management].[Store Shift Supervisor], [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n" +
+                "{[Position].[All Position].[Store Management].[Store Shift Supervisor], [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "{[Position].[All Position].[Store Management].[Store Shift Supervisor], [Customers].[All Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n" +
+                "Row #0: \n" +
+                "Row #1: \n" +
+                "Row #2: \n" +
+                "Row #3: \n" +
+                "Row #4: \n" +
+                "Row #5: \n" +
+                "Row #6: \n" +
+                "Row #7: \n" +
+                "Row #8: \n"));
     }
 
     public void testOrderSetConstant1() {
