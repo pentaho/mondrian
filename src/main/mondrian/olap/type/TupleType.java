@@ -10,6 +10,7 @@
 package mondrian.olap.type;
 
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -140,6 +141,28 @@ public class TupleType implements Type {
         }
         return new TupleType(
             elementTypes.toArray(new Type[elementTypes.size()]));
+    }
+
+    /**
+     * Checks that there are no duplicate dimensions in a list of member types.
+     * If so, the member types will form a valid tuple type.
+     * If not, throws {@link mondrian.olap.MondrianException}.
+     *
+     * @param memberTypes Array of member types
+     */
+    public static void checkDimensions(MemberType[] memberTypes) {
+        for (int i = 0; i < memberTypes.length; i++) {
+            MemberType memberType = memberTypes[i];
+            for (int j = 0; j < i; j++) {
+                MemberType member1 = memberTypes[j];
+                final Dimension dimension = memberType.getDimension();
+                final Dimension dimension1 = member1.getDimension();
+                if (dimension != null && dimension == dimension1) {
+                    throw MondrianResource.instance().DupDimensionsInTuple.ex(
+                            dimension.getUniqueName());
+                }
+            }
+        }
     }
 }
 

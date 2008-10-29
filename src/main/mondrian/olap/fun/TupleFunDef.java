@@ -13,7 +13,6 @@
 package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractTupleCalc;
 import mondrian.mdx.ResolvedFunCall;
@@ -70,7 +69,7 @@ public class TupleFunDef extends FunDefBase {
                 Exp arg = args[i];
                 types[i] = TypeUtil.toMemberType(arg.getType());
             }
-            checkDimensions(types);
+            TupleType.checkDimensions(types);
             return new TupleType(types);
         }
     }
@@ -82,21 +81,6 @@ public class TupleFunDef extends FunDefBase {
             memberCalcs[i] = compiler.compileMember(args[i]);
         }
         return new CalcImpl(call, memberCalcs);
-    }
-
-    private void checkDimensions(MemberType[] memberTypes) {
-        for (int i = 0; i < memberTypes.length; i++) {
-            MemberType memberType = memberTypes[i];
-            for (int j = 0; j < i; j++) {
-                MemberType member1 = memberTypes[j];
-                final Dimension dimension = memberType.getDimension();
-                final Dimension dimension1 = member1.getDimension();
-                if (dimension != null && dimension == dimension1) {
-                    throw MondrianResource.instance().DupDimensionsInTuple.ex(
-                            dimension.getUniqueName());
-                }
-            }
-        }
     }
 
     public static class CalcImpl extends AbstractTupleCalc {

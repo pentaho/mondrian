@@ -15,9 +15,7 @@ import mondrian.calc.impl.AbstractIterCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.*;
 import mondrian.olap.*;
-import mondrian.olap.type.SetType;
-import mondrian.olap.type.TupleType;
-import mondrian.olap.type.Type;
+import mondrian.olap.type.*;
 import mondrian.util.UnsupportedList;
 import mondrian.rolap.*;
 
@@ -51,7 +49,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     public Type getResultType(Validator validator, Exp[] args) {
         // CROSSJOIN(<Set1>,<Set2>) has type [Hie1] x [Hie2].
-        List<Type> list = new ArrayList<Type>();
+        List<MemberType> list = new ArrayList<MemberType>();
         for (Exp arg : args) {
             final Type type = arg.getType();
             if (type instanceof SetType) {
@@ -64,7 +62,8 @@ public class CrossJoinFunDef extends FunDefBase {
                 throw Util.newInternal("arg to crossjoin must be a set");
             }
         }
-        final Type[] types = list.toArray(new Type[list.size()]);
+        final MemberType[] types = list.toArray(new MemberType[list.size()]);
+        TupleType.checkDimensions(types);
         final TupleType tupleType = new TupleType(types);
         return new SetType(tupleType);
     }
@@ -76,7 +75,7 @@ public class CrossJoinFunDef extends FunDefBase {
      * @param type Type to add to list
      * @param list List of types to add to
      */
-    private static void addTypes(final Type type, List<Type> list) {
+    private static void addTypes(final Type type, List<MemberType> list) {
         if (type instanceof SetType) {
             SetType setType = (SetType) type;
             addTypes(setType.getElementType(), list);
@@ -85,8 +84,10 @@ public class CrossJoinFunDef extends FunDefBase {
             for (Type elementType : tupleType.elementTypes) {
                 addTypes(elementType, list);
             }
+        } else if (type instanceof MemberType) {
+            list.add((MemberType) type);
         } else {
-            list.add(type);
+            throw Util.newInternal("Unexpected type: " + type);
         }
     }
 

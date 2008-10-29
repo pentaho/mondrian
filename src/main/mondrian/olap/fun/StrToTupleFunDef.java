@@ -18,10 +18,7 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.mdx.DimensionExpr;
 import mondrian.mdx.HierarchyExpr;
 import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.TupleType;
-import mondrian.olap.type.MemberType;
-import mondrian.olap.type.StringType;
+import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 
 import java.util.ArrayList;
@@ -144,13 +141,14 @@ class StrToTupleFunDef extends FunDefBase {
             //
             // The result is a tuple
             //  (<Hier1>, ... ,  <HierN>)
-            final List<Type> list = new ArrayList<Type>();
+            final List<MemberType> list = new ArrayList<MemberType>();
             for (int i = 1; i < args.length; i++) {
                 Exp arg = args[i];
                 final Type type = arg.getType();
-                list.add(type);
+                list.add(TypeUtil.toMemberType(type));
             }
-            final Type[] types = list.toArray(new Type[list.size()]);
+            final MemberType[] types = list.toArray(new MemberType[list.size()]);
+            TupleType.checkDimensions(types);
             return new TupleType(types);
         }
         }

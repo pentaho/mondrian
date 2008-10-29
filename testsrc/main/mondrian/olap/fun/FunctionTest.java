@@ -3192,6 +3192,28 @@ public class FunctionTest extends FoodMartTestCase {
                 "Row #0: 131,558\n"));
     }
 
+    public void testCrossjoinDupDimensionFails() {
+        assertThrows(
+            "select [Measures].[Unit Sales] ON COLUMNS,\n" +
+                " CrossJoin({[Time].[Quarter].[Q1]}, {[Time].[Month].[5]}) ON ROWS\n" +
+                "from [Sales]",
+            "Tuple contains more than one member of dimension '[Time]'.");
+
+        // now with Item, for kicks
+        assertThrows(
+            "select [Measures].[Unit Sales] ON COLUMNS,\n" +
+                " CrossJoin({[Time].[Quarter].[Q1]}, {[Time].[Month].[5]}).Item(0) ON ROWS\n" +
+                "from [Sales]",
+            "Tuple contains more than one member of dimension '[Time]'.");
+
+        // same query using explicit tuple
+        assertThrows(
+            "select [Measures].[Unit Sales] ON COLUMNS,\n" +
+                " ([Time].[Quarter].[Q1], [Time].[Month].[5]) ON ROWS\n" +
+                "from [Sales]",
+            "Tuple contains more than one member of dimension '[Time]'.");
+    }
+
     public void testDescendantsM() {
         assertAxisReturns("Descendants([Time].[1997].[Q1])",
                 fold(
@@ -6931,6 +6953,12 @@ public class FunctionTest extends FoodMartTestCase {
         // todo: test for garbage at end of string
     }
 
+    public void testStrToTupleDupDimensionsFails() {
+        assertAxisThrows(
+            "{StrToTuple(\"([Gender].[F], [Time].[1997].[Q2], [Gender].[M])\", [Gender], [Time], [Gender])}",
+                "Tuple contains more than one member of dimension '[Gender]'.");
+    }
+
     public void testStrToTupleDepends() {
         getTestContext().assertMemberExprDependsOn(
             "StrToTuple(\"[Time].[1997].[Q2]\", [Time])",
@@ -6986,6 +7014,20 @@ public class FunctionTest extends FoodMartTestCase {
             " [Time])",
             fold("{[Gender].[All Gender].[F], [Time].[1997].[Q2]}\n" +
                 "{[Gender].[All Gender].[M], [Time].[1997]}"));
+    }
+
+    public void testStrToSetDupDimensionsFails() {
+        assertAxisThrows("StrToSet(" +
+            "\"" +
+            "{" +
+            " ([Gender].[F], [Time].[1997].[Q2], [Gender].[F]), " +
+            " ([Gender].[M], [Time].[1997], [Gender].[F])" +
+            "}" +
+            "\"," +
+            " [Gender]," +
+            " [Time]," +
+            " [Gender])",
+            "Tuple contains more than one member of dimension '[Gender]'.");
     }
 
     public void testYtd() {

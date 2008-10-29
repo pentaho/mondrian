@@ -357,18 +357,14 @@ class StrToSetFunDef extends FunDefBase {
             //
             // The result is a set of tuples
             //  (<Hier1>, ... ,  <HierN>)
-            final List<Type> list = new ArrayList<Type>();
+            final List<MemberType> list = new ArrayList<MemberType>();
             for (int i = 1; i < args.length; i++) {
                 Exp arg = args[i];
                 final Type argType = arg.getType();
-                list.add(
-                    new MemberType(
-                        argType.getDimension(),
-                        argType.getHierarchy(),
-                        argType.getLevel(),
-                        null));
+                list.add(TypeUtil.toMemberType(argType));
             }
-            final Type[] types = list.toArray(new Type[list.size()]);
+            final MemberType[] types = list.toArray(new MemberType[list.size()]);
+            TupleType.checkDimensions(types);
             return new SetType(new TupleType(types));
         }
         }
