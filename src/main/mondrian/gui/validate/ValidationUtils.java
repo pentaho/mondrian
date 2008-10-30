@@ -336,6 +336,20 @@ public class ValidationUtils {
                 }
             }
 
+            if (!isEmpty(primaryKeyTable) &&
+                (hierarchy.relation instanceof MondrianGuiDef.Table)) {
+                MondrianGuiDef.Table theTable =
+                    (MondrianGuiDef.Table)hierarchy.relation;
+                String compareTo = (theTable.alias != null &&
+                        theTable.alias.trim().length() > 0) ?
+                        theTable.alias : theTable.name;
+                if (!primaryKeyTable.equals(compareTo)) {
+                    return messages.getString(
+                        "schemaTreeCellRenderer.tableDoesNotMatch",
+                        "Table value does not correspond to Hierarchy Relation");
+                }
+            }
+
         } else if (value instanceof MondrianGuiDef.NamedSet) {
             if (isEmpty(((MondrianGuiDef.NamedSet) value).name)) {
                 return nameMustBeSet;
@@ -496,6 +510,21 @@ public class ValidationUtils {
                         return messages.getString("schemaTreeCellRenderer.wrongTableValue",  "Table value does not correspond to any join");
                     }
                 }
+
+                if (!isEmpty(table) && (parentHierarchy != null &&
+                    parentHierarchy.relation instanceof MondrianGuiDef.Table)) {
+                    MondrianGuiDef.Table theTable =
+                        (MondrianGuiDef.Table)parentHierarchy.relation;
+                    String compareTo = (theTable.alias != null &&
+                            theTable.alias.trim().length() > 0) ?
+                            theTable.alias : theTable.name;
+                    if (!table.equals(compareTo)) {
+                        return messages.getString(
+                            "schemaTreeCellRenderer.tableDoesNotMatch",
+                            "Table value does not correspond to Hierarchy Relation");
+                    }
+                }
+
                 if (isEmpty(table)) {
                     if (parentHierarchy != null) {
                         if (parentHierarchy.relation == null && cube != null) { // case of degenerate dimension within cube, hierarchy table not specified
@@ -521,10 +550,6 @@ public class ValidationUtils {
                         }
                     }
                 } else {
-                    //EC: Validates against table name present on field when not using joins.
-                    if (parentHierarchy != null && parentHierarchy.relation instanceof MondrianGuiDef.Table && !isEmpty(table)) {
-                        return messages.getString("schemaTreeCellRenderer.fieldMustBeEmpty","Table field must be empty");
-                    }
                     //EC: if using Joins then gets the table name for isColExists validation.
                     if (parentHierarchy != null && parentHierarchy.relation instanceof MondrianGuiDef.Join) {
                        table = SchemaExplorer.getTableNameForAlias(parentHierarchy.relation, table);
