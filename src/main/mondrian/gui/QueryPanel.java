@@ -183,7 +183,24 @@ public class QueryPanel extends javax.swing.JPanel {
         queryTextPane.setFont(new java.awt.Font("Courier New", 0, 12));
         queryTextPane.setText("");
         queryTextPane.addMouseListener(new MouseAdapter() {
+
+            // From MouseAdapter javadoc:
+            //
+            // Popup menus are triggered differently
+            // on different systems. Therefore, isPopupTrigger
+            // should be checked in both mousePressed
+            // and mouseReleased
+            // for proper cross-platform functionality.
+
+            public void mousePressed(MouseEvent e) {
+                checkPopupTrigger(e);
+            }
+
             public void mouseReleased(MouseEvent e) {
+                checkPopupTrigger(e);
+            }
+
+            public void checkPopupTrigger(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     int x = e.getX();
                     int y = e.getY();

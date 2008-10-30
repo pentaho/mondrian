@@ -2956,7 +2956,23 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
     class PopupTrigger extends MouseAdapter {
 
+        // From MouseAdapter javadoc:
+        //
+        // Popup menus are triggered differently
+        // on different systems. Therefore, isPopupTrigger
+        // should be checked in both mousePressed
+        // and mouseReleased
+        // for proper cross-platform functionality.
+
+        public void mousePressed(MouseEvent e) {
+            showMenu(e);
+        }
+
         public void mouseReleased(MouseEvent e) {
+            showMenu(e);
+        }
+
+        public void showMenu(MouseEvent e) {
             if (e.isPopupTrigger()) {
                 int x = e.getX();
                 int y = e.getY();
