@@ -4,6 +4,9 @@
 
 # Platform specific path-separator.
 MONDRIAN_HOME=$(cd $(dirname $0)/..; pwd)
+if test ! -d $MONDRIAN_HOME/lib; then
+  MONDRIAN_HOME=$(pwd)
+fi
 case $(uname) in
 Windows_NT|CYGWIN*)
     export PS=";"
