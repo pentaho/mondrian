@@ -68,11 +68,17 @@ public class ValidationUtils {
                 return nameMustBeSet;
             }
         } else if (value instanceof MondrianGuiDef.Cube) {
-            if (isEmpty(((MondrianGuiDef.Cube) value).name)) {
+            MondrianGuiDef.Cube cubeVal = (MondrianGuiDef.Cube) value;
+            if (isEmpty(cubeVal.name)) {
                 return nameMustBeSet;
             }
             if (((MondrianGuiDef.Cube) value).fact == null
-                    || isEmpty(((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) value).fact).name)) //check name is not blank
+                    ||
+                    ((cubeVal.fact instanceof MondrianGuiDef.Table) &&
+                    isEmpty(((MondrianGuiDef.Table) cubeVal.fact).name)) //check name is not blank
+                    ||
+                    ((cubeVal.fact instanceof MondrianGuiDef.View) &&
+                    isEmpty(((MondrianGuiDef.View) cubeVal.fact).alias))) //check alias is not blank
             {
                 return messages.getString("schemaTreeCellRenderer.factNameMustBeSet.alert", "Fact name must be set");
             }
@@ -80,13 +86,15 @@ public class ValidationUtils {
             // database validity check, if database connection is successful
             if (jdbcValidator.isInitialized()) {
 
-                //Vector allTables            = jdbcMetaData.getAllTables(((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) value).fact).schema);
-                String schemaName = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) value).fact).schema;
-                String factTable = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) value).fact).name;
-                if (!jdbcValidator.isTableExists(schemaName, factTable)) {
-                    return messages.getFormattedString("schemaTreeCellRenderer.factTableDoesNotExist.alert",
-                            "Fact table {0} does not exist in database {1}", new String[] { factTable,
-                                    ((schemaName == null || schemaName.equals("")) ? "." : "schema " + schemaName) });
+                // Vector allTables = jdbcMetaData.getAllTables(((MondrianGuiDef.Table) cubeVal.fact).schema);
+                if (((MondrianGuiDef.Cube) value).fact instanceof MondrianGuiDef.Table) {
+                    String schemaName = ((MondrianGuiDef.Table) cubeVal.fact).schema;
+                    String factTable = ((MondrianGuiDef.Table) cubeVal.fact).name;
+                    if (!jdbcValidator.isTableExists(schemaName, factTable)) {
+                        return messages.getFormattedString("schemaTreeCellRenderer.factTableDoesNotExist.alert",
+                                "Fact table {0} does not exist in database {1}", new String[] { factTable,
+                                        ((schemaName == null || schemaName.equals("")) ? "." : "schema " + schemaName) });
+                    }
                 }
             }
         } else if (value instanceof MondrianGuiDef.CubeDimension) {
@@ -121,12 +129,14 @@ public class ValidationUtils {
                 if (!isEmpty(((MondrianGuiDef.Dimension) value).foreignKey)) {
                     // database validity check, if database connection is successful
                     if (jdbcValidator.isInitialized()) {
-
-                        String foreignKey = ((MondrianGuiDef.Dimension) value).foreignKey;
-                        if (!jdbcValidator.isColExists(((MondrianGuiDef.Table) cube.fact).schema,
-                                ((MondrianGuiDef.Table) cube.fact).name, foreignKey)) {
-                            return messages.getFormattedString("schemaTreeCellRenderer.foreignKeyDoesNotExist.alert",
-                                    "foreignKey {0} does not exist in fact table", new String[] { foreignKey });
+                        // TODO: Need to add validation for Views
+                        if (cube.fact instanceof MondrianGuiDef.Table) {
+                            String foreignKey = ((MondrianGuiDef.Dimension) value).foreignKey;
+                            if (!jdbcValidator.isColExists(((MondrianGuiDef.Table) cube.fact).schema,
+                                    ((MondrianGuiDef.Table) cube.fact).name, foreignKey)) {
+                                return messages.getFormattedString("schemaTreeCellRenderer.foreignKeyDoesNotExist.alert",
+                                        "foreignKey {0} does not exist in fact table", new String[] { foreignKey });
+                            }
                         }
                     }
                 }

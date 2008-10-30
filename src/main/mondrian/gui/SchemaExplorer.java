@@ -2604,7 +2604,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         for (int i = e.getPath().getPathCount() - 1; i >= 0; i--) {
             Object comp = e.getPath().getPathComponent(i);
-            if (comp instanceof MondrianGuiDef.Cube &&  ((MondrianGuiDef.Cube) comp).fact != null) {
+            if (comp instanceof MondrianGuiDef.Cube &&
+                ((MondrianGuiDef.Cube) comp).fact != null &&
+                (((MondrianGuiDef.Cube) comp).fact instanceof MondrianGuiDef.Table))
+            {
                 selectedFactTable = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) comp).fact).name;
                 selectedFactTableSchema = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) comp).fact).schema;
             }
