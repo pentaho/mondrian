@@ -364,6 +364,12 @@ public class ValidationUtils {
             if (isEmpty(((MondrianGuiDef.Join) value).rightKey)) {
                 return messages.getString("schemaTreeCellRenderer.rightKeyMustBeSet.alert", "Right key must be set");
             }
+        } else if (value instanceof MondrianGuiDef.Table) {
+            String tableName = ((MondrianGuiDef.Table)value).name;
+            if (!jdbcValidator.isTableExists(null, tableName)) {
+                return messages.getFormattedString("schemaTreeCellRenderer.tableDoesNotExist.alert",
+                        "Table {0} does not exist in database", new String[] { tableName });
+            }
         }
 
         // Step 2: check validity of all child objects for this value object.

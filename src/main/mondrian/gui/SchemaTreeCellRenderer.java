@@ -16,7 +16,6 @@ import java.awt.Dimension;
 
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import mondrian.gui.validate.ValidationUtils;
@@ -101,7 +100,8 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
             //setText(((MondrianGuiDef.Hierarchy) value).name);    // hierarchies do not have names
             super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("hierarchy"))));
             this.setPreferredSize(new java.awt.Dimension(this.getPreferredSize().width + 1, 25)); //Do not remove this
-
+        } else if ((value instanceof MondrianGuiDef.Table)) {
+            setText(invalidFlag, ((MondrianGuiDef.Table) value).name);
         } else if ((value instanceof MondrianGuiDef.RelationOrJoin) ||
             // REVIEW: '||' is superfluous - a Table is always a RelationOrJoin
                 (value instanceof MondrianGuiDef.Table)) {

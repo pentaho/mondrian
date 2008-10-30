@@ -41,6 +41,7 @@ import mondrian.olap.DriverManager;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
 import mondrian.olap.Util.PropertyList;
+import mondrian.rolap.agg.AggregationManager;
 
 import org.apache.log4j.Logger;
 
@@ -308,6 +309,10 @@ public class QueryPanel extends javax.swing.JPanel {
                 list.put("JdbcPassword", se.getJdbcPassword());
             }
             Connection con = DriverManager.getConnection(list, null);
+
+            // clear cache before connecting
+            AggregationManager.instance().getCacheControl(null).flushSchemaCache();
+
             if (con != null) {
                 connection = con;
                 queryMenuItem.setText(getResourceConverter().getFormattedString("queryPanel.successfulConnection.menuItem",

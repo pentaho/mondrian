@@ -474,13 +474,12 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
                 MondrianGuiDef.Table tProps = (MondrianGuiDef.Table) tableModel.getValue();
                 schema = tProps.schema;
             }
-            Vector factTables           = new Vector(jdbcMetaData.getFactTables(schema));
-            Vector allTablesMinusFact   = new Vector(jdbcMetaData.getAllTables(schema, selectedFactTable));
-            Vector allTables            = new Vector(jdbcMetaData.getAllTables(schema));
-            Vector dimeTables           = new Vector(jdbcMetaData.getDimensionTables(schema, selectedFactTable));
+            Vector<String> factTables = new Vector<String>(jdbcMetaData.getFactTables(schema));
+            Vector<String> allTables  = new Vector<String>(jdbcMetaData.getAllTables(schema));
+            Vector<String> dimeTables = new Vector<String>(jdbcMetaData.getDimensionTables(schema, selectedFactTable));
 
-            ComboBoxModel cFactTables = new DefaultComboBoxModel(factTables);   //suggestive fact tables
-            ComboBoxModel cAllTables  = new DefaultComboBoxModel((allTablesMinusFact.size() > 0) ? allTablesMinusFact : allTables);  // all tables of selected schema
+            ComboBoxModel cFactTables = new DefaultComboBoxModel(factTables); //suggestive fact tables
+            ComboBoxModel cAllTables  = new DefaultComboBoxModel(allTables);  // all tables of selected schema
             ComboBoxModel cDimeTables = new DefaultComboBoxModel(dimeTables); // suggestive dimension tables based on selected fact table .
 
             //EC: Sets the corresponding join tables on selection dropdown when using joins.

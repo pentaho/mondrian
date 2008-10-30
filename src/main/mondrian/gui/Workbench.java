@@ -30,6 +30,7 @@ import javax.swing.filechooser.FileSystemView;
 import mondrian.olap.DriverManager;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util.PropertyList;
+import mondrian.rolap.agg.AggregationManager;
 
 import javax.swing.*;
 
@@ -1552,6 +1553,10 @@ public class Workbench extends javax.swing.JFrame {
             if (jdbcPassword != null && jdbcPassword.length() > 0) {
                 list.put("JdbcPassword", jdbcPassword);
             }
+
+            // clear cache before connecting
+            AggregationManager.instance().getCacheControl(null).flushSchemaCache();
+
             DriverManager.getConnection(list, null);
         } catch (Exception ex) {
             LOGGER.error("Exception : Schema file " + file.getAbsolutePath() + " is invalid." + ex.getMessage(), ex);
