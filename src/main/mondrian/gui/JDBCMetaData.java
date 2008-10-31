@@ -475,6 +475,10 @@ public class JDBCMetaData {
             tablesCount.put(dbs.name, count);
         }
 
+        private boolean schemaNameEquals(String a, String b) {
+            return (a != null && a.equals(b));
+        }
+
         private Vector<String> getAllSchemas() {
             if (allSchemas == null) {
                 allSchemas = new Vector<String>();
@@ -492,7 +496,7 @@ public class JDBCMetaData {
                 return tablesCount.containsKey(tableName);
             } else {
                 for (DbSchema s : schemas) {
-                    if (s.name.equals(sname)) {
+                    if (schemaNameEquals(s.name, sname)) {
                         for (DbTable d : s.tables) {
                             if (d.name.equals(tableName)) {
                                 return true;
@@ -516,7 +520,7 @@ public class JDBCMetaData {
             } else {
                 // return a vector of "fk col name" string objects if schema is given
                 for (DbSchema s : schemas) {
-                    if (s.name.equals(sname)) {
+                    if (schemaNameEquals(s.name, sname)) {
                         for (DbTable t : s.tables) {
                             if (t.name.equals(tableName)) {
                                 return t.colsDataType.containsKey(colName);
@@ -546,7 +550,7 @@ public class JDBCMetaData {
             } else {
                 // return a vector of "tablename" string objects
                 for (DbSchema s : schemas) {
-                    if (s.name.equals(sname)) {
+                    if (schemaNameEquals(s.name, sname)) {
                         for (DbTable d : s.tables) {
                             v.add(d.name);
                         }
@@ -575,7 +579,7 @@ public class JDBCMetaData {
             } else {
                 // return a vector of "fact tablename" string objects if schema is given
                 for (DbSchema s : schemas) {
-                    if (s.name.equals(sname)) {
+                    if (schemaNameEquals(s.name, sname)) {
                         for (DbTable t : s.tables) {
                             if (t instanceof FactTable) {
                                 f.add(((FactTable) t).name);
@@ -620,7 +624,7 @@ public class JDBCMetaData {
             } else {
                 // return a vector of "fk col name" string objects if schema is given
                 for (DbSchema s : schemas) {
-                    if (s.name.equals(sname)) {
+                    if (schemaNameEquals(s.name, sname)) {
                         for (DbTable t : s.tables) {
                             if (t instanceof FactTable && t.name
                                 .equals(factTable)) {
@@ -670,7 +674,7 @@ public class JDBCMetaData {
             } else {
                 // return a vector of "fk col name" string objects if schema is given
                 for (DbSchema s : schemas) {
-                    if (s.name.equals(sname)) {
+                    if (schemaNameEquals(s.name, sname)) {
                         for (DbTable t : s.tables) {
                             if (t instanceof FactTable && t.name
                                 .equals(factTable)) {
@@ -697,7 +701,7 @@ public class JDBCMetaData {
             } else {
                 // return a vector of "fk col name" string objects if schema is given
                 for (DbSchema s : schemas) {
-                    if (s.name.equals(sname)) {
+                    if (schemaNameEquals(s.name, sname)) {
                         for (DbTable t : s.tables) {
                             if (t.name.equals(tableName)) {
                                 return t.pk;
@@ -741,7 +745,7 @@ public class JDBCMetaData {
             } else {
                 // return a vector of "col name" string objects if schema is given
                 for (DbSchema s : schemas) {
-                    if (s.name.equals(sname)) {
+                    if (schemaNameEquals(s.name, sname)) {
                         for (DbTable t : s.tables) {
                             if (t.name.equals(tableName)) {
                                 f.addAll(t.colsDataType.keySet());
@@ -766,7 +770,7 @@ public class JDBCMetaData {
             } else {
                 // return a vector of "fk col name" string objects if schema is given
                 for (DbSchema s : schemas) {
-                    if (s.name.equals(sname)) {
+                    if (schemaNameEquals(s.name, sname)) {
                         for (DbTable t : s.tables) {
                             if (t.name.equals(tableName)) {
                                 return Integer.parseInt(
