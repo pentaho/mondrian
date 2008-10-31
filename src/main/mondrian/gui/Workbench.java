@@ -99,7 +99,8 @@ public class Workbench extends javax.swing.JFrame {
     private String openFile = null;
 
     private Map schemaWindowMap = new HashMap();    // map of schema frames and its menu items (JInternalFrame -> JMenuItem)
-    private Vector mdxWindows = new Vector();
+    private Vector<JInternalFrame> mdxWindows = new Vector<JInternalFrame>();
+    private Vector<JInternalFrame> jdbcWindows = new Vector<JInternalFrame>();
     private int windowMenuMapIndex = 1;
 
     /** Creates new form Workbench */
@@ -678,13 +679,14 @@ public class Workbench extends javax.swing.JFrame {
         int desktopH = (int) dsize.getHeight();
         int darea =  (int) (desktopW * desktopH);
 
-        double eacharea = darea / (schemaWindowMap.size() + mdxWindows.size());
+        double eacharea = darea / (schemaWindowMap.size() + mdxWindows.size() + jdbcWindows.size());
         int wh = (int) Math.sqrt(eacharea);
 
-        Iterator []its = new Iterator[2];
+        Iterator []its = new Iterator[3];
 
         its[0] = schemaWindowMap.keySet().iterator();   // keys = schemaframes
         its[1] = mdxWindows.iterator();
+        its[2] = jdbcWindows.iterator();
 
         JInternalFrame sf = null;
         int x = 0, y = 0;
@@ -720,10 +722,11 @@ public class Workbench extends javax.swing.JFrame {
     }
     // cascade all the indows open in schema workbench
     private void cascadeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
-        Iterator []its = new Iterator[2];
+        Iterator []its = new Iterator[3];
 
         its[0] = schemaWindowMap.keySet().iterator();   // keys = schemaframes
         its[1] = mdxWindows.iterator();
+        its[2] = jdbcWindows.iterator();
         int sfi = 1;
         JInternalFrame sf = null;
 
@@ -757,9 +760,10 @@ public class Workbench extends javax.swing.JFrame {
     }
 
     private void closeAllSchemaFrames(boolean exitAfterClose) {
-        Object [][] its = new Object[2][];  // initialize row dimension
+        Object [][] its = new Object[3][];  // initialize row dimension
         its[0] = schemaWindowMap.keySet().toArray();   // keys = schemaframes
         its[1] = mdxWindows.toArray();
+        its[2] = jdbcWindows.toArray();
         JInternalFrame sf = null;
 
         try {
@@ -777,6 +781,8 @@ public class Workbench extends javax.swing.JFrame {
                             if (response == 3) {    // not dirty
                                 sf.setClosed(true);
                             }
+                        } else {
+                            sf.setClosed(true);
                         }
                     }
                 }
@@ -829,10 +835,11 @@ public class Workbench extends javax.swing.JFrame {
     }
 
     private void minimizeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
-        Iterator []its = new Iterator[2];
+        Iterator []its = new Iterator[3];
 
         its[0] = schemaWindowMap.keySet().iterator();   // values = schemaframes
         its[1] = mdxWindows.iterator();
+        its[2] = jdbcWindows.iterator();
         JInternalFrame sf;
 
         try {
@@ -856,10 +863,11 @@ public class Workbench extends javax.swing.JFrame {
     }
 
     private void maximizeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
-        Iterator []its = new Iterator[2];
+        Iterator []its = new Iterator[3];
 
         its[0] = schemaWindowMap.keySet().iterator();   // values = schemaframes
         its[1] = mdxWindows.iterator();
+        its[2] = jdbcWindows.iterator();
         JInternalFrame sf;
 
         try {
@@ -916,7 +924,7 @@ public class Workbench extends javax.swing.JFrame {
                 throw new Exception("Driver=" + this.jdbcDriverClassName + "\nConnection Url=" + this.jdbcConnectionUrl);
             }
 
-            JInternalFrame jf = new JInternalFrame();
+            final JInternalFrame jf = new JInternalFrame();
             jf.setTitle(getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.title",
                     "JDBC Explorer - {0}",
                     new String[] { jdbcConnectionUrl }));
@@ -944,9 +952,55 @@ public class Workbench extends javax.swing.JFrame {
             jf.setResizable(true);
             jf.setVisible(true);
 
-            desktopPane.add(jf);
+            // create jdbc menu item
+            final javax.swing.JMenuItem jdbcMenuItem = new javax.swing.JMenuItem();
+            jdbcMenuItem.setText(getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.menuitem",
+                    "{0} JDBC Explorer",
+                    new String[] { Integer.toString(windowMenuMapIndex++) }));
+            jdbcMenuItem.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    try {
+                        if (jf.isIcon()) {
+                            jf.setIcon(false);
+                        } else {
+                            jf.setSelected(true);
+                        }
+                    } catch (Exception ex) {
+                        LOGGER.error("queryMenuItem", ex);
+                    }
+                }
+            });
 
+            jf.addInternalFrameListener(new InternalFrameAdapter() {
+                public void internalFrameClosing(InternalFrameEvent e) {
+                    jdbcWindows.remove(jf);
+                    jf.dispose();
+                    windowMenu.remove(jdbcMenuItem);  // follow this by removing file from schemaWindowMap
+                    return;
+                }
+            });
+
+            desktopPane.add(jf);
+            jf.setVisible(true);
             jf.show();
+
+            try {
+                jf.setSelected(true);
+            } catch (Exception ex) {
+                // do nothing
+                LOGGER.error("newJDBCExplorerMenuItemActionPerformed.setSelected", ex);
+            }
+
+            jdbcWindows.add(jf);
+
+            windowMenu.add(jdbcMenuItem,-1);
+            windowMenu.add(jSeparator3,-1);
+            windowMenu.add(cascadeMenuItem,-1);
+            windowMenu.add(tileMenuItem,-1);
+            windowMenu.add(minimizeMenuItem, -1);
+            windowMenu.add(maximizeMenuItem, -1);
+            windowMenu.add(closeAllMenuItem,-1);
+
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,
                     getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.exception",
