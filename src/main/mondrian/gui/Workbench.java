@@ -1571,14 +1571,16 @@ public class Workbench extends javax.swing.JFrame {
     private void resetWorkbench() {
         //EC: Updates the JDBCMetaData for each SchemaExplorer contained in each Schema Frame currently opened based
         //on the JDBC preferences entered.
+
+        jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
+                jdbcConnectionUrl, jdbcUsername, jdbcPassword, jdbcSchema, requireSchema);
+
         Iterator theSchemaFrames = schemaWindowMap.keySet().iterator();
         while (theSchemaFrames.hasNext()) {
             JInternalFrame theSchemaFrame = (JInternalFrame) theSchemaFrames.next();
             SchemaExplorer theSchemaExplorer = (SchemaExplorer) theSchemaFrame.getContentPane().getComponent(0);
             File theFile = theSchemaExplorer.getSchemaFile();
             checkSchemaFile(theFile);
-            jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
-                    jdbcConnectionUrl, jdbcUsername, jdbcPassword, jdbcSchema, requireSchema);
             theSchemaExplorer.resetMetaData(jdbcMetaData);
             theSchemaFrame.updateUI();
         }
