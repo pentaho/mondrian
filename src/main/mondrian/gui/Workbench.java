@@ -29,6 +29,8 @@ import javax.swing.event.InternalFrameAdapter;
 import javax.swing.filechooser.FileSystemView;
 import mondrian.olap.DriverManager;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util.PropertyList;
+import mondrian.rolap.agg.AggregationManager;
 
 import javax.swing.*;
 
@@ -78,6 +80,7 @@ public class Workbench extends javax.swing.JFrame {
     private String jdbcUsername;
     private String jdbcPassword;
     private String jdbcSchema;
+    private boolean requireSchema;
 
     private JDBCMetaData jdbcMetaData;
 
@@ -96,7 +99,8 @@ public class Workbench extends javax.swing.JFrame {
     private String openFile=null;
 
     private Map schemaWindowMap = new HashMap();    // map of schema frames and its menu items (JInternalFrame -> JMenuItem)
-    private Vector mdxWindows = new Vector();
+    private Vector<JInternalFrame> mdxWindows = new Vector<JInternalFrame>();
+    private Vector<JInternalFrame> jdbcWindows = new Vector<JInternalFrame>();
     private int windowMenuMapIndex = 1;
 
     /** Creates new form Workbench */
@@ -222,6 +226,7 @@ public class Workbench extends javax.swing.JFrame {
         jdbcUsername = workbenchProperties.getProperty("jdbcUsername");
         jdbcPassword = workbenchProperties.getProperty("jdbcPassword");
         jdbcSchema = workbenchProperties.getProperty("jdbcSchema");
+        requireSchema = "true".equals(workbenchProperties.getProperty("requireSchema"));
     }
 
     /** This method is called from within the constructor to
@@ -524,11 +529,10 @@ public class Workbench extends javax.swing.JFrame {
         pasteMenuItem.setText(getResourceConverter().getString("workbench.menu.paste","Paste"));
         editMenu.add(pasteMenuItem);
 
-        pasteMenuItem.setText(getResourceConverter().getString("workbench.menu.delete","Delete"));
+        deleteMenuItem.setText(getResourceConverter().getString("workbench.menu.delete","Delete"));
         editMenu.add(deleteMenuItem);
 
         menuBar.add(editMenu);
-        editMenu.add(pasteMenuItem);
 
         viewMenu.setText(getResourceConverter().getString("workbench.menu.view","View"));
         viewXMLMenuItem.setText(getResourceConverter().getString("workbench.menu.viewXML","View XML"));
@@ -675,13 +679,14 @@ public class Workbench extends javax.swing.JFrame {
         int desktopH = (int) dsize.getHeight();
         int darea =  (int) (desktopW*desktopH);
 
-        double eacharea= darea/(schemaWindowMap.size()+mdxWindows.size());
+        double eacharea = darea / (schemaWindowMap.size() + mdxWindows.size() + jdbcWindows.size());
         int wh = (int) Math.sqrt(eacharea);
 
-        Iterator []its = new Iterator[2];
+        Iterator []its = new Iterator[3];
 
         its[0] = schemaWindowMap.keySet().iterator();   // keys = schemaframes
         its[1] = mdxWindows.iterator();
+        its[2] = jdbcWindows.iterator();
 
         JInternalFrame sf=null;
         int x=0, y=0;
@@ -717,10 +722,11 @@ public class Workbench extends javax.swing.JFrame {
     }
     // cascade all the indows open in schema workbench
     private void cascadeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
-        Iterator []its = new Iterator[2];
+        Iterator []its = new Iterator[3];
 
         its[0] = schemaWindowMap.keySet().iterator();   // keys = schemaframes
         its[1] = mdxWindows.iterator();
+        its[2] = jdbcWindows.iterator();
         int sfi = 1;
         JInternalFrame sf=null;
 
@@ -754,10 +760,11 @@ public class Workbench extends javax.swing.JFrame {
     }
 
     private void closeAllSchemaFrames(boolean exitAfterClose) {
-        Object [][] its = new Object[2][];  // initialize row dimension
+        Object [][] its = new Object[3][];  // initialize row dimension
         its[0] = schemaWindowMap.keySet().toArray();   // keys = schemaframes
         its[1] = mdxWindows.toArray();
-        JInternalFrame sf=null;
+        its[2] = jdbcWindows.toArray();
+        JInternalFrame sf = null;
 
         try {
             for (int i=0; i<its.length; i++) {
@@ -774,6 +781,8 @@ public class Workbench extends javax.swing.JFrame {
                             if (response == 3) {    // not dirty
                                 sf.setClosed(true);
                             }
+                        } else {
+                            sf.setClosed(true);
                         }
                     }
                 }
@@ -822,10 +831,11 @@ public class Workbench extends javax.swing.JFrame {
     }
 
     private void minimizeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
-        Iterator []its = new Iterator[2];
+        Iterator []its = new Iterator[3];
 
         its[0] = schemaWindowMap.keySet().iterator();   // values = schemaframes
         its[1] = mdxWindows.iterator();
+        its[2] = jdbcWindows.iterator();
         JInternalFrame sf;
 
         try {
@@ -849,10 +859,11 @@ public class Workbench extends javax.swing.JFrame {
     }
 
     private void maximizeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
-        Iterator []its = new Iterator[2];
+        Iterator []its = new Iterator[3];
 
         its[0] = schemaWindowMap.keySet().iterator();   // values = schemaframes
         its[1] = mdxWindows.iterator();
+        its[2] = jdbcWindows.iterator();
         JInternalFrame sf;
 
         try {
@@ -909,7 +920,7 @@ public class Workbench extends javax.swing.JFrame {
                 throw new Exception("Driver="+this.jdbcDriverClassName+"\nConnection Url="+this.jdbcConnectionUrl);
             }
 
-            JInternalFrame jf = new JInternalFrame();
+            final JInternalFrame jf = new JInternalFrame();
             jf.setTitle(getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.title", 
                     "JDBC Explorer - {0}", 
                     new String[] { jdbcConnectionUrl }));
@@ -937,9 +948,55 @@ public class Workbench extends javax.swing.JFrame {
             jf.setResizable(true);
             jf.setVisible(true);
 
-            desktopPane.add(jf);
+            // create jdbc menu item
+            final javax.swing.JMenuItem jdbcMenuItem = new javax.swing.JMenuItem();
+            jdbcMenuItem.setText(getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.menuitem",
+                    "{0} JDBC Explorer",
+                    new String[] { Integer.toString(windowMenuMapIndex++) }));
+            jdbcMenuItem.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    try {
+                        if (jf.isIcon()) {
+                            jf.setIcon(false);
+                        } else {
+                            jf.setSelected(true);
+                        }
+                    } catch (Exception ex) {
+                        LOGGER.error("queryMenuItem", ex);
+                    }
+                }
+            });
 
+            jf.addInternalFrameListener(new InternalFrameAdapter() {
+                public void internalFrameClosing(InternalFrameEvent e) {
+                    jdbcWindows.remove(jf);
+                    jf.dispose();
+                    windowMenu.remove(jdbcMenuItem);  // follow this by removing file from schemaWindowMap
+                    return;
+                }
+            });
+
+            desktopPane.add(jf);
+            jf.setVisible(true);
             jf.show();
+
+            try {
+                jf.setSelected(true);
+            } catch (Exception ex) {
+                // do nothing
+                LOGGER.error("newJDBCExplorerMenuItemActionPerformed.setSelected", ex);
+            }
+
+            jdbcWindows.add(jf);
+
+            windowMenu.add(jdbcMenuItem,-1);
+            windowMenu.add(jSeparator3,-1);
+            windowMenu.add(cascadeMenuItem,-1);
+            windowMenu.add(tileMenuItem,-1);
+            windowMenu.add(minimizeMenuItem, -1);
+            windowMenu.add(maximizeMenuItem, -1);
+            windowMenu.add(closeAllMenuItem,-1);
+
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, 
                     getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.exception", 
@@ -957,6 +1014,7 @@ public class Workbench extends javax.swing.JFrame {
         pd.setJDBCUsername(jdbcUsername);
         pd.setJDBCPassword(jdbcPassword);
         pd.setDatabaseSchema(jdbcSchema);
+        pd.setRequireSchema(requireSchema);
 
         pd.setVisible(true);
 
@@ -966,12 +1024,14 @@ public class Workbench extends javax.swing.JFrame {
             jdbcUsername = pd.getJDBCUsername();
             jdbcPassword = pd.getJDBCPassword();
             jdbcSchema = pd.getDatabaseSchema();
+            requireSchema = pd.getRequireSchema();
 
             workbenchProperties.setProperty("jdbcDriverClassName", jdbcDriverClassName);
             workbenchProperties.setProperty("jdbcConnectionUrl", jdbcConnectionUrl);
             workbenchProperties.setProperty("jdbcUsername", jdbcUsername);
             workbenchProperties.setProperty("jdbcPassword", jdbcPassword);
             workbenchProperties.setProperty("jdbcSchema", jdbcSchema);
+            workbenchProperties.setProperty("requireSchema", "" + requireSchema);
             //EC: Enforces the JDBC preferences entered througout all schemas currently opened
             //in the workbench.
             resetWorkbench();
@@ -1334,9 +1394,10 @@ public class Workbench extends javax.swing.JFrame {
                     "Schema - {0}", 
                     new String[] { file.getName() }));
             //schemaFrame.setTitle("Schema - " + file.getName());
-
-            jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
-                    jdbcConnectionUrl, jdbcUsername, jdbcPassword, jdbcSchema);
+            if (jdbcMetaData == null) {
+                jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
+                    jdbcConnectionUrl, jdbcUsername, jdbcPassword, jdbcSchema, requireSchema);
+            }
 
             schemaFrame.getContentPane().add(new SchemaExplorer(this, file, jdbcMetaData, newFile, schemaFrame));
 
@@ -1497,15 +1558,18 @@ public class Workbench extends javax.swing.JFrame {
     private void resetWorkbench() {
         //EC: Updates the JDBCMetaData for each SchemaExplorer contained in each Schema Frame currently opened based
         //on the JDBC preferences entered.
+
+        jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
+                jdbcConnectionUrl, jdbcUsername, jdbcPassword, jdbcSchema, requireSchema);
+
         Iterator theSchemaFrames = schemaWindowMap.keySet().iterator();
         while (theSchemaFrames.hasNext()) {
             JInternalFrame theSchemaFrame = (JInternalFrame) theSchemaFrames.next();
             SchemaExplorer theSchemaExplorer = (SchemaExplorer) theSchemaFrame.getContentPane().getComponent(0);
             File theFile = theSchemaExplorer.getSchemaFile();
             checkSchemaFile(theFile);
-            jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
-                    jdbcConnectionUrl, jdbcUsername, jdbcPassword, jdbcSchema);
             theSchemaExplorer.resetMetaData(jdbcMetaData);
+            theSchemaExplorer.getTreeUpdater().update();
             theSchemaFrame.updateUI();
         }
         //EC: If the JDBC preferences entered then display a warning.
@@ -1527,18 +1591,22 @@ public class Workbench extends javax.swing.JFrame {
         // check if schema file is valid by initiating a mondrian connection
         try {
             // this connection parses the catalog file which if invalid will throw exception
-            String connectString = "Provider=mondrian;" +
-                    "Jdbc=" + jdbcConnectionUrl + ";" +
-                        "Catalog=" + file.toURL().toString() + ";" +
-                        "JdbcDrivers=" + jdbcDriverClassName + ";";
-
+            PropertyList list = new PropertyList();
+            list.put("Provider", "mondrian");
+            list.put("Jdbc", jdbcConnectionUrl);
+            list.put("Catalog", file.toURL().toString());
+            list.put("JdbcDrivers", jdbcDriverClassName);
             if (jdbcUsername != null && jdbcUsername.length() > 0) {
-                connectString = connectString + "JdbcUser=" + jdbcUsername + ";";
+                list.put("JdbcUser", jdbcUsername);
             }
             if (jdbcPassword != null && jdbcPassword.length() > 0) {
-                connectString = connectString + "JdbcPassword=" + jdbcPassword + ";";
+                list.put("JdbcPassword", jdbcPassword);
             }
-            DriverManager.getConnection(connectString, null);
+
+            // clear cache before connecting
+            AggregationManager.instance().getCacheControl(null).flushSchemaCache();
+
+            DriverManager.getConnection(list, null);
         } catch (Exception ex) {
             LOGGER.error("Exception : Schema file " + file.getAbsolutePath() + " is invalid." + ex.getMessage(), ex);
         } catch (Error err) {

@@ -22,7 +22,7 @@ public class ValidationUtils {
 
     public static String invalid(Messages messages, JDBCValidator jdbcValidator, TreeModel treeModel,
             TreeModelPath tpath, Object value, Object icube, Object iparentDimension, Object iparentHierarchy,
-            Object iparentLevel) {
+            Object iparentLevel, boolean isSchemaRequired) {
         //String errMsg = null;
         String nameMustBeSet = messages.getString("schemaTreeCellRenderer.nameMustBeSet.alert", "Name must be set");
 
@@ -68,11 +68,17 @@ public class ValidationUtils {
                 return nameMustBeSet;
             }
         } else if (value instanceof MondrianGuiDef.Cube) {
-            if (isEmpty(((MondrianGuiDef.Cube) value).name)) {
+            MondrianGuiDef.Cube cubeVal = (MondrianGuiDef.Cube) value;
+            if (isEmpty(cubeVal.name)) {
                 return nameMustBeSet;
             }
             if (((MondrianGuiDef.Cube) value).fact == null
-                    || isEmpty(((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) value).fact).name)) //check name is not blank
+                    ||
+                    ((cubeVal.fact instanceof MondrianGuiDef.Table) &&
+                    isEmpty(((MondrianGuiDef.Table) cubeVal.fact).name)) //check name is not blank
+                    ||
+                    ((cubeVal.fact instanceof MondrianGuiDef.View) &&
+                    isEmpty(((MondrianGuiDef.View) cubeVal.fact).alias))) //check alias is not blank
             {
                 return messages.getString("schemaTreeCellRenderer.factNameMustBeSet.alert", "Fact name must be set");
             }
@@ -80,13 +86,15 @@ public class ValidationUtils {
             // database validity check, if database connection is successful
             if (jdbcValidator.isInitialized()) {
 
-                //Vector allTables            = jdbcMetaData.getAllTables(((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) value).fact).schema);
-                String schemaName = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) value).fact).schema;
-                String factTable = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) value).fact).name;
-                if (!jdbcValidator.isTableExists(schemaName, factTable)) {
-                    return messages.getFormattedString("schemaTreeCellRenderer.factTableDoesNotExist.alert",
-                            "Fact table {0} does not exist in database {1}", new String[] { factTable,
-                                    ((schemaName == null || schemaName.equals("")) ? "." : "schema " + schemaName) });
+                // Vector allTables = jdbcMetaData.getAllTables(((MondrianGuiDef.Table) cubeVal.fact).schema);
+                if (((MondrianGuiDef.Cube) value).fact instanceof MondrianGuiDef.Table) {
+                    String schemaName = ((MondrianGuiDef.Table) cubeVal.fact).schema;
+                    String factTable = ((MondrianGuiDef.Table) cubeVal.fact).name;
+                    if (!jdbcValidator.isTableExists(schemaName, factTable)) {
+                        return messages.getFormattedString("schemaTreeCellRenderer.factTableDoesNotExist.alert",
+                                "Fact table {0} does not exist in database {1}", new String[] { factTable,
+                                        ((schemaName == null || schemaName.equals("")) ? "." : "schema " + schemaName) });
+                    }
                 }
             }
         } else if (value instanceof MondrianGuiDef.CubeDimension) {
@@ -123,12 +131,14 @@ public class ValidationUtils {
                 if (!isEmpty(((MondrianGuiDef.Dimension) value).foreignKey)) {
                     // database validity check, if database connection is successful
                     if (jdbcValidator.isInitialized()) {
-
-                        String foreignKey = ((MondrianGuiDef.Dimension) value).foreignKey;
-                        if (!jdbcValidator.isColExists(((MondrianGuiDef.Table) cube.fact).schema,
-                                ((MondrianGuiDef.Table) cube.fact).name, foreignKey)) {
-                            return messages.getFormattedString("schemaTreeCellRenderer.foreignKeyDoesNotExist.alert",
-                                    "foreignKey {0} does not exist in fact table", new String[] { foreignKey });
+                        // TODO: Need to add validation for Views
+                        if (cube.fact instanceof MondrianGuiDef.Table) {
+                            String foreignKey = ((MondrianGuiDef.Dimension) value).foreignKey;
+                            if (!jdbcValidator.isColExists(((MondrianGuiDef.Table) cube.fact).schema,
+                                    ((MondrianGuiDef.Table) cube.fact).name, foreignKey)) {
+                                return messages.getFormattedString("schemaTreeCellRenderer.foreignKeyDoesNotExist.alert",
+                                        "foreignKey {0} does not exist in fact table", new String[] { foreignKey });
+                            }
                         }
                     }
                 }
@@ -295,6 +305,53 @@ public class ValidationUtils {
                             "PrimaryKey must be set for Join");
                 }
             }
+
+            MondrianGuiDef.Hierarchy hierarchy = ((MondrianGuiDef.Hierarchy) value);
+            // Validates that value in primaryKey exists in Table.
+            String pkTable = null;
+            if (hierarchy.relation instanceof MondrianGuiDef.Join) {
+                pkTable = SchemaExplorer.getTableNameForAlias(hierarchy.relation, hierarchy.primaryKeyTable);
+            } else if (hierarchy.relation instanceof MondrianGuiDef.Table) {
+                pkTable = ((MondrianGuiDef.Table) hierarchy.relation).name;
+            }
+            if (!jdbcValidator.isColExists(null, pkTable, hierarchy.primaryKey)) {
+                return messages.getFormattedString(
+                        "schemaTreeCellRenderer.columnInTableDoesNotExist.alert",
+                        "Column {0} defined in field {1} does not exist in table {2}",
+                        new String[] { isEmpty(hierarchy.primaryKey.trim()) ? "' '" : hierarchy.primaryKey, "primaryKey", pkTable });
+            }
+
+            // Validates against primaryKeyTable name on field when using Table.
+            if (hierarchy.relation instanceof MondrianGuiDef.Table) {
+                if (!isEmpty(hierarchy.primaryKeyTable)) {
+                    return messages.getString("schemaTreeCellRenderer.fieldMustBeEmpty","Table field must be empty");
+                }
+            }
+
+            // Validates that the value at primaryKeyTable corresponds to tables in joins.
+            String primaryKeyTable = hierarchy.primaryKeyTable;
+            if (!isEmpty(primaryKeyTable) && (hierarchy.relation instanceof MondrianGuiDef.Join)) {
+                TreeSet<String> joinTables = new TreeSet<String>();
+                SchemaExplorer.getTableNamesForJoin(hierarchy.relation, joinTables);
+                if (!joinTables.contains(primaryKeyTable)) {
+                    return messages.getString("schemaTreeCellRenderer.wrongTableValue",  "Table value does not correspond to any join");
+                }
+            }
+
+            if (!isEmpty(primaryKeyTable) &&
+                (hierarchy.relation instanceof MondrianGuiDef.Table)) {
+                MondrianGuiDef.Table theTable =
+                    (MondrianGuiDef.Table)hierarchy.relation;
+                String compareTo = (theTable.alias != null &&
+                        theTable.alias.trim().length() > 0) ?
+                        theTable.alias : theTable.name;
+                if (!primaryKeyTable.equals(compareTo)) {
+                    return messages.getString(
+                        "schemaTreeCellRenderer.tableDoesNotMatch",
+                        "Table value does not correspond to Hierarchy Relation");
+                }
+            }
+
         } else if (value instanceof MondrianGuiDef.NamedSet) {
             if (isEmpty(((MondrianGuiDef.NamedSet) value).name)) {
                 return nameMustBeSet;
@@ -323,6 +380,22 @@ public class ValidationUtils {
             if (isEmpty(((MondrianGuiDef.Join) value).rightKey)) {
                 return messages.getString("schemaTreeCellRenderer.rightKeyMustBeSet.alert", "Right key must be set");
             }
+        } else if (value instanceof MondrianGuiDef.Table) {
+            String tableName = ((MondrianGuiDef.Table)value).name;
+            if (!jdbcValidator.isTableExists(null, tableName)) {
+                return messages.getFormattedString("schemaTreeCellRenderer.tableDoesNotExist.alert",
+                        "Table {0} does not exist in database", new String[] { tableName });
+            }
+
+            String theSchema = ((MondrianGuiDef.Table)value).schema;
+            if (!isEmpty(theSchema) && !jdbcValidator.isSchemaExists(theSchema)) {
+                return messages.getFormattedString(
+                        "schemaTreeCellRenderer.schemaDoesNotExist.alert", "Schema {0} does not exist",
+                        new String[] { theSchema });
+            }
+            if (isEmpty(theSchema) && isSchemaRequired) {
+                return messages.getString("schemaTreeCellRenderer.schemaMustBeSet.alert", "Schema must be set");
+            }
         }
 
         // Step 2: check validity of all child objects for this value object.
@@ -332,10 +405,10 @@ public class ValidationUtils {
             String childErrMsg;
             if (child instanceof MondrianGuiDef.Cube) {
                 childErrMsg = invalid(messages, jdbcValidator, treeModel, tpath, child, child, parentDimension,
-                        parentHierarchy, parentLevel); //check current cube child and its children
+                        parentHierarchy, parentLevel, isSchemaRequired); //check current cube child and its children
             } else if (child instanceof MondrianGuiDef.Dimension) {
                 childErrMsg = invalid(messages, jdbcValidator, treeModel, tpath, child, cube, child, parentHierarchy,
-                        parentLevel); //check the current hierarchy and its children
+                        parentLevel, isSchemaRequired); //check the current hierarchy and its children
             } else if (child instanceof MondrianGuiDef.Hierarchy) {
                 // special check for cube dimension where foreign key is blank : allowed /not allowed
                 if (value instanceof MondrianGuiDef.Dimension && cube != null
@@ -349,13 +422,13 @@ public class ValidationUtils {
                     }
                 }
                 childErrMsg = invalid(messages, jdbcValidator, treeModel, tpath, child, cube, parentDimension, child,
-                        parentLevel); //check the current hierarchy and its children
+                        parentLevel, isSchemaRequired); //check the current hierarchy and its children
             } else if (child instanceof MondrianGuiDef.Level) {
                 childErrMsg = invalid(messages, jdbcValidator, treeModel, tpath, child, cube, parentDimension,
-                        parentHierarchy, child); //check the current hierarchy and its children
+                        parentHierarchy, child, isSchemaRequired); //check the current hierarchy and its children
             } else {
                 childErrMsg = invalid(messages, jdbcValidator, treeModel, tpath, child, cube, parentDimension,
-                        parentHierarchy, parentLevel); //check this child and all its children objects with incoming cube and hierarchy
+                        parentHierarchy, parentLevel, isSchemaRequired); //check this child and all its children objects with incoming cube and hierarchy
             }
 
             /* If all children are valid then do a special check.
@@ -445,12 +518,27 @@ public class ValidationUtils {
                 String table = l.table; // specified table for level's column'
                 //EC: If table has been changed in join then sets the table value to null to cause "tableMustBeSet" validation fail.
                 if (!isEmpty(table) && (parentHierarchy != null && parentHierarchy.relation instanceof MondrianGuiDef.Join)) {
-                    TreeSet joinTables = new TreeSet();
+                    TreeSet<String> joinTables = new TreeSet<String>();
                     SchemaExplorer.getTableNamesForJoin(parentHierarchy.relation, joinTables);
                     if (!joinTables.contains(table)) {
                         return messages.getString("schemaTreeCellRenderer.wrongTableValue",  "Table value does not correspond to any join");
                     }
                 }
+
+                if (!isEmpty(table) && (parentHierarchy != null &&
+                    parentHierarchy.relation instanceof MondrianGuiDef.Table)) {
+                    MondrianGuiDef.Table theTable =
+                        (MondrianGuiDef.Table)parentHierarchy.relation;
+                    String compareTo = (theTable.alias != null &&
+                            theTable.alias.trim().length() > 0) ?
+                            theTable.alias : theTable.name;
+                    if (!table.equals(compareTo)) {
+                        return messages.getString(
+                            "schemaTreeCellRenderer.tableDoesNotMatch",
+                            "Table value does not correspond to Hierarchy Relation");
+                    }
+                }
+
                 if (isEmpty(table)) {
                     if (parentHierarchy != null) {
                         if (parentHierarchy.relation == null && cube != null) { // case of degenerate dimension within cube, hierarchy table not specified
@@ -476,10 +564,6 @@ public class ValidationUtils {
                         }
                     }
                 } else {
-                    //EC: Validates against table name present on field when not using joins.
-                    if (parentHierarchy != null && parentHierarchy.relation instanceof MondrianGuiDef.Table && !isEmpty(table)) {
-                        return messages.getString("schemaTreeCellRenderer.fieldMustBeEmpty","Table field must be empty");
-                    }
                     //EC: if using Joins then gets the table name for isColExists validation.
                     if (parentHierarchy != null && parentHierarchy.relation instanceof MondrianGuiDef.Join) {
                        table = SchemaExplorer.getTableNameForAlias(parentHierarchy.relation, table);

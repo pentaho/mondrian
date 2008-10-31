@@ -1,5 +1,7 @@
 package mondrian.gui.validate.impl;
 
+import java.util.List;
+
 import mondrian.gui.JDBCMetaData;
 import mondrian.gui.validate.JDBCValidator;
 
@@ -35,4 +37,8 @@ public class WorkbenchJDBCValidator implements JDBCValidator {
         return jdbcMetadata.isTableExists(schemaName, tableName);
     }
 
+    public boolean isSchemaExists(String schemaName) {
+        List<String> theSchemas = jdbcMetadata.getAllSchemas();
+        return theSchemas != null && theSchemas.contains(schemaName);
+    }
 }

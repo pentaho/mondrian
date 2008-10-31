@@ -2605,7 +2605,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         for(int i=e.getPath().getPathCount()-1; i>=0;i--) {
             Object comp = e.getPath().getPathComponent(i);
-            if ( comp instanceof MondrianGuiDef.Cube &&  ((MondrianGuiDef.Cube) comp).fact != null ) {
+            if (comp instanceof MondrianGuiDef.Cube &&
+                ((MondrianGuiDef.Cube) comp).fact != null &&
+                (((MondrianGuiDef.Cube) comp).fact instanceof MondrianGuiDef.Table))
+            {
                 selectedFactTable = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) comp).fact).name;
                 selectedFactTableSchema = ((MondrianGuiDef.Table) ((MondrianGuiDef.Cube) comp).fact).schema;
             }
@@ -2954,7 +2957,23 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
     class PopupTrigger extends MouseAdapter {
 
+        // From MouseAdapter javadoc:
+        //
+        // Popup menus are triggered differently
+        // on different systems. Therefore, isPopupTrigger
+        // should be checked in both mousePressed
+        // and mouseReleased
+        // for proper cross-platform functionality.
+
+        public void mousePressed(MouseEvent e) {
+            showMenu(e);
+        }
+
         public void mouseReleased(MouseEvent e) {
+            showMenu(e);
+        }
+
+        public void showMenu(MouseEvent e) {
             if (e.isPopupTrigger()) {
                 int x = e.getX();
                 int y = e.getY();
@@ -3367,7 +3386,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     public I18n getResourceConverter() {
         return workbench.getResourceConverter();
     }
-    public static void getTableNamesForJoin(MondrianGuiDef.RelationOrJoin aRelOrJoin, Set aTableNames) {
+    public static void getTableNamesForJoin(MondrianGuiDef.RelationOrJoin aRelOrJoin, Set<String> aTableNames) {
          //EC: Loops join tree and collects table names.
          if (aRelOrJoin instanceof MondrianGuiDef.Join) {
              MondrianGuiDef.RelationOrJoin theRelOrJoin_L = ((MondrianGuiDef.Join) aRelOrJoin).left;
@@ -3424,6 +3443,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (theTableCellEditor instanceof SchemaPropertyCellEditor) {
             ((SchemaPropertyCellEditor) theTableCellEditor).setMetaData(aMetaData);
         }
+    }
+
+    public JTreeUpdater getTreeUpdater() {
+        return updater;
     }
 }
 
