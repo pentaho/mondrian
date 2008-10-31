@@ -23,7 +23,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="3.0.4.11865"/>
+  <property name="version" value="3.0.4.11870"/>
   <property name="vendor" value="Pentaho"/>
   <!--
     ===================================================================
