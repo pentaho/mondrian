@@ -72,6 +72,14 @@ public class PreferencesDialog extends javax.swing.JDialog {
         return schemaTextField.getText();
     }
 
+    public void setRequireSchema(boolean requireSchema) {
+        requireSchemaButton.setSelected(requireSchema);
+    }
+
+    public boolean getRequireSchema() {
+        return requireSchemaButton.isSelected();
+    }
+
     /**
      * @return the workbench i18n converter
      */
@@ -94,6 +102,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
 
         // Set the url text field to 50 to drive the width of the dialog
         urlTextField = new javax.swing.JTextField(50);
@@ -102,6 +111,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         passwordTextField = new javax.swing.JTextField();
         driverClassTextField = new javax.swing.JTextField();
         schemaTextField = new javax.swing.JTextField();
+        requireSchemaButton = new javax.swing.JCheckBox();
         acceptButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
@@ -170,6 +180,15 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(jLabel5, gridBagConstraints);
 
+        jLabel6.setText(getResourceConverter().getString("preferences.requireschema.title","Require Schema Attributes"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        jPanel1.add(jLabel6, gridBagConstraints);
+
         usernameTextField.setText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -199,6 +218,16 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(schemaTextField, gridBagConstraints);
+
+        requireSchemaButton.setSelected(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        jPanel1.add(requireSchemaButton, gridBagConstraints);
 
         driverClassTextField.setText("org.gjt.mm.mysql.Driver");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -274,9 +303,11 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private javax.swing.JTextField usernameTextField;
     private javax.swing.JTextField passwordTextField;
     private javax.swing.JTextField schemaTextField;
+    private javax.swing.JCheckBox requireSchemaButton;
     private javax.swing.JButton acceptButton;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel3;

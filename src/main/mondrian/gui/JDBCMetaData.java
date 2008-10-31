@@ -31,6 +31,7 @@ public class JDBCMetaData {
     String jdbcUsername = null;
     String jdbcPassword = null;
     String jdbcSchema = null;
+    boolean requireSchema = false;
 
     Connection conn = null;
     DatabaseMetaData md = null;
@@ -62,18 +63,23 @@ public class JDBCMetaData {
 
     public JDBCMetaData(Workbench wb, String jdbcDriverClassName,
             String jdbcConnectionUrl, String jdbcUsername,
-            String jdbcPassword, String jdbcSchema) {
+            String jdbcPassword, String jdbcSchema, boolean requireSchema) {
         this.workbench = wb;
         this.jdbcConnectionUrl = jdbcConnectionUrl;
         this.jdbcDriverClassName = jdbcDriverClassName;
         this.jdbcUsername = jdbcUsername;
         this.jdbcPassword = jdbcPassword;
         this.jdbcSchema = jdbcSchema;
+        this.requireSchema = requireSchema;
 
         if (initConnection() == null) {
             setAllSchemas();
             closeConnection();
         }
+    }
+
+    public boolean getRequireSchema() {
+        return requireSchema;
     }
 
     /**
