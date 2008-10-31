@@ -105,8 +105,7 @@ public class JDBCMetaData {
 
             Class.forName(jdbcDriverClassName);
 
-            if (jdbcUsername != null && jdbcUsername.length() > 0 &&
-                jdbcPassword != null && jdbcPassword.length() > 0) {
+            if (jdbcUsername != null && jdbcUsername.length() > 0) {
                 conn = DriverManager.getConnection(jdbcConnectionUrl, jdbcUsername, jdbcPassword);
             } else {
 

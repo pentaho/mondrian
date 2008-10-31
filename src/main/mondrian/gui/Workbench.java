@@ -1353,9 +1353,10 @@ public class Workbench extends javax.swing.JFrame {
                     "Schema - {0}",
                     new String[] { file.getName() }));
             //schemaFrame.setTitle("Schema - " + file.getName());
-
-            jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
+            if (jdbcMetaData == null) {
+                jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
                     jdbcConnectionUrl, jdbcUsername, jdbcPassword, jdbcSchema, requireSchema);
+            }
 
             schemaFrame.getContentPane().add(new SchemaExplorer(this, file, jdbcMetaData, newFile, schemaFrame));
 
