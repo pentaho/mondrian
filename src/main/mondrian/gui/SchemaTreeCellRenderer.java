@@ -258,7 +258,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
     public String invalid(JTree tree, TreePath tpath, Object value, Object icube, Object iparentDimension, Object iparentHierarchy, Object iparentLevel) {
         return ValidationUtils.invalid(new WorkbenchMessages(workbench.getResourceConverter()), new WorkbenchJDBCValidator(jdbcMetaData),
                 new WorkbenchTreeModel((SchemaTreeModel) tree.getModel()), new WorkbenchTreeModelPath(tpath), value, icube, iparentDimension,
-                iparentHierarchy, iparentLevel);
+                iparentHierarchy, iparentLevel, jdbcMetaData.getRequireSchema());
     }
     private boolean isInvalid(JTree tree, Object value, int row) {
         //return (invalid(tree.getSelectionPath(), value) ==null)?false:true;

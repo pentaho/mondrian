@@ -29,6 +29,11 @@ public interface JDBCValidator {
      * validation methods can now be called).
      */
     boolean isInitialized();
+
+    /**
+     * Returns true if schema exists.
+     */
+    boolean isSchemaExists(String schemaName);
 }
 
 // End JDBCValidator.java

@@ -1582,6 +1582,7 @@ public class Workbench extends javax.swing.JFrame {
             File theFile = theSchemaExplorer.getSchemaFile();
             checkSchemaFile(theFile);
             theSchemaExplorer.resetMetaData(jdbcMetaData);
+            theSchemaExplorer.getTreeUpdater().update();
             theSchemaFrame.updateUI();
         }
         //EC: If the JDBC preferences entered then display a warning.

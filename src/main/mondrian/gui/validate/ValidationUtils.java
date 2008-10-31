@@ -22,7 +22,7 @@ public class ValidationUtils {
 
     public static String invalid(Messages messages, JDBCValidator jdbcValidator, TreeModel treeModel,
             TreeModelPath tpath, Object value, Object icube, Object iparentDimension, Object iparentHierarchy,
-            Object iparentLevel) {
+            Object iparentLevel, boolean isSchemaRequired) {
         //String errMsg = null;
         String nameMustBeSet = messages.getString("schemaTreeCellRenderer.nameMustBeSet.alert", "Name must be set");
 
@@ -384,6 +384,16 @@ public class ValidationUtils {
                 return messages.getFormattedString("schemaTreeCellRenderer.tableDoesNotExist.alert",
                         "Table {0} does not exist in database", new String[] { tableName });
             }
+
+            String theSchema = ((MondrianGuiDef.Table)value).schema;
+            if (!isEmpty(theSchema) && !jdbcValidator.isSchemaExists(theSchema)) {
+                return messages.getFormattedString(
+                        "schemaTreeCellRenderer.schemaDoesNotExist.alert", "Schema {0} does not exist",
+                        new String[] { theSchema });
+            }
+            if (isEmpty(theSchema) && isSchemaRequired) {
+                return messages.getString("schemaTreeCellRenderer.schemaMustBeSet.alert", "Schema must be set");
+            }
         }
 
         // Step 2: check validity of all child objects for this value object.
@@ -393,10 +403,10 @@ public class ValidationUtils {
             String childErrMsg;
             if (child instanceof MondrianGuiDef.Cube) {
                 childErrMsg = invalid(messages, jdbcValidator, treeModel, tpath, child, child, parentDimension,
-                        parentHierarchy, parentLevel); //check current cube child and its children
+                        parentHierarchy, parentLevel, isSchemaRequired); //check current cube child and its children
             } else if (child instanceof MondrianGuiDef.Dimension) {
                 childErrMsg = invalid(messages, jdbcValidator, treeModel, tpath, child, cube, child, parentHierarchy,
-                        parentLevel); //check the current hierarchy and its children
+                        parentLevel, isSchemaRequired); //check the current hierarchy and its children
             } else if (child instanceof MondrianGuiDef.Hierarchy) {
                 // special check for cube dimension where foreign key is blank : allowed /not allowed
                 if (value instanceof MondrianGuiDef.Dimension && cube != null
@@ -408,13 +418,13 @@ public class ValidationUtils {
                     }
                 }
                 childErrMsg = invalid(messages, jdbcValidator, treeModel, tpath, child, cube, parentDimension, child,
-                        parentLevel); //check the current hierarchy and its children
+                        parentLevel, isSchemaRequired); //check the current hierarchy and its children
             } else if (child instanceof MondrianGuiDef.Level) {
                 childErrMsg = invalid(messages, jdbcValidator, treeModel, tpath, child, cube, parentDimension,
-                        parentHierarchy, child); //check the current hierarchy and its children
+                        parentHierarchy, child, isSchemaRequired); //check the current hierarchy and its children
             } else {
                 childErrMsg = invalid(messages, jdbcValidator, treeModel, tpath, child, cube, parentDimension,
-                        parentHierarchy, parentLevel); //check this child and all its children objects with incoming cube and hierarchy
+                        parentHierarchy, parentLevel, isSchemaRequired); //check this child and all its children objects with incoming cube and hierarchy
             }
 
             /* If all children are valid then do a special check.

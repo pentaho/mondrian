@@ -3442,6 +3442,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             ((SchemaPropertyCellEditor) theTableCellEditor).setMetaData(aMetaData);
         }
     }
+
+    public JTreeUpdater getTreeUpdater() {
+        return updater;
+    }
 }
 
 // End SchemaExplorer.java
