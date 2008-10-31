@@ -3,9 +3,13 @@
 # Launch Mondrian Schema Workbench on Linux, UNIX or Cygwin
 
 # Platform specific path-separator.
-MONDRIAN_HOME=$(cd $(dirname $0)/..; pwd)
+
+# first look in directory of the script for lib, then 
+# look up one folder if lib does not exist
+
+MONDRIAN_HOME=$(cd $(dirname $0); pwd)
 if test ! -d $MONDRIAN_HOME/lib; then
-  MONDRIAN_HOME=$(pwd)
+  MONDRIAN_HOME=$(cd $(dirname $0)/..; pwd)
 fi
 case $(uname) in
 Windows_NT|CYGWIN*)
