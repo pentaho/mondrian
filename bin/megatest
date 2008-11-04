@@ -65,9 +65,13 @@ marmalade)
   ;;
 esac
 
-case ${hostname} in
-CYGWIN*) export PS=';' ;;
-*) export PS=':' ;;
+case $(uname) in
+CYGWIN*)
+  export PS=';'
+  ;;
+*)
+  export PS=':'
+  ;;
 esac
 
 doTest() {
@@ -164,7 +168,7 @@ doTest2() {
   mysql)
     (
       jdbcDrivers=com.mysql.jdbc.Driver
-      export jdbcURL='jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart'
+      export jdbcURL='jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart&characterEncoding=UTF-8'
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo driver.classpath=/usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar
@@ -798,33 +802,44 @@ if [ "$nightly" ]; then
   fi
 fi
 
-cd "${MONDRIAN_DIR}"
-if [ "$nightly" ]; then
-  # If a cron job, run the whole suite before emitting any output.
-  doTests >megatest.log 2>&1
-  echo
-  echo ::: Summary :::::::::::::::::::::::::::::::::::::
-  echo Tests completed at $(date).
-  egrep 'Running test|OK|Tests run| [0-9]*\) ' ./megatest.log
-  if egrep 'FAILURE|BUILD FAILED|Failures: [^0]|Errors: [^0]' megatest.log; then
-    echo There were failures.
+main()
+{
+  cd "${MONDRIAN_DIR}"
+  if [ "$nightly" ]; then
+    # If a cron job, run the whole suite before emitting any output.
+    doTests >megatest.log 2>&1
+    echo
+    echo ::: Summary :::::::::::::::::::::::::::::::::::::
+    echo Tests completed at $(date).
+    egrep 'Running test|OK|Tests run| [0-9]*\) ' ./megatest.log
+    if egrep 'FAILURE|BUILD FAILED|Failures: [^0]|Errors: [^0]' megatest.log; then
+      echo There were failures.
+    else
+      echo Test succeeded.
+    fi
+
+    echo
+    echo ::: check javadoc :::::::::::::::::::::::::::::::
+    checkJavadoc
+
+    echo
+    echo ::: megatest.log :::::::::::::::::::::::::::::::::
+    # Limit to 10MB, because that is gmail's limit.
+    head --bytes=10000000 megatest.log
+
   else
-    echo Test succeeded.
+    doTests | tee megatest.log
   fi
+}
 
-  echo
-  echo ::: check javadoc :::::::::::::::::::::::::::::::
-  checkJavadoc
-
-  echo
-  echo ::: megatest.log :::::::::::::::::::::::::::::::::
-  # Limit to 10MB, because that is gmail's limit.
-  head --bytes=10000000 megatest.log
-
-else
-  doTests | tee megatest.log
-fi |
-dos2unix
+case $(uname) in
+CYGWIN*)
+  main | dos2unix
+  ;;
+*)
+  main
+  ;;
+esac
 
 # End megatest
 
