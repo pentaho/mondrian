@@ -23,6 +23,9 @@ esac
 
 CP="${MONDRIAN_HOME}/lib/commons-collections.jar"
 CP="${CP}${PS}${MONDRIAN_HOME}/lib/commons-pool.jar"
+CP="${CP}${PS}${MONDRIAN_HOME}/lib/commons-dbcp.jar"
+CP="${CP}${PS}${MONDRIAN_HOME}/lib/commons-io.jar"
+CP="${CP}${PS}${MONDRIAN_HOME}/lib/commons-lang.jar"
 CP="${CP}${PS}${MONDRIAN_HOME}/lib/eigenbase-properties.jar"
 CP="${CP}${PS}${MONDRIAN_HOME}/lib/eigenbase-resgen.jar"
 CP="${CP}${PS}${MONDRIAN_HOME}/lib/eigenbase-xom.jar"
