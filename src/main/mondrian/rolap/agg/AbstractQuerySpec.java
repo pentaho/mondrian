@@ -111,15 +111,21 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             // some DB2 (AS400) versions throw an error, if a column alias is
             // there and *not* used in a subsequent order by/group by
             final Dialect dialect = sqlQuery.getDialect();
-            if (dialect.getDatabaseProduct()
-                == Dialect.DatabaseProduct.DB2_AS400) {
-                sqlQuery.addSelect(expr, null);
+            final String c;
+            final Dialect.DatabaseProduct databaseProduct =
+                dialect.getDatabaseProduct();
+            if (databaseProduct == Dialect.DatabaseProduct.DB2_AS400) {
+                c = sqlQuery.addSelect(expr, null);
             } else {
-                sqlQuery.addSelect(expr, getColumnAlias(i));
+                c = sqlQuery.addSelect(expr, getColumnAlias(i));
             }
 
             if (isAggregate()) {
-                sqlQuery.addGroupBy(expr);
+                if (dialect.requiresGroupByAlias()) {
+                    sqlQuery.addGroupBy(c);
+                } else {
+                    sqlQuery.addGroupBy(expr);
+                }
             }
 
             // Add ORDER BY clause to make the results deterministic.
@@ -258,8 +264,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             final String alias = "d" + i;
             innerSqlQuery.addSelect(expr, alias);
             final String quotedAlias = dialect.quoteIdentifier(alias);
-            outerSqlQuery.addSelect(quotedAlias);
-            outerSqlQuery.addGroupBy(quotedAlias);
+            outerSqlQuery.addSelectGroupBy(quotedAlias);
         }
 
         // add predicates not associated with columns

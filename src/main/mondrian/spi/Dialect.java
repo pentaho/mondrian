@@ -357,7 +357,7 @@ public interface Dialect {
 
     /**
      * Returns whether this Dialect supports expressions in the GROUP BY
-     * clause. Derby/Cloudscape do not.
+     * clause. Derby/Cloudscape and Infobright do not.
      *
      * @return Whether this Dialect allows expressions in the GROUP BY
      *   clause
@@ -380,6 +380,30 @@ public interface Dialect {
      * @return whether value list length is unlimited
      */
     boolean supportsUnlimitedValueList();
+
+    /**
+     * Returns true if this Dialect can include expressions in the GROUP BY
+     * clause only by adding an expression to the SELECT clause and using
+     * its alias.
+     *
+     * <p>For example, in such a dialect,
+     * <blockquote>
+     * <code>SELECT x, x FROM t GROUP BY x</code>
+     * </blockquote>
+     * would be illegal, but
+     * <blockquote>
+     * <code>SELECT x AS a, x AS b FROM t ORDER BY a, b</code>
+     * </blockquote>
+     *
+     * would be legal.</p>
+     *
+     * <p>Infobright is the only such dialect.</p>
+     *
+     * @return Whether this Dialect can include expressions in the GROUP BY
+     *   clause only by adding an expression to the SELECT clause and using
+     *   its alias
+     */
+    boolean requiresGroupByAlias();
 
     /**
      * Returns true if this Dialect can include expressions in the ORDER BY
@@ -493,6 +517,7 @@ public interface Dialect {
         DB2,
         FIREBIRD,
         INFORMIX,
+        INFOBRIGHT,
         INGRES,
         INTERBASE,
         LUCIDDB,

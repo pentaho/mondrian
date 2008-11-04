@@ -1070,24 +1070,28 @@ Revision is $Id$
     </Element>
 
     <Element type="SQL">
-        <Attribute name="dialect" default="generic">
+        <Attribute name="dialect" required="true" default="generic">
             <Doc>
-                Dialect of SQL the view is intended for.
+                Dialect of SQL the view is intended for. Valid values include,
+                but are not limited to:
+                <ul>
+                <li>generic</li>
+                <li>access</li>
+                <li>db2</li>
+                <li>derby</li>
+                <li>firebird</li>
+                <li>hsqldb</li>
+                <li>mssql</li>
+                <li>mysql</li>
+                <li>oracle</li>
+                <li>postgres</li>
+                <li>sybase</li>
+                <li>teradata</li>
+                <li>ingres</li>
+                <li>infobright</li>
+                <li>luciddb</li>
+                </ul>
             </Doc>
-            <Value>generic</Value>
-            <Value>access</Value>
-            <Value>db2</Value>
-            <Value>derby</Value>
-            <Value>firebird</Value>
-            <Value>hsqldb</Value>
-            <Value>mssql</Value>
-            <Value>mysql</Value>
-            <Value>oracle</Value>
-            <Value>postgres</Value>
-            <Value>sybase</Value>
-            <Value>teradata</Value>
-            <Value>ingres</Value>
-            <Value>luciddb</Value>
         </Attribute>
         <CData/>
         <Code><![CDATA[

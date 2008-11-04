@@ -26,6 +26,11 @@
   <li><a href="#2_Set_up_test_data">Set up test data with a non-embedded database</a><ol>
     <li><a href="#2_1_Microsoft_Access">Microsoft Access</a></li>
     <li><a href="#2_2_Non_Access_setup">Other database</a></li>
+    <li><a href="#2_3_Examples">Examples</a></li>
+    <ol>
+    <li><a href="#MySQL_on_Linux_example">MySQL on Linux</a></li>
+    <li><a href="#PostgreSQL_on_Windows_example">PostgreSQL on Windows</a></li>
+    </ol>
   </ol>
   <li><a href="#3_Deploy_and_run_the_web_app">Deploy and run the web application
 with a non-embedded database</a></li>
@@ -46,6 +51,13 @@ configure Mondrian as an XML/A provider</a><ol>
     <li><a href="#6_2_Cache_setup">Cache setup</a></li>
   </ol>
   <li><a href="#7_Database_compatibility">Database compatibility</a></li>
+  <ol>
+    <li><a href="#Infobright">Infobright</a></li>
+    <li><a href="#Ingres">Ingres</a></li>
+    <li><a href="#MySQL">MySQL</a></li>
+    <li><a href="#PostgreSQL">PostgreSQL</a></li>
+    <li><a href="#Sybase">Sybase</a></li>
+  </ol>
   <li><a href="#8_Compatibility_issues">Compatibility issues</a></li>
   <ol>
     <li><a href="#8_1_Weblogic_6_1_and_Xerces">Weblogic 6.1 and Xerces</a></li>
@@ -254,7 +266,7 @@ log4j:WARN Please initialize the log4j system properly.</code>
 will vary depending upon your operating system, and intended
 source and target data sources.</p>
 
-<h5>Example 1. Loading MySQL from a file on Linux</h5>
+<h5>Example 1. Loading MySQL from a file on Linux<a name="MySQL_on_Linux_example">&nbsp;</a></h5>
 
 <p>The following example is a Linux command line to
 create a MySQL schema called 'foodmart', and create
@@ -285,7 +297,7 @@ user:</p>
 &nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL="jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart"</code>
 </blockquote>
 
-<h5>Example 2. Loading PostgreSQL from Access on Windows</h5>
+<h5>Example 2. Loading PostgreSQL from Access on Windows<a name="PostgreSQL_on_Windows_example">&nbsp;</a></h5>
 
 <p>The following example is a Windows command line to
 create FoodMart tables for PostgreSQL from the test
@@ -477,6 +489,7 @@ for the Java VM.</p>
   <li>Firebird</li>
   <li>hsqldb</li>
   <li>IBM DB2</li>
+  <li>Infobright</li>
   <li>Informix</li>
   <li>Ingres</li>
   <li>Interbase</li>
@@ -505,7 +518,45 @@ property settings, and any other tweaks which were required.</p>
 <code><a href="http://p4web.eigenbase.org/open/mondrian/mondrian.properties">mondrian.properties</a></code>.  There are are sample connect
 strings for most databases in there.</p>
 
-<h3>PostgreSQL</h3>
+<h3>Infobright <a name="Infobright">&nbsp;</a></h3>
+
+<p>Infobright is a variant of the MySQL system. In fact, Infobright uses the
+regular MySQL driver, and even reports its product name as 'MySQL'! Mondrian
+detects Infobright by looking in the <code>INFORMATION_SCHEMA.engines</code>
+table; if there is an engine called "BRIGHTHOUSE", mondrian assumes the
+Infobright dialect.</p>
+
+<p>First download and
+<a href="http://www.infobright.org/wiki/Install_Guide/">install</a>
+Infobright Community Edition (ICE). To create and populate the FoodMart schema,
+most steps are the same as for <a href="#MySQL">MySQL</a>. ICE does not support
+the <code>INSERT</code> command, so MondrianFoodMartLoader automatically uses
+the <code>LOAD DATA INFILE</code> command.</p>
+
+<p>If the JDBC driver gives the error <code>Unknown character set: 'usa7'</code>,
+try adding <code>&amp;characterEncoding=UTF-8</code> to the end of the JDBC
+connect string.</p>
+
+<h3>Ingres<a name="Ingres">&nbsp;</a></h3>
+
+<p>Andy Grimm writes:</p>
+<blockquote>
+    <p>In addition, I had to run a perl script against the demo sql file:<br>
+    <br>
+    &gt; <code>perl -pi -e &quot;s/:00\.0/:00/g&quot; FoodMartCreateData.sql</code><br>
+    <br>
+    That drops the &quot;.0&quot; off each timestamp to make it a valid DATE. Our next 
+    release will support timestamps, so this is a short-term fix that could go 
+    into Release Notes.</p>
+</blockquote>
+
+<h3>MySQL <a name="MySQL">&nbsp;</a></h3>
+
+<p>See the <a href="#MySQL_on_Linux_example">MySQL example</a>.</p>
+
+<h3>PostgreSQL<a name="PostgreSQL">&nbsp;</a></h3>
+
+<p>See <a href="#PostgreSQL_example">PostgreSQL example</a>.</p>
 
 <p>To install PostgreSQL 8.2 and its JDBC driver on Ubuntu, I typed:</p>
 
@@ -526,19 +577,7 @@ strings for most databases in there.</p>
     $ sudo -u postgres  createuser -D -A -P foodmart<br/>
     $ sudo -u postgres createdb -O foodmart foodmart</code></blockquote>
 
-<h3>Ingres</h3>
-<p>Andy Grimm writes:</p>
-<blockquote>
-    <p>In addition, I had to run a perl script against the demo sql file:<br>
-    <br>
-    &gt; <code>perl -pi -e &quot;s/:00\.0/:00/g&quot; FoodMartCreateData.sql</code><br>
-    <br>
-    That drops the &quot;.0&quot; off each timestamp to make it a valid DATE. Our next 
-    release will support timestamps, so this is a short-term fix that could go 
-    into Release Notes.</p>
-</blockquote>
-<h3>&nbsp;</h3>
-<h3>Sybase</h3>
+<h3>Sybase<a name="Sybase">&nbsp;</a></h3>
 
 <p><a href="http://forums.pentaho.org/showthread.php?t=47918">mizar_sf writes</a>:</p>
 <blockquote>

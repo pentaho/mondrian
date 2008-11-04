@@ -363,17 +363,14 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                 hierarchy.addToFrom(sqlQuery, captionExp);
             }
 
-            sqlQuery.addSelect(keySql);
-            sqlQuery.addGroupBy(keySql);
+            sqlQuery.addSelectGroupBy(keySql);
 
             if (!ordinalSql.equals(keySql)) {
-                sqlQuery.addSelect(ordinalSql);
-                sqlQuery.addGroupBy(ordinalSql);
+                sqlQuery.addSelectGroupBy(ordinalSql);
             }
 
             if (captionSql != null) {
-                sqlQuery.addSelect(captionSql);
-                sqlQuery.addGroupBy(captionSql);
+                sqlQuery.addSelectGroupBy(captionSql);
             }
 
             constraint.addLevelConstraint(sqlQuery, baseCube, null, currLevel);
@@ -396,8 +393,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
             RolapProperty[] properties = currLevel.getProperties();
             for (RolapProperty property : properties) {
                 String propSql = property.getExp().getExpression(sqlQuery);
-                sqlQuery.addSelect(propSql);
-                sqlQuery.addGroupBy(propSql);
+                sqlQuery.addSelectGroupBy(propSql);
             }
         }
     }

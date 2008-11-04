@@ -297,7 +297,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             "`product`.`brand_name` as `Brand Name`, `product`.`product_name` as `Product Name`, " +
             "`promotion`.`media_type` as `Media Type`, `promotion`.`promotion_name` as `Promotion Name`, " +
             "`customer`.`country` as `Country`, `customer`.`state_province` as `State Province`, `customer`.`city` as `City`, " +
-            "fname + ' ' + lname as `Name`, `customer`.`customer_id` as `Name (Key)`, " +
+            nameExpStr + " as `Name`, `customer`.`customer_id` as `Name (Key)`, " +
             "`customer`.`education` as `Education Level`, `customer`.`gender` as `Gender`, `customer`.`marital_status` as `Marital Status`, " +
             "`customer`.`yearly_income` as `Yearly Income`, " +
             "`sales_fact_1997`.`unit_sales` as `Unit Sales` " +
@@ -468,15 +468,23 @@ public class DrillThroughTest extends FoodMartTestCase {
         final Cube cube = result.getQuery().getCube();
         RolapStar star = ((RolapCube) cube).getStar();
 
+        // Adjust expected SQL for dialect differences in FoodMart.xml.
         Dialect dialect = star.getSqlQueryDialect();
-        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS) {
-            String caseStmt =
-                " \\(case when `sales_fact_1997`.`promotion_id` = 0 then 0" +
+        final String caseStmt =
+            " \\(case when `sales_fact_1997`.`promotion_id` = 0 then 0" +
                 " else `sales_fact_1997`.`store_sales` end\\)";
+        switch (dialect.getDatabaseProduct()) {
+        case ACCESS:
             expectedSql = expectedSql.replaceAll(
                 caseStmt,
                 " Iif(`sales_fact_1997`.`promotion_id` = 0, 0," +
-                " `sales_fact_1997`.`store_sales`)");
+                    " `sales_fact_1997`.`store_sales`)");
+            break;
+        case INFOBRIGHT:
+            expectedSql = expectedSql.replaceAll(
+                caseStmt,
+                " `sales_fact_1997`.`store_sales`");
+            break;
         }
 
         getTestContext().assertSqlEquals(expectedSql, sql, 7978);
@@ -614,7 +622,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         // Prior to fix the request for the drill through SQL would result in
         // an assertion error
         String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(true);
-
+        String nameExpStr = getNameExp(result, "Customers", "Name");
         String expectedSql =
             "select `store`.`store_country` as `Store Country`," +
             " `store`.`store_state` as `Store State`," +
@@ -631,7 +639,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             " `store_ragged`.`store_id` as `Store Id (Key)`, `promotion`.`media_type` as `Media Type`," +
             " `promotion`.`promotion_name` as `Promotion Name`, `customer`.`country` as `Country`," +
             " `customer`.`state_province` as `State Province`, `customer`.`city` as `City`," +
-            " fname + ' ' + lname as `Name`, `customer`.`customer_id` as `Name (Key)`," +
+            " " + nameExpStr + " as `Name`, `customer`.`customer_id` as `Name (Key)`," +
             " `customer`.`education` as `Education Level`, `customer`.`gender` as `Gender`," +
             " `customer`.`marital_status` as `Marital Status`," +
             " `customer`.`yearly_income` as `Yearly Income`," +
@@ -658,7 +666,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             " `product`.`product_name` ASC, `store_ragged`.`store_id` ASC," +
             " `promotion`.`media_type` ASC, `promotion`.`promotion_name` ASC," +
             " `customer`.`country` ASC, `customer`.`state_province` ASC," +
-            " `customer`.`city` ASC, fname + ' ' + lname ASC," +
+            " `customer`.`city` ASC, " + nameExpStr + " ASC," +
             " `customer`.`customer_id` ASC, `customer`.`education` ASC," +
             " `customer`.`gender` ASC, `customer`.`marital_status` ASC," +
             " `customer`.`yearly_income` ASC";

@@ -167,18 +167,23 @@ class AggQuerySpec {
 
             // some DB2 (AS400) versions throw an error, if a column alias is
             // there and *not* used in a subsequent order by/group by
+            final String c;
             switch (sqlQuery.getDialect().getDatabaseProduct()) {
             case DB2_AS400:
             case DB2_OLD_AS400:
-                sqlQuery.addSelect(expr, null);
+                c = sqlQuery.addSelect(expr, null);
                 break;
             default:
-                sqlQuery.addSelect(expr, getColumnAlias(i));
+                c = sqlQuery.addSelect(expr, getColumnAlias(i));
                 break;
             }
 
             if (rollup) {
-                sqlQuery.addGroupBy(expr);
+                if (sqlQuery.getDialect().requiresGroupByAlias()) {
+                    sqlQuery.addGroupBy(c);
+                } else {
+                    sqlQuery.addGroupBy(expr);
+                }
             }
         }
 

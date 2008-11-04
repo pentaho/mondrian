@@ -1158,6 +1158,9 @@ public class SchemaTest extends FoodMartTestCase {
                 "    <SQL dialect=\"mysql\">\n" +
                 "     <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n" +
                 "    </SQL>\n" +
+                "    <SQL dialect=\"infobright\">\n" +
+                "     <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n" +
+                "    </SQL>\n" +
                 "  </View>\n" +
                 "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
                 "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n" +
@@ -1217,6 +1220,9 @@ public class SchemaTest extends FoodMartTestCase {
                 "     <![CDATA[select * from \"store\" \"FOOBAR\"]]>\n" +
                 "    </SQL>\n" +
                 "    <SQL dialect=\"mysql\">\n" +
+                "     <![CDATA[select * from `store` as `FOOBAR`]]>\n" +
+                "    </SQL>\n" +
+                "    <SQL dialect=\"infobright\">\n" +
                 "     <![CDATA[select * from `store` as `FOOBAR`]]>\n" +
                 "    </SQL>\n" +
                 "  </View>\n" +

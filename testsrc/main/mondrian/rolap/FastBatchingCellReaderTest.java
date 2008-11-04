@@ -844,18 +844,17 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
     public void testCanBatchForBatchWithDifferentAggregationTable() {
         final Dialect dialect = getTestContext().getDialect();
-        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.TERADATA) {
-            // On Teradata we don't create aggregate tables, so this test will
-            // fail.
+        final Dialect.DatabaseProduct product = dialect.getDatabaseProduct();
+        switch (product) {
+        case TERADATA:
+        case INFOBRIGHT:
+            // On Teradata and Infobright we don't create aggregate tables, so
+            // this test will fail.
             return;
         }
         getTestContext().clearConnection();
-        boolean useAggregates =
-            MondrianProperties.instance().UseAggregates.get();
-        boolean readAggregates =
-            MondrianProperties.instance().ReadAggregates.get();
-        MondrianProperties.instance().UseAggregates.set(true);
-        MondrianProperties.instance().ReadAggregates.set(true);
+        propSaver.set(propSaver.properties.UseAggregates, true);
+        propSaver.set(propSaver.properties.ReadAggregates, true);
 
         FastBatchingCellReader fbcr =
             new FastBatchingCellReader(getCube(cubeNameSales));
@@ -876,8 +875,6 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
         assertFalse(detailedBatch.canBatch(summaryBatch));
         assertFalse(summaryBatch.canBatch(detailedBatch));
-        MondrianProperties.instance().UseAggregates.set(useAggregates);
-        MondrianProperties.instance().ReadAggregates.set(readAggregates);
     }
 
     public void testCannotBatchTwoBatchesAtTheSameLevel() {

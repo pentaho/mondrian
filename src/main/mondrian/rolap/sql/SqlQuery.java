@@ -344,19 +344,34 @@ public class SqlQuery {
      * Adds an expression to the select clause, automatically creating a
      * column alias.
      */
-    public void addSelect(final String expression) {
+    public String addSelect(final String expression) {
         // Some DB2 versions (AS/400) throw an error if a column alias is
         //  *not* used in a subsequent order by (Group by).
         // Derby fails on 'SELECT... HAVING' if column has alias.
         switch (dialect.getDatabaseProduct()) {
         case DB2_AS400:
         case DERBY:
-            addSelect(expression, null);
-            break;
+            return addSelect(expression, null);
         default:
-            addSelect(expression, nextColumnAlias());
-            break;
+            return addSelect(expression, nextColumnAlias());
         }
+    }
+
+    /**
+     * Adds an expression to the SELECT and GROUP BY clauses. Uses the alias in
+     * the GROUP BY clause, if the dialect requires it.
+     *
+     * @param expression Expression
+     * @return Alias of expression
+     */
+    public String addSelectGroupBy(final String expression) {
+        final String c = addSelect(expression);
+        if (dialect.requiresGroupByAlias()) {
+            addGroupBy(dialect.quoteIdentifier(c));
+        } else {
+            addGroupBy(expression);
+        }
+        return c;
     }
 
     public int getCurrentSelectListSize()
@@ -368,9 +383,15 @@ public class SqlQuery {
         return "c" + select.size();
     }
 
-    /** Adds an expression to the select clause, with a specified column
-     * alias. */
-    public void addSelect(final String expression, final String alias) {
+    /**
+     * Adds an expression to the select clause, with a specified column
+     * alias.
+     *
+     * @param expression Expression
+     * @param alias Column alias (or null for no alias)
+     * @return Column alias
+     */
+    public String addSelect(final String expression, final String alias) {
         buf.setLength(0);
 
         buf.append(expression);
@@ -380,6 +401,7 @@ public class SqlQuery {
         }
 
         select.add(buf.toString());
+        return alias;
     }
 
     public void addWhere(

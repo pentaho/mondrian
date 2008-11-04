@@ -398,8 +398,7 @@ RME is this right
             MondrianDef.Expression exp = level.getKeyExp();
             hierarchy.addToFrom(sqlQuery, exp);
             String expString = exp.getExpression(sqlQuery);
-            sqlQuery.addSelect(expString);
-            sqlQuery.addGroupBy(expString);
+            sqlQuery.addSelectGroupBy(expString);
             exp = level.getOrdinalExp();
             hierarchy.addToFrom(sqlQuery, exp);
             expString = exp.getExpression(sqlQuery);
@@ -414,8 +413,7 @@ RME is this right
                 exp = property.getExp();
                 hierarchy.addToFrom(sqlQuery, exp);
                 expString = exp.getExpression(sqlQuery);
-                sqlQuery.addSelect(expString);
-                sqlQuery.addGroupBy(expString);
+                sqlQuery.addSelectGroupBy(expString);
             }
         }
         return sqlQuery.toString();
@@ -550,8 +548,7 @@ RME is this right
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String q = level.getKeyExp().getExpression(sqlQuery);
-        sqlQuery.addSelect(q);
-        sqlQuery.addGroupBy(q);
+        sqlQuery.addSelectGroupBy(q);
 
         // in non empty mode the level table must be joined to the fact table
         constraint.addLevelConstraint(sqlQuery, null, aggStar, level);
@@ -560,16 +557,14 @@ RME is this right
             MondrianDef.Expression captionExp = level.getCaptionExp();
             hierarchy.addToFrom(sqlQuery, captionExp);
             String captionSql = captionExp.getExpression(sqlQuery);
-            sqlQuery.addSelect(captionSql);
-            sqlQuery.addGroupBy(captionSql);
+            sqlQuery.addSelectGroupBy(captionSql);
         }
 
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(q)) {
-            sqlQuery.addGroupBy(orderBy);
-            sqlQuery.addSelect(orderBy);
+            sqlQuery.addSelectGroupBy(orderBy);
         }
 
         RolapProperty[] properties = level.getProperties();
@@ -577,8 +572,7 @@ RME is this right
             final MondrianDef.Expression exp = property.getExp();
             hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
-            sqlQuery.addSelect(s);
-            sqlQuery.addGroupBy(s);
+            sqlQuery.addSelectGroupBy(s);
         }
         return sqlQuery.toString();
     }
@@ -920,14 +914,12 @@ RME is this right
         sqlQuery.addWhere(condition.toString());
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String childId = level.getKeyExp().getExpression(sqlQuery);
-        sqlQuery.addSelect(childId);
-        sqlQuery.addGroupBy(childId);
+        sqlQuery.addSelectGroupBy(childId);
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(childId)) {
-            sqlQuery.addGroupBy(orderBy);
-            sqlQuery.addSelect(orderBy);
+            sqlQuery.addSelectGroupBy(orderBy);
         }
 
         RolapProperty[] properties = level.getProperties();
@@ -935,8 +927,7 @@ RME is this right
             final MondrianDef.Expression exp = property.getExp();
             hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
-            sqlQuery.addSelect(s);
-            sqlQuery.addGroupBy(s);
+            sqlQuery.addSelectGroupBy(s);
         }
         return sqlQuery.toString();
     }
@@ -975,14 +966,12 @@ RME is this right
 
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String childId = level.getKeyExp().getExpression(sqlQuery);
-        sqlQuery.addSelect(childId);
-        sqlQuery.addGroupBy(childId);
+        sqlQuery.addSelectGroupBy(childId);
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(childId)) {
-            sqlQuery.addGroupBy(orderBy);
-            sqlQuery.addSelect(orderBy);
+            sqlQuery.addSelectGroupBy(orderBy);
         }
 
         RolapProperty[] properties = level.getProperties();
@@ -990,8 +979,7 @@ RME is this right
             final MondrianDef.Expression exp = property.getExp();
             hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
-            sqlQuery.addSelect(s);
-            sqlQuery.addGroupBy(s);
+            sqlQuery.addSelectGroupBy(s);
         }
         return sqlQuery.toString();
     }

@@ -544,6 +544,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                     " sql:field=\"Unit Sales\" type=\"xsd:decimal\"");
                 break;
             case MYSQL:
+            case INFOBRIGHT:
             case DERBY:
             case TERADATA:
                 content = Util.replace(

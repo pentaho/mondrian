@@ -13,6 +13,7 @@ package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
+import mondrian.spi.Dialect;
 import mondrian.rolap.RolapConnectionProperties;
 
 import java.io.InputStream;
@@ -81,6 +82,13 @@ public class NamedSetTest extends FoodMartTestCase {
      * Set defined on top of calc member.
      */
     public void testNamedSetOnMember() {
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            // Mondrian generates 'select ... sum(warehouse_sales) -
+            // sum(warehouse_cost) as c ... order by c4', correctly, but
+            // Infobright gives error "'c4' isn't in GROUP BY".
+            return;
+        }
         assertQueryReturns(
                 "WITH\n" +
                 "    MEMBER [Measures].[Profit]\n" +

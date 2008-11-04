@@ -28,6 +28,16 @@ mysql() {
          -outputJdbcURL="jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart"
 }
 
+infobright() {
+    # As mysql, but '-indexes' option removed because infobright doesn't support them.
+    java -cp "${CP}${PS}/usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar" \
+         mondrian.test.loader.MondrianFoodMartLoader \
+         -verbose -aggregates -tables -data \
+         -jdbcDrivers=com.mysql.jdbc.Driver \
+         -inputFile=demo/FoodMartCreateData.sql \
+         -outputJdbcURL="jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart&characterEncoding=UTF-8"
+}
+
 # Load PostgreSQL.
 #
 # To install postgres and its JDBC driver on ubuntu:
@@ -74,6 +84,6 @@ teradata() {
 }
 
 cd $(dirname $0)/..
-postgresql
+infobright
 
 # End loadFoodMart

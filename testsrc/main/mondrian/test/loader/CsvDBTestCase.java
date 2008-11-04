@@ -13,6 +13,8 @@ import mondrian.olap.Schema;
 import mondrian.rolap.RolapConnection;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
+import mondrian.spi.Dialect;
+
 import java.sql.SQLException;
 import java.sql.Connection;
 import java.io.File;
@@ -46,7 +48,10 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
     }
 
     protected final boolean isApplicable() {
-        return getTestContext().getDialect().allowsDdl();
+        final Dialect dialect = getTestContext().getDialect();
+        return dialect.allowsDdl()
+            && dialect.getDatabaseProduct()
+            != Dialect.DatabaseProduct.INFOBRIGHT;
     }
 
     protected void setUp() throws Exception {

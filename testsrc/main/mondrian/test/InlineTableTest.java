@@ -121,6 +121,13 @@ public class InlineTableTest extends FoodMartTestCase {
     }
 
     public void testInlineTableSnowflake() {
+        if (getTestContext().getDialect().getDatabaseProduct()
+            == Dialect.DatabaseProduct.INFOBRIGHT) {
+            // Infobright has a bug joining an inline table. Gives error
+            // "Illegal mix of collations (ascii_bin,IMPLICIT) and
+            // (utf8_general_ci,COERCIBLE) for operation '='".
+            return;
+        }
         final String cubeName = "Sales_inline_snowflake";
         TestContext testContext = TestContext.create(
             null,

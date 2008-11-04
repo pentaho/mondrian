@@ -18,6 +18,7 @@ import mondrian.udf.CurrentDateMemberExactUdf;
 import mondrian.udf.CurrentDateMemberUdf;
 import mondrian.udf.CurrentDateStringUdf;
 import mondrian.util.Bug;
+import mondrian.spi.Dialect;
 
 import org.eigenbase.xom.StringEscaper;
 
@@ -1129,7 +1130,14 @@ public class FunctionTest extends FoodMartTestCase {
 
         // <Dimension>.members applied to a query with calc measures
         // Again, no calc measures are returned
-        assertQueryReturns("with member [Measures].[Xxx] AS ' [Measures].[Unit Sales] '" +
+        switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            // Skip this test on Infobright, because [Promotion Sales] is
+            // defined wrong.
+            break;
+        default:
+            assertQueryReturns(
+                "with member [Measures].[Xxx] AS ' [Measures].[Unit Sales] '" +
                 "select {[Measures].members} on columns from [Sales]",
                 fold(
                     "Axis #0:\n" +
@@ -1147,13 +1155,20 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 86,837\n" +
                     "Row #0: 5,581\n" +
                     "Row #0: 151,211.21\n"));
+        }
 
         // <Level>.members applied to a query with calc measures
         // Again, no calc measures are returned
-        assertQueryReturns("with member [Measures].[Xxx] AS ' [Measures].[Unit Sales] '" +
+        switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            // Skip this test on Infobright, because [Promotion Sales] is
+            // defined wrong.
+            break;
+        default:
+            assertQueryReturns(
+                "with member [Measures].[Xxx] AS ' [Measures].[Unit Sales] '" +
                 "select {[Measures].[Measures].members} on columns from [Sales]",
-                fold(
-                    "Axis #0:\n" +
+                fold("Axis #0:\n" +
                     "{}\n" +
                     "Axis #1:\n" +
                     "{[Measures].[Unit Sales]}\n" +
@@ -1168,6 +1183,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 86,837\n" +
                     "Row #0: 5,581\n" +
                     "Row #0: 151,211.21\n"));
+        }
     }
 
     public void testHierarchyMembers() {
@@ -1231,10 +1247,16 @@ public class FunctionTest extends FoodMartTestCase {
 
         // <Dimension>.allmembers applied to a query with calc measures
         // Calc measures are returned
-        assertQueryReturns("with member [Measures].[Xxx] AS ' [Measures].[Unit Sales] '" +
-            "select {[Measures].allmembers} on columns from [Sales]",
-            fold(
-                "Axis #0:\n" +
+        switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            // Skip this test on Infobright, because [Promotion Sales] is
+            // defined wrong.
+            break;
+        default:
+            assertQueryReturns(
+                "with member [Measures].[Xxx] AS ' [Measures].[Unit Sales] '" +
+                    "select {[Measures].allmembers} on columns from [Sales]",
+                fold("Axis #0:\n" +
                     "{}\n" +
                     "Axis #1:\n" +
                     "{[Measures].[Unit Sales]}\n" +
@@ -1257,15 +1279,23 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 0.0%\n" +
                     "Row #0: $339,610.90\n" +
                     "Row #0: 266,773\n"));
+        }
 
         // Calc measure members from schema and from query
-        assertQueryReturns("WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' " +
-            "SELECT {[Measures].AllMembers} ON COLUMNS," +
-            "non empty({[Store].[Store State].Members}) ON ROWS " +
-            "FROM Sales " +
-            "WHERE ([1997].[Q1])",
-            fold(
-                "Axis #0:\n" +
+        switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            // Skip this test on Infobright, because [Promotion Sales] is
+            // defined wrong.
+            break;
+        default:
+            assertQueryReturns(
+                "WITH MEMBER [Measures].[Unit to Sales ratio] as\n" +
+                    " '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' " +
+                    "SELECT {[Measures].AllMembers} ON COLUMNS," +
+                    "non empty({[Store].[Store State].Members}) ON ROWS " +
+                    "FROM Sales " +
+                    "WHERE ([1997].[Q1])",
+            fold("Axis #0:\n" +
                     "{[Time].[1997].[Q1]}\n" +
                     "Axis #1:\n" +
                     "{[Measures].[Unit Sales]}\n" +
@@ -1312,15 +1342,22 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #2: 0.0%\n" +
                     "Row #2: $38,042.78\n" +
                     "Row #2: 47.6%\n"));
+        }
 
         // Calc member in query and schema not seen
-        assertQueryReturns("WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' " +
-            "SELECT {[Measures].AllMembers} ON COLUMNS," +
-            "non empty({[Store].[Store State].Members}) ON ROWS " +
-            "FROM Sales " +
-            "WHERE ([1997].[Q1])",
-            fold(
-                "Axis #0:\n" +
+        switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            // Skip this test on Infobright, because [Promotion Sales] is
+            // defined wrong.
+            break;
+        default:
+            assertQueryReturns(
+                "WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' " +
+                    "SELECT {[Measures].AllMembers} ON COLUMNS," +
+                    "non empty({[Store].[Store State].Members}) ON ROWS " +
+                    "FROM Sales " +
+                    "WHERE ([1997].[Q1])",
+                fold("Axis #0:\n" +
                     "{[Time].[1997].[Q1]}\n" +
                     "Axis #1:\n" +
                     "{[Measures].[Unit Sales]}\n" +
@@ -1367,9 +1404,17 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #2: 0.0%\n" +
                     "Row #2: $38,042.78\n" +
                     "Row #2: 47.6%\n"));
+        }
 
         // Calc member in query and schema not seen
-        assertQueryReturns("WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' " +
+        switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            // Skip this test on Infobright, because [Promotion Sales] is
+            // defined wrong.
+            break;
+        default:
+            assertQueryReturns(
+                "WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' " +
                 "SELECT {[Measures].Members} ON COLUMNS," +
                         "non empty({[Store].[Store State].Members}) ON ROWS " +
                 "FROM Sales " +
@@ -1406,6 +1451,7 @@ public class FunctionTest extends FoodMartTestCase {
                 "Row #2: 9,906\n" +
                 "Row #2: 1,104\n" +
                 "Row #2: 18,459.60\n"));
+        }
 
         // Calc member in dimension based on level
         assertQueryReturns("WITH MEMBER [Store].[USA].[CA plus OR] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA].[OR]})' " +
@@ -8412,6 +8458,13 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
 
     public void testComplexOrExpr()
     {
+        switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            // Skip this test on Infobright, because [Promotion Sales] is
+            // defined wrong.
+            return;
+        }
+
         // make sure all aggregates referenced in the OR expression are
         // processed in a single load request by setting the eval depth to
         // a value smaller than the number of measures

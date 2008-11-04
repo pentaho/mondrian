@@ -191,8 +191,8 @@ public class DialectTest extends TestCase {
             }
         }
         if (getDialect().allowsDdl()) {
-            assertEquals(3, phase);
             assertNull(e);
+            assertEquals(3, phase);
         } else {
             assertEquals(1, phase);
             assertNotNull(e);
@@ -275,7 +275,11 @@ public class DialectTest extends TestCase {
         if (getDialect().supportsGroupByExpressions()) {
             assertQuerySucceeds(sql);
         } else {
-            assertQueryFails(sql, new String[] {});
+            assertQueryFails(
+                sql,
+                new String[] {
+                    "'sum\\(`unit_sales` \\+ 3\\) \\+ 8' isn't in GROUP BY"
+                });
         }
     }
 
@@ -317,7 +321,19 @@ public class DialectTest extends TestCase {
             dialectize("SELECT [unit_sales]\n" +
                 "FROM [sales_fact_1997]\n" +
                 "WHERE ([unit_sales], [time_id]) IN ((1, 371), (2, 394))");
-        if (getDialect().supportsMultiValueInExpr()) {
+
+        boolean supports = getDialect().supportsMultiValueInExpr();
+
+        // Infobright supports this syntax but is too slow for general use so
+        // the dialect pretends that it does not.
+        switch (getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            assertFalse(supports);
+            supports = true;
+            break;
+        }
+
+        if (supports) {
             assertQuerySucceeds(sql);
         } else {
             String[] errs = {
@@ -464,6 +480,7 @@ public class DialectTest extends TestCase {
         case ACCESS:
             break;
         case MYSQL:
+        case INFOBRIGHT:
             s = s.replace('[', '`');
             s = s.replace(']', '`');
             break;

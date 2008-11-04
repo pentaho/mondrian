@@ -120,6 +120,7 @@ public class MondrianFoodMartLoader {
     private Connection inputConnection;
 
     private FileWriter fileOutput = null;
+    private File file;
 
     private final Map<String, Column[]> tableMetadataToLoad =
         new HashMap<String, Column[]>();
@@ -128,8 +129,13 @@ public class MondrianFoodMartLoader {
     private final Map<String, List<UniqueConstraint>> tableConstraints =
         new HashMap<String, List<UniqueConstraint>>();
     private Dialect dialect;
+    private boolean batchFile;
 
-
+    /**
+     * Creates an instance of the loader and parses the command-line options.
+     *
+     * @param args Command-line options
+     */
     public MondrianFoodMartLoader(String[] args) {
         if (args.length == 0) {
             usage();
@@ -293,6 +299,13 @@ public class MondrianFoodMartLoader {
 
         dialect = JdbcDialectImpl.create(metaData);
 
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.INFOBRIGHT
+            && indexes)
+        {
+            System.out.println("Infobright engine detected: ignoring indexes");
+            indexes = false;
+        }
+
         if (inputBatchSize == -1) {
             // No explicit batch size was set by user, so assign a good
             // default now
@@ -358,18 +371,19 @@ public class MondrianFoodMartLoader {
     }
 
     /**
-     * Parse a file of INSERT statements and output to the configured JDBC
+     * Parses a file of INSERT statements and output to the configured JDBC
      * connection or another file in the dialect of the target data source.
      *
-     * The assumption is that the input INSERT statements are generated
-     * by this loader by something like:
+     * <p>Assumes that the input INSERT statements are generated
+     * by this loader by something like:</p>
      *
+     * <blockquote><pre>
      * MondrianFoodLoader
      * -verbose -tables -data -indexes
      * -jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver,com.mysql.jdbc.Driver
      * -inputJdbcURL=jdbc:odbc:MondrianFoodMart
      * -outputJdbcURL=jdbc:mysql://localhost/textload?user=root&password=myAdmin
-     * -outputDirectory=C:\Temp\wip\Loader-Output
+     * -outputDirectory=C:\Temp\wip\Loader-Output</pre></blockquote>
      */
     private void loadDataFromFile() throws Exception {
         InputStream is = openInputStream();
@@ -378,21 +392,31 @@ public class MondrianFoodMartLoader {
             throw new Exception("No data file to process");
         }
 
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.INFOBRIGHT) {
+            batchFile = true;
+            file = File.createTempFile("tmpfile", ".csv");
+            fileOutput = new FileWriter(file);
+        } else {
+            batchFile = false;
+        }
         try {
             final InputStreamReader reader = new InputStreamReader(is);
             final BufferedReader bufferedReader = new BufferedReader(reader);
-            final Pattern mySQLRegex = Pattern.compile("INSERT INTO `([^ ]+)` \\((.*)\\) VALUES\\((.*)\\);");
-            final Pattern doubleQuoteRegex = Pattern.compile("INSERT INTO \"([^ ]+)\" \\((.*)\\) VALUES\\((.*)\\);");
+            final Pattern mySQLRegex =
+                Pattern.compile(
+                    "INSERT INTO `([^ ]+)` \\((.*)\\) VALUES\\((.*)\\);");
+            final Pattern doubleQuoteRegex =
+                Pattern.compile(
+                    "INSERT INTO \"([^ ]+)\" \\((.*)\\) VALUES\\((.*)\\);");
             String line;
             int lineNumber = 0;
             int tableRowCount = 0;
-            String prevTable = "";
+            String prevTable = null;
             String quotedTableName = null;
             String quotedColumnNames = null;
             Column[] orderedColumns = null;
-
-            String[] batch = new String[inputBatchSize];
-            int batchSize = 0;
+            StringBuilder massagedLine = new StringBuilder();
+            List<String> batch = new ArrayList<String>(inputBatchSize);
 
             Pattern regex = null;
             String quoteChar = null;
@@ -429,19 +453,18 @@ public class MondrianFoodMartLoader {
 
                 // If table just changed, flush the previous batch.
                 if (!tableName.equals(prevTable)) {
-                    if (!prevTable.equals("")) {
-                        LOGGER.info("Table " + prevTable +
-                            ": loaded " + tableRowCount + " rows.");
-                    }
+                    writeBatch(batch);
+                    afterTable(prevTable, tableRowCount);
                     tableRowCount = 0;
-                    writeBatch(batch, batchSize);
-                    batchSize = 0;
                     prevTable = tableName;
                     quotedTableName = quoteId(tableName);
-                    quotedColumnNames = columnNames.replaceAll(quoteChar,
+                    quotedColumnNames =
+                        columnNames.replaceAll(
+                            quoteChar,
                             dialect.getQuoteIdentifierString());
-                    String[] splitColumnNames = columnNames.replaceAll(quoteChar, "")
-                                            .replaceAll(" ", "").split(",");
+                    String[] splitColumnNames =
+                        columnNames.replaceAll(quoteChar, "")
+                            .replaceAll(" ", "").split(",");
                     Column[] columns = tableMetadataToLoad.get(tableName);
 
                     orderedColumns = new Column[columns.length];
@@ -454,50 +477,97 @@ public class MondrianFoodMartLoader {
                             }
                         }
                         if (thisColumn == null) {
-                            throw new Exception("Unknown column in INSERT statement from file: " + splitColumnNames[i]);
+                            throw new Exception(
+                                "Unknown column in INSERT statement from file: "
+                                    + splitColumnNames[i]);
                         } else {
                             orderedColumns[i] = thisColumn;
                         }
                     }
-
-
                 }
-
-                StringBuilder massagedLine = new StringBuilder();
-
-                massagedLine
-                    .append("INSERT INTO ")
-                    .append(quotedTableName)
-                    .append(" (")
-                    .append(quotedColumnNames)
-                    .append(") VALUES(")
-                    .append(getMassagedValues(orderedColumns, values))
-                    .append(")");
-
-                line = massagedLine.toString();
 
                 ++tableRowCount;
 
-                batch[batchSize++] = line;
+                if (batchFile) {
+                    massagedLine.setLength(0);
+                    getMassagedValues(massagedLine, orderedColumns, values);
+                    fileOutput.write(massagedLine.toString().replace('\'', '"').trim());
+                    fileOutput.write(nl);
+                } else {
+                    massagedLine.setLength(0);
+                    massagedLine
+                        .append("INSERT INTO ")
+                        .append(quotedTableName)
+                        .append(" (")
+                        .append(quotedColumnNames)
+                        .append(") VALUES(");
+                    getMassagedValues(massagedLine, orderedColumns, values);
+                    massagedLine.append(")");
 
-                if (batchSize >= inputBatchSize) {
-                    writeBatch(batch, batchSize);
-                    batchSize = 0;
+                    line = massagedLine.toString();
+
+                    batch.add(line);
+                    if (batch.size() >= inputBatchSize) {
+                        writeBatch(batch);
+                    }
                 }
             }
+
             // Print summary of the final table.
-            if (!prevTable.equals("")) {
-                LOGGER.info("Table " + prevTable +
-                    ": loaded " + tableRowCount + " rows.");
-                tableRowCount = 0;
-                writeBatch(batch, batchSize);
-                batchSize = 0;
-            }
+            writeBatch(batch);
+            afterTable(prevTable, tableRowCount);
+            tableRowCount = 0;
         } finally {
             if (is != null) {
                 is.close();
             }
         }
+    }
+
+    /**
+     * Called after the last row of a table has been read into the batch.
+     *
+     * @param table Table name, or null if there is no previous table
+     * @param tableRowCount Number of rows in the table
+     * @throws IOException
+     */
+    private void afterTable(String table, int tableRowCount) throws IOException {
+        if (table == null) {
+            return;
+        }
+        LOGGER.info(
+            "Table " + table +
+            ": loaded " + tableRowCount + " rows.");
+        if (!batchFile) {
+            return;
+        }
+        fileOutput.close();
+        final String sql = "LOAD DATA INFILE '"
+            + file.getAbsolutePath()
+            + "' INTO TABLE "
+            + table
+            + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'";
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.executeUpdate(
+                sql);
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                "Error while executing statement: " + sql,
+                e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
+        }
+
+        // Re-open for the next table.
+        fileOutput = new FileWriter(file);
     }
 
     /**
@@ -507,9 +577,11 @@ public class MondrianFoodMartLoader {
      *                              These are in MySQL form.
      * @return String               values for the destination dialect
      */
-    private String getMassagedValues(Column[] columns, String values) throws Exception {
-        StringBuilder buf = new StringBuilder();
-
+    private void getMassagedValues(
+        StringBuilder buf,
+        Column[] columns,
+        String values) throws Exception
+    {
         // Get the values out as individual elements
         // Split the string at commas, and cope with embedded commas
         String[] individualValues = new String[columns.length];
@@ -554,8 +626,6 @@ public class MondrianFoodMartLoader {
             }
             buf.append(columnValue(value, columns[i]));
         }
-        return buf.toString();
-
     }
 
     private boolean inQuote(String str, boolean nowInQuote) {
@@ -574,7 +644,8 @@ public class MondrianFoodMartLoader {
 
     private void loadDataFromJdbcInput() throws Exception {
         if (outputDirectory != null) {
-            fileOutput = new FileWriter(new File(outputDirectory, "createData.sql"));
+            file = new File(outputDirectory, "createData.sql");
+            fileOutput = new FileWriter(file);
         }
 
         /*
@@ -603,6 +674,13 @@ public class MondrianFoodMartLoader {
      */
     private void loadFromSQLInserts() throws Exception {
         InputStream is = getClass().getResourceAsStream("insert.sql");
+        if (is == null) {
+            is = new FileInputStream(
+                new File("testsrc/main/mondrian/test/loader/insert.sql"));
+        }
+        if (is == null) {
+            throw new Exception("Cannot find insert.sql in class path");
+        }
         try {
             final InputStreamReader reader = new InputStreamReader(is);
             final BufferedReader bufferedReader = new BufferedReader(reader);
@@ -615,14 +693,6 @@ public class MondrianFoodMartLoader {
 
             String fromQuoteChar = null;
             String toQuoteChar = dialect.getQuoteIdentifierString();
-/*            if (dialect.isMySQL()) {
-                toQuoteChar = "`";
-            } else if (dialect.isDB2()) {
-                toQuoteChar = "";
-            } else {
-                toQuoteChar = "\"";
-            }
-*/
             while ((line = bufferedReader.readLine()) != null) {
                 ++lineNumber;
 
@@ -699,8 +769,7 @@ public class MondrianFoodMartLoader {
 
             rs = statement.executeQuery(ddl);
 
-            String[] batch = new String[inputBatchSize];
-            int batchSize = 0;
+            List<String> batch = new ArrayList<String>(inputBatchSize);
             boolean displayedInsert = false;
 
             while (rs.next()) {
@@ -710,15 +779,14 @@ public class MondrianFoodMartLoader {
                     LOGGER.debug("Example Insert statement: " + insertStatement);
                     displayedInsert = true;
                 }
-                batch[batchSize++] = insertStatement;
-                if (batchSize >= inputBatchSize) {
-                    rowsAdded += writeBatch(batch, batchSize);
-                    batchSize = 0;
+                batch.add(insertStatement);
+                if (batch.size() >= inputBatchSize) {
+                    rowsAdded += writeBatch(batch);
                 }
             }
 
-            if (batchSize > 0) {
-                rowsAdded += writeBatch(batch, batchSize);
+            if (batch.size() > 0) {
+                rowsAdded += writeBatch(batch);
             }
         } finally {
             if (rs != null) {
@@ -781,18 +849,22 @@ public class MondrianFoodMartLoader {
      *      output the statements to a file.
      *
      * @param batch         SQL statements to execute
-     * @param batchSize     # SQL statements to execute
      * @return              # SQL statements executed
      */
-    private int writeBatch(String[] batch, int batchSize) throws IOException, SQLException {
-        if (batchSize == 0) {
+    private int writeBatch(List<String> batch) throws IOException, SQLException {
+        if (batch.size() == 0) {
             // nothing to do
-            return batchSize;
+            return batch.size();
         }
 
-        if (outputDirectory != null) {
-            for (int i = 0; i < batchSize; i++) {
-                fileOutput.write(batch[i]);
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.INFOBRIGHT) {
+            for (int i = 0; i < batch.size(); i++) {
+                fileOutput.write(batch.get(i));
+                fileOutput.write(nl);
+            }
+        } else if (outputDirectory != null) {
+            for (int i = 0; i < batch.size(); i++) {
+                fileOutput.write(batch.get(i));
                 fileOutput.write(";" + nl);
             }
         } else {
@@ -807,49 +879,51 @@ public class MondrianFoodMartLoader {
                 // and its JDBC driver doesn't support batch writes,
                 // so collapse the batch into one big multi-row insert.
                 String VALUES_TOKEN = "VALUES";
-                StringBuilder sb = new StringBuilder(batch[0]);
-                for (int i = 1; i < batchSize; i++) {
+                StringBuilder sb = new StringBuilder(batch.get(0));
+                for (int i = 1; i < batch.size(); i++) {
                     sb.append(",\n");
-                    int valuesPos = batch[i].indexOf(VALUES_TOKEN);
+                    int valuesPos = batch.get(i).indexOf(VALUES_TOKEN);
                     if (valuesPos < 0) {
                         throw new RuntimeException(
-                            "Malformed INSERT:  " + batch[i]);
+                            "Malformed INSERT:  " + batch.get(i));
                     }
                     valuesPos += VALUES_TOKEN.length();
-                    sb.append(batch[i].substring(valuesPos));
+                    sb.append(batch.get(i).substring(valuesPos));
                 }
-                batch[0] = sb.toString();
-                batchSize = 1;
+                batch.clear();
+                batch.add(sb.toString());
             }
 
             Statement stmt = connection.createStatement();
-            if (batchSize == 1) {
+            if (batch.size() == 1) {
                 // Don't use batching if there's only one item. This allows
                 // us to work around bugs in the JDBC driver by setting
                 // outputJdbcBatchSize=1.
-                stmt.execute(batch[0]);
+                stmt.execute(batch.get(0));
             } else {
-                for (int i = 0; i < batchSize; i++) {
-                    stmt.addBatch(batch[i]);
+                for (int i = 0; i < batch.size(); i++) {
+                    stmt.addBatch(batch.get(i));
                 }
                 int [] updateCounts;
 
                 try {
                     updateCounts = stmt.executeBatch();
                 } catch (SQLException e) {
-                    for (int i = 0; i < batchSize; i++) {
-                        LOGGER.error("Error in SQL batch: " + batch[i]);
+                    for (int i = 0; i < batch.size(); i++) {
+                        LOGGER.error("Error in SQL batch: " + batch.get(i));
                     }
                     throw e;
                 }
                 int updates = 0;
                 for (int i = 0; i < updateCounts.length; updates += updateCounts[i], i++) {
                     if (updateCounts[i] == 0) {
-                        LOGGER.error("Error in SQL: " + batch[i]);
+                        LOGGER.error("Error in SQL: " + batch.get(i));
                     }
                 }
-                if (updates < batchSize) {
-                    throw new RuntimeException("Failed to execute batch: " + batchSize + " versus " + updates);
+                if (updates < batch.size()) {
+                    throw new RuntimeException(
+                        "Failed to execute batch: " + batch.size()
+                            + " versus " + updates);
                 }
             }
             stmt.close();
@@ -857,7 +931,7 @@ public class MondrianFoodMartLoader {
                 connection.setAutoCommit(true);
             }
         }
-        return batchSize;
+        return batch.size();
     }
 
     /**
@@ -894,7 +968,8 @@ public class MondrianFoodMartLoader {
             boolean summaryTables)
             throws Exception {
         if (outputDirectory != null) {
-            fileOutput = new FileWriter(new File(outputDirectory, "createIndexes.sql"));
+            file = new File(outputDirectory, "createIndexes.sql");
+            fileOutput = new FileWriter(file);
         }
 
         createIndex(true, "account", "i_account_id", new String[] {"account_id"}, baseTables, summaryTables);
@@ -1078,6 +1153,7 @@ public class MondrianFoodMartLoader {
                         .append(quoteId(indexName));
                     switch (dialect.getDatabaseProduct()) {
                     case MYSQL:
+                    case INFOBRIGHT:
                     case TERADATA:
                         buf.append(" ON ")
                             .append(quoteId(tableName));
@@ -1124,7 +1200,8 @@ public class MondrianFoodMartLoader {
      */
     private void createTables() throws Exception  {
         if (outputDirectory != null) {
-            fileOutput = new FileWriter(new File(outputDirectory, "createTables.sql"));
+            file = new File(outputDirectory, "createTables.sql");
+            fileOutput = new FileWriter(file);
         }
 
         createTable("sales_fact_1997", new Column[] {
@@ -1580,7 +1657,12 @@ public class MondrianFoodMartLoader {
         createTable(name, columns,  true, false);
     }
 
-    private void createTable(String name, Column[] columns,  boolean loadData, boolean aggregate) {
+    private void createTable(
+        String name,
+        Column[] columns,
+        boolean loadData,
+        boolean aggregate)
+    {
         try {
 
             // Initialize columns
@@ -1921,6 +2003,7 @@ public class MondrianFoodMartLoader {
             String trimmedValue = columnValue.trim();
             switch (product) {
             case MYSQL:
+            case INFOBRIGHT:
             case ORACLE:
             case DB2:
             case DB2_AS400:
@@ -2093,6 +2176,7 @@ public class MondrianFoodMartLoader {
                 case LUCIDDB:
                     return name;
                 case MYSQL:
+                case INFOBRIGHT:
                     return "TINYINT(1)";
                 case MSSQL:
                     return "BIT";
@@ -2123,6 +2207,7 @@ public class MondrianFoodMartLoader {
                 switch (dialect.getDatabaseProduct()) {
                 case MSSQL:
                 case MYSQL:
+                case INFOBRIGHT:
                     return "DATETIME";
                 case INGRES:
                     return "INGRESDATE";

@@ -471,6 +471,13 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testSample8() {
+        if (TestContext.instance().getDialect().getDatabaseProduct() ==
+            Dialect.DatabaseProduct.INFOBRIGHT)
+        {
+            // Skip this test on Infobright, because [Promotion Sales] is
+            // defined wrong.
+            return;
+        }
         assertQueryReturns(sampleQueries[8].query, sampleQueries[8].result);
     }
 

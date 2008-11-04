@@ -51,6 +51,16 @@ public class JdbcDialectImpl implements Dialect {
      */
     private static final int DOUBLE_QUOTE_SIZE = 2 * SINGLE_QUOTE_SIZE + 1;
 
+    /**
+     * Creates a JdbcDialectImpl.
+     *
+     * @param quoteIdentifierString String used to quote identifiers
+     * @param productName Product name per JDBC driver
+     * @param productVersion Product version per JDBC driver
+     * @param supportedResultSetTypes Supported result set types
+     * @param readOnly Whether database is read-only
+     * @param maxColumnNameLength Maximum column name length
+     */
     JdbcDialectImpl(
         String quoteIdentifierString,
         String productName,
@@ -107,8 +117,9 @@ public class JdbcDialectImpl implements Dialect {
         try {
             productVersion = databaseMetaData.getDatabaseProductVersion();
         } catch (SQLException e11) {
-            throw Util.newInternal(e11,
-                    "while detecting database product version");
+            throw Util.newInternal(
+                e11,
+                "while detecting database product version");
         }
 
         Set<List<Integer>> supports = new HashSet<List<Integer>>();
@@ -157,6 +168,37 @@ public class JdbcDialectImpl implements Dialect {
         } catch (SQLException e) {
             throw Util.newInternal(e,
                 "while detecting maxColumnNameLength");
+        }
+
+        // Detect Infobright. Infobright uses the MySQL driver and appears to
+        // be a MySQL instance. The only difference is the presence of the
+        // BRIGHTHOUSE engine.
+        if (productName.equals("MySQL")
+            && productVersion.compareTo("5.0") >= 0)
+        {
+            Statement statement = null;
+            try {
+                statement = databaseMetaData.getConnection().createStatement();
+                final ResultSet resultSet =
+                    statement.executeQuery(
+                        "select * from INFORMATION_SCHEMA.engines "
+                            + "where ENGINE = 'BRIGHTHOUSE'");
+                if (resultSet.next()) {
+                    productName = "MySQL (Infobright)";
+                }
+            } catch (SQLException e) {
+                throw Util.newInternal(
+                    e,
+                    "while running query to detect Brighthouse engine");
+            } finally {
+                if (statement != null) {
+                    try {
+                        statement.close();
+                    } catch (SQLException e) {
+                        // ignore
+                    }
+                }
+            }
         }
 
         return new JdbcDialectImpl(
@@ -398,6 +440,7 @@ public class JdbcDialectImpl implements Dialect {
     public boolean requiresAliasForFromQuery() {
         switch (databaseProduct) {
         case MYSQL:
+        case INFOBRIGHT:
         case DERBY:
         case TERADATA:
         case POSTGRES:
@@ -424,6 +467,7 @@ public class JdbcDialectImpl implements Dialect {
         // subqueries in the FROM clause.
         switch (getDatabaseProduct()) {
         case MYSQL:
+        case INFOBRIGHT:
             return productVersion.compareTo("4.") >= 0;
         case DB2_OLD_AS400:
         case INFORMIX:
@@ -436,7 +480,8 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public boolean allowsCompoundCountDistinct() {
-        return getDatabaseProduct() == DatabaseProduct.MYSQL;
+        return getDatabaseProduct() == DatabaseProduct.MYSQL
+            || getDatabaseProduct() == DatabaseProduct.INFOBRIGHT;
     }
 
     public boolean allowsCountDistinct() {
@@ -470,6 +515,7 @@ public class JdbcDialectImpl implements Dialect {
                 columnNames, columnTypes, valueList,
                 " from `days` where `day` = 1");
         case MYSQL:
+        case INFOBRIGHT:
         case INGRES:
         case MSSQL:
         case TERADATA:
@@ -665,7 +711,8 @@ public class JdbcDialectImpl implements Dialect {
 
     public void quote(
         StringBuilder buf,
-        Object value, Datatype datatype)
+        Object value,
+        Datatype datatype)
     {
         if (value == null) {
             buf.append("null");
@@ -710,8 +757,14 @@ public class JdbcDialectImpl implements Dialect {
         switch (databaseProduct) {
         case MYSQL:
             return false;
+        case INFOBRIGHT:
+            // Infobright is similar to MySQL, but apparently NULLs collate
+            // last. This is good news, because the workaround to force NULLs
+            // to collate last on MySQL would kill Infobright.
+            return true;
+        default:
+            return true;
         }
-        return true;
     }
 
     public String forceNullsCollateLast(String expr) {
@@ -719,6 +772,7 @@ public class JdbcDialectImpl implements Dialect {
         // provides the syntax 'ORDER BY x ASC NULLS LAST'.
         switch (databaseProduct) {
         case MYSQL:
+        case INFOBRIGHT:
             String addIsNull = "ISNULL(" + expr + "), ";
             expr = addIsNull + expr;
             return expr;
@@ -728,7 +782,13 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public boolean supportsGroupByExpressions() {
-        return !(getDatabaseProduct() == DatabaseProduct.DERBY);
+        switch (getDatabaseProduct()) {
+        case DERBY:
+        case INFOBRIGHT:
+            return false;
+        default:
+            return true;
+        }
     }
 
     public boolean supportsGroupingSets() {
@@ -748,10 +808,19 @@ public class JdbcDialectImpl implements Dialect {
         return getDatabaseProduct() == DatabaseProduct.LUCIDDB;
     }
 
+    public boolean requiresGroupByAlias() {
+        switch (getDatabaseProduct()) {
+        case INFOBRIGHT:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     public boolean requiresOrderByAlias() {
-        final DatabaseProduct x = getDatabaseProduct();
-        switch (x) {
+        switch (getDatabaseProduct()) {
         case MYSQL:
+        case INFOBRIGHT:
         case DB2:
         case DB2_AS400:
         case DB2_OLD_AS400:
@@ -767,8 +836,19 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public boolean supportsMultiValueInExpr() {
-        return getDatabaseProduct() == DatabaseProduct.LUCIDDB ||
-            getDatabaseProduct() == DatabaseProduct.MYSQL;
+        final DatabaseProduct x = getDatabaseProduct();
+        switch (x) {
+        case LUCIDDB:
+        case MYSQL:
+            return true;
+        default:
+        case INFOBRIGHT:
+            // Infobright supports multi-value IN by falling through to MySQL,
+            // which is very slow (see for example
+            // PredicateFilterTest.testFilterAtSameLevel) so we pretend that it
+            // does not.
+            return false;
+        }
     }
 
     public boolean supportsResultSetConcurrency(
@@ -787,6 +867,14 @@ public class JdbcDialectImpl implements Dialect {
         return maxColumnNameLength;
     }
 
+    /**
+     * Converts a product name and version (per the JDBC driver) into a product
+     * enumeration.
+     *
+     * @param productName Product name
+     * @param productVersion Product version
+     * @return database product
+     */
     public static DatabaseProduct getProduct(
         String productName,
         String productVersion)
@@ -836,6 +924,8 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.ORACLE;
         } else if (productName.toUpperCase().indexOf("POSTGRE") >= 0) {
             return DatabaseProduct.POSTGRES;
+        } else if (productName.toUpperCase().equals("MYSQL (INFOBRIGHT)")) {
+            return DatabaseProduct.INFOBRIGHT;
         } else if (productName.toUpperCase().equals("MYSQL")) {
             return DatabaseProduct.MYSQL;
         } else if (productName.toUpperCase().indexOf("SYBASE") >= 0) {

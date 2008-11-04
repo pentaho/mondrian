@@ -1163,8 +1163,13 @@ public class NonEmptyTest extends BatchTestCase {
                         + "  [Time].[1997].[Q1].[1])");
     }
 
-    /** check that top count is executed native unless disabled */
+    /** Checks that TopCount is executed natively unless disabled. */
     public void testNativeTopCount() {
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            // Hits same Infobright bug as NamedSetTest.testNamedSetOnMember.
+            return;
+        }
 
         String query =
             "select {[Measures].[Store Sales]} on columns,"
@@ -1187,8 +1192,13 @@ public class NonEmptyTest extends BatchTestCase {
         MondrianProperties.instance().EnableNativeTopCount.set(origNativeTopCount);
     }
 
-    /** check that top count is executed native with calculated member */
+    /** Checks that TopCount is executed natively with calculated member. */
     public void testCmNativeTopCount() {
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            // Hits same Infobright bug as NamedSetTest.testNamedSetOnMember.
+            return;
+        }
         String query =
             "with member [Measures].[Store Profit Rate] as '([Measures].[Store Sales]-[Measures].[Store Cost])/[Measures].[Store Cost]', format = '#.00%' "
             + "select {[Measures].[Store Sales]} on columns,"
@@ -2331,6 +2341,12 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testNotNativeVirtualCubeCrossJoin1()
     {
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            // Query generated for Infobright takes a long time. Presume it's
+            // an Infobright performance bug.
+            return;
+        }
         // for this test, verify that no alert is raised even though
         // native evaluation isn't supported, because query
         // doesn't use explicit NonEmptyCrossJoin
@@ -2365,6 +2381,12 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testNotNativeVirtualCubeCrossJoinUnsupported()
     {
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case INFOBRIGHT:
+            // Query generated for Infobright takes a long time. Presume it's
+            // an Infobright performance bug.
+            return;
+        }
         BooleanProperty enableProperty =
             MondrianProperties.instance().EnableNativeCrossJoin;
         if (!enableProperty.get()) {

@@ -292,6 +292,12 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
       <SQL dialect="mysql">
 (case when `sales_fact_1997`.`promotion_id` = 0 then 0 else `sales_fact_1997`.`store_sales` end)
       </SQL>
+      <!-- Workaround the fact that Infobright does not have a CASE operator.
+           The simpler expression gives wrong results, so some tests are
+           disabled. -->
+      <SQL dialect="infobright">
+`sales_fact_1997`.`store_sales`
+      </SQL>
       <SQL dialect="derby">
 (case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
       </SQL>
@@ -350,6 +356,9 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
   <Measure name="Warehouse Profit" aggregator="sum">
     <MeasureExpression>
       <SQL dialect="mysql">
+`warehouse_sales` - `inventory_fact_1997`.`warehouse_cost`
+      </SQL>
+      <SQL dialect="infobright">
 `warehouse_sales` - `inventory_fact_1997`.`warehouse_cost`
       </SQL>
       <SQL dialect="generic">
