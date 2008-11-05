@@ -42,20 +42,20 @@ CP="${CP}${PS}${MONDRIAN_HOME}/lib/workbench.jar"
 
 # local directory is ~/.schemaWorkbench
 
-if test ! -d ~/.schemaWorkbench; then
-    mkdir ~/.schemaWorkbench
+if test ! -d ${HOME}/.schemaWorkbench; then
+    mkdir ${HOME}/.schemaWorkbench
 fi
 
 # copy mondrian.properties and log4j.xml if necessary
-if test ! -e ~/.schemaWorkbench/mondrian.properties; then
-    cp mondrian.properties ~/.schemaWorkbench/mondrian.properties
+if test ! -e ${HOME}/.schemaWorkbench/mondrian.properties; then
+    cp mondrian.properties ${HOME}/.schemaWorkbench/mondrian.properties
 fi
 
-if test ! -e ~/.schemaWorkbench/log4j.xml; then
-    cp log4j.xml ~/.schemaWorkbench/log4j.xml
+if test ! -e ${HOME}/.schemaWorkbench/log4j.xml; then
+    cp log4j.xml ${HOME}/.schemaWorkbench/log4j.xml
 fi
 
-CP="${CP}${PS}~/.schemaWorkbench"
+CP="${CP}${PS}${HOME}/.schemaWorkbench"
 
 
 # or
