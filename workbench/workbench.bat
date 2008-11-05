@@ -5,6 +5,8 @@ rem Schema Workbench launch script
 rem base Mondrian JARs need to be included
 
 set CP=lib/commons-dbcp.jar
+set CP=%CP%;lib/commons-io.jar
+set CP=%CP%;lib/commons-lang.jar
 set CP=%CP%;lib/commons-collections.jar
 set CP=%CP%;lib/commons-pool.jar
 set CP=%CP%;lib/eigenbase-properties.jar
