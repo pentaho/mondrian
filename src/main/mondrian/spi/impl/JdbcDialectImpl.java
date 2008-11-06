@@ -174,7 +174,7 @@ public class JdbcDialectImpl implements Dialect {
         // be a MySQL instance. The only difference is the presence of the
         // BRIGHTHOUSE engine.
         if (productName.equals("MySQL")
-            && productVersion.compareTo("5.0") >= 0)
+            && productVersion.compareTo("5.1") >= 0)
         {
             Statement statement = null;
             try {
