@@ -247,7 +247,6 @@ public class XmlaHandler implements XmlaConstants {
                             long lval = bd.longValue();
 
                             setValueAndType(lval);
-
                         } catch (ArithmeticException ex) {
                             // No, it can not be converted to long
 
@@ -257,7 +256,6 @@ public class XmlaHandler implements XmlaConstants {
                                 this.valueType = XSD_INTEGER;
                                 this.value = bi;
                                 this.isDecimal = false;
-
                             } catch (ArithmeticException ex1) {
                                 // OK, its a decimal
                                 this.valueType = XSD_DECIMAL;
@@ -610,9 +608,11 @@ public class XmlaHandler implements XmlaConstants {
         }
     }
 
-    private void execute(XmlaRequest request, XmlaResponse response)
-            throws XmlaException {
-
+    private void execute(
+        XmlaRequest request,
+        XmlaResponse response)
+        throws XmlaException
+    {
         final Map<String, String> properties = request.getProperties();
         final String contentName =
             properties.get(PropertyDefinition.Content.name());
@@ -1224,8 +1224,8 @@ public class XmlaHandler implements XmlaConstants {
     }
 
     private QueryResult executeDrillThroughQuery(XmlaRequest request)
-            throws XmlaException {
-
+        throws XmlaException
+    {
         checkFormat(request);
 
         DataSourcesConfig.DataSource ds = getDataSource(request);
@@ -1823,11 +1823,11 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         private List<Hierarchy> axisInfo(
-                SaxWriter writer,
-                Axis axis,
-                QueryAxis queryAxis,
-                String axisName) {
-
+            SaxWriter writer,
+            Axis axis,
+            QueryAxis queryAxis,
+            String axisName)
+        {
             writer.startElement("AxisInfo", new String[] { "name", axisName});
 
             List<Hierarchy> hierarchies;
@@ -1853,10 +1853,10 @@ public class XmlaHandler implements XmlaConstants {
 
 
         private void writeHierarchyInfo(
-                SaxWriter writer,
-                List<Hierarchy> hierarchies,
-                String[] props) {
-
+            SaxWriter writer,
+            List<Hierarchy> hierarchies,
+            String[] props)
+        {
             for (Hierarchy hierarchy : hierarchies) {
                 writer.startElement(
                     "HierarchyInfo", new String[]{
@@ -2578,7 +2578,6 @@ public class XmlaHandler implements XmlaConstants {
                 if (axis >= 2) {
                     iterate(writer, axis - 1, ho);
                 } else {
-
                     writer.startElement("row");//abrimos la fila
                     pos[axis] = i; //coordenadas: fila i
                     pos[0] = 0; //coordenadas (0,i): columna 0
@@ -2614,8 +2613,8 @@ public class XmlaHandler implements XmlaConstants {
     }
 
     private void discover(XmlaRequest request, XmlaResponse response)
-            throws XmlaException {
-
+        throws XmlaException
+    {
         final RowsetDefinition rowsetDefinition =
             RowsetDefinition.valueOf(request.getRequestType());
         Rowset rowset = rowsetDefinition.getRowset(request, this);
@@ -2671,7 +2670,6 @@ public class XmlaHandler implements XmlaConstants {
                 HSB_DISCOVER_UNPARSE_CODE,
                 HSB_DISCOVER_UNPARSE_FAULT_FS,
                 t);
-
         } finally {
             // keep the tags balanced, even if there's an error
             writer.endElement();
@@ -2855,9 +2853,9 @@ public class XmlaHandler implements XmlaConstants {
      * @return Array of DataSourcesConfig.Catalog
      */
     public DataSourcesConfig.Catalog[] getCatalogs(
-            XmlaRequest request,
-            DataSourcesConfig.DataSource ds) {
-
+        XmlaRequest request,
+        DataSourcesConfig.DataSource ds)
+    {
         Map<String, String> properties = request.getProperties();
         final String catalogName =
             properties.get(PropertyDefinition.Catalog.name());
@@ -3014,7 +3012,6 @@ public class XmlaHandler implements XmlaConstants {
                 stmt, request.drillThroughMaxRows(),
                 request.drillThroughFirstRowset(), count,
                 ResultSet.TYPE_FORWARD_ONLY);
-
         } catch (XmlaException xex) {
             throw xex;
         } catch (RuntimeException rte) {

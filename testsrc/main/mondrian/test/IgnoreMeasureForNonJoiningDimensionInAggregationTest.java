@@ -29,7 +29,6 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest extends FoodMa
     private final MondrianProperties prop = MondrianProperties.instance();
 
     protected void setUp() throws Exception {
-
         originalNonEmptyFlag =
             prop.EnableNonEmptyOnAllAxis.get();
         originalEliminateUnrelatedDimensions =

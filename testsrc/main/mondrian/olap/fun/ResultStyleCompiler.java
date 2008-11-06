@@ -219,7 +219,6 @@ System.out.println("MultiCalc.evaluator: lists NOT EQUALS cnt="+cnt);
 System.out.println("MultiCalc.evaluator: lists EQUALS cnt="+cnt);
                 }
 */
-
             }
 
             return (onlyMutableList) ? valueMList : valueIter;

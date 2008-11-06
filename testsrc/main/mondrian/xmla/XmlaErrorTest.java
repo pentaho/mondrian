@@ -74,7 +74,6 @@ public class XmlaErrorTest extends XmlaBaseTestCase
             HttpServletResponse response,
             Map<String, Object> context) throws Exception
         {
-
             // look for authorization
             // Authorization: Basic ZWRnZTphYmNkMTIzNC4=
             // tjones:abcd1234$$.
@@ -142,10 +141,10 @@ System.out.println("password=" + password);
 
             String expect = request.getHeader(EXPECT);
             if ((expect != null) &&
-                expect.equalsIgnoreCase(EXPECT_100_CONTINUE)) {
-
+                expect.equalsIgnoreCase(EXPECT_100_CONTINUE))
+            {
                 XmlaRequestCallback.Helper.generatedExpectResponse(
-                                    request, response, context);
+                    request, response, context);
                 return false;
             } else {
                 return true;
@@ -154,10 +153,10 @@ System.out.println("password=" + password);
 
 
         public void preAction(
-                HttpServletRequest request,
-                Element[] requestSoapParts,
-                Map<String, Object> context) throws Exception {
-
+            HttpServletRequest request,
+            Element[] requestSoapParts,
+            Map<String, Object> context) throws Exception
+        {
             context.put(MY_SESSION_ID, getSessionId("XmlaExcelXPTest", Action.CREATE));
         }
 
@@ -187,6 +186,7 @@ System.out.println("password=" + password);
 
         return list.toArray(new Element[0]);
     }
+
     static CharacterData getCharacterData(Node node) {
         NodeList nlist = node.getChildNodes();
         int len = nlist.getLength();
@@ -197,8 +197,8 @@ System.out.println("password=" + password);
             }
         }
         return null;
-
     }
+
     static String getNodeContent(Node n) {
         CharacterData cd = getCharacterData(n);
         return (cd != null)
@@ -268,9 +268,9 @@ System.out.println("password=" + password);
                 // error desc element
                 node = faultNodes[1];
                 errorDesc = getNodeContent(node);
-
             }
         }
+
         Fault(Node faultNode) throws Exception {
             this(getChildElements(faultNode));
         }
@@ -278,21 +278,27 @@ System.out.println("password=" + password);
         String getFaultCode() {
             return faultCode;
         }
+
         String getFaultString() {
             return faultString;
         }
+
         String getFaultActor() {
             return faultActor;
         }
+
         boolean hasDetailError() {
             return (errorCode != null);
         }
+
         String getDetailErrorCode() {
             return errorCode;
         }
+
         String getDetailErrorDesc() {
             return errorDesc;
         }
+
         public String toString() {
             StringBuilder buf = new StringBuilder(100);
             buf.append("faultCode=");
@@ -309,6 +315,7 @@ System.out.println("password=" + password);
             buf.append(errorDesc);
             return buf.toString();
         }
+
         void checkSame(Fault expectedFault) throws Exception {
             if (! isEquals(this.faultCode, expectedFault.faultCode)) {
                 notSame("faultcode", this.faultCode, expectedFault.faultCode);
@@ -330,8 +337,10 @@ System.out.println("password=" + password);
                 notSame("error.code", this.errorCode, expectedFault.errorCode);
             }
         }
+
         private void notSame(String elementName, String expected, String got)
-                throws Exception {
+            throws Exception
+        {
             throw new Exception("For element " +
                 elementName +
                 " Expected " +
@@ -339,7 +348,6 @@ System.out.println("password=" + password);
                 " but Got " +
                 got);
         }
-
     }
 
     private static PrintStream systemErr;
@@ -358,7 +366,6 @@ System.out.println("password=" + password);
         // intentionally, squelch the ones that SAX produces on stderr
         systemErr = System.err;
         System.setErr(new PrintStream(new ByteArrayOutputStream()));
-
     }
 
     protected void tearDown() throws Exception {
@@ -884,9 +891,9 @@ System.out.println("DO IT AGAIN");
     // helper
     /////////////////////////////////////////////////////////////////////////
     public void doTest(
-            MockHttpServletRequest req,
-            Fault expectedFault) throws Exception {
-
+        MockHttpServletRequest req,
+        Fault expectedFault) throws Exception
+    {
         MockHttpServletResponse res = new MockHttpServletResponse();
         res.setCharacterEncoding("UTF-8");
 
@@ -895,12 +902,10 @@ System.out.println("DO IT AGAIN");
 
         int statusCode = res.getStatusCode();
         if (statusCode == HttpServletResponse.SC_OK) {
-
             byte[] bytes = res.toByteArray();
             processResults(bytes, expectedFault);
 
         } else if (statusCode == HttpServletResponse.SC_UNAUTHORIZED) {
-
             byte[] bytes = res.toByteArray();
             processResults(bytes, expectedFault);
 
@@ -925,14 +930,13 @@ System.out.println("Got CONTINUE");
             }
         } else {
             fail("Bad status code: " + statusCode);
-
         }
     }
 
     public void doTest(
-            String reqFileName,
-            Fault expectedFault) throws Exception {
-
+        String reqFileName,
+        Fault expectedFault) throws Exception
+    {
         String requestText = fileToString(reqFileName);
 if (DEBUG) {
 System.out.println("reqFileName=" + reqFileName);
@@ -944,8 +948,8 @@ System.out.println("reqFileName=" + reqFileName);
     }
 
     protected void processResults(byte[] results, Fault expectedFault)
-            throws Exception {
-
+        throws Exception
+    {
 if (DEBUG) {
 String response = new String(results);
 System.out.println("response=" + response);

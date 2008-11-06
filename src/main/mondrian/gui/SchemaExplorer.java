@@ -151,7 +151,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     errMsg = getResourceConverter().getFormattedString("schemaExplorer.parsing.error",
                             "Parsing Error: Could not open file {0}\n{1}",
                                 new String[] { schemaFile.toString(), ex.getLocalizedMessage() });
-
                 }
             }
             setTitle(); // sets title of i frame with schema name and file name
@@ -216,7 +215,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                 // propertyTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
              * But this does not save if a tree cell is selected , whereas it only saves if a click is done anywhere on let panel.
              */
-
         } catch (Exception ex) {
             LOGGER.error("SchemaExplorer init error", ex);
         }
@@ -226,7 +224,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
      * initialize the form.
      */
     private void initComponents() {
-
         //ResourceBundle resources = ResourceBundle.getBundle("mondrian.gui.resources.gui");
         jPanelXML = new JPanel();
         jScrollPaneXML = new JScrollPane();
@@ -751,7 +748,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         this.add(footer, java.awt.BorderLayout.SOUTH);
 
         updater = new JTreeUpdater(tree);
-
     }
 
     protected void arrowButtonUpAction(ActionEvent evt) {
@@ -937,7 +933,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Cube)) {
@@ -986,7 +981,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     }
                 }
             }
-
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Table)) {
@@ -1094,10 +1088,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     // aggexcludes can also be added to aggregate patterns
                     path = tpath.getPathComponent(parentIndex);
                     break;
-
                 }
             }
-
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Table || path instanceof MondrianGuiDef.AggPattern)) {
@@ -1151,7 +1143,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.AggTable)) {
@@ -1194,7 +1185,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.AggTable)) {
@@ -1236,7 +1226,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.AggTable)) {
@@ -1278,7 +1267,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         if (!(path instanceof MondrianGuiDef.AggTable)) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.aggregateTableNotSelected.alert","Aggregate Table not selected."), alert, JOptionPane.WARNING_MESSAGE);
@@ -1319,7 +1307,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         if (! ((path instanceof MondrianGuiDef.AggName) ||
                 (path instanceof MondrianGuiDef.AggPattern))) {
@@ -1363,7 +1350,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.VirtualCube)) {
@@ -1413,7 +1399,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         if (! ((path instanceof MondrianGuiDef.Cube) || (path instanceof MondrianGuiDef.VirtualCube))) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.cubeOrVirtualCubeNotSelected.alert","Cube or Virtual Cube not selected."), alert, JOptionPane.WARNING_MESSAGE);
@@ -1455,7 +1440,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                 vcube.calculatedMembers[i] = (MondrianGuiDef.CalculatedMember) temp[i];}
 
             vcube.calculatedMembers[vcube.calculatedMembers.length - 1] = calcmember;
-
         }
 
         Object [] parentPathObjs = new Object[parentIndex + 1];
@@ -1556,7 +1540,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                                     prevSibling = Array.get(parentArr, k - 1);
                                 }
                                 continue;
-
                             }
                         }
                         Array.set(newArr, m++, match);
@@ -1582,7 +1565,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     } else {
                         fs[i].set(parent, newArr);
                     }
-
                 } catch (Exception ex) {
                     // field not found
                 }
@@ -1849,7 +1831,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Cube)) {
@@ -1893,7 +1874,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Role)) {
@@ -1937,7 +1917,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
 
         if (!(path instanceof MondrianGuiDef.SchemaGrant)) {
@@ -1984,7 +1963,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.CubeGrant)) {
@@ -2027,7 +2005,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
 
         if (!(path instanceof MondrianGuiDef.CubeGrant)) {
@@ -2071,7 +2048,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
 
         if (!(path instanceof MondrianGuiDef.HierarchyGrant)) {
@@ -2118,7 +2094,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         if (!(path instanceof MondrianGuiDef.Hierarchy)) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.hierarchyNotSelected.alert","Hierarchy not selected."), alert, JOptionPane.WARNING_MESSAGE);
@@ -2163,7 +2138,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.ExpressionView)) {
@@ -2206,7 +2180,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Level)) {
@@ -2244,7 +2217,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         if (!(path instanceof MondrianGuiDef.Level)) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.levelNotSelected.alert","Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
@@ -2281,7 +2253,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         if (!(path instanceof MondrianGuiDef.Level)) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.levelNotSelected.alert","Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
@@ -2318,7 +2289,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         if (!(path instanceof MondrianGuiDef.Level)) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.levelNotSelected.alert","Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
@@ -2355,7 +2325,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
         if (!(path instanceof MondrianGuiDef.Measure)) {
             JOptionPane.showMessageDialog(this, getResourceConverter().getString("schemaExplorer.measureNotSelected.alert","Measure not selected."), alert, JOptionPane.WARNING_MESSAGE);
@@ -2392,7 +2361,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
 
         if (!(path instanceof MondrianGuiDef.Hierarchy)) {
@@ -2429,7 +2397,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
 
         if (!(path instanceof MondrianGuiDef.Dimension)) {
@@ -2480,7 +2447,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
 
         if (!(path instanceof MondrianGuiDef.Level)) {
@@ -2532,7 +2498,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     break;
                 }
             }
-
         }
 
         if (!(path instanceof MondrianGuiDef.Level)) {
@@ -2595,7 +2560,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                 sce.stopCellEditing();
                 e = e2;
             }
-
         }
         lastSelected = e.getPath().getLastPathComponent();
 
@@ -2938,7 +2902,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
      * @see javax.swing.event.CellEditorListener#editingStopped(ChangeEvent)
      */
     public void editingStopped(ChangeEvent e) {
-
         setDirty(true);
         if (! dirtyFlag || ((PropertyTableModel) propertyTable.getModel()).target instanceof MondrianGuiDef.Schema) {
             setDirtyFlag(true);   // true means dirty indication shown on title

@@ -123,7 +123,6 @@ public class RolapCubeMember extends RolapMember {
     }
 
     public Member getDataMember() {
-
         RolapMember member = (RolapMember) rolapMember.getDataMember();
         if (member != null) {
             RolapCubeMember cubeDataMember =
@@ -213,7 +212,6 @@ public class RolapCubeMember extends RolapMember {
     }
 
     public Object getPropertyValue(String propertyName, boolean matchCase) {
-
         // we need to wrap these children as rolap cube members
         Property property = Property.lookup(propertyName, matchCase);
         if (property != null) {
@@ -266,8 +264,7 @@ public class RolapCubeMember extends RolapMember {
             case Property.MEMBER_KEY_ORDINAL:
             case Property.KEY_ORDINAL:
                 return this == this.getHierarchy().getAllMember() ? 0
-                        : getKey();
-
+                    : getKey();
             }
         }
         // fall through to rolap member
@@ -319,7 +316,6 @@ public class RolapCubeMember extends RolapMember {
                     }
                 }
             }
-
         }
         return exp;
     }

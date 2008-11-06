@@ -73,17 +73,19 @@ public class RolapResultTest extends AggTableTestCase {
     public RolapResultTest() {
         super();
     }
+
     public RolapResultTest(String name) {
         super(name);
     }
+
     protected void setUp() throws Exception {
         super.setUp();
-
     }
-    protected void tearDown() throws Exception {
 
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
+
     public void testAll() throws Exception {
         if (!isApplicable()) {
             return;

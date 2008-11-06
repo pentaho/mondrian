@@ -143,7 +143,6 @@ public class Workbench extends javax.swing.JFrame {
         } catch (Exception e) {
             // TODO deal with exception
             LOGGER.error("loadWorkbenchProperties", e);
-
         }
     }
 
@@ -915,7 +914,6 @@ public class Workbench extends javax.swing.JFrame {
         } catch (Exception ex) {
             LOGGER.error("aboutMenuItemActionPerformed", ex);
         }
-
     }
     private void newJDBCExplorerMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         try {
@@ -938,7 +936,6 @@ public class Workbench extends javax.swing.JFrame {
                 jdbcPassword != null && jdbcPassword.length() > 0) {
                 conn = java.sql.DriverManager.getConnection(jdbcConnectionUrl, jdbcUsername, jdbcPassword);
             } else {
-
                 conn = java.sql.DriverManager.getConnection(jdbcConnectionUrl);
             }
 
@@ -1000,7 +997,6 @@ public class Workbench extends javax.swing.JFrame {
             windowMenu.add(minimizeMenuItem, -1);
             windowMenu.add(maximizeMenuItem, -1);
             windowMenu.add(closeAllMenuItem,-1);
-
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,
                     getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.exception",
@@ -1059,7 +1055,6 @@ public class Workbench extends javax.swing.JFrame {
     }
 
     private void newQueryMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
-
         JMenuItem schemaMenuItem = (JMenuItem) schemaWindowMap.get(desktopPane.getSelectedFrame());
 
         final JInternalFrame jf = new JInternalFrame();
@@ -1375,7 +1370,6 @@ public class Workbench extends javax.swing.JFrame {
      */
     private void openSchemaFrame(File file, boolean newFile) {
         try {
-
             if (! newFile) {
                 // check if file not already open
                 if (checkFileOpen(file)) {
@@ -1504,13 +1498,11 @@ public class Workbench extends javax.swing.JFrame {
                         viewXMLMenuItem.setSelected(se.isEditModeXML());  // update view menu based on
                     }
                 }
-
             });
             viewXMLMenuItem.setSelected(false);
         } catch (Exception ex) {
             LOGGER.error("openSchemaFrame", ex);
         }
-
     }
     private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         JFileChooser jfc = new JFileChooser();
@@ -1524,7 +1516,6 @@ public class Workbench extends javax.swing.JFrame {
                 public String getDescription() {
                     return getResourceConverter().getString("workbench.open.schema.file.type", "Mondrian Schema files (*.xml)");
                 }
-
             });
 
             String lastUsed = workbenchProperties.getProperty(LAST_USED1_URL);
@@ -1549,7 +1540,6 @@ public class Workbench extends javax.swing.JFrame {
 
     // checks if file already open in schema explorer
     private boolean checkFileOpen(File file) {
-
         Iterator it = schemaWindowMap.keySet().iterator();  // keys=schemaframes
         while (it.hasNext()) {
             JInternalFrame elem = (JInternalFrame) it.next();
@@ -1565,7 +1555,6 @@ public class Workbench extends javax.swing.JFrame {
             }
         }
         return false;
-
     }
 
     private void resetWorkbench() {

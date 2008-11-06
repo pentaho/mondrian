@@ -395,7 +395,6 @@ public abstract class RolapAggregationManager {
             compoundGroupMap.put(bitKey, compoundGroup);
         }
         compoundGroup.add(tuple);
-
     }
 
     private static boolean makeCompoundGroupForMember(
@@ -539,7 +538,6 @@ public abstract class RolapAggregationManager {
         while (member != null) {
             RolapCubeLevel level = member.getLevel();
             if (!level.isAll()) {
-
                 RolapStar.Column column = level.getBaseStarKeyColumn(baseCube);
                 if (memberPredicate == null) {
                     memberPredicate =

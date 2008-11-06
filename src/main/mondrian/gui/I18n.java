@@ -104,7 +104,6 @@ public class I18n {
 
                 Locale model = new Locale(language, country, variant);
                 supportedLocales.add(model);
-
             }
         } catch (Exception e) {
             LOGGER.error("getListOfAvailableLanguages", e);

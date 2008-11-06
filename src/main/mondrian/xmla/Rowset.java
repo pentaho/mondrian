@@ -183,7 +183,6 @@ abstract class Rowset implements XmlaConstants {
      * @param response XMLA response writer
      */
     protected void emit(Row row, XmlaResponse response) throws XmlaException {
-
         SaxWriter writer = response.getWriter();
 
         writer.startElement("row");

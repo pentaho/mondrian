@@ -151,18 +151,18 @@ public class QueryPanel extends javax.swing.JPanel {
 
         schemaList.setBackground(Color.white);
         final JPanel qpanel = this;
-        schemaList.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-
-
-            }
-        });
+        schemaList.addItemListener(
+            new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                }
+            });
         connectButton.setText(getResourceConverter().getString("queryPanel.connect.title","Connect"));
-        connectButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                connectButtonActionPerformed(evt);
-            }
-        });
+        connectButton.addActionListener(
+            new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    connectButtonActionPerformed(evt);
+                }
+            });
 
         schemaPanel.add(schemaLabel); //java.awt.BorderLayout.WEST
         schemaPanel.add(schemaList);
@@ -184,7 +184,6 @@ public class QueryPanel extends javax.swing.JPanel {
         queryTextPane.setFont(new java.awt.Font("Courier New", 0, 12));
         queryTextPane.setText("");
         queryTextPane.addMouseListener(new MouseAdapter() {
-
             // From MouseAdapter javadoc:
             //
             // Popup menus are triggered differently
@@ -207,7 +206,6 @@ public class QueryPanel extends javax.swing.JPanel {
                     int y = e.getY();
 
                     jPopupMenu.show(queryTextPane, x, y);
-
                 }
             }
         });
@@ -223,7 +221,6 @@ public class QueryPanel extends javax.swing.JPanel {
         jSplitPane1.setBottomComponent(jScrollPane2);
 
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
-
     }
 
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:T://event_executeButtonActionPerformed

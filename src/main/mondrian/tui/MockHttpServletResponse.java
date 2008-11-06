@@ -349,7 +349,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
             headers.put(name, valueList);
         }
         valueList.add(value);
-
     }
 
     /**
@@ -417,7 +416,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
         return ((list == null) || (list.size() == 0))
             ? null
             : list.get(0);
-
     }
 
     public String getContentType() {

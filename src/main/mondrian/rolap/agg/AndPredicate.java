@@ -68,7 +68,6 @@ public class AndPredicate extends ListPredicate {
     }
 
     public BitKey checkInList(SqlQuery sqlQuery, BitKey inListLHSBitKey) {
-
         // AND predicate by itself is not using IN list; when it is
         // one of the children to an OR predicate, then using IN list
         // is helpful. The later is checked by passing in a bitmap that

@@ -203,7 +203,6 @@ public class JdbcSchema {
                         LOGGER.warn(ex);
                     }
                 }
-
             }
             // reset
             sweepDBCount = 0;
@@ -695,7 +694,6 @@ public class JdbcSchema {
              * Get an iterator over all usages of the given column type.
              */
             public Iterator<Usage> getUsages(UsageType usageType) {
-
                 // Yes, this is legal.
                 class ColumnTypeIterator implements Iterator<Usage> {
                     private final Iterator<Usage> usageIter;
@@ -717,7 +715,6 @@ public class JdbcSchema {
                                 nextUsage = usage;
                                 return true;
                             }
-
                         }
                         nextUsage = null;
                         return false;
@@ -905,7 +902,6 @@ public class JdbcSchema {
         public Iterator<JdbcSchema.Table.Column.Usage> getColumnUsages(
             final UsageType usageType)
         {
-
             class CTIterator implements Iterator<JdbcSchema.Table.Column.Usage> {
                 private final Iterator<Column> columnIter;
                 private final UsageType columnType;
@@ -966,8 +962,8 @@ public class JdbcSchema {
         public void setTableUsageType(final TableUsageType tableUsageType) {
             // if usageIter has already been set, then usageIter can NOT be reset
             if ((this.tableUsageType != TableUsageType.UNKNOWN) &&
-                    (this.tableUsageType != tableUsageType)) {
-
+                    (this.tableUsageType != tableUsageType))
+            {
                 throw mres.AttemptToChangeTableUsage.ex(
                     getName(),
                     this.tableUsageType.name(),

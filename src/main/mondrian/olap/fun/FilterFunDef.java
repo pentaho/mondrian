@@ -97,7 +97,6 @@ class FilterFunDef extends FunDefBase {
             }
 
         } else {
-
             if (imlcalc.getResultStyle() == ResultStyle.ITERABLE) {
                 return new IterMemberArrayIterCalc(call, calcs);
             } else if (imlcalc.getResultStyle() == ResultStyle.LIST) {
@@ -370,7 +369,6 @@ class FilterFunDef extends FunDefBase {
                 ilcalc.getResultStyle());
 
         } else {
-
             switch (ilcalc.getResultStyle()) {
             case LIST:
                 return new ImMutableMemberArrayListCalc(call, calcs);

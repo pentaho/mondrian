@@ -47,20 +47,22 @@ public class SimpleTestRunner {
         System.out.println(buf.toString());
         System.exit(0);
     }
+
     protected static TestCase makeTestCase(String classname) throws Exception {
         Class cls = Class.forName(classname);
 
         return (TestCase) cls.newInstance();
     }
-    protected static TestCase makeTestCase(String classname, String methodname)
-            throws Exception {
 
+    protected static TestCase makeTestCase(String classname, String methodname)
+        throws Exception
+    {
         Class cls = Class.forName(classname);
 
         Constructor cons = cls.getConstructor(new Class[] { String.class});
         return (TestCase) cons.newInstance(new Object[] { methodname });
-
     }
+
     protected static void outputErrorInfo(Enumeration e, boolean quiet) {
         while (e.hasMoreElements()) {
             TestFailure tf = (TestFailure) e.nextElement();

@@ -115,11 +115,11 @@ public class QueryAxis extends QueryPart {
         Exp slicer = exp;
         if (slicer instanceof LevelExpr ||
             slicer instanceof HierarchyExpr ||
-            slicer instanceof DimensionExpr) {
-
+            slicer instanceof DimensionExpr)
+        {
             slicer = new UnresolvedFunCall(
-                    "DefaultMember", Syntax.Property, new Exp[] {
-                        slicer});
+                "DefaultMember", Syntax.Property, new Exp[] {
+                    slicer});
         }
         if (slicer == null) {
             ;

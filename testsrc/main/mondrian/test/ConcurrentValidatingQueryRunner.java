@@ -111,36 +111,37 @@ public class ConcurrentValidatingQueryRunner extends Thread {
                             mdxQueries.length);
                     } else {
                         queryIndex = mRunCount %
-                                mdxQueries.length;
+                            mdxQueries.length;
                     }
 
                     mRunCount++;
 
                     synchronized (lock) {
-                    // flush a random region of cache
-                    if (mRandomCacheFlush &&
-                        (Math.random() < mRandomFlushFrequency)) {
-                        flushRandomRegionOfCache();
-                    }
+                        // flush a random region of cache
+                        if (mRandomCacheFlush &&
+                            (Math.random() < mRandomFlushFrequency)) {
+                            flushRandomRegionOfCache();
+                        }
 
-                    // flush the whole schema
-                    if (mRandomCacheFlush &&
-                        (Math.random() < mRandomFlushFrequency)) {
-                        flushSchema();
+                        // flush the whole schema
+                        if (mRandomCacheFlush &&
+                            (Math.random() < mRandomFlushFrequency)) {
+                            flushSchema();
+                        }
                     }
-                    } // end sync block
                     synchronized (lock) {
-                    concurrentMdxTest.assertQueryReturns(
-                        mdxQueries[queryIndex].query,
-                        mdxQueries[queryIndex].result);
-                    mSuccessCount++;
-                    } //end sync block
-
+                        concurrentMdxTest.assertQueryReturns(
+                            mdxQueries[queryIndex].query,
+                            mdxQueries[queryIndex].result);
+                        mSuccessCount++;
+                    }
                 } catch (Exception e) {
                     mExceptions.add(
-                            new Exception("Exception occurred in iteration " +
-                                   mRunCount + " of thread " +
-                                    Thread.currentThread().getName(), e));
+                        new Exception(
+                            "Exception occurred in iteration " +
+                            mRunCount + " of thread " +
+                            Thread.currentThread().getName(),
+                            e));
                 }
             }
             mStopTime = System.currentTimeMillis();

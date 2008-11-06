@@ -24,7 +24,6 @@ import java.io.IOException;
 public class NullMemberRepresentationTest extends FoodMartTestCase {
 
     public void testClosingPeriodMemberLeafWithCustomNullRepresentation() {
-
         assertQueryReturns(
                 "with member [Measures].[Foo] as ' ClosingPeriod().uniquename '\n" +
                         "select {[Measures].[Foo]} on columns,\n" +
@@ -63,7 +62,6 @@ public class NullMemberRepresentationTest extends FoodMartTestCase {
 
         assertExprReturns("[Gender].[All Gender].Parent.Name",
                 getNullMemberRepresentation());
-
     }
 
     private String getNullMemberRepresentation() {

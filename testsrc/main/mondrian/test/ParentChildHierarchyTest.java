@@ -225,7 +225,6 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * Test case for bug #1708327
      */
     public void _testNonClosureParentChildHierarchy() {
-
         getEmpNonClosureTestContext().assertQueryReturns(
                 "Select " +
                 "{[EmployeesNonClosure].[Sheri Nowmer].children} on columns," +

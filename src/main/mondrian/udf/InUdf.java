@@ -26,7 +26,6 @@ import java.util.regex.*;
 public class InUdf implements UserDefinedFunction {
 
     public Object execute(Evaluator evaluator, Argument[] arguments) {
-
         Object arg0 = arguments[0].evaluate(evaluator);
         List arg1 = (List) arguments[1].evaluate(evaluator);
 

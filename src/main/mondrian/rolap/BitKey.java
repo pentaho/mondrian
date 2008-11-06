@@ -1022,7 +1022,6 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         private void andNot(long[] bits) {
             for (int i = 0; i < bits.length; i++) {
                 this.bits[i] &= ~bits[i];
-
             }
         }
 

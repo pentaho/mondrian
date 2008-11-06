@@ -35,7 +35,6 @@ class ExtractFunDef extends FunDefBase {
         "Extract(<Set>, <Dimension>[, <Dimension>...])",
         "Returns a set of tuples from extracted dimension elements. The opposite of Crossjoin.",
         Syntax.Function) {
-
         public FunDef resolve(
             Exp[] args, Validator validator, int[] conversionCount) {
             if (args.length < 2) {

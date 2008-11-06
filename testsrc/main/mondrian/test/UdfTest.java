@@ -202,7 +202,6 @@ public class UdfTest extends FoodMartTestCase {
                     "user-defined function 'BadPlusOne': return type is null",
                     s);
         }
-
     }
 
     public void testComplexFun() {

@@ -165,8 +165,8 @@ class CacheMemberReader implements MemberReader, MemberCache {
         for (RolapMember member : members) {
             if ((member.getLevel().getDepth() == levelDepth) &&
                 (startOrdinal <= member.getOrdinal()) &&
-                (member.getOrdinal() < endOrdinal)) {
-
+                (member.getOrdinal() < endOrdinal))
+            {
                 list.add(member);
             }
         }
@@ -235,8 +235,8 @@ class CacheMemberReader implements MemberReader, MemberCache {
             for (int ordinal = member.getOrdinal(); ordinal < members.size();
                  ordinal++) {
                 if ((members.get(ordinal).getLevel() == member.getLevel()) &&
-                    (n-- == 0)) {
-
+                    (n-- == 0))
+                {
                     return members.get(ordinal);
                 }
             }

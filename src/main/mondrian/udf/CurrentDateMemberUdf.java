@@ -40,7 +40,6 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
     private Object resultDateMember = null;
 
     public Object execute(Evaluator evaluator, Argument[] arguments) {
-
         if (resultDateMember != null) {
             return resultDateMember;
         }

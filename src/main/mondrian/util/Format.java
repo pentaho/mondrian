@@ -484,7 +484,6 @@ public class Format {
             }
             return true;
         }
-
     }
 
     /**
@@ -1128,7 +1127,6 @@ public class Format {
 //                                                            strYear);
 //              return ret;
 //          }
-
     }
 
     private static class StringFormat extends BasicFormat
@@ -1332,7 +1330,6 @@ public class Format {
             "True/False", "\\T\\r\\u\\e;\\T\\r\\u\\e;\\F\\a\\l\\s\\e;\\F\\a\\l\\s\\e", "Any nonzero numeric value (usually - 1) is True. Zero is False."),
         new MacroToken(
             "On/Off", "\\O\\n;\\O\\n;\\O\\f\\f;\\O\\f\\f", "Any nonzero numeric value (usually - 1) is On. Zero is Off."),
-
     };
 
     /**

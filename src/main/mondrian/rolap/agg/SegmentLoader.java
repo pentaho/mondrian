@@ -114,7 +114,6 @@ public class SegmentLoader {
             setDataToSegments(
                 groupingSetsList, nonGroupingDataSets,
                 groupingDataSetsMap, pinnedSegments);
-
         } catch (SQLException e) {
             throw stmt.handle(e);
         } finally {
@@ -479,9 +478,8 @@ public class SegmentLoader {
         }
         groupingColumns.add(detailedBatchColumns);
         for (GroupingSet aggBatchDetail : aggBatchDetails) {
-            groupingColumns.add(aggBatchDetail.getSegments()[0]
-                .aggregation.getColumns());
-
+            groupingColumns.add(
+                aggBatchDetail.getSegments()[0].aggregation.getColumns());
         }
         return groupingColumns;
     }
@@ -490,7 +488,6 @@ public class SegmentLoader {
         // Workspace to build up lists of distinct values for each axis.
         SortedSet<Comparable<?>>[] axisValueSets = new SortedSet[arity];
         for (int i = 0; i < axisValueSets.length; i++) {
-
             if (Util.PreJdk15) {
                 // Work around the fact that Boolean is not Comparable until JDK
                 // 1.5.

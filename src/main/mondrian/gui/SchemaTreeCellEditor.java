@@ -56,7 +56,6 @@ public class SchemaTreeCellEditor extends javax.swing.tree.DefaultTreeCellEditor
             }
         });
          */
-
     }
 
     public Component getTreeCellEditorComponent(JTree tree, Object value, boolean isSelected, boolean expanded, boolean leaf, int row) {
@@ -127,7 +126,6 @@ public class SchemaTreeCellEditor extends javax.swing.tree.DefaultTreeCellEditor
             return new MondrianGuiDef.Join("","",new MondrianGuiDef.Table(), "", "", new MondrianGuiDef.Table());
         } else if (retValue.equals("Table")) {
             return new MondrianGuiDef.Table();
-
         }
         return null;
          */
@@ -159,7 +157,6 @@ public class SchemaTreeCellEditor extends javax.swing.tree.DefaultTreeCellEditor
             relationObj = new MondrianGuiDef.Join("","",new MondrianGuiDef.Table("","Table 1",""), "", "", new MondrianGuiDef.Table("","Table 2",""));
         } else if (retValue.equals("Table")) {
             relationObj = new MondrianGuiDef.Table("","Table","");
-
         }
 
         TreePath tpath = tree.getSelectionPath();

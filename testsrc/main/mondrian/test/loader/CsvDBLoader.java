@@ -582,7 +582,6 @@ if (value0.startsWith("# ")) {
                         csvloader = null;
                         break;
                     }
-
                 }
             }
         } finally {

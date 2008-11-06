@@ -605,7 +605,6 @@ public class RolapConnection extends ConnectionBase {
             */
             query.setQueryEndExecution();
             return result;
-
         } catch (ResultLimitExceededException e) {
             // query has been punted
             throw e;

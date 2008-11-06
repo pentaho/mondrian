@@ -66,10 +66,12 @@ abstract class Recognizer {
     protected final MessageRecorder msgRecorder;
     protected boolean returnValue;
 
-    protected Recognizer(final RolapStar star,
-                         final JdbcSchema.Table dbFactTable,
-                         final JdbcSchema.Table aggTable,
-                         final MessageRecorder msgRecorder) {
+    protected Recognizer(
+        final RolapStar star,
+        final JdbcSchema.Table dbFactTable,
+        final JdbcSchema.Table aggTable,
+        final MessageRecorder msgRecorder)
+    {
         this.star = star;
         this.dbFactTable = dbFactTable;
         this.aggTable = aggTable;
@@ -164,7 +166,6 @@ abstract class Recognizer {
         msgRecorder.pushContextName("Recognizer.checkFactCount");
 
         try {
-
             Matcher factCountMatcher = getFactCountMatcher();
 
             int nosOfFactCounts = 0;
@@ -188,26 +189,24 @@ abstract class Recognizer {
                         returnValue = false;
                     }
                 }
-
             }
             if (nosOfFactCounts == 0) {
                 String msg = mres.NoFactCountColumns.str(
-                        aggTable.getName(),
-                        dbFactTable.getName());
+                    aggTable.getName(),
+                    dbFactTable.getName());
                 msgRecorder.reportError(msg);
 
                 returnValue = false;
 
             } else if (nosOfFactCounts > 1) {
                 String msg = mres.TooManyFactCountColumns.str(
-                        aggTable.getName(),
-                        dbFactTable.getName(),
-                        nosOfFactCounts);
+                    aggTable.getName(),
+                    dbFactTable.getName(),
+                    nosOfFactCounts);
                 msgRecorder.reportError(msg);
 
                 returnValue = false;
             }
-
         } finally {
             msgRecorder.popContextName();
         }
@@ -242,13 +241,12 @@ abstract class Recognizer {
         try {
             if (nosMeasures == 0) {
                 String msg = mres.NoMeasureColumns.str(
-                        aggTable.getName(),
-                        dbFactTable.getName());
+                    aggTable.getName(),
+                    dbFactTable.getName());
                 msgRecorder.reportError(msg);
 
                 returnValue = false;
             }
-
         } finally {
             msgRecorder.popContextName();
         }
@@ -290,8 +288,8 @@ abstract class Recognizer {
                 int seenCount = 0;
                 for (Iterator<JdbcSchema.Table.Column.Usage> mit =
                     aggTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);
-                        mit.hasNext();) {
-
+                        mit.hasNext();)
+                {
                     JdbcSchema.Table.Column.Usage aggUsage = mit.next();
                     if (aggUsage.rMeasure == avgFactUsage.rMeasure) {
                         avgAggUsage = aggUsage;
@@ -321,8 +319,10 @@ abstract class Recognizer {
      * @param factUsage fact usage
      * @param aggSiblingUsage existing sibling usage
      */
-    protected void makeMeasure(final JdbcSchema.Table.Column.Usage factUsage,
-                               final JdbcSchema.Table.Column.Usage aggSiblingUsage) {
+    protected void makeMeasure(
+        final JdbcSchema.Table.Column.Usage factUsage,
+        final JdbcSchema.Table.Column.Usage aggSiblingUsage)
+    {
         JdbcSchema.Table.Column aggColumn = aggSiblingUsage.getColumn();
 
         JdbcSchema.Table.Column.Usage aggUsage =
@@ -330,22 +330,24 @@ abstract class Recognizer {
 
         aggUsage.setSymbolicName(factUsage.getSymbolicName());
         RolapAggregator ra = convertAggregator(
-                        aggUsage,
-                        factUsage.getAggregator(),
-                        aggSiblingUsage.getAggregator());
+            aggUsage,
+            factUsage.getAggregator(),
+            aggSiblingUsage.getAggregator());
         aggUsage.setAggregator(ra);
         aggUsage.rMeasure = factUsage.rMeasure;
     }
 
     /**
-     * This method creates an aggregate table column measure usage from a fact
+     * Creates an aggregate table column measure usage from a fact
      * table column measure usage.
      *
      * @param factUsage
      * @param aggColumn
      */
-    protected void makeMeasure(final JdbcSchema.Table.Column.Usage factUsage,
-                               final JdbcSchema.Table.Column aggColumn) {
+    protected void makeMeasure(
+        final JdbcSchema.Table.Column.Usage factUsage,
+        final JdbcSchema.Table.Column aggColumn)
+    {
         JdbcSchema.Table.Column.Usage aggUsage =
             aggColumn.newUsage(JdbcSchema.UsageType.MEASURE);
 
@@ -361,7 +363,8 @@ abstract class Recognizer {
      * table foreign key column return in the number matched. For each matching
      * column a foreign key usage is created.
      */
-    protected abstract int matchForeignKey(JdbcSchema.Table.Column.Usage factUsage);
+    protected abstract int matchForeignKey(
+        JdbcSchema.Table.Column.Usage factUsage);
 
     /**
      * This method checks the foreign key columns.
@@ -380,14 +383,13 @@ abstract class Recognizer {
         msgRecorder.pushContextName("Recognizer.checkForeignKeys");
 
         try {
-
             List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys =
                 Collections.emptyList();
 
             for (Iterator<JdbcSchema.Table.Column.Usage> it =
                 dbFactTable.getColumnUsages(JdbcSchema.UsageType.FOREIGN_KEY);
-                    it.hasNext();) {
-
+                    it.hasNext();)
+            {
                 JdbcSchema.Table.Column.Usage factUsage = it.next();
 
                 int matchCount = matchForeignKey(factUsage);
@@ -404,13 +406,13 @@ abstract class Recognizer {
 
                 } else if (matchCount == 0) {
                     if (notSeenForeignKeys.isEmpty()) {
-                        notSeenForeignKeys = new ArrayList<JdbcSchema.Table.Column.Usage>();
+                        notSeenForeignKeys =
+                            new ArrayList<JdbcSchema.Table.Column.Usage>();
                     }
                     notSeenForeignKeys.add(factUsage);
                 }
             }
             return notSeenForeignKeys;
-
         } finally {
             msgRecorder.popContextName();
         }
@@ -448,8 +450,9 @@ abstract class Recognizer {
      *
      * @param notSeenForeignKeys
      */
-    protected void checkLevels(List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys) {
-
+    protected void checkLevels(
+        List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys)
+    {
         // These are the factTable that do not appear in the aggTable.
         // 1) find all cubes with this given factTable
         // 1) per cube, find all usages with the column as foreign key
@@ -506,7 +509,6 @@ abstract class Recognizer {
                                 continue mid_level;
                             }
                             if (matchLevel(hierarchy, hierarchyUsage, level)) {
-
                                 continue mid_level;
 
                             } else {
@@ -561,9 +563,11 @@ abstract class Recognizer {
      * @param aggColumn
      * @param rightJoinConditionColumnName
      */
-    protected void makeForeignKey(final JdbcSchema.Table.Column.Usage factUsage,
-                                  final JdbcSchema.Table.Column aggColumn,
-                                  final String rightJoinConditionColumnName) {
+    protected void makeForeignKey(
+        final JdbcSchema.Table.Column.Usage factUsage,
+        final JdbcSchema.Table.Column aggColumn,
+        final String rightJoinConditionColumnName)
+    {
         JdbcSchema.Table.Column.Usage aggUsage =
             aggColumn.newUsage(JdbcSchema.UsageType.FOREIGN_KEY);
         aggUsage.setSymbolicName("FOREIGN_KEY");
@@ -581,9 +585,9 @@ abstract class Recognizer {
      * rolap level returning true if a match is found.
      */
     protected abstract boolean matchLevel(
-            final Hierarchy hierarchy,
-            final HierarchyUsage hierarchyUsage,
-            final RolapLevel level);
+        final Hierarchy hierarchy,
+        final HierarchyUsage hierarchyUsage,
+        final RolapLevel level);
 
     /**
      * Make a level column usage.
@@ -595,111 +599,110 @@ abstract class Recognizer {
      * for the column and it matches something else, then it is an error.
      */
     protected void makeLevel(
-            final JdbcSchema.Table.Column aggColumn,
-            final Hierarchy hierarchy,
-            final HierarchyUsage hierarchyUsage,
-            final String factColumnName,
-            final String levelColumnName,
-            final String symbolicName) {
-
+        final JdbcSchema.Table.Column aggColumn,
+        final Hierarchy hierarchy,
+        final HierarchyUsage hierarchyUsage,
+        final String factColumnName,
+        final String levelColumnName,
+        final String symbolicName)
+    {
         msgRecorder.pushContextName("Recognizer.makeLevel");
 
         try {
+            if (aggColumn.hasUsage(JdbcSchema.UsageType.LEVEL)) {
+                // The column has at least one usage of level type
+                // make sure we are looking at the
+                // same table and column
+                for (Iterator<JdbcSchema.Table.Column.Usage> uit =
+                    aggColumn.getUsages(JdbcSchema.UsageType.LEVEL);
+                     uit.hasNext();) {
+                    JdbcSchema.Table.Column.Usage aggUsage = uit.next();
 
-        if (aggColumn.hasUsage(JdbcSchema.UsageType.LEVEL)) {
-            // The column has at least one usage of level type
-            // make sure we are looking at the
-            // same table and column
-            for (Iterator<JdbcSchema.Table.Column.Usage> uit =
-                aggColumn.getUsages(JdbcSchema.UsageType.LEVEL);
-                    uit.hasNext();) {
-                JdbcSchema.Table.Column.Usage aggUsage = uit.next();
+                    MondrianDef.Relation rel = hierarchyUsage.getJoinTable();
+                    String cName = levelColumnName;
 
-                MondrianDef.Relation rel = hierarchyUsage.getJoinTable();
-                String cName = levelColumnName;
+                    if (! aggUsage.relation.equals(rel) ||
+                        ! aggColumn.column.name.equals(cName))
+                    {
+                        // this is an error so return
+                        String msg = mres.DoubleMatchForLevel.str(
+                            aggTable.getName(),
+                            dbFactTable.getName(),
+                            aggColumn.getName(),
+                            aggUsage.relation.toString(),
+                            aggColumn.column.name,
+                            rel.toString(),
+                            cName);
+                        msgRecorder.reportError(msg);
 
-                if (! aggUsage.relation.equals(rel) ||
-                    ! aggColumn.column.name.equals(cName)) {
+                        returnValue = false;
 
-                    // this is an error so return
-                    String msg = mres.DoubleMatchForLevel.str(
-                        aggTable.getName(),
-                        dbFactTable.getName(),
-                        aggColumn.getName(),
-                        aggUsage.relation.toString(),
-                        aggColumn.column.name,
-                        rel.toString(),
-                        cName);
-                    msgRecorder.reportError(msg);
+                        msgRecorder.throwRTException();
+                    }
+                }
+            } else {
+                JdbcSchema.Table.Column.Usage aggUsage =
+                    aggColumn.newUsage(JdbcSchema.UsageType.LEVEL);
+                // Cache table and column for the above
+                // check
+                aggUsage.relation = hierarchyUsage.getJoinTable();
+                aggUsage.joinExp = hierarchyUsage.getJoinExp();
+                aggUsage.levelColumnName = levelColumnName;
+
+                aggUsage.setSymbolicName(symbolicName);
+
+                String tableAlias;
+                if (aggUsage.joinExp instanceof MondrianDef.Column) {
+                    MondrianDef.Column mcolumn =
+                        (MondrianDef.Column) aggUsage.joinExp;
+                    tableAlias = mcolumn.table;
+                } else {
+                    tableAlias = aggUsage.relation.getAlias();
+                }
+
+
+                RolapStar.Table factTable = star.getFactTable();
+                RolapStar.Table descTable =
+                    factTable.findDescendant(tableAlias);
+
+                if (descTable == null) {
+                    // TODO: what to do here???
+                    StringBuilder buf = new StringBuilder(256);
+                    buf.append("descendant table is null for factTable=");
+                    buf.append(factTable.getAlias());
+                    buf.append(", tableAlias=");
+                    buf.append(tableAlias);
+                    msgRecorder.reportError(buf.toString());
 
                     returnValue = false;
 
                     msgRecorder.throwRTException();
                 }
+
+                RolapStar.Column rc = descTable.lookupColumn(factColumnName);
+
+                if (rc == null) {
+                    rc = lookupInChildren(descTable, factColumnName);
+                }
+                if (rc == null) {
+                    StringBuilder buf = new StringBuilder(256);
+                    buf.append("Rolap.Column not found (null) for tableAlias=");
+                    buf.append(tableAlias);
+                    buf.append(", factColumnName=");
+                    buf.append(factColumnName);
+                    buf.append(", levelColumnName=");
+                    buf.append(levelColumnName);
+                    buf.append(", symbolicName=");
+                    buf.append(symbolicName);
+                    msgRecorder.reportError(buf.toString());
+
+                    returnValue = false;
+
+                    msgRecorder.throwRTException();
+                } else {
+                    aggUsage.rColumn = rc;
+                }
             }
-        } else {
-            JdbcSchema.Table.Column.Usage aggUsage =
-                aggColumn.newUsage(JdbcSchema.UsageType.LEVEL);
-            // Cache table and column for the above
-            // check
-            aggUsage.relation = hierarchyUsage.getJoinTable();
-            aggUsage.joinExp = hierarchyUsage.getJoinExp();
-            aggUsage.levelColumnName = levelColumnName;
-
-            aggUsage.setSymbolicName(symbolicName);
-
-            String tableAlias;
-            if (aggUsage.joinExp instanceof MondrianDef.Column) {
-                MondrianDef.Column mcolumn =
-                    (MondrianDef.Column) aggUsage.joinExp;
-                tableAlias = mcolumn.table;
-            } else {
-                tableAlias = aggUsage.relation.getAlias();
-            }
-
-
-            RolapStar.Table factTable = star.getFactTable();
-            RolapStar.Table descTable = factTable.findDescendant(tableAlias);
-
-            if (descTable == null) {
-                // TODO: what to do here???
-                StringBuilder buf = new StringBuilder(256);
-                buf.append("descendant table is null for factTable=");
-                buf.append(factTable.getAlias());
-                buf.append(", tableAlias=");
-                buf.append(tableAlias);
-                msgRecorder.reportError(buf.toString());
-
-                returnValue = false;
-
-                msgRecorder.throwRTException();
-            }
-
-            RolapStar.Column rc = descTable.lookupColumn(factColumnName);
-
-            if (rc == null) {
-                rc = lookupInChildren(descTable, factColumnName);
-
-            }
-            if (rc == null) {
-                StringBuilder buf = new StringBuilder(256);
-                buf.append("Rolap.Column not found (null) for tableAlias=");
-                buf.append(tableAlias);
-                buf.append(", factColumnName=");
-                buf.append(factColumnName);
-                buf.append(", levelColumnName=");
-                buf.append(levelColumnName);
-                buf.append(", symbolicName=");
-                buf.append(symbolicName);
-                msgRecorder.reportError(buf.toString());
-
-                returnValue = false;
-
-                msgRecorder.throwRTException();
-            } else {
-                aggUsage.rColumn = rc;
-            }
-        }
         } finally {
             msgRecorder.popContextName();
         }
@@ -773,9 +776,9 @@ abstract class Recognizer {
      * @param factAgg
      */
     protected RolapAggregator convertAggregator(
-            final JdbcSchema.Table.Column.Usage aggUsage,
-            final RolapAggregator factAgg) {
-
+        final JdbcSchema.Table.Column.Usage aggUsage,
+        final RolapAggregator factAgg)
+    {
         // NOTE: This assumes that the aggregate table does not have an explicit
         // average column.
         if (factAgg == RolapAggregator.Avg) {
@@ -813,10 +816,10 @@ abstract class Recognizer {
      * @param siblingAgg
      */
     protected RolapAggregator convertAggregator(
-            final JdbcSchema.Table.Column.Usage aggUsage,
-            final RolapAggregator factAgg,
-            final RolapAggregator siblingAgg) {
-
+        final JdbcSchema.Table.Column.Usage aggUsage,
+        final RolapAggregator factAgg,
+        final RolapAggregator siblingAgg)
+    {
         msgRecorder.pushContextName("Recognizer.convertAggregator");
         RolapAggregator rollupAgg =  null;
 
@@ -859,7 +862,9 @@ abstract class Recognizer {
      * @param aggUsage Aggregate table column usage
      * @return The name of the column which holds the fact count.
      */
-    private String getFactCountExpr(final JdbcSchema.Table.Column.Usage aggUsage) {
+    private String getFactCountExpr(
+        final JdbcSchema.Table.Column.Usage aggUsage)
+    {
         // get the fact count column name.
         JdbcSchema.Table aggTable = aggUsage.getColumn().getTable();
 
@@ -927,7 +932,6 @@ abstract class Recognizer {
             msgRecorder.reportError(msg);
 
             return null;
-
         } finally {
             msgRecorder.popContextName();
         }

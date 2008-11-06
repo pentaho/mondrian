@@ -55,7 +55,6 @@ public abstract class RolapNative {
         TupleReader getTupleReader() {
             return tupleReader;
         }
-
     }
 
     interface Listener {

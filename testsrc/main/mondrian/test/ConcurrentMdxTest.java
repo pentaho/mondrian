@@ -1235,7 +1235,6 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
                     "Axis #0:\n" +
                             "{}\n" +
                             "565,238.13"),
-
     };
 
     public void testConcurrentValidatingQueriesInRandomOrder() {

@@ -75,7 +75,6 @@ public class BatchTestCase extends FoodMartTestCase {
         addRequests(batch, cubeName, measure, tableNames, fieldNames,
             fieldValues, new ArrayList<String>(), 0);
         return batch;
-
     }
 
     protected FastBatchingCellReader.Batch createBatch(
@@ -94,7 +93,6 @@ public class BatchTestCase extends FoodMartTestCase {
         addRequests(batch, cubeName, measure, tableNames, fieldNames,
             fieldValues, new ArrayList<String>(), 0, constraint);
         return batch;
-
     }
 
     private void addRequests(

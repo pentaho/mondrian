@@ -85,7 +85,6 @@ public class ValidationUtils {
 
             // database validity check, if database connection is successful
             if (jdbcValidator.isInitialized()) {
-
                 // Vector allTables = jdbcMetaData.getAllTables(((MondrianGuiDef.Table) cubeVal.fact).schema);
                 if (((MondrianGuiDef.Cube) value).fact instanceof MondrianGuiDef.Table) {
                     String schemaName = ((MondrianGuiDef.Table) cubeVal.fact).schema;
@@ -249,10 +248,8 @@ public class ValidationUtils {
             } else if (isEmpty(((MondrianGuiDef.Measure) value).column)) {
                 return messages.getString("schemaTreeCellRenderer.columnMustBeSet.alert", "Column must be set");
             } else if (cube != null && cube.fact != null) {
-
                 // database validity check, if database connection is successful
                 if (jdbcValidator.isInitialized()) {
-
                     //Vector allcols  = jdbcMetaData.getAllColumns(((MondrianGuiDef.Table) cube.fact).schema, ((MondrianGuiDef.Table) cube.fact).name);
 
                     String column = ((MondrianGuiDef.Measure) value).column;
@@ -448,7 +445,6 @@ public class ValidationUtils {
 
                         // database validity check, if database connection is successful
                         if (jdbcMetaData.getErrMsg() == null) {
-
                             //Vector allcols  = jdbcMetaData.getAllColumns(((MondrianGuiDef.Table) c.fact).schema, ((MondrianGuiDef.Table) c.fact).name);
                             String foreignKey = d.foreignKey;
                             if (! jdbcMetaData.isColExists(((MondrianGuiDef.Table) c.fact).schema, ((MondrianGuiDef.Table) c.fact).name, foreignKey)) {
@@ -480,7 +476,6 @@ public class ValidationUtils {
                     }
                     childErrMsg = messages.getFormattedString("schemaTreeCellRenderer.childErrorMessageWithName.alert",
                             "{0} {1} is invalid", new String[] { simpleName[simpleName.length - 1], childName });
-
                 } catch (Exception ex) {
                     childErrMsg = messages.getFormattedString(
                             "schemaTreeCellRenderer.childErrorExceptionMessage.alert", "{0} is invalid",
@@ -501,8 +496,15 @@ public class ValidationUtils {
         }
     }
 
-    private static String validateColumn(String column, String fieldName, Messages messages, MondrianGuiDef.Level l, JDBCValidator jdbcValidator, MondrianGuiDef.Cube cube, MondrianGuiDef.Hierarchy parentHierarchy) {
-
+    private static String validateColumn(
+        String column,
+        String fieldName,
+        Messages messages,
+        MondrianGuiDef.Level l,
+        JDBCValidator jdbcValidator,
+        MondrianGuiDef.Cube cube,
+        MondrianGuiDef.Hierarchy parentHierarchy)
+    {
         /* // level column may be blank, if it has properties defined with cols.
         if (isEmpty(column)) {
             return "Column" + emptyMsg;

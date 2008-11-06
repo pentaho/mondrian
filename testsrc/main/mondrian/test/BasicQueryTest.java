@@ -482,7 +482,6 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testGoodComments() {
-
         assertQueryReturns(
                 "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]/* trailing comment*/",
                 EmptyResult);
@@ -5387,7 +5386,6 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testMemberOrdinalCaching() {
-
         boolean saved = props.CompareSiblingsByOrderKey.get();
         props.CompareSiblingsByOrderKey.set(true);
         Connection conn = null;
@@ -5825,7 +5823,6 @@ public class BasicQueryTest extends FoodMartTestCase {
             assertQueriesReturnSimilarResults(queryWithoutFilter,
                     queryWithDefaultMeasureFilter, testContext);
         }
-
     }
 
     /**
@@ -5996,7 +5993,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * ORA-01795 error.
      */
     public void testBug1630754() {
-
         // In order to reproduce this bug a dimension with 2 levels with more
         // than 1000 member each was necessary. The customer_id column has more than
         // 1000 distinct members so it was used for this test.

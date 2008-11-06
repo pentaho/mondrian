@@ -101,7 +101,6 @@ public class RolapNativeSql {
         public String toString() {
             return compilers.toString();
         }
-
     }
 
     /**
@@ -426,7 +425,6 @@ public class RolapNativeSql {
             }
             return sqlQuery.getDialect().caseWhenElse(cond, val1, val2);
         }
-
     }
 
     /**

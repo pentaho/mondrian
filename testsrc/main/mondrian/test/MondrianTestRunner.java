@@ -82,7 +82,6 @@ public class MondrianTestRunner extends BaseTestRunner {
         // uncomment this block to get a list of the single tests with time used
         final long[] longa = new long[1];
        result.addListener(new TestListener() {
-
          public void addError(Test arg0, Throwable arg1) {
                // do nothing
            }
@@ -137,7 +136,6 @@ public class MondrianTestRunner extends BaseTestRunner {
                         }
                     }
                 }
-
             }, "Test thread " + i);
             threads[i].start();
         }

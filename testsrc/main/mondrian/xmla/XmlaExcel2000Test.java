@@ -91,8 +91,8 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         {
             String expect = request.getHeader(XmlaRequestCallback.EXPECT);
             if ((expect != null) &&
-                expect.equalsIgnoreCase(XmlaRequestCallback.EXPECT_100_CONTINUE)) {
-
+                expect.equalsIgnoreCase(XmlaRequestCallback.EXPECT_100_CONTINUE))
+            {
                 XmlaRequestCallback.Helper.generatedExpectResponse(
                     request, response, context);
                 return false;
@@ -258,7 +258,6 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
 
         int statusCode = res.getStatusCode();
         if (statusCode == HttpServletResponse.SC_OK) {
-
             byte[] bytes = res.toByteArray();
             String expectedStr = generateExpectedString(nos, props);
             Document expectedDoc = XmlUtil.parseString(expectedStr);
@@ -287,7 +286,6 @@ System.out.println("Got CONTINUE");
             }
         } else {
             fail("Bad status code: "  + statusCode);
-
         }
     }
 
@@ -301,10 +299,11 @@ System.out.println("Got CONTINUE");
         String expectedStr = generateExpectedString(nos, props);
         Document expectedDoc = XmlUtil.parseString(expectedStr);
         validate(bytes, expectedDoc);
-
     }
+
     protected void validate(byte[] bytes, Document expectedDoc)
-            throws Exception {
+        throws Exception
+    {
 if (DEBUG) {
         String response = new String(bytes);
 System.out.println("response=" + response);

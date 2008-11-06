@@ -337,7 +337,6 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 if (n instanceof Element) {
                     Element e = (Element) n;
                     if (NS_XMLA.equals(e.getNamespaceURI())) {
-
                         String key = e.getLocalName();
                         String value = XmlaUtil.textInElement(e);
 

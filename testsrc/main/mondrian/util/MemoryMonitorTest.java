@@ -195,7 +195,6 @@ Does not work without the notify on add feature.
             if (! listener.wasNotified) {
                 fail("Listener callback was not called");
             }
-
         } finally {
             mm.removeListener(listener);
         }
@@ -289,7 +288,6 @@ Does not work without the notify on add feature.
                 buf = 0;
                 double dp = (100.0 * (maxMemory - usedMemory)) / maxMemory;
                 THRESHOLD_PERCENTAGE = 100 - (int) Math.ceil(dp);
-
             }
 //System.out.println("buf       ="+buf);
 //System.out.println("THRESHOLD_PERCENTAGE="+THRESHOLD_PERCENTAGE);
@@ -325,7 +323,6 @@ Does not work without the notify on add feature.
             }
 
             fail("Memory Notification Exception did not occur");
-
         } catch (MemoryLimitExceededException ex) {
             if (! listener.wasNotified) {
                 fail("Listener callback not called");

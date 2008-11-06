@@ -504,9 +504,9 @@ RME TODO
          * @param aggTable
          */
         private static void add(
-                final ExplicitRules.TableDef tableDef,
-                final MondrianDef.AggTable aggTable) {
-
+            final ExplicitRules.TableDef tableDef,
+            final MondrianDef.AggTable aggTable)
+        {
             if (aggTable.getAggFactCount() != null) {
                 tableDef.setFactCountName(aggTable.getAggFactCount().getColumnName());
             }
@@ -632,7 +632,6 @@ RME TODO
                                 msgRecorder.getContext(),
                                 name));
                     } else {
-
                         RolapCube cube = ExplicitRules.TableDef.this.getCube();
                         SchemaReader schemaReader = cube.getSchemaReader();
                         RolapLevel level =
@@ -1257,7 +1256,6 @@ RME TODO
             pw.print(subprefix);
             pw.print("name=");
             pw.println(this.name);
-
         }
     }
 
@@ -1270,14 +1268,14 @@ RME TODO
          * Make a PatternTableDef from the catalog schema.
          */
         static ExplicitRules.PatternTableDef make(
-                final MondrianDef.AggPattern aggPattern,
-                final ExplicitRules.Group group) {
-
+            final MondrianDef.AggPattern aggPattern,
+            final ExplicitRules.Group group)
+        {
             ExplicitRules.PatternTableDef pattern =
-                    new ExplicitRules.PatternTableDef(
-                            aggPattern.getPattern(),
-                            aggPattern.isIgnoreCase(),
-                            group);
+                new ExplicitRules.PatternTableDef(
+                    aggPattern.getPattern(),
+                    aggPattern.isIgnoreCase(),
+                    group);
 
             MondrianDef.AggExclude[] excludes = aggPattern.getAggExcludes();
             if (excludes != null) {
@@ -1389,7 +1387,6 @@ RME TODO
             }
             pw.print(subprefix);
             pw.println("]");
-
         }
     }
 

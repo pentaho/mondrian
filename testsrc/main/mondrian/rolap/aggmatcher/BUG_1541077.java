@@ -200,7 +200,6 @@ public class BUG_1541077 extends AggTableTestCase {
             "    column='amount' aggregator='avg'\n" +
             "   formatString='00.0'/>\n" +
             "</Cube>";
-
     }
 }
 

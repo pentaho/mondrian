@@ -563,10 +563,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         }
 
         public void getMemberChildren(
-                List<RolapMember> parentMembers,
-                List<RolapMember> children,
-                MemberChildrenConstraint constraint) {
-
+            List<RolapMember> parentMembers,
+            List<RolapMember> children,
+            MemberChildrenConstraint constraint)
+        {
             synchronized (cacheHelper) {
                 checkCacheStatus();
 
@@ -888,10 +888,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         }
 
         public void getMemberChildren(
-                List<RolapMember> parentMembers,
-                List<RolapMember> children,
-                MemberChildrenConstraint constraint) {
-
+            List<RolapMember> parentMembers,
+            List<RolapMember> children,
+            MemberChildrenConstraint constraint)
+        {
             List<RolapMember> missed = new ArrayList<RolapMember>();
             for (RolapMember parentMember : parentMembers) {
                 List<RolapMember> list = null;
@@ -1045,16 +1045,16 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         }
 
         public RolapMember makeMember(
-                RolapMember parentMember,
-                RolapLevel childLevel,
-                Object value,
-                Object captionValue,
-                boolean parentChild,
-                ResultSet resultSet,
-                Object key,
-                int columnOffset)
-                throws SQLException {
-
+            RolapMember parentMember,
+            RolapLevel childLevel,
+            Object value,
+            Object captionValue,
+            boolean parentChild,
+            ResultSet resultSet,
+            Object key,
+            int columnOffset)
+            throws SQLException
+        {
             RolapMember parent = null;
             if (parentMember != null) {
                 parent = ((RolapCubeMember)parentMember).getRolapMember();

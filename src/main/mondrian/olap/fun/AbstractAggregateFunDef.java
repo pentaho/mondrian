@@ -126,7 +126,6 @@ public class AbstractAggregateFunDef extends FunDefBase {
         List tuplesForAggregation,
         Evaluator evaluator)
     {
-
         if (tuplesForAggregation.size() == 0) {
             return tuplesForAggregation;
         }
@@ -207,7 +206,6 @@ public class AbstractAggregateFunDef extends FunDefBase {
             } else {
                 processedTuples.add(tuples[0]);
             }
-
         }
         return tuplesAsList(processedTuples);
     }

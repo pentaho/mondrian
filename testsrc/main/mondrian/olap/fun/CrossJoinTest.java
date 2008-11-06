@@ -134,8 +134,8 @@ if (! Util.Retrowoven) {
     }
 
     protected void doMemberMemberIterTest(
-            CrossJoinFunDef.BaseMemberMemberIterCalc calc) {
-
+        CrossJoinFunDef.BaseMemberMemberIterCalc calc)
+    {
         List<Member> l1 = makeListMember(m1);
         String s1 = toString(l1);
         String e1 = "{a,b,c}";
@@ -201,8 +201,8 @@ if (! Util.Retrowoven) {
     }
 
     protected void doMemberMemberArrayIterTest(
-            CrossJoinFunDef.BaseMemberMemberArrayIterCalc calc) {
-
+        CrossJoinFunDef.BaseMemberMemberArrayIterCalc calc)
+    {
         List<Member> l1 = makeListMember(m1);
         String s1 = toString(l1);
         String e1 = "{a,b,c}";
@@ -266,8 +266,8 @@ if (! Util.Retrowoven) {
     }
 
     protected void doMemberArrayMemberIterTest(
-            CrossJoinFunDef.BaseMemberArrayMemberIterCalc calc) {
-
+        CrossJoinFunDef.BaseMemberArrayMemberIterCalc calc)
+    {
         List<Member[]> l3 = makeListMemberArray(m3);
         String s3 = toString(l3);
         String e3 = "{[k,l],[m,n]}";
@@ -331,8 +331,8 @@ if (! Util.Retrowoven) {
     }
 
     protected void doMemberArrayMemberArrayIterTest(
-            CrossJoinFunDef.BaseMemberArrayMemberArrayIterCalc calc) {
-
+        CrossJoinFunDef.BaseMemberArrayMemberArrayIterCalc calc)
+    {
         List<Member[]> l4 = makeListMemberArray(m4);
         String s4 = toString(l4);
         String e4 = "{[U,V],[W,X],[Y,Z]}";
@@ -371,8 +371,8 @@ if (! Util.Retrowoven) {
     }
 
     protected void doMemberMemberListTest(
-            CrossJoinFunDef.BaseListCalc calc) {
-
+        CrossJoinFunDef.BaseListCalc calc)
+    {
         List<Member> l1 = makeListMember(m1);
         String s1 = toString(l1);
         String e1 = "{a,b,c}";
@@ -472,8 +472,8 @@ if (! Util.Retrowoven) {
     }
 
     protected void doMemberMemberArrayListTest(
-            CrossJoinFunDef.BaseListCalc calc) {
-
+        CrossJoinFunDef.BaseListCalc calc)
+    {
         List<Member> l1 = makeListMember(m1);
         String s1 = toString(l1);
         String e1 = "{a,b,c}";
@@ -552,8 +552,8 @@ if (! Util.Retrowoven) {
     }
 
     protected void doMemberArrayMemberListTest(
-            CrossJoinFunDef.BaseListCalc calc) {
-
+        CrossJoinFunDef.BaseListCalc calc)
+    {
         List<Member[]> l3 = makeListMemberArray(m3);
         String s3 = toString(l3);
         String e3 = "{[k,l],[m,n]}";
@@ -666,8 +666,8 @@ if (! Util.Retrowoven) {
     }
 
     protected void doMemberArrayMemberArrayListTest(
-            CrossJoinFunDef.BaseListCalc calc) {
-
+        CrossJoinFunDef.BaseListCalc calc)
+    {
         List<Member[]> l4 = makeListMemberArray(m4);
         String s4 = toString(l4);
         String e4 = "{[U,V],[W,X],[Y,Z]}";
@@ -778,8 +778,8 @@ if (! Util.Retrowoven) {
     }
 
     protected void doMMemberMemberListTest(
-            CrossJoinFunDef.BaseListCalc calc) {
-
+        CrossJoinFunDef.BaseListCalc calc)
+    {
         List<Member> l1 = makeListMember(m1);
         String s1 = toString(l1);
         String e1 = "{a,b,c}";
@@ -845,8 +845,8 @@ if (! Util.Retrowoven) {
     }
 
     protected void doMMemberMemberArrayListTest(
-            CrossJoinFunDef.BaseListCalc calc) {
-
+        CrossJoinFunDef.BaseListCalc calc)
+    {
         List<Member> l1 = makeListMember(m1);
         String s1 = toString(l1);
         String e1 = "{a,b,c}";
@@ -900,8 +900,8 @@ if (! Util.Retrowoven) {
     }
 
     protected void doMMemberArrayMemberListTest(
-            CrossJoinFunDef.BaseListCalc calc) {
-
+        CrossJoinFunDef.BaseListCalc calc)
+    {
         List<Member[]> l1 = makeListMemberArray(m3);
         String s1 = toString(l1);
         String e1 = "{[k,l],[m,n]}";
@@ -957,8 +957,8 @@ if (! Util.Retrowoven) {
     }
 
     protected void doMMemberArrayMemberArrayListTest(
-            CrossJoinFunDef.BaseListCalc calc) {
-
+        CrossJoinFunDef.BaseListCalc calc)
+    {
         List<Member[]> l1 = makeListMemberArray(m3);
         String s1 = toString(l1);
         String e1 = "{[k,l],[m,n]}";

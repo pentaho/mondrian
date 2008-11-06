@@ -143,7 +143,8 @@ public class XmlaUtil implements XmlaConstants {
     }
 
     private static Element _2Element(InputSource source)
-            throws XmlaException {
+        throws XmlaException
+    {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setIgnoringElementContentWhitespace(true);
@@ -152,7 +153,6 @@ public class XmlaUtil implements XmlaConstants {
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(source);
             return doc.getDocumentElement();
-
         } catch (Exception e) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
@@ -212,10 +212,11 @@ public class XmlaUtil implements XmlaConstants {
         return null;
     }
 
-    public static Element[] filterChildElements(Element parent,
-                                                String ns,
-                                                String lname) {
-
+    public static Element[] filterChildElements(
+        Element parent,
+        String ns,
+        String lname)
+    {
 /*
 way too noisy
         if (LOGGER.isDebugEnabled()) {

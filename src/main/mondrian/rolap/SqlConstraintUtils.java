@@ -632,7 +632,6 @@ public class SqlConstraintUtils {
         String columnValue,
         boolean caseSensitive)
     {
-
         // this method can be called within the context of shared members,
         // outside of the normal rolap star, therefore we need to
         // check the level to see if it is a shared or cube level.
@@ -795,7 +794,6 @@ public class SqlConstraintUtils {
 
             boolean containsNull = false;
             for (RolapMember p = m; p != null; p = p.getParentMember()) {
-
                 if (p.isAll()) {
                     // Ignore the ALL level.
                     // Generate SQL condition for the next level

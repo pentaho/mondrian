@@ -747,7 +747,6 @@ public class FunctionTest extends FoodMartTestCase {
 
         member = testContextRagged.executeSingletonAxis("Ancestor([Store].[All Stores].[Vatican], -5)");
         Assert.assertNull("Ancestor at -5 must be null", member);
-
     }
 
     public void testAncestorHigher() {
@@ -925,7 +924,6 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testClosingPeriodMemberLeaf() {
-
         Member member;
         if (false) {
             // This test is mistaken. Valid forms are ClosingPeriod(<level>)
@@ -1932,7 +1930,6 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDrilldownMember() {
-
         // Expect all children of USA
         assertAxisReturns("DrilldownMember({[Store].[USA]}, {[Store].[USA]})",
                 fold(
@@ -2306,7 +2303,6 @@ public class FunctionTest extends FoodMartTestCase {
                 "Axis #1:\n" +
                 "{[Store].[foo]}\n" +
                 "Row #0: 67,659\n"));
-
     }
 
 
@@ -4073,7 +4069,6 @@ public class FunctionTest extends FoodMartTestCase {
                     "    ([Time].[1997].[Q2])");
 
         checkDataResults(new Double[][] {{new Double(8.963)}}, result, 0.001);
-
     }
 
     /**
@@ -4815,7 +4810,6 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 33,033\n" +
                     "Row #0: 33,101\n" +
                     "Row #0: 33,190\n"));
-
     }
 
     public void testParallelPeriodLevel() {
@@ -4969,7 +4963,6 @@ public class FunctionTest extends FoodMartTestCase {
             assertExprReturns("NULL/1", "");
             assertExprReturns("NULL/NULL", "");
             assertExprReturns("1/NULL", "");
-
         } finally {
             MondrianProperties.instance().NullDenominatorProducesNull.
             set(origNullDenominatorProducesNull);
@@ -5522,7 +5515,6 @@ public class FunctionTest extends FoodMartTestCase {
      * out the cache to solve this.
      */
     public void testHierarchizeOrdinal() {
-
         TestContext context = getTestContext("[Sales_Hierarchize]");
         final Connection connection = context.getFoodMartConnection();
         connection.getSchema().createCube(
@@ -5737,7 +5729,6 @@ public class FunctionTest extends FoodMartTestCase {
                                    "Row #0: 4\n" +
                                    "Row #1: 5\n" +
                                    "Row #2: 14\n"));
-
     }
 
     /**
@@ -6941,7 +6932,6 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}\n" +
                     "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}\n" +
                     "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}"));
-
     }
 
     public void testUnionQuery() {
@@ -8676,7 +8666,6 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
                         "Axis #1:\n" +
                         "{[Store].[All Stores].[USA]}\n" +
                         "Row #0: 266,773\n"));
-
     }
 
     public void testLenFunctionWithAnEmptyString() {

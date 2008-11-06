@@ -147,10 +147,10 @@ public abstract class XmlaServlet extends HttpServlet
      *
      */
     protected void doPost(
-            HttpServletRequest request,
-            HttpServletResponse response)
-            throws ServletException, IOException {
-
+        HttpServletRequest request,
+        HttpServletResponse response)
+        throws ServletException, IOException
+    {
         // Request Soap Header and Body
         // header [0] and body [1]
         Element[] requestSoapParts = new Element[2];
@@ -164,7 +164,6 @@ public abstract class XmlaServlet extends HttpServlet
         Phase phase = Phase.VALIDATE_HTTP_HEAD;
 
         try {
-
             if (charEncoding != null) {
                 try {
                     request.setCharacterEncoding(charEncoding);
@@ -195,14 +194,12 @@ public abstract class XmlaServlet extends HttpServlet
                         return;
                     }
                 }
-
             } catch (XmlaException xex) {
                 LOGGER.error("Errors when invoking callbacks validateHttpHeader", xex);
                 handleFault(response, responseSoapParts, phase, xex);
                 phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
-
             } catch (Exception ex) {
                 LOGGER.error("Errors when invoking callbacks validateHttpHeader", ex);
                 handleFault(response, responseSoapParts,
@@ -228,11 +225,12 @@ public abstract class XmlaServlet extends HttpServlet
                 String contentType = request.getContentType();
                 if (contentType == null ||
                     contentType.indexOf("text/xml") == -1) {
-                    throw new IllegalArgumentException("Only accepts content type 'text/xml', not '" + contentType + "'");
+                    throw new IllegalArgumentException(
+                        "Only accepts content type 'text/xml', not '"
+                        + contentType + "'");
                 }
 
                 unmarshallSoapMessage(request, requestSoapParts);
-
             } catch (XmlaException xex) {
                 LOGGER.error("Unable to unmarshall SOAP message", xex);
                 handleFault(response, responseSoapParts, phase, xex);
@@ -278,7 +276,6 @@ public abstract class XmlaServlet extends HttpServlet
                 phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
-
             } catch (Exception ex) {
                 LOGGER.error("Errors when invoking callbacks preaction", ex);
                 handleFault(response, responseSoapParts,
@@ -300,11 +297,11 @@ public abstract class XmlaServlet extends HttpServlet
                 }
 
                 // process XML/A request
-                handleSoapBody(response,
-                               requestSoapParts,
-                               responseSoapParts,
-                               context);
-
+                handleSoapBody(
+                    response,
+                    requestSoapParts,
+                    responseSoapParts,
+                    context);
             } catch (XmlaException xex) {
                 LOGGER.error("Errors when handling XML/A message", xex);
                 handleFault(response, responseSoapParts, phase, xex);
@@ -331,15 +328,17 @@ public abstract class XmlaServlet extends HttpServlet
                 phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
-
             } catch (Exception ex) {
                 LOGGER.error("Errors when invoking callbacks postaction", ex);
-                handleFault(response, responseSoapParts,
-                        phase, new XmlaException(
-                                SERVER_FAULT_FC,
-                                CPOSTA_CODE,
-                                CPOSTA_FAULT_FS,
-                                ex));
+                handleFault(
+                    response,
+                    responseSoapParts,
+                    phase,
+                    new XmlaException(
+                        SERVER_FAULT_FC,
+                        CPOSTA_CODE,
+                        CPOSTA_FAULT_FS,
+                        ex));
                 phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
@@ -348,10 +347,8 @@ public abstract class XmlaServlet extends HttpServlet
             phase = Phase.SEND_RESPONSE;
 
             try {
-
                 response.setStatus(HttpServletResponse.SC_OK);
                 marshallSoapMessage(response, responseSoapParts);
-
             } catch (XmlaException xex) {
                 LOGGER.error("Errors when handling XML/A message", xex);
                 handleFault(response, responseSoapParts, phase, xex);
@@ -359,13 +356,11 @@ public abstract class XmlaServlet extends HttpServlet
                 marshallSoapMessage(response, responseSoapParts);
                 return;
             }
-
         } catch (Throwable t) {
             LOGGER.error("Unknown Error when handling XML/A message", t);
             handleFault(response, responseSoapParts, phase, t);
             marshallSoapMessage(response, responseSoapParts);
         }
-
     }
 
     /**
@@ -434,8 +429,8 @@ public abstract class XmlaServlet extends HttpServlet
      * and if it exists, use it.
      */
     protected DataSourcesConfig.DataSources makeDataSources(
-                ServletConfig servletConfig) {
-
+        ServletConfig servletConfig)
+    {
         String paramValue =
                 servletConfig.getInitParameter(PARAM_DATASOURCES_CONFIG);
         // if false, then do not throw exception if the file/url
@@ -522,29 +517,31 @@ public abstract class XmlaServlet extends HttpServlet
     }
 
     protected DataSourcesConfig.DataSources parseDataSourcesUrl(
-                URL dataSourcesConfigUrl) {
-
+        URL dataSourcesConfigUrl)
+    {
         try {
             String dataSourcesConfigString =
-                    readDataSourcesContent(dataSourcesConfigUrl);
+                readDataSourcesContent(dataSourcesConfigUrl);
             return parseDataSources(dataSourcesConfigString);
-
         } catch (Exception e) {
-            throw Util.newError(e, "Failed to parse data sources config '" +
-                                dataSourcesConfigUrl.toExternalForm() + "'");
+            throw Util.newError(
+                e,
+                "Failed to parse data sources config '" +
+                dataSourcesConfigUrl.toExternalForm() + "'");
         }
     }
 
     protected String readDataSourcesContent(URL dataSourcesConfigUrl)
-            throws IOException {
+        throws IOException
+    {
         return Util.readURL(
                 dataSourcesConfigUrl,
                 Util.toMap(System.getProperties()));
     }
 
     protected DataSourcesConfig.DataSources parseDataSources(
-                String dataSourcesConfigString) {
-
+        String dataSourcesConfigString)
+    {
         try {
             if (dataSourcesConfigString == null) {
                 LOGGER.warn("XmlaServlet.parseDataSources: null input");
@@ -555,18 +552,19 @@ public abstract class XmlaServlet extends HttpServlet
                     dataSourcesConfigString,
                     Util.toMap(System.getProperties()));
 
-        if (LOGGER.isDebugEnabled()) {
-            String msg = "XmlaServlet.parseDataSources: " +
+            if (LOGGER.isDebugEnabled()) {
+                String msg = "XmlaServlet.parseDataSources: " +
                     "dataSources=" + dataSourcesConfigString;
-            LOGGER.debug(msg);
-        }
+                LOGGER.debug(msg);
+            }
             final Parser parser = XOMUtil.createDefaultParser();
             final DOMWrapper doc = parser.parse(dataSourcesConfigString);
             return new DataSourcesConfig.DataSources(doc);
-
         } catch (XOMException e) {
-            throw Util.newError(e, "Failed to parse data sources config: " +
-                                dataSourcesConfigString);
+            throw Util.newError(
+                e,
+                "Failed to parse data sources config: " +
+                dataSourcesConfigString);
         }
     }
 

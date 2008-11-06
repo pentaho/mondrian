@@ -121,7 +121,6 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
      * @param newLowThreshold the new threshold.
      */
     protected void notifyNewLowThreshold(final long newLowThreshold) {
-
         if (newLowThreshold == Long.MAX_VALUE) {
             TENURED_POOL.setUsageThreshold(0);
         } else {

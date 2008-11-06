@@ -81,7 +81,6 @@ class GroupingSetsList {
         for (GroupingSet aggBatchDetail : groupingSets) {
             groupingColumns.add(aggBatchDetail.getSegments()[0]
                 .aggregation.getColumns());
-
         }
         return groupingColumns;
     }

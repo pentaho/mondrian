@@ -1989,9 +1989,12 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
      * @return resolved function definition
      */
     public static FunDef resolveFunArgs(
-        Validator validator, Exp[] args, Exp[] newArgs, String name,
-        Syntax syntax) {
-
+        Validator validator,
+        Exp[] args,
+        Exp[] newArgs,
+        String name,
+        Syntax syntax)
+    {
         Query query = validator.getQuery();
         Cube cube = null;
         if (query != null) {

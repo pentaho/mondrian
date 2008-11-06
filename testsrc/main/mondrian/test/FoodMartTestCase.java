@@ -211,7 +211,6 @@ public class FoodMartTestCase extends TestCase {
         String query2,
         TestContext testContext)
     {
-
         String resultString1 =
                 TestContext.toString(testContext.executeQuery(query1));
         String resultString2 =
@@ -225,7 +224,6 @@ public class FoodMartTestCase extends TestCase {
     private static String measureValues(String resultString) {
         int index = resultString.indexOf("}");
         return index != -1 ? resultString.substring(index) : resultString;
-
     }
 
     protected boolean isGroupingSetsSupported() {

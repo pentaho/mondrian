@@ -49,7 +49,6 @@ public class MemberHelperTest extends TestCase {
 
         assertEquals(mh0, mh2);
         assertFalse(mh1.equals(mh2));
-
     }
 
 
@@ -76,7 +75,6 @@ public class MemberHelperTest extends TestCase {
         assertEquals(mh1, mh2);
         assertFalse(mh1.equals(mh3));
         assertFalse(mh3.equals(mh1));
-
     }
 
     public void testConstructor() {
@@ -184,11 +182,9 @@ public class MemberHelperTest extends TestCase {
         }
 
         public void setName(String name) {
-
         }
 
         public void setProperty(String name, Object value) {
-
         }
 
         public String getDescription() {

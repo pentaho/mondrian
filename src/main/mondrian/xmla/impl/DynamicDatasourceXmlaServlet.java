@@ -128,9 +128,10 @@ public class DynamicDatasourceXmlaServlet extends DefaultXmlaServlet {
         }
     }
 
-    boolean areCatalogsEqual
-            (DataSourcesConfig.Catalog catalog1, DataSourcesConfig.Catalog catalog2) {
-
+    boolean areCatalogsEqual(
+        DataSourcesConfig.Catalog catalog1,
+        DataSourcesConfig.Catalog catalog2)
+    {
         if ((catalog1.getDataSourceInfo() != null &&
                 catalog2.getDataSourceInfo() == null) ||
                 (catalog2.getDataSourceInfo() != null &&
@@ -141,7 +142,6 @@ public class DynamicDatasourceXmlaServlet extends DefaultXmlaServlet {
         if ((catalog1.getDataSourceInfo() == null &&
                 catalog2.getDataSourceInfo() == null) ||
                 (catalog1.getDataSourceInfo().equals(catalog2.getDataSourceInfo()))) {
-
             return (catalog1.name.equals(catalog2.name) &&
                     catalog1.definition.equals(catalog2.definition));
         }

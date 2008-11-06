@@ -272,7 +272,6 @@ public class SqlTupleReader implements TupleReader {
         public String toString() {
             return level.getUniqueName();
         }
-
     }
 
     public SqlTupleReader(TupleConstraint constraint) {
@@ -582,7 +581,6 @@ public class SqlTupleReader implements TupleReader {
     }
 
     private String makeLevelMembersSql(DataSource dataSource) {
-
         // In the case of a virtual cube, if we need to join to the fact
         // table, we do not necessarily have a single underlying fact table,
         // as the underlying base cubes in the virtual cube may all reference
@@ -657,8 +655,8 @@ public class SqlTupleReader implements TupleReader {
     private String generateSelectForLevels(
         DataSource dataSource,
         RolapCube baseCube,
-        WhichSelect whichSelect) {
-
+        WhichSelect whichSelect)
+    {
         String s = "while generating query to retrieve members of level(s) " + targets;
         SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, s);
 

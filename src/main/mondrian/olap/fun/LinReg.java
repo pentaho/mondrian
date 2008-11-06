@@ -272,7 +272,6 @@ public abstract class LinReg extends FunDefBase {
                     TupleType;
             return new PointCalc(call, xPointCalc, listCalc, yCalc, xCalc, isTuples);
         }
-
     }
 
     private static class PointCalc extends AbstractDoubleCalc {
@@ -488,7 +487,6 @@ debug("LinReg.process","ERROR error(s) count ="  + swY.errorCount);
     }
 
     public static LinReg.Value linearReg(List xlist, List ylist) {
-
         // y and x have same number of points
         int size = ylist.size();
         double sumX = 0.0;

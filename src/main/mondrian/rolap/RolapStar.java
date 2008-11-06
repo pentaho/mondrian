@@ -518,7 +518,6 @@ public class RolapStar {
                 localAggregations.get().clear();
             }
         }
-
     }
 
     /**
@@ -530,7 +529,6 @@ public class RolapStar {
      * @param aggregationKey this is the contrained column bitkey
      */
     public Aggregation lookupOrCreateAggregation(AggregationKey aggregationKey) {
-
         Aggregation aggregation = lookupAggregation(aggregationKey);
 
         if (aggregation == null) {
@@ -590,7 +588,6 @@ public class RolapStar {
      * be called.
      */
     public void checkAggregateModifications() {
-
         // Clear own aggregation requests at the beginning of a query
         // made by request to materialize results after RolapResult constructor
         // is finished
@@ -633,7 +630,6 @@ public class RolapStar {
         // aggregations, synchronize this instead
         synchronized (this) {
             if (cacheAggregations && !RolapStar.disableCaching) {
-
                 // Push pending modifications other thread could not push
                 // to global cache, because it was in use
                 Iterator<Map.Entry<AggregationKey, Aggregation>>
@@ -688,7 +684,6 @@ public class RolapStar {
     {
         if (cacheAggregations && !RolapStar.disableCaching) {
             synchronized (destAggregations) {
-
                 boolean found = false;
                 Iterator<Map.Entry<AggregationKey, Aggregation>>
                         it = destAggregations.entrySet().iterator();
@@ -699,7 +694,6 @@ public class RolapStar {
                     Aggregation aggregation = e.getValue();
 
                     if (localAggregationKey.equals(aggregationKey)) {
-
                         if (localAggregation.getCreationTimestamp().after(
                             aggregation.getCreationTimestamp())) {
                             it.remove();
@@ -1655,11 +1649,11 @@ public class RolapStar {
          * @param parentColumn Parent column
          */
         synchronized Column makeColumns(
-                RolapCube cube,
-                RolapCubeLevel level,
-                Column parentColumn,
-                String usagePrefix) {
-
+            RolapCube cube,
+            RolapCubeLevel level,
+            Column parentColumn,
+            String usagePrefix)
+        {
             Column nameColumn = null;
             if (level.getNameExp() != null) {
                 // make a column for the name expression
@@ -1804,7 +1798,6 @@ public class RolapStar {
 
                 String rightAlias = join.rightAlias;
                 if (rightAlias == null) {
-
                     // the right relation of a join may be a join
                     // if so, we need to use the right relation join's
                     // left relation's alias.
@@ -1962,7 +1955,6 @@ public class RolapStar {
                         }
                     }
                 }
-
             }
             return null;
         }
@@ -1986,7 +1978,6 @@ public class RolapStar {
                         }
                     }
                 }
-
             }
             return null;
         }

@@ -496,7 +496,6 @@ public class SchemaTest extends FoodMartTestCase {
                             "Row #5: 44,967\n" +
                             "Row #6: 33,045\n" +
                             "Row #7: 11,919\n"));
-
     }
 
     /**
@@ -505,7 +504,6 @@ public class SchemaTest extends FoodMartTestCase {
      * unique joins to the fact table.
      */
     public void testSnowflakeHierarchyValidationNotNeeded() {
-
         // this test breaks when using aggregates at the moment
         // due to a known limitation
         if ((MondrianProperties.instance().ReadAggregates.get() ||
@@ -568,7 +566,6 @@ public class SchemaTest extends FoodMartTestCase {
                 + "Axis #2:\n"
                 + "{[Store.MyHierarchy].[All Store.MyHierarchys].[Mexico]}\n"
                 + "Row #0: 51,298\n"));
-
     }
 
     /**
@@ -641,7 +638,6 @@ public class SchemaTest extends FoodMartTestCase {
      * both using a table alias.
      */
     public void testDimensionsShareJoinTable() {
-
         final TestContext testContext = TestContext.create(
                 null,
                 "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n" +
@@ -1007,7 +1003,6 @@ public class SchemaTest extends FoodMartTestCase {
                             "Axis #2:\n" +
                             "{[Time].[1997].[Q1]}\n" +
                             "Row #0: 66,291\n"));
-
     }
 
     /**
@@ -1536,7 +1531,6 @@ public class SchemaTest extends FoodMartTestCase {
      * This tests for bug #1746362 Property column shifting when use captionColumn.
      */
     public void testBug1746362() {
-
         // In order to reproduce the problem a dimension specifying captionColumn and
         // Properties were required.
         final TestContext testContext = TestContext.createSubstitutingCube(
@@ -2024,7 +2018,6 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     public void testVirtualCubeNamedSetSupportInSchemaError() {
-
         final TestContext testContext = TestContext.createSubstitutingCube(
                 "Warehouse and Sales", null,null, "<NamedSet name=\"Non CA State Stores\" " +
                 "formula=\"EXCEPT({[Store].[Store State].[USA].children},{[Store].[Store Country].[USA].[CA]})\"/>");

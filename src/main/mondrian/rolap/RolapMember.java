@@ -268,9 +268,12 @@ public class RolapMember extends MemberBase {
             }
         }
     }
-    private static int setAllChildren(
-            int ordinal, SchemaReader schemaReader, Member member) {
 
+    private static int setAllChildren(
+        int ordinal,
+        SchemaReader schemaReader,
+        Member member)
+    {
         ordinal = setOrdinal(member, ordinal);
 
         List<Member> children = schemaReader.getMemberChildren(member);

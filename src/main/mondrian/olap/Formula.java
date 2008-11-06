@@ -486,8 +486,8 @@ public class Formula extends QueryPart {
             returnFormula(member);
             if (member.isCalculated()
                     && member instanceof RolapCalculatedMember
-                    && !hasCyclicReference(memberExpr)) {
-
+                    && !hasCyclicReference(memberExpr))
+            {
                 Formula formula = ((RolapCalculatedMember) member).getFormula();
                 formula.accept(validator);
                 returnFormula(member);

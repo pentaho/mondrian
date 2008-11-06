@@ -259,9 +259,10 @@ public class RolapUtil {
      * @param reason reason why native evaluation was skipped
      */
     public static void alertNonNative(
-        String functionName, String reason)
-        throws NativeEvaluationUnsupportedException {
-
+        String functionName,
+        String reason)
+        throws NativeEvaluationUnsupportedException
+    {
         // No i18n for log message, but yes for excn
         String alertMsg =
             "Unable to use native SQL evaluation for '" + functionName

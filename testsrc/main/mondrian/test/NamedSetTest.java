@@ -563,8 +563,6 @@ public class NamedSetTest extends FoodMartTestCase {
                 "Row #3: 2\n" +
                 "Row #4: $49,394.27\n" +
                 "Row #4: 5\n"));
-
-
     }
 
     public void testGenerate() {

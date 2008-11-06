@@ -66,7 +66,6 @@ class HeadTailFunDef extends FunDefBase {
             };
         } else {
             return new AbstractListCalc(call, new Calc[] {listCalc, integerCalc}) {
-
                 public List evaluateList(Evaluator evaluator) {
                     List list = listCalc.evaluateList(evaluator);
                     int count = integerCalc.evaluateInteger(evaluator);

@@ -419,7 +419,6 @@ public class RolapHierarchy extends HierarchyBase {
                 // Search for the smallest subset of the relation which
                 // uses C.
                 subRelation = relationSubset(relation, expression.getTableAlias());
-
             }
         }
         query.addFrom(subRelation, null, failIfExists);
@@ -741,8 +740,8 @@ public class RolapHierarchy extends HierarchyBase {
     RolapDimension createClosedPeerDimension(
         RolapLevel src,
         MondrianDef.Closure clos,
-        MondrianDef.CubeDimension xmlDimension) {
-
+        MondrianDef.CubeDimension xmlDimension)
+    {
         // REVIEW (mb): What about attribute primaryKeyTable?
 
         // Create a peer dimension.

@@ -396,7 +396,6 @@ public class TestAggregationManager extends BatchTestCase {
      * elaborate because the original bug was quite arbitrary.
      */
     public void testNonEmptyCrossJoinLoneAxis() {
-
         // Not sure what this test is checking.
         // For now, only run it for derby.
         final Dialect dialect = getTestContext().getDialect();

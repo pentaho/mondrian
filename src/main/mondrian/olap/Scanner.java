@@ -98,9 +98,7 @@ public class Scanner {
     /**
      * Advance input by one character, setting {@link #nextChar}.
      */
-    private void advance()
-        throws java.io.IOException {
-
+    private void advance() throws IOException {
         if (firstLookaheadChar == lastLookaheadChar) {
             // We have nothing in the lookahead buffer.
             nextChar = getChar();
@@ -119,9 +117,7 @@ public class Scanner {
     }
 
     /** Peek at the character after {@link #nextChar} without advancing. */
-    private int lookahead()
-        throws java.io.IOException {
-
+    private int lookahead() throws IOException {
         return lookahead(1);
     }
 
@@ -130,9 +126,7 @@ public class Scanner {
      * lookahead(0) returns the current char (nextChar).
      * lookahead(1) returns the next char (was lookaheadChar, same as lookahead());
      */
-    private int lookahead(int n)
-        throws java.io.IOException {
-
+    private int lookahead(int n) throws IOException {
         if (n == 0) {
             return nextChar;
         } else {
@@ -171,16 +165,12 @@ public class Scanner {
     }
 
     /** Read a character from input, returning -1 if end of input. */
-    protected int getChar()
-        throws java.io.IOException {
-
+    protected int getChar() throws IOException {
         return System.in.read();
     }
 
     /** Initialize the scanner */
-    public void init()
-        throws java.io.IOException {
-
+    public void init() throws IOException {
         initReswords();
         lines = new ArrayList<Integer>();
         iChar = iPrevChar = 0;
@@ -396,9 +386,9 @@ public class Scanner {
      * end of file terminates a comment without error.
      */
     private void skipComment(
-            final String startDelim,
-            final String endDelim) throws IOException {
-
+        final String startDelim,
+        final String endDelim) throws IOException
+    {
         int depth = 1;
 
         // skip the starting delimiter
@@ -433,7 +423,6 @@ public class Scanner {
      * If the next tokens are comments, skip over them.
      */
     private void searchForComments() throws IOException {
-
         // eat all following comments
         boolean foundComment;
         do {
@@ -468,7 +457,6 @@ public class Scanner {
      * Recognizes and returns the next complete token.
      */
     public Symbol next_token() throws IOException {
-
         StringBuilder id;
         boolean ampersandId = false;
         for (;;) {

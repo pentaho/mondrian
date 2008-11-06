@@ -71,7 +71,6 @@ public class RolapCubeTest extends FoodMartTestCase {
     }
 
     public void testGetCalculatedMembersForCaliforniaManager() {
-
         String[] expectedCalculatedMembers = new String[] {
             "[Measures].[Profit]", "[Measures].[Profit last Period]",
             "[Measures].[Profit Growth]"
@@ -97,7 +96,6 @@ public class RolapCubeTest extends FoodMartTestCase {
     }
 
     public void testGetCalculatedMembersReturnsOnlyAccessibleMembers() {
-
         String[] expectedCalculatedMembers = new String[]{
             "[Measures].[Profit]", "[Measures].[Profit last Period]",
             "[Measures].[Profit Growth]", "[Product].[~Missing]"
@@ -125,7 +123,6 @@ public class RolapCubeTest extends FoodMartTestCase {
     }
 
     public void testGetCalculatedMembersReturnsOnlyAccessibleMembersForHierarchy() {
-
         String[] expectedCalculatedMembersFromProduct = new String[]{
             "[Product].[~Missing]"
         };
@@ -164,7 +161,6 @@ public class RolapCubeTest extends FoodMartTestCase {
     }
 
     public void testGetCalculatedMembersReturnsOnlyAccessibleMembersForLevel() {
-
         String[] expectedCalculatedMembersFromProduct = new String[]{
             "[Product].[~Missing]"
         };
@@ -205,7 +201,6 @@ public class RolapCubeTest extends FoodMartTestCase {
     }
 
     public void testNonJoiningDimensions() {
-
         TestContext testContext = this.getTestContext();
 
         Connection connection = testContext.getConnection();
@@ -280,7 +275,6 @@ public class RolapCubeTest extends FoodMartTestCase {
             connection1.close();
             connection2.close();
         }
-
     }
 
     private TestContext createTestContextWithAdditionalMembersAndARole() {

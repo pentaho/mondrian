@@ -294,7 +294,6 @@ public class NonEmptyTest extends BatchTestCase {
         checkNative(0, 8, query, fold(result), requestFreshConnection);
 
         MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
-
     }
 
     public void testNonNativeFilterWithNullMeasure() {
@@ -346,7 +345,6 @@ public class NonEmptyTest extends BatchTestCase {
         checkNotNative(9, query, fold(result));
 
         MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
-
     }
 
     public void testNativeFilterWithNullMeasure() {
@@ -450,7 +448,6 @@ public class NonEmptyTest extends BatchTestCase {
      * Verify that CrossJoins with two non native inputs can be natively evaluated.
      */
     public void testExpandAllNonNativeInputs() {
-
         // This query will not run natively unless the <Dimension>.Children
         // expression is expanded to a member list.
         //
@@ -492,7 +489,6 @@ public class NonEmptyTest extends BatchTestCase {
      * Verify that CrossJoins with one non native inputs can be natively evaluated.
      */
     public void testExpandOneNonNativeInput() {
-
         // This query will not be evaluated natively unless the Filter
         // expression is expanded to a member list.
 
@@ -567,7 +563,6 @@ public class NonEmptyTest extends BatchTestCase {
      * evaluation, even when ExpandNonNative is true.
      */
     public void testExpandAllMembersInAllInputs() {
-
         // This query will not be evaluated natively, even if the Hierarchize
         // expression is expanded to a member list. The reason is that the
         // expanded list contains ALL members.
@@ -607,7 +602,6 @@ public class NonEmptyTest extends BatchTestCase {
      * evaluation, even when ExpandNonNative is true.
      */
     public void testExpandCalcMembersInAllInputs() {
-
         // This query will not be evaluated natively, even if the Hierarchize
         // expression is expanded to a member list. The reason is that the
         // expanded list contains ALL members.
@@ -732,7 +726,6 @@ public class NonEmptyTest extends BatchTestCase {
      * inputs that preduce MemberList results.
      */
     public void testExpandNestedNonNativeInputs() {
-
         String query =
             "select " +
             "NonEmptyCrossJoin(" +
@@ -1059,7 +1052,6 @@ public class NonEmptyTest extends BatchTestCase {
      * evaluation.
      */
     public void testAllMembersNECJ1() {
-
         // This query cannot be evaluated natively because of the "All" member.
 
         String query =
@@ -1088,7 +1080,6 @@ public class NonEmptyTest extends BatchTestCase {
      * contain the All member.
      */
     public void testAllMembersNECJ2() {
-
         // This query can be evaluated natively because there is at least one
         // non "All" member.
         //
@@ -1129,12 +1120,11 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testAllLevelMembers() {
         checkNative(
-                14,
-                14,
-                "select {[Measures].[Store Sales]} ON COLUMNS, "
-                        + "NON EMPTY Crossjoin([Product].[(All)].Members, [Promotion Media].[All Media].Children) ON ROWS "
-                        + "from [Sales]");
-
+            14,
+            14,
+            "select {[Measures].[Store Sales]} ON COLUMNS, "
+            + "NON EMPTY Crossjoin([Product].[(All)].Members, [Promotion Media].[All Media].Children) ON ROWS "
+            + "from [Sales]");
     }
 
     /**
@@ -1241,7 +1231,6 @@ public class NonEmptyTest extends BatchTestCase {
                         + "from [Sales] "
                         + "where ([Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink])  ",
                 result);
-
     }
 
     public void testMeasureInSlicer() {
@@ -1260,7 +1249,6 @@ public class NonEmptyTest extends BatchTestCase {
                         + "from [Sales]  "
                         + "where ([Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink])",
                 result);
-
     }
 
     /**
@@ -2025,7 +2013,6 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testLevelMembersWithoutNonEmpty() {
-
         SmartMemberReader smr = getSmartMemberReader("Customers");
 
         MemberCacheHelper smrch = ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader)smr).rolapCubeCacheHelper;
@@ -2129,7 +2116,6 @@ public class NonEmptyTest extends BatchTestCase {
      * Tests non empty children of All member w/o WHERE clause
      */
     public void testMemberChildrenNoWhere() {
-
         // the time dimension is joined because there is no (All) level in the Time
         // hierarchy:
         //
@@ -2324,7 +2310,6 @@ public class NonEmptyTest extends BatchTestCase {
         alertProperty.set("ERROR");
 
         try {
-
             // cross join involves non-conforming dimensions should not use
             // native cross joins because it will result in a cartesian
             // product join
@@ -3517,7 +3502,6 @@ public class NonEmptyTest extends BatchTestCase {
                     interpretedResult, nativeResult, false,
                     "Native implementation returned different result than interpreter; MDX=" + mdx);
             }
-
         } finally {
             Connection con = getConnection();
             RolapNativeRegistry reg = getRegistry(con);
@@ -3639,7 +3623,6 @@ public class NonEmptyTest extends BatchTestCase {
         public void excutingSql(TupleEvent e) {
             this.excecuteSql = true;
         }
-
     }
 }
 

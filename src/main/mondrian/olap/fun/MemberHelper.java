@@ -20,8 +20,8 @@ public class MemberHelper {
     public MemberHelper(Object entry) {
         if ((entry == null) ||
             (entry instanceof Member) ||
-            (entry instanceof Member[])) {
-
+            (entry instanceof Member[]))
+        {
             mObject = entry;
         } else {
             throw new IllegalArgumentException("Expected Member or Member[]");
@@ -42,8 +42,8 @@ public class MemberHelper {
         } else if (mh.mObject instanceof Member && mObject instanceof Member) {
             return ((Member)mObject).equals(mh.mObject);
         } else if (mh.mObject instanceof Member[] &&
-            mObject instanceof Member[]) {
-
+            mObject instanceof Member[])
+        {
             Member[] array1 = (Member[])mh.mObject;
             Member[] array2 = (Member[])this.mObject;
 

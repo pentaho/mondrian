@@ -67,8 +67,8 @@ class DefaultRecognizer extends Recognizer {
      * Get the Match used to identify columns that are measures.
      */
     protected Recognizer.Matcher getMeasureMatcher(
-            JdbcSchema.Table.Column.Usage factUsage) {
-
+        JdbcSchema.Table.Column.Usage factUsage)
+    {
         String measureName = factUsage.getSymbolicName();
         String measureColumnName = factUsage.getColumn().getName();
         String aggregateName = factUsage.getAggregator().getName();
@@ -135,7 +135,6 @@ class DefaultRecognizer extends Recognizer {
                 }
             }
             return measureCountCount;
-
         } finally {
             msgRecorder.popContextName();
         }
@@ -181,13 +180,12 @@ class DefaultRecognizer extends Recognizer {
      * returned.
      */
     protected boolean matchLevel(
-            final Hierarchy hierarchy,
-            final HierarchyUsage hierarchyUsage,
-            final RolapLevel level) {
-
+        final Hierarchy hierarchy,
+        final HierarchyUsage hierarchyUsage,
+        final RolapLevel level)
+    {
         msgRecorder.pushContextName("DefaultRecognizer.matchLevel");
         try {
-
             String usagePrefix = hierarchyUsage.getUsagePrefix();
             String hierName = hierarchy.getName();
             String levelName = level.getName();
@@ -209,7 +207,6 @@ class DefaultRecognizer extends Recognizer {
                 }
             }
             return false;
-
         } finally {
             msgRecorder.popContextName();
         }

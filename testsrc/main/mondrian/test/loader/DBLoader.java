@@ -230,7 +230,6 @@ public abstract class DBLoader {
      * @return number format, ie. length = 6, places = 2 => "####.##"
      */
     public static String decimalFormat(String lengthStr, String placesStr) {
-
         int length = Integer.parseInt(lengthStr);
         int places = Integer.parseInt(placesStr);
         return decimalFormat(length, places);
@@ -506,7 +505,6 @@ public abstract class DBLoader {
             String upperCaseTypeName = typeName.toUpperCase();
             Matcher matcher = decimalDataTypeRegex.matcher(upperCaseTypeName);
             if (matcher.matches()) {
-
                 type = new Type(upperCaseTypeName);
                 extraTypes.put(upperCaseTypeName, type);
                 return type;
@@ -1071,7 +1069,6 @@ public abstract class DBLoader {
                     rowsAdded += writeBatch(batch, nosInBatch);
                 }
             }
-
         } catch (Exception e) {
 // RME
 e.printStackTrace();
@@ -1083,8 +1080,8 @@ e.printStackTrace();
     }
 
     protected String createInsertStatement(Table table, Object[] values)
-            throws Exception {
-
+        throws Exception
+    {
         Column[] columns = table.getColumns();
         if (columns.length != values.length) {
             int numberOfNullColumns = 0;
@@ -1465,7 +1462,6 @@ e.printStackTrace();
 
         Statement statement = getConnection().createStatement();
         statement.execute(ddl);
-
     }
 }
 

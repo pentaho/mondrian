@@ -442,7 +442,6 @@ public class RolapResult extends ResultBase {
             if (this.cellInfos.size() > 10000) {
                 this.cellInfos.trimToSize();
             }
-
         } catch (ResultLimitExceededException ex) {
             // If one gets a ResultLimitExceededException, then
             // don't count on anything being worth caching.
@@ -461,7 +460,6 @@ public class RolapResult extends ResultBase {
             query.clearEvalCache();
 
             throw ex;
-
         } finally {
             if (normalExecution) {
                 // Push all modifications to the aggregate cache to the global
@@ -531,9 +529,10 @@ public class RolapResult extends ResultBase {
         }
     }
 
-    protected boolean replaceNonAllMembers(List<List<Member>> nonAllMembers,
-                                            AxisMember axisMembers) {
-
+    protected boolean replaceNonAllMembers(
+        List<List<Member>> nonAllMembers,
+        AxisMember axisMembers)
+    {
         boolean changed = false;
         List<Member> mList = new ArrayList<Member>();
         for (ListIterator<List<Member>> it = nonAllMembers.listIterator();
@@ -552,7 +551,6 @@ public class RolapResult extends ResultBase {
             }
         }
         return changed;
-
     }
 
     protected void loadMembers(List<List<Member>> nonAllMembers,
@@ -783,7 +781,6 @@ public class RolapResult extends ResultBase {
         // evaluator which collects requests.
         int count = 0;
         while (true) {
-
             evaluator.setCellReader(batchingReader);
             executeStripe(query.axes.length - 1, evaluator.push(), pos);
 
@@ -926,11 +923,9 @@ public class RolapResult extends ResultBase {
 
                     ci.formatString = cachedFormatString;
                     ci.valueFormatter = valueFormatter;
-
                 } catch (ResultLimitExceededException e) {
                     // Do NOT ignore a ResultLimitExceededException!!!
                     throw e;
-
                 } catch (MondrianEvaluationException e) {
                     // ignore but warn
                     LOGGER.warn("Mondrian: exception in executeStripe.", e);
@@ -1092,7 +1087,6 @@ public class RolapResult extends ResultBase {
                 int ordinal = m.getDimension().getOrdinal(cube);
                 members[ordinal] = m;
             }
-
         }
         return members;
     }

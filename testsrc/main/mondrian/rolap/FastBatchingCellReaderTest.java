@@ -393,7 +393,6 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         } else {
             assertEquals(2, groupedBatches.size());
         }
-
     }
 
     public void testAddToCompositeBatchForBothBatchesNotPartOfCompositeBatch() {
@@ -800,8 +799,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                         measureUnitSales);
 
         if (MondrianProperties.instance().UseAggregates.get()
-                && MondrianProperties.instance().ReadAggregates.get()) {
-
+            && MondrianProperties.instance().ReadAggregates.get())
+        {
             assertFalse(batch2.canBatch(batch1));
             assertFalse(batch1.canBatch(batch2));
         } else {
@@ -974,7 +973,6 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             groupingSets.get(0).getLevelBitKey());
         assertEquals(summaryBatch.getConstrainedColumnsBitKey(),
             groupingSets.get(1).getLevelBitKey());
-
     }
 
     /**

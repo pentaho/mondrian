@@ -49,7 +49,6 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
     public SchemaTreeCellRenderer() {
         super();
         myClassLoader = this.getClass().getClassLoader();
-
     }
 
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
@@ -159,7 +158,6 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
              */
             this.setPreferredSize(new java.awt.Dimension(this.getPreferredSize().width + 1, 25)); //Do not remove this
         } else if (value instanceof MondrianGuiDef.Measure) {
-
             setText(invalidFlag, ((MondrianGuiDef.Measure) value).name);
             super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("measure"))));
         } else if (value instanceof MondrianGuiDef.MemberReaderParameter) {
@@ -245,7 +243,6 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
         }
 
         return this;
-
     }
 
     // called from external methods

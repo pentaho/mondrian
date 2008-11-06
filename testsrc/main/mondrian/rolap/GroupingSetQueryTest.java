@@ -501,7 +501,6 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testSQLForTotalOnCJofMembersWithDistinctCount() {
-
         prop.EnableGroupingSets.set(true);
         String mdxQuery = "WITH \n" +
             "SET [COG_OQP_INT_s2] AS 'CROSSJOIN(" +
@@ -549,7 +548,6 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testAggregationOnMembersAndDefaultMemberForDistinctCount() {
-
         prop.EnableGroupingSets.set(true);
         String mdxQueryWithMembers = "WITH " +
             "MEMBER [Gender].[COG_OQP_USR_Aggregate(Gender)] " +

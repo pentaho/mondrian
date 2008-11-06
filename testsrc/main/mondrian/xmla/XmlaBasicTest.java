@@ -782,7 +782,6 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
      */
 
     public void doTestRT(String requestType, TestContext testContext) throws Exception {
-
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);

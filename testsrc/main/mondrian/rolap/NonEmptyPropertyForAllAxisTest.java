@@ -22,7 +22,6 @@ import org.eigenbase.util.property.BooleanProperty;
 public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
 
     public void testNonEmptyForAllAxesWithPropertySet() {
-
         final BooleanProperty property =
             MondrianProperties.instance().EnableNonEmptyOnAllAxis;
         final boolean save = property.get();

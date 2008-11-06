@@ -267,7 +267,6 @@ public class FastBatchingCellReader implements CellReader {
         } else {
             compositeBatch.add(summaryBatch);
         }
-
     }
 
     boolean shouldUseGroupingFunction() {
@@ -465,7 +464,6 @@ public class FastBatchingCellReader implements CellReader {
             // Load agg(distinct <SQL expression>) measures individually
             // for DBs that does allow multiple distinct SQL measures.
             if (!dialect.allowsMultipleDistinctSqlMeasures()) {
-
                 // Note that the intention was orignially to capture the
                 // subquery SQL measures and separate them out; However,
                 // without parsing the SQL string, Mondrian cannot distinguish
@@ -810,7 +808,6 @@ public class FastBatchingCellReader implements CellReader {
          * @return AggStar
          */
         private AggStar getAgg(boolean[] rollup) {
-
             AggregationManager aggregationManager =
                 AggregationManager.instance();
             AggStar star =

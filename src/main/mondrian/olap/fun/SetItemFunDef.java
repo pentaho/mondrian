@@ -45,7 +45,6 @@ class SetItemFunDef extends FunDefBase {
             "<Set>.Item(<String> [, ...])",
             "Returns a tuple from the set specified in <Set>. The tuple to be returned is specified by the member name (or names) in <String>.",
             Syntax.Method) {
-
         public FunDef resolve(
                 Exp[] args, Validator validator, int[] conversionCount) {
             if (args.length < 1) {

@@ -87,7 +87,6 @@ public class CacheHitTest extends FoodMartTestCase {
         System.out.println("== " + this.getName() + " ==");
         runRandomSuite(suite, 200);
         clearCache("Sales");
-
     }
 
     /**

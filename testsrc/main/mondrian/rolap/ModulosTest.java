@@ -48,7 +48,6 @@ public class ModulosTest extends TestCase {
         assertTrue("Pos[0] length equals 3" , (pos[0] == 3));
         assertTrue("Pos[1] length equals 2" , (pos[1] == 2));
         assertTrue("Pos[2] length equals 1" , (pos[2] == 1));
-
     }
 
     public void testOne() {

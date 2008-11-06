@@ -50,8 +50,10 @@ public class CalculatedChildFunDef extends FunDefBase {
     }
 
     private Member getCalculatedChild(
-            Member parent, String childName, Evaluator evaluator) {
-
+        Member parent,
+        String childName,
+        Evaluator evaluator)
+    {
         final SchemaReader schemaReader =
                 evaluator.getQuery().getSchemaReader(true);
         Level childLevel = parent.getLevel().getChildLevel();

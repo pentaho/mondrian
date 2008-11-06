@@ -43,7 +43,6 @@ public class JDBCExplorer extends javax.swing.JPanel {
 
             tree.setModel(model);
             //tree.addTreeSelectionListener(this);
-
         } catch (Exception ex) {
             LOGGER.error(ex);
         }
@@ -70,7 +69,6 @@ public class JDBCExplorer extends javax.swing.JPanel {
         jSplitPane1.setRightComponent(jScrollPane2);
 
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
-
     } //GEN-END:initComponents
 
 

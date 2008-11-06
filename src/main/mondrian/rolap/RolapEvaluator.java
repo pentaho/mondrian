@@ -958,7 +958,6 @@ public class RolapEvaluator implements Evaluator {
      * SSAS2000 sense.
      */
     private Member getScopedMaxSolveOrder(Member [] calcMembers) {
-
         // Finite state machine that determines the member with the highest
         // solve order.
         Member maxSolveMember = null;
@@ -1006,8 +1005,8 @@ public class RolapEvaluator implements Evaluator {
                 } else if (member.getSolveOrder() > maxSolveMember.getSolveOrder() ||
                         (member.getSolveOrder() == maxSolveMember.getSolveOrder() &&
                          member.getDimension().getOrdinal(root.cube) <
-                         maxSolveMember.getDimension().getOrdinal(root.cube))) {
-
+                         maxSolveMember.getDimension().getOrdinal(root.cube)))
+                {
                     maxSolveMember = member;
                 }
                 break;

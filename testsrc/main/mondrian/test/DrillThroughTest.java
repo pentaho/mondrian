@@ -120,7 +120,6 @@ public class DrillThroughTest extends FoodMartTestCase {
         getTestContext().assertSqlEquals(expectedSql, sql, 7978);
 
         assertEquals(calcCell.getDrillThroughCount(), 7978);
-
     }
 
 
@@ -496,7 +495,6 @@ public class DrillThroughTest extends FoodMartTestCase {
      * bug".
      */
     public void testDrillThroughDupKeys() throws Exception {
-
         /*
          * Note here that the type on the Store Id level is Integer or Numeric. The default, of course, would be String.
          *

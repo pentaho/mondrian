@@ -938,11 +938,11 @@ public class RolapCube extends CubeBase {
      * @param memberName Name of member which the properties belong to.
      */
     private void validateMemberProps(
-            final MondrianDef.CalculatedMemberProperty[] xmlProperties,
-            List<String> propNames,
-            List<String> propExprs,
-            String memberName) {
-
+        final MondrianDef.CalculatedMemberProperty[] xmlProperties,
+        List<String> propNames,
+        List<String> propExprs,
+        String memberName)
+    {
         MemberProperty[] properties = new MemberProperty[xmlProperties.length];
         for (int i = 0; i < properties.length; i++) {
             final MondrianDef.CalculatedMemberProperty xmlProperty =
@@ -1204,9 +1204,9 @@ public class RolapCube extends CubeBase {
     }
 
     synchronized void createUsage(
-            RolapCubeHierarchy hierarchy,
-            MondrianDef.CubeDimension cubeDim) {
-
+        RolapCubeHierarchy hierarchy,
+        MondrianDef.CubeDimension cubeDim)
+    {
         HierarchyUsage usage = new HierarchyUsage(this, hierarchy, cubeDim);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("RolapCube.createUsage: "+
@@ -1418,7 +1418,6 @@ public class RolapCube extends CubeBase {
                 // there is a single dimension table, then this is currently
                 // an unsupported configuation and all bets are off.
                 if (relation instanceof MondrianDef.Join) {
-
                     // RME
                     // take out after things seem to be working
                     MondrianDef.RelationOrJoin relationTmp1 = relation;
@@ -1484,7 +1483,6 @@ public class RolapCube extends CubeBase {
                             }
                         }
                     }
-
                 }
 
                 // cube and dimension usage are in different tables
@@ -1581,11 +1579,11 @@ public class RolapCube extends CubeBase {
      * column needs to be associated with that table.
      */
     protected RolapStar.Column makeColumns(
-            RolapStar.Table table,
-            RolapCubeLevel level,
-            RolapStar.Column parentColumn,
-            String usagePrefix) {
-
+        RolapStar.Table table,
+        RolapCubeLevel level,
+        RolapStar.Column parentColumn,
+        String usagePrefix)
+    {
         // If there is a table name, then first see if the table name is the
         // table parameter's name or alias and, if so, simply add the column
         // to that table. On the other hand, find the ancestor of the table
@@ -1737,7 +1735,6 @@ public class RolapCube extends CubeBase {
             this.alias = alias;
             this.depth = depth;
         }
-
     }
 
     /**
@@ -1919,7 +1916,6 @@ public class RolapCube extends CubeBase {
         } else {
             throw Util.newInternal("bad relation type " + relation);
         }
-
     }
 
     /**
@@ -1973,7 +1969,6 @@ public class RolapCube extends CubeBase {
         } else {
             throw Util.newInternal("bad relation type " + relation);
         }
-
     }
 
     /**
@@ -2008,7 +2003,6 @@ public class RolapCube extends CubeBase {
                 join.leftKey = jleft.leftKey;
             }
         }
-
     }
 
     /**
@@ -2089,7 +2083,6 @@ public class RolapCube extends CubeBase {
         } else {
             throw Util.newInternal("bad relation type " + relation);
         }
-
     }
     //
     ///////////////////////////////////////////////////////////////////////////

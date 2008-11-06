@@ -58,10 +58,10 @@ public class AggStar {
      * etc.
      */
     public static AggStar makeAggStar(
-            final RolapStar star,
-            final JdbcSchema.Table dbTable,
-            final MessageRecorder msgRecorder) {
-
+        final RolapStar star,
+        final JdbcSchema.Table dbTable,
+        final MessageRecorder msgRecorder)
+    {
         AggStar aggStar = new AggStar(star, dbTable);
         AggStar.FactTable aggStarFactTable = aggStar.getFactTable();
 

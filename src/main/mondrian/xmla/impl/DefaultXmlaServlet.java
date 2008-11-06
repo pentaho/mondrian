@@ -75,10 +75,10 @@ public class DefaultXmlaServlet extends XmlaServlet {
     }
 
     protected void unmarshallSoapMessage(
-            HttpServletRequest request,
-            Element[] requestSoapParts)
-            throws XmlaException {
-
+        HttpServletRequest request,
+        Element[] requestSoapParts)
+        throws XmlaException
+    {
         try {
             InputStream inputStream;
             try {
@@ -182,7 +182,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
                     new SAXException(msg));
             }
             requestSoapParts[1] = childs[0];
-
         } catch (XmlaException xex) {
             throw xex;
         } catch (Exception ex) {
@@ -208,11 +207,11 @@ public class DefaultXmlaServlet extends XmlaServlet {
      *
      */
     protected void handleSoapHeader(
-            HttpServletResponse response,
-            Element[] requestSoapParts,
-            byte[][] responseSoapParts,
-            Map<String, Object> context) throws XmlaException {
-
+        HttpServletResponse response,
+        Element[] requestSoapParts,
+        byte[][] responseSoapParts,
+        Map<String, Object> context) throws XmlaException
+    {
         try {
             Element hdrElem = requestSoapParts[0];
             if ((hdrElem == null) || (! hdrElem.hasChildNodes())) {
@@ -304,11 +303,9 @@ public class DefaultXmlaServlet extends XmlaServlet {
                     buf.append(NS_XMLA);
                     buf.append("\" />");
                     bytes = buf.toString().getBytes(encoding);
-
                 }
             }
             responseSoapParts[0] = bytes;
-
         } catch (XmlaException xex) {
             throw xex;
         } catch (Exception ex) {
@@ -417,7 +414,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
             }
 
             responseSoapParts[1] = osBuf.toByteArray();
-
         } catch (XmlaException xex) {
             throw xex;
         } catch (Exception ex) {
@@ -430,10 +426,10 @@ public class DefaultXmlaServlet extends XmlaServlet {
     }
 
     protected void marshallSoapMessage(
-            HttpServletResponse response,
-            byte[][] responseSoapParts)
-            throws XmlaException {
-
+        HttpServletResponse response,
+        byte[][] responseSoapParts)
+        throws XmlaException
+    {
         try {
             // If CharacterEncoding was set in web.xml, use this value
             String encoding = (charEncoding != null)
@@ -515,7 +511,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
                 buf.append(nl);
 
                 byteChunks[4] = buf.toString().getBytes(encoding);
-
             } catch (UnsupportedEncodingException uee) {
                 LOGGER.warn("This should be handled at begin of processing request", uee);
             }
@@ -585,11 +580,11 @@ public class DefaultXmlaServlet extends XmlaServlet {
      *
      */
     protected void handleFault(
-                    HttpServletResponse response,
-                    byte[][] responseSoapParts,
-                    Phase phase,
-                    Throwable t) {
-
+        HttpServletResponse response,
+        byte[][] responseSoapParts,
+        Phase phase,
+        Throwable t)
+    {
         // Regardless of whats been put into the response so far, clear
         // it out.
         response.reset();

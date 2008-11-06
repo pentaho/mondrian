@@ -29,7 +29,6 @@ import java.lang.ref.*;
  */
 public class HighDimensionsTest extends FoodMartTestCase {
     public HighDimensionsTest() {
-
     }
 
     public HighDimensionsTest(String name) {

@@ -28,7 +28,6 @@ import java.lang.ref.*;
  */
 public class FilteredIterableTest extends FoodMartTestCase {
     public FilteredIterableTest() {
-
     }
 
     public FilteredIterableTest(String name) {

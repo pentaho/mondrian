@@ -97,13 +97,13 @@ public class Aggregation {
      *                       the RolapStar for this Aggregation
      */
     public Aggregation(
-            AggregationKey aggregationKey) {
+        AggregationKey aggregationKey)
+    {
         this.segmentRefs = getThreadSafeListImplementation();
         this.maxConstraints =
                 MondrianProperties.instance().MaxConstraints.get();
         this.creationTimestamp = new Date();
         this.aggregationKey = aggregationKey;
-
     }
 
     private CopyOnWriteArrayList<SoftReference<Segment>> getThreadSafeListImplementation() {

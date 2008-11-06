@@ -434,7 +434,6 @@ public abstract class ObjectFactory<V> {
 
                 return constructor.newInstance(parameterValues);
             }
-
         } catch (Exception exc) {
             throw new CreationException("Error creating object of type \"" +
                         this.interfaceClass.getName() + "\"" , exc);
@@ -638,7 +637,6 @@ public abstract class ObjectFactory<V> {
                     ? getObject(propClassName, parameterTypes, parameterValues)
                         // Get application default
                     : getDefault(parameterTypes, parameterValues);
-
             }
             return this.singleInstance;
         }

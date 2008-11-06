@@ -1160,7 +1160,6 @@ enum RowsetDefinition {
 
         writer.endElement(); // xsd:restriction
         writer.endElement(); // xsd:simpleType
-
     }
 
     protected void writeRowsetXmlSchemaRowDef(SaxWriter writer) {
@@ -1350,7 +1349,6 @@ enum RowsetDefinition {
             Util.discard(description);
             this.dbTypeIndicator = dbTypeIndicator;
         }
-
     }
 
     static class Column {
@@ -5506,7 +5504,6 @@ TODO: see above
                                 connection.getRole());
                         populateCube(schemaReader, catalogName, cube, rows);
                     }
-
                 }
             }
         }
@@ -5726,8 +5723,8 @@ TODO: see above
             final SchemaReader schemaReader,
             List<Member> members,
             final String catalogName,
-            Cube cube, List<Row> rows) {
-
+            Cube cube, List<Row> rows)
+        {
             for (Member member : members) {
                 outputMember(schemaReader, member, catalogName, cube, rows);
             }
@@ -5977,7 +5974,6 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
             return ordinal;
         }
 */
-
     }
 
     static class MdschemaSetsRowset extends Rowset {

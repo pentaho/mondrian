@@ -154,7 +154,6 @@ public abstract class ListPredicate implements StarPredicate {
         }
 
         return isEqual;
-
     }
 
     public StarPredicate minus(StarPredicate predicate) {

@@ -59,7 +59,6 @@ public class MDXQueryServlet extends HttpServlet {
     /** Destroys the servlet.
      */
     public void destroy() {
-
     }
 
     /** Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.

@@ -68,7 +68,6 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
 
     /** Creates a new instance of SchemaPropertyCellEditor */
     public SchemaPropertyCellEditor(Workbench workbench) {
-
         this.workbench = workbench;
 
         noSelect = getResourceConverter().getString("schemaPropertyCellEditor.noSelection",
@@ -107,13 +106,11 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
                     }
                     listEditor.setSelectedIndex(-1);
                     all = !all;
-
                 }
                 if (listEditor.isDisplayable()) {
                     listEditor.setPopupVisible(true);
                 }
             }
-
         };
 
         JTextComponent editor = (JTextComponent) listEditor.getEditor().getEditorComponent();
@@ -127,7 +124,6 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
         });
 
         editor.addKeyListener(new KeyAdapter() {
-
             public void keyPressed(KeyEvent e) {
                 if (listEditor.isDisplayable()) {
                     listEditor.setPopupVisible(true);
@@ -150,11 +146,15 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
         relationTable = new JTable();
         relationRenderer.add(relationList);
         relationRenderer.add(relationTable);
-
     }
 
-    public Component getTableCellEditorComponent(final JTable table, Object value, boolean isSelected, final int row, final int column) {
-
+    public Component getTableCellEditorComponent(
+        final JTable table,
+        Object value,
+        boolean isSelected,
+        final int row,
+        final int column)
+    {
         PropertyTableModel tableModel = (PropertyTableModel) table.getModel();
         Class parentClassz = null;
         if (tableModel.getParentTarget() != null) {
@@ -260,8 +260,10 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             listEditorValue = (String)value;
             activeEditor = listEditor;
 
-        } else if ((tableModel.target instanceof MondrianGuiDef.Grant || tableModel.target instanceof MondrianGuiDef.MemberGrant) && propertyName.equals("access")) {
-
+        } else if ((tableModel.target instanceof MondrianGuiDef.Grant
+                    || tableModel.target instanceof MondrianGuiDef.MemberGrant)
+                   && propertyName.equals("access"))
+        {
             listEditor.setEditable(false);
             listEditor.setToolTipText(null);
             listEditor.removeActionListener(al);
@@ -839,10 +841,8 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
                             tableEditor.setValueAt(value, tableEditor.getEditingRow(), tableEditor.getEditingColumn());
                             //sce.stopCellEditing();
                         }
-                         **/
-
+                         */
                 }
-
             }
             activeEditor.setVisible(false);
             fireEditingStopped();

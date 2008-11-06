@@ -31,20 +31,22 @@ public class Checkin_7634 extends CsvDBTestCase {
     private static final String CHECKIN_7634 = "Checkin_7634.csv";
 
     private int crossJoinSize;
+
     public Checkin_7634() {
         super();
     }
+
     public Checkin_7634(String name) {
         super(name);
     }
+
     protected void setUp() throws Exception {
         super.setUp();
         crossJoinSize = MondrianProperties.instance().CrossJoinOptimizerSize.get();
-
     }
+
     protected void tearDown() throws Exception {
         MondrianProperties.instance().CrossJoinOptimizerSize.set(crossJoinSize);
-
         super.tearDown();
     }
 
@@ -116,7 +118,6 @@ public class Checkin_7634 extends CsvDBTestCase {
             "    column='shipped_value' aggregator='sum'\n" +
             "   formatString='#,###'/>\n" +
             "</Cube>";
-
     }
 }
 

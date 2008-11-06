@@ -420,7 +420,6 @@ public class RolapCubeLevel extends RolapLevel {
             RolapCube baseCube,
             CellRequest request)
         {
-
             // Replace a parent/child level by its closed equivalent, when
             // available; this is always valid, and improves performance by
             // enabling the database to compute aggregates.

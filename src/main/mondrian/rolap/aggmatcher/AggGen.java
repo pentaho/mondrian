@@ -122,9 +122,10 @@ public class AggGen {
         }
         return null;
     }
-    protected void addForeignKeyToNotLostColumnUsages(
-            JdbcSchema.Table.Column column) {
 
+    protected void addForeignKeyToNotLostColumnUsages(
+        JdbcSchema.Table.Column column)
+    {
         // first make sure its not already in
         String cname = column.getName();
         for (JdbcSchema.Table.Column.Usage usage : notLostColumnUsages) {
@@ -243,7 +244,6 @@ public class AggGen {
                 }
 
             } else {
-
                 if (!addCollapsedColumn(db, column)) {
                     return;
                 }
@@ -931,7 +931,6 @@ public class AggGen {
             pw.print(" NOT NULL");
         }
         pw.println(',');
-
     }
 }
 

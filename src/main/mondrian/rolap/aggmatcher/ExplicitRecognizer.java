@@ -85,7 +85,6 @@ class ExplicitRecognizer extends Recognizer {
     protected int checkMeasures() {
         msgRecorder.pushContextName("ExplicitRecognizer.checkMeasures");
         try {
-
             int measureColumnCounts = 0;
             // Look at each aggregate table column. For each measure defined,
             // see if the measure's column name equals the column's name.
@@ -155,7 +154,6 @@ class ExplicitRecognizer extends Recognizer {
                 }
             }
             return measureColumnCounts;
-
         } finally {
             msgRecorder.popContextName();
         }
@@ -218,7 +216,6 @@ class ExplicitRecognizer extends Recognizer {
             }
         }
         return matchCount;
-
     }
 
     /**
@@ -238,7 +235,6 @@ class ExplicitRecognizer extends Recognizer {
             final RolapLevel rlevel) {
         msgRecorder.pushContextName("ExplicitRecognizer.matchLevel");
         try {
-
             // Try to match a Level's name against the RolapLevel unique name.
             String levelUniqueName = rlevel.getUniqueName();
             for (ExplicitRules.TableDef.Level level : getTableDef().getLevels()) {
@@ -260,11 +256,9 @@ class ExplicitRecognizer extends Recognizer {
                             return true;
                         }
                     }
-
                 }
             }
             return false;
-
         } finally {
             msgRecorder.popContextName();
         }

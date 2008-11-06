@@ -761,7 +761,6 @@ RME is this right
                 dataSource, sql, "SqlMemberSource.getMemberChildren",
                 "while building member cache");
         try {
-
             int limit = MondrianProperties.instance().ResultLimit.get();
             boolean checkCacheStatus = true;
 
@@ -812,16 +811,16 @@ RME is this right
     }
 
     public RolapMember makeMember(
-            RolapMember parentMember,
-            RolapLevel childLevel,
-            Object value,
-            Object captionValue,
-            boolean parentChild,
-            ResultSet resultSet,
-            Object key,
-            int columnOffset)
-            throws SQLException {
-
+        RolapMember parentMember,
+        RolapLevel childLevel,
+        Object value,
+        Object captionValue,
+        boolean parentChild,
+        ResultSet resultSet,
+        Object key,
+        int columnOffset)
+        throws SQLException
+    {
         RolapMember member = new RolapMember(parentMember, childLevel, value);
         if (!childLevel.getOrdinalExp().equals(childLevel.getKeyExp())) {
             member.setOrdinal(lastOrdinal++);

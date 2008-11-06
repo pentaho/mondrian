@@ -73,8 +73,8 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
         {
             String expect = request.getHeader(XmlaRequestCallback.EXPECT);
             if ((expect != null) &&
-                expect.equalsIgnoreCase(XmlaRequestCallback.EXPECT_100_CONTINUE)) {
-
+                expect.equalsIgnoreCase(XmlaRequestCallback.EXPECT_100_CONTINUE))
+            {
                 XmlaRequestCallback.Helper.generatedExpectResponse(
                     request, response, context);
                 return false;
@@ -82,10 +82,11 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
                 return true;
             }
         }
+
         public void preAction(
-                HttpServletRequest request,
-                Element[] requestSoapParts,
-                Map<String, Object> context) throws Exception {
+            HttpServletRequest request,
+            Element[] requestSoapParts,
+            Map<String, Object> context) throws Exception {
         }
 
         private void setSessionId(Map<String, Object> context) {
@@ -285,7 +286,6 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
 
         int statusCode = res.getStatusCode();
         if (statusCode == HttpServletResponse.SC_OK) {
-
             byte[] bytes = res.toByteArray();
             String expectedStr = generateExpectedString(nos, props);
             Document expectedDoc = XmlUtil.parseString(expectedStr);
@@ -314,7 +314,6 @@ System.out.println("Got CONTINUE");
             }
         } else {
             fail("Bad status code: " + statusCode);
-
         }
     }
 

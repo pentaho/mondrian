@@ -99,7 +99,6 @@ public class Checkin_7641 extends CsvDBTestCase {
             "    column='shipped_value' aggregator='sum'\n" +
             "   formatString='#,###'/>\n" +
             "</Cube>";
-
     }
 }
 

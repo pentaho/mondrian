@@ -26,7 +26,6 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
     }
 
     public void testGetCubesWithNoHrCubes() {
-
         String[] expectedCubes = new String[] {
                 "Sales", "Warehouse", "Warehouse and Sales", "Store",
                 "Sales Ragged", "Sales 2"
@@ -47,7 +46,6 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
     }
 
     public void testGetCubesWithNoRole() {
-
         String[] expectedCubes = new String[] {
                 "Sales", "Warehouse", "Warehouse and Sales", "Store",
                 "Sales Ragged", "Sales 2", "HR"
@@ -68,7 +66,6 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
     }
 
     public void testGetCubesForCaliforniaManager() {
-
         String[] expectedCubes = new String[] {
                 "Sales"
         };

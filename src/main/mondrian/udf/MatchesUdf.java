@@ -26,7 +26,6 @@ import java.util.regex.*;
 public class MatchesUdf implements UserDefinedFunction {
 
     public Object execute(Evaluator evaluator, Argument[] arguments) {
-
         Object arg0 = arguments[0].evaluateScalar(evaluator);
         Object arg1 = arguments[1].evaluateScalar(evaluator);
 

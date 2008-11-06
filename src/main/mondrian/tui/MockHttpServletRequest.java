@@ -172,7 +172,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
         this.remotePort = 5000;
 
         this.sessionCreated = false;
-
     }
 
 
@@ -411,7 +410,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return (session == null)
             ? null
             : session.getServletContext().getRealPath(path);
-
     }
 
     /**
@@ -488,7 +486,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
      *
      */
     public String getHeader(String name) {
-
         List<String> headerList = headers.get(name);
 
         return ((headerList == null) || (headerList.size() == 0))

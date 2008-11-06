@@ -275,13 +275,15 @@ System.out.println("    value=" +value);
         String actual = XmlaHandler.ValueInfo.getValueTypeHint(dataType);
         Assert.assertEquals(expected, actual);
     }
-    protected void doXmlaHandlerValueInfo(final String dataType,
-                                          final Object inputValue,
-                                          final String valueType,
-                                          final Object value,
-                                          final boolean isDecimal)
-        throws Exception {
 
+    protected void doXmlaHandlerValueInfo(
+        final String dataType,
+        final Object inputValue,
+        final String valueType,
+        final Object value,
+        final boolean isDecimal)
+        throws Exception
+    {
         XmlaHandler.ValueInfo vi =
             new XmlaHandler.ValueInfo(dataType, inputValue);
         Assert.assertEquals("valueType:", valueType, vi.valueType);

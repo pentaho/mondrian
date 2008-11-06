@@ -118,10 +118,11 @@ public class HierarchyUsage {
      * @param hierarchy Hierarchy
      * @param cubeDim XML definition of a dimension which belongs to a cube
      */
-    HierarchyUsage(RolapCube cube,
-                   RolapHierarchy hierarchy,
-                   MondrianDef.CubeDimension cubeDim) {
-
+    HierarchyUsage(
+        RolapCube cube,
+        RolapHierarchy hierarchy,
+        MondrianDef.CubeDimension cubeDim)
+    {
         assert cubeDim != null : "precondition: cubeDim != null";
 
         this.fact = cube.fact;
@@ -223,7 +224,6 @@ public class HierarchyUsage {
                 + ", cubeDim="
                 + cubeDim.getClass().getName());
         }
-
     }
 
     protected Logger getLogger() {
@@ -317,13 +317,13 @@ public class HierarchyUsage {
         return buf.toString();
     }
 
-    void init(RolapCube cube,
-              RolapHierarchy hierarchy,
-              MondrianDef.DimensionUsage cubeDim) {
-
+    void init(
+        RolapCube cube,
+        RolapHierarchy hierarchy,
+        MondrianDef.DimensionUsage cubeDim)
+    {
         // Three ways that a hierarchy can be joined to the fact table.
         if (cubeDim != null && cubeDim.level != null) {
-
             // 1. Specify an explicit 'level' attribute in a <DimensionUsage>.
             RolapLevel joinLevel = (RolapLevel)
                     Util.lookupHierarchyLevel(hierarchy, cubeDim.level);

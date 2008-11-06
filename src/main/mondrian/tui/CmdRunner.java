@@ -771,9 +771,11 @@ public class CmdRunner {
         }
     }
 
-    protected void commandLoop(String mdxCmd, boolean interactive)
-        throws IOException {
-
+    protected void commandLoop(
+        String mdxCmd,
+        boolean interactive)
+        throws IOException
+    {
         StringReader is = new StringReader(mdxCmd);
         commandLoop(is, interactive);
     }
@@ -789,7 +791,6 @@ public class CmdRunner {
      * @param interactive Whether the session is interactive
      */
     protected void commandLoop(Reader in, boolean interactive) {
-
         StringBuilder buf = new StringBuilder(2048);
         boolean inMdxCmd = false;
         String resultString = null;
@@ -876,8 +877,8 @@ public class CmdRunner {
             if ((line == null) ||
                     ((line.length() == 1) &&
                     ((line.charAt(0) == EXECUTE_CHAR) ||
-                        (line.charAt(0) == CANCEL_CHAR)))) {
-
+                        (line.charAt(0) == CANCEL_CHAR))))
+            {
                 // If EXECUTE_CHAR, then execute, otherwise its the
                 // CANCEL_CHAR and simply empty buffer.
                 if ((line == null) || (line.charAt(0) == EXECUTE_CHAR)) {
@@ -889,7 +890,6 @@ public class CmdRunner {
                 inMdxCmd = false;
 
             } else if (line.length() > 0) {
-
                 // OK, just add the line to the mdx query we are building.
                 inMdxCmd = true;
 
@@ -938,9 +938,11 @@ public class CmdRunner {
      * If an escape character is seen '\\', then it and the next character
      * is added to the line regardless of what the next character is.
      */
-    protected static String readLine(Reader reader, boolean inMdxCmd)
-        throws IOException {
-
+    protected static String readLine(
+        Reader reader,
+        boolean inMdxCmd)
+        throws IOException
+    {
         StringBuilder buf = new StringBuilder(128);
         StringBuilder line = new StringBuilder(128);
         int offset;
@@ -1027,9 +1029,11 @@ public class CmdRunner {
      * -1 for end of file, or \n or \r.  Add \n and \r to the end of the
      * buffer to be included in strings and comment blocks.
      */
-    protected static int getLine(Reader reader, StringBuilder line)
-        throws IOException {
-
+    protected static int getLine(
+        Reader reader,
+        StringBuilder line)
+        throws IOException
+    {
         line.setLength(0);
         for (;;) {
             int i = reader.read();
@@ -1052,13 +1056,13 @@ public class CmdRunner {
      * buffer.
      */
     protected static int readString(
-            Reader reader,
-            StringBuilder line,
-            int offset,
-            StringBuilder buf,
-            int i)
-            throws IOException {
-
+        Reader reader,
+        StringBuilder line,
+        int offset,
+        StringBuilder buf,
+        int i)
+        throws IOException
+    {
         String delim = line.substring(offset, offset + 1);
         return readBlock(reader, line, offset, delim, delim, true, true, buf, i);
     }
@@ -1071,17 +1075,17 @@ public class CmdRunner {
      * A delimited block is a delimited comment (/\* ... *\/), or a string.
      */
     protected static int readBlock(
-            Reader reader,
-            StringBuilder line,
-            int offset,
-            final String startDelim,
-            final String endDelim,
-            final boolean allowEscape,
-            final boolean addToBuf,
-            StringBuilder buf,
-            int i)
-            throws IOException {
-
+        Reader reader,
+        StringBuilder line,
+        int offset,
+        final String startDelim,
+        final String endDelim,
+        final boolean allowEscape,
+        final boolean addToBuf,
+        StringBuilder buf,
+        int i)
+        throws IOException
+    {
         int depth = 1;
         if (addToBuf) {
             buf.append(startDelim);
@@ -1155,10 +1159,11 @@ public class CmdRunner {
      * of SOAP xml.
      *
      */
-    protected void processSoapXmla(File file, int validateXmlaResponse)
-            throws Exception {
-
-
+    protected void processSoapXmla(
+        File file,
+        int validateXmlaResponse)
+        throws Exception
+    {
         String catalogURL = CmdRunner.getCatalogURLProperty();
         Map<String, String> catalogNameUrls = new HashMap<String, String>();
         catalogNameUrls.put(CATALOG_NAME, catalogURL);
@@ -1167,11 +1172,11 @@ public class CmdRunner {
 
         byte[] bytes = null;
         try {
-            bytes = XmlaSupport.processSoapXmla(file,
-                        getConnectString(),
-                        catalogNameUrls,
-                        null);
-
+            bytes = XmlaSupport.processSoapXmla(
+                file,
+                getConnectString(),
+                catalogNameUrls,
+                null);
         } finally {
             queryTime = (System.currentTimeMillis() - start);
             totalQueryTime += queryTime;
@@ -1198,10 +1203,11 @@ public class CmdRunner {
      * This is called to process a file containing XMLA xml.
      *
      */
-    protected void processXmla(File file, int validateXmlaResponce)
-            throws Exception {
-
-
+    protected void processXmla(
+        File file,
+        int validateXmlaResponce)
+        throws Exception
+    {
         String catalogURL = CmdRunner.getCatalogURLProperty();
         Map<String, String> catalogNameUrls = new HashMap<String, String>();
         catalogNameUrls.put(CATALOG_NAME, catalogURL);
@@ -1214,7 +1220,6 @@ public class CmdRunner {
                 file,
                 getConnectString(),
                 catalogNameUrls);
-
         } finally {
             queryTime = (System.currentTimeMillis() - start);
             totalQueryTime += queryTime;
@@ -1358,7 +1363,6 @@ public class CmdRunner {
             // file
             buf.append(nl);
             appendFile(buf);
-
         }
         if ((cmd & LIST_CMD) != 0) {
             // list
@@ -1844,7 +1848,6 @@ public class CmdRunner {
                         buf.append(nl);
 
                     } else {
-
                         for (int j = 0; j < paramsArray.length; j++) {
                             int[] params = paramsArray[j];
                             appendIndent(buf, 1);
@@ -2056,6 +2059,7 @@ public class CmdRunner {
 
         return buf.toString();
     }
+
     //////////////////////////////////////////////////////////////////////////
     // echo
     //////////////////////////////////////////////////////////////////////////
@@ -2066,13 +2070,12 @@ public class CmdRunner {
         appendIndent(buf, 2);
         buf.append("echo text to standard out.");
     }
-    protected String executeEcho(String mdxCmd) {
 
+    protected String executeEcho(String mdxCmd) {
         try {
             String resultString = (mdxCmd.length() == 4)
                 ? "" : mdxCmd.substring(4);
             return resultString;
-
         } catch (Exception ex) {
             setError(ex);
             //return error;
@@ -2117,7 +2120,6 @@ public class CmdRunner {
             setError(msg);
             return msg;
         } else {
-
             String cubeName = m.group(1);
             String expression = mdxCmd.substring(cubeName.length() + 1);
 
@@ -2216,7 +2218,6 @@ public class CmdRunner {
                     clearError();
 
                     buf.append(resultString);
-
                 } catch (Exception ex) {
                     setError(ex);
                     buf.append("Error: ").append(ex);
@@ -2246,15 +2247,12 @@ public class CmdRunner {
     }
 
     protected String executeMdxCmd(String mdxCmd) {
-
         this.mdxCmd = mdxCmd;
         try {
-
             String resultString = execute(mdxCmd);
             mdxResult = resultString;
             clearError();
             return resultString;
-
         } catch (Exception ex) {
             setError(ex);
             //return error;
@@ -2265,9 +2263,10 @@ public class CmdRunner {
     /////////////////////////////////////////////////////////////////////////
     // helpers
     /////////////////////////////////////////////////////////////////////////
-    protected static void loadPropertiesFromFile(String propFile)
-                throws IOException {
-
+    protected static void loadPropertiesFromFile(
+        String propFile)
+        throws IOException
+    {
         MondrianProperties.instance().load(new FileInputStream(propFile));
     }
 
@@ -2383,7 +2382,6 @@ public class CmdRunner {
     }
 
     public static void main(String[] args) throws Exception {
-
         Options options;
         try {
             options = parseOptions(args);

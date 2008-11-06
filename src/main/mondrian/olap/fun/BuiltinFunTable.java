@@ -66,7 +66,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 Syntax.Empty,
                 Category.Empty,
                 new int[0]) {
-
             }
         );
 
@@ -102,7 +101,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         DimensionType.forDimension(dimension),
                         dimension);
             }
-
         });
 
         // "<Level>.Dimension"
@@ -367,7 +365,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         define(DimensionCurrentMemberFunDef.instance);
@@ -389,7 +386,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         // "<Dimension>.DefaultMember"
@@ -606,7 +602,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 }
                 return parent;
             }
-
         });
 
         // <Member>.PrevMember
@@ -796,7 +791,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         define(RankFunDef.Resolver);
@@ -842,7 +836,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         define(VarFunDef.VarResolver);
@@ -909,7 +902,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         define(CrossJoinFunDef.Resolver);
@@ -994,7 +986,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         // <Dimension>.AllMembers
@@ -1013,7 +1004,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         // <Hierarchy>.Members
@@ -1032,7 +1022,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         // <Hierarchy>.AllMembers
@@ -1110,7 +1099,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         // <Member>.Siblings
@@ -1195,7 +1183,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         // <Level>.Caption
@@ -1443,7 +1430,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         // <Numeric Expression> - <Numeric Expression>
@@ -1590,7 +1576,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         // <Logical Expression> AND <Logical Expression>
@@ -1951,7 +1936,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         // Len(<String Expression>)
@@ -1968,7 +1952,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         // Define VBA functions.

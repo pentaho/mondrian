@@ -105,7 +105,6 @@ public class StandAlone {
         }
 
         displayElapsedTime(startTime, "Connect time");
-
     }
 
     private static void displayElapsedTime(long startTime, String message) {
@@ -267,7 +266,6 @@ public class StandAlone {
 
                         System.out.print(prop.getName() + ": " +
                             member.getPropertyValue(prop.getName()));
-
                     }
                     System.out.print("}");
                 }
@@ -279,7 +277,6 @@ public class StandAlone {
         if (line.equals("\\schema")) {
             printSchema(cxn.getSchema());
         } else if (line.equals("\\dbg")) {
-
             PrintWriter out = java.sql.DriverManager.getLogWriter();
 
             if (out == null) {
@@ -396,7 +393,6 @@ public class StandAlone {
         for (Hierarchy hierarchy : hierarchies) {
             printHierarchy(1, hierarchy);
         }
-
     }
 
 

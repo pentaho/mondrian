@@ -289,7 +289,6 @@ public class Vba {
             Matcher m = p.matcher(string);
             m.find();
             return Double.parseDouble(m.group());
-
         }
     }
 
@@ -695,7 +694,6 @@ public class Vba {
     @Signature("IRR(values()[, guess])")
     @Description("Returns a Double specifying the internal rate of return for a series of periodic cash flows (payments and receipts).")
     public static double IRR(double[] valueArray, double guess) {
-
         // calc pV of stream (sum of pV's for valueArray) ((1 + guess) ^ index)
         double minGuess = 0.0;
         double maxGuess = 1.0;
@@ -746,7 +744,6 @@ public class Vba {
         (fiNPV * (1 + financeRate));
 
         return Math.pow(ratio, 1.0 / (valueArray.length - 1)) - 1.0;
-
     }
 
     @FunctionName("NPer")
@@ -1274,7 +1271,6 @@ public class Vba {
     @Description("Returns an expression formatted as a date or time.")
     public static String formatDateTime(Date date) {
         return formatDateTime(date, 0);
-
     }
 
     @FunctionName("FormatDateTime")
@@ -1431,19 +1427,22 @@ public class Vba {
             // todo: impl & test
             Object expression, int numDigitsAfterDecimal /* default -1 */) {
         return formatPercent(expression, numDigitsAfterDecimal, -1);
-
     }
 
     @FunctionName("FormatPercent")
     @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
     public static String formatPercent(
-            // todo: impl & test
-            Object expression, int numDigitsAfterDecimal /* default -1 */,
-            int includeLeadingDigit /* default UseDefault */) {
-        return formatPercent(expression, numDigitsAfterDecimal,
-                includeLeadingDigit, -1);
-
+        // todo: impl & test
+        Object expression,
+        int numDigitsAfterDecimal /* default -1 */,
+        int includeLeadingDigit /* default UseDefault */)
+    {
+        return formatPercent(
+            expression,
+            numDigitsAfterDecimal,
+            includeLeadingDigit,
+            -1);
     }
 
     @FunctionName("FormatPercent")
@@ -1462,11 +1461,12 @@ public class Vba {
     @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
     public static String formatPercent(
-            Object expression, int numDigitsAfterDecimal /* default -1 */,
-            int includeLeadingDigit /* default UseDefault */,
-            int useParensForNegativeNumbers /* default UseDefault */,
-            int groupDigits /* default UseDefault */) {
-
+        Object expression,
+        int numDigitsAfterDecimal /* default -1 */,
+        int includeLeadingDigit /* default UseDefault */,
+        int useParensForNegativeNumbers /* default UseDefault */,
+        int groupDigits /* default UseDefault */)
+    {
         NumberFormat format = NumberFormat.getPercentInstance();
         if (numDigitsAfterDecimal != -1) {
             format.setMaximumFractionDigits(numDigitsAfterDecimal);
@@ -1503,7 +1503,6 @@ public class Vba {
         }
 
         return format.format(expression);
-
     }
 
     // instr is already implemented in BuiltinFunTable... defer

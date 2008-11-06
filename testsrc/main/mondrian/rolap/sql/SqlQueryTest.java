@@ -53,7 +53,6 @@ public class SqlQueryTest extends BatchTestCase {
              * if the test chooses to warn regardless of the dialect.
              */
             prop.WarnIfNoPatternForDialect.set("NONE");
-
         }
     }
 
@@ -251,7 +250,6 @@ public class SqlQueryTest extends BatchTestCase {
             assertQuerySql(inputMdx, sqlPatterns);
         } finally {
             prop.OptimizePredicates.set(intialValueOptimize);
-
         }
     }
 

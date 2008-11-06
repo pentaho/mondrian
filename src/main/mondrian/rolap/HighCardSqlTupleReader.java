@@ -276,8 +276,8 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
     private String generateSelectForLevels(
         DataSource dataSource,
         RolapCube baseCube,
-        WhichSelect whichSelect) {
-
+        WhichSelect whichSelect)
+    {
         String s = "while generating query to retrieve members of level(s) "
                 + targets;
         SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, s);

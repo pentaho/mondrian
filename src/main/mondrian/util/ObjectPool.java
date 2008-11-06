@@ -279,7 +279,6 @@ public class ObjectPool<T> {
         this.distinct = 0;
         this.freeEntries = capacity; // delta
         this.highWaterMark = chooseHighWaterMark(capacity, this.maxLoadFactor);
-
     }
 
 

@@ -450,7 +450,6 @@ public class RoleImpl implements Role {
                 }
 
             } else {
-
                 // Create 'custom' access for any ancestors of 'member' which
                 // do not have explicit access but which have at least one
                 // child visible.

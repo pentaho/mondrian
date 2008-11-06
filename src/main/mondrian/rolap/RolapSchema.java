@@ -341,7 +341,6 @@ public class RolapSchema implements Schema {
             }
 
             load(xmlSchema);
-
         } catch (XOMException e) {
             throw Util.newError(e, "while parsing catalog " + catalogUrl);
         } catch (FileSystemException e) {
@@ -682,7 +681,6 @@ public class RolapSchema implements Schema {
     }
 
     public Cube createCube(String xml) {
-
         RolapCube cube;
         try {
             final Parser xmlParser = XOMUtil.createDefaultParser();
@@ -870,7 +868,6 @@ public class RolapSchema implements Schema {
                         clazz.getConstructor();
                     final DynamicSchemaProcessor dynProc = ctor.newInstance();
                     catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
-
                 } catch (Exception e) {
                     throw Util.newError(e, "loading DynamicSchemaProcessor "
                         + dynProcName);
@@ -906,7 +903,6 @@ public class RolapSchema implements Schema {
                         catalogStr = Util.readURL(catalogUrl);
                     }
                     md5Bytes = encodeMD5(catalogStr);
-
                 } catch (Exception ex) {
                     // Note, can not throw an Exception from this method
                     // but just to show that all is not well in Mudville
@@ -931,8 +927,8 @@ public class RolapSchema implements Schema {
                 if (schema == null ||
                     md5Bytes == null ||
                     schema.md5Bytes == null ||
-                    ! schema.md5Bytes.equals(md5Bytes)) {
-
+                    ! schema.md5Bytes.equals(md5Bytes))
+                {
                     schema = new RolapSchema(
                         key,
                         md5Bytes,
@@ -1004,7 +1000,6 @@ public class RolapSchema implements Schema {
                         "\" exists already ";
                     LOGGER.debug(msg);
                 }
-
             }
 
             return schema;
@@ -1087,7 +1082,6 @@ public class RolapSchema implements Schema {
                         schema.finalCleanUp();
                     }
                 }
-
             }
             mapUrlToSchema.clear();
             JdbcSchema.clearAllDBs();
@@ -1436,8 +1430,8 @@ System.out.println("RolapSchema.getSharedHierarchy: "+
     synchronized MemberReader createMemberReader(
         final String sharedName,
         final RolapHierarchy hierarchy,
-        final String memberReaderClass) {
-
+        final String memberReaderClass)
+    {
         MemberReader reader;
         if (sharedName != null) {
             reader = mapSharedHierarchyToReader.get(sharedName);
@@ -1485,9 +1479,9 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * Creates a {@link MemberReader} with which to Read a hierarchy.
      */
     private MemberReader createMemberReader(
-            final RolapHierarchy hierarchy,
-            final String memberReaderClass) {
-
+        final RolapHierarchy hierarchy,
+        final String memberReaderClass)
+    {
         if (memberReaderClass != null) {
             Exception e2;
             try {
@@ -1544,8 +1538,8 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * Creates a {@link DataSourceChangeListener} with which to detect changes to datasources.
      */
     private DataSourceChangeListener createDataSourceChangeListener(
-            Util.PropertyList connectInfo) {
-
+        Util.PropertyList connectInfo)
+    {
         DataSourceChangeListener changeListener = null;
 
         // If CatalogContent is specified in the connect string, ignore
@@ -1556,7 +1550,6 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
 
         if (! Util.isEmpty(dataSourceChangeListenerStr)) {
             try {
-
                 Class<?> clazz = Class.forName(dataSourceChangeListenerStr);
                 Constructor<?> constructor = clazz.getConstructor();
                 changeListener = (DataSourceChangeListener)constructor.newInstance();
@@ -1770,7 +1763,6 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * Location of a node in an XML document.
      */
     private interface XmlLocation {
-
     }
 }
 

@@ -105,7 +105,6 @@ public class JTreeUpdater implements TreeExpansionListener, TreeSelectionListene
             }
         }
         //System.out.println("subtree collapsed ="+expandedTreePaths.size());
-
     }
 
     public void valueChanged(TreeSelectionEvent treeSelectionEvent) {

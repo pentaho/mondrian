@@ -183,7 +183,6 @@ public interface Role {
          * children.
          */
         FULL,
-
     }
 }
 

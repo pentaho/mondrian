@@ -161,13 +161,11 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
             assertTrue(xmlaServlet.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
             assertTrue(xmlaServlet.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
             assertFalse(xmlaServlet.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
-
         } finally {
             if (dsFile != null) {
                 dsFile.delete();
             }
         }
-
     }
 
 
@@ -179,12 +177,13 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
         }
 
         public boolean containsCatalog(String datasourceName, String catalogName) {
-
             return locateCatalog(datasourceName, catalogName) != null;
-
         }
 
-        public DataSourcesConfig.Catalog locateCatalog(String datasourceName, String catalogName) {
+        public DataSourcesConfig.Catalog locateCatalog(
+            String datasourceName,
+            String catalogName)
+        {
             for (DataSourcesConfig.DataSource ds : dataSources.dataSources) {
                 if (ds.name.equals(datasourceName)) {
                     for (DataSourcesConfig.Catalog catalog : ds.catalogs.catalogs) {

@@ -157,7 +157,6 @@ public abstract class AbstractMemoryMonitor
             }
 */
             return true;
-
         } finally {
             getLogger().info("addListener exit");
         }
@@ -214,7 +213,6 @@ public abstract class AbstractMemoryMonitor
                 listener.memoryUsageNotification(getUsedMemory(), getMaxMemory());
             }
 */
-
         } finally {
             getLogger().info("updateListenerThreshold exit");
         }
@@ -242,7 +240,6 @@ public abstract class AbstractMemoryMonitor
                 if (lowThreshold > prevLowThreshold) {
                     notifyNewLowThreshold(lowThreshold);
                 }
-
             }
             return result;
         } finally {

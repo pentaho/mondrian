@@ -1886,10 +1886,10 @@ public class CrossJoinFunDef extends FunDefBase {
     }
 
     protected List nonEmptyOptimizeList(
-            Evaluator evaluator,
-            List list,
-            ResolvedFunCall call) {
-
+        Evaluator evaluator,
+        List list,
+        ResolvedFunCall call)
+    {
         int opSize = MondrianProperties.instance().CrossJoinOptimizerSize.get();
         if (list.isEmpty()) {
             return list;
@@ -2417,11 +2417,11 @@ public class CrossJoinFunDef extends FunDefBase {
      * @return True if at least one combination evaluated to non-null.
      */
     private static boolean checkData(
-            Member[][] nonAllMembers,
-            int cnt,
-            Set<Member> measureSet,
-            Evaluator evaluator) {
-
+        Member[][] nonAllMembers,
+        int cnt,
+        Set<Member> measureSet,
+        Evaluator evaluator)
+    {
         if (cnt < 0) {
             // no measures found, use standard algorithm
             if (measureSet.isEmpty()) {

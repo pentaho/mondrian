@@ -151,8 +151,8 @@ public class Util extends XOMUtil {
             char c = st.charAt(i);
             if ((c == ']') &&
                 ((i + 1) < st.length()) &&
-                (st.charAt(i + 1) != '.')) {
-
+                (st.charAt(i + 1) != '.'))
+            {
                 retString.append(']'); //escaping character
             }
             retString.append(c);
@@ -1599,7 +1599,6 @@ public class Util extends XOMUtil {
             return (prependClassName)
                 ? err.getClass().getName() + ": " + errMsg
                 : errMsg;
-
         }
     }
 
@@ -2036,8 +2035,8 @@ public class Util extends XOMUtil {
      * @throws IOException
      */
     public static String readFully(final Reader rdr, final int bufferSize)
-            throws IOException {
-
+        throws IOException
+    {
         if (bufferSize <= 0) {
             throw new IllegalArgumentException(
                     "Buffer size must be greater than 0");

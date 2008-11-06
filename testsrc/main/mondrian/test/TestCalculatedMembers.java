@@ -244,7 +244,6 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void _testWhole() {
-
         /*
          * "allmembers" tests compatibility with MSAS
          */
@@ -906,7 +905,6 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testCalcMemberCustomFormatterInSchema() {
-
         // calc member defined in schema
         String cubeName = "Sales";
         TestContext testContext =

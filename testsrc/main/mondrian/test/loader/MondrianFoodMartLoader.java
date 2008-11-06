@@ -729,13 +729,11 @@ public class MondrianFoodMartLoader {
             if (buf.length() > 0) {
                 executeDDL(buf.toString());
             }
-
         } finally {
             if (is != null) {
                 is.close();
             }
         }
-
     }
 
     /**
@@ -1123,7 +1121,6 @@ public class MondrianFoodMartLoader {
         }
 
         try {
-
             // Is it an aggregate table or a base table?
             boolean isBase =
                     !aggregateTableMetadataToLoad.containsKey(tableName);
@@ -1664,7 +1661,6 @@ public class MondrianFoodMartLoader {
         boolean aggregate)
     {
         try {
-
             // Initialize columns
             for (Column column1 : columns) {
                 column1.init(dialect);
@@ -1777,7 +1773,6 @@ public class MondrianFoodMartLoader {
             fileOutput.write(ddl);
             fileOutput.write(";" + nl);
         }
-
     }
 
     /**
@@ -1809,7 +1804,6 @@ public class MondrianFoodMartLoader {
      * @return          String representation of column value
      */
     private String columnValue(ResultSet rs, Column column) throws Exception {
-
         Object obj = rs.getObject(column.name);
         String columnType = column.typeName;
 
@@ -2070,7 +2064,6 @@ public class MondrianFoodMartLoader {
      * @return number format, ie. length = 6, places = 2 => "####.##"
      */
     private static String decimalFormat(String lengthStr, String placesStr) {
-
         int length = Integer.parseInt(lengthStr);
         int places = Integer.parseInt(placesStr);
         return decimalFormat(length, places);

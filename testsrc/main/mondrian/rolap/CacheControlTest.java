@@ -873,7 +873,6 @@ public class CacheControlTest extends FoodMartTestCase {
      * normal form.
      */
     public void testNormalize() {
-
         // Create
         // Union(
         //    Crossjoin(

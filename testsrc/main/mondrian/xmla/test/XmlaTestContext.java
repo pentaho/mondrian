@@ -72,7 +72,6 @@ public class XmlaTestContext {
         // Deal with MySQL and other connect strings with & in them
         connectString = connectString.replaceAll("&", "&amp;");
         return connectString;
-
     }
 
     public DataSourcesConfig.DataSources dataSources() {
@@ -108,7 +107,6 @@ public class XmlaTestContext {
             final DOMWrapper def = xmlParser.parse(dsConfigReader);
             DATASOURCES = new DataSourcesConfig.DataSources(def);
         } catch (Exception e) {
-
         }
 
         return DATASOURCES;

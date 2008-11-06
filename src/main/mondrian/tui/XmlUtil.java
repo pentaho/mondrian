@@ -391,11 +391,11 @@ public class XmlUtil {
      *
      */
     public static DOMParser getParser(
-            String schemaLocationPropertyValue,
-            EntityResolver entityResolver,
-            boolean validate)
-            throws SAXNotRecognizedException, SAXNotSupportedException {
-
+        String schemaLocationPropertyValue,
+        EntityResolver entityResolver,
+        boolean validate)
+        throws SAXNotRecognizedException, SAXNotSupportedException
+    {
         boolean doingValidation =
             (validate || (schemaLocationPropertyValue != null));
 
@@ -467,13 +467,14 @@ public class XmlUtil {
      *
      */
     public static Document parse(byte[] bytes)
-            throws SAXException, IOException {
+        throws SAXException, IOException
+    {
         return XmlUtil.parse(new ByteArrayInputStream(bytes));
     }
 
     public static Document parse(File file)
-            throws SAXException, IOException {
-
+        throws SAXException, IOException
+    {
         return parse(new FileInputStream(file));
     }
 
@@ -482,8 +483,8 @@ public class XmlUtil {
      *
      */
     public static Document parse(InputStream in)
-            throws SAXException, IOException {
-
+        throws SAXException, IOException
+    {
         InputSource source = new InputSource(in);
 
         DOMParser parser = XmlUtil.getParser(null, null, false);
@@ -588,43 +589,64 @@ public class XmlUtil {
         return buf.toString();
     }
 
-    public static String selectAsString(Node node, String xpath)
-                                            throws XPathException {
+    public static String selectAsString(
+        Node node,
+        String xpath)
+        throws XPathException
+    {
         return XmlUtil.selectAsString(node, xpath, node);
     }
-    public static String selectAsString(Node node, String xpath,
-                        Node namespaceNode) throws XPathException {
 
+    public static String selectAsString(
+        Node node,
+        String xpath,
+        Node namespaceNode)
+        throws XPathException
+    {
         XPathResult xpathResult = XmlUtil.select(node, xpath, namespaceNode);
         return XmlUtil.convertToString(xpathResult, false);
     }
 
-    public static Node[] selectAsNodes(Node node, String xpath)
-                                            throws XPathException {
+    public static Node[] selectAsNodes(
+        Node node,
+        String xpath)
+        throws XPathException
+    {
         return XmlUtil.selectAsNodes(node, xpath, node);
     }
-    public static Node[] selectAsNodes(Node node, String xpath,
-                        Node namespaceNode) throws XPathException {
 
+    public static Node[] selectAsNodes(
+        Node node,
+        String xpath,
+        Node namespaceNode)
+        throws XPathException
+    {
         XPathResult xpathResult = XmlUtil.select(node, xpath, namespaceNode);
         return XmlUtil.convertToNodes(xpathResult);
     }
 
-    public static XPathResult select(Node contextNode, String xpath,
-                        Node namespaceNode) throws XPathException {
+    public static XPathResult select(
+        Node contextNode,
+        String xpath,
+        Node namespaceNode)
+        throws XPathException
+    {
         XPathEvaluator evaluator = new XPathEvaluatorImpl();
         XPathNSResolver resolver = evaluator.createNSResolver(namespaceNode);
 
-        return (XPathResult) evaluator.evaluate(xpath, contextNode, resolver,
-                XPathResult.ANY_TYPE, null);
+        return (XPathResult) evaluator.evaluate(
+            xpath, contextNode, resolver,
+            XPathResult.ANY_TYPE, null);
     }
 
     /**
      * Convert an XPathResult object to String.
      *
      */
-    public static String convertToString(XPathResult xpathResult,
-                                         boolean prettyPrint) {
+    public static String convertToString(
+        XPathResult xpathResult,
+        boolean prettyPrint)
+    {
         switch (xpathResult.getResultType()) {
         case XPathResult.NUMBER_TYPE:
             double d = xpathResult.getNumberValue();
@@ -873,7 +895,6 @@ public class XmlUtil {
         }
 
         return versionNumbers;
-
     }
 
     /**
@@ -918,7 +939,6 @@ public class XmlUtil {
         throws IOException,
         SAXException
     {
-
         OutputFormat format  = new OutputFormat(doc, null, true);
         StringWriter writer = new StringWriter(1000);
         XMLSerializer serial = new XMLSerializer(writer, format);
@@ -948,7 +968,6 @@ public class XmlUtil {
         } catch (SAXParseException ex) {
             checkForParseError(parser, ex);
         }
-
     }
 
     /**
@@ -984,12 +1003,12 @@ public class XmlUtil {
     public static Node transform(Document inDoc,
         String xslFileName,
         String[][] namevalueParameters)
-            throws ParserConfigurationException,
-                SAXException,
-                IOException,
-                TransformerConfigurationException,
-                TransformerException {
-
+        throws ParserConfigurationException,
+               SAXException,
+               IOException,
+               TransformerConfigurationException,
+               TransformerException
+    {
         DocumentBuilderFactory dfactory = DocumentBuilderFactory.newInstance();
         dfactory.setNamespaceAware(true);
 
@@ -1030,12 +1049,12 @@ public class XmlUtil {
     public static Node transform(Document inDoc,
         Reader xslReader,
         String[][] namevalueParameters)
-            throws ParserConfigurationException,
-                SAXException,
-                IOException,
-                TransformerConfigurationException,
-                TransformerException {
-
+        throws ParserConfigurationException,
+               SAXException,
+               IOException,
+               TransformerConfigurationException,
+               TransformerException
+    {
         DocumentBuilderFactory dfactory = DocumentBuilderFactory.newInstance();
         dfactory.setNamespaceAware(true);
 

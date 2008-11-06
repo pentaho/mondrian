@@ -115,10 +115,15 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
         return booleanRenderer;
     }
 
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-
+    public Component getTableCellRendererComponent(
+        JTable table,
+        Object value,
+        boolean isSelected,
+        boolean hasFocus,
+        int row,
+        int column)
+    {
         if (column == 1) {
-
             /*if ((((PropertyTableModel) table.getModel()).target.getClass() == MondrianGuiDef.Measure.class) && (row==1)) {
                 listRenderer.setSelectedItem((String)value);
                 return listRenderer;
@@ -139,7 +144,6 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
             } else if (value == null) {
                 return null;
             } else if (value.getClass() == MondrianGuiDef.Join.class) {
-
                 stringRenderer.setText(generateJoinStr(value));
 
                 stringRenderer.setToolTipText(workbench.getResourceConverter().getString("schemaPropertyCellRenderer.selectJoinObject",
@@ -256,7 +260,6 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
             }
         }
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
     }
 
     private String generateJoinStr(Object value) {
@@ -282,7 +285,6 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
         int tableW = 0;
         Object value = null;
         for (int i = 0; i < relationTable.getRowCount(); i++) {
-
             TableCellRenderer renderer = relationTable.getCellRenderer(i, 1);
             Component comp = renderer.getTableCellRendererComponent(relationTable, relationTable.getValueAt(i, 1), false, false, i, 1);
             try {
@@ -304,11 +306,8 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 } else {
                     tableH += height;
                     tableW = Math.max(tableW, width * 2);
-
                 }
-
             } catch (Exception ea) {
-
             }
         }
         //===relationTable.setPreferredSize(new Dimension(200,200));  //table height  changes
@@ -323,7 +322,6 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
             relationRenderer.setPreferredSize(jScrollPaneT.getPreferredSize()); //good, it changes panel size
             relationRenderer.setMaximumSize(jScrollPaneT.getPreferredSize()); //good, it changes panel size
         }
-
     }
 
  /*
@@ -335,9 +333,7 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 int height = comp.getMaximumSize().height;
                 relationTable.setRowHeight(i, height);
             } catch (Exception ea) {
-
             }
-
         }
     }
   */

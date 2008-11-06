@@ -1649,7 +1649,6 @@ public class Query extends QueryPart {
 
             return super.getParameter(name);
         }
-
     }
 
     private static class ConnectionParameterImpl

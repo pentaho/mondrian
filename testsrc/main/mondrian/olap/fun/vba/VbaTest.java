@@ -417,7 +417,6 @@ public class VbaTest extends TestCase {
             // in EST, this string is "4:35:47 PM EST"
             assertTrue(datestr.startsWith("4:35:47 PM"));
             assertEquals("4:35 PM", Vba.formatDateTime(date, 4));
-
         } catch (ParseException e) {
             e.printStackTrace();
             fail();
@@ -823,7 +822,6 @@ public class VbaTest extends TestCase {
         assertEquals(60.0, result);
         result = Vba.dDB(cost, salvage, life, period + 3, factor);
         assertEquals(80.0, result);
-
     }
 
     public void testRate() {
@@ -871,9 +869,6 @@ public class VbaTest extends TestCase {
 
         vals = new double[] {-1000, 200, 200, 200, 200, 200, 200};
         assertTrue(Math.abs(0.04490701 - Vba.MIRR(vals, 0.06, 0.04)) < 0.0000001);
-
-
-
     }
 
     public void testIPmt() {

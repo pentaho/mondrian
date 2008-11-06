@@ -332,7 +332,6 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         public static Map<Member, Integer>[] membersVersusOccurencesInTuple(
             List<Member[]> tuples)
         {
-
             int tupleLength = tuples.get(0).length;
             //noinspection unchecked
             Map<Member, Integer>[] counters = new Map[tupleLength];
@@ -359,7 +358,6 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             SchemaReader reader,
             Cube baseCubeForMeasure)
         {
-
             boolean didOptimize;
             Set<Member> membersToBeOptimized = new HashSet<Member>();
             Set<Member> optimizedMembers = new HashSet<Member>();
@@ -477,7 +475,6 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             }
             return reader.getMemberChildren(parentMember).size();
         }
-
     }
 }
 

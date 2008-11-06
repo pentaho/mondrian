@@ -108,7 +108,6 @@ public class JDBCMetaData {
             if (jdbcUsername != null && jdbcUsername.length() > 0) {
                 conn = DriverManager.getConnection(jdbcConnectionUrl, jdbcUsername, jdbcPassword);
             } else {
-
                 conn = DriverManager.getConnection(jdbcConnectionUrl);
             }
 
@@ -237,7 +236,6 @@ public class JDBCMetaData {
                     do  {
                         ((FactTable) dbt).addFks(rs_fks.getString("FKCOLUMN_NAME"),rs_fks.getString("pktable_name"));
                     } while (rs_fks.next());
-
                 } else {
                     dbt = new DbTable();
                 }
@@ -308,7 +306,6 @@ public class JDBCMetaData {
 
     /* get all tables in given schema minus the given table name */
     public Vector<String> getAllTables(String schemaName, String minusTable) {
-
         if (minusTable == null) {
             return getAllTables(schemaName);
         } else {
@@ -370,7 +367,6 @@ public class JDBCMetaData {
     }
 
     public String getTablePK(String schemaName, String tableName) {
-
         if (tableName == null) {
             return null;
         } else {
@@ -412,7 +408,6 @@ public class JDBCMetaData {
         } else {
             return db.getColumnDataType(schemaName, tableName, colName);
         }
-
     }
     public String getDbCatalogName() {
         return db.catalogName;
@@ -427,7 +422,6 @@ public class JDBCMetaData {
     }
 
     public static void main(String[] args) {
-
         /*
         JDBCMetaData sb = new JDBCMetaData("org.postgresql.Driver","jdbc:postgresql://localhost:5432/testdb?user=admin&password=admin");
         System.out.println("allSchemas="+sb.allSchemas);
@@ -548,7 +542,6 @@ public class JDBCMetaData {
                         v.add(d.schemaName + "->" + d.name);
                     }
                 }
-
             } else {
                 // return a vector of "tablename" string objects
                 for (DbSchema s : schemas) {
@@ -692,7 +685,6 @@ public class JDBCMetaData {
         }
 
         private String getTablePK(String sname, String tableName) {
-
             if (sname == null || sname.equals("")) {
                 // return a vector of "schemaname -> table name -> dimension table name" string objects if schema is not given
                 for (DbTable t : tables) {
@@ -762,7 +754,6 @@ public class JDBCMetaData {
         }
 
         private int getColumnDataType(String sname, String tableName, String colName) {
-
             if (sname == null || sname.equals("")) {
                 for (DbTable t : tables) {
                     if (t.name.equals(tableName)) {
@@ -808,7 +799,6 @@ public class JDBCMetaData {
         private void addColsDataType(String col, String dataType) {
             colsDataType.put(col, dataType);
         }
-
     }
 
     class FactTable extends DbTable {

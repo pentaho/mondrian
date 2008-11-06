@@ -86,7 +86,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "Axis #2:\n" +
                 "{[Measures].[Customer Count]}\n" +
                 "Row #0: 5,581\n"));
-
     }
 
     public void testCrossJoinOfAllMembers() {
@@ -102,7 +101,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "Axis #2:\n" +
                 "{[Measures].[Customer Count]}\n" +
                 "Row #0: 5,581\n"));
-
     }
 
     public void testCrossJoinMembersWithASingleMember() {
@@ -156,7 +154,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         };
 
         assertQuerySql(query, patterns);
-
     }
 
     public void testCrossJoinMembersWithSetOfMembers() {
@@ -214,7 +211,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         };
 
         assertQuerySql(query, patterns);
-
     }
 
     public void testCrossJoinParticularMembersFromTwoDimensions() {
@@ -230,7 +226,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "Axis #2:\n" +
                 "{[Measures].[Customer Count]}\n" +
                 "Row #0: 1,389\n"));
-
     }
 
     public void testDistinctCountOnSetOfMembersFromOneDimension() {
@@ -245,7 +240,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 "Axis #2:\n" +
                 "{[Measures].[Customer Count]}\n" +
                 "Row #0: 5,581\n"));
-
     }
 
     public void testDistinctCountWithAMeasureAsPartOfTuple() {
@@ -279,7 +273,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testDistinctCountOnTuplesWithSomeNonJoiningDimensions() {
-
         boolean orginalPropertyValue = props.IgnoreMeasureForNonJoiningDimension.get();
         props.IgnoreMeasureForNonJoiningDimension.set(false);
         String mdx = "WITH MEMBER WAREHOUSE.X as 'Aggregate({WAREHOUSE.[STATE PROVINCE].MEMBERS}*" +
@@ -336,7 +329,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                     "Axis #2:\n" +
                     "{[Warehouse].[X]}\n" +
                     "Row #0: \n"));
-
     }
 
     public void testNonJoiningDimensionWithAllMember() {
@@ -649,7 +641,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOnCJofMembersGeneratesOptimalQuery() {
-
         String mdxQuery = "WITH \n" +
             "SET [COG_OQP_INT_s2] AS 'CROSSJOIN({[Store].[Store].MEMBERS}, " +
             "{{[Gender].[Gender].MEMBERS}, " +
@@ -912,7 +903,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOfMembersAndDefaultMemberWithoutGroupingSets() {
-
         boolean originalGroupingSetsPropertyValue = props.EnableGroupingSets.get();
         props.EnableGroupingSets.set(false);
         String mdxQueryWithMembers = "WITH " +
@@ -1026,7 +1016,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         };
 
         assertQuerySql(query, patterns);
-
     }
 
     public void testOptimizeListWhenTuplesAreFormedWithDifferentLevels() {
@@ -1114,11 +1103,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql)};
 
         assertQuerySql(query, patterns);
-
     }
 
     public void testOptimizeListWithTuplesOfLength3() {
-
         String query =
             "WITH\n" +
             "MEMBER Product.Agg AS \n" +
@@ -1241,7 +1228,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testShouldNotRemoveDuplicateTuples() {
-
         Member maleChildMember = member(
             Id.Segment.toList("Gender","All Gender","M"), salesCubeSchemaReader);
         Member femaleChildMember = member(
@@ -1257,7 +1243,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testMemberCountIsSameForAllMembersInTuple() {
-
         List <Member[]>memberList =
             CrossJoinFunDef.crossJoin(
                 genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),

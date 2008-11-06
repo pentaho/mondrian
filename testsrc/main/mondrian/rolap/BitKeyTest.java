@@ -686,11 +686,15 @@ public class BitKeyTest extends TestCase {
                 ", size1=" + size1 +
                 ", i=" + i,
                 (bitKey0.equals(bitKey1)));
-
         }
     }
-    private void doTestNotEquals(int size0, int[] positions0,
-                                 int size1, int[] positions1) {
+
+    private void doTestNotEquals(
+        int size0,
+        int[] positions0,
+        int size1,
+        int[] positions1)
+    {
         BitKey bitKey0 = makeAndSet(size0, positions0);
         BitKey bitKey1 = makeAndSet(size1, positions1);
 
