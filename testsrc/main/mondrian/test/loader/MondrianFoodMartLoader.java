@@ -398,6 +398,10 @@ public class MondrianFoodMartLoader {
             fileOutput = new FileWriter(file);
         } else {
             batchFile = false;
+            if (outputDirectory != null) {
+                file = new File(outputDirectory, "createData.sql");
+                fileOutput = new FileWriter(file);
+            }
         }
         try {
             final InputStreamReader reader = new InputStreamReader(is);
@@ -454,6 +458,7 @@ public class MondrianFoodMartLoader {
                 // If table just changed, flush the previous batch.
                 if (!tableName.equals(prevTable)) {
                     writeBatch(batch);
+                    batch = new ArrayList<String>(inputBatchSize);
                     afterTable(prevTable, tableRowCount);
                     tableRowCount = 0;
                     prevTable = tableName;
@@ -509,6 +514,7 @@ public class MondrianFoodMartLoader {
                     batch.add(line);
                     if (batch.size() >= inputBatchSize) {
                         writeBatch(batch);
+                        batch = new ArrayList<String>(inputBatchSize);
                     }
                 }
             }

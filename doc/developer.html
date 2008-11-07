@@ -22,31 +22,31 @@
 
 <hr noshade size="1">
 
-<p>There are several ways to get Mondrian running. The easiest is to download a 
-binary release, as described in the <a href="install.html">installation guide</a>. 
-But you can also build Mondrian from its source code. This document describes 
-how to do that, how to learn about Mondrian's inner workings, and the guidelines 
+<p>There are several ways to get Mondrian running. The easiest is to download a
+binary release, as described in the <a href="install.html">installation guide</a>.
+But you can also build Mondrian from its source code. This document describes
+how to do that, how to learn about Mondrian's inner workings, and the guidelines
 you'll need to follow if you want to contribute to the Mondrian project.</p>
 
 <h2>Getting the source code<a name="Getting_the_source_code">&nbsp;</a></h2>
 
-<p>First, you need to get a copy of the source code. You can get the source code 
+<p>First, you need to get a copy of the source code. You can get the source code
 from SourceForge or from the project's Perforce source server.</p>
 
 <h3>Download the latest release<a name="3_3_Download_the_latest_source_release">&nbsp;</a></h3>
 
 <p>Download the latest <code>mondrian-<i>version</i>.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
-SourceForge</a>, and unzip. Now find the <code>mondrian-<i>version</i>-src.zip</code> 
-inside this distribution, and unzip it. The directory you unzip this source code to &mdash; 
+SourceForge</a>, and unzip. Now find the <code>mondrian-<i>version</i>-src.zip</code>
+inside this distribution, and unzip it. The directory you unzip this source code to &mdash;
 typically something like <code>C:\open\mondrian</code>
 or <code>/usr/local/mondrian-<i>x.y.z</i></code> &mdash; will be denoted <code>
 <i>${project.location}</i></code> later in this document.</p>
 
 <h3>Connect to the Perforce source-code server<a name="3_4_Connect_to_the_Perforce_source_code_server">&nbsp;</a></h3>
 
-<p>If you are a mondrian developer, and need to access the latest source code 
-and check in changes, you should connect to the Perforce source-code server. If 
-you are not a developer, but are interested in getting the latest code, you can 
+<p>If you are a mondrian developer, and need to access the latest source code
+and check in changes, you should connect to the Perforce source-code server. If
+you are not a developer, but are interested in getting the latest code, you can
 connect as the 'guest' user.</p>
 <ol>
   <li>Download the perforce client from
@@ -61,7 +61,7 @@ connect as the 'guest' user.</p>
   </li>
   <li>Set <code>Server</code> to <code>perforce.eigenbase.org</code>;
     <code>Port</code> to <code>1666</code>; set <code>User</code> to
-your SourceForge username (usually <code>guest</code>, unless you are a commiter 
+your SourceForge username (usually <code>guest</code>, unless you are a commiter
 	to the project); set <code>
 Client</code> to your username plus the name of your machine (for
 example, <code>guest.jhyde.stilton</code>).</li>
@@ -77,42 +77,42 @@ create a client with the same name. Set its root to something like
 
 <h3>Checking in code<a name="Checking_in_code">&nbsp;</a></h3>
 
-<p>If you are a regular contributor to the Mondrian project, we will give you 
-privileges to commit to the source code server. As a commiter, you will be able to add, edit, 
-and delete files in the source system, and commit changelists. Usually we ask 
-you to prove your worth with a few tasks before welcoming you to the team; contact Julian Hyde for 
+<p>If you are a regular contributor to the Mondrian project, we will give you
+privileges to commit to the source code server. As a commiter, you will be able to add, edit,
+and delete files in the source system, and commit changelists. Usually we ask
+you to prove your worth with a few tasks before welcoming you to the team; contact Julian Hyde for
 more information on how to join the team.</p>
 <p>When you check in:</p>
 <ul>
-    <li><b>Write a unit test for your change</b>. (Or unit tests: the number of 
-    unit tests you write should be appropriate for the scale of your change.) 
-    The test should fail before you make the change, and succeed after it. We 
-    recommend a test-driven development process, where you write the test before 
-    you change the code. Unit tests are particularly important if you are fixing 
+    <li><b>Write a unit test for your change</b>. (Or unit tests: the number of
+    unit tests you write should be appropriate for the scale of your change.)
+    The test should fail before you make the change, and succeed after it. We
+    recommend a test-driven development process, where you write the test before
+    you change the code. Unit tests are particularly important if you are fixing
     a bug.</li>
-    <li><b>Run the regression suite, and make sure all tests pass</b>. We don't 
-    expect you to run the suite in all configurations (DBMSes, operating 
-    systems, JDK versions, and parameter settings) but if your change affects 
-    something configuration-specific, be smart and test more than one 
-    configuration. For example, SQL generation is DBMS-specific, and file 
-    handling is OS-specific, but MDX function implementations are typically 
+    <li><b>Run the regression suite, and make sure all tests pass</b>. We don't
+    expect you to run the suite in all configurations (DBMSes, operating
+    systems, JDK versions, and parameter settings) but if your change affects
+    something configuration-specific, be smart and test more than one
+    configuration. For example, SQL generation is DBMS-specific, and file
+    handling is OS-specific, but MDX function implementations are typically
     generic.</li>
     <li><b>Make sure your change adheres to the <a href="#Coding_guidelines">
-    coding guidelines</a></b>. Perforce will reject your change if any of the 
-	modified files have <code><a href="#The_checkFile_utility">checkFile</a></code> 
-	errors; you may find it convenient to run <code>checkFile</code> before 
+    coding guidelines</a></b>. Perforce will reject your change if any of the
+	modified files have <code><a href="#The_checkFile_utility">checkFile</a></code>
+	errors; you may find it convenient to run <code>checkFile</code> before
 	submitting. </li>
-    <li><b>If the change affects mondrian's user-visible behavior, update the 
+    <li><b>If the change affects mondrian's user-visible behavior, update the
     documentation</b>. For example, if you make a schema change, update
     <a href="schema.html">schema.html</a>.</li>
-    <li><b>If your change affects a public API, discuss the change with mondrian 
-    developers first</b>. We want to preserve backwards compatibility if 
+    <li><b>If your change affects a public API, discuss the change with mondrian
+    developers first</b>. We want to preserve backwards compatibility if
     possible, or at least clearly document the change in the release notes.</li>
-    <li><b>Check in your changes in a single perforce changelist</b>. The 
-    changelist must have a helpful description, prefixed by 'MONDRIAN: ' to 
-    distinguish it from changes to other projects on the same server. If your 
-    changes fixes a bug, reference the bug number in your changelist 
-    description, and reference the changelist number and expected release number 
+    <li><b>Check in your changes in a single perforce changelist</b>. The
+    changelist must have a helpful description, prefixed by 'MONDRIAN: ' to
+    distinguish it from changes to other projects on the same server. If your
+    changes fixes a bug, reference the bug number in your changelist
+    description, and reference the changelist number and expected release number
     in the bug comments when closing the bug.</li>
 </ul>
 
@@ -120,7 +120,7 @@ more information on how to join the team.</p>
 
 <p>Next, install a build environment. Install the <a href="#JDK">JDK</a>, <a href="#Ant">Ant</a>, <a href="#Tomcat">Tomcat</a>, <a href="#Xalan">Xalan</a>,
 and <a href="#JUnit">JUnit</a>, and set <code>JAVA_HOME</code>, <code>ANT_HOME</code>,
-  <code>TOMCAT_HOME</code>, <code>XALAN_HOME</code>, <code>JUNIT_HOME</code> in 
+  <code>TOMCAT_HOME</code>, <code>XALAN_HOME</code>, <code>JUNIT_HOME</code> in
 your environment.</p>
 
 <p>Download the latest <code>jpivot-<i>version</i>.war</code> from
@@ -195,13 +195,48 @@ Total time: 46 seconds</code>
 
 <h2>Installing the database</h2>
 
-<p>Before you run the regression test suite or the web application, you must 
+<p>Before you run the regression test suite or the web application, you must
 install the standard FoodMart dataset. This is described in the
 <a href="install.html#2_Set_up_test_data">installation guide</a>.</p>
 
-<p>&nbsp;If you got your files from the Perforce server, you can skip the step 
+<p>&nbsp;If you got your files from the Perforce server, you can skip the step
 where you download the data sets: you should already have the files <code>demo/access/MondrianFoodMart.mdb</code>
 and <code>demo/FoodMartCreateData.zip</code>.</p>
+
+<p>You will need to update your mondrian.properties in order to connect to the FoodMart database during
+the test. The important properties are:</p>
+
+<table style="border-collapse: collapse;" border="1" cellpadding="2" cellspacing="0" id="table1">
+  <tbody>
+    <tr>
+      <th>Property</th><th>Description</th><th>Example (MySQL)</th>
+    </tr>
+    <tr>
+      <td>mondrian.foodmart.jdbcURL</td>
+      <td>JDBC URL to connect to your database. Required</td>
+      <td>jdbc:mysql://localhost:3307/foodmart</td>
+    </tr>
+    <tr>
+      <td>mondrian.foodmart.jdbcUser</td>
+      <td>User name for database connection. Required</td>
+      <td>root</td>
+    </tr>
+    <tr>
+      <td>mondrian.foodmart.jdbcPassword</td>
+      <td>Password for database connection. Required</td>
+      <td>password</td>
+    </tr>
+    <tr>
+      <td>mondrian.jdbcDrivers</td>
+      <td>List of paths to JDBC driver JARs as a valid classpath. The paths can be relative to the root of the installation. Required</td>
+      <td>testlib/mysql-connector-java-3.1.11-bin.jar</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>There is a target in the build script, load-foodmart, that will load the Foodmart data into an empty
+database configured through your mondrian.properties settings.</p>
+
 
 <h2>Running the test suite<a name="6_Run_the_test_suite">&nbsp;</a></h2>
 
@@ -224,7 +259,7 @@ prepare:<br>
 <br>
 parser:<br>
 [javacup] Opening files...<br>
-[javacup] Parsing specification from 
+[javacup] Parsing specification from
 C:\open\mondrian\src\main\mondrian\olap\Parser.cup...<br>
 [javacup] Checking specification...<br>
 [javacup] Warning: Terminal &quot;UNKNOWN&quot; was declared but never used<br>
@@ -237,7 +272,7 @@ C:\open\mondrian\src\main\mondrian\olap\Parser.cup...<br>
 [javacup] *** Reduce/Reduce conflict found in state #99<br>
 [javacup] between value_expression_primary ::= NULL (*)<br>
 [javacup] and term3 ::= term3 IS NULL (*)<br>
-[javacup] under symbols: {EOF, AND, AS, CELL, DIMENSION, ELSE, END, IN, IS, 
+[javacup] under symbols: {EOF, AND, AS, CELL, DIMENSION, ELSE, END, IN, IS,
 MATCHES, MEMBER, NOT, ON, OR, PROPERTIES, SELECT, SE<br>
 T, THEN, WHEN, XOR, COLON, COMMA, EQ, GE, GT, LE, LT, NE, RBRACE, RPAREN}<br>
 [javacup] Resolved in favor of the second production.<br>
@@ -270,25 +305,25 @@ T, THEN, WHEN, XOR, COLON, COMMA, EQ, GE, GT, LE, LT, NE, RBRACE, RPAREN}<br>
 <br>
 generate.resources:<br>
 [javac] Compiling 3 source files to C:\open\mondrian\classes<br>
-[resgen] Generating 
+[resgen] Generating
 C:\open\mondrian\src\main\mondrian\resource\MondrianResource.java<br>
-[resgen] Generating 
+[resgen] Generating
 C:\open\mondrian\classes\mondrian\resource\MondrianResource.properties<br>
-[resgen] Generating 
+[resgen] Generating
 C:\open\mondrian\src\main\mondrian\resource\MondrianResource_en_US.java<br>
-[resgen] Generating 
+[resgen] Generating
 C:\open\mondrian\classes\mondrian\resource\MondrianResource_en_US.properties<br>
-[resgen] Generating 
+[resgen] Generating
 C:\open\mondrian\src\main\mondrian\resource\MondrianResource_de_DE.java<br>
-[resgen] Generating 
+[resgen] Generating
 C:\open\mondrian\classes\mondrian\resource\MondrianResource_de_DE.properties<br>
-[resgen] Generating 
+[resgen] Generating
 C:\open\mondrian\src\main\mondrian\resource\MondrianResource_de.java<br>
-[resgen] Generating 
+[resgen] Generating
 C:\open\mondrian\classes\mondrian\resource\MondrianResource_de.properties<br>
-[resgen] Generating 
+[resgen] Generating
 C:\open\mondrian\src\main\mondrian\resource\MondrianResource_es_ES.java<br>
-[resgen] Generating 
+[resgen] Generating
 C:\open\mondrian\classes\mondrian\resource\MondrianResource_es_ES.properties<br>
 <br>
 def:<br>
@@ -312,19 +347,19 @@ compile.java:<br>
 check-FoodMartCreateData-uptodate:<br>
 <br>
 unzip-FoodMartCreateData:<br>
-[unzip] Expanding: C:\open\mondrian\demo\FoodMartCreateData.zip into 
+[unzip] Expanding: C:\open\mondrian\demo\FoodMartCreateData.zip into
 C:\open\mondrian\demo<br>
 <br>
 check-FoodMartAccessDB-uptodate:<br>
 <br>
 unzip-FoodMartAccessDB:<br>
-[unzip] Expanding: C:\open\mondrian\demo\access\MondrianFoodMart-Access.zip into 
+[unzip] Expanding: C:\open\mondrian\demo\access\MondrianFoodMart-Access.zip into
 C:\open\mondrian\demo\access<br>
 <br>
 check-FoodMartDerbyDB-uptodate:<br>
 <br>
 unzip-FoodMartDerbyDB:<br>
-[unzip] Expanding: C:\open\mondrian\demo\derby\derby-foodmart.zip into 
+[unzip] Expanding: C:\open\mondrian\demo\derby\derby-foodmart.zip into
 C:\open\mondrian\demo\derby<br>
 <br>
 compile:<br>
@@ -378,8 +413,8 @@ Total time: 12 minutes 13 seconds</code></blockquote>
 	<code>ant war</code>
 </blockquote>
 
-<p>This will create <code>lib/mondrian.war</code>. Copy <code>mondrian.war</code> 
-to the <i></i><code><i>TOMCAT_HOME</i>/webapps</code> directory.</p><p>Now, start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</p><h2>Coding guidelines<a name="Coding_guidelines">&nbsp;</a></h2><p>If you are contributing code, please follow the same guidelines used for the 
+<p>This will create <code>lib/mondrian.war</code>. Copy <code>mondrian.war</code>
+to the <i></i><code><i>TOMCAT_HOME</i>/webapps</code> directory.</p><p>Now, start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</p><h2>Coding guidelines<a name="Coding_guidelines">&nbsp;</a></h2><p>If you are contributing code, please follow the same guidelines used for the
 rest of the code. (&quot;When in Rome, do as the Romans do.&quot;)</p><p>Code content:</p><ul>
   <li>Declare variables as near to their first use as possible.</li><li>Don't initialize variables with 'dummy' values just
       to shut up the compiler.</li><li>One declaration per line is recommended.</li><li>Only one top-level class should be defined per java file.</li></ul><p>Documentation and comments:</p><ul>
@@ -389,10 +424,10 @@ rest of the code. (&quot;When in Rome, do as the Romans do.&quot;)</p><p>Code co
       or future active ('Will collect garbage.').</li><li>When editing HTML documents, please don't use an editor which reformats
       the HTML source (such as Microsoft Word).</li></ul><p>Spacing and indentation:</p><ul>
   <li>Use spaces, not tabs.</li><li>Indentation 4.</li><li>Open braces on the same line as the preceding 'if', 'else', 'while'
-      statement, or method or 'class' declaration.</li><li>Use braces even for single-line blocks.</li><li>Try to keep lines shorter than 80 characters.</li></ul><p>The following images show my 
-code style settings in IntelliJ. If you use IntelliJ, plug in these settings; if 
+      statement, or method or 'class' declaration.</li><li>Use braces even for single-line blocks.</li><li>Try to keep lines shorter than 80 characters.</li></ul><p>The following images show my
+code style settings in IntelliJ. If you use IntelliJ, plug in these settings; if
 not, they should give you an idea of the code formatting policy.</p>
-      
+
 <p><img border="0" alt="Code formatting: General" src="images/code_general.png" width="1007" height="826"></p>
 
 <p><img border="0" alt="Code formatting: Alignment and Braces" src="images/code_indentation.png" width="1007" height="866"></p>
@@ -403,15 +438,15 @@ not, they should give you an idea of the code formatting policy.</p>
 
 <h2>The checkFile utility<a name="The_checkFile_utility">&nbsp;</a></h2>
 
-<p>When you submit a change list, the perforce server enforces some basic code 
-formatting guidelines using a utility called <code>checkFile</code>. If the 
-files you are submitting do not pass the guidelines, the submission will fail 
+<p>When you submit a change list, the perforce server enforces some basic code
+formatting guidelines using a utility called <code>checkFile</code>. If the
+files you are submitting do not pass the guidelines, the submission will fail
 and indicate the lines in error.</p>
 
-<p>You may find it convenient to run the utility locally to find errors before 
+<p>You may find it convenient to run the utility locally to find errors before
 submitting. You can get it from perforce at
-<a href="http://p4web.eigenbase.org/open/util/bin/"><code>//open/util/bin/checkFile</code></a>. 
-The script requires <a href="http://www.cygwin.com">cygwin</a> to run on 
+<a href="http://p4web.eigenbase.org/open/util/bin/"><code>//open/util/bin/checkFile</code></a>.
+The script requires <a href="http://www.cygwin.com">cygwin</a> to run on
 Windows.</p>
 <p>Usage:</p>
 <blockquote>
@@ -446,8 +481,8 @@ simple query. The easiest way to run a query is to run a junit testcase such as
 The debugger will stop every time a SQL
 statement is executed, and you should be able to loop up the call stack to which component is executing the query.</p><p>I expect that you will see the following phases in the execution:<ul>
 
-<li>One or two SQL queries will be executed as the <code>schema.xml</code> file is read 
-(validating calculated members and named sets, resolving default members of 
+<li>One or two SQL queries will be executed as the <code>schema.xml</code> file is read
+(validating calculated members and named sets, resolving default members of
 hierarchies, and such)<li>A few SQL queries will be executed to resolve members as the query
 is parsed. (For example, if a query uses <code>[Store].[USA].[CA]</code>, it will
 look all members of the <code>[Store Nation]</code> level, then look up all children
@@ -462,20 +497,20 @@ executing a SQL query per cell, Mondrian makes a pass over all cells
 building a list of cells which are not in the cache. Then it builds
 and executes a SQL query to fetch all of those cells. If it didn't
 manage to fetch all cell values, it will repeat this step until it
-does.</li></ul></p><p>Remember that the purpose of these queries is to populate cache. There are two caches. The dimension cache which maps a member to its children, e.g.</p><blockquote><code>[Store].[All Stores]</code>&nbsp;&rarr; <code>{ [Store].[USA], [Store].[Canada], [Store].[Mexico]}</code></blockquote><p>The aggregation cache maps a tuple a measure value, e.g.</p><blockquote><code>([Store].[USA], [Gender].[F], [Measures].[Unit Sales])</code> 
+does.</li></ul></p><p>Remember that the purpose of these queries is to populate cache. There are two caches. The dimension cache which maps a member to its children, e.g.</p><blockquote><code>[Store].[All Stores]</code>&nbsp;&rarr; <code>{ [Store].[USA], [Store].[Canada], [Store].[Mexico]}</code></blockquote><p>The aggregation cache maps a tuple a measure value, e.g.</p><blockquote><code>([Store].[USA], [Gender].[F], [Measures].[Unit Sales])</code>
 	&rarr; <code>123,456</code></blockquote><p>Once the cache has been populated, the query won't be executed
 again. That's why I recommend that you restart the process each time
 you run this in the debugger.</p>
 
 <p>&nbsp;</p>
 
-<h2>Appendix A. Product installation instructions<a name="Appendix_A_Product_installation_instructions">&nbsp;</a></h2><p>These are the products I used to build mondrian. Install all of the products 
+<h2>Appendix A. Product installation instructions<a name="Appendix_A_Product_installation_instructions">&nbsp;</a></h2><p>These are the products I used to build mondrian. Install all of the products
 marked 'required'.</p><p>In the following, the symbol <code><i>${project.location}</i></code> means the root of your
 source tree.</p><table style="border-collapse: collapse;" border="1" cellpadding="2" cellspacing="0" id="table1">
   <tbody>
     <tr>
       <th>Product</th><th>Required?</th><th>Version</th><th>Comment</th></tr><tr>
-      <td>JDK<a name="JDK">&nbsp;</a></td><td>Yes</td><td>1.5 or later (1.4 
+      <td>JDK<a name="JDK">&nbsp;</a></td><td>Yes</td><td>1.5 or later (1.4
 		support available via retroweaver)</td><td>Available from <a href="http://developer.java.sun.com/" target="_blank">http://developer.java.sun.com/</a>.
           I downloaded <code>jdk-1_5_0_08-windows-i586-p.exe</code>,
           and installed to <code>C:/jdk1.5.0_08</code>, and set <code>JAVA_HOME</code>

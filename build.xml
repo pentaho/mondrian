@@ -341,14 +341,15 @@ demo/access/MondrianFoodMart.mdb"/>
   <echo>==============================================================</echo>
   <echo>| Mondrian configuration info                                |</echo>
   <echo>==============================================================</echo>
-  <echo>project.location      = ${project.location}</echo>
-  <echo>jdk.home              = ${env.JAVA_HOME}</echo>
-  <echo>catalina.home         = ${env.CATALINA_HOME}</echo>
-  <echo>junit.home            = ${env.JUNIT_HOME}</echo>
-  <echo>log4j.configuration   = ${log4j.configuration}</echo>
+  <echo>project.location             = ${project.location}</echo>
+  <echo>jdk.home                     = ${env.JAVA_HOME}</echo>
+  <echo>catalina.home                = ${env.CATALINA_HOME}</echo>
+  <echo>junit.home                   = ${env.JUNIT_HOME}</echo>
+  <echo>log4j.configuration          = ${log4j.configuration}</echo>
   <echo>mondrian.foodmart.catalogURL = ${mondrian.foodmart.catalogURL}</echo>
   <echo>mondrian.foodmart.jdbcURL    = ${mondrian.foodmart.jdbcURL}</echo>
   <echo>mondrian.jdbcDrivers         = ${mondrian.jdbcDrivers}</echo>
+  <echo>driver.classpath (additions) = ${driver.classpath}</echo>
   <echo>==============================================================</echo>
   </target>
 
@@ -999,6 +1000,40 @@ buildJdk16.sh" />
       <patternset includes="**/*.*"/>
     </unzip>
     <touch file="demo/derby/foodmart/service.properties"/>
+  </target>
+
+    
+  <target name="load-foodmart"
+        depends="info"
+        description="load the foodmart database from the data file using the Mondrian loader. Assumes empty database exists">
+
+    <!--
+        Load from demo/FoodMartCreateData.zip directly - no need to unzip
+        
+        Otherwise override, like
+                <arg value="-inputFile=demo/myData.sql"/>
+                <arg value="-inputFile=demo/myData.zip"/> - will access this without unzipping
+
+        You can override the JDBC batch size by setting the same property in your mondrian.properties.
+        Current using the default of 50 SQL statements per batch.
+        
+    -->
+
+    <property name="mondrian.foodmart.loaderBatchSize" value="50" />
+
+    <java classname="mondrian.test.loader.MondrianFoodMartLoader"
+            classpathref="project.test.classpath"
+            fork="yes">
+        <arg value="-tables"/>
+        <arg value="-data"/>
+        <arg value="-indexes"/>
+        <arg value="-outputJdbcBatchSize=${mondrian.foodmart.loaderBatchSize}"/>
+        <arg value="-jdbcDrivers=${mondrian.jdbcDrivers}"/>
+        <arg value="-outputJdbcURL=${mondrian.foodmart.jdbcURL}"/>
+        <arg value="-outputJdbcUser=${mondrian.foodmart.jdbcUser}"/>
+        <arg value="-outputJdbcPassword=${mondrian.foodmart.jdbcPassword}"/>
+    </java>
+     
   </target>
 
   <target name="release" depends="clean-deep, binzip, binDerbyzip"/>
