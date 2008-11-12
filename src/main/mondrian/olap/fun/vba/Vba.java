@@ -1505,37 +1505,75 @@ public class Vba {
         return format.format(expression);
     }
 
-    // instr is already implemented in BuiltinFunTable... defer
-
     // public Object inStrB(Object start, Object string1, Object string2, int
     // compare /* default BinaryCompare */)
 
-    // @FunctionName("InStr")
-    // @Signature("InStr([start, ]string1, string2[, compare])")
-    // @Description("Returns a Variant (Long) specifying the position of the first occurrence of one string within another.")
+    @FunctionName("InStr")
+    @Signature("InStr([start, ]stringcheck, stringmatch[, compare])")
+    @Description("Returns a Variant (Long) specifying the position of the first occurrence of one string within another.")
+    public static int inStr(String stringCheck, String stringMatch) {
+        return inStr(1, stringCheck, stringMatch, 0);
+    }
+
+    @FunctionName("InStr")
+    @Signature("InStr([start, ]stringcheck, stringmatch[, compare])")
+    @Description("Returns the position of an occurrence of one string within another.")
+    public static int inStr(
+        int start /* default 1 */,
+        String stringCheck,
+        String stringMatch)
+    {
+        return inStr(start, stringCheck, stringMatch, 0);
+    }
+
+    @FunctionName("InStr")
+    @Signature("InStr([start, ]stringcheck, stringmatch[, compare])")
+    @Description("Returns the position of an occurrence of one string within another.")
+    public static int inStr(
+        int start /* default 1 */,
+        String stringCheck,
+        String stringMatch,
+        int compare /* default BinaryCompare */)
+    {
+        // todo: implement binary vs. text compare
+        if (start == 0 || start < -1) {
+            throw new InvalidArgumentException(
+                    "start must be -1 or a location in the string to start");
+        }
+        if (start != -1) {
+            return stringCheck.indexOf(stringMatch, start - 1) + 1;
+        } else {
+            return stringCheck.indexOf(stringMatch) + 1;
+        }
+    }
 
     @FunctionName("InStrRev")
-    @Signature("InstrRev(stringcheck, stringmatch[, start[, compare]])")
+    @Signature("InStrRev(stringcheck, stringmatch[, start[, compare]])")
     @Description("Returns the position of an occurrence of one string within another, from the end of string.")
     public static int inStrRev(String stringCheck, String stringMatch) {
         return inStrRev(stringCheck, stringMatch, -1);
     }
 
     @FunctionName("InStrRev")
-    @Signature("InstrRev(stringcheck, stringmatch[, start[, compare]])")
+    @Signature("InStrRev(stringcheck, stringmatch[, start[, compare]])")
     @Description("Returns the position of an occurrence of one string within another, from the end of string.")
-    public static int inStrRev(String stringCheck, String stringMatch, int start /*
-                                                                                     * default
-                                                                                     * -1
-                                                                                     */) {
+    public static int inStrRev(
+        String stringCheck,
+        String stringMatch,
+        int start /* default -1 */)
+    {
         return inStrRev(stringCheck, stringMatch, start, 0);
     }
 
     @FunctionName("InStrRev")
-    @Signature("InstrRev(stringcheck, stringmatch[, start[, compare]])")
+    @Signature("InStrRev(stringcheck, stringmatch[, start[, compare]])")
     @Description("Returns the position of an occurrence of one string within another, from the end of string.")
-    public static int inStrRev(String stringCheck, String stringMatch,
-            int start /* default -1 */, int compare /* default BinaryCompare */) {
+    public static int inStrRev(
+        String stringCheck,
+        String stringMatch,
+        int start /* default -1 */,
+        int compare /* default BinaryCompare */)
+    {
         // todo: implement binary vs. text compare
         if (start == 0 || start < -1) {
             throw new InvalidArgumentException(

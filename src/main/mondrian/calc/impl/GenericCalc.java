@@ -16,7 +16,10 @@ import mondrian.calc.*;
 import java.util.*;
 
 /**
- * Adapter which computes an expression and converts it to any required type.
+ * Adapter which computes a scalar or tuple expression and converts it to any
+ * required type.
+ *
+ * @see mondrian.calc.impl.GenericIterCalc
  *
  * @author jhyde
  * @version $Id$
@@ -24,66 +27,13 @@ import java.util.*;
  */
 public abstract class GenericCalc
     extends AbstractCalc
-    implements ListCalc, MemberListCalc, TupleListCalc, IterCalc, TupleCalc,
+    implements TupleCalc,
     StringCalc, IntegerCalc, DoubleCalc, BooleanCalc, DateTimeCalc,
     VoidCalc, MemberCalc, LevelCalc, HierarchyCalc, DimensionCalc
 {
     protected GenericCalc(Exp exp) {
         super(exp);
     }
-
-    public List evaluateList(Evaluator evaluator) {
-        Object o = evaluate(evaluator);
-        if (o instanceof List) {
-            return (List) o;
-        } else {
-            // Iterable
-            final Iterable iter = (Iterable) o;
-            Iterator it = iter.iterator();
-            List<Object> list = new ArrayList<Object>();
-            while (it.hasNext()) {
-                list.add(it.next());
-            }
-            return list;
-        }
-    }
-    @SuppressWarnings({"unchecked"})
-    public final List<Member> evaluateMemberList(Evaluator evaluator) {
-        return (List<Member>) evaluateList(evaluator);
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public final List<Member[]> evaluateTupleList(Evaluator evaluator) {
-        return (List<Member[]>) evaluateList(evaluator);
-    }
-
-
-
-    public Iterable evaluateIterable(Evaluator evaluator) {
-        Object o = evaluate(evaluator);
-        if (o instanceof Iterable) {
-            return (Iterable) o;
-        } else {
-            final List list = (List) o;
-            // for java4 must convert List into an Iterable
-            return new Iterable() {
-                public Iterator iterator() {
-                    return list.iterator();
-                }
-            };
-        }
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
-        return (Iterable<Member>) evaluateIterable(evaluator);
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
-        return (Iterable<Member[]>) evaluateIterable(evaluator);
-    }
-
 
     public Member[] evaluateTuple(Evaluator evaluator) {
         return (Member[]) evaluate(evaluator);

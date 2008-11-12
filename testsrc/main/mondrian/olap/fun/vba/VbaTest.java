@@ -902,11 +902,40 @@ public class VbaTest extends TestCase {
         assertEquals(60.0, Vba.sYD(1000, 100, 1, 5));
     }
 
+    public void testInStr() {
+        assertEquals(
+            1,
+            Vba.inStr("the quick brown fox jumps over the lazy dog", "the"));
+        assertEquals(
+            32,
+            Vba.inStr(16, "the quick brown fox jumps over the lazy dog", "the"));
+        assertEquals(
+            0,
+            Vba.inStr(16, "the quick brown fox jumps over the lazy dog", "cat"));
+        assertEquals(
+            0,
+            Vba.inStr(1, "the quick brown fox jumps over the lazy dog", "cat"));
+        assertEquals(
+            0,
+            Vba.inStr(1, "", "cat"));
+        assertEquals(
+            0,
+            Vba.inStr(100, "short string", "str"));
+        try {
+            Vba.inStr(0, "the quick brown fox jumps over the lazy dog", "the");
+            fail();
+        } catch (InvalidArgumentException e) {
+            assertTrue(e.getMessage().indexOf("-1 or a location") >= 0);
+        }
+    }
+
     public void testInStrRev() {
-        assertEquals(32, Vba.inStrRev("the quick brown fox jumps over the lazy dog",
-                "the"));
-        assertEquals(1, Vba.inStrRev("the quick brown fox jumps over the lazy dog",
-                "the", 16));
+        assertEquals(
+            32,
+            Vba.inStrRev("the quick brown fox jumps over the lazy dog", "the"));
+        assertEquals(
+            1,
+            Vba.inStrRev("the quick brown fox jumps over the lazy dog", "the", 16));
         try {
             Vba.inStrRev("the quick brown fox jumps over the lazy dog", "the", 0);
             fail();

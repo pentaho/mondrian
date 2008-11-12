@@ -1042,19 +1042,25 @@ if (! Util.Retrowoven) {
         buf.append(']');
         return buf.toString();
     }
+
     protected List<Member> makeListMember(Member[] ms) {
         return new ArrayList<Member>(Arrays.asList(ms));
     }
+
     protected List<Member[]> makeListMemberArray(Member[][] ms) {
         return new ArrayList<Member[]>(Arrays.asList(ms));
     }
+
     protected ResolvedFunCall getResolvedFunCall() {
         FunDef funDef = new TestFunDef();
         Exp[] args = new Exp[0];
         Type returnType =
-            new SetType(new MemberType(null, null, null, null));
-        ResolvedFunCall call = new ResolvedFunCall(funDef, args, returnType);
-        return call;
+            new SetType(
+                new TupleType(
+                    new Type[] {
+                    new MemberType(null, null, null, null),
+                    new MemberType(null, null, null, null)}));
+        return new ResolvedFunCall(funDef, args, returnType);
     }
 
     ////////////////////////////////////////////////////////////////////////
