@@ -11,8 +11,9 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractIterCalc;
 import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.AbstractTupleIterCalc;
+import mondrian.calc.impl.AbstractMemberIterCalc;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
@@ -202,6 +203,7 @@ public class CrossJoinFunDef extends FunDefBase {
             }
         }
     }
+
     private Calc toIter(ExpCompiler compiler, final Exp exp) {
         // Want iterable, immutable list or mutable list in that order
         // It is assumed that an immutable list is easier to get than
@@ -209,22 +211,28 @@ public class CrossJoinFunDef extends FunDefBase {
         final Type type = exp.getType();
         if (type instanceof SetType) {
             // this can return an IterCalc or ListCalc
-            return compiler.compileAs(exp,
-                null, ResultStyle.ITERABLE_LIST_MUTABLELIST);
+            return compiler.compileAs(
+                exp,
+                null,
+                ResultStyle.ITERABLE_LIST_MUTABLELIST);
         } else {
             // this always returns an IterCalc
-            return new SetFunDef.IterSetCalc(
+            return new SetFunDef.ExprMemberIterCalc(
                 new DummyExp(new SetType(type)),
                 new Exp[] {exp},
                 compiler,
                 ResultStyle.ITERABLE_LIST_MUTABLELIST);
         }
     }
-    private abstract class BaseIterCalc extends AbstractIterCalc {
-        protected BaseIterCalc(ResolvedFunCall call, Calc[] calcs) {
+
+    private abstract class BaseTupleIterCalc
+        extends AbstractTupleIterCalc
+    {
+        protected BaseTupleIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
-        public Iterable evaluateIterable(Evaluator evaluator) {
+
+        public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
             ResolvedFunCall call = (ResolvedFunCall) exp;
             // Use a native evaluator, if more efficient.
             // TODO: Figure this out at compile time.
@@ -233,7 +241,8 @@ public class CrossJoinFunDef extends FunDefBase {
                 schemaReader.getNativeSetEvaluator(
                     call.getFunDef(), call.getArgs(), evaluator, this);
             if (nativeEvaluator != null) {
-                return (Iterable) nativeEvaluator.execute(
+                return (Iterable<Member[]>)
+                    nativeEvaluator.execute(
                             ResultStyle.ITERABLE);
             }
 
@@ -252,7 +261,7 @@ public class CrossJoinFunDef extends FunDefBase {
                 //l1 = checkList(evaluator, l1);
                 l1 = nonEmptyOptimizeList(evaluator, l1, call);
                 if (l1.isEmpty()) {
-                    return Collections.EMPTY_LIST;
+                    return Collections.emptyList();
                 }
                 o1 = l1;
             }
@@ -265,7 +274,7 @@ public class CrossJoinFunDef extends FunDefBase {
                 //l2 = checkList(evaluator, l2);
                 l2 = nonEmptyOptimizeList(evaluator, l2, call);
                 if (l2.isEmpty()) {
-                    return Collections.EMPTY_LIST;
+                    return Collections.emptyList();
                 }
                 o2 = l2;
             }
@@ -575,7 +584,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // Member Member
     abstract class BaseMemberMemberIterCalc
-            extends BaseIterCalc {
+            extends BaseTupleIterCalc {
         BaseMemberMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -586,7 +595,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // Member Member[]
     abstract class BaseMemberMemberArrayIterCalc
-                    extends BaseIterCalc {
+                    extends BaseTupleIterCalc {
         BaseMemberMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -602,7 +611,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // Member[] Member
     abstract class BaseMemberArrayMemberIterCalc
-                    extends BaseIterCalc {
+                    extends BaseTupleIterCalc {
         BaseMemberArrayMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -618,7 +627,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // Member[] Member[]
     abstract class BaseMemberArrayMemberArrayIterCalc
-                    extends BaseIterCalc {
+                    extends BaseTupleIterCalc {
         BaseMemberArrayMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -841,7 +850,8 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // ITERABLE Member[] LIST Member
     class IterMemberArrayListMemberIterCalc
-                extends BaseMemberArrayMemberIterCalc {
+        extends BaseMemberArrayMemberIterCalc
+    {
         IterMemberArrayListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -1055,14 +1065,26 @@ public class CrossJoinFunDef extends FunDefBase {
         }
     }
 
+    /**
+     * Compiles an expression to list (or mutable list) format. Never returns
+     * null.
+     *
+     * @param compiler Compiler
+     * @param exp Expression
+     * @return Compiled expression that yields a list or mutable list
+     */
     private ListCalc toList(ExpCompiler compiler, final Exp exp) {
         // Want immutable list or mutable list in that order
         // It is assumed that an immutable list is easier to get than
         // a mutable list.
         final Type type = exp.getType();
         if (type instanceof SetType) {
-            return (ListCalc) compiler.compileAs(exp,
-                null, ResultStyle.LIST_MUTABLELIST);
+            final Calc calc = compiler.compileAs(
+                exp, null, ResultStyle.LIST_MUTABLELIST);
+            if (calc == null) {
+                return compiler.compileList(exp, false);
+            }
+            return (ListCalc) calc;
         } else {
             return new SetFunDef.ListSetCalc(
                     new DummyExp(new SetType(type)),

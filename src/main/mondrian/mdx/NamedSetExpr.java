@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,8 +11,10 @@ package mondrian.mdx;
 
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
+import mondrian.olap.type.SetType;
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.AbstractTupleIterCalc;
+import mondrian.calc.impl.AbstractMemberIterCalc;
 
 import java.util.List;
 
@@ -73,18 +75,63 @@ public class NamedSetExpr extends ExpBase implements Exp {
     }
 
     public Calc accept(ExpCompiler compiler) {
-        return new AbstractListCalc(this, new Calc[] { /* todo: compile namedSet.getExp() */ }, false) {
-            public List evaluateList(Evaluator evaluator) {
-                return (List) evaluator.evaluateNamedSet(
-                    namedSet.getName(), namedSet.getExp());
-            }
+        // This is a deliberate breach of the usual rules for interpreting
+        // acceptable result styles. Usually the caller gets to call the shots:
+        // the callee iterates over the acceptable styles and implements in the
+        // first style it is able to. But in this case, we return iterable if
+        // the caller can handle it, even if it isn't the caller's first choice.
+        // This is because the .current and .currentOrdinal functions only
+        // work correctly on iterators.
+        final List<ResultStyle> styleList = compiler.getAcceptableResultStyles();
+        if (!styleList.contains(ResultStyle.ITERABLE)
+            && !styleList.contains(ResultStyle.ANY)) {
+            return null;
+        }
 
-            public boolean dependsOn(Dimension dimension) {
-                // Given that a named set is never re-evaluated within the scope
-                // of a query, effectively it's independent of all dimensions.
-                return false;
-            }
-        };
+        if (((SetType) getType()).getArity() != 1) {
+            return new AbstractTupleIterCalc(
+                this,
+                new Calc[]{ /* todo: compile namedSet.getExp() */})
+            {
+                public Iterable<Member[]> evaluateTupleIterable(
+                    Evaluator evaluator)
+                {
+                    final Evaluator.NamedSetEvaluator eval = getEval(evaluator);
+                    return eval.evaluateTupleIterable();
+                }
+
+                public boolean dependsOn(Dimension dimension) {
+                    // Given that a named set is never re-evaluated within the
+                    // scope of a query, effectively it's independent of all
+                    // dimensions.
+                    return false;
+                }
+            };
+        } else {
+            return new AbstractMemberIterCalc(
+                this,
+                new Calc[]{ /* todo: compile namedSet.getExp() */})
+            {
+                public Iterable<Member> evaluateMemberIterable(
+                    Evaluator evaluator)
+                {
+                    final Evaluator.NamedSetEvaluator eval = getEval(evaluator);
+                    return eval.evaluateMemberIterable();
+                }
+
+                public boolean dependsOn(Dimension dimension) {
+                    // Given that a named set is never re-evaluated within the
+                    // scope of a query, effectively it's independent of all
+                    // dimensions.
+                    return false;
+                }
+            };
+        }
+    }
+
+    public Evaluator.NamedSetEvaluator getEval(Evaluator evaluator) {
+        return evaluator.getNamedSetEvaluator(
+            namedSet.getName(), namedSet.getExp());
     }
 
     public Object accept(MdxVisitor visitor) {
@@ -96,6 +143,7 @@ public class NamedSetExpr extends ExpBase implements Exp {
     public Type getType() {
         return namedSet.getType();
     }
+
 }
 
 // End NamedSetExpr.java

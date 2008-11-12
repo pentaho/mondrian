@@ -16,6 +16,7 @@ import mondrian.calc.ResultStyle;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.TupleType;
+import mondrian.olap.type.SetType;
 
 import java.util.*;
 
@@ -70,9 +71,7 @@ class TopBottomCountFunDef extends FunDefBase {
                 call.getArgCount() > 2 ?
                 compiler.compileScalar(call.getArg(2), true) :
                 null;
-        final int arity = call.getType() instanceof TupleType ?
-            ((TupleType) call.getType()).elementTypes.length :
-            1;
+        final int arity = ((SetType) call.getType()).getArity();
         return new AbstractListCalc(call, new Calc[] {listCalc, integerCalc, orderCalc}) {
             public List evaluateList(Evaluator evaluator) {
                 // Use a native evaluator, if more efficient.
@@ -126,6 +125,7 @@ class TopBottomCountFunDef extends FunDefBase {
                                 sortMembers(
                                     eval,
                                     (List<Member>) l2,
+                                    (List<Member>) l2,
                                     orderCalc, top, true);
                                 l2.remove(l2.size() - 1);
                                 if (!iterator.hasNext()) {
@@ -138,6 +138,7 @@ class TopBottomCountFunDef extends FunDefBase {
                             for (;;) {
                                 sortTuples(
                                     eval,
+                                    (List<mondrian.olap.Member[]>) l2,
                                     (List<mondrian.olap.Member[]>) l2,
                                     orderCalc, top, true, arity);
                                 l2.remove(l2.size() - 1);
@@ -153,10 +154,12 @@ class TopBottomCountFunDef extends FunDefBase {
                             sortMembers(
                                 evaluator.push(),
                                 (List<Member>) list,
+                                (List<Member>) list,
                                 orderCalc, top, true);
                         } else {
                             sortTuples(
                                 evaluator.push(),
+                                (List<mondrian.olap.Member[]>) list,
                                 (List<mondrian.olap.Member[]>) list,
                                 orderCalc, top, true, arity);
                         }

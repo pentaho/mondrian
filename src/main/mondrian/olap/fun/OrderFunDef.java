@@ -13,6 +13,7 @@ package mondrian.olap.fun;
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.olap.*;
+import mondrian.olap.type.SetType;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.*;
@@ -39,13 +40,14 @@ class OrderFunDef extends FunDefBase {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc = compiler.compileList(call.getArg(0), true);
+        final IterCalc listCalc = compiler.compileIter(call.getArg(0));
         final Calc expCalc = compiler.compileScalar(call.getArg(1), true);
         final Flag order = getLiteralArg(call, 2, Flag.ASC, Flag.class);
 
+        final boolean tuple = ((SetType) listCalc.getType()).getArity() != 1;
         if (expCalc instanceof MemberValueCalc) {
             MemberValueCalc memberValueCalc = (MemberValueCalc) expCalc;
-            List<Calc> constantList = new ArrayList<Calc>();
+            List<MemberCalc> constantList = new ArrayList<MemberCalc>();
             List<Calc> variableList = new ArrayList<Calc>();
             final MemberCalc[] calcs = (MemberCalc[]) memberValueCalc.getCalcs();
             for (MemberCalc memberCalc : calcs) {
@@ -61,33 +63,68 @@ class OrderFunDef extends FunDefBase {
             } else if (variableList.isEmpty()) {
                 // All members are constant. Optimize by setting entire context
                 // first.
-                return new ContextCalc(
+                if (tuple) {
+                    return new ContextCalc<Member[]>(
                         calcs,
-                        new CalcImpl(
-                                call,
-                                listCalc,
-                                new ValueCalc(
-                                        new DummyExp(expCalc.getType())),
+                        new TupleCalcImpl(
+                            call,
+                            (TupleIterCalc) listCalc,
+                            new ValueCalc(
+                                new DummyExp(expCalc.getType())),
                             order.descending,
                             order.brk));
+                } else {
+                    return new ContextCalc<Member>(
+                        calcs,
+                        new MemberCalcImpl(
+                            call,
+                            (MemberIterCalc) listCalc,
+                            new ValueCalc(
+                                new DummyExp(expCalc.getType())),
+                            order.descending,
+                            order.brk));
+                }
             } else {
                 // Some members are constant. Evaluate these before evaluating
                 // the list expression.
-                return new ContextCalc(
-                    constantList.toArray(
-                        new MemberCalc[constantList.size()]),
-                        new CalcImpl(
-                                call,
-                                listCalc,
-                                new MemberValueCalc(
-                                    new DummyExp(expCalc.getType()),
-                                    variableList.toArray(
-                                        new MemberCalc[variableList.size()])),
+                if (tuple) {
+                    return new ContextCalc<Member[]>(
+                        constantList.toArray(
+                            new MemberCalc[constantList.size()]),
+                        new TupleCalcImpl(
+                            call,
+                            (TupleIterCalc) listCalc,
+                            new MemberValueCalc(
+                                new DummyExp(expCalc.getType()),
+                                variableList.toArray(
+                                    new MemberCalc[variableList.size()])),
                             order.descending,
                             order.brk));
+                } else {
+                    return new ContextCalc<Member>(
+                        constantList.toArray(
+                            new MemberCalc[constantList.size()]),
+                        new MemberCalcImpl(
+                            call,
+                            (MemberIterCalc) listCalc,
+                            new MemberValueCalc(
+                                new DummyExp(expCalc.getType()),
+                                variableList.toArray(
+                                    new MemberCalc[variableList.size()])),
+                            order.descending,
+                            order.brk));
+                }
             }
         }
-        return new CalcImpl(call, listCalc, expCalc, order.descending, order.brk);
+        if (tuple) {
+            return new TupleCalcImpl(
+                call, (TupleIterCalc) listCalc,
+                expCalc, order.descending, order.brk);
+        } else {
+            return new MemberCalcImpl(
+                call, (MemberIterCalc) listCalc,
+                expCalc, order.descending, order.brk);
+        }
     }
 
     /**
@@ -116,37 +153,57 @@ class OrderFunDef extends FunDefBase {
         }
     }
 
-    private static class CalcImpl extends AbstractListCalc {
-        private final ListCalc listCalc;
+    private interface CalcWithDual<T> extends Calc {
+        public List<T> evaluateDual(
+            Evaluator rootEvaluator,
+            Evaluator subEvaluator);
+    }
+
+    private static class MemberCalcImpl
+        extends AbstractMemberListCalc
+        implements CalcWithDual<Member>
+    {
+        private final MemberIterCalc listCalc;
         private final Calc expCalc;
         private final boolean desc;
         private final boolean brk;
 
-        public CalcImpl(
+        public MemberCalcImpl(
             ResolvedFunCall call,
-            ListCalc listCalc,
+            MemberIterCalc listCalc,
             Calc expCalc,
             boolean desc,
             boolean brk)
         {
             super(call, new Calc[]{listCalc, expCalc});
-            assert listCalc.getResultStyle() == ResultStyle.MUTABLE_LIST;
+//            assert listCalc.getResultStyle() == ResultStyle.MUTABLE_LIST;
             this.listCalc = listCalc;
             this.expCalc = expCalc;
             this.desc = desc;
             this.brk = brk;
         }
 
-        public List evaluateDual(Evaluator rootEvaluator, Evaluator subEvaluator) {
-            List list = listCalc.evaluateList(rootEvaluator);
-            sortMembers(subEvaluator.push(), list, expCalc, desc, brk);
-            return list;
+        public List<Member> evaluateDual(
+            Evaluator rootEvaluator,
+            Evaluator subEvaluator)
+        {
+            final Iterable<Member> iterable =
+                listCalc.evaluateMemberIterable(rootEvaluator);
+            // REVIEW: If iterable happens to be a list, we'd like to pass it,
+            // but we cannot yet guarantee that it is mutable.
+            final List<Member> list = null;
+            return sortMembers(
+                subEvaluator.push(), iterable, list, expCalc, desc, brk);
         }
 
-        public List evaluateList(Evaluator evaluator) {
-            List list = listCalc.evaluateList(evaluator);
-            sortMembers(evaluator.push(), list, expCalc, desc, brk);
-            return list;
+        public List<Member> evaluateMemberList(Evaluator evaluator) {
+            final Iterable<Member> iterable =
+                listCalc.evaluateMemberIterable(evaluator);
+            // REVIEW: If iterable happens to be a list, we'd like to pass it,
+            // but we cannot yet guarantee that it is mutable.
+            final List<Member> list = null;
+            return sortMembers(
+                evaluator.push(), iterable, list, expCalc, desc, brk);
         }
 
         public Calc[] getCalcs() {
@@ -165,13 +222,81 @@ class OrderFunDef extends FunDefBase {
         }
     }
 
-    private static class ContextCalc extends GenericCalc {
+    private static class TupleCalcImpl
+        extends AbstractTupleListCalc
+        implements CalcWithDual<Member []>
+    {
+        private final TupleIterCalc iterCalc;
+        private final Calc expCalc;
+        private final boolean desc;
+        private final boolean brk;
+        private final int arity;
+
+        public TupleCalcImpl(
+            ResolvedFunCall call,
+            TupleIterCalc iterCalc,
+            Calc expCalc,
+            boolean desc,
+            boolean brk)
+        {
+            super(call, new Calc[]{iterCalc, expCalc});
+//            assert iterCalc.getResultStyle() == ResultStyle.MUTABLE_LIST;
+            this.iterCalc = iterCalc;
+            this.expCalc = expCalc;
+            this.desc = desc;
+            this.brk = brk;
+            this.arity = getType().getArity();
+        }
+
+        public List<Member[]> evaluateDual(
+            Evaluator rootEvaluator,
+            Evaluator subEvaluator)
+        {
+            final Iterable<Member[]> iterable =
+                iterCalc.evaluateTupleIterable(rootEvaluator);
+            final List<Member[]> list =
+                iterable instanceof List && false
+                    ? Util.<Member[]>cast((List) iterable)
+                    : null;
+            Util.discard(iterCalc.getResultStyle());
+            return sortTuples(
+                subEvaluator.push(), iterable, list, expCalc, desc, brk, arity);
+        }
+
+        public List<Member[]> evaluateTupleList(Evaluator evaluator) {
+            final Iterable<Member[]> iterable =
+                iterCalc.evaluateTupleIterable(evaluator);
+            final List<Member[]> list =
+                iterable instanceof List && false
+                    ? Util.<Member[]>cast((List) iterable)
+                    : null;
+            return sortTuples(
+                evaluator.push(), iterable, list, expCalc, desc, brk, arity);
+        }
+
+        public Calc[] getCalcs() {
+            return new Calc[] {iterCalc, expCalc};
+        }
+
+        public List<Object> getArguments() {
+            return Collections.singletonList(
+                (Object) (desc ?
+                    (brk ? Flag.BDESC : Flag.DESC) :
+                    (brk ? Flag.BASC : Flag.ASC)));
+        }
+
+        public boolean dependsOn(Dimension dimension) {
+            return anyDependsButFirst(getCalcs(), dimension);
+        }
+    }
+
+    private static class ContextCalc<T> extends GenericIterCalc {
         private final MemberCalc[] memberCalcs;
-        private final CalcImpl calc;
+        private final CalcWithDual calc;
         private final Calc[] calcs;
         private final Member[] members; // workspace
 
-        protected ContextCalc(MemberCalc[] memberCalcs, CalcImpl calc) {
+        protected ContextCalc(MemberCalc[] memberCalcs, CalcWithDual<T> calc) {
             super(new DummyExp(calc.getType()));
             this.memberCalcs = memberCalcs;
             this.calc = calc;
@@ -209,6 +334,7 @@ class OrderFunDef extends FunDefBase {
             }
             return calc.dependsOn(dimension);
         }
+
         public ResultStyle getResultStyle() {
             return calc.getResultStyle();
         }

@@ -70,6 +70,14 @@ public class SetFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final Exp[] args = call.getArgs();
+        if (args.length == 1
+            && args[0].getType() instanceof SetType)
+        {
+            // Optimized case when there is only one argument. This occurs quite
+            // often, because people write '{Foo.Children} on 1' when they could
+            // write 'Foo.Children on 1'.
+            return args[0].accept(compiler);
+        }
         return new ListSetCalc(
             call, args, compiler,
             ResultStyle.LIST_MUTABLELIST);
@@ -122,8 +130,7 @@ public class SetFunDef extends FunDefBase {
             if (type instanceof SetType) {
                 // TODO use resultStyles
                 final ListCalc listCalc = compiler.compileList(arg);
-                final Type elementType = ((SetType) type).getElementType();
-                if (elementType instanceof MemberType) {
+                if (((SetType) type).getArity() == 1) {
                     final MemberListCalc memberListCalc =
                         (MemberListCalc) listCalc;
                     return new AbstractVoidCalc(arg, new Calc[] {listCalc}) {
@@ -224,214 +231,221 @@ public class SetFunDef extends FunDefBase {
         }
     }
 
-    public static class IterSetCalc extends AbstractIterCalc {
-        private final IterCalc[] iterCalcs;
+    private static List<Calc> compileSelf(
+        Exp[] args,
+        ExpCompiler compiler,
+        List<ResultStyle> resultStyles)
+    {
+        List<Calc> calcs = new ArrayList<Calc>(args.length);
+        for (Exp arg : args) {
+            calcs.add(createCalc(arg, compiler, resultStyles));
+        }
+        return calcs;
+    }
 
-        public IterSetCalc(
+    private static IterCalc createCalc(
+        Exp arg,
+        ExpCompiler compiler,
+        List<ResultStyle> resultStyles)
+    {
+        final Type type = arg.getType();
+        if (type instanceof SetType) {
+            final Calc calc = compiler.compileAs(arg, null, resultStyles);
+            if (((SetType) type).getArity() == 1) {
+                switch (calc.getResultStyle()) {
+                case ITERABLE:
+                    final MemberIterCalc iterCalc = (MemberIterCalc) calc;
+                    return new AbstractMemberIterCalc(arg, new Calc[] {calc}) {
+                        public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
+                            return iterCalc.evaluateMemberIterable(evaluator);
+                        }
+
+                        protected String getName() {
+                            return "Sublist";
+                        }
+                    };
+                case LIST:
+                case MUTABLE_LIST:
+                    final MemberListCalc memberListCalc =
+                        (MemberListCalc) calc;
+                    return new AbstractMemberIterCalc(arg, new Calc[] {calc}) {
+                        public Iterable<Member> evaluateMemberIterable(
+                            Evaluator evaluator)
+                        {
+                            List<Member> result = new ArrayList<Member>();
+                            List<Member> list =
+                                memberListCalc.evaluateMemberList(evaluator);
+                            // Add only members which are not null.
+                            for (Member member : list) {
+                                if (member == null || member.isNull()) {
+                                    continue;
+                                }
+                                result.add(member);
+                            }
+                            return result;
+                        }
+
+                        protected String getName() {
+                            return "Sublist";
+                        }
+                    };
+                }
+                throw ResultStyleException.generateBadType(
+                    ResultStyle.ITERABLE_LIST_MUTABLELIST,
+                    calc.getResultStyle());
+            } else {
+                switch (calc.getResultStyle()) {
+                case ITERABLE:
+                    final TupleIterCalc iterCalc = (TupleIterCalc) calc;
+                    return new AbstractTupleIterCalc(arg, new Calc[] {calc}) {
+                        public Iterable<Member[]> evaluateTupleIterable(
+                            Evaluator evaluator)
+                        {
+                            return iterCalc.evaluateTupleIterable(evaluator);
+                        }
+
+                        protected String getName() {
+                            return "Sublist";
+                        }
+                    };
+                case LIST:
+                case MUTABLE_LIST:
+                    final TupleListCalc tupleListCalc = (TupleListCalc) calc;
+                    return new AbstractTupleIterCalc(arg, new Calc[] {calc}) {
+                        public Iterable<Member[]> evaluateTupleIterable(
+                            Evaluator evaluator)
+                        {
+                            List<Member[]> result =
+                                new ArrayList<Member[]>();
+                            List<Member[]> list =
+                                tupleListCalc.evaluateTupleList(evaluator);
+                            // Add only tuples which are not null. Tuples with
+                            // any null members are considered null.
+                            list:
+                            for (Member[] members : list) {
+                                for (Member member : members) {
+                                    if (member == null || member.isNull()) {
+                                        continue list;
+                                    }
+                                }
+                                result.add(members);
+                            }
+                            return result;
+                        }
+
+                        protected String getName() {
+                            return "Sublist";
+                        }
+                    };
+                }
+                throw ResultStyleException.generateBadType(
+                    ResultStyle.ITERABLE_LIST_MUTABLELIST,
+                    calc.getResultStyle());
+            }
+        } else if (TypeUtil.couldBeMember(type)) {
+            final MemberCalc memberCalc = compiler.compileMember(arg);
+            final ResolvedFunCall call = wrapAsSet(arg);
+            return new AbstractMemberIterCalc(call, new Calc[] {memberCalc}) {
+                public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
+                    final Member member =
+                        memberCalc.evaluateMember(evaluator);
+                    return new Iterable<Member>() {
+                        public Iterator<Member> iterator() {
+                            return new Iterator<Member>() {
+                                private Member m = member;
+                                public boolean hasNext() {
+                                    return (m != null);
+                                }
+                                public Member next() {
+                                    try {
+                                        return m;
+                                    } finally {
+                                        m = null;
+                                    }
+                                }
+                                public void remove() {
+                                    throw new UnsupportedOperationException("remove");
+                                }
+                            };
+                        }
+                    };
+                }
+                protected String getName() {
+                    return "Sublist";
+                }
+            };
+        } else {
+            final TupleCalc tupleCalc = compiler.compileTuple(arg);
+            final ResolvedFunCall call = wrapAsSet(arg);
+            return new AbstractTupleIterCalc(call, new Calc[] {tupleCalc}) {
+                public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
+                    final Member[] members = tupleCalc.evaluateTuple(evaluator);
+                    return new Iterable<Member[]>() {
+                        public Iterator<Member[]> iterator() {
+                            return new Iterator<Member[]>() {
+                                private Member[] m = members;
+                                public boolean hasNext() {
+                                    return (m != null);
+                                }
+                                public Member[] next() {
+                                    try {
+                                        return m;
+                                    } finally {
+                                        m = null;
+                                    }
+                                }
+                                public void remove() {
+                                    throw new UnsupportedOperationException("remove");
+                                }
+                            };
+                        }
+                    };
+                }
+                protected String getName() {
+                    return "Sublist";
+                }
+            };
+        }
+    }
+
+    private static ResolvedFunCall wrapAsSet(Exp arg) {
+        return new ResolvedFunCall(
+                new SetFunDef(Resolver, new int[] {arg.getCategory()}),
+                new Exp[] {arg},
+                new SetType(arg.getType()));
+    }
+
+    /**
+     * Compiled expression that evaluates one or more expressions, each of which
+     * yields a member or a set of members, and returns the result as an member
+     * iterator.
+     */
+    public static class ExprMemberIterCalc extends AbstractMemberIterCalc {
+        private final MemberIterCalc[] iterCalcs;
+
+        public ExprMemberIterCalc(
             Exp exp,
             Exp[] args,
             ExpCompiler compiler,
             List<ResultStyle> resultStyles)
         {
             super(exp, null);
-            iterCalcs = compileSelf(args, compiler, resultStyles);
+            final List<Calc> calcList = compileSelf(args, compiler, resultStyles);
+            iterCalcs = calcList.toArray(new MemberIterCalc[calcList.size()]);
         }
 
         public Calc[] getCalcs() {
             return iterCalcs;
         }
 
-        private IterCalc[] compileSelf(
-            Exp[] args,
-            ExpCompiler compiler,
-            List<ResultStyle> resultStyles)
-        {
-            IterCalc[] iterCalcs = new IterCalc[args.length];
-            for (int i = 0; i < args.length; i++) {
-                iterCalcs[i] = createCalc(args[i], compiler, resultStyles);
-            }
-            return iterCalcs;
-        }
-
-        private IterCalc createCalc(
-            Exp arg,
-            ExpCompiler compiler,
-            List<ResultStyle> resultStyles)
-        {
-            final Type type = arg.getType();
-            if (type instanceof SetType) {
-                final Calc calc = compiler.compileAs(arg, null, resultStyles);
-                final Type elementType = ((SetType) type).getElementType();
-                if (elementType instanceof MemberType) {
-                    switch (calc.getResultStyle()) {
-                    case ITERABLE:
-                        return new AbstractIterCalc(arg, new Calc[] {calc}) {
-                            private final IterCalc iterCalc = (IterCalc) calc;
-                            public Iterable evaluateIterable(Evaluator evaluator) {
-                                return iterCalc.evaluateIterable(evaluator);
-                            }
-                            protected String getName() {
-                                return "Sublist";
-                            }
-                        };
-                    case LIST:
-                    case MUTABLE_LIST:
-                        return new AbstractIterCalc(arg, new Calc[] {calc}) {
-                            private final MemberListCalc memberListCalc =
-                                (MemberListCalc) calc;
-                            public Iterable evaluateIterable(Evaluator evaluator) {
-                                List<Member> result = new ArrayList<Member>();
-                                List<Member> list =
-                                    memberListCalc.evaluateMemberList(evaluator);
-                                // Add only members which are not null.
-                                for (Member member : list) {
-                                    if (member == null || member.isNull()) {
-                                        continue;
-                                    }
-                                    result.add(member);
-                                }
-                                return result;
-                            }
-                            protected String getName() {
-                                return "Sublist";
-                            }
-                        };
-                    }
-                    throw ResultStyleException.generateBadType(
-                        ResultStyle.ITERABLE_LIST_MUTABLELIST,
-                        calc.getResultStyle());
-                } else {
-                    switch (calc.getResultStyle()) {
-                    case ITERABLE:
-                        return new AbstractIterCalc(arg, new Calc[] {calc}) {
-                            private final IterCalc iterCalc = (IterCalc) calc;
-                            public Iterable evaluateIterable(Evaluator evaluator) {
-                                return iterCalc.evaluateIterable(evaluator);
-                            }
-                            protected String getName() {
-                                return "Sublist";
-                            }
-                        };
-                    case LIST:
-                    case MUTABLE_LIST:
-                        return new AbstractIterCalc(arg, new Calc[] {calc}) {
-                            private final TupleListCalc tupleListCalc =
-                                (TupleListCalc) calc;
-
-                            public Iterable evaluateIterable(Evaluator evaluator) {
-                                return evaluateTupleIterable(evaluator);
-                            }
-
-                            public Iterable<Member[]> evaluateTupleIterable(
-                                Evaluator evaluator)
-                            {
-                                List<Member[]> result =
-                                    new ArrayList<Member[]>();
-                                List<Member[]> list =
-                                    tupleListCalc.evaluateTupleList(evaluator);
-                                // Add only tuples which are not null. Tuples with
-                                // any null members are considered null.
-                                list:
-                                for (Member[] members : list) {
-                                    for (Member member : members) {
-                                        if (member == null || member.isNull()) {
-                                            continue list;
-                                        }
-                                    }
-                                    result.add(members);
-                                }
-                                return result;
-                            }
-
-                            protected String getName() {
-                                return "Sublist";
-                            }
-                        };
-                    }
-                    throw ResultStyleException.generateBadType(
-                        ResultStyle.ITERABLE_LIST_MUTABLELIST,
-                        calc.getResultStyle());
-                }
-            } else if (TypeUtil.couldBeMember(type)) {
-                final MemberCalc memberCalc = compiler.compileMember(arg);
-                final ResolvedFunCall call = wrapAsSet(arg);
-                return new AbstractIterCalc(call, new Calc[] {memberCalc}) {
-                    public Iterable evaluateIterable(Evaluator evaluator) {
-                        final Member member =
-                            memberCalc.evaluateMember(evaluator);
-                        return new Iterable<Member>() {
-                            public Iterator<Member> iterator() {
-                                return new Iterator<Member>() {
-                                    private Member m = member;
-                                    public boolean hasNext() {
-                                        return (m != null);
-                                    }
-                                    public Member next() {
-                                        try {
-                                            return m;
-                                        } finally {
-                                            m = null;
-                                        }
-                                    }
-                                    public void remove() {
-                                        throw new UnsupportedOperationException("remove");
-                                    }
-                                };
-                            }
-                        };
-                    }
-                    protected String getName() {
-                        return "Sublist";
-                    }
-                };
-            } else {
-                final TupleCalc tupleCalc = compiler.compileTuple(arg);
-                final ResolvedFunCall call = wrapAsSet(arg);
-                return new AbstractIterCalc(call, new Calc[] {tupleCalc}) {
-                    public Iterable evaluateIterable(Evaluator evaluator) {
-                        final Member[] members = tupleCalc.evaluateTuple(evaluator);
-                        return new Iterable<Member[]>() {
-                            public Iterator<Member[]> iterator() {
-                                return new Iterator<Member[]>() {
-                                    private Member[] m = members;
-                                    public boolean hasNext() {
-                                        return (m != null);
-                                    }
-                                    public Member[] next() {
-                                        try {
-                                            return m;
-                                        } finally {
-                                            m = null;
-                                        }
-                                    }
-                                    public void remove() {
-                                        throw new UnsupportedOperationException("remove");
-                                    }
-                                };
-                            }
-                        };
-                    }
-                    protected String getName() {
-                        return "Sublist";
-                    }
-                };
-            }
-        }
-
-        private ResolvedFunCall wrapAsSet(Exp arg) {
-            return new ResolvedFunCall(
-                    new SetFunDef(Resolver, new int[] {arg.getCategory()}),
-                    new Exp[] {arg},
-                    new SetType(arg.getType()));
-        }
-
-        public Iterable evaluateIterable(final Evaluator evaluator) {
+        public Iterable<Member> evaluateMemberIterable(final Evaluator evaluator) {
             return new Iterable<Member>() {
                 public Iterator<Member> iterator() {
                     return new Iterator<Member>() {
                         int index = 0;
                         Iterator<Member> currentIterator = null;
                         Member member = null;
+
                         public boolean hasNext() {
                             if (member != null) {
                                 return true;
@@ -440,7 +454,7 @@ public class SetFunDef extends FunDefBase {
                                 if (index >= iterCalcs.length) {
                                     return false;
                                 }
-                                IterCalc iterCalc = iterCalcs[index++];
+                                MemberIterCalc iterCalc = iterCalcs[index++];
                                 Iterable<Member> iter =
                                     iterCalc.evaluateMemberIterable(evaluator);
                                 currentIterator = iter.iterator();
@@ -451,7 +465,7 @@ public class SetFunDef extends FunDefBase {
                                     if (index >= iterCalcs.length) {
                                         return false;
                                     }
-                                    IterCalc iterCalc = iterCalcs[index++];
+                                    MemberIterCalc iterCalc = iterCalcs[index++];
                                     Iterable<Member> iter =
                                         iterCalc.evaluateMemberIterable(evaluator);
                                     currentIterator = iter.iterator();
@@ -464,6 +478,7 @@ public class SetFunDef extends FunDefBase {
                             }
                             return true;
                         }
+
                         public Member next() {
                             try {
                                 return member;

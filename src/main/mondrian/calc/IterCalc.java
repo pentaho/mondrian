@@ -29,9 +29,6 @@ public interface IterCalc extends Calc {
      * @return An Iterable of members or tuples, never null.
      */
     Iterable evaluateIterable(Evaluator evaluator);
-    Iterable<Member> evaluateMemberIterable(Evaluator evaluator);
-    Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator);
-
 }
 
 // End IterCalc.java

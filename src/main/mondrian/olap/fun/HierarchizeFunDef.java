@@ -10,10 +10,13 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.AbstractMemberListCalc;
+import mondrian.calc.impl.AbstractTupleListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Evaluator;
 import mondrian.olap.FunDef;
+import mondrian.olap.Member;
+import mondrian.olap.type.SetType;
 
 import java.util.List;
 
@@ -43,13 +46,27 @@ class HierarchizeFunDef extends FunDefBase {
             compiler.compileList(call.getArg(0), true);
         String order = getLiteralArg(call, 1, "PRE", prePost);
         final boolean post = order.equals("POST");
-        return new AbstractListCalc(call, new Calc[] {listCalc}) {
-            public List evaluateList(Evaluator evaluator) {
-                List list = listCalc.evaluateList(evaluator);
-                hierarchize(list, post);
-                return list;
-            }
-        };
+        final int arity = ((SetType) listCalc.getType()).getArity();
+        if (arity == 1) {
+            final MemberListCalc memberListCalc = (MemberListCalc) listCalc;
+            return new AbstractMemberListCalc(call, new Calc[] {listCalc}) {
+                public List<Member> evaluateMemberList(Evaluator evaluator) {
+                    List<Member> list =
+                        memberListCalc.evaluateMemberList(evaluator);
+                    hierarchizeMemberList(list, post);
+                    return list;
+                }
+            };
+        } else {
+            final TupleListCalc tupleListCalc = (TupleListCalc) listCalc;
+            return new AbstractTupleListCalc(call, new Calc[] {listCalc}) {
+                public List<Member[]> evaluateTupleList(Evaluator evaluator) {
+                    List<Member[]> list = tupleListCalc.evaluateTupleList(evaluator);
+                    hierarchizeTupleList(list, post, arity);
+                    return list;
+                }
+            };
+        }
     }
 }
 

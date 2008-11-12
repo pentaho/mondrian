@@ -582,7 +582,7 @@ public class Util extends XOMUtil {
                 for (int j = i + 1; j < names.size(); j++) {
                     List<Member> childrenList =
                         schemaReader.getMemberChildren(bestChild);
-                    FunUtil.hierarchize(childrenList, false);
+                    FunUtil.hierarchizeMemberList(childrenList, false);
                     if (matchType == MatchType.AFTER) {
                         bestChild = childrenList.get(0);
                     } else {

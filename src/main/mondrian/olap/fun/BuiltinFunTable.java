@@ -370,6 +370,8 @@ public class BuiltinFunTable extends FunTableImpl {
         define(DimensionCurrentMemberFunDef.instance);
 
         define(HierarchyCurrentMemberFunDef.instance);
+        define(NamedSetCurrentFunDef.instance);
+        define(NamedSetCurrentOrdinalFunDef.instance);
 
         // "<Member>.DataMember"
         define(new FunDefBase(
@@ -744,25 +746,6 @@ public class BuiltinFunTable extends FunTableImpl {
         define(IifFunDef.HIERARCHY_INSTANCE);
         define(IifFunDef.DIMENSION_INSTANCE);
         define(IifFunDef.SET_INSTANCE);
-
-        // InStr(<String Expression>, <String Expression>)
-        define(new FunDefBase(
-                "InStr",
-                "Returns the position of the first occurrence of one string within another." +
-                    " Implements very basic form of InStr",
-                "fnSS") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final StringCalc stringCalc1 = compiler.compileString(call.getArg(0));
-                final StringCalc stringCalc2 = compiler.compileString(call.getArg(1));
-                return new AbstractIntegerCalc(call, new Calc[] {stringCalc1, stringCalc2}) {
-                    public int evaluateInteger(Evaluator evaluator) {
-                        String value = stringCalc1.evaluateString(evaluator);
-                        String pattern = stringCalc2.evaluateString(evaluator);
-                        return value.indexOf(pattern) + 1;
-                    }
-                };
-            }
-        });
 
         define(LinReg.InterceptResolver);
         define(LinReg.PointResolver);

@@ -15,7 +15,7 @@ import java.util.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.AbstractMemberListCalc;
 import mondrian.mdx.*;
 import mondrian.resource.MondrianResource;
 
@@ -113,8 +113,8 @@ class DescendantsFunDef extends FunDefBase {
             final IntegerCalc depthCalc = depthSpecified ?
                 compiler.compileInteger(call.getArg(1)) :
                 null;
-            return new AbstractListCalc(call, new Calc[] {memberCalc, depthCalc}) {
-                public List evaluateList(Evaluator evaluator) {
+            return new AbstractMemberListCalc(call, new Calc[] {memberCalc, depthCalc}) {
+                public List<Member> evaluateMemberList(Evaluator evaluator) {
                     final Member member = memberCalc.evaluateMember(evaluator);
                     List<Member> result = new ArrayList<Member>();
                     int depth = -1;
@@ -128,7 +128,7 @@ class DescendantsFunDef extends FunDefBase {
                         evaluator.getSchemaReader();
                     descendantsLeavesByDepth(
                         member, result, schemaReader, depth);
-                    hierarchize(result, false);
+                    hierarchizeMemberList(result, false);
                     return result;
                 }
             };
@@ -137,8 +137,8 @@ class DescendantsFunDef extends FunDefBase {
                     compiler.compileInteger(call.getArg(1)) :
                     null;
             final Flag flag1 = flag;
-            return new AbstractListCalc(call, new Calc[] {memberCalc, depthCalc}) {
-                public List evaluateList(Evaluator evaluator) {
+            return new AbstractMemberListCalc(call, new Calc[] {memberCalc, depthCalc}) {
+                public List<Member> evaluateMemberList(Evaluator evaluator) {
                     final Member member = memberCalc.evaluateMember(evaluator);
                     List<Member> result = new ArrayList<Member>();
                     final int depth = depthCalc.evaluateInteger(evaluator);
@@ -147,7 +147,7 @@ class DescendantsFunDef extends FunDefBase {
                         member, result, schemaReader,
                         depth, flag1.before, flag1.self, flag1.after,
                         evaluator);
-                    hierarchize(result, false);
+                    hierarchizeMemberList(result, false);
                     return result;
                 }
             };
@@ -156,8 +156,8 @@ class DescendantsFunDef extends FunDefBase {
                     compiler.compileLevel(call.getArg(1)) :
                     null;
             final Flag flag2 = flag;
-            return new AbstractListCalc(call, new Calc[] {memberCalc, levelCalc}) {
-                public List evaluateList(Evaluator evaluator) {
+            return new AbstractMemberListCalc(call, new Calc[] {memberCalc, levelCalc}) {
+                public List<Member> evaluateMemberList(Evaluator evaluator) {
                     final Evaluator context =
                             evaluator.isNonEmpty() ? evaluator : null;
                     final Member member = memberCalc.evaluateMember(evaluator);
@@ -170,7 +170,7 @@ class DescendantsFunDef extends FunDefBase {
                             schemaReader, member, level, result,
                         flag2.before, flag2.self,
                         flag2.after, flag2.leaves, context);
-                    hierarchize(result, false);
+                    hierarchizeMemberList(result, false);
                     return result;
                 }
             };

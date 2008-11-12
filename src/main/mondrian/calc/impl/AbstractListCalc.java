@@ -16,6 +16,8 @@ import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.Member;
 import mondrian.olap.type.SetType;
+import mondrian.olap.type.TupleType;
+import mondrian.olap.type.Type;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.ListCalc} interface.
@@ -34,6 +36,7 @@ public abstract class AbstractListCalc
 {
     private final Calc[] calcs;
     private final boolean mutable;
+    protected final boolean tuple;
 
     /**
      * Creates an abstract implementation of a compiled expression which returns
@@ -60,7 +63,12 @@ public abstract class AbstractListCalc
         super(exp);
         this.calcs = calcs;
         this.mutable = mutable;
-        assert getType() instanceof SetType : "expecting a set: " + getType();
+        assert type instanceof SetType : "expecting a set: " + getType();
+        this.tuple = getType().getArity() != 1;
+    }
+
+    public SetType getType() {
+        return (SetType) super.getType();
     }
 
     public Object evaluate(Evaluator evaluator) {
@@ -89,6 +97,19 @@ public abstract class AbstractListCalc
         return (List<Member[]>) evaluateList(evaluator);
     }
 
+    /**
+     * Helper method with which to implement {@link #evaluateList}
+     * if you have implemented {@link #evaluateMemberList} and
+     * {@link #evaluateTupleList}.
+     *
+     * @param evaluator Evaluator
+     * @return List
+     */
+    protected List evaluateEitherList(Evaluator evaluator) {
+        return tuple
+            ? evaluateTupleList(evaluator)
+            : evaluateMemberList(evaluator);
+    }
 }
 
 // End AbstractListCalc.java

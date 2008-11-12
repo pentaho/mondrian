@@ -400,6 +400,10 @@
     <text>Cannot deduce type of set</text>
 </exception>
 
+<exception id="40340" name="NotANamedSet">
+    <text>Not a named set</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Loader -->
 

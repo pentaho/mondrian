@@ -174,7 +174,8 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         // they originally appeared in the cross product
         int enumTargetCount = getEnumTargetCount();
         if (enumTargetCount > 0) {
-            FunUtil.hierarchize(tupleList, false);
+            FunUtil.hierarchizeTupleList(
+                Util.<Member[]>cast(tupleList), false, n);
         }
         return tupleList;
     }

@@ -12,42 +12,17 @@
 */
 
 package mondrian.rolap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Locale;
-import java.util.Map;
 
 import mondrian.calc.Calc;
 import mondrian.calc.DummyExp;
 import mondrian.calc.ParameterSlot;
-import mondrian.calc.ResultStyle;
 import mondrian.calc.impl.ValueCalc;
-import mondrian.olap.Axis;
-import mondrian.olap.Cell;
-import mondrian.olap.CellFormatter;
-import mondrian.olap.Cube;
-import mondrian.olap.Dimension;
-import mondrian.olap.DimensionType;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Exp;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Member;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Parameter;
-import mondrian.olap.Position;
-import mondrian.olap.Query;
-import mondrian.olap.QueryAxis;
-import mondrian.olap.ResultBase;
-import mondrian.olap.ResultLimitExceededException;
-import mondrian.olap.SchemaReader;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.olap.type.ScalarType;
+import mondrian.olap.type.SetType;
+import mondrian.olap.type.TupleType;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.util.ConcatenableList;
@@ -55,6 +30,8 @@ import mondrian.util.Format;
 import mondrian.util.ObjectPool;
 
 import org.apache.log4j.Logger;
+
+import java.util.*;
 
 /**
  * A <code>RolapResult</code> is the result of running a query.
@@ -65,7 +42,7 @@ import org.apache.log4j.Logger;
  */
 public class RolapResult extends ResultBase {
 
-    private static final Logger LOGGER = Logger.getLogger(ResultBase.class);
+    static final Logger LOGGER = Logger.getLogger(ResultBase.class);
 
     private RolapEvaluator evaluator;
     private final CellKey point;
@@ -87,24 +64,32 @@ public class RolapResult extends ResultBase {
     private final Map<Integer, List<Position>> positionsCurrent =
         new HashMap<Integer, List<Position>>();
 
+    /**
+     * Creates a RolapResult.
+     *
+     * @param query Query
+     * @param execute Whether to execute the query
+     */
     RolapResult(Query query, boolean execute) {
         super(query, new Axis[query.axes.length]);
 
         this.point = CellKey.Generator.newCellKey(query.axes.length);
-        final int expDeps = MondrianProperties.instance().TestExpDependencies.get();
+        final int expDeps =
+            MondrianProperties.instance().TestExpDependencies.get();
         if (expDeps > 0) {
             this.evaluator = new RolapDependencyTestingEvaluator(this, expDeps);
         } else {
-            final RolapEvaluator.RolapEvaluatorRoot root =
-                    new RolapResultEvaluatorRoot(this);
+            final RolapEvaluatorRoot root =
+                new RolapResultEvaluatorRoot(this);
             this.evaluator = new RolapEvaluator(root);
         }
         RolapCube rcube = (RolapCube) query.getCube();
         this.batchingReader = new FastBatchingCellReader(rcube);
 
-        this.cellInfos = (query.axes.length > 4)
-            ?  new CellInfoMap(point) : new CellInfoPool(query.axes.length);
-
+        this.cellInfos =
+            (query.axes.length > 4)
+                ?  new CellInfoMap(point)
+                : new CellInfoPool(query.axes.length);
 
         if (!execute) {
             return;
@@ -475,7 +460,11 @@ public class RolapResult extends ResultBase {
             }
         }
     }
-    protected boolean removeDimension(Dimension dimension, List<List<Member>> nonAllMembers) {
+
+    protected boolean removeDimension(
+        Dimension dimension,
+        List<List<Member>> nonAllMembers)
+    {
         boolean changed = false;
         for (ListIterator<List<Member>> it = nonAllMembers.listIterator();
                 it.hasNext();) {
@@ -488,8 +477,11 @@ public class RolapResult extends ResultBase {
         return changed;
     }
 
-    private static class CalculatedMeasureVisitor extends mondrian.mdx.MdxVisitorImpl {
+    private static class CalculatedMeasureVisitor
+        extends mondrian.mdx.MdxVisitorImpl
+    {
         Dimension dimension;
+
         CalculatedMeasureVisitor() {
         }
         public Object visit(mondrian.olap.Formula formula) {
@@ -725,8 +717,13 @@ public class RolapResult extends ResultBase {
             if (construct) {
                 axisResult = new RolapAxis.SingleEmptyPosition();
             }
-
         } else {
+            final int arity =
+                axis.getSet().getType() instanceof SetType
+                    ? ((SetType) axis.getSet().getType()).getArity()
+                    : axis.getSet().getType() instanceof TupleType
+                    ? ((TupleType) axis.getSet().getType()).elementTypes.length
+                    : 1;
             evaluator.setNonEmpty(axis.isNonEmpty());
             evaluator.setEvalAxes(true);
             Object value = axisCalc.evaluate(evaluator);
@@ -742,15 +739,19 @@ public class RolapResult extends ResultBase {
                         if (list.isEmpty()) {
                             // should be???
                             axisResult = new RolapAxis.NoPosition();
-                        } else if (list.get(0) instanceof Member[]) {
-                            axisResult =
-                                new RolapAxis.MemberArrayList((List<Member[]>)value);
-                        } else {
+                        } else if (arity == 1) {
                             axisResult =
                                 new RolapAxis.MemberList((List<Member>)value);
+                        } else {
+                            axisResult =
+                                new RolapAxis.MemberArrayList((List<Member[]>)value);
                         }
                     } else if (axisMembers != null) {
-                        axisMembers.merge(list);
+                        if (arity == 1) {
+                            axisMembers.mergeMemberList((List<Member>) value);
+                        } else {
+                            axisMembers.mergeTupleList((List<Member[]>) value);
+                        }
                     }
                 } else {
                     // Iterable
@@ -759,7 +760,7 @@ public class RolapResult extends ResultBase {
                     if (construct) {
                         if (! it.hasNext()) {
                             axisResult = new RolapAxis.NoPosition();
-                        } else if (it.next() instanceof Member[]) {
+                        } else if (arity != 1) {
                             axisResult = new RolapAxis.MemberArrayIterable(
                                 (Iterable<Member[]>)value);
                         } else {
@@ -767,7 +768,11 @@ public class RolapResult extends ResultBase {
                                 (Iterable<Member>)value);
                         }
                     } else if (axisMembers != null) {
-                        axisMembers.merge(it);
+                        if (arity == 1) {
+                            axisMembers.mergeMemberIter(it);
+                        } else {
+                            axisMembers.mergeTupleIter(it);
+                        }
                     }
                 }
             }
@@ -821,7 +826,14 @@ public class RolapResult extends ResultBase {
         return batchingReader.isDirty();
     }
 
-    private Object evaluateExp(Calc calc, RolapEvaluator evaluator) {
+    /**
+     * Evaluates an expression. Intended for evaluating named sets.
+     *
+     * @param calc Compiled expression
+     * @param evaluator Evaluation context
+     * @return Result
+     */
+    Object evaluateExp(Calc calc, RolapEvaluator evaluator) {
         int attempt = 0;
         boolean dirty = batchingReader.isDirty();
         while (true) {
@@ -829,7 +841,13 @@ public class RolapResult extends ResultBase {
 
             ev.setCellReader(batchingReader);
             Object preliminaryValue = calc.evaluate(ev);
-            Util.discard(preliminaryValue);
+            if (preliminaryValue instanceof Iterable
+                && !(preliminaryValue instanceof List)) {
+                Iterable iterable = (Iterable) preliminaryValue;
+                for (Object anIterable : iterable) {
+                    Util.discard(anIterable);
+                }
+            }
 
             if (!batchingReader.loadAggregations(evaluator.getQuery())) {
                 break;
@@ -1141,80 +1159,81 @@ public class RolapResult extends ResultBase {
             // cells does not exceed the result limit.
             this.limit = MondrianProperties.instance().ResultLimit.get();
         }
+
         public Iterator<Member> iterator() {
             return members.iterator();
         }
+
         void setSlicer(final boolean isSlicer) {
             this.isSlicer = isSlicer;
         }
+
         boolean isEmpty() {
             return this.members.isEmpty();
         }
+
         void countOnly(boolean countOnly) {
             this.countOnly = countOnly;
         }
+
         void checkLimit() {
             if (this.limit > 0) {
                 this.totalCellCount *= this.axisCount;
                 if (this.totalCellCount > this.limit) {
-                    throw MondrianResource.instance().
-                        TotalMembersLimitExceeded.ex(this.totalCellCount,
-                                                        this.limit);
+                    throw MondrianResource.instance().TotalMembersLimitExceeded
+                        .ex(
+                            this.totalCellCount,
+                            this.limit);
                 }
                 this.axisCount = 0;
             }
         }
+
         void clearAxisCount() {
             this.axisCount = 0;
         }
+
         void clearTotalCellCount() {
             this.totalCellCount = 1;
         }
+
         void clearMembers() {
             this.members.clear();
             this.axisCount = 0;
             this.totalCellCount = 1;
         }
+
         List<Member> members() {
             return this.members;
         }
 
-        void merge(List list) {
-            if (!list.isEmpty()) {
-                if (list.get(0) instanceof Member[]) {
-                    for (Member[] o : Util.<Member[]>cast(list)) {
-                        merge(o);
-                    }
-                } else {
-                    for (Member o : Util.<Member>cast(list)) {
-                        if (o == null) {
-                            continue;
-                        }
-                        if (o.getDimension().isHighCardinality()) {
-                            break;
-                        }
-                        merge(o);
-                    }
+        void mergeMemberList(List<Member> list) {
+            for (Member o : list) {
+                if (o == null) {
+                    continue;
                 }
+                if (o.getDimension().isHighCardinality()) {
+                    break;
+                }
+                mergeMember(o);
             }
         }
 
-        void merge(Iterator it) {
-            if (it.hasNext()) {
-                Object o = it.next();
-                if (o instanceof Member[]) {
-                    merge((Member[]) o);
-                    while (it.hasNext()) {
-                        o = it.next();
-                        merge((Member[]) o);
-                    }
-                } else {
-                    merge((Member) o);
-                    while (it.hasNext()) {
-                        o = it.next();
-                        merge((Member) o);
-                    }
-                }
+        void mergeTupleList(List<Member[]> list) {
+            for (Member[] o : list) {
+                mergeTuple(o);
+            }
+        }
+
+        private void mergeMemberIter(Iterator<Member> it) {
+            while (it.hasNext()) {
+                mergeMember(it.next());
+            }
+        }
+
+        private void mergeTupleIter(Iterator<Member[]> it) {
+            while (it.hasNext()) {
+                mergeTuple(it.next());
             }
         }
 
@@ -1223,13 +1242,13 @@ public class RolapResult extends ResultBase {
             return (parent == null) ? m : getTopParent(parent);
         }
 
-        private void merge(final Member[] members) {
+        private void mergeTuple(final Member[] members) {
             for (Member member : members) {
-                merge(member);
+                mergeMember(member);
             }
         }
 
-        private void merge(final Member member) {
+        private void mergeMember(final Member member) {
             this.axisCount++;
             if (! countOnly) {
                 if (isSlicer) {
@@ -1255,30 +1274,30 @@ public class RolapResult extends ResultBase {
         }
     }
 
-
     /**
-     * Extension to {@link RolapEvaluator.RolapEvaluatorRoot} which is capable
+     * Extension to {@link RolapEvaluatorRoot} which is capable
      * of evaluating named sets.<p/>
      *
      * A given set is only evaluated once each time a query is executed; the
-     * result is added to the {@link #namedSetValues} cache on first execution
+     * result is added to the {@link #namedSetEvaluators} cache on first execution
      * and re-used.<p/>
      *
-     * Named sets are always evaluated in the context of the slicer.<p/>
+     * <p>Named sets are always evaluated in the context of the slicer.<p/>
      */
     protected static class RolapResultEvaluatorRoot
-            extends RolapEvaluator.RolapEvaluatorRoot {
+        extends RolapEvaluatorRoot
+    {
         /**
          * Maps the names of sets to their values. Populated on demand.
          */
-        private final Map<String, Object> namedSetValues =
-            new HashMap<String, Object>();
+        private final Map<String, RolapNamedSetEvaluator> namedSetEvaluators =
+            new HashMap<String, RolapNamedSetEvaluator>();
 
         /**
          * Evaluator containing context resulting from evaluating the slicer.
          */
-        private RolapEvaluator slicerEvaluator;
-        private final RolapResult result;
+        RolapEvaluator slicerEvaluator;
+        final RolapResult result;
         private static final Object Sentinel = new Object();
 
         public RolapResultEvaluatorRoot(RolapResult result) {
@@ -1290,37 +1309,14 @@ public class RolapResult extends ResultBase {
             slicerEvaluator = (RolapEvaluator) evaluator;
         }
 
-        protected Object evaluateNamedSet(String name, Exp exp) {
-            Object value = namedSetValues.get(name);
+        protected Evaluator.NamedSetEvaluator evaluateNamedSet(
+            final String name,
+            final Exp exp)
+        {
+            RolapNamedSetEvaluator value = namedSetEvaluators.get(name);
             if (value == null) {
-                final RolapEvaluator.RolapEvaluatorRoot root =
-                    slicerEvaluator.root;
-                final Calc calc = root.getCompiled(exp, false, ResultStyle.LIST);
-                Object o = result.evaluateExp(calc, slicerEvaluator.push());
-                List list;
-                if (o instanceof List) {
-                    list = (List) o;
-                } else {
-                    // Iterable
-
-                    // TODO:
-                    // Here, we have to convert the Iterable into a List,
-                    // materialize it, because in the class
-                    // mondrian.mdx.NamedSetExpr the Calc returned by the
-                    // 'accept' method is an AbstractListCalc (hence we must
-                    // provide a list here). It would be better if the
-                    // NamedSetExpr class knew if it needed a ListCalc or
-                    // an IterCalc.
-                    Iterable iter = (Iterable) o;
-                    list = new ArrayList();
-                    for (Object e : iter) {
-                        list.add(e);
-                    }
-                }
-                // Make immutable, just in case expressions are modifying the
-                // results we give them.
-                value = Collections.unmodifiableList(list);
-                namedSetValues.put(name, value);
+                value = new RolapNamedSetEvaluator(this, name, exp);
+                namedSetEvaluators.put(name, value);
             }
             return value;
         }
@@ -1904,12 +1900,18 @@ public class RolapResult extends ResultBase {
 
             // if there are unique members on both axes and no order function,
             //  sort the list to ensure default order
-            if (!list.isEmpty() && !extras.isEmpty() && ordered == false) {
+            if (!list.isEmpty() && !extras.isEmpty() && !ordered) {
                 Member[] membs = list.get(0);
                 int membsSize = membs.length;
                 ValueCalc valCalc = new ValueCalc(new DummyExp(new ScalarType()));
-                FunUtil.sortTuples(evaluator, list, valCalc,
-                        false, false, membsSize);
+                FunUtil.sortTuples(
+                    evaluator,
+                    list,
+                    list,
+                    valCalc,
+                    false,
+                    false,
+                    membsSize);
             }
 
             return new RolapAxis.MemberArrayList(list);

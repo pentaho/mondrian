@@ -12,7 +12,6 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapCube.CubeComparator;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
@@ -472,7 +471,8 @@ public class SqlTupleReader implements TupleReader {
         // they originally appeared in the cross product
         int enumTargetCount = getEnumTargetCount();
         if (enumTargetCount > 0) {
-            FunUtil.hierarchize(tupleList, false);
+            FunUtil.hierarchizeTupleList(
+                Util.<Member[]>cast(tupleList), false, n);
         }
         return tupleList;
     }

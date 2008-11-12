@@ -13,7 +13,6 @@ package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
-import mondrian.spi.Dialect;
 import mondrian.rolap.RolapConnectionProperties;
 
 import java.io.InputStream;
@@ -170,17 +169,116 @@ public class NamedSetTest extends FoodMartTestCase {
 
     /**
      * Set defined using filter expression.
-     *
-     * <p>Probably doesn't work because we don't support the InStr VB function.
      */
-    public void _testIntrinsic() {
+    public void testIntrinsic() {
         assertQueryReturns("WITH SET [ChardonnayChablis] AS\n" +
-                "   'Filter([Product].Members, (InStr(1, [Product].CurrentMember.Name, \"chardonnay\") <> 0) OR (InStr(1, [Product].CurrentMember.Name, \"chablis\") <> 0))'\n" +
-                "SELECT\n" +
-                "   [ChardonnayChablis] ON COLUMNS,\n" +
-                "   {Measures.[Unit Sales]} ON ROWS\n" +
-                "FROM Sales",
-                "xxxx");
+            "   'Filter([Product].Members, (InStr(1, [Product].CurrentMember.Name, \"chardonnay\") <> 0) OR (InStr(1, [Product].CurrentMember.Name, \"chablis\") <> 0))'\n" +
+            "SELECT\n" +
+            "   [ChardonnayChablis] ON COLUMNS,\n" +
+            "   {Measures.[Unit Sales]} ON ROWS\n" +
+            "FROM Sales",
+            fold("Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "Axis #2:\n" +
+                    "{[Measures].[Unit Sales]}\n"));
+        assertQueryReturns("WITH SET [BeerMilk] AS\n" +
+            "   'Filter([Product].Members, (InStr(1, [Product].CurrentMember.Name, \"Beer\") <> 0) OR (InStr(1, LCase([Product].CurrentMember.Name), \"milk\") <> 0))'\n" +
+            "SELECT\n" +
+            "   [BeerMilk] ON COLUMNS,\n" +
+            "   {Measures.[Unit Sales]} ON ROWS\n" +
+            "FROM Sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl].[Pearl Imported Beer]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl].[Pearl Light Beer]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Light Beer]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure].[Top Measure Imported Beer]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure].[Top Measure Light Beer]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus].[Walrus Imported Beer]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus].[Walrus Light Beer]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Booker].[Booker 1% Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Booker].[Booker 2% Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Booker].[Booker Buttermilk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Booker].[Booker Chocolate Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Booker].[Booker Whole Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Carlson].[Carlson 1% Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Carlson].[Carlson 2% Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Carlson].[Carlson Buttermilk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Carlson].[Carlson Chocolate Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Carlson].[Carlson Whole Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club 1% Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club 2% Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club Buttermilk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club Chocolate Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club Whole Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Even Better].[Even Better 1% Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Even Better].[Even Better 2% Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Even Better].[Even Better Buttermilk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Even Better].[Even Better Chocolate Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Even Better].[Even Better Whole Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Gorilla].[Gorilla 1% Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Gorilla].[Gorilla 2% Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Gorilla].[Gorilla Buttermilk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Gorilla].[Gorilla Chocolate Milk]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Gorilla].[Gorilla Whole Milk]}\n" +
+                "{[Product].[All Products].[Food].[Snacks].[Candy].[Chocolate Candy].[Atomic].[Atomic Malted Milk Balls]}\n" +
+                "{[Product].[All Products].[Food].[Snacks].[Candy].[Chocolate Candy].[Choice].[Choice Malted Milk Balls]}\n" +
+                "{[Product].[All Products].[Food].[Snacks].[Candy].[Chocolate Candy].[Gulf Coast].[Gulf Coast Malted Milk Balls]}\n" +
+                "{[Product].[All Products].[Food].[Snacks].[Candy].[Chocolate Candy].[Musial].[Musial Malted Milk Balls]}\n" +
+                "{[Product].[All Products].[Food].[Snacks].[Candy].[Chocolate Candy].[Thresher].[Thresher Malted Milk Balls]}\n" +
+                "Axis #2:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Row #0: 6,838\n" +
+                "Row #0: 1,683\n" +
+                "Row #0: 154\n" +
+                "Row #0: 115\n" +
+                "Row #0: 175\n" +
+                "Row #0: 210\n" +
+                "Row #0: 187\n" +
+                "Row #0: 175\n" +
+                "Row #0: 145\n" +
+                "Row #0: 161\n" +
+                "Row #0: 174\n" +
+                "Row #0: 187\n" +
+                "Row #0: 4,186\n" +
+                "Row #0: 189\n" +
+                "Row #0: 177\n" +
+                "Row #0: 110\n" +
+                "Row #0: 133\n" +
+                "Row #0: 163\n" +
+                "Row #0: 212\n" +
+                "Row #0: 131\n" +
+                "Row #0: 175\n" +
+                "Row #0: 175\n" +
+                "Row #0: 234\n" +
+                "Row #0: 155\n" +
+                "Row #0: 145\n" +
+                "Row #0: 140\n" +
+                "Row #0: 159\n" +
+                "Row #0: 168\n" +
+                "Row #0: 190\n" +
+                "Row #0: 177\n" +
+                "Row #0: 227\n" +
+                "Row #0: 197\n" +
+                "Row #0: 168\n" +
+                "Row #0: 160\n" +
+                "Row #0: 133\n" +
+                "Row #0: 174\n" +
+                "Row #0: 151\n" +
+                "Row #0: 143\n" +
+                "Row #0: 188\n" +
+                "Row #0: 176\n" +
+                "Row #0: 192\n" +
+                "Row #0: 157\n" +
+                "Row #0: 164\n"));
     }
 
     /**
@@ -784,6 +882,7 @@ public class NamedSetTest extends FoodMartTestCase {
                 "with set [Foo] as ' CrossJoin([Gender].members, [Marital Status].members) '" +
                 "select {[Foo]} on columns from [Sales]";
         result = executeQuery(queryString);
+        Util.discard(result);
 
         // Formula for a named set may be a set of members.
         queryString =
@@ -945,6 +1044,71 @@ public class NamedSetTest extends FoodMartTestCase {
                 "Row #2: 55\n" +
                 "Row #3: 149\n" +
                 "Row #4: 89\n"));
+    }
+
+    public void testCurrentAndCurrentOrdinal() {
+        // This test checks that <Named Set>.Current and
+        // <Named Set>.CurrentOrdinal basically work - that is, don't give an
+        // error - but the results are currently off. Note that every cell says
+        // that CurrentOrdinal=8. This is because by the time cells
+        // are evaluated, the evaluator context that produced the axes has
+        // already been lost. Could do better.
+        assertQueryReturns(
+            "with set [Gender Marital Status] as\n" +
+                " [Gender].members * [Marital Status].members\n" +
+                "member [Measures].[GMS Ordinal] as\n" +
+                " [Gender Marital Status].CurrentOrdinal\n" +
+                "member [Measures].[GMS Name]\n" +
+                " as TupleToStr([Gender Marital Status].Current)\n" +
+                "select {\n" +
+                "  [Measures].[Unit Sales],\n" +
+                "  [Measures].[GMS Ordinal],\n" +
+                "  [Measures].[GMS Name]} on 0,\n" +
+                " {[Gender Marital Status]} on 1\n" +
+                "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "{[Measures].[GMS Ordinal]}\n" +
+                "{[Measures].[GMS Name]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender], [Marital Status].[All Marital Status]}\n" +
+                "{[Gender].[All Gender], [Marital Status].[All Marital Status].[M]}\n" +
+                "{[Gender].[All Gender], [Marital Status].[All Marital Status].[S]}\n" +
+                "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status]}\n" +
+                "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}\n" +
+                "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}\n" +
+                "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status]}\n" +
+                "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}\n" +
+                "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}\n" +
+                "Row #0: 266,773\n" +
+                "Row #0: 8\n" +
+                "Row #0: ([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S])\n" +
+                "Row #1: 131,796\n" +
+                "Row #1: 8\n" +
+                "Row #1: ([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S])\n" +
+                "Row #2: 134,977\n" +
+                "Row #2: 8\n" +
+                "Row #2: ([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S])\n" +
+                "Row #3: 131,558\n" +
+                "Row #3: 8\n" +
+                "Row #3: ([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S])\n" +
+                "Row #4: 65,336\n" +
+                "Row #4: 8\n" +
+                "Row #4: ([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S])\n" +
+                "Row #5: 66,222\n" +
+                "Row #5: 8\n" +
+                "Row #5: ([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S])\n" +
+                "Row #6: 135,215\n" +
+                "Row #6: 8\n" +
+                "Row #6: ([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S])\n" +
+                "Row #7: 66,460\n" +
+                "Row #7: 8\n" +
+                "Row #7: ([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S])\n" +
+                "Row #8: 68,755\n" +
+                "Row #8: 8\n" +
+                "Row #8: ([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S])\n"));
     }
 
     /**

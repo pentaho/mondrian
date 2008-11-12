@@ -16,6 +16,7 @@ import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.Member;
 import mondrian.olap.type.SetType;
+import mondrian.olap.type.TupleType;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.IterCalc} interface.
@@ -30,9 +31,11 @@ import mondrian.olap.type.SetType;
  */
 
 public abstract class AbstractIterCalc
-        extends AbstractCalc
-        implements IterCalc {
+    extends AbstractCalc
+    implements IterCalc
+{
     private final Calc[] calcs;
+    protected final boolean tuple;
 
     /**
      * Creates an abstract implementation of a compiled expression which returns
@@ -46,11 +49,25 @@ public abstract class AbstractIterCalc
         super(exp);
         this.calcs = calcs;
         assert getType() instanceof SetType : "expecting a set: " + getType();
+        this.tuple = ((SetType) exp.getType()).getArity() != 1;
     }
 
     public Object evaluate(Evaluator evaluator) {
-        final Iterable iter = evaluateIterable(evaluator);
-        return iter;
+        return evaluateIterable(evaluator);
+    }
+
+    /**
+     * Helper method with which to implement {@link #evaluateIterable}
+     * if you have implemented {@link #evaluateMemberIterable} and
+     * {@link #evaluateTupleIterable}.
+     *
+     * @param evaluator Evaluator
+     * @return List
+     */
+    protected Iterable evaluateEitherIterable(Evaluator evaluator) {
+        return tuple
+            ? evaluateTupleIterable(evaluator)
+            : evaluateMemberIterable(evaluator);
     }
 
     public Calc[] getCalcs() {
@@ -70,7 +87,6 @@ public abstract class AbstractIterCalc
     public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
         return (Iterable<Member[]>) evaluateIterable(evaluator);
     }
-
 }
 
 // End AbstractIterCalc.java

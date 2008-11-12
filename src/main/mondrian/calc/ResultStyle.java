@@ -119,6 +119,10 @@ public enum ResultStyle {
             ITERABLE,
             MUTABLE_LIST,
             LIST);
+
+    public static final List<ResultStyle> ANY_ONLY =
+        Arrays.asList(
+            ANY);
 }
 
 // End ResultStyle.java

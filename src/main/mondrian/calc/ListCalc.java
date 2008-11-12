@@ -12,6 +12,8 @@ package mondrian.calc;
 import java.util.List;
 
 import mondrian.olap.Evaluator;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.SetType;
 
 /**
  * Expression which evaluates a set of members or tuples to a list.

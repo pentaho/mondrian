@@ -11,41 +11,40 @@ package mondrian.calc.impl;
 
 import mondrian.olap.*;
 import mondrian.olap.type.SetType;
-import mondrian.olap.type.Type;
 import mondrian.calc.*;
 
 import java.util.List;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.ListCalc} interface
- * for expressions that return a list of members but never a list of tuples.
+ * for expressions that return a list of tuples but never a list of members.
  *
  * <p>The derived class must
- * implement the {@link #evaluateMemberList(mondrian.olap.Evaluator)} method,
+ * implement the {@link #evaluateTupleList(mondrian.olap.Evaluator)} method,
  * and the {@link #evaluate(mondrian.olap.Evaluator)} method will call it.
  *
- * @see mondrian.calc.impl.AbstractListCalc
+ * @see AbstractListCalc
  *
  * @author jhyde
  * @version $Id$
- * @since Feb 20, 2008
+ * @since Oct 24, 2008
  */
-public abstract class AbstractMemberListCalc
+public abstract class AbstractTupleListCalc
     extends AbstractCalc
-    implements MemberListCalc
+    implements TupleListCalc
 {
     private final Calc[] calcs;
     private final boolean mutable;
 
     /**
      * Creates an abstract implementation of a compiled expression which
-     * returns a mutable list of members.
+     * returns a mutable list of tuples.
      *
      * @param exp Expression which was compiled
      * @param calcs List of child compiled expressions (for dependency
      *   analysis)
      */
-    protected AbstractMemberListCalc(Exp exp, Calc[] calcs) {
+    protected AbstractTupleListCalc(Exp exp, Calc[] calcs) {
         this(exp, calcs, true);
     }
 
@@ -58,22 +57,22 @@ public abstract class AbstractMemberListCalc
      *   analysis)
      * @param mutable Whether the list is mutable
      */
-    protected AbstractMemberListCalc(Exp exp, Calc[] calcs, boolean mutable) {
+    protected AbstractTupleListCalc(Exp exp, Calc[] calcs, boolean mutable) {
         super(exp);
         this.calcs = calcs;
         this.mutable = mutable;
         assert type instanceof SetType : "expecting a set: " + getType();
-        assert getType().getArity() == 1;
+        assert getType().getArity() > 1;
     }
 
     public SetType getType() {
         return (SetType) super.getType();
     }
 
-    public Object evaluate(Evaluator evaluator) {
-        final List<Member> memberList = evaluateMemberList(evaluator);
-        assert memberList != null : "null as empty memberList is deprecated";
-        return memberList;
+    public final Object evaluate(Evaluator evaluator) {
+        final List<Member[]> tupleList = evaluateTupleList(evaluator);
+        assert tupleList != null : "null as empty tuple list is deprecated";
+        return tupleList;
     }
 
     public Calc[] getCalcs() {
@@ -87,16 +86,17 @@ public abstract class AbstractMemberListCalc
     }
 
     public String toString() {
-        return "AbstractMemberListCalc object";
+        return "AbstractTupleListCalc object";
     }
 
-    public List<Member> evaluateList(Evaluator evaluator) {
-        return evaluateMemberList(evaluator);
+    // override return type
+    public final List<Member[]> evaluateList(Evaluator evaluator) {
+        return evaluateTupleList(evaluator);
     }
 
-    public List<Member[]> evaluateTupleList(Evaluator evaluator) {
+    public final List<Member> evaluateMemberList(Evaluator evaluator) {
         throw new UnsupportedOperationException();
     }
 }
 
-// End AbstractMemberListCalc.java
+// End AbstractTupleListCalc.java

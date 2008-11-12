@@ -1761,6 +1761,198 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("Unit Sales", result.getCell(new int[]{0}).getValue());
     }
 
+    /**
+     * Tests NamedSet.CurrentOrdinal combined with the Order function.
+     */
+    public void testNamedSetCurrentOrdinalWithOrder() {
+        assertQueryReturns(
+            "with set [Time Regular] as [Time].Members\n" +
+                " set [Time Reversed] as Order([Time Regular], [Time Regular].CurrentOrdinal, BDESC)\n" +
+                "select [Time Reversed] on 0\n" +
+                "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1998].[Q4].[12]}\n" +
+                "{[Time].[1998].[Q4].[11]}\n" +
+                "{[Time].[1998].[Q4].[10]}\n" +
+                "{[Time].[1998].[Q4]}\n" +
+                "{[Time].[1998].[Q3].[9]}\n" +
+                "{[Time].[1998].[Q3].[8]}\n" +
+                "{[Time].[1998].[Q3].[7]}\n" +
+                "{[Time].[1998].[Q3]}\n" +
+                "{[Time].[1998].[Q2].[6]}\n" +
+                "{[Time].[1998].[Q2].[5]}\n" +
+                "{[Time].[1998].[Q2].[4]}\n" +
+                "{[Time].[1998].[Q2]}\n" +
+                "{[Time].[1998].[Q1].[3]}\n" +
+                "{[Time].[1998].[Q1].[2]}\n" +
+                "{[Time].[1998].[Q1].[1]}\n" +
+                "{[Time].[1998].[Q1]}\n" +
+                "{[Time].[1998]}\n" +
+                "{[Time].[1997].[Q4].[12]}\n" +
+                "{[Time].[1997].[Q4].[11]}\n" +
+                "{[Time].[1997].[Q4].[10]}\n" +
+                "{[Time].[1997].[Q4]}\n" +
+                "{[Time].[1997].[Q3].[9]}\n" +
+                "{[Time].[1997].[Q3].[8]}\n" +
+                "{[Time].[1997].[Q3].[7]}\n" +
+                "{[Time].[1997].[Q3]}\n" +
+                "{[Time].[1997].[Q2].[6]}\n" +
+                "{[Time].[1997].[Q2].[5]}\n" +
+                "{[Time].[1997].[Q2].[4]}\n" +
+                "{[Time].[1997].[Q2]}\n" +
+                "{[Time].[1997].[Q1].[3]}\n" +
+                "{[Time].[1997].[Q1].[2]}\n" +
+                "{[Time].[1997].[Q1].[1]}\n" +
+                "{[Time].[1997].[Q1]}\n" +
+                "{[Time].[1997]}\n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: 26,796\n" +
+                "Row #0: 25,270\n" +
+                "Row #0: 19,958\n" +
+                "Row #0: 72,024\n" +
+                "Row #0: 20,388\n" +
+                "Row #0: 21,697\n" +
+                "Row #0: 23,763\n" +
+                "Row #0: 65,848\n" +
+                "Row #0: 21,350\n" +
+                "Row #0: 21,081\n" +
+                "Row #0: 20,179\n" +
+                "Row #0: 62,610\n" +
+                "Row #0: 23,706\n" +
+                "Row #0: 20,957\n" +
+                "Row #0: 21,628\n" +
+                "Row #0: 66,291\n" +
+                "Row #0: 266,773\n"));
+    }
+
+    /**
+     * Tests NamedSet.CurrentOrdinal combined with the Generate function.
+     */
+    public void testNamedSetCurrentOrdinalWithGenerate() {
+        assertQueryReturns(
+            " with set [Time Regular] as [Time].Members\n" +
+                "set [Every Other Time] as\n" +
+                "  Generate(\n" +
+                "    [Time Regular],\n" +
+                "    {[Time].Members.Item(\n" +
+                "      [Time Regular].CurrentOrdinal * 2)})\n" +
+                "select [Every Other Time] on 0\n" +
+                "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1997]}\n" +
+                "{[Time].[1997].[Q1].[1]}\n" +
+                "{[Time].[1997].[Q1].[3]}\n" +
+                "{[Time].[1997].[Q2].[4]}\n" +
+                "{[Time].[1997].[Q2].[6]}\n" +
+                "{[Time].[1997].[Q3].[7]}\n" +
+                "{[Time].[1997].[Q3].[9]}\n" +
+                "{[Time].[1997].[Q4].[10]}\n" +
+                "{[Time].[1997].[Q4].[12]}\n" +
+                "{[Time].[1998].[Q1]}\n" +
+                "{[Time].[1998].[Q1].[2]}\n" +
+                "{[Time].[1998].[Q2]}\n" +
+                "{[Time].[1998].[Q2].[5]}\n" +
+                "{[Time].[1998].[Q3]}\n" +
+                "{[Time].[1998].[Q3].[8]}\n" +
+                "{[Time].[1998].[Q4]}\n" +
+                "{[Time].[1998].[Q4].[11]}\n" +
+                "Row #0: 266,773\n" +
+                "Row #0: 21,628\n" +
+                "Row #0: 23,706\n" +
+                "Row #0: 20,179\n" +
+                "Row #0: 21,350\n" +
+                "Row #0: 23,763\n" +
+                "Row #0: 20,388\n" +
+                "Row #0: 19,958\n" +
+                "Row #0: 26,796\n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n"));
+    }
+
+    public void testNamedSetCurrentOrdinalWithFilter() {
+        assertQueryReturns(
+            "with set [Time Regular] as [Time].Members\n" +
+                " set [Time Subset] as Filter([Time Regular], [Time Regular].CurrentOrdinal = 3 or [Time Regular].CurrentOrdinal = 5)\n" +
+                "select [Time Subset] on 0\n" +
+                "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1997].[Q1].[2]}\n" +
+                "{[Time].[1997].[Q2]}\n" +
+                "Row #0: 20,957\n" +
+                "Row #0: 62,610\n"));
+    }
+
+    public void testNamedSetCurrentOrdinalWithCrossjoin() {
+        // TODO:
+    }
+
+    public void testNamedSetCurrentOrdinalWithNonNamedSetFails() {
+        // a named set wrapped in {...} is not a named set, so CurrentOrdinal
+        // fails
+        assertThrows(
+            "with set [Time Members] as [Time].Members\n" +
+                "member [Measures].[Foo] as ' {[Time Members]}.CurrentOrdinal '\n" +
+                "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n" +
+                " {[Product].Children} on 1\n" +
+                "from [Sales]",
+            "Not a named set");
+
+        // as above for Current function
+        assertThrows(
+            "with set [Time Members] as [Time].Members\n" +
+                "member [Measures].[Foo] as ' {[Time Members]}.Current.Name '\n" +
+                "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n" +
+                " {[Product].Children} on 1\n" +
+                "from [Sales]",
+            "Not a named set");
+
+        // a set expression is not a named set, so CurrentOrdinal fails
+        assertThrows(
+            "with member [Measures].[Foo] as\n" +
+                " ' Head([Time].Members, 5).CurrentOrdinal '\n" +
+                "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n" +
+                " {[Product].Children} on 1\n" +
+                "from [Sales]",
+            "Not a named set");
+
+        // as above for Current function
+        assertThrows(
+            "with member [Measures].[Foo] as\n" +
+                " ' Crossjoin([Time].Members, [Gender].Members).Current.Name '\n" +
+                "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n" +
+                " {[Product].Children} on 1\n" +
+                "from [Sales]",
+            "Not a named set");
+    }
+
     public void testDimensionDefaultMember() {
         Member member = executeSingletonAxis("[Measures].DefaultMember");
         Assert.assertEquals("Unit Sales", member.getName());
@@ -2932,6 +3124,17 @@ public class FunctionTest extends FoodMartTestCase {
     public void testCrossjoinAsterisk() {
         assertAxisReturns("{[Gender].[M]} * {[Marital Status].[S]}",
                 "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}");
+    }
+
+    public void testCrossjoinAsteriskTuple() {
+        // TODO: Check whether SSAS regards this as an error.
+        assertThrows(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+                "NON EMPTY [Store].[All Stores] " +
+                " * ([Product].[All Products], [Gender]) " +
+                " * [Customers].[All Customers] ON ROWS " +
+                "from [Sales]",
+            "Axis 'ROWS' expression is not a set");
     }
 
     public void testCrossjoinAsteriskAssoc() {
@@ -5323,6 +5526,12 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Store].[All Stores].[USA].[CA].[San Francisco]"));
     }
 
+    public void testGenerateNonSetFails() {
+        // TODO: check what SSAS does here; does it implicitly convert to set?
+        assertAxisThrows("Generate({[Store].[USA], [Store].[USA].[CA]}, [Store].PrevMember, ALL)",
+                fold("No function matches signature 'Generate(<Set>, <Member>, <Symbol>)'"));
+    }
+
     public void testGenerateAll() {
         assertAxisReturns("Generate({[Store].[USA].[CA], [Store].[USA].[OR].[Portland]}," +
                 " Ascendants([Store].CurrentMember)," +
@@ -5680,55 +5889,54 @@ public class FunctionTest extends FoodMartTestCase {
     public void testOrderCalc() {
         // [Measures].[Unit Sales] is a constant member, so it is evaluated in
         // a ContextCalc.
-        // Note that a CopyListCalc is required because Children returns an
-        // immutable list, and Order wants to sortMembers it.
+        // Note that a MemberListIterCalc is required because Children returns
+        // an immutable list, and Order wants an iterable.
         assertAxisCompilesTo(
-                "order([Product].children, [Measures].[Unit Sales])",
-                "{}(Sublist(ContextCalc([Measures].[Unit Sales], Order(CopyListCalc(Children(CurrentMember([Product]))), ValueCalc, ASC))))");
+            "order([Product].children, [Measures].[Unit Sales])",
+            "ContextCalc([Measures].[Unit Sales], Order(MemberListIterCalc(Children(CurrentMember([Product]))), ValueCalc, ASC))");
 
         // [Time].[1997] is constant, and is evaluated in a ContextCalc.
         // [Product].Parent is variable, and is evaluated inside the loop.
         assertAxisCompilesTo(
-                "order([Product].children, ([Time].[1997], [Product].CurrentMember.Parent))",
-                "{}(Sublist(ContextCalc([Time].[1997], Order(CopyListCalc(Children(CurrentMember([Product]))), MemberValueCalc(Parent(CurrentMember([Product]))), ASC))))");
+            "order([Product].children, ([Time].[1997], [Product].CurrentMember.Parent))",
+            "ContextCalc([Time].[1997], Order(MemberListIterCalc(Children(CurrentMember([Product]))), MemberValueCalc(Parent(CurrentMember([Product]))), ASC))");
 
         // No ContextCalc this time. All members are non-variable.
         assertAxisCompilesTo(
-                "order([Product].children, [Product].CurrentMember.Parent)",
-                "{}(Sublist(Order(CopyListCalc(Children(CurrentMember([Product]))), MemberValueCalc(Parent(CurrentMember([Product]))), ASC)))");
+            "order([Product].children, [Product].CurrentMember.Parent)",
+            "Order(MemberListIterCalc(Children(CurrentMember([Product]))), MemberValueCalc(Parent(CurrentMember([Product]))), ASC)");
 
         // List expression is dependent on one of the constant calcs. It cannot
         // be pulled up, so [Gender].[M] is not in the ContextCalc.
         // Note that there is no CopyListCalc - because Filter creates its own
         // mutable copy.
         assertAxisCompilesTo(
-                "order(filter([Product].children, [Measures].[Unit Sales] > 1000), ([Gender].[M], [Measures].[Store Sales]))",
-                "{}(Sublist(ContextCalc([Measures].[Store Sales], Order(Filter(Children(CurrentMember([Product])), >(MemberValueCalc([Measures].[Unit Sales]), 1000.0)), MemberValueCalc([Gender].[All Gender].[M]), ASC))))");
+            "order(filter([Product].children, [Measures].[Unit Sales] > 1000), ([Gender].[M], [Measures].[Store Sales]))",
+            "ContextCalc([Measures].[Store Sales], Order(Filter(Children(CurrentMember([Product])), >(MemberValueCalc([Measures].[Unit Sales]), 1000.0)), MemberValueCalc([Gender].[All Gender].[M]), ASC))");
     }
 
-
     /**
-     * This test case verifies that the order function works with a defined member.
+     * Verifies that the order function works with a defined member.
      * See this forum post for additional information:
      * http://forums.pentaho.org/showthread.php?p=179473#post179473
      */
     public void testOrderWithMember() {
-        assertQueryReturns("with member [Measures].[Product Name Length] as 'LEN([Product].CurrentMember.Name)'\n" +
-                           "select {[Measures].[Product Name Length]} ON COLUMNS,\n" +
-                           "Order([Product].[All Products].Children, [Measures].[Product Name Length], BASC) ON ROWS\n" +
-                           "from [Sales]",
-                           fold(
-                                   "Axis #0:\n" +
-                                   "{}\n" +
-                                   "Axis #1:\n" +
-                                   "{[Measures].[Product Name Length]}\n" +
-                                   "Axis #2:\n" +
-                                   "{[Product].[All Products].[Food]}\n" +
-                                   "{[Product].[All Products].[Drink]}\n" +
-                                   "{[Product].[All Products].[Non-Consumable]}\n" +
-                                   "Row #0: 4\n" +
-                                   "Row #1: 5\n" +
-                                   "Row #2: 14\n"));
+        assertQueryReturns(
+            "with member [Measures].[Product Name Length] as 'LEN([Product].CurrentMember.Name)'\n" +
+                "select {[Measures].[Product Name Length]} ON COLUMNS,\n" +
+                "Order([Product].[All Products].Children, [Measures].[Product Name Length], BASC) ON ROWS\n" +
+                "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Product Name Length]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Food]}\n" +
+                "{[Product].[All Products].[Drink]}\n" +
+                "{[Product].[All Products].[Non-Consumable]}\n" +
+                "Row #0: 4\n" +
+                "Row #1: 5\n" +
+                "Row #2: 14\n"));
     }
 
     /**
