@@ -27,129 +27,117 @@ import java.util.*;
  */
 class OrderFunDef extends FunDefBase {
 
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
-            "Order",
-            "Order(<Set>, <Value Expression>[, ASC | DESC | BASC | BDESC])",
-            "Arranges members of a set, optionally preserving or breaking the hierarchy.",
-            new String[]{"fxxvy", "fxxv"},
-            OrderFunDef.class,
-            Flag.getNames());
+    static final ResolverImpl Resolver = new ResolverImpl();
 
-    public OrderFunDef(FunDef dummyFunDef) {
-        super(dummyFunDef);
+    public OrderFunDef(ResolverBase resolverBase, int type, int[] types) {
+        super(resolverBase, type, types);
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final IterCalc listCalc = compiler.compileIter(call.getArg(0));
-        final Calc expCalc = compiler.compileScalar(call.getArg(1), true);
-        final Flag order = getLiteralArg(call, 2, Flag.ASC, Flag.class);
-
+        List<SortKeySpec> keySpecList = new ArrayList<SortKeySpec>();
+        buildKeySpecList(keySpecList, call, compiler);
+        final int keySpecCount = keySpecList.size();
+        Calc[] calcList = new Calc[keySpecCount + 1]; // +1 for the listCalc
+        calcList[0] = listCalc;
         final boolean tuple = ((SetType) listCalc.getType()).getArity() != 1;
-        if (expCalc instanceof MemberValueCalc) {
-            MemberValueCalc memberValueCalc = (MemberValueCalc) expCalc;
-            List<MemberCalc> constantList = new ArrayList<MemberCalc>();
-            List<Calc> variableList = new ArrayList<Calc>();
-            final MemberCalc[] calcs = (MemberCalc[]) memberValueCalc.getCalcs();
-            for (MemberCalc memberCalc : calcs) {
-                if (memberCalc instanceof ConstantCalc &&
-                    !listCalc.dependsOn(memberCalc.getType().getDimension())) {
-                    constantList.add(memberCalc);
+
+        if (keySpecCount == 1) {
+            final Calc expCalc = compiler.compileScalar(call.getArg(1), true);
+            calcList[1] = expCalc;
+
+            if (expCalc instanceof MemberValueCalc) {
+                MemberValueCalc memberValueCalc = (MemberValueCalc) expCalc;
+                List<MemberCalc> constantList = new ArrayList<MemberCalc>();
+                List<Calc> variableList = new ArrayList<Calc>();
+                final MemberCalc[] calcs = (MemberCalc[]) memberValueCalc.getCalcs();
+                for (MemberCalc memberCalc : calcs) {
+                    if (memberCalc instanceof ConstantCalc &&
+                        !listCalc.dependsOn(memberCalc.getType().getDimension())) {
+                        constantList.add(memberCalc);
+                    } else {
+                        variableList.add(memberCalc);
+                    }
+                }
+                if (constantList.isEmpty()) {
+                    // All members are non-constant -- cannot optimize
+                } else if (variableList.isEmpty()) {
+                    // All members are constant. Optimize by setting entire context
+                    // first.
+                    calcList[1] = new ValueCalc(
+                        new DummyExp(expCalc.getType()));
+                    if (tuple) {
+                        return new ContextCalc<Member[]>(
+                            calcs,
+                            new TupleCalcImpl(
+                                call, calcList, keySpecList));
+                    } else {
+                        return new ContextCalc<Member>(
+                            calcs,
+                            new MemberCalcImpl(
+                                call, calcList, keySpecList));
+                    }
                 } else {
-                    variableList.add(memberCalc);
+                    // Some members are constant. Evaluate these before evaluating
+                    // the list expression.
+                    calcList[1] = new MemberValueCalc(
+                        new DummyExp(expCalc.getType()),
+                        variableList.toArray(
+                            new MemberCalc[variableList.size()]));
+                    if (tuple) {
+                        return new ContextCalc<Member[]>(
+                            constantList.toArray(
+                                new MemberCalc[constantList.size()]),
+                            new TupleCalcImpl(
+                                call, calcList, keySpecList));
+                    } else {
+                        return new ContextCalc<Member>(
+                            constantList.toArray(
+                                new MemberCalc[constantList.size()]),
+                            new MemberCalcImpl(
+                                call, calcList, keySpecList));
+                    }
                 }
             }
-            if (constantList.isEmpty()) {
-                // All members are non-constant -- cannot optimize
-            } else if (variableList.isEmpty()) {
-                // All members are constant. Optimize by setting entire context
-                // first.
-                if (tuple) {
-                    return new ContextCalc<Member[]>(
-                        calcs,
-                        new TupleCalcImpl(
-                            call,
-                            (TupleIterCalc) listCalc,
-                            new ValueCalc(
-                                new DummyExp(expCalc.getType())),
-                            order.descending,
-                            order.brk));
-                } else {
-                    return new ContextCalc<Member>(
-                        calcs,
-                        new MemberCalcImpl(
-                            call,
-                            (MemberIterCalc) listCalc,
-                            new ValueCalc(
-                                new DummyExp(expCalc.getType())),
-                            order.descending,
-                            order.brk));
-                }
+            if (tuple) {
+                return new TupleCalcImpl(
+                    call, calcList, keySpecList);
             } else {
-                // Some members are constant. Evaluate these before evaluating
-                // the list expression.
-                if (tuple) {
-                    return new ContextCalc<Member[]>(
-                        constantList.toArray(
-                            new MemberCalc[constantList.size()]),
-                        new TupleCalcImpl(
-                            call,
-                            (TupleIterCalc) listCalc,
-                            new MemberValueCalc(
-                                new DummyExp(expCalc.getType()),
-                                variableList.toArray(
-                                    new MemberCalc[variableList.size()])),
-                            order.descending,
-                            order.brk));
-                } else {
-                    return new ContextCalc<Member>(
-                        constantList.toArray(
-                            new MemberCalc[constantList.size()]),
-                        new MemberCalcImpl(
-                            call,
-                            (MemberIterCalc) listCalc,
-                            new MemberValueCalc(
-                                new DummyExp(expCalc.getType()),
-                                variableList.toArray(
-                                    new MemberCalc[variableList.size()])),
-                            order.descending,
-                            order.brk));
-                }
+                return new MemberCalcImpl(
+                    call, calcList, keySpecList);
             }
         }
+        for (int i = 0; i < keySpecCount; i++) {
+            final Calc expCalc = keySpecList.get(i).getKey();
+            calcList[i + 1] = expCalc;
+        }
         if (tuple) {
-            return new TupleCalcImpl(
-                call, (TupleIterCalc) listCalc,
-                expCalc, order.descending, order.brk);
+            return new TupleCalcImpl(call, calcList, keySpecList);
         } else {
-            return new MemberCalcImpl(
-                call, (MemberIterCalc) listCalc,
-                expCalc, order.descending, order.brk);
+            return new MemberCalcImpl(call, calcList, keySpecList);
         }
     }
 
-    /**
-     * Enumeration of the flags allowed to the <code>ORDER</code> MDX function.
-     */
-    enum Flag {
-        ASC(false, false),
-        DESC(true, false),
-        BASC(false, true),
-        BDESC(true, true);
-
-        private final boolean descending;
-        private final boolean brk;
-
-        Flag(boolean descending, boolean brk) {
-            this.descending = descending;
-            this.brk = brk;
-        }
-
-        public static String[] getNames() {
-            List<String> names = new ArrayList<String>();
-            for (Flag flags : Flag.class.getEnumConstants()) {
-                names.add(flags.name());
+    private void buildKeySpecList(
+        List<SortKeySpec> keySpecList, ResolvedFunCall call, ExpCompiler compiler)
+    {
+        final int argCount = call.getArgs().length;
+        int j = 1; // args[0] is the input set
+        Calc key;
+        Flag dir;
+        Exp arg;
+        while (j < argCount) {
+            arg = call.getArg(j);
+            key = compiler.compileScalar(arg, true);
+            j++;
+            if ((j >= argCount) ||
+                (call.getArg(j).getCategory() !=  Category.Symbol)) {
+                dir = Flag.ASC;
+            } else {
+                dir = getLiteralArg(call, j, Flag.ASC, Flag.class);
+                j++;
             }
-            return names.toArray(new String[names.size()]);
+            keySpecList.add(new SortKeySpec(key, dir));
         }
     }
 
@@ -164,36 +152,41 @@ class OrderFunDef extends FunDefBase {
         implements CalcWithDual<Member>
     {
         private final MemberIterCalc listCalc;
-        private final Calc expCalc;
-        private final boolean desc;
-        private final boolean brk;
+        private final Calc[] sortKeyCalcList;
+        private final List<SortKeySpec> keySpecList;
+        private final int originalKeySpecCount;
 
         public MemberCalcImpl(
             ResolvedFunCall call,
-            MemberIterCalc listCalc,
-            Calc expCalc,
-            boolean desc,
-            boolean brk)
+            Calc[] calcList,
+            List<SortKeySpec> keySpecList)
         {
-            super(call, new Calc[]{listCalc, expCalc});
+            super(call, calcList);
+            this.listCalc = (MemberIterCalc) calcList[0];
 //            assert listCalc.getResultStyle() == ResultStyle.MUTABLE_LIST;
-            this.listCalc = listCalc;
-            this.expCalc = expCalc;
-            this.desc = desc;
-            this.brk = brk;
+            this.sortKeyCalcList = calcList;
+            this.keySpecList = keySpecList;
+            this.originalKeySpecCount = keySpecList.size();
         }
 
         public List<Member> evaluateDual(
             Evaluator rootEvaluator,
             Evaluator subEvaluator)
         {
+            assert originalKeySpecCount == 1;
+            Flag sortKeyDir = keySpecList.get(0).getDirection();
             final Iterable<Member> iterable =
                 listCalc.evaluateMemberIterable(rootEvaluator);
             // REVIEW: If iterable happens to be a list, we'd like to pass it,
             // but we cannot yet guarantee that it is mutable.
             final List<Member> list = null;
             return sortMembers(
-                subEvaluator.push(), iterable, list, expCalc, desc, brk);
+                subEvaluator.push(),
+                iterable,
+                list,
+                sortKeyCalcList[1],
+                sortKeyDir.descending,
+                sortKeyDir.brk);
         }
 
         public List<Member> evaluateMemberList(Evaluator evaluator) {
@@ -202,23 +195,84 @@ class OrderFunDef extends FunDefBase {
             // REVIEW: If iterable happens to be a list, we'd like to pass it,
             // but we cannot yet guarantee that it is mutable.
             final List<Member> list = null;
-            return sortMembers(
-                evaluator.push(), iterable, list, expCalc, desc, brk);
+            // go by size of keySpecList before purging
+            if (originalKeySpecCount == 1) {
+                Flag sortKeyDir = keySpecList.get(0).getDirection();
+                return sortMembers(
+                    evaluator.push(),
+                    iterable,
+                    list,
+                    sortKeyCalcList[1],
+                    sortKeyDir.descending,
+                    sortKeyDir.brk);
+            } else {
+                purgeKeySpecList(keySpecList, list);
+                if (!keySpecList.isEmpty()) {
+                    return sortMembers(
+                        evaluator.push(), iterable, list, keySpecList);
+                } else {
+                    return list;
+                }
+            }
         }
 
         public Calc[] getCalcs() {
-            return new Calc[] {listCalc, expCalc};
+            return sortKeyCalcList;
         }
 
         public List<Object> getArguments() {
+            // only good for original Order syntax
+            assert originalKeySpecCount == 1;
+            Flag sortKeyDir = keySpecList.get(0).getDirection();
             return Collections.singletonList(
-                (Object) (desc ?
-                    (brk ? Flag.BDESC : Flag.DESC) :
-                    (brk ? Flag.BASC : Flag.ASC)));
+                (Object) (sortKeyDir.descending ?
+                    (sortKeyDir.brk ? Flag.BDESC : Flag.DESC) :
+                    (sortKeyDir.brk ? Flag.BASC : Flag.ASC)));
         }
 
         public boolean dependsOn(Dimension dimension) {
             return anyDependsButFirst(getCalcs(), dimension);
+        }
+
+        private void purgeKeySpecList(
+            List<SortKeySpec> keySpecList, List list)
+        {
+            if (list == null || list.isEmpty()) {
+                return;
+            }
+            if (keySpecList.size() == 1) {
+                return;
+            }
+            Object head = list.get(0);
+            List<Dimension> listDimensions = new ArrayList<Dimension>();
+            if (head instanceof Object []) {
+                for (Object dim : (Object []) head) {
+                    listDimensions.add(((Member) dim).getDimension());
+                }
+            } else {
+                listDimensions.add(((Member) head).getDimension());
+            }
+            // do not sort (remove sort key spec from the list) if
+            // 1. <member_value_expression> evaluates to a member from a
+            // level/dimension which is not used in the first argument
+            // 2. <member_value_expression> evaluates to the same member for
+            // all cells; for example, a report showing all quarters of
+            // year 1998 will not be sorted if the sort key is on the constant
+            // member [1998].[Q1]
+            Iterator iter = keySpecList.listIterator();
+            while (iter.hasNext()) {
+                SortKeySpec key = (SortKeySpec) iter.next();
+                Calc expCalc = key.getKey();
+                if (expCalc instanceof MemberOrderKeyFunDef.CalcImpl) {
+                    Calc[] calcs = ((MemberOrderKeyFunDef.CalcImpl) expCalc).getCalcs();
+                    MemberCalc memberCalc = (MemberCalc) calcs[0];
+                    if (memberCalc instanceof ConstantCalc ||
+                        !listDimensions.contains(memberCalc.getType().getDimension()))
+                    {
+                        iter.remove();
+                    }
+                }
+            }
         }
     }
 
@@ -227,24 +281,22 @@ class OrderFunDef extends FunDefBase {
         implements CalcWithDual<Member []>
     {
         private final TupleIterCalc iterCalc;
-        private final Calc expCalc;
-        private final boolean desc;
-        private final boolean brk;
+        private final Calc[] sortKeyCalcList;
+        private final List<SortKeySpec> keySpecList;
+        private final int originalKeySpecCount;
         private final int arity;
 
         public TupleCalcImpl(
             ResolvedFunCall call,
-            TupleIterCalc iterCalc,
-            Calc expCalc,
-            boolean desc,
-            boolean brk)
+            Calc[] calcList,
+            List<SortKeySpec> keySpecList)
         {
-            super(call, new Calc[]{iterCalc, expCalc});
+            super(call, calcList);
 //            assert iterCalc.getResultStyle() == ResultStyle.MUTABLE_LIST;
-            this.iterCalc = iterCalc;
-            this.expCalc = expCalc;
-            this.desc = desc;
-            this.brk = brk;
+            this.iterCalc = (TupleIterCalc) calcList[0];
+            this.sortKeyCalcList = calcList;
+            this.keySpecList = keySpecList;
+            this.originalKeySpecCount = keySpecList.size();
             this.arity = getType().getArity();
         }
 
@@ -252,6 +304,7 @@ class OrderFunDef extends FunDefBase {
             Evaluator rootEvaluator,
             Evaluator subEvaluator)
         {
+            assert originalKeySpecCount == 1;
             final Iterable<Member[]> iterable =
                 iterCalc.evaluateTupleIterable(rootEvaluator);
             final List<Member[]> list =
@@ -259,8 +312,15 @@ class OrderFunDef extends FunDefBase {
                     ? Util.<Member[]>cast((List) iterable)
                     : null;
             Util.discard(iterCalc.getResultStyle());
+            Flag sortKeyDir = keySpecList.get(0).getDirection();
             return sortTuples(
-                subEvaluator.push(), iterable, list, expCalc, desc, brk, arity);
+                subEvaluator.push(),
+                iterable,
+                list,
+                sortKeyCalcList[1],
+                sortKeyDir.descending,
+                sortKeyDir.brk,
+                arity);
         }
 
         public List<Member[]> evaluateTupleList(Evaluator evaluator) {
@@ -270,23 +330,85 @@ class OrderFunDef extends FunDefBase {
                 iterable instanceof List && false
                     ? Util.<Member[]>cast((List) iterable)
                     : null;
-            return sortTuples(
-                evaluator.push(), iterable, list, expCalc, desc, brk, arity);
+            // go by size of keySpecList before purging
+            if (originalKeySpecCount == 1) {
+                Flag sortKeyDir = keySpecList.get(0).getDirection();
+                return sortTuples(
+                    evaluator.push(),
+                    iterable,
+                    list,
+                    sortKeyCalcList[1],
+                    sortKeyDir.descending,
+                    sortKeyDir.brk,
+                    arity);
+            } else {
+                purgeKeySpecList(keySpecList, list);
+                if (!keySpecList.isEmpty()) {
+                    return sortTuples(
+                        evaluator.push(), iterable, list, keySpecList, arity);
+                } else {
+                    return list;
+                }
+            }
         }
 
         public Calc[] getCalcs() {
-            return new Calc[] {iterCalc, expCalc};
+            return sortKeyCalcList;
         }
 
         public List<Object> getArguments() {
+            // only good for original Order syntax
+            assert originalKeySpecCount == 1;
+            Flag sortKeyDir = keySpecList.get(0).getDirection();
             return Collections.singletonList(
-                (Object) (desc ?
-                    (brk ? Flag.BDESC : Flag.DESC) :
-                    (brk ? Flag.BASC : Flag.ASC)));
+                (Object) (sortKeyDir.descending ?
+                    (sortKeyDir.brk ? Flag.BDESC : Flag.DESC) :
+                    (sortKeyDir.brk ? Flag.BASC : Flag.ASC)));
         }
 
         public boolean dependsOn(Dimension dimension) {
             return anyDependsButFirst(getCalcs(), dimension);
+        }
+
+        private void purgeKeySpecList(
+            List<SortKeySpec> keySpecList, List list)
+        {
+            if (list == null || list.isEmpty()) {
+                return;
+            }
+            if (keySpecList.size() == 1) {
+                return;
+            }
+            Object head = list.get(0);
+            List<Dimension> listDimensions = new ArrayList<Dimension>();
+            if (head instanceof Object []) {
+                for (Object dim : (Object []) head) {
+                    listDimensions.add(((Member) dim).getDimension());
+                }
+            } else {
+                listDimensions.add(((Member) head).getDimension());
+            }
+            // do not sort (remove sort key spec from the list) if
+            // 1. <member_value_expression> evaluates to a member from a
+            // level/dimension which is not used in the first argument
+            // 2. <member_value_expression> evaluates to the same member for
+            // all cells; for example, a report showing all quarters of
+            // year 1998 will not be sorted if the sort key is on the constant
+            // member [1998].[Q1]
+            Iterator iter = keySpecList.listIterator();
+            while (iter.hasNext()) {
+                SortKeySpec key = (SortKeySpec) iter.next();
+                Calc expCalc = key.getKey();
+                if (expCalc instanceof MemberOrderKeyFunDef.CalcImpl) {
+                    Calc[] calcs = ((MemberOrderKeyFunDef.CalcImpl) expCalc).getCalcs();
+                    MemberCalc memberCalc = (MemberCalc) calcs[0];
+                    if (memberCalc instanceof ConstantCalc ||
+                        !listDimensions.contains(memberCalc.getType().getDimension()))
+                    {
+                        iter.remove();
+                    }
+                }
+            }
         }
     }
 
@@ -337,6 +459,70 @@ class OrderFunDef extends FunDefBase {
 
         public ResultStyle getResultStyle() {
             return calc.getResultStyle();
+        }
+    }
+
+    private static class ResolverImpl extends ResolverBase {
+        private final String[] reservedWords;
+        static int[] argTypes;
+
+        private ResolverImpl() {
+            super(
+                    "Order",
+                    "Order(<Set> {, <Key Specification>}...)",
+                    "Arranges members of a set, optionally preserving or breaking the hierarchy.",
+                    Syntax.Function);
+            this.reservedWords = Flag.getNames();
+        }
+
+        public FunDef resolve(
+                Exp[] args, Validator validator, int[] conversionCount)
+        {
+            argTypes = new int[args.length];
+
+            if (args.length < 2) {
+                return null;
+            }
+            // first arg must be a set
+            if (!validator.canConvert(
+                args[0], Category.Set, conversionCount))
+            {
+                return null;
+            }
+            argTypes[0] = Category.Set;
+            // after fist args, should be: value [, symbol]
+            int i = 1;
+            while (i < args.length) {
+                if (!validator.canConvert(
+                    args[i], Category.Value, conversionCount))
+                {
+                    return null;
+                } else {
+                    argTypes[i] = Category.Value;
+                    i++;
+                }
+                // if symbol is not specified, skip to the next
+                if ((i == args.length)) {
+                    //done, will default last arg to ASC
+                } else {
+                    if (!validator.canConvert(
+                        args[i], Category.Symbol, conversionCount))
+                    {
+                        // continue, will default sort flag for prev arg to ASC
+                    } else {
+                        argTypes[i] = Category.Symbol;
+                        i++;
+                    }
+                }
+            }
+            return new OrderFunDef(this, Category.Set, argTypes);
+        }
+
+        public String[] getReservedWords() {
+            if (reservedWords != null) {
+                return reservedWords;
+            }
+            return super.getReservedWords();
         }
     }
 }

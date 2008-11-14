@@ -6008,31 +6008,20 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <FUNCTION_NAME>Order</FUNCTION_NAME>
                         <DESCRIPTION>Arranges members of a set,
                             optionally preserving or breaking the hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Set, Value, Symbol</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>Order</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>Order</FUNCTION_NAME>
-                        <DESCRIPTION>Arranges members of a set,
-                            optionally preserving or breaking the hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Set, Value</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>Order</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>OrderSet</FUNCTION_NAME>
-                        <DESCRIPTION>Arranges members of a set,
-                            optionally preserving or breaking the hierarchy.</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
-                        <CAPTION>OrderSet</CAPTION>
+                        <CAPTION>Order</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>OrderKey</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the member order key.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>OrderKey</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Ordinal</FUNCTION_NAME>

@@ -579,6 +579,8 @@ public class BuiltinFunTable extends FunTableImpl {
         define(OpeningClosingPeriodFunDef.OpeningPeriodResolver);
         define(OpeningClosingPeriodFunDef.ClosingPeriodResolver);
 
+        define (MemberOrderKeyFunDef.instance);
+
         define(ParallelPeriodFunDef.Resolver);
 
         // <Member>.Parent
@@ -1061,7 +1063,6 @@ public class BuiltinFunTable extends FunTableImpl {
 
         define(XtdFunDef.MtdResolver);
         define(OrderFunDef.Resolver);
-        define(OrderSetFunDef.Resolver);
         define(UnorderFunDef.Resolver);
         define(PeriodsToDateFunDef.Resolver);
         define(XtdFunDef.QtdResolver);

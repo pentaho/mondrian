@@ -15,26 +15,26 @@ import junit.framework.*;
 import mondrian.test.*;
 
 /**
- * <code>OrderSetTest</code> tests the extended syntax of Order
+ * <code>OrderTest</code> tests the extended syntax of Order
  * function. See { @link
  * http://pub.eigenbase.org/wiki/MondrianOrderFunctionExtension } for
  * syntax rules.
  * MDX queries and their expected results are maintained separately in
- * OrderSetTest.ref.xml file.If you would prefer to see them as inlined
+ * OrderTest.ref.xml file.If you would prefer to see them as inlined
  * Java string literals, run ant target "generateDiffRepositoryJUnit" and
- * then use file OrderSetTestJUnit.java which will be generated in
+ * then use file OrderTestJUnit.java which will be generated in
  * this directory.
  *
  * @author Khanh Vu
  * @version $Id$
  */
-public class OrderSetTest extends ClearViewBase {
+public class OrderTest extends ClearViewBase {
 
-    public OrderSetTest() {
+    public OrderTest() {
         super();
     }
 
-    public OrderSetTest(String name) {
+    public OrderTest(String name) {
         super(name);
     }
 
@@ -43,13 +43,13 @@ public class OrderSetTest extends ClearViewBase {
     }
 
     private static DiffRepository getDiffReposStatic() {
-        return DiffRepository.lookup(OrderSetTest.class);
+        return DiffRepository.lookup(OrderTest.class);
     }
 
     public static TestSuite suite() {
-        return constructSuite(getDiffReposStatic(), OrderSetTest.class);
+        return constructSuite(getDiffReposStatic(), OrderTest.class);
     }
 
 }
 
-// End OrderSetTest.java
+// End OrderTest.java

@@ -10,7 +10,7 @@
             <![CDATA[
 With 
   Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Store Size in SQFT])' 
-  Set [*SORTED_SET] as 'OrderSet([*NATIVE_CJ_SET], [Customers].currentMember, BASC, [Store Size in SQFT].currentMember, BDESC)' 
+  Set [*SORTED_SET] as 'Order([*NATIVE_CJ_SET], [Customers].currentMember.OrderKey, BASC, [Store Size in SQFT].currentMember.OrderKey, BDESC)' 
   Set [*BASE_MEMBERS_Store Size in SQFT] as '[Store Size in SQFT].[Store Sqft].Members' 
   Set [*NATIVE_MEMBERS_Customers] as 'Generate([*NATIVE_CJ_SET], {[Customers].CurrentMember})' 
   Set [*BASE_MEMBERS_Customers] as '[Customers].[City].Members' 
@@ -232,7 +232,7 @@ Row #94: 11,491
             <![CDATA[
 With
   Set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Product]'
-  Set [*SORTED_SET] as 'OrderSet([*NATIVE_CJ_SET], Ancestor([Product].currentMember, [Product].[Product Family]), BDESC, Ancestor([Product].currentMember, [Product].[Product Department]), BDESC)'
+  Set [*SORTED_SET] as 'Order([*NATIVE_CJ_SET], Ancestor([Product].currentMember, [Product].[Product Family]).OrderKey, BDESC, Ancestor([Product].currentMember, [Product].[Product Department]).OrderKey, BDESC)'
   Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
   Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Department].Members,[Product].CurrentMember.Parent Not In {[Product].[All Products].[Food]})'
   Set [*BASE_MEMBERS_Measures] as '{[Measures].[*ZERO]}'
@@ -279,8 +279,8 @@ Row #7: 0
             <![CDATA[
 With
 Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Yearly Income],[*BASE_MEMBERS_Education Level])'
-Set [*SORTED_COL_AXIS] as 'OrderSet([*NATIVE_MEMBERS_Yearly Income],[Yearly Income].CurrentMember.Name,BASC)'
-Set [*SORTED_ROW_AXIS] as 'OrderSet([*NATIVE_MEMBERS_Education Level],([Yearly Income].[*TOTAL_MEMBER_SEL~SUM],[Measures].[*FORMATTED_MEASURE_0]),BASC)'
+Set [*SORTED_COL_AXIS] as 'Order([*NATIVE_MEMBERS_Yearly Income],[Yearly Income].CurrentMember.OrderKey,BASC)'
+Set [*SORTED_ROW_AXIS] as 'Order([*NATIVE_MEMBERS_Education Level],([Yearly Income].[*TOTAL_MEMBER_SEL~SUM],[Measures].[*FORMATTED_MEASURE_0]),BASC)'
 Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
 Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
@@ -387,8 +387,8 @@ Row #6: 2,950
             <![CDATA[
 With
   Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Gender]))'
-  Set [*SORTED_COL_AXIS] as 'OrderSet([*NATIVE_MEMBERS_Customers],[Customers].currentMember, BDESC)'
-  Set [*SORTED_ROW_AXIS] as 'OrderSet(Generate([*NATIVE_CJ_SET], {([Product].currentMember,[Gender].CurrentMember)}),[Product].currentMember, BDESC, ([Customers].[*TOTAL_MEMBER_SEL~SUM],[Measures].[*FORMATTED_MEASURE_0]),BASC)'
+  Set [*SORTED_COL_AXIS] as 'Order([*NATIVE_MEMBERS_Customers],[Customers].currentMember.OrderKey, BDESC)'
+  Set [*SORTED_ROW_AXIS] as 'Order(Generate([*NATIVE_CJ_SET], {([Product].currentMember,[Gender].CurrentMember)}),[Product].currentMember.OrderKey, BDESC, ([Customers].[*TOTAL_MEMBER_SEL~SUM],[Measures].[*FORMATTED_MEASURE_0]),BASC)'
   Set [*BASE_MEMBERS_Gender] as '[Gender].[Gender].Members'
   Set [*NATIVE_MEMBERS_Customers] as 'Generate([*NATIVE_CJ_SET], {[Customers].CurrentMember})'
   Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
@@ -458,10 +458,10 @@ Row #5: 709
             <![CDATA[
 With
   Set [*ORDERED_SET] as 
-    'OrderSet([*NATIVE_CJ_SET],
-           Ancestor([Product].currentMember, [Product].[Product Family]), BASC,
-           Ancestor([Product].currentMember, [Product].[Product Department]), BDESC,
-           Ancestor([Product].currentMember, [Product].[Product Category]), BASC)'
+    'Order([*NATIVE_CJ_SET],
+           Ancestor([Product].currentMember, [Product].[Product Family]).OrderKey, BASC,
+           Ancestor([Product].currentMember, [Product].[Product Department]).OrderKey, BDESC,
+           Ancestor([Product].currentMember, [Product].[Product Category]).OrderKey, BASC)'
   Set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Product]'
   Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
   Set [*BASE_MEMBERS_Product] as '[Product].[Product Category].Members'
@@ -602,9 +602,9 @@ Row #54: 0
             <![CDATA[
 With
   Set [*ORDERED_SET] as 
-    'OrderSet([*NATIVE_CJ_SET],
-           Ancestor([Product].currentMember, [Product].[Product Family]), BASC, 
-           Ancestor([Product].currentMember, [Product].[Product Category]), BDESC)'
+    'Order([*NATIVE_CJ_SET],
+           Ancestor([Product].currentMember, [Product].[Product Family]).OrderKey, BASC, 
+           Ancestor([Product].currentMember, [Product].[Product Category]).OrderKey, BDESC)'
   Set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Product]'
   Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
   Set [*BASE_MEMBERS_Product] as '[Product].[Product Category].Members'
@@ -830,7 +830,7 @@ report sorted by name BDESC
             <![CDATA[
 With
 Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Store Cost]))'
-Set [*SM_SET_2] as 'OrderSet(Generate([*NATIVE_CJ_SET], {([Product].currentMember)}), [Product].currentMember, BDESC)'
+Set [*SM_SET_2] as 'Order(Generate([*NATIVE_CJ_SET], {([Product].currentMember)}), [Product].currentMember.OrderKey, BDESC)'
 Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
 Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*SUMMARY_MEASURE_1],[Measures].[*SUMMARY_MEASURE_3]}'
@@ -957,7 +957,7 @@ report sorted by measure BDESC
             <![CDATA[
 With
 Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Store Cost]))'
-Set [*SM_SET_2] as 'OrderSet(Generate([*NATIVE_CJ_SET], {([Product].currentMember)}), [Measures].[*FORMATTED_MEASURE_0], BDESC)'
+Set [*SM_SET_2] as 'Order(Generate([*NATIVE_CJ_SET], {([Product].currentMember)}), [Measures].[*FORMATTED_MEASURE_0], BDESC)'
 Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
 Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*SUMMARY_MEASURE_1],[Measures].[*SUMMARY_MEASURE_3]}'
@@ -1084,7 +1084,7 @@ test RSUM that breaks by higher levels
             <![CDATA[
 With
 Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Store Cost]))'
-Set [*ORDERED_SET] as 'OrderSet([*SM_SET_10],[Product].CurrentMember.Parent,BDESC,[Measures].[*FORMATTED_MEASURE_3],BASC)'
+Set [*ORDERED_SET] as 'Order([*SM_SET_10],[Product].CurrentMember.Parent.OrderKey,BDESC,[Measures].[*FORMATTED_MEASURE_3],BASC)'
 Set [*SM_SET_10] as 'Generate([*NATIVE_CJ_SET], {([Product].currentMember)})'
 Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
 Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Department].Members,[Product].CurrentMember.Parent Not In {[Product].[All Products].[Food]})'
