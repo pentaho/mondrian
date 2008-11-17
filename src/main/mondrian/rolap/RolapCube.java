@@ -2242,6 +2242,13 @@ public class RolapCube extends CubeBase {
         // Note that non-exact matches aren't supported at this level,
         // so the matchType is ignored
         String status = null;
+        OlapElement oe = null;
+        if (matchType == MatchType.EXACT_SCHEMA) {
+            oe = super.lookupChild(schemaReader, s, MatchType.EXACT_SCHEMA);
+        } else {
+            oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
+        }
+
         OlapElement oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
 
         if (oe == null) {
