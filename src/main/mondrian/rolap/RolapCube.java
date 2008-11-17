@@ -2249,8 +2249,6 @@ public class RolapCube extends CubeBase {
             oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
         }
 
-        OlapElement oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
-
         if (oe == null) {
             HierarchyUsage[] usages = getUsagesBySource(s.name);
             if (usages.length > 0) {
