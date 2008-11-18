@@ -1776,7 +1776,7 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
 ]]>
         </Resource>
         <Resource name="response">
-            <![CDATA[<?xml version="1.0"?>
+			<![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
@@ -2181,6 +2181,83 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Store">
+                                    <UName>[Store].[All Stores].[Canada].[BC]</UName>
+                                    <Caption>BC</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>2</DisplayInfo>
+                                    <PARENT_LEVEL>1</PARENT_LEVEL>
+                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[Canada]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[All Stores].[Mexico].[DF]</UName>
+                                    <Caption>DF</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>2</DisplayInfo>
+                                    <PARENT_LEVEL>1</PARENT_LEVEL>
+                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[Mexico]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[All Stores].[Mexico].[Guerrero]</UName>
+                                    <Caption>Guerrero</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_LEVEL>1</PARENT_LEVEL>
+                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[Mexico]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[All Stores].[Mexico].[Jalisco]</UName>
+                                    <Caption>Jalisco</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_LEVEL>1</PARENT_LEVEL>
+                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[Mexico]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[All Stores].[Mexico].[Veracruz]</UName>
+                                    <Caption>Veracruz</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_LEVEL>1</PARENT_LEVEL>
+                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[Mexico]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[All Stores].[Mexico].[Yucatan]</UName>
+                                    <Caption>Yucatan</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_LEVEL>1</PARENT_LEVEL>
+                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[Mexico]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[All Stores].[Mexico].[Zacatecas]</UName>
+                                    <Caption>Zacatecas</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>131074</DisplayInfo>
+                                    <PARENT_LEVEL>1</PARENT_LEVEL>
+                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[Mexico]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
                                     <UName>[Store].[All Stores].[USA].[CA]</UName>
                                     <Caption>CA</Caption>
                                     <LName>[Store].[Store State]</LName>
@@ -2303,47 +2380,103 @@ FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING         </Statement>
                             <Value xsi:type="xsd:double">1</Value>
                             <FormatString>Standard</FormatString>
                         </Cell>
-                        <Cell CellOrdinal="1">
-                            <Value xsi:type="xsd:double">159167.84</Value>
-                            <FormatString>#,###.00</FormatString>
-                        </Cell>
                         <Cell CellOrdinal="2">
                             <Value xsi:type="xsd:double">1</Value>
                             <FormatString>Standard</FormatString>
-                        </Cell>
-                        <Cell CellOrdinal="3">
-                            <Value xsi:type="xsd:double">63530.4251</Value>
-                            <FormatString>#,###.00</FormatString>
                         </Cell>
                         <Cell CellOrdinal="4">
                             <Value xsi:type="xsd:double">1</Value>
                             <FormatString>Standard</FormatString>
                         </Cell>
-                        <Cell CellOrdinal="5">
-                            <Value xsi:type="xsd:double">142277.07</Value>
-                            <FormatString>#,###.00</FormatString>
-                        </Cell>
                         <Cell CellOrdinal="6">
                             <Value xsi:type="xsd:double">1</Value>
                             <FormatString>Standard</FormatString>
-                        </Cell>
-                        <Cell CellOrdinal="7">
-                            <Value xsi:type="xsd:double">56772.5006</Value>
-                            <FormatString>#,###.00</FormatString>
                         </Cell>
                         <Cell CellOrdinal="8">
                             <Value xsi:type="xsd:double">1</Value>
                             <FormatString>Standard</FormatString>
                         </Cell>
-                        <Cell CellOrdinal="9">
-                            <Value xsi:type="xsd:double">263793.22</Value>
-                            <FormatString>#,###.00</FormatString>
-                        </Cell>
                         <Cell CellOrdinal="10">
                             <Value xsi:type="xsd:double">1</Value>
                             <FormatString>Standard</FormatString>
                         </Cell>
-                        <Cell CellOrdinal="11">
+                        <Cell CellOrdinal="12">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="14">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="16">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="18">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="20">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="22">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="24">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="26">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="28">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="29">
+                            <Value xsi:type="xsd:double">159167.84</Value>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="30">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="31">
+                            <Value xsi:type="xsd:double">63530.4251</Value>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="32">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="33">
+                            <Value xsi:type="xsd:double">142277.07</Value>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="34">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="35">
+                            <Value xsi:type="xsd:double">56772.5006</Value>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="36">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="37">
+                            <Value xsi:type="xsd:double">263793.22</Value>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="38">
+                            <Value xsi:type="xsd:double">1</Value>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="39">
                             <Value xsi:type="xsd:double">105324.3079</Value>
                             <FormatString>#,###.00</FormatString>
                         </Cell>

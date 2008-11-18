@@ -41,16 +41,29 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
     }
 
     public void testNonEmptyWithCognosCalcOneLiteral() throws Exception {
-        final BooleanProperty property =
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis;
-        boolean currentState = property.get();
+        final BooleanProperty enableNonEmptyOnAllAxes =
+                MondrianProperties.instance().EnableNonEmptyOnAllAxis;
+        boolean nonEmptyAllAxesCurrentState = enableNonEmptyOnAllAxes.get();
+
+        final BooleanProperty enableNativeNonEmpty =
+                MondrianProperties.instance().EnableNativeNonEmpty;
+        boolean nativeNonemptyCurrentState = enableNativeNonEmpty.get();
+
         try {
-            property.set(true);
+            enableNonEmptyOnAllAxes.set(true);
+            enableNativeNonEmpty.set(false);
             executeMDX();
+            if (Bug.Bug2076407Fixed) {
+                enableNativeNonEmpty.set(true);
+                executeMDX();
+            }
         } finally {
-            property.set(currentState);
+            enableNativeNonEmpty.set(nativeNonemptyCurrentState);
+            enableNonEmptyOnAllAxes.set(nonEmptyAllAxesCurrentState);
         }
     }
+
+
 
     public void testCellProperties() throws Exception {
         executeMDX();

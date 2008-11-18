@@ -49,6 +49,13 @@ public class Bug {
 
     /**
      * Whether
+     * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2076407&group_id=35302&atid=414613">bug Bug2076407Fixed, "Make Native NonEmpty consistant with MSAS"</a>
+     * is fixed.
+     */
+    public static final boolean Bug2076407Fixed = false;
+
+    /**
+     * Whether
      * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1767775&group_id=35302&atid=414613">bug 1767775, "Predicate references RolapStar.Column when used in AggStar"</a>
      * is fixed.
      */

@@ -25,16 +25,23 @@ import mondrian.rolap.sql.TupleConstraint;
  */
 public class SqlConstraintFactory {
 
-    boolean enabled = MondrianProperties.instance().EnableNativeNonEmpty.get();
+    static boolean enabled;
 
     private static final SqlConstraintFactory instance = new SqlConstraintFactory();
 
-    /** singleton */
+    /**
+     * singleton
+     */
     private SqlConstraintFactory() {
     }
 
     public static SqlConstraintFactory instance() {
+        setNativeNonEmptyValue();
         return instance;
+    }
+
+    public static void setNativeNonEmptyValue() {
+        enabled = MondrianProperties.instance().EnableNativeNonEmpty.get();
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(Evaluator context) {
@@ -45,8 +52,7 @@ public class SqlConstraintFactory {
     }
 
     public TupleConstraint getLevelMembersConstraint(Evaluator context) {
-        boolean[] satisfied = {false};
-        return getLevelMembersConstraint(context, null, satisfied);
+        return getLevelMembersConstraint(context, null);
     }
 
     /**
@@ -55,27 +61,18 @@ public class SqlConstraintFactory {
      * implemented (say if native constraints are disabled) returns null.
      *
      * @param context Context within which members must be non-empty
-     * @param levels levels being referenced in the current context
-     * @param satisfied Set to false if constraint does not satisfy non-empty
-     * context and caller still has to do it
+     * @param levels  levels being referenced in the current context
      * @return Constraint
      */
     public TupleConstraint getLevelMembersConstraint(
-        Evaluator context,
-        Level [] levels,
-        boolean[] satisfied)
-    {
+            Evaluator context,
+            Level[] levels) {
         if (context == null) {
-            satisfied[0] = true;
             return DefaultTupleConstraint.instance();
         }
         if (!enabled) {
-            // Cannot implement constraint in SQL; caller must still implement
-            // it
-            satisfied[0] = false;
             return DefaultTupleConstraint.instance();
         }
-        satisfied[0] = true;
         if (!SqlContextConstraint.isValidContext(context, false, levels)) {
             return DefaultTupleConstraint.instance();
         }
@@ -83,9 +80,8 @@ public class SqlConstraintFactory {
     }
 
     public MemberChildrenConstraint getChildByNameConstraint(
-        RolapMember parent,
-        Id.Segment childName)
-    {
+            RolapMember parent,
+            Id.Segment childName) {
         // Ragged hierarchies span multiple levels, so SQL WHERE does not work
         // there
         if (!enabled || parent.getHierarchy().isRagged()) {
@@ -105,9 +101,8 @@ public class SqlConstraintFactory {
      * @return constraint
      */
     public TupleConstraint getDescendantsConstraint(
-        List<RolapMember> parentMembers,
-        MemberChildrenConstraint mcc)
-    {
+            List<RolapMember> parentMembers,
+            MemberChildrenConstraint mcc) {
         return new DescendantsConstraint(parentMembers, mcc);
     }
 }
