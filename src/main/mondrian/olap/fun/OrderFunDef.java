@@ -42,10 +42,10 @@ class OrderFunDef extends FunDefBase {
         calcList[0] = listCalc;
         final boolean tuple = ((SetType) listCalc.getType()).getArity() != 1;
 
+        assert keySpecCount >= 1;
+        final Calc expCalc = keySpecList.get(0).getKey();
+        calcList[1] = expCalc;
         if (keySpecCount == 1) {
-            final Calc expCalc = compiler.compileScalar(call.getArg(1), true);
-            calcList[1] = expCalc;
-
             if (expCalc instanceof MemberValueCalc) {
                 MemberValueCalc memberValueCalc = (MemberValueCalc) expCalc;
                 List<MemberCalc> constantList = new ArrayList<MemberCalc>();
@@ -99,17 +99,10 @@ class OrderFunDef extends FunDefBase {
                     }
                 }
             }
-            if (tuple) {
-                return new TupleCalcImpl(
-                    call, calcList, keySpecList);
-            } else {
-                return new MemberCalcImpl(
-                    call, calcList, keySpecList);
-            }
         }
-        for (int i = 0; i < keySpecCount; i++) {
-            final Calc expCalc = keySpecList.get(i).getKey();
-            calcList[i + 1] = expCalc;
+        for (int i = 1; i < keySpecCount; i++) {
+            final Calc expCalcs = keySpecList.get(i).getKey();
+            calcList[i + 1] = expCalcs;
         }
         if (tuple) {
             return new TupleCalcImpl(call, calcList, keySpecList);

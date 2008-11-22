@@ -399,32 +399,6 @@ public class FunUtil extends Util {
         return mapMemberToValue;
     }
 
-    static Map<Member, Object> evaluateMembers(
-            Evaluator evaluator,
-            List<Member> members,
-            boolean parentsToo) {
-        Map<Member, Object> mapMemberToValue = new HashMap<Member, Object>();
-        for (int i = 0, count = members.size(); i < count; i++) {
-            Member member = members.get(i);
-            while (true) {
-                evaluator.setContext(member);
-                Object result = evaluator.evaluateCurrent();
-                mapMemberToValue.put(member, result);
-                if (!parentsToo) {
-                    break;
-                }
-                member = member.getParentMember();
-                if (member == null) {
-                    break;
-                }
-                if (mapMemberToValue.containsKey(member)) {
-                    break;
-                }
-            }
-        }
-        return mapMemberToValue;
-    }
-
     /**
      * Populates the list of maps from members to values/members.
      * Each member of the list corresponds to a sort key. Since it is
@@ -640,7 +614,7 @@ public class FunUtil extends Util {
             for (Member member : memberIter) {
                 memberList.add(member);
             }
-            if (memberList.isEmpty()) {
+            if (memberList.size() <= 1) {
                 return memberList;
             }
         }
@@ -709,6 +683,9 @@ public class FunUtil extends Util {
             tupleList = new ArrayList<Member[]>();
             for (Member[] tuple : tupleIter) {
                 tupleList.add(tuple);
+            }
+            if (tupleList.size() <= 1) {
+                return tupleList;
             }
         }
         Comparator<Member[]> comparator;
