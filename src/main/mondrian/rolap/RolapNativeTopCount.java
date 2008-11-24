@@ -14,6 +14,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import mondrian.olap.*;
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.spi.Dialect;
@@ -32,12 +33,12 @@ public class RolapNativeTopCount extends RolapNativeSet {
     }
 
     static class TopCountConstraint extends SetConstraint {
-        String orderByExpr;
+        Exp orderByExpr;
         boolean ascending;
 
         public TopCountConstraint(
             CrossJoinArg[] args, RolapEvaluator evaluator,
-            String orderByExpr, boolean ascending) {
+            Exp orderByExpr, boolean ascending) {
             super(args, evaluator, true);
             this.orderByExpr = orderByExpr;
             this.ascending = ascending;
@@ -51,25 +52,33 @@ public class RolapNativeTopCount extends RolapNativeSet {
             return true;
         }
 
-        public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
+        public void addConstraint(
+            SqlQuery sqlQuery,
+            RolapCube baseCube,
+            AggStar aggStar) {
             if (orderByExpr != null) {
+                RolapNativeSql sql = new RolapNativeSql(sqlQuery, aggStar);
+                String orderBySql = sql.generateTopCountOrderBy(orderByExpr);
                 Dialect dialect = sqlQuery.getDialect();
                 if (dialect.requiresOrderByAlias()) {
                     String alias = sqlQuery.nextColumnAlias();
                     alias = dialect.quoteIdentifier(alias);
-                    sqlQuery.addSelect(orderByExpr, alias);
+                    sqlQuery.addSelect(orderBySql, alias);
                     sqlQuery.addOrderBy(alias, ascending, true, false);
                 } else {
-                    sqlQuery.addOrderBy(orderByExpr, ascending, true, false);
+                    sqlQuery.addOrderBy(orderBySql, ascending, true, false);
                 }
             }
-            super.addConstraint(sqlQuery, baseCube);
+            super.addConstraint(sqlQuery, baseCube, aggStar);
         }
 
         public Object getCacheKey() {
             List<Object> key = new ArrayList<Object>();
             key.add(super.getCacheKey());
-            key.add(orderByExpr);
+            //Note required to use string in order for caching to work
+            if (orderByExpr != null) {
+                key.add(orderByExpr.toString());
+            }
             key.add(ascending);
             return key;
         }
@@ -121,12 +130,16 @@ public class RolapNativeTopCount extends RolapNativeSet {
         DataSource ds = schemaReader.getDataSource();
 
         // generate the ORDER BY Clause
+        // Need to generate top count order by to determine whether
+        // or not it can be created. The top count
+        // could change to use an aggregate table later in evaulation
         SqlQuery sqlQuery = SqlQuery.newQuery(ds, "NativeTopCount");
-        RolapNativeSql sql = new RolapNativeSql(sqlQuery);
-        String orderByExpr = null;
+        RolapNativeSql sql = new RolapNativeSql(sqlQuery, null);
+        Exp orderByExpr = null;
         if (args.length == 3) {
-            orderByExpr = sql.generateTopCountOrderBy(args[2]);
-            if (orderByExpr == null) {
+            orderByExpr = args[2];
+            String orderBySQL = sql.generateTopCountOrderBy(args[2]);
+            if (orderBySQL == null) {
                 return null;
             }
         }

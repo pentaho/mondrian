@@ -1168,6 +1168,149 @@ public class TestAggregationManager extends BatchTestCase {
         assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
+    public void testAggregatingTuples() {
+        if (!(MondrianProperties.instance().UseAggregates.get() &&
+                MondrianProperties.instance().ReadAggregates.get())) {
+            return;
+        }
+
+        // flush cache, to be sure sql is executed
+
+        getConnection().getCacheControl(null).flushSchemaCache();
+
+        // This first query verifies that simple collapsed levels in aggregate
+        // tables load as tuples correctly.  The collapsed levels appear
+        // in the aggregate table SQL below.
+
+        // also note that at the time of this writing, this exercising the high
+        // cardinality tuple reader
+
+        String query = "select {[Measures].[Unit Sales]} on columns, " +
+        "non empty CrossJoin({[Gender].[M]},{[Marital Status].[M]}) on rows " +
+        "from [Sales] ";
+
+        SqlPattern[] patterns = {
+                new SqlPattern(
+                    ACCESS_MYSQL,
+                    "select " +
+                    "`agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0`, " +
+                    "`agg_g_ms_pcat_sales_fact_1997`.`marital_status` as `c1` " +
+                    "from " +
+                    "`agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` " +
+                    "where " +
+                    "(`agg_g_ms_pcat_sales_fact_1997`.`gender` = 'M') " +
+                    "and (`agg_g_ms_pcat_sales_fact_1997`.`marital_status` = 'M') " +
+                    "group by " +
+                    "`agg_g_ms_pcat_sales_fact_1997`.`gender`, " +
+                    "`agg_g_ms_pcat_sales_fact_1997`.`marital_status` " +
+                    "order by " +
+                    "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), " +
+                    "`agg_g_ms_pcat_sales_fact_1997`.`gender` ASC, " +
+                    "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`marital_status`), " +
+                    "`agg_g_ms_pcat_sales_fact_1997`.`marital_status` ASC",
+                    null)
+            };
+
+        assertQuerySqlOrNot(getTestContext(), query, patterns, false, false, false);
+
+        assertQueryReturns(
+            query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}\n" +
+                "Row #0: 66,460\n"));
+
+        // This second query verifies that joined levels on aggregate tables
+        // load correctly.
+
+        String query2 = "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+            "NON EMPTY {[Store].[Store State].Members} ON ROWS " +
+            "from [Sales] where [Time].[1997].[Q1]";
+
+        SqlPattern[] patterns2 = {
+                new SqlPattern(
+                    ACCESS_MYSQL,
+                    "select " +
+                    "`store`.`store_country` as `c0`, " +
+                    "`store`.`store_state` as `c1` " +
+                    "from " +
+                    "`store` as `store`, " +
+                    "`agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997` " +
+                    "where " +
+                    "`agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id` and " +
+                    "`agg_c_14_sales_fact_1997`.`the_year` = 1997 and " +
+                    "`agg_c_14_sales_fact_1997`.`quarter` = 'Q1' " +
+                    "group by " +
+                    "`store`.`store_country`, `store`.`store_state` " +
+                    "order by " +
+                    "ISNULL(`store`.`store_country`), " +
+                    "`store`.`store_country` ASC, " +
+                    "ISNULL(`store`.`store_state`), " +
+                    "`store`.`store_state` ASC",
+                    null)
+            };
+
+        assertQuerySqlOrNot(getTestContext(), query2, patterns2, false, false, false);
+
+        assertQueryReturns(
+                 query2,
+                 fold(
+                    "Axis #0:\n" +
+                    "{[Time].[1997].[Q1]}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Store].[All Stores].[USA].[CA]}\n" +
+                    "{[Store].[All Stores].[USA].[OR]}\n" +
+                    "{[Store].[All Stores].[USA].[WA]}\n" +
+                    "Row #0: 16,890\n" +
+                    "Row #1: 19,287\n" +
+                    "Row #2: 30,114\n"));
+    }
+
+    /**
+     * this test verifies the collapsed children code in SqlMemberSource
+     */
+    public void testCollapsedChildren() {
+        if (!(MondrianProperties.instance().UseAggregates.get() &&
+                MondrianProperties.instance().ReadAggregates.get())) {
+            return;
+        }
+
+        // flush cache to be sure sql is executed
+        getConnection().getCacheControl(null).flushSchemaCache();
+
+        SqlPattern[] patterns = {
+                new SqlPattern(
+                    ACCESS_MYSQL,
+                    "select " +
+                    "`agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0` " +
+                    "from " +
+                    "`agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` " +
+                    "group by " +
+                    "`agg_g_ms_pcat_sales_fact_1997`.`gender`",
+                    null)
+            };
+
+        String query = "select non empty [Gender].[All Gender].Children on rows from [Sales]";
+
+        assertQuerySqlOrNot(getTestContext(), query, patterns, false, false, false);
+
+        assertQueryReturns(
+                query,
+                fold("Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Gender].[All Gender].[F]}\n" +
+                    "{[Gender].[All Gender].[M]}\n" +
+                    "Row #0: 131,558\n" +
+                    "Row #0: 135,215\n"));
+    }
+
 }
 
 // End TestAggregationManager.java

@@ -11,6 +11,9 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
+import mondrian.rolap.agg.AggregationManager;
+import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.util.*;
@@ -283,141 +286,117 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                 + targets;
         SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, s);
 
+        Evaluator evaluator = getEvaluator(constraint);
+        AggStar aggStar = chooseAggStar(evaluator);
+
         for (Target target : targets) {
             if (target.getSrcMembers() == null) {
                 addLevelMemberSql(
                     sqlQuery,
                     target.getLevel(),
                     baseCube,
-                    whichSelect);
+                    whichSelect,
+                    aggStar);
             }
         }
 
         // additional constraints
-        constraint.addConstraint(sqlQuery, baseCube);
+        constraint.addConstraint(sqlQuery, baseCube, aggStar);
 
         return sqlQuery.toString();
     }
 
     /**
-     * Generates the SQL statement to access members of <code>level</code>. For
-     * example, <blockquote>
-     * <pre>SELECT "country", "state_province", "city"
-     * FROM "customer"
-     * GROUP BY "country", "state_province", "city", "init", "bar"
-     * ORDER BY "country", "state_province", "city"</pre>
-     * </blockquote> accesses the "City" level of the "Customers"
-     * hierarchy. Note that:<ul>
-     *
-     * <li><code>"country", "state_province"</code> are the parent keys;</li>
-     *
-     * <li><code>"city"</code> is the level key;</li>
-     *
-     * <li><code>"init", "bar"</code> are member properties.</li>
-     * </ul>
-     *
-     * @param sqlQuery the query object being constructed
-     * @param level level to be added to the sql query
-     * @param baseCube this is the cube object for regular cubes, and the
-     *   underlying base cube for virtual cubes
-     * @param whichSelect describes whether this select belongs to a larger
-     * select containing unions or this is a non-union select
+     * Obtain the AggStar instance which corresponds to an aggregate table
+     * which can be used to support the member constraint
+     * @param evaluator the current evaluator to obtain the cube and members to be queried
+     * @return AggStar for aggregate table
      */
-    private void addLevelMemberSql(
-        SqlQuery sqlQuery,
-        RolapLevel level,
-        RolapCube baseCube,
-        WhichSelect whichSelect)
-    {
-        RolapHierarchy hierarchy = level.getHierarchy();
+    private AggStar chooseAggStar(Evaluator evaluator) {
+        if (evaluator == null) {
+            return null;
+        }
 
-        // lookup RolapHierarchy of base cube that matches this hierarchy
-        if (hierarchy instanceof RolapCubeHierarchy) {
-            RolapCubeHierarchy cubeHierarchy = (RolapCubeHierarchy)hierarchy;
-            if (baseCube != null
-                && !cubeHierarchy.getDimension().getCube().equals(baseCube)) {
-                hierarchy = baseCube.findBaseCubeHierarchy(hierarchy);
+        // Current cannot support aggregate tables for virtual cubes
+        RolapCube cube = (RolapCube) evaluator.getCube();
+        if (cube.isVirtual()) {
+            return null;
+        }
+
+        RolapStar star = cube.getStar();
+        final int starColumnCount = star.getColumnCount();
+        BitKey measureBitKey = BitKey.Factory.makeBitKey(starColumnCount);
+        BitKey levelBitKey = BitKey.Factory.makeBitKey(starColumnCount);
+
+        // Convert global ordinal to cube based ordinal (the 0th dimension
+        // is always [Measures]). In the case of filter constraint this will
+        // be the measure on which the filter will be done.
+        final Member[] members = evaluator.getMembers();
+
+        // if measure is calculated, we can't continue
+        if (!(members[0] instanceof RolapBaseCubeMeasure)) {
+            return null;
+        }
+
+        RolapBaseCubeMeasure measure = (RolapBaseCubeMeasure)members[0];
+
+        int bitPosition = ((RolapStar.Measure)measure.getStarMeasure()).getBitPosition();
+
+        // set a bit for each level which is constrained in the context
+        final CellRequest request =
+            RolapAggregationManager.makeRequest(members);
+        if (request == null) {
+            // One or more calculated members. Cannot use agg table.
+            return null;
+        }
+        // TODO: RME why is this using the array of constrained columns
+        // from the CellRequest rather than just the constrained columns
+        // BitKey (method getConstrainedColumnsBitKey)?
+        RolapStar.Column[] columns = request.getConstrainedColumns();
+        for (RolapStar.Column column1 : columns) {
+            levelBitKey.set(column1.getBitPosition());
+        }
+
+        // set the masks
+        for (Target target : targets) {
+            RolapLevel level = target.getLevel();
+            if (!level.isAll()) {
+                RolapStar.Column column = ((RolapCubeLevel)level).getStarKeyColumn();
+                levelBitKey.set(column.getBitPosition());
             }
         }
 
-        RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
-        int levelDepth = level.getDepth();
-        for (int i = 0; i <= levelDepth; i++) {
-            RolapLevel currLevel = levels[i];
-            if (currLevel.isAll()) {
-                continue;
-            }
+        measureBitKey.set(bitPosition);
 
-            MondrianDef.Expression keyExp = currLevel.getKeyExp();
-            MondrianDef.Expression ordinalExp = currLevel.getOrdinalExp();
-            MondrianDef.Expression captionExp = currLevel.getCaptionExp();
+        // find the aggstar using the masks
+        AggStar aggStar = AggregationManager.instance().findAgg(
+            star, levelBitKey, measureBitKey, new boolean[]{ false });
 
-            String keySql = keyExp.getExpression(sqlQuery);
-            String ordinalSql = ordinalExp.getExpression(sqlQuery);
+        if (aggStar == null) {
+            return null;
+        }
 
-            hierarchy.addToFrom(sqlQuery, keyExp);
-            hierarchy.addToFrom(sqlQuery, ordinalExp);
+        // determine if any collapsed levels contain more than one column, if
+        // so, the aggStar is not compatible.
+        //
+        // In the future, this feature could be improved by:
+        // 1. changing the sql generation to join the collapsed level to its
+        // dimension table(s) to select the additional columns.
+        // 2. Create members that are missing these values and populate the
+        // values at a later time.
+        // 3. extend agg tables to support additional level columns
 
-            String captionSql = null;
-            if (captionExp != null) {
-                captionSql = captionExp.getExpression(sqlQuery);
-                hierarchy.addToFrom(sqlQuery, captionExp);
-            }
-
-            sqlQuery.addSelectGroupBy(keySql);
-
-            if (!ordinalSql.equals(keySql)) {
-                sqlQuery.addSelectGroupBy(ordinalSql);
-            }
-
-            if (captionSql != null) {
-                sqlQuery.addSelectGroupBy(captionSql);
-            }
-
-            constraint.addLevelConstraint(sqlQuery, baseCube, null, currLevel);
-
-            // If this is a select on a virtual cube, the query will be
-            // a union, so the order by columns need to be numbers,
-            // not column name strings or expressions.
-            switch (whichSelect) {
-            case LAST:
-                sqlQuery.addOrderBy(
-                    Integer.toString(
-                        sqlQuery.getCurrentSelectListSize()),
-                        true, false, true);
-                break;
-            case ONLY:
-                sqlQuery.addOrderBy(ordinalSql, true, false, true);
-                break;
-            }
-
-            RolapProperty[] properties = currLevel.getProperties();
-            for (RolapProperty property : properties) {
-                String propSql = property.getExp().getExpression(sqlQuery);
-                sqlQuery.addSelectGroupBy(propSql);
+        for (Target target : targets) {
+            RolapLevel level = target.getLevel();
+            if (!level.isAll()) {
+                if (isLevelCollapsed(aggStar, (RolapCubeLevel)level) &&
+                    levelContainsMultipleColumns(level)) {
+                    return null;
+                }
             }
         }
-    }
 
-    /**
-     * Description of the position of a SELECT statement in a UNION. Queries
-     * on virtual cubes tend to generate unions.
-     */
-    enum WhichSelect {
-        /**
-         * Select statement does not belong to a union.
-         */
-        ONLY,
-        /**
-         * Select statement belongs to a UNION, but is not the last. Typically
-         * this occurs when querying a virtual cube.
-         */
-        NOT_LAST,
-        /**
-         * Select statement is the last in a UNION. Typically
-         * this occurs when querying a virtual cube.
-         */
-        LAST
+        return aggStar;
     }
 }
 

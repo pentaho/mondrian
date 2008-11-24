@@ -29,7 +29,10 @@ public class DefaultTupleConstraint implements TupleConstraint {
     protected DefaultTupleConstraint() {
     }
 
-    public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
+    public void addConstraint(
+            SqlQuery sqlQuery,
+            RolapCube baseCube,
+            AggStar aggStar) {
     }
 
     public void addLevelConstraint(

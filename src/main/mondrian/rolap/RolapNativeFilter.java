@@ -16,6 +16,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import mondrian.olap.*;
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
 
@@ -33,11 +34,11 @@ public class RolapNativeFilter extends RolapNativeSet {
     }
 
     static class FilterConstraint extends SetConstraint {
-        String filterExpr;
+        Exp filterExpr;
 
-        public FilterConstraint(CrossJoinArg[] args, RolapEvaluator evaluator, String filterByExpr) {
+        public FilterConstraint(CrossJoinArg[] args, RolapEvaluator evaluator, Exp filterExpr) {
             super(args, evaluator, true);
-            this.filterExpr = filterByExpr;
+            this.filterExpr = filterExpr;
         }
 
         /**
@@ -48,15 +49,24 @@ public class RolapNativeFilter extends RolapNativeSet {
             return true;
         }
 
-        public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
-            sqlQuery.addHaving(filterExpr);
-            super.addConstraint(sqlQuery, baseCube);
+        public void addConstraint(
+            SqlQuery sqlQuery,
+            RolapCube baseCube,
+            AggStar aggStar) {
+            // Use aggregate table to generate filter condition
+            RolapNativeSql sql = new RolapNativeSql(sqlQuery, aggStar);
+            String filterSql =  sql.generateFilterCondition(filterExpr);
+            sqlQuery.addHaving(filterSql);
+            super.addConstraint(sqlQuery, baseCube, aggStar);
         }
 
         public Object getCacheKey() {
             List<Object> key = new ArrayList<Object>();
             key.add(super.getCacheKey());
-            key.add(filterExpr);
+            // Note required to use string in order for caching to work
+            if (filterExpr != null) {
+                key.add(filterExpr.toString());
+            }
             return key;
         }
     }
@@ -96,8 +106,11 @@ public class RolapNativeFilter extends RolapNativeSet {
         DataSource ds = schemaReader.getDataSource();
 
         // generate the WHERE condition
+        // Need to generate where condition here to determine whether
+        // or not the filter condition can be created. The filter
+        // condition could change to use an aggregate table later in evaulation
         SqlQuery sqlQuery = SqlQuery.newQuery(ds, "NativeFilter");
-        RolapNativeSql sql = new RolapNativeSql(sqlQuery);
+        RolapNativeSql sql = new RolapNativeSql(sqlQuery, null);
         String filterExpr = sql.generateFilterCondition(args[1]);
         if (filterExpr == null) {
             return null;
@@ -114,7 +127,7 @@ public class RolapNativeFilter extends RolapNativeSet {
 
         evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
 
-        TupleConstraint constraint = new FilterConstraint(cargs, evaluator, filterExpr);
+        TupleConstraint constraint = new FilterConstraint(cargs, evaluator, args[1]);
         return new SetEvaluator(cargs, schemaReader, constraint);
     }
 

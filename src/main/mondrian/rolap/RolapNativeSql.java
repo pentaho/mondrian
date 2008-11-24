@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mondrian.olap.*;
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.mdx.MemberExpr;
 import mondrian.spi.Dialect;
@@ -33,6 +34,7 @@ public class RolapNativeSql {
     CompositeSqlCompiler booleanCompiler;
 
     RolapStoredMeasure storedMeasure;
+    AggStar aggStar;
 
     /**
      * We remember one of the measures so we can generate
@@ -166,7 +168,19 @@ public class RolapNativeSql {
             if (!saveStoredMeasure(measure)) {
                 return null;
             }
-            String exprInner = measure.getMondrianDefExpression().getExpression(sqlQuery);
+
+            String exprInner;
+            // Use aggregate table to create condition if available
+            if (aggStar != null &&
+                    measure.getStarMeasure() instanceof RolapStar.Column) {
+                RolapStar.Column column = (RolapStar.Column) measure.getStarMeasure();
+                int bitPos = column.getBitPosition();
+                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                exprInner = aggColumn.generateExprString(sqlQuery);
+            } else {
+                exprInner = measure.getMondrianDefExpression().getExpression(sqlQuery);
+            }
+
             String expr = measure.getAggregator().getExpression(exprInner);
             if (dialect.getDatabaseProduct().getFamily()
                 == Dialect.DatabaseProduct.DB2) {
@@ -431,9 +445,10 @@ public class RolapNativeSql {
      * creates a new instance
      * @param sqlQuery the query which is needed for differen SQL dialects - its not modified.
      */
-    RolapNativeSql(SqlQuery sqlQuery) {
+    RolapNativeSql(SqlQuery sqlQuery, AggStar aggStar) {
         this.sqlQuery = sqlQuery;
         this.dialect = sqlQuery.getDialect();
+        this.aggStar = aggStar;
 
         numericCompiler = new CompositeSqlCompiler();
         booleanCompiler = new CompositeSqlCompiler();

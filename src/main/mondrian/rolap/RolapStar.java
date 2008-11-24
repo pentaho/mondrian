@@ -1619,8 +1619,9 @@ public class RolapStar {
         }
 
         synchronized void makeMeasure(RolapBaseCubeMeasure measure) {
-            assert lookupMeasureByName(
-                measure.getCube().getName(), measure.getName()) == null;
+            // Remove assertion to allow cube to be recreated
+            // assert lookupMeasureByName(
+            //    measure.getCube().getName(), measure.getName()) == null;
             RolapStar.Measure starMeasure = new RolapStar.Measure(
                 measure.getName(),
                 measure.getCube().getName(),

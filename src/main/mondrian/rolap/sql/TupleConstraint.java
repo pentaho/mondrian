@@ -31,9 +31,13 @@ public interface TupleConstraint extends SqlConstraint {
      * Modifies a Level.Members query.
      *
      * @param sqlQuery the query to modify
+     * @param aggStar aggregate star to use
      * @param baseCube base cube for virtual cube constraints
      */
-    public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube);
+    public void addConstraint(
+            SqlQuery sqlQuery,
+            RolapCube baseCube,
+            AggStar aggStar);
 
     /**
      * Will be called multiple times for every "group by" level in

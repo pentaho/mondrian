@@ -13,6 +13,7 @@ import java.util.*;
 import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
@@ -77,8 +78,11 @@ public abstract class RolapNativeSet extends RolapNative {
             return args.length > 1 || super.isJoinRequired();
         }
 
-        public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
-            super.addConstraint(sqlQuery, baseCube);
+        public void addConstraint(
+                SqlQuery sqlQuery,
+                RolapCube baseCube,
+                AggStar aggStar) {
+            super.addConstraint(sqlQuery, baseCube, aggStar);
             for (CrossJoinArg arg : args) {
                 // if the cross join argument has calculated members in its
                 // enumerated set, ignore the constraint since we won't
@@ -86,7 +90,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 // will simply enumerate through the members in the set
                 if (!(arg instanceof MemberListCrossJoinArg) ||
                     !((MemberListCrossJoinArg) arg).hasCalcMembers()) {
-                    arg.addConstraint(sqlQuery, baseCube);
+                    arg.addConstraint(sqlQuery, baseCube, aggStar);
                 }
             }
         }
@@ -267,7 +271,10 @@ public abstract class RolapNativeSet extends RolapNative {
 
         List<RolapMember> getMembers();
 
-        void addConstraint(SqlQuery sqlQuery, RolapCube baseCube);
+        void addConstraint(
+                SqlQuery sqlQuery,
+                RolapCube baseCube,
+                AggStar aggStar);
 
         boolean isPreferInterpreter(boolean joinArg);
     }
@@ -305,10 +312,13 @@ public abstract class RolapNativeSet extends RolapNative {
             return list;
         }
 
-        public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
+        public void addConstraint(
+                SqlQuery sqlQuery,
+                RolapCube baseCube,
+                AggStar aggStar) {
             if (member != null) {
                 SqlConstraintUtils.addMemberConstraint(
-                    sqlQuery, baseCube, null, member, true);
+                    sqlQuery, baseCube, aggStar, member, true);
             }
         }
 
@@ -504,9 +514,12 @@ public abstract class RolapNativeSet extends RolapNative {
             }
         }
 
-        public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
+        public void addConstraint(
+                SqlQuery sqlQuery,
+                RolapCube baseCube,
+                AggStar aggStar) {
             SqlConstraintUtils.addMemberConstraint(
-                sqlQuery, baseCube, null,
+                sqlQuery, baseCube, aggStar,
                 members, restrictMemberTypes, true);
         }
 

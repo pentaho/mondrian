@@ -1519,6 +1519,13 @@ public class NonEmptyTest extends BatchTestCase {
                         "order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC, ISNULL(`store`.`store_state`), `store`.`store_state` ASC, " +
                         "ISNULL(`store`.`store_city`), `store`.`store_city` ASC, ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
 
+        if (MondrianProperties.instance().UseAggregates.get() &&
+                MondrianProperties.instance().ReadAggregates.get()) {
+            // slightly different sql expected, uses agg table now for join
+            necjSqlMySql = necjSqlMySql.replaceAll("sales_fact_1997", "agg_c_14_sales_fact_1997");
+            necjSqlDerby = necjSqlDerby.replaceAll("sales_fact_1997", "agg_c_14_sales_fact_1997");
+        }
+
         SqlPattern[] patterns =
                 new SqlPattern[]{
                         new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),

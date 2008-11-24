@@ -291,6 +291,7 @@ public class SqlConstraintUtils {
                 constrainMultiLevelMembers(
                     sqlQuery,
                     baseCube,
+                    aggStar,
                     members,
                     firstUniqueParentLevel,
                     restrictMemberTypes);
@@ -299,6 +300,7 @@ public class SqlConstraintUtils {
                 generateSingleValueInExpr(
                     sqlQuery,
                     baseCube,
+                    aggStar,
                     members,
                     firstUniqueParentLevel,
                     restrictMemberTypes);
@@ -349,6 +351,7 @@ public class SqlConstraintUtils {
      *
      * @param sqlQuery query containing the where clause
      * @param baseCube base cube if virtual
+     * @param aggStar aggregate star if available
      * @param members list of constraining members
      * @param fromLevel lowest parent level that is unique
      * @param restrictMemberTypes defines the behavior when calculated members
@@ -360,6 +363,7 @@ public class SqlConstraintUtils {
     private static String constrainMultiLevelMembers(
         SqlQuery sqlQuery,
         RolapCube baseCube,
+        AggStar aggStar,
         List<RolapMember> members,
         RolapLevel fromLevel,
         boolean restrictMemberTypes)
@@ -375,6 +379,7 @@ public class SqlConstraintUtils {
                 generateMultiValueInExpr(
                     sqlQuery,
                     baseCube,
+                    aggStar,
                     members,
                     fromLevel,
                     restrictMemberTypes,
@@ -486,9 +491,17 @@ public class SqlConstraintUtils {
                     }
 
                     if (column != null) {
-                        RolapStar.Table targetTable = column.getTable();
-                        hierarchy.addToFrom(sqlQuery, targetTable);
+                        if (aggStar != null) {
+                            int bitPos = column.getBitPosition();
+                            AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                            AggStar.Table table = aggColumn.getTable();
+                            table.addToFrom(sqlQuery, false, true);
+                        } else {
+                            RolapStar.Table targetTable = column.getTable();
+                            hierarchy.addToFrom(sqlQuery, targetTable);
+                        }
                     } else {
+                        assert (aggStar == null);
                         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
                     }
                 }
@@ -503,6 +516,7 @@ public class SqlConstraintUtils {
                         level,
                         sqlQuery,
                         baseCube,
+                        aggStar,
                         getColumnValue(
                             gp.getKey(),
                             sqlQuery.getDialect(),
@@ -536,6 +550,7 @@ public class SqlConstraintUtils {
                         generateMultiValueInExpr(
                             sqlQuery,
                             baseCube,
+                            aggStar,
                             children,
                             childrenLevel,
                             restrictMemberTypes,
@@ -551,6 +566,7 @@ public class SqlConstraintUtils {
                         generateSingleValueInExpr(
                             sqlQuery,
                             baseCube,
+                            aggStar,
                             children,
                             childrenLevel,
                             restrictMemberTypes));
@@ -619,6 +635,7 @@ public class SqlConstraintUtils {
      * @param level the level
      * @param query the query that the sql expression will be added to
      * @param baseCube base cube for virtual levels
+     * @param aggStar aggregate star if available
      * @param columnValue value constraining the level
      * @param caseSensitive if true, need to handle case sensitivity of the
      * member value
@@ -629,6 +646,7 @@ public class SqlConstraintUtils {
         RolapLevel level,
         SqlQuery query,
         RolapCube baseCube,
+        AggStar aggStar,
         String columnValue,
         boolean caseSensitive)
     {
@@ -652,8 +670,17 @@ public class SqlConstraintUtils {
                 // we presume that it is a string.
                 datatype = Dialect.Datatype.String;
             }
-            columnString = column.generateExprString(query);
+            if (aggStar != null) {
+                // this makes the assumption that the name column is the same
+                // as the key column
+                int bitPos = column.getBitPosition();
+                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                columnString = aggColumn.generateExprString(query);
+            } else {
+                columnString = column.generateExprString(query);
+            }
         } else {
+            assert (aggStar == null);
             MondrianDef.Expression exp = level.getNameExp();
             if (exp == null) {
                 exp = level.getKeyExp();
@@ -702,6 +729,7 @@ public class SqlConstraintUtils {
      *
      * @param sqlQuery query containing the where clause
      * @param baseCube base cube if virtual
+     * @param aggStar aggregate star if available
      * @param members list of constraining members
      * @param fromLevel lowest parent level that is unique
      * @param restrictMemberTypes defines the behavior when calculated members are present
@@ -712,6 +740,7 @@ public class SqlConstraintUtils {
     private static String generateMultiValueInExpr(
         SqlQuery sqlQuery,
         RolapCube baseCube,
+        AggStar aggStar,
         List<RolapMember> members,
         RolapLevel fromLevel,
         boolean restrictMemberTypes,
@@ -742,15 +771,26 @@ public class SqlConstraintUtils {
 
             String columnString;
             if (column != null) {
-                RolapStar.Table targetTable = column.getTable();
-                hierarchy.addToFrom(sqlQuery, targetTable);
+                if (aggStar != null) {
+                    // this assumes that the name column is identical to the
+                    // id column
+                    int bitPos = column.getBitPosition();
+                    AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                    AggStar.Table table = aggColumn.getTable();
+                    table.addToFrom(sqlQuery, false, true);
+                    columnString = aggColumn.generateExprString(sqlQuery);
+                } else {
+                    RolapStar.Table targetTable = column.getTable();
+                    hierarchy.addToFrom(sqlQuery, targetTable);
 
-                RolapStar.Column nameColumn = column.getNameColumn();
-                if (nameColumn == null) {
-                    nameColumn = column;
+                    RolapStar.Column nameColumn = column.getNameColumn();
+                    if (nameColumn == null) {
+                        nameColumn = column;
+                    }
+                    columnString = nameColumn.generateExprString(sqlQuery);
                 }
-                columnString = nameColumn.generateExprString(sqlQuery);
             } else {
+                assert (aggStar == null);
                 hierarchy.addToFrom(sqlQuery, level.getKeyExp());
 
                 MondrianDef.Expression nameExp = level.getNameExp();
@@ -873,6 +913,7 @@ public class SqlConstraintUtils {
      *
      * @param sqlQuery query containing the where clause
      * @param baseCube base cube if virtual
+     * @param aggStar aggregate star if available
      * @param members list of constraining members
      * @param fromLevel lowest parent level that is unique
      * @param restrictMemberTypes defines the behavior when calculated members are present
@@ -881,6 +922,7 @@ public class SqlConstraintUtils {
     private static String generateSingleValueInExpr(
         SqlQuery sqlQuery,
         RolapCube baseCube,
+        AggStar aggStar,
         List<RolapMember> members,
         RolapLevel fromLevel,
         boolean restrictMemberTypes)
@@ -918,16 +960,26 @@ public class SqlConstraintUtils {
                 column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
             }
 
-            StarColumnPredicate cc = getColumnPredicates(column, c);
             String q;
             if (column != null) {
-                RolapStar.Table targetTable = column.getTable();
-                hierarchy.addToFrom(sqlQuery, targetTable);
-                q = column.generateExprString(sqlQuery);
+                if (aggStar != null) {
+                    int bitPos = column.getBitPosition();
+                    AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                    AggStar.Table table = aggColumn.getTable();
+                    table.addToFrom(sqlQuery, false, true);
+                    q = aggColumn.generateExprString(sqlQuery);
+                } else {
+                    RolapStar.Table targetTable = column.getTable();
+                    hierarchy.addToFrom(sqlQuery, targetTable);
+                    q = column.generateExprString(sqlQuery);
+                }
             } else {
+                assert (aggStar == null);
                 hierarchy.addToFrom(sqlQuery, level.getKeyExp());
                 q = level.getKeyExp().getExpression(sqlQuery);
             }
+
+            StarColumnPredicate cc = getColumnPredicates(column, c);
 
             if (!dialect.supportsUnlimitedValueList() &&
                 cc instanceof ListColumnPredicate &&

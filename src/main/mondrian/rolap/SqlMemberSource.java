@@ -13,6 +13,7 @@
 
 package mondrian.rolap;
 
+import mondrian.gui.MondrianGuiDef.AggTable;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.sql.*;
@@ -546,33 +547,50 @@ RME is this right
         constraint.addMemberConstraint(sqlQuery, null, aggStar, member);
 
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
-        hierarchy.addToFrom(sqlQuery, level.getKeyExp());
-        String q = level.getKeyExp().getExpression(sqlQuery);
-        sqlQuery.addSelectGroupBy(q);
 
-        // in non empty mode the level table must be joined to the fact table
-        constraint.addLevelConstraint(sqlQuery, null, aggStar, level);
+        boolean collapsedLevel = (aggStar != null) &&
+                        isLevelCollapsed(aggStar, (RolapCubeLevel)level);
 
-        if (level.hasCaptionColumn()) {
-            MondrianDef.Expression captionExp = level.getCaptionExp();
-            hierarchy.addToFrom(sqlQuery, captionExp);
-            String captionSql = captionExp.getExpression(sqlQuery);
-            sqlQuery.addSelectGroupBy(captionSql);
-        }
+        if (!collapsedLevel) {
+            hierarchy.addToFrom(sqlQuery, level.getKeyExp());
+            String q = level.getKeyExp().getExpression(sqlQuery);
+            sqlQuery.addSelectGroupBy(q);
 
-        hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
-        String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
-        sqlQuery.addOrderBy(orderBy, true, false, true);
-        if (!orderBy.equals(q)) {
-            sqlQuery.addSelectGroupBy(orderBy);
-        }
+            // in non empty mode the level table must be joined to the fact table
+            constraint.addLevelConstraint(sqlQuery, null, aggStar, level);
 
-        RolapProperty[] properties = level.getProperties();
-        for (RolapProperty property : properties) {
-            final MondrianDef.Expression exp = property.getExp();
-            hierarchy.addToFrom(sqlQuery, exp);
-            final String s = exp.getExpression(sqlQuery);
-            sqlQuery.addSelectGroupBy(s);
+            if (level.hasCaptionColumn()) {
+                MondrianDef.Expression captionExp = level.getCaptionExp();
+                hierarchy.addToFrom(sqlQuery, captionExp);
+                String captionSql = captionExp.getExpression(sqlQuery);
+                sqlQuery.addSelectGroupBy(captionSql);
+            }
+
+            hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
+            String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
+            sqlQuery.addOrderBy(orderBy, true, false, true);
+            if (!orderBy.equals(q)) {
+                sqlQuery.addSelectGroupBy(orderBy);
+            }
+
+            RolapProperty[] properties = level.getProperties();
+            for (RolapProperty property : properties) {
+                final MondrianDef.Expression exp = property.getExp();
+                hierarchy.addToFrom(sqlQuery, exp);
+                final String s = exp.getExpression(sqlQuery);
+                sqlQuery.addSelectGroupBy(s);
+            }
+        } else {
+            // an earlier check was made in getAggStar() to verify
+            // that this is a single column level, so there is no
+
+            RolapStar.Column starColumn =
+                ((RolapCubeLevel)level).getStarKeyColumn();
+            int bitPos = starColumn.getBitPosition();
+            AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+            String q = aggColumn.generateExprString(sqlQuery);
+            sqlQuery.addSelectGroupBy(q);
+            aggColumn.getTable().addToFrom(sqlQuery, false, true);
         }
         return sqlQuery.toString();
     }
@@ -597,7 +615,16 @@ RME is this right
         // Convert global ordinal to cube based ordinal (the 0th dimension
         // is always [Measures])
         final Member[] members = evaluator.getMembers();
-        Member measure = members[0];
+
+        // if measure is calculated, we can't continue
+        if (!(members[0] instanceof RolapBaseCubeMeasure)) {
+            return null;
+        }
+        RolapBaseCubeMeasure measure = (RolapBaseCubeMeasure)members[0];
+        // we need to do more than this!  we need the rolap star ordinal, not the rolap cube
+
+        int bitPosition = ((RolapStar.Measure)measure.getStarMeasure()).getBitPosition();
+
         int ordinal = measure.getOrdinal();
 
         // childLevel will always end up being a RolapCubeLevel, but the API
@@ -629,11 +656,83 @@ RME is this right
 
         // set the masks
         levelBitKey.set(column.getBitPosition());
-        measureBitKey.set(ordinal);
+        measureBitKey.set(bitPosition);
 
         // find the aggstar using the masks
-        return AggregationManager.instance().findAgg(
+        AggStar aggStar = AggregationManager.instance().findAgg(
                 star, levelBitKey, measureBitKey, new boolean[]{ false });
+
+        if (aggStar == null) {
+            return null;
+        }
+
+        // verify that the selected member level can fully populate the
+        // member objects
+
+        if (!childLevel.isAll()) {
+            if (isLevelCollapsed(aggStar, (RolapCubeLevel)childLevel) &&
+                levelContainsMultipleColumns(childLevel)) {
+                return null;
+            }
+        }
+
+        return aggStar;
+    }
+
+    /**
+     * Determine if a level contains more than a single column for its
+     * data, such as an ordinal column or property column
+     *
+     * @param level the level to check
+     * @return true if multiple relational columns are involved in this level
+     */
+    private static boolean levelContainsMultipleColumns(RolapLevel level) {
+        MondrianDef.Expression keyExp = level.getKeyExp();
+        MondrianDef.Expression ordinalExp = level.getOrdinalExp();
+        MondrianDef.Expression captionExp = level.getCaptionExp();
+
+        if (!keyExp.equals(ordinalExp)) {
+            return true;
+        }
+
+        if (captionExp != null && !keyExp.equals(captionExp)) {
+            return true;
+        }
+
+        RolapProperty[] properties = level.getProperties();
+        for (RolapProperty property : properties) {
+            if (!property.getExp().equals(keyExp)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine if the given aggregate table has the dimension level
+     * specified within in (AggStar.FactTable) it, aka collapsed,
+     * or associated with foreign keys (AggStar.DimTable)
+     *
+     * @param aggStar aggregate star if exists
+     * @param level level
+     * @return true if agg table has level or not
+     */
+    private static boolean isLevelCollapsed(
+            AggStar aggStar,
+            RolapCubeLevel level)
+    {
+        boolean levelCollapsed = false;
+        if (level.isAll()) {
+            return levelCollapsed;
+        }
+        RolapStar.Column starColumn = level.getStarKeyColumn();
+        int bitPos = starColumn.getBitPosition();
+        AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+        if (aggColumn.getTable() instanceof AggStar.FactTable) {
+            levelCollapsed = true;
+        }
+        return levelCollapsed;
     }
 
     public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children) {

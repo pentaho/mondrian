@@ -229,8 +229,11 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         }
         Evaluator e = evaluator.push(parent);
         SqlConstraintUtils.addContextConstraint(sqlQuery, aggStar, e, strict);
-        SqlConstraintUtils.addMemberConstraint(
-                sqlQuery, baseCube, aggStar, parent, true);
+
+        // comment out addMemberConstraint here since constraint
+        // is already added by addContextConstraint
+        // SqlConstraintUtils.addMemberConstraint(
+        //        sqlQuery, baseCube, aggStar, parent, true);
     }
 
     /**
@@ -253,9 +256,13 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      * Called from LevelMembers: restricts the SQL resultset to the current
      * context.
      */
-    public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
+    public void addConstraint(
+            SqlQuery sqlQuery,
+            RolapCube baseCube,
+            AggStar aggStar)
+    {
         SqlConstraintUtils.addContextConstraint(
-            sqlQuery, null, evaluator, strict);
+            sqlQuery, aggStar, evaluator, strict);
     }
 
     /**

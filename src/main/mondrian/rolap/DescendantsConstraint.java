@@ -42,8 +42,12 @@ class DescendantsConstraint implements TupleConstraint {
         this.mcc = mcc;
     }
 
-    public void addConstraint(SqlQuery sqlQuery, RolapCube baseCube) {
-        mcc.addMemberConstraint(sqlQuery, baseCube, null, parentMembers);
+    public void addConstraint(
+        SqlQuery sqlQuery,
+        RolapCube baseCube,
+        AggStar aggStar)
+    {
+        mcc.addMemberConstraint(sqlQuery, baseCube, aggStar, parentMembers);
     }
 
     public void addLevelConstraint(
