@@ -6349,6 +6349,38 @@ public class FunctionTest extends FoodMartTestCase {
                 "Row #0: 75\n"));
     }
 
+    public void testOrderKeyEmpty() {
+        String query =
+            "select \n" +
+            "  Order(" +
+            "    {}," +
+            "    [Customers].currentMember.OrderKey, BDESC) \n" +
+            "on 0 from [Sales]";
+
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n"));
+    }
+
+    public void testOrderKeyOne() {
+        String query =
+            "select \n" +
+            "  Order(" +
+            "    {[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}," +
+            "    [Customers].currentMember.OrderKey, BDESC) \n" +
+            "on 0 from [Sales]";
+
+        assertQueryReturns(query,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n" +
+                "Row #0: 75\n"));
+    }
+
     public void testOrderMemberMemberValueExpNew() {
         String query =
             "select \n" +

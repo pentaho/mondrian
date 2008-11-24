@@ -552,7 +552,7 @@ public class FunUtil extends Util {
         boolean desc,
         boolean brk)
     {
-        if (memberList != null && memberList.isEmpty()) {
+        if ((memberList != null) && (memberList.size() <= 1)) {
             return memberList;
         }
         Map<Member, Object> mapMemberToValue;
@@ -603,7 +603,7 @@ public class FunUtil extends Util {
         List<Member> memberList,
         List<SortKeySpec> keySpecList)
     {
-        if (memberList != null && memberList.isEmpty()) {
+        if ((memberList != null) && (memberList.size() <= 1)) {
             return memberList;
         }
         ComparatorChain chainedComp = new ComparatorChain();
@@ -671,7 +671,7 @@ public class FunUtil extends Util {
         boolean brk,
         int arity)
     {
-        if (tupleList != null && tupleList.isEmpty()) {
+        if ((tupleList != null) && (tupleList.size() <= 1)) {
             return tupleList;
         }
 
@@ -730,7 +730,7 @@ public class FunUtil extends Util {
         List<SortKeySpec> keySpecList,
         int arity)
     {
-        if (tupleList != null && tupleList.isEmpty()) {
+        if ((tupleList != null) && (tupleList.size() <= 1)) {
             return tupleList;
         }
         ComparatorChain chainedComp = new ComparatorChain();
@@ -741,7 +741,7 @@ public class FunUtil extends Util {
             for (Member[] tuple : tupleIter) {
                 tupleList.add(tuple);
             }
-            if (tupleList.isEmpty()) {
+            if (tupleList.size() <= 1) {
                 return tupleList;
             }
         }
