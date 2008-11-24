@@ -65,6 +65,7 @@ public class TestContext {
      * {@link #getFoodMartConnection}.
      */
     private Connection foodMartConnection;
+    private Dialect dialect;
 
     protected static final String nl = Util.nl;
     private static final String lineBreak = "\"," + nl + "\"";
@@ -914,7 +915,14 @@ public class TestContext {
         return string;
     }
 
-    public Dialect getDialect() {
+    public synchronized Dialect getDialect() {
+        if (dialect == null) {
+            dialect = getDialectInternal();
+        }
+        return dialect;
+    }
+
+    private Dialect getDialectInternal() {
         java.sql.Connection connection = null;
         try {
             DataSource dataSource = getConnection().getDataSource();

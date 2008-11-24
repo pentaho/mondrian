@@ -26,11 +26,11 @@ import java.sql.Date;
 public class JdbcDialectImpl implements Dialect {
     private final String quoteIdentifierString;
     private final String productName;
-    private final String productVersion;
+    protected final String productVersion;
     private final Set<List<Integer>> supportedResultSetTypes;
     private final boolean readOnly;
     private final int maxColumnNameLength;
-    private final DatabaseProduct databaseProduct;
+    protected final DatabaseProduct databaseProduct;
 
     private static final int[] RESULT_SET_TYPE_VALUES = {
         ResultSet.TYPE_FORWARD_ONLY,
@@ -84,7 +84,9 @@ public class JdbcDialectImpl implements Dialect {
 
     /**
      * Creates a {@link Dialect} from a {@link java.sql.DatabaseMetaData}.
+     *
      * @param databaseMetaData JDBC metadata describing the database
+     * @return Dialect
      */
     public static Dialect create(final DatabaseMetaData databaseMetaData) {
         String productName;
@@ -201,13 +203,141 @@ public class JdbcDialectImpl implements Dialect {
             }
         }
 
-        return new JdbcDialectImpl(
-            quoteIdentifierString,
-            productName,
-            productVersion,
-            supports,
-            readOnly,
-            maxColumnNameLength);
+        DatabaseProduct databaseProduct =
+            getProduct(productName, productVersion);
+        switch (databaseProduct) {
+        case ACCESS:
+            return new AccessDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case DB2:
+        case DB2_AS400:
+            return new Db2Dialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case DB2_OLD_AS400:
+            return new Db2OldAs400Dialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case DERBY:
+            return new DerbyDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case FIREBIRD:
+            return new FirebirdDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case INFORMIX:
+            return new InformixDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case INTERBASE:
+            return new InterbaseDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case LUCIDDB:
+            return new LucidDbDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case MSSQL:
+            return new MicrosoftSqlServerDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case MYSQL:
+            return new MySqlDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case ORACLE:
+            return new OracleDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case INGRES:
+            return new IngresDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case POSTGRES:
+            return new PostgreSqlDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case SYBASE:
+            return new SybaseDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        case TERADATA:
+            return new TeradataDialect(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        default:
+            // TODO: create extension mechanism, and check list of extension
+            // dialects at this point
+            return new JdbcDialectImpl(
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports,
+                readOnly,
+                maxColumnNameLength);
+        }
     }
 
     /**
@@ -239,27 +369,13 @@ public class JdbcDialectImpl implements Dialect {
         }
     }
 
-    // -- detect various databases --
-
     public String toUpper(String expr) {
-        switch (getDatabaseProduct()) {
-        case DB2:
-        case DB2_AS400:
-        case DB2_OLD_AS400:
-        case ACCESS:
-            return "UCASE(" + expr + ")";
-        default:
-            return "UPPER(" + expr + ")";
-        }
+        return "UPPER(" + expr + ")";
     }
 
     public String caseWhenElse(String cond, String thenExpr, String elseExpr) {
-        switch (getDatabaseProduct()) {
-        case ACCESS:
-            return "IIF(" + cond + "," + thenExpr + "," + elseExpr + ")";
-        default:
-            return "CASE WHEN " + cond + " THEN " + thenExpr + " ELSE " + elseExpr + " END";
-        }
+        return "CASE WHEN " + cond + " THEN " + thenExpr + " ELSE " + elseExpr +
+            " END";
     }
 
     public String quoteIdentifier(final String val) {
@@ -387,27 +503,24 @@ public class JdbcDialectImpl implements Dialect {
             throw new NumberFormatException(
                 "Illegal DATE literal:  " + value);
         }
-        if (getDatabaseProduct() == DatabaseProduct.DERBY) {
-            // Derby accepts DATE('2008-01-23') but not SQL:2003 format.
-            buf.append("DATE(");
-            Util.singleQuoteString(value, buf);
-            buf.append(")");
-        } else if (getDatabaseProduct() == DatabaseProduct.ACCESS) {
-            // Access accepts #01/23/2008# but not SQL:2003 format.
-            buf.append("#");
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(date);
-            buf.append(calendar.get(Calendar.MONTH) + 1);
-            buf.append("/");
-            buf.append(calendar.get(Calendar.DAY_OF_MONTH));
-            buf.append("/");
-            buf.append(calendar.get(Calendar.YEAR));
-            buf.append("#");
-        } else {
-            // SQL:2003 date format: DATE '2008-01-23'.
-            buf.append("DATE ");
-            Util.singleQuoteString(value, buf);
-        }
+        quoteDateLiteral(buf, value, date);
+    }
+
+    /**
+     * Helper method for {@link #quoteDateLiteral(StringBuilder, String)}.
+     *
+     * @param buf Buffer to append to
+     * @param value Value as string
+     * @param date Value as date
+     */
+    protected void quoteDateLiteral(
+        StringBuilder buf,
+        String value,
+        Date date)
+    {
+        // SQL:2003 date format: DATE '2008-01-23'.
+        buf.append("DATE ");
+        Util.singleQuoteString(value, buf);
     }
 
     public void quoteTimeLiteral(StringBuilder buf, String value) {
@@ -438,64 +551,31 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public boolean requiresAliasForFromQuery() {
-        switch (databaseProduct) {
-        case MYSQL:
-        case INFOBRIGHT:
-        case DERBY:
-        case TERADATA:
-        case POSTGRES:
-            return true;
-        default:
-            return false;
-        }
+        return false;
     }
 
     public boolean allowsAs() {
-        switch (databaseProduct) {
-        case ORACLE:
-        case SYBASE:
-        case FIREBIRD:
-        case INTERBASE:
-            return false;
-        default:
-            return true;
-        }
+        return true;
     }
 
     public boolean allowsFromQuery() {
-        // Older versions of AS400 and MySQL before 4.0 do not allow FROM
-        // subqueries in the FROM clause.
-        switch (getDatabaseProduct()) {
-        case MYSQL:
-        case INFOBRIGHT:
-            return productVersion.compareTo("4.") >= 0;
-        case DB2_OLD_AS400:
-        case INFORMIX:
-        case SYBASE:
-        case INTERBASE:
-            return false;
-        default:
-            return true;
-        }
+        return true;
     }
 
     public boolean allowsCompoundCountDistinct() {
-        return getDatabaseProduct() == DatabaseProduct.MYSQL
-            || getDatabaseProduct() == DatabaseProduct.INFOBRIGHT;
+        return false;
     }
 
     public boolean allowsCountDistinct() {
-        return getDatabaseProduct() != DatabaseProduct.ACCESS;
+        return true;
     }
 
     public boolean allowsMultipleCountDistinct() {
-        return allowsCountDistinct() &&
-            getDatabaseProduct() != DatabaseProduct.DERBY;
+        return allowsCountDistinct();
     }
 
     public boolean allowsMultipleDistinctSqlMeasures() {
-        return allowsMultipleCountDistinct()
-            && getDatabaseProduct() != DatabaseProduct.LUCIDDB;
+        return allowsMultipleCountDistinct();
     }
 
     public String generateInline(
@@ -503,36 +583,8 @@ public class JdbcDialectImpl implements Dialect {
         List<String> columnTypes,
         List<String[]> valueList)
     {
-        switch (databaseProduct) {
-        case ORACLE:
-            return generateInlineGeneric(
-                columnNames, columnTypes, valueList,
-                " from dual");
-        case ACCESS:
-            // Fall back to using the FoodMart 'days' table, because
-            // Access SQL has no way to generate values not from a table.
-            return generateInlineGeneric(
-                columnNames, columnTypes, valueList,
-                " from `days` where `day` = 1");
-        case MYSQL:
-        case INFOBRIGHT:
-        case INGRES:
-        case MSSQL:
-        case TERADATA:
-            String fromClause = null;
-            if (databaseProduct == DatabaseProduct.TERADATA && valueList.size() > 1) {
-                // In teradata, "SELECT 1,2" is valid but "SELECT 1,2 UNION
-                // SELECT 3,4" gives "3888: SELECT for a UNION,INTERSECT or
-                // MINUS must reference a table."
-                fromClause = " FROM (SELECT 1 a) z ";
-            }
-            return generateInlineGeneric(
-                columnNames, columnTypes, valueList, fromClause);
-
-        default:
-            return generateInlineForAnsi(
-                "t", columnNames, columnTypes, valueList);
-        }
+        return generateInlineForAnsi(
+            "t", columnNames, columnTypes, valueList, false);
     }
 
     /**
@@ -544,23 +596,26 @@ public class JdbcDialectImpl implements Dialect {
      * @param columnTypes Column types
      * @param valueList List rows
      * @param fromClause FROM clause, or null
+     * @param cast Whether to cast the values in the first row
      * @return Expression that returns the given values
      */
-    private String generateInlineGeneric(
+    protected String generateInlineGeneric(
         List<String> columnNames,
         List<String> columnTypes,
         List<String[]> valueList,
-        String fromClause)
+        String fromClause,
+        boolean cast)
     {
         final StringBuilder buf = new StringBuilder();
         int columnCount = columnNames.size();
         assert columnTypes.size() == columnCount;
 
-        // Teradata derives datatype from value of column in first row, and
-        // truncates subsequent rows. Therefore, we need to cast every
-        // value to the correct length. Figure out the maximum length now.
+        // Some databases, e.g. Teradata, derives datatype from value of column
+        // in first row, and truncates subsequent rows. Therefore, we need to
+        // cast every value to the correct length. Figure out the maximum length
+        // now.
         Integer[] maxLengths = new Integer[columnCount];
-        if (getDatabaseProduct() == DatabaseProduct.TERADATA) {
+        if (cast) {
             for (int i = 0; i < columnTypes.size(); i++) {
                 String columnType = columnTypes.get(i);
                 Datatype datatype = Datatype.valueOf(columnType);
@@ -630,12 +685,20 @@ public class JdbcDialectImpl implements Dialect {
      *
      * <p>This syntax is known to work on Derby, but not Oracle 10 or
      * Access.
+     *
+     * @param alias Table alias
+     * @param columnNames Column names
+     * @param columnTypes Column types
+     * @param valueList List rows
+     * @param cast Whether to generate casts
+     * @return Expression that returns the given values
      */
     public String generateInlineForAnsi(
         String alias,
         List<String> columnNames,
         List<String> columnTypes,
-        List<String[]> valueList)
+        List<String[]> valueList,
+        boolean cast)
     {
         final StringBuilder buf = new StringBuilder();
         buf.append("SELECT * FROM (VALUES ");
@@ -643,7 +706,7 @@ public class JdbcDialectImpl implements Dialect {
         // string values to avoid this.  Determine the cast type for each
         // column.
         String[] castTypes = null;
-        if (getDatabaseProduct() == DatabaseProduct.DERBY) {
+        if (cast) {
             castTypes = new String[columnNames.size()];
             for (int i = 0; i < columnNames.size(); i++) {
                 String columnType = columnTypes.get(i);
@@ -672,9 +735,7 @@ public class JdbcDialectImpl implements Dialect {
                     buf.append("CAST(NULL AS ")
                         .append(sqlType)
                         .append(")");
-                } else if (getDatabaseProduct() == DatabaseProduct.DERBY
-                    && castTypes[j] != null)
-                {
+                } else if (cast && castTypes[j] != null) {
                     buf.append("CAST(");
                     quote(buf, value, datatype);
                     buf.append(" AS ")
@@ -701,11 +762,6 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public boolean needsExponent(Object value, String valueString) {
-        if (getDatabaseProduct() == DatabaseProduct.LUCIDDB &&
-            value instanceof Double &&
-            !valueString.contains("E")) {
-            return true;
-        }
         return false;
     }
 
@@ -728,6 +784,11 @@ public class JdbcDialectImpl implements Dialect {
     /**
      * Guesses the type of a column based upon (a) its basic type,
      * (b) a list of values.
+     *
+     * @param basicType Basic type
+     * @param valueList Value list
+     * @param column Column ordinal
+     * @return SQL type
      */
     private static String guessSqlType(
         String basicType,
@@ -754,81 +815,33 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public boolean isNullsCollateLast() {
-        switch (databaseProduct) {
-        case MYSQL:
-            return false;
-        case INFOBRIGHT:
-            // Infobright is similar to MySQL, but apparently NULLs collate
-            // last. This is good news, because the workaround to force NULLs
-            // to collate last on MySQL would kill Infobright.
-            return true;
-        default:
-            return true;
-        }
+        return true;
     }
 
     public String forceNullsCollateLast(String expr) {
         // If we need to support other DBMSes, note that the SQL standard
         // provides the syntax 'ORDER BY x ASC NULLS LAST'.
-        switch (databaseProduct) {
-        case MYSQL:
-        case INFOBRIGHT:
-            String addIsNull = "ISNULL(" + expr + "), ";
-            expr = addIsNull + expr;
-            return expr;
-        default:
-            return expr;
-        }
+        return expr;
     }
 
     public boolean supportsGroupByExpressions() {
-        switch (getDatabaseProduct()) {
-        case DERBY:
-        case INFOBRIGHT:
-            return false;
-        default:
-            return true;
-        }
+        return true;
     }
 
     public boolean supportsGroupingSets() {
-        switch (getDatabaseProduct()) {
-        case ORACLE:
-        case DB2:
-        case DB2_AS400:
-        case DB2_OLD_AS400:
-        case TERADATA:
-            return true;
-        default:
-            return false;
-        }
+        return false;
     }
 
     public boolean supportsUnlimitedValueList() {
-        return getDatabaseProduct() == DatabaseProduct.LUCIDDB;
+        return false;
     }
 
     public boolean requiresGroupByAlias() {
-        switch (getDatabaseProduct()) {
-        case INFOBRIGHT:
-            return true;
-        default:
-            return false;
-        }
+        return false;
     }
 
     public boolean requiresOrderByAlias() {
-        switch (getDatabaseProduct()) {
-        case MYSQL:
-        case INFOBRIGHT:
-        case DB2:
-        case DB2_AS400:
-        case DB2_OLD_AS400:
-        case INGRES:
-            return true;
-        default:
-            return false;
-        }
+        return false;
     }
 
     public boolean allowsOrderByAlias() {
@@ -836,19 +849,7 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public boolean supportsMultiValueInExpr() {
-        final DatabaseProduct x = getDatabaseProduct();
-        switch (x) {
-        case LUCIDDB:
-        case MYSQL:
-            return true;
-        default:
-        case INFOBRIGHT:
-            // Infobright supports multi-value IN by falling through to MySQL,
-            // which is very slow (see for example
-            // PredicateFilterTest.testFilterAtSameLevel) so we pretend that it
-            // does not.
-            return false;
-        }
+        return false;
     }
 
     public boolean supportsResultSetConcurrency(

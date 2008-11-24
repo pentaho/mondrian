@@ -144,16 +144,6 @@ public class SqlQuery {
     }
 
     /**
-     * Creates a <code>SqlQuery</code>
-     *
-     * @param databaseMetaData used to determine which dialect of
-     *     SQL to generate. Must not be held beyond the constructor.
-     */
-    public SqlQuery(final DatabaseMetaData databaseMetaData) {
-        this(JdbcDialectImpl.create(databaseMetaData));
-    }
-
-    /**
      * Creates an empty <code>SqlQuery</code> with the same environment as this
      * one. (As per the Gang of Four 'prototype' pattern.)
      */
