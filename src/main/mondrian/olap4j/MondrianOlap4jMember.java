@@ -116,7 +116,7 @@ class MondrianOlap4jMember implements Member, Named {
     }
 
     public int getSolveOrder() {
-        throw new UnsupportedOperationException();
+        return member.getSolveOrder();
     }
 
     public ParseTreeNode getExpression() {
@@ -128,7 +128,7 @@ class MondrianOlap4jMember implements Member, Named {
     }
 
     public boolean isCalculatedInQuery() {
-        throw new UnsupportedOperationException();
+        return member.isCalculatedInQuery();
     }
 
     public Object getPropertyValue(Property property) {
@@ -155,15 +155,19 @@ class MondrianOlap4jMember implements Member, Named {
     }
 
     public boolean isHidden() {
-        throw new UnsupportedOperationException();
+        return member.isHidden();
     }
 
     public int getDepth() {
-        throw new UnsupportedOperationException();
+        return member.getDepth();
     }
 
     public Member getDataMember() {
-        throw new UnsupportedOperationException();
+        final mondrian.olap.Member dataMember = member.getDataMember();
+        if (dataMember == null) {
+            return null;
+        }
+        return new MondrianOlap4jMember(olap4jSchema, dataMember);
     }
 
     public String getName() {
@@ -175,11 +179,11 @@ class MondrianOlap4jMember implements Member, Named {
     }
 
     public String getCaption(Locale locale) {
-        throw new UnsupportedOperationException();
+        return member.getCaption();
     }
 
     public String getDescription(Locale locale) {
-        throw new UnsupportedOperationException();
+        return member.getDescription();
     }
 }
 
