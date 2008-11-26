@@ -65,8 +65,9 @@ public class SqlConstraintFactory {
      * @return Constraint
      */
     public TupleConstraint getLevelMembersConstraint(
-            Evaluator context,
-            Level[] levels) {
+        Evaluator context,
+        Level[] levels)
+    {
         if (context == null) {
             return DefaultTupleConstraint.instance();
         }
@@ -80,8 +81,9 @@ public class SqlConstraintFactory {
     }
 
     public MemberChildrenConstraint getChildByNameConstraint(
-            RolapMember parent,
-            Id.Segment childName) {
+        RolapMember parent,
+        Id.Segment childName)
+    {
         // Ragged hierarchies span multiple levels, so SQL WHERE does not work
         // there
         if (!enabled || parent.getHierarchy().isRagged()) {
@@ -101,8 +103,9 @@ public class SqlConstraintFactory {
      * @return constraint
      */
     public TupleConstraint getDescendantsConstraint(
-            List<RolapMember> parentMembers,
-            MemberChildrenConstraint mcc) {
+        List<RolapMember> parentMembers,
+        MemberChildrenConstraint mcc)
+    {
         return new DescendantsConstraint(parentMembers, mcc);
     }
 }
