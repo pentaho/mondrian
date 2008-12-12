@@ -110,6 +110,8 @@ public class DialectTest extends TestCase {
                 ".*Invalid number of arguments to function 'COUNT'. Was expecting 1 arguments",
                 // teradata
                 ".*Syntax error: expected something between the word 'customer_id' and ','\\..*",
+                // netezza
+                "(?s).*ERROR:  Function 'COUNT', number of parameters greater than the maximum \\(1\\).*",
             };
             assertQueryFails(sql, errs);
         }
@@ -229,6 +231,8 @@ public class DialectTest extends TestCase {
                 "ERROR: subquery in FROM must have an alias",
                 // teradata
                 ".*Syntax error, expected something like a name or a Unicode delimited identifier or an 'UDFCALLNAME' keyword between '\\)' and ';'\\.",
+                // netezza
+                "(?s).*ERROR:  sub-SELECT in FROM must have an alias.*",
             };
             assertQueryFails(sql, errs);
         } else {
@@ -311,6 +315,8 @@ public class DialectTest extends TestCase {
                 "(?s)\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression 'GROUPING SETS.*",
                 // postgres
                 "ERROR: syntax error at or near \"SETS\"",
+                // netezza
+                "(?s).*found \"SETS\" \\(at char 135\\) expecting `EXCEPT' or `FOR' or `INTERSECT' or `ORDER' or `UNION'.*",
             };
             assertQueryFails(sql, errs);
         }
@@ -343,6 +349,8 @@ public class DialectTest extends TestCase {
                 "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(comma\\) in query expression '.*'.",
                 // teradata
                 ".*Syntax error, expected something like a 'SELECT' keyword or '\\(' between '\\(' and the integer '1'\\.",
+                // netezza
+                "(?s).*found \"1\" \\(at char 81\\) expecting `SELECT' or `'\\(''.*",
             };
             assertQueryFails(sql, errs);
         }

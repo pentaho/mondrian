@@ -996,6 +996,9 @@ public class TestAggregationManager extends BatchTestCase {
             "        <SQL dialect=\"mysql\">\n" +
             "`store_country`\n" +
             "        </SQL>\n" +
+            "        <SQL dialect=\"netezza\">\n" +
+            "\"store_country\"\n" +
+            "        </SQL>\n" +
             "        <SQL dialect=\"generic\">\n" +
             "store_country\n" +
             "        </SQL>\n" +

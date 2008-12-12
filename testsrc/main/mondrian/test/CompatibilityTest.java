@@ -362,6 +362,9 @@ public class CompatibilityTest extends FoodMartTestCase {
                 "        <SQL dialect=\"luciddb\">\n" +
                 "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n" +
                 "       </SQL>\n" +
+                "        <SQL dialect=\"netezza\">\n" +
+                "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n" +
+                "       </SQL>\n" +
                 "        <SQL dialect=\"generic\">\n" +
                 "           case store_name when 'HQ' then null else store_name end\n" +
                 "       </SQL>\n" +

@@ -992,6 +992,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         case TERADATA:
             // Teradata gives "Syntax error: expected something between '(' and
             // the 'select' keyword." in 12.0.
+        case NETEZZA:
+            // Netezza gives an "ERROR:  Correlated Subplan expressions not supported"
             return;
         }
 

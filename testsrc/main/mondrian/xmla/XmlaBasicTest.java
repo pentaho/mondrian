@@ -547,6 +547,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
             case INFOBRIGHT:
             case DERBY:
             case TERADATA:
+            case NETEZZA:
                 content = Util.replace(
                     content,
                     " sql:field=\"Store Sqft\" type=\"xsd:double\"",

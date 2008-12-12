@@ -2798,6 +2798,9 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "      <SQL dialect=\"db2\">\n" +
                 "        <![CDATA[SELECT * FROM \"customer\"]]>\n" +
                 "      </SQL>\n" +
+                "      <SQL dialect=\"netezza\">\n" +
+                "        <![CDATA[SELECT * FROM \"customer\"]]>\n" +
+                "      </SQL>\n" +
                 "    </View>\n" +
                 "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n" +
                 "  </Hierarchy>\n" +

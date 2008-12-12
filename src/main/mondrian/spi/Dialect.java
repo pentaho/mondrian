@@ -522,6 +522,7 @@ public interface Dialect {
         INTERBASE,
         LUCIDDB,
         MSSQL,
+        NETEZZA,
         ORACLE,
         POSTGRES,
         MYSQL,
