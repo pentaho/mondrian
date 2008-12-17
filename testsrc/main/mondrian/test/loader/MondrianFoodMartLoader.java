@@ -577,11 +577,13 @@ public class MondrianFoodMartLoader {
     }
 
     /**
+     * Converts column values for a destination dialect.
+     *
      * @param columns               column metadata for the table
      * @param values                the contents of the INSERT VALUES clause,
      *                              for example "34,67.89,'GHt''ab'".
      *                              These are in MySQL form.
-     * @return String               values for the destination dialect
+     * @param buf                   Buffer in which to write values
      */
     private void getMassagedValues(
         StringBuilder buf,
