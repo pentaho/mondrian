@@ -834,6 +834,7 @@ in {mondrian.foodmart.jdbcURL}.">
     <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="GrandTotalTest"/>
     <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="SubTotalTest"/>
     <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="BatchedFillTest"/>
+    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="HangerDimensionTest"/>
   </target>
 
   <target name="etags">

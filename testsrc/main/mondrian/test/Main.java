@@ -189,6 +189,7 @@ public class Main extends TestSuite {
             addTest(suite, BasicQueryTest.class);
             addTest(suite, CVBasicTest.class, "suite");
             addTest(suite, GrandTotalTest.class, "suite");
+            addTest(suite, HangerDimensionTest.class, "suite");
             addTest(suite, MetricFilterTest.class, "suite");
             addTest(suite, MiscTest.class, "suite");
             addTest(suite, PredicateFilterTest.class, "suite");

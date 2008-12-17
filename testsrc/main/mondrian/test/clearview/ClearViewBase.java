@@ -91,16 +91,26 @@ public abstract class ClearViewBase extends BatchTestCase {
         if (! (cubeName.equals("")
             || cubeName.equals("${modifiedCubeName}")))
         {
+            String customDimensions = diffRepos.expand(
+                null, "${customDimensions}");
+            customDimensions =
+                (! (customDimensions.equals("")
+                    || customDimensions.equals("${customDimensions}"))) ?
+                        customDimensions : null;
             String calculatedMembers = diffRepos.expand(
                 null, "${calculatedMembers}");
-            if (! (calculatedMembers.equals("")
-                || calculatedMembers.equals("${calculatedMembers}")))
-            {
-                testContext = testContext.createSubstitutingCube(
-                    cubeName,
-                    null,
-                    calculatedMembers);
-            }
+            calculatedMembers =
+                (! (calculatedMembers.equals("")
+                    || calculatedMembers.equals("${calculatedMembers}"))) ?
+                        calculatedMembers : null;
+            String namedSets = diffRepos.expand(
+                null, "${namedSets}");
+            namedSets =
+                (! (namedSets.equals("")
+                    || namedSets.equals("${namedSets}"))) ?
+                        namedSets : null;
+            testContext = testContext.createSubstitutingCube(
+                cubeName, customDimensions, calculatedMembers, namedSets);
         }
 
         // Set some properties to match the way we configure them

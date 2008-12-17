@@ -92,20 +92,49 @@ public class <xsl:value-of select="$classname"/> extends BatchTestCase
 
   <xsl:template match="TestCase">
       <xsl:param name="modifiedCubeName" select="Resource[@name='modifiedCubeName']"/>
+      <xsl:param name="customDimensions" select="Resource[@name='customDimensions']"/>
       <xsl:param name="calculatedMembers" select="Resource[@name='calculatedMembers']"/>
+      <xsl:param name="namedSets" select="Resource[@name='namedSets']"/>
     public void <xsl:value-of select="@name"/>()
         throws Exception
     { 
       TestContext testContext = getTestContext();  
       <xsl:if test="not(normalize-space(string($modifiedCubeName)) = '')" >
-          <xsl:if test="not(normalize-space(string($calculatedMembers)) = '')" >
         testContext =   testContext.createSubstitutingCube(
-&quot;<xsl:value-of select="normalize-space(Resource[@name='modifiedCubeName'])"/>&quot;,
+            &quot;<xsl:value-of select="normalize-space(Resource[@name='modifiedCubeName'])"/>&quot;,
+            <xsl:choose>
+              <xsl:when
+                test="normalize-space(string($customDimensions)) = ''">
             null,
-&quot;<xsl:call-template name="genTxt">
-      <xsl:with-param name="text" select="Resource[@name='calculatedMembers']"/>
-      </xsl:call-template>&quot;);         
-          </xsl:if>
+              </xsl:when>
+              <xsl:otherwise>
+            &quot;<xsl:call-template name="genTxt">
+              <xsl:with-param name="text" select="Resource[@name='customDimensions']"/>
+              </xsl:call-template>&quot;,
+              </xsl:otherwise>
+            </xsl:choose>
+            <xsl:choose>
+              <xsl:when
+                test="normalize-space(string($calculatedMembers)) = ''">
+            null,
+              </xsl:when>
+              <xsl:otherwise>
+            &quot;<xsl:call-template name="genTxt">
+              <xsl:with-param name="text" select="Resource[@name='calculatedMembers']"/>
+              </xsl:call-template>&quot;,
+              </xsl:otherwise>
+            </xsl:choose>
+            <xsl:choose>
+              <xsl:when
+                test="normalize-space(string($namedSets)) = ''">
+            null
+              </xsl:when>
+              <xsl:otherwise>
+            &quot;<xsl:call-template name="genTxt">
+              <xsl:with-param name="text" select="Resource[@name='namedSets']"/>
+              </xsl:call-template>&quot;,
+              </xsl:otherwise>
+            </xsl:choose>);
       </xsl:if>
         testContext.assertQueryReturns(
 &quot;<xsl:call-template name="genTxt">
