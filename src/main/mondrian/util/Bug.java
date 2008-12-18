@@ -90,6 +90,12 @@ public class Bug {
      */
     public static final boolean Bug1888821Fixed = false;
 
+    /**
+     * Whether
+     * <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2446228&group_id=35302&atid=414613">bug 2446228, "HighCardinalityTest test cases disabled"</a>
+     * is fixed.
+     */
+    public static final boolean Bug2446228Fixed = false;
 
     /**
      * Returns whether to avoid a test because the memory monitor may cause it

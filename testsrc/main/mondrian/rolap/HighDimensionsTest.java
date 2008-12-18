@@ -11,10 +11,9 @@ package mondrian.rolap;
 
 import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
-import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-import mondrian.test.DiffRepository;
+import mondrian.util.Bug;
 import junit.framework.Assert;
 
 import java.util.*;
@@ -56,6 +55,9 @@ public class HighDimensionsTest extends FoodMartTestCase {
 
 
     public void testPromotionsTwoDimensions() throws Exception {
+        if (!Bug.Bug2446228Fixed) {
+            return;
+        }
         execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
                     + "{[Promotions].[Promotion Name].Members} on rows\n"
                     + "from [Sales Ragged]", 1, "Promotions",
@@ -64,6 +66,9 @@ public class HighDimensionsTest extends FoodMartTestCase {
 
 
     public void testHead() throws Exception {
+        if (!Bug.Bug2446228Fixed) {
+            return;
+        }
         execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
                     + "head({[Promotions].[Promotion Name].Members},40) "
                     + "on rows from [Sales Ragged]", 1, "Promotions",
@@ -111,6 +116,9 @@ public class HighDimensionsTest extends FoodMartTestCase {
 
 
     public void testNonEmpty() throws Exception {
+        if (!Bug.Bug2446228Fixed) {
+            return;
+        }
         execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
                     + "non empty {[Promotions].[Promotion Name].Members} "
                     + "on rows from [Sales Ragged]", 1, "Promotions",
