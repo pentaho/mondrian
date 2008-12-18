@@ -66,7 +66,7 @@
                                                     <xsd:element name="HierarchyGrant" maxOccurs="unbounded" minOccurs="0">
                                                         <xsd:complexType>
                                                             <xsd:sequence>
-                                                                <xsd:element name="MemeberGrant" maxOccurs="unbounded" minOccurs="0">
+                                                                <xsd:element name="MemberGrant" maxOccurs="unbounded" minOccurs="0">
                                                                     <xsd:complexType>
                                                                         <xsd:attribute name="member" use="required"></xsd:attribute>
                                                                         <xsd:attribute name="access" use="required">
