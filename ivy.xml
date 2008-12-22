@@ -59,11 +59,10 @@
 -->
         <dependency org="xmlunit" name="xmlunit" rev="1.1"/>
         <dependency org="org.apache.derby" name="derby" rev="10.2.2.0"/>
-	<!-- 
-             note, the source of the jpivot build is available at
-	     http://repo.pentaho.org/artifactory/third-party/com/tonbeller/jpivot/1.8.0-080724snapshotsrc/jpivot-1.8.0-080724snapshotsrc.zip
+	    <!--
+         note, this is a build of jpivot's CVS trunk on 12-22-2008
         -->
-        <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-080724">
+        <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-081222">
             <artifact name="jpivot" type="war"/>
         </dependency>
 
