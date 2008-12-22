@@ -3404,6 +3404,20 @@ public class NonEmptyTest extends BatchTestCase {
         }
     }
 
+    public void testNonEmptyResults() {
+        // This unit test was failing with a NullPointerException in JPivot
+        // after the highcardinality feature was added, I've included it
+        // here to make sure it continues to work.
+        assertQueryReturns(
+                "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Store Cost]} ON columns, "
+                + "NON EMPTY Filter([Product].[Brand Name].Members, ([Measures].[Unit Sales] > 100000.0)) ON rows "
+                + "from [Sales] where [Time].[1997]",
+                fold("Axis #0:\n" +
+                "{[Time].[1997]}\n" +
+                "Axis #1:\n" +
+                "Axis #2:\n"));
+    }
+
     /**
      * Make sure the mdx runs correctly and not in native mode.
      *

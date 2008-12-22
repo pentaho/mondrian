@@ -222,8 +222,8 @@ public class Target {
                 }
 
                 if (idx == 0) {
-                    this.firstMemberAssigned = true;
                     this.first = list.get(index);
+                    this.firstMemberAssigned = true;
                     return this.first;
                 } else {
                     return list.get(index);
