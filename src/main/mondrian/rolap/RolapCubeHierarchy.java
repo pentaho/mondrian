@@ -614,10 +614,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                         constraint.getEvaluator().isNonEmpty());
 
                 List<RolapMember> list;
+                final RolapCubeLevel cubeLevel = (RolapCubeLevel) level;
                 if (!joinReq) {
                     list =
                         rolapHierarchy.getMemberReader().getMembersInLevel(
-                            ((RolapCubeLevel) level).getRolapLevel(),
+                            cubeLevel.getRolapLevel(),
                             startOrdinal, endOrdinal, constraint);
                 } else {
                     list =
@@ -639,12 +640,12 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                         if (member.getParentMember() != null) {
                             parent =
                                 createAncestorMembers(
-                                    (RolapCubeLevel) level.getParentLevel(),
+                                    cubeLevel.getParentLevel(),
                                     member.getParentMember());
                         }
                         RolapCubeMember newmember =
                             lookupCubeMember(
-                                parent, member, (RolapCubeLevel) level);
+                                parent, member, cubeLevel);
                         newlist.add(newmember);
                     }
                 }
@@ -660,10 +661,17 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             RolapMember member)
         {
             RolapCubeMember parent = null;
-            if (member.getParentMember() != null) {
+            final RolapMember parentMember = member.getParentMember();
+            if (parentMember != null) {
+                // In parent-child hierarchies, a member's parent may be in the
+                // same level
+                final RolapCubeLevel parentLevel =
+                    parentMember.getLevel() == member.getLevel()
+                        ? level
+                        : level.getParentLevel();
                 parent =
                     createAncestorMembers(
-                        level.getParentLevel(), member.getParentMember());
+                        parentLevel, parentMember);
             }
             return lookupCubeMember(parent, member, level);
         }

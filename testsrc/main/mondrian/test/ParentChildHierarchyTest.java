@@ -462,7 +462,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * Script That Uses the LEAVES Flag to Return the Bottom 10 Dimension
      * Members, from <a href="http://www.winscriptingsolutions.com/Files/09/27139/Listing_01.txt">here</a>.
      */
-    public void testFoo() {
+    public void testParentChildDescendantsLeavesBottom() {
         assertQueryReturns(
                 "WITH SET [NonEmptyEmployees] AS 'FILTER(DESCENDANTS([Employees].[All Employees], 10, LEAVES),\n" +
                 "  NOT ISEMPTY([Measures].[Employee Salary]))'\n" +
@@ -511,7 +511,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     /**
      * Script from <a href="http://www.winscriptingsolutions.com/Files/09/27139/Listing_02.txt">here</a>.
      */
-    public void testBar() {
+    public void testParentChildDescendantsLeavesTop() {
         assertQueryReturns(
                 "with set [Leaves] as 'Descendants([Employees].[All Employees], 15, LEAVES)'\n" +
                 " set [Parents] as 'Generate([Leaves], {[Employees].CurrentMember.Parent})'\n" +
@@ -545,6 +545,73 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Row #7: 19\n" +
                 "Row #8: 19\n" +
                 "Row #9: 19\n"));
+    }
+
+    public void testAllMembersParent() {
+        final String expected = fold("Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Parent]}\n" +
+            "Axis #2:\n" +
+            "{[Employees].[All Employees]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown].[Nancy Miller]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown].[Wanda Hollar]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Corinne Zugschwert]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Michelle Adams]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Donahue Steen]}\n" +
+            "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[John Baker]}\n" +
+            "Row #0: #null\n" +
+            "Row #1: All Employees\n" +
+            "Row #2: Sheri Nowmer\n" +
+            "Row #3: Derrick Whelply\n" +
+            "Row #4: Beverly Baker\n" +
+            "Row #5: Shauna Wyro\n" +
+            "Row #6: Bunny McCown\n" +
+            "Row #7: Bunny McCown\n" +
+            "Row #8: Beverly Baker\n" +
+            "Row #9: Jacqueline Wyllie\n" +
+            "Row #10: Ralph Mccoy\n" +
+            "Row #11: Anne Tuck\n" +
+            "Row #12: Anne Tuck\n" +
+            "Row #13: Anne Tuck\n" +
+            "Row #14: Anne Tuck\n");
+
+        // Query contains 'Head' just to keep the number of rows reasonable. We
+        // assume that it does not affect the behavior of <Hierarchy>.Members.
+        assertQueryReturns(
+            "with member [Measures].[Parent] as '[Employees].CurrentMember.Parent.Name'\n"
+                + "select {[Measures].[Parent]}\n"
+                + "ON COLUMNS,\n"
+                + "Head([Employees].Members, 15)\n"
+                + "ON ROWS from [HR]",
+            expected);
+
+        // Similar query, using <Hierarchy>.AllMembers rather than
+        // <Hierarchy>.Members, returns the same result.
+        assertQueryReturns(
+            "with member [Measures].[Parent] as '[Employees].CurrentMember.Parent.Name'\n"
+                + "select {[Measures].[Parent]}\n"
+                + "ON COLUMNS,\n"
+                + "Head([Employees].AllMembers, 15)\n"
+                + "ON ROWS from [HR]",
+            expected);
+
+        // Similar query use <Level>.Members, same result expected.
+        assertQueryReturns(
+            "with member [Measures].[Parent] as '[Employees].CurrentMember.Parent.Name'\n"
+                + "select {[Measures].[Parent]}\n"
+                + "ON COLUMNS,\n"
+                + "{[Employees], Head([Employees].[Employee Id].Members, 14)}\n"
+                + "ON ROWS from [HR]",
+            expected);
     }
 
     // todo: test DimensionUsage which joins to a level which is not in the
@@ -707,7 +774,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             result,
             2,
             extendedContext,
-            "[Employees].[All Employees].[Derrick Whelply]",
+            "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]",
             "$36,494.07",
             "select `time_by_day`.`the_year` as `Year`," +
             " `employee`.`employee_id` as `Employee Id (Key)`," +
@@ -734,7 +801,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             result,
             2,
             extendedContext,
-            "[Employees].[All Employees].[Derrick Whelply]",
+            "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]",
             "$36,494.07",
             "select" +
             " `time_by_day`.`the_year` as `Year`," +
@@ -878,29 +945,29 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         // in arbitrary order -- so to keep things deterministic, this example
         // deliberately uses a set of  employees with unique last names.
         testContext.assertQueryReturns(
-                "with member [Measures].[First Name] as " +
-                        " 'Iif([Employees].Level.Name = \"Employee Id\", [Employees].CurrentMember.Properties(\"First Name\"), Cast(NULL AS STRING)) '\n" +
-                        "select {[Measures].[Org Salary], [Measures].[First Name]} on columns,\n" +
-                        " {Tail(Head([Employees].Members, 15), 4)} on rows\n" +
-                        "from [HR-ordered]",
-                fold("Axis #0:\n" +
-                        "{}\n" +
-                        "Axis #1:\n" +
-                        "{[Measures].[Org Salary]}\n" +
-                        "{[Measures].[First Name]}\n" +
-                        "Axis #2:\n" +
-                        "{[Employees].[All Employees].[Ronald Adina]}\n" +
-                        "{[Employees].[All Employees].[Samuel Agcaoili]}\n" +
-                        "{[Employees].[All Employees].[James Aguilar]}\n" +
-                        "{[Employees].[All Employees].[Robert Ahlering]}\n" +
-                        "Row #0: $107.16\n" +
-                        "Row #0: Ronald\n" +
-                        "Row #1: $981.82\n" +
-                        "Row #1: Samuel\n" +
-                        "Row #2: $403.64\n" +
-                        "Row #2: James\n" +
-                        "Row #3: $40.47\n" +
-                        "Row #3: Robert\n"));
+            "with member [Measures].[First Name] as " +
+                " 'Iif([Employees].Level.Name = \"Employee Id\", [Employees].CurrentMember.Properties(\"First Name\"), Cast(NULL AS STRING)) '\n" +
+                "select {[Measures].[Org Salary], [Measures].[First Name]} on columns,\n" +
+                " {Tail(Head([Employees].Members, 15), 4)} on rows\n" +
+                "from [HR-ordered]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Org Salary]}\n" +
+                "{[Measures].[First Name]}\n" +
+                "Axis #2:\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack].[Samuel Agcaoili]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack].[Megan Davis]}\n" +
+                "Row #0: $29,762.88\n" +
+                "Row #0: Brenda\n" +
+                "Row #1: $27,908.33\n" +
+                "Row #1: Wayne\n" +
+                "Row #2: $981.82\n" +
+                "Row #2: Samuel\n" +
+                "Row #3: $927.27\n" +
+                "Row #3: Megan\n"));
 
         // Make sure <Member>.CHILDREN is sorted.
         testContext.assertQueryReturns(

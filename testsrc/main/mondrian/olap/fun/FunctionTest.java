@@ -1094,6 +1094,44 @@ public class FunctionTest extends FoodMartTestCase {
         assertAxisReturns("{[Store].[All Stores].Parent.Parent}", "");
     }
 
+    public void testParentPC() {
+        final TestContext testContext = getTestContext("HR");
+        if (false) {
+        testContext.assertAxisReturns(
+            "[Employees].Parent",
+            "");
+        testContext.assertAxisReturns(
+            "[Employees].[Sheri Nowmer].Parent",
+            "[Employees].[All Employees]");
+        testContext.assertAxisReturns(
+            "[Employees].[Sheri Nowmer].[Derrick Whelply].Parent",
+            "[Employees].[All Employees].[Sheri Nowmer]");
+        testContext.assertAxisReturns(
+            "[Employees].Members.Item(3)",
+            "[Employees].[All Employees].[Michael Spence]");
+        }
+        testContext.assertAxisReturns(
+            "[Employees].Members.Item(3).Parent",
+            "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]");
+        testContext.assertAxisReturns(
+            "[Employees].AllMembers.Item(3).Parent",
+            "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]");
+
+        // Ascendants(<Member>) applied to parent-child hierarchy accessed via
+        // <Level>.Members
+        testContext.assertAxisReturns(
+            "Ascendants([Employees].Members.Item(73))",
+            fold(
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha Jameson].[James Bailey]\n" +
+                    "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha Jameson]\n" +
+                    "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy]\n" +
+                    "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie]\n" +
+                    "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]\n" +
+                    "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]\n" +
+                    "[Employees].[All Employees].[Sheri Nowmer]\n" +
+                    "[Employees].[All Employees]"));
+    }
+
     public void testMembers() {
         // <Level>.members
         assertAxisReturns("{[Customers].[Country].Members}", fold(
@@ -5657,6 +5695,28 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Product].[All Products].[Food].[Eggs]\n" +
                     "[Product].[All Products].[Food]\n" +
                     "[Product].[All Products]"));
+    }
+
+    public void testHierarchizePC() {
+        getTestContext("HR").assertAxisReturns(
+            "Hierarchize(\n" +
+                "   { Subset([Employees].Members, 90, 10),\n" +
+                "     Head([Employees].Members, 5) })",
+            fold("[Employees].[All Employees]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Leopoldo Renfro]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Donna Brockett]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Laurie Anderson]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Louis Gomez]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Melvin Glass]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Kristin Cohen]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Susan Kharman]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Gordon Kirschner]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Geneva Kouba]\n" +
+                "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Tricia Clark]"));
     }
 
     public void testHierarchizeCrossJoinPre() {

@@ -570,6 +570,10 @@ month column, so valid member specifications will be of the form:
 <code>[Time].[2005].[Q1].[<b><i>1</i></b>]</code>. Members of the <code>[Month]</code>
 level will displayed in the order January, February, etc.</p>
 
+<p>In a parent-child hierarchy, members are always sorted in hierarchical
+order. The <code>ordinalColumn</code> attribute controls the order that
+siblings appear within their parent.</p>
+
 <p>Ordinal columns may be of any datatype which can legally be used in
 an ORDER BY clause.  Scope of ordering is per-parent, so in the
 example above, the day_in_month column should cycle for each month.
@@ -3155,7 +3159,7 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
 <br />
 <br />
 
-<p>Author: Julian Hyde; last modified September 2008.<br/>
+<p>Author: Julian Hyde; last modified December 2008.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">log</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc..<br/>

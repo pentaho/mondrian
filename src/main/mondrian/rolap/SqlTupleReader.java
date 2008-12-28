@@ -70,6 +70,16 @@ public class SqlTupleReader implements TupleReader {
     int maxRows = 0;
 
     /**
+     * How many members could not be instantiated in this iteration. This
+     * phenomenon occurs in a parent-child hierarchy, where a member cannot be
+     * created before its parent. Populating the hierarchy will take multiple
+     * passes and will terminate in success when missedMemberCount == 0 at the
+     * end of a pass, or failure if a pass generates failures but does not
+     * manage to load any more members.
+     */
+    private int missedMemberCount;
+
+    /**
      * TODO: Document this class.
      */
     private class Target {
@@ -92,8 +102,10 @@ public class SqlTupleReader implements TupleReader {
         private RolapMember currMember;
 
         public Target(
-            RolapLevel level, MemberBuilder memberBuilder,
-            List<RolapMember> srcMembers) {
+            RolapLevel level,
+            MemberBuilder memberBuilder,
+            List<RolapMember> srcMembers)
+        {
             this.level = level;
             this.cache = memberBuilder.getMemberCache();
             this.cacheLock = memberBuilder.getMemberCacheLock();
@@ -134,7 +146,9 @@ public class SqlTupleReader implements TupleReader {
             }
         }
 
-        private int internalAddRow(ResultSet resultSet, int column) throws SQLException {
+        private int internalAddRow(ResultSet resultSet, int column)
+            throws SQLException
+        {
             RolapMember member = null;
             if (currMember != null) {
                 member = currMember;
@@ -146,6 +160,37 @@ public class SqlTupleReader implements TupleReader {
                         member = level.getHierarchy().getAllMember();
                         continue;
                     }
+                    RolapMember parentMember = member;
+                    if (parentChild) {
+                        Object parentValue =
+                            resultSet.getObject(++column);
+                        if (parentValue == null) {
+                            // member is at top of hierarchy; its parent is the
+                            // 'all' member. Convert null to placeholder value
+                            // for uniformity in hashmaps.
+                            parentValue = RolapUtil.sqlNullValue;
+                        } else if (parentValue.toString().equals(
+                            childLevel.getNullParentValue()))
+                        {
+                            // member is at top of hierarchy; its parent is the
+                            // 'all' member
+                        } else {
+                            Object parentKey =
+                                cache.makeKey(
+                                    member,
+                                    parentValue);
+                            parentMember = cache.getMember(parentKey);
+                            if (parentMember == null) {
+                                // Parent member has not been loaded yet. Skip
+                                // this member this time. As long as the data
+                                // forms a hierarchy, we will complete in a
+                                // number of passes not greater than the depth
+                                // of the hierarchy.
+                                ++missedMemberCount;
+                                return -1;
+                            }
+                        }
+                    }
                     Object value = resultSet.getObject(++column);
                     if (value == null) {
                         value = RolapUtil.sqlNullValue;
@@ -156,10 +201,14 @@ public class SqlTupleReader implements TupleReader {
                     } else {
                         captionValue = null;
                     }
-                    RolapMember parentMember = member;
-                    Object key = cache.makeKey(parentMember, value);
+                    Object key;
+                    if (parentChild) {
+                        key = cache.makeKey(member, value);
+                    } else {
+                        key = cache.makeKey(parentMember, value);
+                    }
                     member = cache.getMember(key, checkCacheStatus);
-                    checkCacheStatus = false; /* Only check the first time */
+                    checkCacheStatus = false; // only check the first time
                     if (member == null) {
                         member = memberBuilder.makeMember(
                             parentMember, childLevel, value, captionValue,
@@ -442,9 +491,42 @@ public class SqlTupleReader implements TupleReader {
         List<List<RolapMember>> partialResult,
         List<List<RolapMember>> newPartialResult)
     {
-        prepareTuples(dataSource, partialResult, newPartialResult);
+        int memberCount = countMembers();
+        while (true) {
+            missedMemberCount = 0;
+            int memberCountBefore = memberCount;
+            prepareTuples(dataSource, partialResult, newPartialResult);
+            memberCount = countMembers();
+            if (missedMemberCount == 0) {
+                // We have successfully read all members. This is always the
+                // case in a regular hierarchy. In a parent-child hierarchy
+                // it may take several passes, because we cannot create a member
+                // before we create its parent.
+                break;
+            }
+            if (memberCount == memberCountBefore) {
+                // This pass made no progress. This must be because of a cycle.
+                throw Util.newError(
+                    "Parent-child hierarchy contains cyclic data");
+            }
+        }
         assert targets.size() == 1;
         return targets.get(0).close();
+    }
+
+    /**
+     * Returns the number of members that have been read from all targets.
+     *
+     * @return Number of members that have been read from all targets
+     */
+    private int countMembers() {
+        int n = 0;
+        for (Target target : targets) {
+            if (target.list != null) {
+                n += target.list.size();
+            }
+        }
+        return n;
     }
 
     public List<RolapMember[]> readTuples(
@@ -748,6 +830,14 @@ public class SqlTupleReader implements TupleReader {
                 MondrianDef.Expression keyExp = currLevel.getKeyExp();
                 MondrianDef.Expression ordinalExp = currLevel.getOrdinalExp();
                 MondrianDef.Expression captionExp = currLevel.getCaptionExp();
+                MondrianDef.Expression parentExp = currLevel.getParentExp();
+
+                if (parentExp != null) {
+                    hierarchy.addToFrom(sqlQuery, parentExp);
+                    String parentSql = parentExp.getExpression(sqlQuery);
+                    sqlQuery.addSelectGroupBy(parentSql);
+                    sqlQuery.addOrderBy(parentSql, true, false, true);
+                }
 
                 String keySql = keyExp.getExpression(sqlQuery);
                 String ordinalSql = ordinalExp.getExpression(sqlQuery);
@@ -771,7 +861,8 @@ public class SqlTupleReader implements TupleReader {
                     sqlQuery.addSelectGroupBy(captionSql);
                 }
 
-                constraint.addLevelConstraint(sqlQuery, baseCube, aggStar, currLevel);
+                constraint.addLevelConstraint(
+                    sqlQuery, baseCube, aggStar, currLevel);
 
                 // If this is a select on a virtual cube, the query will be
                 // a union, so the order by columns need to be numbers,

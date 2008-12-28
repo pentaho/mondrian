@@ -448,30 +448,30 @@ public class UdfTest extends FoodMartTestCase {
                     "Row #2: \n" +
                     "Row #3: \n"));
     }
+
     public void testMatches()
     {
         assertQueryReturns(
             "SELECT {[Measures].[Org Salary]} ON COLUMNS, " +
-            "Filter({[Employees].MEMBERS}, " +
-            "[Employees].CurrentMember.Name MATCHES '(?i)sam.*') ON ROWS " +
-            "FROM [HR]",
-            fold(
-                "Axis #0:\n" +
+                "Filter({[Employees].MEMBERS}, " +
+                "[Employees].CurrentMember.Name MATCHES '(?i)sam.*') ON ROWS " +
+                "FROM [HR]",
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Org Salary]}\n" +
                 "Axis #2:\n" +
-                "{[Employees].[All Employees].[Sam Warren]}\n" +
-                "{[Employees].[All Employees].[Sam Zeller]}\n" +
-                "{[Employees].[All Employees].[Sam Adair]}\n" +
-                "{[Employees].[All Employees].[Samuel Johnson]}\n" +
-                "{[Employees].[All Employees].[Sam Wheeler]}\n" +
-                "{[Employees].[All Employees].[Samuel Agcaoili]}\n" +
-                "{[Employees].[All Employees].[Samantha Weller]}\n" +
-                "Row #0: $40.31\n" +
-                "Row #1: $40.35\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Samuel Johnson]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard].[Mary Hunt].[Bonnie Bruno].[Sam Warren]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Charles Macaluso].[Barbara Wallin].[Michael Suggs].[Sam Adair]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lois Wood].[Dell Gras].[Kristine Aldred].[Sam Zeller]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey].[Shanay Steelman].[Neal Hasty].[Sam Wheeler]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack].[Samuel Agcaoili]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Maya Gutierrez].[Jonathan Murraiin].[James Thompson].[Samantha Weller]}\n" +
+                "Row #0: $40.62\n" +
+                "Row #1: $40.31\n" +
                 "Row #2: $75.60\n" +
-                "Row #3: $40.62\n" +
+                "Row #3: $40.35\n" +
                 "Row #4: $47.52\n" +
                 "Row #5: \n" +
                 "Row #6: \n"));
