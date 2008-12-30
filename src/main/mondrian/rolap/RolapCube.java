@@ -2190,12 +2190,32 @@ public class RolapCube extends CubeBase {
      * @return base cube level if found
      */
     public RolapCubeLevel findBaseCubeLevel(RolapLevel level) {
+        String levelDimName = level.getDimension().getName();
+        String levelHierName = level.getHierarchy().getName();
+
+        // closures are not in the dimension list so we need special logic for
+        // locating the level
+
+        boolean isClosure = false;
+        String closDimName = null;
+        String closHierName = null;
+        if (levelDimName.endsWith("$Closure")) {
+            isClosure = true;
+            closDimName = levelDimName.substring(0, levelDimName.length() - 8);
+            closHierName = levelHierName.substring(0, levelHierName.length() - 8);
+        }
+
         for (int i = 0; i < getDimensions().length; i++) {
             Dimension dimension = getDimensions()[i];
-            if (dimension.getName().equals(level.getDimension().getName())) {
+            if (dimension.getName().equals(levelDimName) ||
+                (isClosure && dimension.getName().equals(closDimName))) {
                 for (int j = 0; j <  dimension.getHierarchies().length; j++) {
                     Hierarchy hier = dimension.getHierarchies()[j];
-                    if (hier.getName().equals(level.getHierarchy().getName())) {
+                    if (hier.getName().equals(levelHierName) ||
+                        (isClosure && hier.getName().equals(closHierName))) {
+                        if (isClosure) {
+                            return (RolapCubeLevel)((RolapCubeLevel)hier.getLevels()[1]).getClosedPeer();
+                        }
                         for (int k = 0; k < hier.getLevels().length; k++) {
                             Level lvl = hier.getLevels()[k];
                             if (lvl.getName().equals(level.getName())) {

@@ -1031,6 +1031,62 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                         "Row #0: 1,156\n" +
                         "Row #0: 1,157\n"));
     }
+
+    /**
+     * test case for bug #2477623, Closure Tables not working with Virtual Cubes
+     */
+    public void testClosureTableInVirtualCube() {
+        TestContext testContext = TestContext.create(
+            "<Dimension name=\"Employees\" >" +
+            "   <Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"" +
+            "      primaryKey=\"employee_id\" primaryKeyTable=\"employee\">" +
+            "      <Table name=\"employee\"/>" +
+            "      <Level name=\"Employee Name\" type=\"String\" uniqueMembers=\"true\"" +
+            "         column=\"employee_id\" parentColumn=\"supervisor_id\"" +
+            "         nameColumn=\"full_name\" nullParentValue=\"0\">" +
+            "         <Closure parentColumn=\"supervisor_id\" childColumn=\"employee_id\">" +
+            "            <Table name=\"employee_closure\"/>" +
+            "         </Closure>" +
+            "      </Level>" +
+            "   </Hierarchy>" +
+            "</Dimension>"
+            , null,
+            "<Cube name=\"CustomSales\">" +
+            "   <Table name=\"sales_fact_1997\"/>" +
+            "   <DimensionUsage name=\"Employees\" source=\"Employees\" foreignKey=\"time_id\"/>" +
+            "   <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"/>" +
+            "</Cube>" +
+            "<Cube name=\"CustomHR\">" +
+            "   <Table name=\"salary\"/>" +
+            "   <DimensionUsage name=\"Employees\" source=\"Employees\" foreignKey=\"employee_id\"/>" +
+            "   <Measure name=\"Org Salary\" column=\"salary_paid\" aggregator=\"sum\"/>" +
+            "</Cube>" +
+            "<VirtualCube name=\"CustomSalesAndHR\" >" +
+            "<VirtualCubeDimension name=\"Employees\"/>" +
+            "<VirtualCubeMeasure cubeName=\"CustomSales\" name=\"[Measures].[Store Sales]\"/>" +
+            "<VirtualCubeMeasure cubeName=\"CustomHR\" name=\"[Measures].[Org Salary]\"/>" +
+            "<CalculatedMember name=\"HR Cost per Sale\" dimension=\"Measures\">" +
+            "<Formula>[Measures].[Store Sales] / [Measures].[Org Salary]</Formula>" +
+            "</CalculatedMember>" +
+            "</VirtualCube>",
+            null, null, null);
+
+        testContext.assertQueryReturns(
+            "select " +
+            "[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].Children" +
+            " ON COLUMNS, " +
+            "{[Measures].[Org Salary]} ON ROWS from [CustomSalesAndHR]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]}\n" +
+                "Axis #2:\n" +
+                "{[Measures].[Org Salary]}\n" +
+                "Row #0: 152.76\n" +
+                "Row #0: 60\n"));
+    }
 }
 
 // End ParentChildHierarchyTest.java

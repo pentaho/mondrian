@@ -29,7 +29,7 @@ public class RolapCubeLevel extends RolapLevel {
 
     private final RolapLevel rolapLevel;
     private RolapStar.Column starKeyColumn = null;
-
+    private RolapCubeLevel closedPeer = null;
     protected LevelReader levelReader;
 
     public RolapCubeLevel(RolapLevel level, RolapCubeHierarchy hierarchy) {
@@ -74,13 +74,14 @@ public class RolapCubeLevel extends RolapLevel {
               successfully to the star.  This type of hack will go away once
               HierarchyUsage is phased out
             */
-            getCube().createUsage(
-                    (RolapCubeHierarchy)cubeDimension.getHierarchies()[0],
-                    xmlDimension);
-
+            if (! getCube().isVirtual()) {
+                getCube().createUsage(
+                        (RolapCubeHierarchy)cubeDimension.getHierarchies()[0],
+                        xmlDimension);
+            }
             cubeDimension.init(xmlDimension);
             getCube().registerDimension(cubeDimension);
-            RolapCubeLevel closedPeer =
+            closedPeer =
                 (RolapCubeLevel) cubeDimension.getHierarchies()[0].getLevels()[1];
 
             this.levelReader = new ParentChildLevelReaderImpl(closedPeer);
@@ -202,7 +203,11 @@ public class RolapCubeLevel extends RolapLevel {
     }
 
     boolean hasClosedPeer() {
-        return rolapLevel.hasClosedPeer();
+        return closedPeer != null;
+    }
+
+    public RolapCubeLevel getClosedPeer() {
+        return closedPeer;
     }
 
     public MemberFormatter getMemberFormatter() {
