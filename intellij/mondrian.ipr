@@ -59,6 +59,7 @@
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
     <option name="MAXIMUM_HEAP_SIZE" value="128" />
   </component>
+  <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false" />
   <component name="EntryPointsManager">
     <entry_points version="2.0" />
   </component>
@@ -278,6 +279,9 @@
       </item>
     </group>
   </component>
+  <component name="ProjectDetails">
+    <option name="projectName" value="mondrian" />
+  </component>
   <component name="ProjectFileVersion" converted="true" />
   <component name="ProjectModuleManager">
     <modules>
@@ -286,6 +290,7 @@
       <module fileurl="file://$PROJECT_DIR$/../../olap4j/olap4j.iml" filepath="$PROJECT_DIR$/../../olap4j/olap4j.iml" />
     </modules>
   </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK" />
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
       <value>
@@ -299,6 +304,9 @@
     <option name="GENERATE_NO_WARNINGS" value="false" />
     <option name="GENERATE_IIOP_STUBS" value="false" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
+  </component>
+  <component name="SvnBranchConfigurationManager">
+    <option name="myVersion" value="124" />
   </component>
   <component name="TestDox.ConfigurationController">
     <option name="allowCustomPackages" value="false" />
@@ -351,15 +359,21 @@
         <root url="jar://$PROJECT_DIR$/../lib/jlfgr.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/servlet-api.jar!/" />
       </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="commons-math">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../lib/commons-math.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
+      <JAVADOC>
+        <root url="jar://$PROJECT_DIR$/../lib/commons-math-javadoc.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-lang-javadoc.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-collections-javadoc.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-logging-javadoc.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-dbcp-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/../lib/servlet-api-source.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-io-source.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/log4j-source.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-lang-source.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-logging-source.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-collections-source.jar!/" />
+      </SOURCES>
     </library>
     <library name="eigenbase-properties">
       <CLASSES>
@@ -374,28 +388,18 @@
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/../lib/junit.jar!/" />
       </CLASSES>
-      <JAVADOC />
-      <SOURCES />
+      <JAVADOC>
+        <root url="jar://$PROJECT_DIR$/../lib/junit-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/../lib/junit-source.jar!/" />
+      </SOURCES>
     </library>
     <library name="jdbcDrivers">
       <CLASSES>
         <root url="jar:///usr/lib/oracle/xe/app/oracle/product/10.2.0/server/jdbc/lib/ojdbc14.jar!/" />
         <root url="jar:///usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/derby.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="dom4j">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../lib/dom4j.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="commons-io">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../lib/commons-io.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

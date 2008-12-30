@@ -25,6 +25,7 @@
             XML/A APIs.
         </description>
     </info>
+
     <dependencies>
         <dependency org="commons-collections" name="commons-collections" rev="2.1"/>
         <dependency org="commons-dbcp" name="commons-dbcp" rev="1.2"/>
@@ -51,22 +52,18 @@
         <dependency org="javax.servlet" name="servlet-api" rev="2.4"/>
         <dependency org="log4j" name="log4j" rev="1.2.9"/>
         <dependency org="org.olap4j" name="olap4j" rev="0.9.6-svn098"/>
-        <!--try xalan 2.6.0?-->
+        <!-- REVIEW: try xalan 2.6.0? -->
         <dependency org="xalan" name="xalan" rev="2.4.1"/>
         <dependency org="xerces" name="xercesImpl" rev="2.5.0"/>
-<!--
-        <dependency org="xml-apis" name="xml-apis" rev="2.0.2"/>
--->
         <dependency org="xmlunit" name="xmlunit" rev="1.1"/>
         <dependency org="org.apache.derby" name="derby" rev="10.2.2.0"/>
-	    <!--
-         note, this is a build of jpivot's CVS trunk on 12-22-2008
-        -->
+
+	    <!-- Note that this is a build of jpivot's CVS trunk on 12-22-2008. -->
         <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-081222">
             <artifact name="jpivot" type="war"/>
         </dependency>
 
-        <!--Exclusions-->
+        <!-- Exclusions -->
         <exclude org="avalon-framework" module="avalon-framework"/>
         <exclude org="commons-discovery" module="commons-discovery"/>
         <exclude org="commons-net" module="commons-net"/>

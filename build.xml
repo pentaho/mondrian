@@ -12,7 +12,7 @@
   <property environment="env"/>
 
   <!-- Define desired ivy version and location. -->
-  <property name="ivy.install.version" value="2.0.0-rc1"/>
+  <property name="ivy.install.version" value="2.0.0-rc2"/>
   <property name="ivy.jar.dir" value="${basedir}/ivy"/>
   <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
 
@@ -386,11 +386,13 @@ demo/access/MondrianFoodMart.mdb"/>
   <target name="resolve" unless="skip.download">
       <!-- Workbench dependencies to workbench/plugins -->
       <ivy:resolve file="workbench/ivy.xml"/>
-      <ivy:retrieve pattern="${wb.plugins.dir}/[module].[ext]"/>
+      <ivy:retrieve type="jar" pattern="${wb.plugins.dir}/[module].[ext]"/>
+      <ivy:retrieve type="source,javadoc" pattern="${wb.plugins.dir}/[module]-[type].[ext]"/>
 
       <!-- Mondrian depenencies. -->
       <ivy:resolve file="ivy.xml"/>
-      <ivy:retrieve pattern="${lib.dir}/[module].[ext]"/>
+      <ivy:retrieve type="jar" pattern="${lib.dir}/[module].[ext]"/>
+      <ivy:retrieve type="source,javadoc" pattern="${lib.dir}/[module]-[type].[ext]"/>
   </target>
 
   <target name="cmdrunner" depends="jar">
