@@ -2665,6 +2665,10 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
             throw new UnsupportedOperationException();
         }
 
+        public boolean isEvaluated() {
+            throw new UnsupportedOperationException();
+        }
+
         public int getSolveOrder() {
             throw new UnsupportedOperationException();
         }

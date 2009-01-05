@@ -165,6 +165,10 @@ public class MemberHelperTest extends TestCase {
             return false;
         }
 
+        public boolean isEvaluated() {
+            return false;
+        }
+
         public boolean isCalculatedInQuery() {
             return false;
         }

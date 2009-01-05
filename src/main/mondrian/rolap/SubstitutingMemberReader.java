@@ -177,7 +177,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
         MemberChildrenConstraint constraint)
     {
         memberReader.getMemberChildren(
-            substitute(parentMembers),
+            desubstitute(parentMembers),
             new SubstitutingMemberList(children),
             constraint);
     }

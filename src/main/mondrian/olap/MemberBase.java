@@ -158,6 +158,10 @@ public abstract class MemberBase
        return (flags & FLAG_CALCULATED) != 0;
     }
 
+    public boolean isEvaluated() {
+        return isCalculated();
+    }
+
     public OlapElement lookupChild(
         SchemaReader schemaReader,
         Id.Segment childName)

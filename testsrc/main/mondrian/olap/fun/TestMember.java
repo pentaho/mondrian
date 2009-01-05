@@ -78,6 +78,11 @@ public class TestMember implements Member {
     public boolean isCalculated() {
         throw new UnsupportedOperationException();
     }
+
+    public boolean isEvaluated() {
+        throw new UnsupportedOperationException();
+    }
+
     public int getSolveOrder() {
         throw new UnsupportedOperationException();
     }

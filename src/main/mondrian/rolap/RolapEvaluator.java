@@ -171,7 +171,7 @@ public class RolapEvaluator implements Evaluator {
             }
 
             currentMembers[ordinal] = member;
-            if (member.isCalculated()) {
+            if (member.isEvaluated()) {
                 addCalcMember(member);
             }
         }
@@ -368,11 +368,11 @@ public class RolapEvaluator implements Evaluator {
         if (m.equals(previous)) {
             return m;
         }
-        if (previous.isCalculated()) {
+        if (previous.isEvaluated()) {
             removeCalcMember(previous);
         }
         currentMembers[ordinal] = m;
-        if (m.isCalculated()) {
+        if (m.isEvaluated()) {
             addCalcMember(m);
         }
         return previous;
@@ -738,7 +738,7 @@ public class RolapEvaluator implements Evaluator {
 
     final void addCalcMember(Member member) {
         assert member != null;
-        assert member.isCalculated();
+        assert member.isEvaluated();
         calcMembers[calcMemberCount++] = member;
     }
 

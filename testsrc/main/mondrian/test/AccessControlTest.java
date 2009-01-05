@@ -1201,9 +1201,12 @@ public class AccessControlTest extends FoodMartTestCase {
                 "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products]}\n" +
                 "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products]}\n" +
                 "Axis #2:\n" +
+                "{[Store Type].[All Store Types]}\n" +
                 "{[Store Type].[All Store Types].[Supermarket]}\n" +
                 "Row #0: 4,042.96\n" +
-                "Row #0: 4,042.96\n"));
+                "Row #0: 4,042.96\n" +
+                "Row #1: 4,042.96\n" +
+                "Row #1: 4,042.96\n"));
 
         // explicit tuples, not crossjoin
         testContext.assertQueryReturns(
@@ -1222,11 +1225,16 @@ public class AccessControlTest extends FoodMartTestCase {
                 "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products]}\n" +
                 "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products].[Food]}\n" +
                 "Axis #2:\n" +
+                "{[Store Type].[All Store Types]}\n" +
                 "{[Store Type].[All Store Types].[Supermarket]}\n" +
                 "Row #0: 4,042.96\n" +
                 "Row #0: 82.454\n" +
                 "Row #0: 4,042.96\n" +
-                "Row #0: 2,696.758\n"));
+                "Row #0: 2,696.758\n" +
+                "Row #1: 4,042.96\n" +
+                "Row #1: 82.454\n" +
+                "Row #1: 4,042.96\n" +
+                "Row #1: 2,696.758\n"));
 
         // extended testcase; note that [Store Size in SQFT].Parent is null,
         // so disappears
@@ -1251,11 +1259,16 @@ public class AccessControlTest extends FoodMartTestCase {
                 "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products]}\n" +
                 "{[Store Size in SQFT].[All Store Size in SQFTs].[20319], [Product].[All Products].[Food]}\n" +
                 "Axis #2:\n" +
+                "{[Store Type].[All Store Types]}\n" +
                 "{[Store Type].[All Store Types].[Supermarket]}\n" +
                 "Row #0: 4,042.96\n" +
                 "Row #0: 4,042.96\n" +
                 "Row #0: 4,042.96\n" +
-                "Row #0: 2,696.758\n"));
+                "Row #0: 2,696.758\n" +
+                "Row #1: 4,042.96\n" +
+                "Row #1: 4,042.96\n" +
+                "Row #1: 4,042.96\n" +
+                "Row #1: 2,696.758\n"));
 
         testContext.assertQueryReturns(
             "select Hierarchize(\n" +
@@ -1272,13 +1285,37 @@ public class AccessControlTest extends FoodMartTestCase {
             fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
+                "{[Product].[All Products], [Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n" +
+                "{[Product].[All Products], [Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n" +
+                "{[Product].[All Products], [Store Type].[All Store Types].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n" +
                 "{[Product].[All Products], [Store Type].[All Store Types].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy], [Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy], [Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy], [Store Type].[All Store Types].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n" +
                 "{[Product].[All Products].[Drink].[Dairy], [Store Type].[All Store Types].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n" +
+                "{[Product].[All Products].[Food], [Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n" +
+                "{[Product].[All Products].[Food], [Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n" +
+                "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n" +
                 "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n" +
+                "{[Product].[All Products].[Food].[Eggs], [Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n" +
+                "{[Product].[All Products].[Food].[Eggs], [Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n" +
+                "{[Product].[All Products].[Food].[Eggs], [Store Type].[All Store Types].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n" +
                 "{[Product].[All Products].[Food].[Eggs], [Store Type].[All Store Types].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n" +
                 "Row #0: 4,042.96\n" +
+                "Row #0: 4,042.96\n" +
+                "Row #0: 4,042.96\n" +
+                "Row #0: 4,042.96\n" +
+                "Row #0: 82.454\n" +
+                "Row #0: 82.454\n" +
+                "Row #0: 82.454\n" +
                 "Row #0: 82.454\n" +
                 "Row #0: 2,696.758\n" +
+                "Row #0: 2,696.758\n" +
+                "Row #0: 2,696.758\n" +
+                "Row #0: 2,696.758\n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
+                "Row #0: \n" +
                 "Row #0: \n"));
     }
 
@@ -1398,6 +1435,65 @@ public class AccessControlTest extends FoodMartTestCase {
                 "Row #0: 54,431.14\n" +
                 "Row #0: 4,441.18\n" +
                 "Row #0: 4,441.18\n"));
+    }
+
+    /**
+     * this tests the fix for
+     * http://jira.pentaho.com/browse/BISERVER-2491
+     * rollupPolicy=partial and queries to upper members don't work
+     */
+    public void testBugBiserver2491() {
+        final String BiServer2491Role2 =
+            "<Role name=\"role2\">"
+            + " <SchemaGrant access=\"none\">"
+            + "  <CubeGrant cube=\"Sales\" access=\"all\">"
+            + "   <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">"
+            + "    <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>"
+            + "    <MemberGrant member=\"[Store].[USA].[CA].[Los Angeles]\" access=\"none\"/>"
+            + "   </HierarchyGrant>"
+            + "  </CubeGrant>"
+            + " </SchemaGrant>"
+            + "</Role>";
+
+        final TestContext testContext =
+            TestContext.create(
+                null, null, null, null, null, BiServer2491Role2)
+                .withRole("role2");
+
+        final String firstBrokenMdx =
+            "select [Measures].[Unit Sales] ON COLUMNS, {[Store].[Store Country].Members} ON ROWS from [Sales]";
+
+        checkQuery(testContext, firstBrokenMdx);
+        testContext.assertQueryReturns(
+                firstBrokenMdx,
+                    fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Store].[All Stores].[USA]}\n" +
+                    "Row #0: 49,085\n"));
+
+        final String secondBrokenMdx =
+            "select [Measures].[Unit Sales] ON COLUMNS, Descendants([Store],[Store].[Store Name]) ON ROWS from [Sales]";
+        checkQuery(testContext, secondBrokenMdx);
+        testContext.assertQueryReturns(
+                secondBrokenMdx,
+                    fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}\n" +
+                    "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n" +
+                    "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n" +
+                    "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}\n" +
+                    "Row #0: \n" +
+                    "Row #1: 21,333\n" +
+                    "Row #2: 25,635\n" +
+                    "Row #3: 2,117\n"));
     }
 }
 

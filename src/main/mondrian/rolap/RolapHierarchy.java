@@ -921,6 +921,10 @@ public class RolapHierarchy extends HierarchyBase {
         }
 
         public boolean isCalculated() {
+            return false;
+        }
+
+        public boolean isEvaluated() {
             return true;
         }
     }

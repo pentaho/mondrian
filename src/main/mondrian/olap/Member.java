@@ -99,6 +99,16 @@ public interface Member extends OlapElement, Comparable {
      * member</code> clause in an mdx query or a calculated member defined in
      * cube. */
     boolean isCalculated();
+
+    /**
+     * Returns whether this member should be evaluated within the Evaluator, normally
+     * isCalculated() and isEvaluated() should return the same value, but in situations
+     * where mondrian would like to treat the two concepts separately such in role based
+     * security, these values may differ.
+     *
+     * @return true if evaluated
+     */
+    boolean isEvaluated();
     int getSolveOrder();
     Exp getExpression();
 
