@@ -155,7 +155,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         if (!NonEmptyCrossJoinConstraint.isValidContext(
                 evaluator,
                 false,
-                levels.toArray(new RolapLevel[levels.size()]))) {
+                levels.toArray(new RolapLevel[levels.size()]),
+                restrictMemberTypes())) {
             // Missing join conditions due to non-conforming dimensions
             // meant native evaluation would have led to a true cross
             // product, which we want to defer instead of pushing it down;

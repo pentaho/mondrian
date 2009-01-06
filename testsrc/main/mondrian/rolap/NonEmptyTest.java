@@ -68,6 +68,28 @@ public class NonEmptyTest extends BatchTestCase {
         super(name);
     }
 
+    public void testTopCountWithCalcMemberInSlicer() {
+        // Internal error: can not restrict SQL to calculated Members
+        TestContext ctx = TestContext.instance();
+        ctx.assertQueryReturns(
+            "with member [Time].[First Term] as 'Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})' " +
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+            "TopCount([Product].[Product Subcategory].Members, 3, [Measures].[Unit Sales]) ON ROWS " +
+            "from [Sales] " +
+            "where ([Time].[First Term]) ",
+            "Axis #0:" + nl +
+            "{[Time].[First Term]}" + nl +
+            "Axis #1:" + nl +
+            "{[Measures].[Unit Sales]}" + nl +
+            "Axis #2:" + nl +
+            "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables]}" + nl +
+            "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit]}" + nl +
+            "{[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup]}" + nl +
+            "Row #0: 10,215" + nl +
+            "Row #1: 5,711" + nl +
+            "Row #2: 3,926" + nl);
+    }
+
     public void testTopCountCacheKeyMustIncludeCount() {
         /**
          * When caching topcount results, the number of elements must
@@ -978,7 +1000,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         try {
             // Query should return empty result.
-            checkNative(0, 0, fold(query), result, requestFreshConnection);
+            checkNative(0, 0, query, fold(result), requestFreshConnection);
         } finally {
             MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         }
@@ -1014,7 +1036,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         try {
             // Query should return empty result.
-            checkNotNative(0, fold(query), result);
+            checkNotNative(0, query, fold(result));
         } finally {
             MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
         }

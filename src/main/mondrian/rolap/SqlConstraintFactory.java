@@ -45,7 +45,7 @@ public class SqlConstraintFactory {
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(Evaluator context) {
-        if (!enabled || !SqlContextConstraint.isValidContext(context)) {
+        if (!enabled || !SqlContextConstraint.isValidContext(context, false)) {
             return DefaultMemberChildrenConstraint.instance();
         }
         return new SqlContextConstraint((RolapEvaluator) context, false);
@@ -74,7 +74,7 @@ public class SqlConstraintFactory {
         if (!enabled) {
             return DefaultTupleConstraint.instance();
         }
-        if (!SqlContextConstraint.isValidContext(context, false, levels)) {
+        if (!SqlContextConstraint.isValidContext(context, false, levels, false)) {
             return DefaultTupleConstraint.instance();
         }
         return new SqlContextConstraint((RolapEvaluator) context, false);

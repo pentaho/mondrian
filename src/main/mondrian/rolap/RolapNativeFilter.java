@@ -79,7 +79,7 @@ public class RolapNativeFilter extends RolapNativeSet {
         if (!isEnabled()) {
             return null;
         }
-        if (!FilterConstraint.isValidContext(evaluator)) {
+        if (!FilterConstraint.isValidContext(evaluator, restrictMemberTypes())) {
             return null;
         }
         // is this "Filter(<set>, <numeric expr>)"

@@ -43,23 +43,29 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     private boolean strict;
 
     /**
+     * @param context evaluation context
+     * @param strict false if more rows than requested may be returned
+     * (i.e. the constraint is incomplete)
+     *
      * @return false if this contstraint will not work for the current context
      */
-    public static boolean isValidContext(Evaluator context) {
-        return isValidContext(context, true, null);
+    public static boolean isValidContext(Evaluator context, boolean strict) {
+        return isValidContext(context, true, null, strict);
     }
 
     /**
      * @param context evaluation context
      * @param disallowVirtualCube if true, check for virtual cubes
      * @param levels levels being referenced in the current context
+     * @param strict false if more rows than requested may be returned
+     * (i.e. the constraint is incomplete)
      *
      * @return false if constraint will not work for current context
      */
     public static boolean isValidContext(
         Evaluator context,
         boolean disallowVirtualCube,
-        Level [] levels)
+        Level [] levels, boolean strict)
     {
         if (context == null) {
             return false;
@@ -93,6 +99,19 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
             }
 
             query.setBaseCubes(baseCubeList);
+        }
+
+        // may return more rows than requested?
+        if (!strict) {
+            return true;
+        }
+
+        // we can not handle calc members in slicer except calc measure
+        Member[] members = ((RolapEvaluator)context).getMembers();
+        for (int i = 1; i < members.length; i++) {
+            if (members[i].isCalculated()) {
+                return false;
+            }
         }
         return true;
     }

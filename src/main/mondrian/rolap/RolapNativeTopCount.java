@@ -97,7 +97,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
         if (!isEnabled()) {
             return null;
         }
-        if (!TopCountConstraint.isValidContext(evaluator)) {
+        if (!TopCountConstraint.isValidContext(evaluator, restrictMemberTypes())) {
             return null;
         }
 

@@ -53,7 +53,8 @@ public abstract class RolapNativeSet extends RolapNative {
      * the interpreter, instead of using SQL.
      *
      * If false, calc members will be ignored and the computation will be done
-     * in SQL, returning more members than requested.
+     * in SQL, returning more members than requested.  This is ok, if
+     * the superflous members are filtered out in java code afterwards.
      * </p>
      */
     protected abstract boolean restrictMemberTypes();
