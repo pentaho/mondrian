@@ -20,6 +20,8 @@
 <div class="contentheading">How to install Mondrian</div>
 <!-- end page title -->
 
+<p><strong>This package is for Mondrian developers and power users. If you are interested solely in Mondrian's analysis capabilities from a user standpoint, download the <a href="http://sourceforge.net/project/showfiles.php?group_id=140317&package_id=160028">Pentaho Business Intelligence Server</a> instead.</strong></p>
+
 <hr noshade="noshade" size="1">
 <ol>
   <li><a href="#1_Introduction">Introduction</a></li>
@@ -128,8 +130,25 @@ JDBC connect string "<code>jdbc:odbc:MondrianFoodMart</code>".</p>
 
 <h3>2.2. Other database<a name="2_2_Non_Access_setup">&nbsp;</a></h3>
 
-<p>If not using Access, use the MondrianFoodMartLoader utility to
-create a database, and load data from a SQL script.</p>
+<p>If you are not using Access, you can use the MondrianFoodMartLoader utility to
+create a database and load data from an SQL script (<code>[-inputFile=&lt;file name&gt;]</code>). But if you
+have already loaded the data into one JDBC data source (say Microsoft
+Access), use the <code>
+-inputJdbcURL</code> and related options to copy the data to another JDBC
+database.</p>
+<p>The loader uses the standard J2SE JDBC, relevant JDBC driver JARs,
+and some classes out of Mondrian that do not rely on additional JARs.
+It has been tested against Oracle, PostgreSQL, MySQL, and Microsoft Access.</p>
+<p>If the target is a JDBC database, you must create the necessary
+database or schema first. This is database-specific.</p>
+<p>You can safely ignore any log4j warnings:</p>
+
+<blockquote>
+  <code>log4j:WARN No appenders could be found for logger
+(mondrian.rolap.RolapUtil).&nbsp;<br>
+log4j:WARN Please initialize the log4j system properly.</code>
+</blockquote>
+
 <h4>Syntax</h4>
 <blockquote>
 	<code>MondrianFoodMartLoader<br>
@@ -240,25 +259,6 @@ given, assumes data comes from this file of INSERT statements.</td>
     </tbody>
   </table>
 
-<p>The usual source for the MondrianFoodMartLoader utility is
-a SQL script (<code>[-inputFile=&lt;file name&gt;]</code>). But you
-have already loaded the data into one JDBC data source (say Microsoft
-Access), use the <code>
--inputJdbcURL</code> and related options to copy data to another JDBC
-database.</p>
-<p>The loader uses standard J2SE JDBC, the relevant JDBC driver JARs,
-and some classes out of Mondrian that do not rely on additional JARs.
-It has been tested against Oracle, Postgres, MySQL and Microsoft Access.</p>
-<p>If you the target is a JDBC database, you must create the necessary
-database or schema first. This is database-specific.</p>
-<p>You can safely ignore any log4j warnings:</p>
-
-<blockquote>
-  <code>log4j:WARN No appenders could be found for logger
-(mondrian.rolap.RolapUtil).&nbsp;<br>
-log4j:WARN Please initialize the log4j system properly.</code>
-</blockquote>
-
 <h4>Examples</h4>
 
 <p>Here are some examples to give you a general idea how
@@ -321,7 +321,7 @@ dataset in the Access database:</p>
   <li>Install Tomcat (version 5.0.25 or later).</li>
   <li>From the unzipped binary release, explode <code>lib/mondrian.war</code>
 to <code><i>TOMCAT_HOME</i>/webapps/mondrian</code></li>
-  <li>Open the mondrian.properties file in <code><i>TOMCAT_HOME</i>/webapps/mondrian</code> and customize the&nbsp; 
+  <li>Create or open the mondrian.properties file in <code><i>TOMCAT_HOME</i>/webapps/mondrian</code> and customize the&nbsp; 
   <code>mondrian.jdbcDrivers</code>
 properties for the database you set up from the instructions above.</li>
   <li>Open the web.xml file in <code><i>TOMCAT_HOME</i>/webapps/mondrian/WEB-INF</code> and customize the two
@@ -339,7 +339,7 @@ connect strings there to the same database parameters for the FoodMart database
   </blockquote>
   </li>
 
-  <li>Modify the <code>fourheir.jsp</code>, <code>mondrian.jsp</code>, <code>colors.jsp</code>
+  <li>Modify the <code>fourhier.jsp</code>, <code>mondrian.jsp</code>, <code>colors.jsp</code>
 and <code>arrows.jsp </code>files in the <code><i>TOMCAT_HOME</i>/webapps/mondrian/WEB-INF/queries</code> 
   folder. 
   Modify the line
@@ -369,6 +369,7 @@ catalogUri="/WEB-INF/queries/FoodMart.xml"&gt;</code>
   </ul>
   </li>
   <li>Start your database, if needed.</li>
+  <li>Start Tomcat.</li>
   <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li>
 </ol>
 
