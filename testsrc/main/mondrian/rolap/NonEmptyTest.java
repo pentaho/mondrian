@@ -68,6 +68,44 @@ public class NonEmptyTest extends BatchTestCase {
         super(name);
     }
 
+    public void testTopCountCacheKeyMustIncludeCount() {
+        /**
+         * When caching topcount results, the number of elements must
+         * be part of the cache key
+         */
+        TestContext ctx = TestContext.instance();
+        // fill cache
+        ctx.assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+            "TopCount([Product].[Product Subcategory].Members, 2, [Measures].[Unit Sales]) ON ROWS " +
+            "from [Sales]",
+            "Axis #0:" + nl +
+            "{}" + nl +
+            "Axis #1:" + nl +
+            "{[Measures].[Unit Sales]}" + nl +
+            "Axis #2:" + nl +
+            "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables]}" + nl +
+            "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit]}" + nl +
+            "Row #0: 20,739" + nl +
+            "Row #1: 11,767" + nl);
+        // run again with different count
+        ctx.assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
+            "TopCount([Product].[Product Subcategory].Members, 3, [Measures].[Unit Sales]) ON ROWS " +
+            "from [Sales]",
+            "Axis #0:" + nl +
+            "{}" + nl +
+            "Axis #1:" + nl +
+            "{[Measures].[Unit Sales]}" + nl +
+            "Axis #2:" + nl +
+            "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables]}" + nl +
+            "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit]}" + nl +
+            "{[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup]}" + nl +
+            "Row #0: 20,739" + nl +
+            "Row #1: 11,767" + nl +
+            "Row #2: 8,006" + nl);
+    }
+
     public void testStrMeasure() {
         TestContext ctx = TestContext.create(
             null,

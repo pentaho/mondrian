@@ -35,13 +35,15 @@ public class RolapNativeTopCount extends RolapNativeSet {
     static class TopCountConstraint extends SetConstraint {
         Exp orderByExpr;
         boolean ascending;
+        Integer count;
 
-        public TopCountConstraint(
+        public TopCountConstraint(int count,
             CrossJoinArg[] args, RolapEvaluator evaluator,
             Exp orderByExpr, boolean ascending) {
             super(args, evaluator, true);
             this.orderByExpr = orderByExpr;
             this.ascending = ascending;
+            this.count = new Integer(count);
         }
 
         /**
@@ -80,6 +82,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
                 key.add(orderByExpr.toString());
             }
             key.add(ascending);
+            key.add(count);
             return key;
         }
     }
@@ -147,7 +150,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
         evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
 
         TupleConstraint constraint =
-            new TopCountConstraint(cargs, evaluator, orderByExpr, ascending);
+            new TopCountConstraint(count, cargs, evaluator, orderByExpr, ascending);
         SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);
         sev.setMaxRows(count);
         return sev;
