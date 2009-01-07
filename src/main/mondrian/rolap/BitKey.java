@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -74,19 +74,21 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
      * If one switches <code>this</code> with the parameter <code>bitKey</code>
      * one gets the equivalent of isSubSetOf.
      *
-     * @param bitKey
+     * @param bitKey Bit key
      */
     boolean isSuperSetOf(BitKey bitKey);
 
     /**
      * Or the parameter <code>BitKey</code> with <code>this</code>.
      *
-     * @param bitKey
+     * @param bitKey Bit key
      */
     BitKey or(BitKey bitKey);
 
     /**
      * Returns the boolean AND of this bitkey and the given bitkey.
+     *
+     * @param bitKey Bit key
      */
     BitKey and(BitKey bitKey);
 
@@ -184,6 +186,9 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
      * Abstract implementation of {@link BitKey}.
      */
     abstract class AbstractBitKey implements BitKey {
+        /**
+         * Creates an AbstractBitKey.
+         */
         protected AbstractBitKey() {
         }
 
@@ -223,6 +228,13 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             }
         }
 
+        /**
+         * Copies a byte into a bit set at a particular position.
+         *
+         * @param bitSet Bit set
+         * @param pos Position
+         * @param x Byte
+         */
         protected static void copyFromByte(BitSet bitSet, int pos, byte x)
         {
             if (x == 0) {
@@ -261,10 +273,18 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             }
         }
 
+        /**
+         * Copies a {@code long} value (interpreted as 64 bits) into a bit set.
+         *
+         * @param bitSet Bit set
+         * @param pos Position
+         * @param x Byte
+         */
         protected static void copyFromLong(
-                final BitSet bitSet,
-                int pos,
-                long x) {
+            final BitSet bitSet,
+            int pos,
+            long x)
+        {
             while (x != 0) {
                 copyFromByte(bitSet, pos, (byte) (x & 0xff));
                 x >>>= 8;
@@ -278,6 +298,74 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                 : "Bad BitKey type: " + bitKey.getClass().getName();
             return new IllegalArgumentException(msg);
         }
+
+        /**
+         * Compares a pair of {@code long} arrays, using unsigned comparison
+         * semantics and padding to the left with 0s.
+         *
+         * <p>Values are treated as unsigned for the purposes of comparison.
+         *
+         * <p>If the arrays have different lengths, the shorter is padded with
+         * 0s.
+         *
+         * @param a1 First array
+         * @param a2 Second array
+         * @return -1 if a1 compares less to a2,
+         * 0 if a1 is equal to a2,
+         * 1 if a1 is greater than a2
+         */
+        static int compareUnsignedArrays(long[] a1, long[] a2) {
+            int i1 = a1.length - 1;
+            int i2 = a2.length - 1;
+            if (i1 > i2) {
+                do {
+                    if (a1[i1] != 0) {
+                        return 1;
+                    }
+                    --i1;
+                } while (i1 > i2);
+            } else if (i2 > i1) {
+                do {
+                    if (a2[i2] != 0) {
+                        return -1;
+                    }
+                    --i2;
+                } while (i2 > i1);
+            }
+            assert i1 == i2;
+            for (; i1 >= 0; --i1) {
+                int c = compareUnsigned(a1[i1], a2[i1]);
+                if (c != 0) {
+                    return c;
+                }
+            }
+            return 0;
+        }
+
+        /**
+         * Performs unsigned comparison on two {@code long} values.
+         *
+         * @param i1 First value
+         * @param i2 Second value
+         * @return -1 if i1 is less than i2,
+         * 1 if i1 is greater than i2,
+         * 0 if i1 equals i2
+         */
+        static int compareUnsigned(long i1, long i2) {
+            // We want to do unsigned comparison.
+            // Signed comparison returns the correct result except
+            // if i1<0 & i2>=0
+            // or i1>=0 & i2<0
+            if (i1 == i2) {
+                return 0;
+            } else if ((i1 < 0) == (i2 < 0)) {
+                // Same signs, signed comparison gives the right result
+                return i1 < i2 ? -1 : 1;
+            } else {
+                // Different signs, use signed comparison and invert the result
+                return i1 < i2 ? 1 : -1;
+            }
+        }
     }
 
     /**
@@ -286,11 +374,21 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
     public class Small extends AbstractBitKey {
         private long bits;
 
+        /**
+         * Creates a Small with no bits set.
+         */
         private Small() {
         }
+
+        /**
+         * Creates a Small and initializes it to the 64 bit value.
+         *
+         * @param bits 64 bit value
+         */
         private Small(long bits) {
             this.bits = bits;
         }
+
         public void set(int pos) {
             if (pos < 64) {
                 bits |= bit(pos);
@@ -298,15 +396,19 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                 throw new IllegalArgumentException("pos " + pos + " exceeds capacity 64");
             }
         }
+
         public boolean get(int pos) {
             return pos < 64 && ((bits & bit(pos)) != 0);
         }
+
         public void clear(int pos) {
             bits &= ~bit(pos);
         }
+
         public void clear() {
             bits = 0;
         }
+
         private void or(long bits) {
             this.bits |= bits;
         }
@@ -528,13 +630,38 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             }
             return false;
         }
+
         public int hashCode() {
-            return (int)(bits ^ (bits >>> 32));
+            return (int)(1234L ^ bits ^ (bits >>> 32));
         }
 
-        // implement Comparable (in lazy, expensive fashion)
         public int compareTo(BitKey bitKey) {
-            return toString().compareTo(bitKey.toString());
+            if (bitKey instanceof Small) {
+                Small that = (Small) bitKey;
+                return this.bits == that.bits ? 0
+                    : this.bits < that.bits ? -1
+                    : 1;
+            } else if (bitKey instanceof Mid128) {
+                Mid128 that = (Mid128) bitKey;
+                if (that.bits1 != 0) {
+                    return -1;
+                }
+                return compareUnsigned(this.bits, that.bits0);
+            } else {
+                return compareToBig((Big) bitKey);
+            }
+        }
+
+        protected int compareToBig(Big that) {
+            int thatBitsLength = that.effectiveSize();
+            switch (thatBitsLength) {
+            case 0:
+                return this.bits == 0 ? 0 : 1;
+            case 1:
+                return compareUnsigned(this.bits, that.bits[0]);
+            default:
+                return -1;
+            }
         }
 
         public String toString() {
@@ -545,9 +672,11 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             }
             return buf.toString();
         }
+
         public BitKey copy() {
             return new Small(this.bits);
         }
+
         public BitKey emptyCopy() {
             return new Small();
         }
@@ -566,6 +695,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
         private Mid128() {
         }
+
         private Mid128(Mid128 mid) {
             this.bits0 = mid.bits0;
             this.bits1 = mid.bits1;
@@ -855,12 +985,14 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             }
             return false;
         }
+
         public int hashCode() {
             long h = 1234;
             h ^= bits0;
             h ^= bits1 * 2;
             return (int)((h >> 32) ^ h);
         }
+
         public String toString() {
             StringBuilder buf = new StringBuilder(64);
             buf.append("0x");
@@ -869,9 +1001,11 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             }
             return buf.toString();
         }
+
         public BitKey copy() {
             return new Mid128(this);
         }
+
         public BitKey emptyCopy() {
             return new Mid128();
         }
@@ -883,7 +1017,44 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
         // implement Comparable (in lazy, expensive fashion)
         public int compareTo(BitKey bitKey) {
-            return toString().compareTo(bitKey.toString());
+            if (bitKey instanceof Mid128) {
+                Mid128 that = (Mid128) bitKey;
+                if (this.bits1 != that.bits1) {
+                    return compareUnsigned(this.bits1, that.bits1);
+                }
+                return compareUnsigned(this.bits0, that.bits0);
+            } else if (bitKey instanceof Small) {
+                Small that = (Small) bitKey;
+                if (this.bits1 != 0) {
+                    return 1;
+                }
+                return compareUnsigned(this.bits0, that.bits);
+            } else {
+                return compareToBig((Big) bitKey);
+            }
+        }
+
+        int compareToBig(Big that) {
+            int thatBitsLength = that.effectiveSize();
+            switch (thatBitsLength) {
+            case 0:
+                return this.bits1 == 0
+                    && this.bits0 == 0
+                    ? 0
+                    : 1;
+            case 1:
+                if (this.bits1 != 0) {
+                    return 1;
+                }
+                return compareUnsigned(this.bits0, that.bits[0]);
+            case 2:
+                if (this.bits1 != that.bits[1]) {
+                    return compareUnsigned(this.bits1, that.bits[1]);
+                }
+                return compareUnsigned(this.bits0, that.bits[0]);
+            default:
+                return -1;
+            }
         }
     }
 
@@ -897,12 +1068,29 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         private Big(int size) {
             bits = new long[chunkCount(size + 1)];
         }
+
         private Big(Big big) {
             bits = (long[]) big.bits.clone();
         }
+
         private int size() {
             return bits.length;
         }
+
+        /**
+         * Returns the number of chunks, ignoring any chunks on the leading
+         * edge that are all zero.
+         *
+         * @return number of chunks that are not on the leading edge
+         */
+        private int effectiveSize() {
+            int n = bits.length;
+            while (n > 0 && bits[n - 1] == 0) {
+                --n;
+            }
+            return n;
+        }
+
         public void set(int pos) {
             bits[chunkPos(pos)] |= bit(pos);
         }
@@ -910,26 +1098,32 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         public boolean get(int pos) {
             return (bits[chunkPos(pos)] & bit(pos)) != 0;
         }
+
         public void clear(int pos) {
             bits[chunkPos(pos)] &= ~bit(pos);
         }
+
         public void clear() {
             for (int i = 0; i < bits.length; i++) {
                 bits[i] = 0;
             }
         }
+
         private void or(long bits0) {
             this.bits[0] |= bits0;
         }
+
         private void or(long bits0, long bits1) {
             this.bits[0] |= bits0;
             this.bits[1] |= bits1;
         }
+
         private void or(long[] bits) {
             for (int i = 0; i < bits.length; i++) {
                 this.bits[i] |= bits[i];
             }
         }
+
         private void and(long[] bits) {
             int length = Math.min(bits.length, this.bits.length);
             for (int i = 0; i < length; i++) {
@@ -1098,6 +1292,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             }
             return bitSet;
         }
+
         public Iterator<Integer> iterator() {
             return new Iterator<Integer>() {
                 long[] bits = Big.this.bits.clone();
@@ -1157,14 +1352,17 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                     }
                     return false;
                 }
+
                 public Integer next() {
                     return Integer.valueOf(pos);
                 }
+
                 public void remove() {
                     throw new UnsupportedOperationException("remove");
                 }
             };
         }
+
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
@@ -1223,13 +1421,21 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             }
             return false;
         }
+
         public int hashCode() {
+            // It is important that leading 0s, and bits.length do not affect
+            // the hash code. For instance, we want {1} to be equal to
+            // {1, 0, 0}. This algorithm in fact ignores all 0s.
+            //
+            // It is also important that the hash code is the same as produced
+            // by Small and Mid128.
             long h = 1234;
             for (int i = bits.length; --i >= 0;) {
                 h ^= bits[i] * (i + 1);
             }
             return (int)((h >> 32) ^ h);
         }
+
         public String toString() {
             StringBuilder buf = new StringBuilder(64);
             buf.append("0x");
@@ -1257,9 +1463,16 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             return true;
         }
 
-        // implement Comparable (in lazy, expensive fashion)
         public int compareTo(BitKey bitKey) {
-            return toString().compareTo(bitKey.toString());
+            if (bitKey instanceof Big) {
+                return compareUnsignedArrays(this.bits, ((Big) bitKey).bits);
+            } else if (bitKey instanceof Mid128) {
+                Mid128 that = (Mid128) bitKey;
+                return -that.compareToBig(this);
+            } else {
+                Small that = (Small) bitKey;
+                return -that.compareToBig(this);
+            }
         }
     }
 
@@ -1279,9 +1492,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
         4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
         5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-        4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0};
-
-
+        4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
+    };
 }
 
 // End BitKey.java

@@ -69,7 +69,8 @@ public class ValueColumnPredicate
     public int compareTo(Object o) {
         ValueColumnPredicate that = (ValueColumnPredicate) o;
         int columnBitKeyComp =
-            getConstrainedColumnBitKey().compareTo(that.getConstrainedColumnBitKey());
+            getConstrainedColumnBitKey().compareTo(
+                that.getConstrainedColumnBitKey());
 
         // First compare the column bitkeys.
         if (columnBitKeyComp != 0) {
@@ -92,11 +93,11 @@ public class ValueColumnPredicate
             return false;
         }
         final ValueColumnPredicate that = (ValueColumnPredicate) other;
-        int columnBitKeyComp =
-            getConstrainedColumnBitKey().compareTo(that.getConstrainedColumnBitKey());
 
         // First compare the column bitkeys.
-        if (columnBitKeyComp != 0) {
+        if (!getConstrainedColumnBitKey().equals(
+            that.getConstrainedColumnBitKey()))
+        {
             return false;
         }
 
