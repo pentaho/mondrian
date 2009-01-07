@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2008 Julian Hyde and others
+// Copyright (C) 2003-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -5658,6 +5658,88 @@ public class FunctionTest extends FoodMartTestCase {
 
         assertAxisReturns("Head([Gender].[F].Children)",
                 "");
+    }
+
+    /**
+     * Test case for bug 2488492, "Union between calc mem and head function
+     * throws exception"
+     */
+    public void testHeadBug() {
+        assertQueryReturns(
+            "SELECT\n"
+                + "                        UNION(\n"
+                + "                            {([Customers].CURRENTMEMBER)},\n"
+                + "                            HEAD(\n"
+                + "                                {([Customers].CURRENTMEMBER)},\n"
+                + "                                IIF(\n"
+                + "                                    COUNT(\n"
+                + "                                        FILTER(\n"
+                + "                                            DESCENDANTS(\n"
+                + "                                                [Customers].CURRENTMEMBER,\n"
+                + "                                                [Customers].[Country]),\n"
+                + "                                            [Measures].[Unit Sales] >= 66),\n"
+                + "                                        INCLUDEEMPTY)> 0,\n"
+                + "                                    1,\n"
+                + "                                    0)),\n"
+                + "                            ALL)\n"
+                + "    ON AXIS(0)\n"
+                + "FROM\n"
+                + "    [Sales]\n",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[All Customers]}\n" +
+                "{[Customers].[All Customers]}\n" +
+                "Row #0: 266,773\n" +
+                "Row #0: 266,773\n"));
+
+        assertQueryReturns(
+            "WITH\n"
+                + "    MEMBER\n"
+                + "        [Customers].[COG_OQP_INT_t2]AS '1',\n"
+                + "        SOLVE_ORDER = 65535\n"
+                + "SELECT\n"
+                + "                        UNION(\n"
+                + "                            {([Customers].[COG_OQP_INT_t2])},\n"
+                + "                            HEAD(\n"
+                + "                                {([Customers].CURRENTMEMBER)},\n"
+                + "                                IIF(\n"
+                + "                                    COUNT(\n"
+                + "                                        FILTER(\n"
+                + "                                            DESCENDANTS(\n"
+                + "                                                [Customers].CURRENTMEMBER,\n"
+                + "                                                [Customers].[Country]),\n"
+                + "                                            [Measures].[Unit Sales]>= 66),\n"
+                + "                                        INCLUDEEMPTY)> 0,\n"
+                + "                                    1,\n"
+                + "                                    0)),\n"
+                + "                            ALL)\n"
+                + "    ON AXIS(0)\n"
+                + "FROM\n"
+                + "    [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Customers].[COG_OQP_INT_t2]}\n" +
+                "{[Customers].[All Customers]}\n" +
+                "Row #0: 1\n" +
+                "Row #0: 266,773\n"));
+
+        // More minimal test case. Also demonstrates similar problem with Tail.
+        assertAxisReturns(
+            "Union(\n"
+                + "  Union(\n"
+                + "    Tail([Customers].[USA].[CA].Children, 2),\n"
+                + "    Head([Customers].[USA].[WA].Children, 2),\n"
+                + "    ALL),\n"
+                + "  Tail([Customers].[USA].[OR].Children, 2),"
+                + "  ALL)",
+            fold("[Customers].[All Customers].[USA].[CA].[West Covina]\n" +
+                "[Customers].[All Customers].[USA].[CA].[Woodland Hills]\n" +
+                "[Customers].[All Customers].[USA].[WA].[Anacortes]\n" +
+                "[Customers].[All Customers].[USA].[WA].[Ballard]\n" +
+                "[Customers].[All Customers].[USA].[OR].[W. Linn]\n" +
+                "[Customers].[All Customers].[USA].[OR].[Woodburn]"));
     }
 
     public void testHierarchize() {

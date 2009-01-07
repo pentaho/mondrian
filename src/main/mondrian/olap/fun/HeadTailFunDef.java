@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -75,16 +75,16 @@ class HeadTailFunDef extends FunDefBase {
         }
     }
 
-    static List tail(final int count, final List members) {
+    static <T> List<T> tail(final int count, final List<T> members) {
         assert members != null;
         final int memberCount = members.size();
         if (count >= memberCount) {
             return members;
         }
         if (count <= 0) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
-        return new UnsupportedList<Object>() {
+        return new UnsupportedList<T>() {
             public boolean isEmpty() {
                 return false;
             }
@@ -93,23 +93,32 @@ class HeadTailFunDef extends FunDefBase {
                 return Math.min(count, members.size());
             }
 
-            public Object get(final int idx) {
+            public T get(final int idx) {
                 final int index = idx + memberCount - count;
                 return members.get(index);
             }
 
-            public Iterator<Object> iterator() {
+            public Iterator<T> iterator() {
                 return new ItrUnknownSize();
+            }
+
+            public Object[] toArray() {
+                final int offset = memberCount - count;
+                final Object[] a = new Object[size()];
+                for (int i = memberCount - count; i < memberCount; i++) {
+                    a[i - offset] = members.get(i);
+                }
+                return a;
             }
         };
     }
 
-    static List head(final int count, final List members) {
+    static <T> List<T> head(final int count, final List<T> members) {
         assert members != null;
         if (count <= 0) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
-        return new UnsupportedList<Object>() {
+        return new UnsupportedList<T>() {
             public boolean isEmpty() {
                 return false;
             }
@@ -118,14 +127,32 @@ class HeadTailFunDef extends FunDefBase {
                 return Math.min(count, members.size());
             }
 
-            public Object get(final int index) {
+            public T get(final int index) {
                 if (index >= count) {
                     throw new IndexOutOfBoundsException();
                 }
                 return members.get(index);
             }
-            public Iterator<Object> iterator() {
+
+            public Iterator<T> iterator() {
                 return new ItrUnknownSize();
+            }
+
+            public Object[] toArray() {
+                Object[] a = new Object[count];
+                int i = 0;
+                for (Object member : members) {
+                    if (i >= a.length) {
+                        return a;
+                    }
+                    a[i++] = member;
+                }
+                if (i < a.length) {
+                    Object[] a0 = a;
+                    a = new Object[i];
+                    System.arraycopy(a0, 0, a, 0, i);
+                }
+                return a;
             }
         };
     }
