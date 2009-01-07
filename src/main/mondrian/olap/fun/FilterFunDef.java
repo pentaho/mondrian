@@ -177,9 +177,10 @@ class FilterFunDef extends FunDefBase {
             MemberListCalc lcalc = (MemberListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            final Evaluator evaluator2 = evaluator.push();
+            final Evaluator evaluator2 = evaluator.push(false);
             List<Member> members = lcalc.evaluateMemberList(evaluator);
-
+            // make list mutable
+            members = new ArrayList<Member>(members);
             Iterator<Member> it = members.iterator();
             while (it.hasNext()) {
                 Member member = it.next();
@@ -202,7 +203,7 @@ class FilterFunDef extends FunDefBase {
             MemberListCalc lcalc = (MemberListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            final Evaluator evaluator2 = evaluator.push();
+            final Evaluator evaluator2 = evaluator.push(false);
             List<Member> members = lcalc.evaluateMemberList(evaluator);
 
             // Not mutable, must create new list
@@ -228,7 +229,7 @@ class FilterFunDef extends FunDefBase {
             MemberIterCalc icalc = (MemberIterCalc) calcs[0];
             final BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            final Evaluator evaluator2 = evaluator.push();
+            final Evaluator evaluator2 = evaluator.push(false);
             // This does dynamics, just in time,
             // as needed filtering
             final Iterable<Member> iter =
@@ -286,9 +287,11 @@ class FilterFunDef extends FunDefBase {
             TupleListCalc lcalc = (TupleListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            final Evaluator evaluator2 = evaluator.push();
+            final Evaluator evaluator2 = evaluator.push(false);
             List<Member[]> members = lcalc.evaluateTupleList(evaluator);
 
+            // make list mutable
+            members = new ArrayList<Member[]>(members);
             Iterator<Member[]> it = members.iterator();
             while (it.hasNext()) {
                 Member[] member = it.next();
@@ -313,7 +316,7 @@ class FilterFunDef extends FunDefBase {
             TupleListCalc lcalc = (TupleListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            final Evaluator evaluator2 = evaluator.push();
+            final Evaluator evaluator2 = evaluator.push(false);
             List<Member[]> members = lcalc.evaluateTupleList(evaluator);
 
             // Not mutable, must create new list
@@ -341,7 +344,7 @@ class FilterFunDef extends FunDefBase {
             TupleIterCalc icalc = (TupleIterCalc) calcs[0];
             final BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            final Evaluator evaluator2 = evaluator.push();
+            final Evaluator evaluator2 = evaluator.push(false);
 
             // This does dynamics, just in time,
             // as needed filtering
@@ -466,9 +469,11 @@ class FilterFunDef extends FunDefBase {
             ListCalc lcalc = (ListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            final Evaluator evaluator2 = evaluator.push();
+            final Evaluator evaluator2 = evaluator.push(false);
             List members = lcalc.evaluateList(evaluator);
 
+            // make list mutable
+            members = new ArrayList(members);
             Iterator it = members.iterator();
             while (it.hasNext()) {
                 Member member = (Member) it.next();
@@ -491,7 +496,7 @@ class FilterFunDef extends FunDefBase {
             MemberListCalc lcalc = (MemberListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            final Evaluator evaluator2 = evaluator.push();
+            final Evaluator evaluator2 = evaluator.push(false);
             List<Member> members = lcalc.evaluateMemberList(evaluator);
 
             // Not mutable, must create new list
@@ -519,9 +524,11 @@ class FilterFunDef extends FunDefBase {
             ListCalc lcalc = (ListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            final Evaluator evaluator2 = evaluator.push();
+            final Evaluator evaluator2 = evaluator.push(false);
             List members = lcalc.evaluateList(evaluator);
 
+            // make list mutable
+            members = new ArrayList(members);
             Iterator it = members.iterator();
             while (it.hasNext()) {
                 Member[] member = (Member[]) it.next();
@@ -542,7 +549,7 @@ class FilterFunDef extends FunDefBase {
             TupleListCalc lcalc = (TupleListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            final Evaluator evaluator2 = evaluator.push();
+            final Evaluator evaluator2 = evaluator.push(false);
             List<Member[]> members = lcalc.evaluateTupleList(evaluator);
 
             // Not mutable, must create new list

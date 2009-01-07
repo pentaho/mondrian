@@ -146,11 +146,13 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 // and create a lambda function containing the members.
                 Evaluator evaluator2 =
                     evaluator.pushAggregation(tupleList);
+                // cancel nonEmpty context
+                evaluator2.setNonEmpty(false);
                 final Object o = evaluator2.evaluateCurrent();
                 final Number number = (Number) o;
                 return GenericCalc.numberToDouble(number);
             }
-            return (Double) rollup.aggregate(evaluator.push(), list, calc);
+            return (Double) rollup.aggregate(evaluator.push(false), list, calc);
         }
 
         /**

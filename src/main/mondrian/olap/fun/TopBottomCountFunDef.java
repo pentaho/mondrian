@@ -119,7 +119,7 @@ class TopBottomCountFunDef extends FunDefBase {
                             final Object o = iterator.next();
                             l2.add(o);
                         }
-                        final Evaluator eval = evaluator.push();
+                        final Evaluator eval = evaluator.push(false);
                         if (arity == 1) {
                             for (;;) {
                                 sortMembers(
@@ -152,13 +152,13 @@ class TopBottomCountFunDef extends FunDefBase {
                     } else {
                         if (arity == 1) {
                             sortMembers(
-                                evaluator.push(),
+                                evaluator.push(false),
                                 (List<Member>) list,
                                 (List<Member>) list,
                                 orderCalc, top, true);
                         } else {
                             sortTuples(
-                                evaluator.push(),
+                                evaluator.push(false),
                                 (List<mondrian.olap.Member[]>) list,
                                 (List<mondrian.olap.Member[]>) list,
                                 orderCalc, top, true, arity);

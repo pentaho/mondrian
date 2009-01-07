@@ -51,7 +51,7 @@ class CorrelationFunDef extends AbstractAggregateFunDef {
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc1, calc2}) {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = evaluateCurrentList(listCalc, evaluator);
-                return correlation(evaluator.push(),
+                return correlation(evaluator.push(false),
                         memberList, calc1, calc2);
             }
 

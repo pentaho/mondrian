@@ -115,7 +115,7 @@ class SetItemFunDef extends FunDefBase {
             if (isString) {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
-                        final List<Member[]> list = listCalc.evaluateList(evaluator);
+                        final List<Member[]> list = listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         String[] results = new String[stringCalcs.length];
                         for (int i = 0; i < stringCalcs.length; i++) {
@@ -142,7 +142,7 @@ class SetItemFunDef extends FunDefBase {
             } else {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
-                        final List<Member[]> list = listCalc.evaluateList(evaluator);
+                        final List<Member[]> list = listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         final int index = indexCalc.evaluateInteger(evaluator);
                         int listSize = list.size();
@@ -160,7 +160,7 @@ class SetItemFunDef extends FunDefBase {
             if (isString) {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
-                        final List<Member> list = listCalc.evaluateList(evaluator);
+                        final List<Member> list = listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         final String result =
                                 stringCalcs[0].evaluateString(evaluator);
@@ -175,7 +175,7 @@ class SetItemFunDef extends FunDefBase {
             } else {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
-                        final List list = listCalc.evaluateList(evaluator);
+                        final List list = listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         final int index = indexCalc.evaluateInteger(evaluator);
                         int listSize = list.size();

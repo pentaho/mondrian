@@ -46,7 +46,8 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
         return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}, false) {
             public List evaluateList(Evaluator evaluator) {
                 SchemaReader schemaReader = evaluator.getSchemaReader();
-                evaluator.setNonEmpty(true);
+                // evaluate the arguments in non empty mode
+                evaluator = evaluator.push(true);
                 NativeEvaluator nativeEvaluator =
                     schemaReader.getNativeSetEvaluator(
                         call.getFunDef(), call.getArgs(), evaluator, this);
@@ -59,9 +60,6 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
                     return Collections.EMPTY_LIST;
                 }
                 final List list2 = listCalc2.evaluateList(evaluator);
-                // evaluate the arguments in non empty mode
-                evaluator = evaluator.push();
-                evaluator.setNonEmpty(true);
                 List<Member[]> result = crossJoin(list1, list2);
 
                 // remove any remaining empty crossings from the result

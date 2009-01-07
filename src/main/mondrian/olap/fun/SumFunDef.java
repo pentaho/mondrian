@@ -105,7 +105,7 @@ class SumFunDef extends AbstractAggregateFunDef {
             public double evaluateDouble(Evaluator evaluator) {
                 ListCalc listCalc = (ListCalc) ncalc;
                 List memberList = evaluateCurrentList(listCalc, evaluator);
-                return sumDouble(evaluator.push(), memberList, calc);
+                return sumDouble(evaluator.push(false), memberList, calc);
             }
 
             public Calc[] getCalcs() {

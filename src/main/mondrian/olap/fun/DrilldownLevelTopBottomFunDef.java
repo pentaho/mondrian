@@ -120,7 +120,7 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
                         schemaReader.getMemberChildren(member);
                     final List<Member> sortedChildren =
                         sortMembers(
-                            evaluator.push(),
+                            evaluator.push(false),
                             children,
                             children,
                             orderCalc,

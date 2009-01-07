@@ -60,8 +60,8 @@ class MinMaxFunDef extends AbstractAggregateFunDef {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = evaluateCurrentList(listCalc, evaluator);
                 return (Double)(max ?
-                        max(evaluator.push(), memberList, calc) :
-                        min(evaluator.push(), memberList, calc));
+                        max(evaluator.push(false), memberList, calc) :
+                        min(evaluator.push(false), memberList, calc));
             }
 
             public boolean dependsOn(Dimension dimension) {

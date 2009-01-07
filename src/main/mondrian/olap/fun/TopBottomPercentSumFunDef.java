@@ -119,7 +119,7 @@ class TopBottomPercentSumFunDef extends FunDefBase {
                 mapMemberToValue =
                     evaluateMembers(evaluator, calc, memberList, null, false);
                 sortMembers(
-                    evaluator,
+                    evaluator.push(false),
                     memberList,
                     memberList,
                     calc,
@@ -132,7 +132,7 @@ class TopBottomPercentSumFunDef extends FunDefBase {
                     evaluateTuples(evaluator, calc, tupleList);
                 int arity = ((Member[]) first).length;
                 sortTuples(
-                    evaluator,
+                    evaluator.push(false),
                     tupleList,
                     tupleList,
                     calc,

@@ -134,6 +134,7 @@ public class RolapEvaluator implements Evaluator {
             } else {
                 aggregationLists = null;
             }
+            expandingMember = parent.expandingMember;
         }
     }
 
@@ -281,6 +282,12 @@ public class RolapEvaluator implements Evaluator {
     public final RolapEvaluator push(Member member) {
         final RolapEvaluator evaluator = _push();
         evaluator.setContext(member);
+        return evaluator;
+    }
+
+    public Evaluator push(boolean nonEmpty) {
+        final RolapEvaluator evaluator = _push();
+        evaluator.setNonEmpty(nonEmpty);
         return evaluator;
     }
 
@@ -653,6 +660,17 @@ public class RolapEvaluator implements Evaluator {
     private Object getExpResultCacheKey(ExpCacheDescriptor descriptor) {
         final List<Object> key = new ArrayList<Object>();
         key.add(descriptor.getExp());
+
+        // in NON EMPTY mode the result depends on everything, e.g.
+        // "NON EMPTY [Customer].[Name].members" may return different results
+        // for 1997-01 and 1997-02
+        if (nonEmpty) {
+            for (int i = 0; i < currentMembers.length; i++) {
+                key.add(currentMembers[i]);
+            }
+            return key;
+        }
+
         final int[] dimensionOrdinals =
             descriptor.getDependentDimensionOrdinals();
         for (int i = 0; i < dimensionOrdinals.length; i++) {

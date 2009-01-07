@@ -68,6 +68,64 @@ public class NonEmptyTest extends BatchTestCase {
         super(name);
     }
 
+    public void testBugCantRestrictSlicerToCalcMember() throws Exception {
+        TestContext ctx = TestContext.instance();
+        ctx.assertQueryReturns(
+        "WITH MEMBER [Time].[Aggr] AS 'Aggregate({[Time].[1998].[Q1], [Time].[1998].[Q2]})' " +
+        "SELECT {[Measures].[Store Sales]} ON COLUMNS, " +
+        "NON EMPTY Order(TopCount([Customers].[Name].Members,3,[Measures].[Store Sales]),[Measures].[Store Sales],BASC) ON ROWS " +
+        "FROM [Sales] " +
+        "WHERE ([Time].[Aggr])",
+
+        fold("Axis #0:\n" +
+        "{[Time].[Aggr]}\n" +
+        "Axis #1:\n" +
+        "{[Measures].[Store Sales]}\n" +
+        "Axis #2:\n"));
+    }
+    public void testBug1961163() throws Exception {
+        TestContext ctx = TestContext.instance();
+        ctx.assertQueryReturns(
+        "with member [Measures].[AvgRevenue] as 'Avg([Store].[Store Name].Members, [Measures].[Store Sales])' " +
+        "select NON EMPTY {[Measures].[Store Sales], [Measures].[AvgRevenue]} ON COLUMNS, " +
+        "NON EMPTY Filter([Store].[Store Name].Members, ([Measures].[AvgRevenue] < [Measures].[Store Sales])) ON ROWS " +
+        "from [Sales]",
+
+        "Axis #0:" + nl +
+        "{}" + nl +
+        "Axis #1:" + nl +
+        "{[Measures].[Store Sales]}" + nl +
+        "{[Measures].[AvgRevenue]}" + nl +
+        "Axis #2:" + nl +
+        "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}" + nl +
+        "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}" + nl +
+        "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}" + nl +
+        "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}" + nl +
+        "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}" + nl +
+        "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}" + nl +
+        "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}" + nl +
+        "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}" + nl +
+        "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}" + nl +
+        "Row #0: 45,750.24" + nl +
+        "Row #0: 43,479.86" + nl +
+        "Row #1: 54,545.28" + nl +
+        "Row #1: 43,479.86" + nl +
+        "Row #2: 54,431.14" + nl +
+        "Row #2: 43,479.86" + nl +
+        "Row #3: 55,058.79" + nl +
+        "Row #3: 43,479.86" + nl +
+        "Row #4: 87,218.28" + nl +
+        "Row #4: 43,479.86" + nl +
+        "Row #5: 52,896.30" + nl +
+        "Row #5: 43,479.86" + nl +
+        "Row #6: 52,644.07" + nl +
+        "Row #6: 43,479.86" + nl +
+        "Row #7: 49,634.46" + nl +
+        "Row #7: 43,479.86" + nl +
+        "Row #8: 74,843.96" + nl +
+        "Row #8: 43,479.86" + nl);
+    }
+
     public void testTopCountWithCalcMemberInSlicer() {
         // Internal error: can not restrict SQL to calculated Members
         TestContext ctx = TestContext.instance();
@@ -267,7 +325,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testNativeFilter() {
         String query =
             "select {[Measures].[Store Sales]} ON COLUMNS, "
-            + "Order(Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name]), ([Measures].[Store Sales] > 200.0)), [Measures].[Store Sales], DESC) ON ROWS "
+            + "NON EMPTY Order(Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name]), ([Measures].[Store Sales] > 200.0)), [Measures].[Store Sales], DESC) ON ROWS "
             + "from [Sales] "
             + "where ([Time].[1997])";
 
@@ -434,7 +492,6 @@ public class NonEmptyTest extends BatchTestCase {
             "Row #2: 24,390\n" +
             "Row #3: 33,858\n" +
             "Row #3: 22,123\n";
-
         boolean origNativeFilter =
             MondrianProperties.instance().EnableNativeFilter.get();
         MondrianProperties.instance().EnableNativeFilter.set(true);
@@ -2052,7 +2109,7 @@ public class NonEmptyTest extends BatchTestCase {
         TupleConstraint lmc = scf.getLevelMembersConstraint(null);
         assertNull(smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc));
         // make sure that NON EMPTY [Customers].[Name].Members IS in cache
-        lmc = scf.getLevelMembersConstraint(context);
+        lmc = scf.getLevelMembersConstraint(context.push(true));
         List list = smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
         if (MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
             assertNotNull(list);
@@ -2071,7 +2128,7 @@ public class NonEmptyTest extends BatchTestCase {
         assertNull(ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc));
 
         // lookup NON EMPTY children of [Burlingame] -> yes these are in cache
-        mcc = scf.getMemberChildrenConstraint(context);
+        mcc = scf.getMemberChildrenConstraint(context.push(true));
         list = smrich.mapMemberToChildren.get((RolapMember) parent, mcc);
         assertNotNull(list);
         assertTrue(list.contains(member));
@@ -2109,7 +2166,7 @@ public class NonEmptyTest extends BatchTestCase {
             assertEquals(10281, list.size());
         }
         // make sure that NON EMPTY [Customers].[Name].Members is NOT in cache
-        lmc = scf.getLevelMembersConstraint(context);
+        lmc = scf.getLevelMembersConstraint(context.push(true));
         assertNull(smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc));
 
         // make sure that the parent/child for the context are cached
@@ -2128,7 +2185,7 @@ public class NonEmptyTest extends BatchTestCase {
         assertTrue(list.contains(member));
 
         // lookup NON EMPTY children of [Burlingame] -> not in cache
-        mcc = scf.getMemberChildrenConstraint(context);
+        mcc = scf.getMemberChildrenConstraint(context.push(true));
         list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
         assertNull(list);
     }
@@ -2289,7 +2346,7 @@ public class NonEmptyTest extends BatchTestCase {
         assertNull(ssmrch.mapMemberToChildren.get(burlingame, mcc));
         // but non empty children is
         Evaluator evaluator = getEvaluator(result, new int[] { 0, 0});
-        mcc = scf.getMemberChildrenConstraint(evaluator);
+        mcc = scf.getMemberChildrenConstraint(evaluator.push(true));
         List list = ssmrch.mapMemberToChildren.get(burlingame, mcc);
         assertNotNull(list);
         assertTrue(list.contains(peggy));

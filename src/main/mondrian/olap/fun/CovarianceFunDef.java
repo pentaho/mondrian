@@ -63,7 +63,7 @@ class CovarianceFunDef extends FunDefBase {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = listCalc.evaluateList(evaluator);
                 return (Double)covariance(
-                        evaluator.push(), memberList,
+                        evaluator.push(false), memberList,
                         calc1, calc2, biased);
             }
 

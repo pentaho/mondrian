@@ -174,7 +174,7 @@ class OrderFunDef extends FunDefBase {
             // but we cannot yet guarantee that it is mutable.
             final List<Member> list = null;
             return sortMembers(
-                subEvaluator.push(),
+                subEvaluator.push(false),
                 iterable,
                 list,
                 sortKeyCalcList[1],
@@ -192,7 +192,7 @@ class OrderFunDef extends FunDefBase {
             if (originalKeySpecCount == 1) {
                 Flag sortKeyDir = keySpecList.get(0).getDirection();
                 return sortMembers(
-                    evaluator.push(),
+                    evaluator.push(false),
                     iterable,
                     list,
                     sortKeyCalcList[1],
@@ -202,7 +202,7 @@ class OrderFunDef extends FunDefBase {
                 purgeKeySpecList(keySpecList, list);
                 if (!keySpecList.isEmpty()) {
                     return sortMembers(
-                        evaluator.push(), iterable, list, keySpecList);
+                        evaluator.push(false), iterable, list, keySpecList);
                 } else {
                     return list;
                 }
@@ -307,7 +307,7 @@ class OrderFunDef extends FunDefBase {
             Util.discard(iterCalc.getResultStyle());
             Flag sortKeyDir = keySpecList.get(0).getDirection();
             return sortTuples(
-                subEvaluator.push(),
+                subEvaluator.push(false),
                 iterable,
                 list,
                 sortKeyCalcList[1],
@@ -327,7 +327,7 @@ class OrderFunDef extends FunDefBase {
             if (originalKeySpecCount == 1) {
                 Flag sortKeyDir = keySpecList.get(0).getDirection();
                 return sortTuples(
-                    evaluator.push(),
+                    evaluator.push(false),
                     iterable,
                     list,
                     sortKeyCalcList[1],
@@ -338,7 +338,7 @@ class OrderFunDef extends FunDefBase {
                 purgeKeySpecList(keySpecList, list);
                 if (!keySpecList.isEmpty()) {
                     return sortTuples(
-                        evaluator.push(), iterable, list, keySpecList, arity);
+                        evaluator.push(false), iterable, list, keySpecList, arity);
                 } else {
                     return list;
                 }

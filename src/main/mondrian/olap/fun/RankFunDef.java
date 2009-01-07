@@ -337,7 +337,7 @@ public class RankFunDef extends FunDefBase {
 
         public Object evaluate(Evaluator evaluator) {
             // Create a new evaluator so we don't corrupt the given one.
-            final Evaluator evaluator2 = evaluator.push();
+            final Evaluator evaluator2 = evaluator.push(false);
             // Construct an array containing the value of the expression
             // for each member.
             List members = (List) listCalc.evaluate(evaluator2);

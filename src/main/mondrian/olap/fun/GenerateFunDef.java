@@ -126,6 +126,7 @@ class GenerateFunDef extends FunDefBase {
         }
 
         public List evaluateList(Evaluator evaluator) {
+            evaluator = evaluator.push(false);
             // 8 cases - all of the combinations of tupleIn x tupleOut x all
             final Evaluator evaluator2 = evaluator.push();
             if (tupleIn) {

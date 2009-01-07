@@ -362,7 +362,7 @@ public abstract class LinReg extends FunDefBase {
             DoubleCalc yCalc,
             DoubleCalc xCalc,
             boolean isTuples) {
-        List members = listCalc.evaluateList(evaluator);
+        List members = listCalc.evaluateList(evaluator.push(false));
 
         evaluator = evaluator.push();
 

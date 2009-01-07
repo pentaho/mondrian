@@ -65,6 +65,7 @@ class CountFunDef extends AbstractAggregateFunDef {
                     return count(evaluator, iterable, includeEmpty);
                 }
 */
+                evaluator = evaluator.push(false);
                 if (calc instanceof IterCalc) {
                     IterCalc iterCalc = (IterCalc) calc;
                     Iterable iterable =

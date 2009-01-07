@@ -57,7 +57,7 @@ class VarPFunDef extends AbstractAggregateFunDef {
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = evaluateCurrentList(listCalc, evaluator);
-                return (Double)var(evaluator.push(), memberList, calc, true);
+                return (Double)var(evaluator.push(false), memberList, calc, true);
             }
 
             public boolean dependsOn(Dimension dimension) {

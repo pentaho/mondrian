@@ -87,6 +87,11 @@ public interface Evaluator {
     Evaluator push(Member member);
 
     /**
+     * Creates a new evaluator with the same state except nonEmpty property.
+     */
+    Evaluator push(boolean nonEmpty);
+
+    /**
      * Restores previous evaluator.
      */
     Evaluator pop();

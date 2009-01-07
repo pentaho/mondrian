@@ -69,7 +69,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
         ListCalc listCalc,
         Evaluator evaluator)
     {
-        List tuples = listCalc.evaluateList(evaluator);
+        List tuples = listCalc.evaluateList(evaluator.push(false));
 
         int currLen = tuples.size();
         crossProd(evaluator, currLen);
@@ -81,7 +81,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
         IterCalc iterCalc,
         Evaluator evaluator)
     {
-        Iterable iter = iterCalc.evaluateIterable(evaluator);
+        Iterable iter = iterCalc.evaluateIterable(evaluator.push(false));
 
         int currLen = 0;
         crossProd(evaluator, currLen);

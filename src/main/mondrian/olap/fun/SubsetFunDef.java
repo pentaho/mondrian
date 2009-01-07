@@ -51,6 +51,7 @@ class SubsetFunDef extends FunDefBase {
                 null;
         return new AbstractListCalc(call, new Calc[] {listCalc, startCalc, countCalc}) {
             public List evaluateList(Evaluator evaluator) {
+                evaluator = evaluator.push(false);
                 final List list =
                         listCalc.evaluateList(evaluator);
                 final int start =

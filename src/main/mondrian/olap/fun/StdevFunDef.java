@@ -57,7 +57,7 @@ class StdevFunDef extends AbstractAggregateFunDef {
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = evaluateCurrentList(listCalc, evaluator);
-                return (Double)stdev(evaluator.push(), memberList, calc, false);
+                return (Double)stdev(evaluator.push(false), memberList, calc, false);
             }
 
             public boolean dependsOn(Dimension dimension) {

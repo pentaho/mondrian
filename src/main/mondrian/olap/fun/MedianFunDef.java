@@ -49,7 +49,7 @@ class MedianFunDef extends AbstractAggregateFunDef {
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = evaluateCurrentList(listCalc, evaluator);
-                return percentile(evaluator.push(), memberList, calc, 0.5);
+                return percentile(evaluator.push(false), memberList, calc, 0.5);
             }
 
             public boolean dependsOn(Dimension dimension) {
