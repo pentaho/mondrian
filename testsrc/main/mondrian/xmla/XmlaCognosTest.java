@@ -32,6 +32,110 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
         super(name);
     }
 
+    public void testCognosMDXSuiteHR_001() throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteHR_002() throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteSales_001() throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteSales_002() throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteSales_003() throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteSales_004() throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_003()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_005()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_006()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_007()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_009()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_012()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_013()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_014()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_015()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_016()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_017()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_020()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_021()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_024()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_028()
+            throws Exception {
+        executeMDX();
+    }
+
+    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_029()
+            throws Exception {
+        executeMDX();
+    }
+
     public void testDimensionPropertyForPercentageIssue() throws Exception {
         executeMDX();
     }
@@ -91,7 +195,8 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
 
     private void executeMDX() throws Exception {
         String requestType = "EXECUTE";
-        doTest(requestType, getDefaultRequestProperties(requestType), TestContext.instance());
+        doTest(requestType, getDefaultRequestProperties(requestType),
+                TestContext.instance());
     }
 
     protected DiffRepository getDiffRepos() {
