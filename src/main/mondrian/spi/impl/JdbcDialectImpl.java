@@ -929,6 +929,8 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.INFOBRIGHT;
         } else if (productName.toUpperCase().equals("MYSQL")) {
             return DatabaseProduct.MYSQL;
+        } else if (productName.startsWith("HP Neoview")) {
+            return DatabaseProduct.NEOVIEW;
         } else if (productName.toUpperCase().indexOf("SYBASE") >= 0) {
             return DatabaseProduct.SYBASE;
         } else if (productName.toUpperCase().indexOf("TERADATA") >= 0) {

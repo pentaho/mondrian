@@ -523,6 +523,7 @@ public interface Dialect {
         LUCIDDB,
         MSSQL,
         NETEZZA,
+        NEOVIEW,
         ORACLE,
         POSTGRES,
         MYSQL,

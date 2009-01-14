@@ -874,16 +874,28 @@ public class MondrianFoodMartLoader {
                 fileOutput.write(";" + nl);
             }
         } else {
-            boolean useTxn =
-                connection.getMetaData().supportsTransactions();
+            boolean useTxn = connection.getMetaData().supportsTransactions();
+
+            switch (dialect.getDatabaseProduct()) {
+            case NEOVIEW:
+                // setAutoCommit can not changed to true again, throws
+                // "com.hp.t4jdbc.HPT4Exception: SetAutoCommit not possible",
+                // since a transaction is active
+                useTxn = false;
+                break;
+            }
+
             if (useTxn) {
                 connection.setAutoCommit(false);
             }
 
-            if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB) {
+            switch (dialect.getDatabaseProduct()) {
+            case LUCIDDB:
+            case NEOVIEW:
                 // LucidDB doesn't perform well with single-row inserts,
                 // and its JDBC driver doesn't support batch writes,
                 // so collapse the batch into one big multi-row insert.
+                // Similarly Neoview.
                 String VALUES_TOKEN = "VALUES";
                 StringBuilder sb = new StringBuilder(batch.get(0));
                 for (int i = 1; i < batch.size(); i++) {
@@ -1753,6 +1765,12 @@ public class MondrianFoodMartLoader {
             }
 
             buf.append(")");
+            switch (dialect.getDatabaseProduct()) {
+            case NEOVIEW:
+                // no unique keys defined
+                buf.append(" NO PARTITION");
+            }
+
             final String ddl = buf.toString();
             executeDDL(ddl);
         } catch (Exception e) {
@@ -1900,6 +1918,7 @@ public class MondrianFoodMartLoader {
                 switch (dialect.getDatabaseProduct()) {
                 case ORACLE:
                 case LUCIDDB:
+                case NEOVIEW:
                     return "TIMESTAMP '" + ts + "'";
                 default:
                     return "'" + ts + "'";
@@ -1914,6 +1933,7 @@ public class MondrianFoodMartLoader {
                 switch (dialect.getDatabaseProduct()) {
                 case ORACLE:
                 case LUCIDDB:
+                case NEOVIEW:
                     return "DATE '" + dateFormatter.format(dt) + "'";
                 default:
                     return "'" + dateFormatter.format(dt) + "'";
@@ -1985,6 +2005,7 @@ public class MondrianFoodMartLoader {
             switch (product) {
             case ORACLE:
             case LUCIDDB:
+            case NEOVIEW:
                 return "TIMESTAMP " + columnValue;
             }
 
@@ -1995,6 +2016,7 @@ public class MondrianFoodMartLoader {
             switch (product) {
             case ORACLE:
             case LUCIDDB:
+            case NEOVIEW:
                 return "DATE " + columnValue;
             }
 
@@ -2015,6 +2037,7 @@ public class MondrianFoodMartLoader {
             case DERBY:
             case TERADATA:
             case INGRES:
+            case NEOVIEW:
                 if (trimmedValue.equals("true")) {
                     return "1";
                 } else if (trimmedValue.equals("false")) {
