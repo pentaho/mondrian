@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2008 Julian Hyde and others
+// Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
  */
@@ -13,7 +13,6 @@ import mondrian.olap.MondrianProperties;
 import mondrian.rolap.BatchTestCase;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
-import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 
 import java.util.ArrayList;
@@ -61,14 +60,6 @@ public class SqlQueryTest extends BatchTestCase {
         prop.WarnIfNoPatternForDialect.set(origWarnIfNoPatternForDialect);
     }
 
-    private static String dialectize(Dialect dialect, String expected) {
-        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
-            return Util.replace(fold(expected), " =as= ", " ");
-        } else {
-            return Util.replace(fold(expected), " =as= ", " as ");
-        }
-    }
-
     public void testToStringForSingleGroupingSetSql() {
         if (!isGroupingSetsSupported()) {
             return;
@@ -107,7 +98,7 @@ public class SqlQueryTest extends BatchTestCase {
                     "))";
             }
             assertEquals(
-                dialectize(dialect, expected),
+                dialectize(dialect.getDatabaseProduct(), expected),
                 sqlQuery.toString());
         }
     }
@@ -294,7 +285,7 @@ public class SqlQueryTest extends BatchTestCase {
                     + "group by grouping sets ((),(gs1,gs2,gs3))";
             }
             assertEquals(
-                dialectize(dialect, expected),
+                dialectize(dialect.getDatabaseProduct(), expected),
                 sqlQuery.toString());
         }
     }
@@ -353,7 +344,7 @@ public class SqlQueryTest extends BatchTestCase {
                     "group by grouping sets ((c0,c1,c2),(c1,c2))";
             }
             assertEquals(
-                dialectize(dialect, expected),
+                dialectize(dialect.getDatabaseProduct(), expected),
                 sqlQuery.toString());
         }
     }

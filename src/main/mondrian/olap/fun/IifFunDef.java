@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2008-2008 Julian Hyde
+// Copyright (C) 2008-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,8 +12,7 @@ import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.TypeUtil;
+import mondrian.olap.type.*;
 
 /**
  * Definition of the <code>Iif</code> MDX function.
@@ -23,6 +22,13 @@ import mondrian.olap.type.TypeUtil;
  * @since Jan 17, 2008
  */
 public class IifFunDef extends FunDefBase {
+    /**
+     * Creates an IifFunDef.
+     *
+     * @param name        Name of the function, for example "Members".
+     * @param description Description of the function
+     * @param flags       Encoding of the syntactic, return, and parameter types
+     */
     protected IifFunDef(
         String name,
         String description,
@@ -45,18 +51,33 @@ public class IifFunDef extends FunDefBase {
         final Calc calc2 =
             compiler.compileAs(
                 call.getArg(2), call.getType(), ResultStyle.ANY_LIST);
-        return new GenericCalc(call) {
-            public Object evaluate(Evaluator evaluator) {
-                final boolean b =
-                    booleanCalc.evaluateBoolean(evaluator);
-                Calc calc = b ? calc1 : calc2;
-                return calc.evaluate(evaluator);
-            }
+        if (call.getType() instanceof SetType) {
+            return new GenericIterCalc(call) {
+                public Object evaluate(Evaluator evaluator) {
+                    final boolean b =
+                        booleanCalc.evaluateBoolean(evaluator);
+                    Calc calc = b ? calc1 : calc2;
+                    return calc.evaluate(evaluator);
+                }
 
-            public Calc[] getCalcs() {
-                return new Calc[] {booleanCalc, calc1, calc2};
-            }
-        };
+                public Calc[] getCalcs() {
+                    return new Calc[] {booleanCalc, calc1, calc2};
+                }
+            };
+        } else {
+            return new GenericCalc(call) {
+                public Object evaluate(Evaluator evaluator) {
+                    final boolean b =
+                        booleanCalc.evaluateBoolean(evaluator);
+                    Calc calc = b ? calc1 : calc2;
+                    return calc.evaluate(evaluator);
+                }
+
+                public Calc[] getCalcs() {
+                    return new Calc[] {booleanCalc, calc1, calc2};
+                }
+            };
+        }
     }
 
     // IIf(<Logical Expression>, <String Expression>, <String Expression>)

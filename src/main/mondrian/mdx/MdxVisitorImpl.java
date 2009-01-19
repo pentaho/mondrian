@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -78,6 +78,29 @@ public class MdxVisitorImpl implements MdxVisitor {
     public Object visit(Literal literal) {
         // do nothing
         return null;
+    }
+
+    /**
+     * Visits an array of expressions. Returns the same array if none of the
+     * expressions are changed, otherwise a new array.
+     *
+     * @param args Array of expressions
+     * @return Array of visited expressions; same as {@code args} iff none of
+     * the expressions are changed.
+     */
+    protected Exp[] visitArray(Exp[] args) {
+        Exp[] newArgs = args;
+        for (int i = 0; i < args.length; i++) {
+            Exp arg = args[i];
+            Exp newArg = (Exp) arg.accept(this);
+            if (newArg != arg) {
+                if (newArgs == args) {
+                    newArgs = args.clone();
+                }
+                newArgs[i] = newArg;
+            }
+        }
+        return newArgs;
     }
 }
 

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2003-2008 Julian Hyde and others
+// Copyright (C) 2003-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -652,8 +652,8 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<Member> it1 = (Iterable<Member>) o1;
-            Iterable<Member> it2 = (Iterable<Member>) o2;
+            Iterable<Member> it1 = Util.castToIterable(o1);
+            Iterable<Member> it2 = Util.castToIterable(o2);
             return makeIterableIterable(it1, it2);
         }
     }
@@ -667,7 +667,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<Member> it1 = (Iterable<Member>) o1;
+            Iterable<Member> it1 = Util.castToIterable(o1);
             List<Member> l2 = (List<Member>) o2;
 
             if (l2 instanceof RandomAccess) {
@@ -747,7 +747,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<Member> it1 = (Iterable<Member>) o1;
+            Iterable<Member> it1 = Util.castToIterable(o1);
             Iterable<List<Member>> it2 = (Iterable<List<Member>>) o2;
             return makeIterableIterable(it1, it2);
         }
@@ -762,7 +762,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<Member> it1 = (Iterable<Member>) o1;
+            Iterable<Member> it1 = Util.castToIterable(o1);
             List<List<Member>> l2 = (List<List<Member>>) o2;
 
             if (l2 instanceof RandomAccess) {
@@ -842,8 +842,8 @@ public class CrossJoinFunDef extends FunDefBase {
 
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<List<Member>> it1 = (Iterable<List<Member>>) o1;
-            Iterable<Member> it2 = (Iterable<Member>) o2;
+            Iterable<List<Member>> it1 = Util.castToIterable(o1);
+            Iterable<Member> it2 = Util.castToIterable(o2);
             return makeIterableIterable(it1, it2);
         }
     }
@@ -881,7 +881,7 @@ public class CrossJoinFunDef extends FunDefBase {
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             List<List<Member>> l1 = (List<List<Member>>) o1;
-            Iterable<Member> it2 = (Iterable<Member>) o2;
+            Iterable<Member> it2 = Util.castToIterable(o2);
 
             if (l1 instanceof RandomAccess) {
                 // direct access faster

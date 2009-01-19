@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -2217,6 +2217,37 @@ public class Util extends XOMUtil {
     @SuppressWarnings({"unchecked"})
     public static <T> List<T> cast(List<?> list) {
         return (List<T>) list;
+    }
+
+    /**
+     * Casts a collection to iterable.
+     *
+     * <p>Under JDK 1.4, {@link Collection} objects do not implement
+     * {@link Iterable}, so this method inserts a casting wrapper. (Since
+     * Iterable does not exist under JDK 1.4, they will have been compiled under
+     * JDK 1.5 or later, then retrowoven to 1.4 class format. References to
+     * Iterable will have been replaced with references to
+     * <code>com.rc.retroweaver.runtime.Retroweaver_</code>.</p>
+     *
+     * <p>Under later JDKs this method is trivial. This method can be deleted
+     * when we discontinue support for JDK 1.4.
+     *
+     * @param iterable Object which ought to be iterable
+     * @param <T> Element type
+     * @return Object cast to Iterable
+     */
+    public static <T> Iterable<T> castToIterable(
+        final Object iterable)
+    {
+        if (Util.Retrowoven &&
+            !(iterable instanceof Iterable)) {
+            return new Iterable<T>() {
+                public Iterator<T> iterator() {
+                    return ((Collection<T>) iterable).iterator();
+                }
+            };
+        }
+        return (Iterable<T>) iterable;
     }
 
     /**

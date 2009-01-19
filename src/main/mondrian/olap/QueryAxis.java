@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -102,13 +102,22 @@ public class QueryAxis extends QueryPart {
         return o;
     }
 
-    public Calc compile(ExpCompiler compiler, List<ResultStyle> resultStyles) {
+    public Calc compile(ExpCompiler compiler, ResultStyle resultStyle) {
         Exp exp = this.exp;
         if (axisOrdinal == AxisOrdinal.SLICER) {
             exp = normalizeSlicerExpression(exp);
             exp = exp.accept(compiler.getValidator());
         }
-        return compiler.compileAs(exp, null, resultStyles);
+        switch (resultStyle) {
+        case LIST:
+            return compiler.compileList(exp, false);
+        case MUTABLE_LIST:
+            return compiler.compileList(exp, true);
+        case ITERABLE:
+            return compiler.compileIter(exp);
+        default:
+            throw Util.unexpected(resultStyle);
+        }
     }
 
     private static Exp normalizeSlicerExpression(Exp exp) {

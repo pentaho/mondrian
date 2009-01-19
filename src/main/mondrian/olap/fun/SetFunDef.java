@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -408,11 +408,29 @@ public class SetFunDef extends FunDefBase {
         }
     }
 
-    private static ResolvedFunCall wrapAsSet(Exp arg) {
+    /**
+     * Creates a call to the set operator with a given collection of
+     * expressions. There must be at least one expression.
+     *
+     * @param args Expressions
+     * @return Call to set operator
+     */
+    public static ResolvedFunCall wrapAsSet(Exp... args) {
+        assert args.length > 0;
+        final int[] categories = new int[args.length];
+        Type type = null;
+        for (int i = 0; i < args.length; i++) {
+            final Exp arg = args[i];
+            categories[i] = arg.getCategory();
+            final Type argType = arg.getType();
+            if (argType instanceof SetType) {
+                type = ((SetType) argType).getElementType();
+            }
+        }
         return new ResolvedFunCall(
-                new SetFunDef(Resolver, new int[] {arg.getCategory()}),
-                new Exp[] {arg},
-                new SetType(arg.getType()));
+            new SetFunDef(Resolver, categories),
+            args,
+            new SetType(type));
     }
 
     /**

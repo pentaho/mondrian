@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde and others.
+// Copyright (C) 2005-2009 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -180,22 +180,32 @@ public class ModulosTest extends TestCase {
     }
 
     static class PositionList extends RolapAxis.PositionListBase {
-        int size;
+        final int size;
+
         PositionList(int size) {
             this.size = size;
         }
+
         public int size() {
             return size;
         }
+
+        public boolean isEmpty() {
+            return size > 0;
+        }
+
         public Position get(int index) {
             return null;
         }
+
         public ListIterator<Position> listIterator() {
             return null;
         }
+
         public ListIterator<Position> listIterator(int index) {
             return null;
         }
+
         public Iterator<Position> iterator() {
             return null;
         }

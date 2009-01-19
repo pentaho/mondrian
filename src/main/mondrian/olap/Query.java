@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -492,15 +492,11 @@ public class Query extends QueryPart {
         if (axes != null) {
             axisCalcs = new Calc[axes.length];
             for (int i = 0; i < axes.length; i++) {
-                axisCalcs[i] = axes[i].compile(
-                    compiler,
-                    Collections.singletonList(resultStyle));
+                axisCalcs[i] = axes[i].compile(compiler, resultStyle);
             }
         }
         if (slicerAxis != null) {
-            slicerCalc = slicerAxis.compile(
-                compiler,
-                Collections.singletonList(resultStyle));
+            slicerCalc = slicerAxis.compile(compiler, resultStyle);
         }
     }
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -17,10 +17,7 @@ import mondrian.olap.type.LevelType;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.ExpCompiler} interface.
@@ -93,6 +90,7 @@ public class AbstractExpCompiler implements ExpCompiler {
         List<ResultStyle> preferredResultTypes)
     {
         assert preferredResultTypes != null;
+        int substitutions = 0;
         if (Util.Retrowoven) {
             // Copy and replace ITERABLE
             // A number of functions declare that they can accept
@@ -101,10 +99,11 @@ public class AbstractExpCompiler implements ExpCompiler {
             List<ResultStyle> tmp =
                 new ArrayList<ResultStyle>(preferredResultTypes.size());
             for (ResultStyle preferredResultType : preferredResultTypes) {
-                tmp.add(
-                    (preferredResultType == ResultStyle.ITERABLE)
-                        ? ResultStyle.LIST
-                        : preferredResultType);
+                if (preferredResultType == ResultStyle.ITERABLE) {
+                    preferredResultType = ResultStyle.LIST;
+                    ++substitutions;
+                }
+                tmp.add(preferredResultType);
             }
             preferredResultTypes = tmp;
         }
@@ -122,7 +121,24 @@ public class AbstractExpCompiler implements ExpCompiler {
                     return compileDimension(exp);
                 }
             }
-            return compile(exp);
+            final Calc calc = compile(exp);
+            if (substitutions > 0) {
+                if (calc == null) {
+                    this.resultStyles =
+                        Collections.singletonList(ResultStyle.ITERABLE);
+                    return compile(exp);
+                } else if (calc instanceof IterCalc) {
+                    return calc;
+                } else {
+                    assert calc instanceof ListCalc;
+                    if (((SetType) calc.getType()).getArity() == 1) {
+                        return toIter((MemberListCalc) calc);
+                    } else {
+                        return toIter((TupleListCalc) calc);
+                    }
+                }
+            }
+            return calc;
         } finally {
             this.resultStyles = save;
         }
@@ -255,22 +271,22 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 
     /**
-     * Converts an iterable to a list.
+     * Converts an iterable over members to a list of members.
      *
      * @param calc Calc
      * @return List calculation.
      */
-    private MemberListCalc toList(MemberIterCalc calc) {
+    public MemberListCalc toList(MemberIterCalc calc) {
         return new IterableMemberListCalc(calc);
     }
 
     /**
-     * Converts an iterable to a list.
+     * Converts an iterable over tuples to a list of tuples.
      *
      * @param calc Calc
      * @return List calculation.
      */
-    private TupleListCalc toList(TupleIterCalc calc) {
+    public TupleListCalc toList(TupleIterCalc calc) {
         return new IterableTupleListCalc(calc);
     }
 
@@ -291,11 +307,23 @@ public class AbstractExpCompiler implements ExpCompiler {
         }
     }
 
-    private MemberIterCalc toIter(final MemberListCalc memberListCalc) {
+    /**
+     * Converts a list of members to an iterable over members.
+     *
+     * @param memberListCalc Calc
+     * @return Iterable calculation
+     */
+    public MemberIterCalc toIter(final MemberListCalc memberListCalc) {
         return new MemberListIterCalc(memberListCalc);
     }
 
-    private TupleIterCalc toIter(final TupleListCalc tupleListCalc) {
+    /**
+     * Converts a list of tuples to an iterable over tuples.
+     *
+     * @param tupleListCalc Calc
+     * @return Iterable calculation
+     */
+    public TupleIterCalc toIter(final TupleListCalc tupleListCalc) {
         return new TupleListIterCalc(tupleListCalc);
     }
 

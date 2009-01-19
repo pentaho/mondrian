@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2008-2008 Julian Hyde and others
+// Copyright (C) 2008-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -161,13 +161,25 @@ class RolapNamedSetEvaluator
                     this + ": " +
                     "Named set " + name + " evaluated to:" + Util.nl);
             int arity = ((SetType) calc.getType()).getArity();
+            int rowCount = 0;
+            final int maxRowCount = 100;
             if (arity == 1) {
                 for (Member t : Util.<Member>cast(rawList)) {
+                    if (rowCount++ > maxRowCount) {
+                        buf.append("...");
+                        buf.append(Util.nl);
+                        break;
+                    }
                     buf.append(t);
                     buf.append(Util.nl);
                 }
             } else {
                 for (Member[] t : Util.<Member[]>cast(rawList)) {
+                    if (rowCount++ > maxRowCount) {
+                        buf.append("...");
+                        buf.append(Util.nl);
+                        break;
+                    }
                     int k = 0;
                     for (Member member : t) {
                         if (k++ > 0) {

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2008 Julian Hyde
+// Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,8 +12,7 @@
 package mondrian.test;
 
 import mondrian.olap.MondrianProperties;
-import org.eigenbase.util.property.Property;
-import org.eigenbase.util.property.BooleanProperty;
+import org.eigenbase.util.property.*;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -46,6 +45,63 @@ public class PropertySaver {
      * @param value New value
      */
     public void set(BooleanProperty property, boolean value) {
+        if (!originalValues.containsKey(property)) {
+            final String originalValue =
+                properties.containsKey(property.getPath())
+                    ? properties.getProperty(property.getPath())
+                    : NOT_SET;
+            originalValues.put(
+                property,
+                originalValue);
+        }
+        property.set(value);
+    }
+
+    /**
+     * Sets an integer property and remembers its previous value.
+     *
+     * @param property Property
+     * @param value New value
+     */
+    public void set(IntegerProperty property, int value) {
+        if (!originalValues.containsKey(property)) {
+            final String originalValue =
+                properties.containsKey(property.getPath())
+                    ? properties.getProperty(property.getPath())
+                    : NOT_SET;
+            originalValues.put(
+                property,
+                originalValue);
+        }
+        property.set(value);
+    }
+
+    /**
+     * Sets a string property and remembers its previous value.
+     *
+     * @param property Property
+     * @param value New value
+     */
+    public void set(StringProperty property, String value) {
+        if (!originalValues.containsKey(property)) {
+            final String originalValue =
+                properties.containsKey(property.getPath())
+                    ? properties.getProperty(property.getPath())
+                    : NOT_SET;
+            originalValues.put(
+                property,
+                originalValue);
+        }
+        property.set(value);
+    }
+
+    /**
+     * Sets a double property and remembers its previous value.
+     *
+     * @param property Property
+     * @param value New value
+     */
+    public void set(DoubleProperty property, Double value) {
         if (!originalValues.containsKey(property)) {
             final String originalValue =
                 properties.containsKey(property.getPath())

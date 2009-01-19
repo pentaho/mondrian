@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2008 Julian Hyde and others
+// Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -69,8 +69,9 @@ public class BatchTestCase extends FoodMartTestCase {
             values.add(fieldValues[i][0]);
         }
         FastBatchingCellReader.Batch batch = fbcr.new Batch(
-            createRequest(cubeName, measure,
-                tableNames, fieldNames, values.toArray(new String[0])));
+            createRequest(
+                cubeName, measure, tableNames, fieldNames,
+                values.toArray(new String[values.size()])));
 
         addRequests(batch, cubeName, measure, tableNames, fieldNames,
             fieldValues, new ArrayList<String>(), 0);
@@ -87,8 +88,9 @@ public class BatchTestCase extends FoodMartTestCase {
             values.add(fieldValues[i][0]);
         }
         FastBatchingCellReader.Batch batch = fbcr.new Batch(
-            createRequest(cubeName, measure,
-                tableNames, fieldNames, values.toArray(new String[0]), constraint));
+            createRequest(
+                cubeName, measure, tableNames, fieldNames,
+                values.toArray(new String[values.size()]), constraint));
 
         addRequests(batch, cubeName, measure, tableNames, fieldNames,
             fieldValues, new ArrayList<String>(), 0, constraint);
@@ -113,8 +115,10 @@ public class BatchTestCase extends FoodMartTestCase {
                 selectedValues.remove(fieldValues[currPos][j]);
             }
         } else {
-            batch.add(createRequest(cubeName, measure, tableNames,
-                fieldNames, selectedValues.toArray(new String[0])));
+            batch.add(
+                createRequest(
+                    cubeName, measure, tableNames, fieldNames,
+                    selectedValues.toArray(new String[selectedValues.size()])));
         }
     }
 
@@ -138,8 +142,10 @@ public class BatchTestCase extends FoodMartTestCase {
                 selectedValues.remove(fieldValues[currPos][j]);
             }
         } else {
-            batch.add(createRequest(cubeName, measure, tableNames,
-                fieldNames, selectedValues.toArray(new String[0]), constraint));
+            batch.add(
+                createRequest(
+                    cubeName, measure, tableNames, fieldNames,
+                    selectedValues.toArray(new String[selectedValues.size()]), constraint));
         }
     }
 
@@ -331,12 +337,12 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param clearCache whether to clear cache before executing the MDX query
      */
     protected void assertQuerySqlOrNot(
-            TestContext testContext,
-            String mdxQuery,
-            SqlPattern[] patterns,
-            boolean negative,
-            boolean bypassSchemaCache,
-            boolean clearCache)
+        TestContext testContext,
+        String mdxQuery,
+        SqlPattern[] patterns,
+        boolean negative,
+        boolean bypassSchemaCache,
+        boolean clearCache)
     {
         Connection connection = testContext.getConnection();
 
@@ -359,16 +365,8 @@ public class BatchTestCase extends FoodMartTestCase {
             String sql = sqlPattern.getSql();
             String trigger = sqlPattern.getTriggerSql();
 
-            switch (d) {
-            case ORACLE:
-                sql = sql.replaceAll(" =as= ", " ");
-                trigger = trigger.replaceAll(" =as= ", " ");
-                break;
-            case TERADATA:
-                sql = sql.replaceAll(" =as= ", " as ");
-                trigger = trigger.replaceAll(" =as= ", " as ");
-                break;
-            }
+            sql = dialectize(d, sql);
+            trigger = dialectize(d, trigger);
 
             // Create a dummy DataSource which will throw a 'bomb' if it is
             // asked to execute a particular SQL statement, but will otherwise
@@ -420,6 +418,18 @@ public class BatchTestCase extends FoodMartTestCase {
         }
     }
 
+    protected String dialectize(Dialect.DatabaseProduct d, String sql) {
+        switch (d) {
+        case ORACLE:
+            return sql.replaceAll(" =as= ", " ");
+        case TERADATA:
+            return sql.replaceAll(" =as= ", " as ");
+        case DERBY:
+            return sql.replaceAll("`", "\"");
+        default:
+            return sql;
+        }
+    }
 
     private void clearCache(RolapCube cube) {
         // Clear the cache for the Sales cube, so the query runs as if
@@ -512,7 +522,8 @@ public class BatchTestCase extends FoodMartTestCase {
     }
 
     static CellRequestConstraint makeConstraintYearQuarterMonth(
-        List<String[]> values) {
+        List<String[]> values)
+    {
         String[] aggConstraintTables =
             new String[] { "time_by_day", "time_by_day", "time_by_day" };
         String[] aggConstraintColumns =
@@ -520,19 +531,17 @@ public class BatchTestCase extends FoodMartTestCase {
         List<String[]> aggConstraintValues = new ArrayList<String[]>();
 
         for (String[] value : values) {
-            assert (value.length == 3);
+            assert value.length == 3;
             aggConstraintValues.add(value);
         }
 
-        CellRequestConstraint aggConstraint =
-            new CellRequestConstraint(
-                aggConstraintTables, aggConstraintColumns, aggConstraintValues);
-
-        return aggConstraint;
+        return new CellRequestConstraint(
+            aggConstraintTables, aggConstraintColumns, aggConstraintValues);
     }
 
     static CellRequestConstraint makeConstraintCountryState(
-        List<String[]> values) {
+        List<String[]> values)
+    {
         String[] aggConstraintTables =
             new String[] { "store", "store"};
         String[] aggConstraintColumns =
@@ -540,19 +549,17 @@ public class BatchTestCase extends FoodMartTestCase {
         List<String[]> aggConstraintValues = new ArrayList<String[]>();
 
         for (String[] value : values) {
-            assert (value.length == 2);
+            assert value.length == 2;
             aggConstraintValues.add(value);
         }
 
-        CellRequestConstraint aggConstraint =
-            new CellRequestConstraint(
-                aggConstraintTables, aggConstraintColumns, aggConstraintValues);
-
-        return aggConstraint;
+        return new CellRequestConstraint(
+            aggConstraintTables, aggConstraintColumns, aggConstraintValues);
     }
 
     static CellRequestConstraint makeConstraintProductFamilyDepartment(
-        List<String[]> values) {
+        List<String[]> values)
+    {
         String[] aggConstraintTables =
             new String[] { "product_class", "product_class"};
         String[] aggConstraintColumns =
@@ -560,15 +567,12 @@ public class BatchTestCase extends FoodMartTestCase {
         List<String[]> aggConstraintValues = new ArrayList<String[]>();
 
         for (String[] value : values) {
-            assert (value.length == 2);
+            assert value.length == 2;
             aggConstraintValues.add(value);
         }
 
-        CellRequestConstraint aggConstraint =
-            new CellRequestConstraint(
-                aggConstraintTables, aggConstraintColumns, aggConstraintValues);
-
-        return aggConstraint;
+        return new CellRequestConstraint(
+            aggConstraintTables, aggConstraintColumns, aggConstraintValues);
     }
 
     protected RolapStar.Measure getMeasure(String cube, String measureName) {
@@ -577,8 +581,7 @@ public class BatchTestCase extends FoodMartTestCase {
         Cube salesCube = connection.getSchema().lookupCube(cube, fail);
         Member measure = salesCube.getSchemaReader(null).getMemberByUniqueName(
             Util.parseIdentifier(measureName), fail);
-        RolapStar.Measure starMeasure = RolapStar.getStarMeasure(measure);
-        return starMeasure;
+        return RolapStar.getStarMeasure(measure);
     }
 
     protected Connection getFoodMartConnection() {

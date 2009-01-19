@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -173,13 +173,21 @@ public class DialectTest extends TestCase {
         SQLException e = null;
         Statement stmt = null;
         try {
+            String dropSql = dialectize("drop table [foo]");
+            String createSql = dialectize("create table [foo] ([i] integer)");
             stmt = getConnection().createStatement();
-            String sql = dialectize("create table [foo] ([i] integer)");
+
+            // drop previously existing table, and ignore any errors
+            try {
+                stmt.execute(dropSql);
+            } catch (SQLException e3) {
+                // ignore
+            }
+            // now create and drop a dummy table
             phase = 1;
-            assertFalse(stmt.execute(sql));
+            assertFalse(stmt.execute(createSql));
             phase = 2;
-            sql = dialectize("drop table [foo]");
-            assertFalse(stmt.execute(sql));
+            assertFalse(stmt.execute(dropSql));
             phase = 3;
         } catch (SQLException e2) {
             e = e2;
@@ -193,7 +201,7 @@ public class DialectTest extends TestCase {
             }
         }
         if (getDialect().allowsDdl()) {
-            assertNull(e);
+            assertNull(e == null ? null : e.getMessage(), e);
             assertEquals(3, phase);
         } else {
             assertEquals(1, phase);

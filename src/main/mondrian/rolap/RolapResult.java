@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,9 +13,7 @@
 
 package mondrian.rolap;
 
-import mondrian.calc.Calc;
-import mondrian.calc.DummyExp;
-import mondrian.calc.ParameterSlot;
+import mondrian.calc.*;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
@@ -964,18 +962,17 @@ public class RolapResult extends ResultBase {
         } else {
             Axis axis = axes[axisOrdinal];
             List<Position> positions = axis.getPositions();
-            if (positionsHighCardinality.get(axisOrdinal) == null) {
-                try {
-                    positionsHighCardinality.put(
-                        axisOrdinal,
-                        positions.get(0).get(0).getDimension()
-                            .isHighCardinality());
-                } catch (IndexOutOfBoundsException ioobe) {
-                    // No elements... no problem
-                }
+            if (positionsHighCardinality.get(axisOrdinal) == null
+                && !positions.isEmpty()
+                && !positions.get(0).isEmpty())
+            {
+                positionsHighCardinality.put(
+                    axisOrdinal,
+                    positions.get(0).get(0).getDimension()
+                        .isHighCardinality());
             }
             if (positionsHighCardinality.get(axisOrdinal) != null
-                    && positionsHighCardinality.get(axisOrdinal))
+                && positionsHighCardinality.get(axisOrdinal))
             {
                 final int limit =
                     MondrianProperties.instance().HighCardChunkSize.get();

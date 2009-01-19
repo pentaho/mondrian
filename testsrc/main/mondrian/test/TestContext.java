@@ -14,8 +14,7 @@ package mondrian.test;
 
 import junit.framework.Assert;
 import junit.framework.ComparisonFailure;
-import mondrian.calc.Calc;
-import mondrian.calc.CalcWriter;
+import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
@@ -1200,7 +1199,11 @@ public class TestContext {
         String expectedDimList,
         final boolean scalar)
     {
-        final Calc calc = query.compileExpression(expression, scalar, null);
+        final Calc calc =
+            query.compileExpression(
+                expression,
+                scalar,
+                scalar ? null : ResultStyle.ITERABLE);
         final Dimension[] dimensions = query.getCube().getDimensions();
         StringBuilder buf = new StringBuilder("{");
         int dependCount = 0;

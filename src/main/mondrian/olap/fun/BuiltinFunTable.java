@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,7 +25,6 @@ import mondrian.olap.fun.vba.Excel;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.olap.type.Type;
-import org.eigenbase.xom.XOMUtil;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -1028,21 +1027,7 @@ public class BuiltinFunTable extends FunTableImpl {
         });
 
         // <Level>.Members
-        define(new FunDefBase(
-                "Members",
-                "Returns the set of members in a level.",
-                "pxl") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final LevelCalc levelCalc =
-                    compiler.compileLevel(call.getArg(0));
-                return new AbstractMemberListCalc(call, new Calc[] {levelCalc}) {
-                    public List<Member> evaluateMemberList(Evaluator evaluator) {
-                        Level level = levelCalc.evaluateLevel(evaluator);
-                        return levelMembers(level, evaluator, false);
-                    }
-                };
-            }
-        });
+        define(LevelMembersFunDef.INSTANCE);
 
         // <Level>.AllMembers
         define(new FunDefBase(
@@ -1961,6 +1946,7 @@ public class BuiltinFunTable extends FunTableImpl {
         }
         return instance;
     }
+
 }
 
 // End BuiltinFunTable.java

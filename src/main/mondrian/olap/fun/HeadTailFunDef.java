@@ -88,7 +88,7 @@ class HeadTailFunDef extends FunDefBase {
         }
         return new UnsupportedList<T>() {
             public boolean isEmpty() {
-                return false;
+                return count == 0 || members.isEmpty();
             }
 
             public int size() {
@@ -122,7 +122,7 @@ class HeadTailFunDef extends FunDefBase {
         }
         return new UnsupportedList<T>() {
             public boolean isEmpty() {
-                return false;
+                return count == 0 || members.isEmpty();
             }
 
             public int size() {

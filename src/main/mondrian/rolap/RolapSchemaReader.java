@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2008 Julian Hyde
+// Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -123,7 +123,8 @@ public abstract class RolapSchemaReader
             int depth = 0;
             for (Member m = member.getParentMember();
                 m != null;
-                m = m.getParentMember()) {
+                m = m.getParentMember())
+            {
                 depth++;
             }
             return depth;
@@ -564,7 +565,8 @@ public abstract class RolapSchemaReader
      * "mondrian.trace.level".
      */
     private static class SystemPropertyParameter
-        extends ParameterImpl {
+        extends ParameterImpl
+    {
         /**
          * true if source is a system property;
          * false if source is a mondrian property.

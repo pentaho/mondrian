@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -17,9 +17,10 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.type.SetType;
 import mondrian.olap.*;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Definition of the <code>Filter</code> MDX function.
@@ -76,8 +77,8 @@ class FilterFunDef extends FunDefBase {
         ExpCompiler compiler)
     {
         // want iterable, mutable list or immutable list in that order
-        Calc imlcalc = compiler.compileAs(call.getArg(0),
-            null, ResultStyle.ITERABLE_LIST_MUTABLELIST);
+        Calc imlcalc = compiler.compileAs(
+            call.getArg(0), null, ResultStyle.ITERABLE_LIST_MUTABLELIST);
         BooleanCalc bcalc = compiler.compileBoolean(call.getArg(1));
         Calc[] calcs = new Calc[] {imlcalc, bcalc};
 
@@ -120,8 +121,9 @@ class FilterFunDef extends FunDefBase {
                     schemaReader.getNativeSetEvaluator(
                             call.getFunDef(), call.getArgs(), evaluator, this);
             if (nativeEvaluator != null) {
-                return (Iterable<Member>) nativeEvaluator.execute(
-                    ResultStyle.ITERABLE);
+                return Util.castToIterable(
+                    nativeEvaluator.execute(
+                        ResultStyle.ITERABLE));
             } else {
                 return makeIterable(evaluator);
             }
@@ -170,6 +172,8 @@ class FilterFunDef extends FunDefBase {
     private static class MutableMemberIterCalc extends BaseMemberIterCalc {
         MutableMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
+            assert calcs[0] instanceof MemberListCalc;
+            assert calcs[1] instanceof BooleanCalc;
         }
 
         protected Iterable<Member> makeIterable(Evaluator evaluator) {
@@ -196,6 +200,8 @@ class FilterFunDef extends FunDefBase {
     private static class ImMutableMemberIterCalc extends BaseMemberIterCalc {
         ImMutableMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
+            assert calcs[0] instanceof MemberListCalc;
+            assert calcs[1] instanceof BooleanCalc;
         }
 
         protected Iterable<Member> makeIterable(Evaluator evaluator) {
@@ -222,6 +228,8 @@ class FilterFunDef extends FunDefBase {
     private static class IterMemberIterCalc extends BaseMemberIterCalc {
         IterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
+            assert calcs[0] instanceof MemberIterCalc;
+            assert calcs[1] instanceof BooleanCalc;
         }
 
         protected Iterable<Member> makeIterable(Evaluator evaluator) {
@@ -280,6 +288,8 @@ class FilterFunDef extends FunDefBase {
     private static class MutableMemberArrayIterCalc extends BaseTupleIterCalc {
         MutableMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
+            assert calcs[0] instanceof TupleListCalc;
+            assert calcs[1] instanceof BooleanCalc;
         }
 
         protected Iterable<Member[]> makeIterable(Evaluator evaluator) {
@@ -309,6 +319,8 @@ class FilterFunDef extends FunDefBase {
     {
         ImMutableMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
+            assert calcs[0] instanceof TupleListCalc;
+            assert calcs[1] instanceof BooleanCalc;
         }
 
         protected Iterable<Member[]> makeIterable(Evaluator evaluator) {
@@ -337,6 +349,8 @@ class FilterFunDef extends FunDefBase {
     {
         IterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
+            assert calcs[0] instanceof TupleIterCalc;
+            assert calcs[1] instanceof BooleanCalc;
         }
 
         protected Iterable<Member[]> makeIterable(Evaluator evaluator) {
@@ -409,7 +423,7 @@ class FilterFunDef extends FunDefBase {
         if (((SetType) ilcalc.getType()).getArity() == 1) {
             switch (ilcalc.getResultStyle()) {
             case LIST:
-                return new ImMutableMemberListCalc(call, calcs);
+                return new ImmutableMemberListCalc(call, calcs);
             case MUTABLE_LIST:
                 return new MutableMemberListCalc(call, calcs);
             }
@@ -420,9 +434,9 @@ class FilterFunDef extends FunDefBase {
         } else {
             switch (ilcalc.getResultStyle()) {
             case LIST:
-                return new ImMutableMemberArrayListCalc(call, calcs);
+                return new ImmutableTupleListCalc(call, calcs);
             case MUTABLE_LIST:
-                return new MutableMemberArrayListCalc(call, calcs);
+                return new MutableTupleListCalc(call, calcs);
             }
             throw ResultStyleException.generateBadType(
                 ResultStyle.MUTABLELIST_LIST,
@@ -463,7 +477,10 @@ class FilterFunDef extends FunDefBase {
     private static class MutableMemberListCalc extends BaseListCalc {
         MutableMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
+            assert calcs[0] instanceof ListCalc;
+            assert calcs[1] instanceof BooleanCalc;
         }
+
         protected List makeList(Evaluator evaluator) {
             Calc[] calcs = getCalcs();
             ListCalc lcalc = (ListCalc) calcs[0];
@@ -486,9 +503,11 @@ class FilterFunDef extends FunDefBase {
         }
     }
 
-    private static class ImMutableMemberListCalc extends BaseListCalc {
-        ImMutableMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
+    private static class ImmutableMemberListCalc extends BaseListCalc {
+        ImmutableMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
+            assert calcs[0] instanceof MemberListCalc;
+            assert calcs[1] instanceof BooleanCalc;
         }
 
         protected List makeList(Evaluator evaluator) {
@@ -515,23 +534,26 @@ class FilterFunDef extends FunDefBase {
     //
     // Member[] List Calcs
     //
-    private static class MutableMemberArrayListCalc extends BaseListCalc {
-        MutableMemberArrayListCalc(ResolvedFunCall call, Calc[] calcs) {
+    private static class MutableTupleListCalc extends BaseListCalc {
+        MutableTupleListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
+            assert calcs[0] instanceof TupleListCalc;
+            assert calcs[1] instanceof BooleanCalc;
         }
+
         protected List makeList(Evaluator evaluator) {
             Calc[] calcs = getCalcs();
-            ListCalc lcalc = (ListCalc) calcs[0];
+            TupleListCalc lcalc = (TupleListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push(false);
-            List members = lcalc.evaluateList(evaluator);
+            List<Member[]> members = lcalc.evaluateTupleList(evaluator);
 
             // make list mutable
-            members = new ArrayList(members);
-            Iterator it = members.iterator();
+            members = new ArrayList<Member[]>(members);
+            Iterator<Member[]> it = members.iterator();
             while (it.hasNext()) {
-                Member[] member = (Member[]) it.next();
+                Member[] member = it.next();
                 evaluator2.setContext(member);
                 if (! bcalc.evaluateBoolean(evaluator2)) {
                     it.remove();
@@ -540,10 +562,14 @@ class FilterFunDef extends FunDefBase {
             return members;
         }
     }
-    private static class ImMutableMemberArrayListCalc extends BaseListCalc {
-        ImMutableMemberArrayListCalc(ResolvedFunCall call, Calc[] calcs) {
+
+    private static class ImmutableTupleListCalc extends BaseListCalc {
+        ImmutableTupleListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
+            assert calcs[0] instanceof TupleListCalc;
+            assert calcs[1] instanceof BooleanCalc;
         }
+
         protected List makeList(Evaluator evaluator) {
             Calc[] calcs = getCalcs();
             TupleListCalc lcalc = (TupleListCalc) calcs[0];

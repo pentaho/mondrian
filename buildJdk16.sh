@@ -5,6 +5,6 @@
 # Change the following line to point to your JDK 1.6 home.
 export JAVA_HOME=/usr/local/jdk1.6
 export PATH=$JAVA_HOME/bin:$PATH
-ant compile.java
+ant -Dskip.download compile.java
 
 # End buildJdk16.sh

@@ -1803,6 +1803,11 @@ public class FunctionTest extends FoodMartTestCase {
      * Tests NamedSet.CurrentOrdinal combined with the Order function.
      */
     public void testNamedSetCurrentOrdinalWithOrder() {
+        // The <Named Set>.CurrentOrdinal only works correctly when named sets
+        // are evaluated as iterables, and JDK 1.4 only supports lists.
+        if (Util.Retrowoven) {
+            return;
+        }
         assertQueryReturns(
             "with set [Time Regular] as [Time].Members\n" +
                 " set [Time Reversed] as Order([Time Regular], [Time Regular].CurrentOrdinal, BDESC)\n" +
@@ -1885,6 +1890,11 @@ public class FunctionTest extends FoodMartTestCase {
      * Tests NamedSet.CurrentOrdinal combined with the Generate function.
      */
     public void testNamedSetCurrentOrdinalWithGenerate() {
+        // The <Named Set>.CurrentOrdinal only works correctly when named sets
+        // are evaluated as iterables, and JDK 1.4 only supports lists.
+        if (Util.Retrowoven) {
+            return;
+        }
         assertQueryReturns(
             " with set [Time Regular] as [Time].Members\n" +
                 "set [Every Other Time] as\n" +
@@ -1934,6 +1944,11 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testNamedSetCurrentOrdinalWithFilter() {
+        // The <Named Set>.CurrentOrdinal only works correctly when named sets
+        // are evaluated as iterables, and JDK 1.4 only supports lists.
+        if (Util.Retrowoven) {
+            return;
+        }
         assertQueryReturns(
             "with set [Time Regular] as [Time].Members\n" +
                 " set [Time Subset] as Filter([Time Regular], [Time Regular].CurrentOrdinal = 3 or [Time Regular].CurrentOrdinal = 5)\n" +
@@ -6052,9 +6067,13 @@ public class FunctionTest extends FoodMartTestCase {
         // be pulled up, so [Gender].[M] is not in the ContextCalc.
         // Note that there is no CopyListCalc - because Filter creates its own
         // mutable copy.
+        // Under JDK 1.4, needs an extra converter from list to iterator,
+        // because JDK 1.4 doesn't support the ITERABLE result style.
         assertAxisCompilesTo(
             "order(filter([Product].children, [Measures].[Unit Sales] > 1000), ([Gender].[M], [Measures].[Store Sales]))",
-            "ContextCalc([Measures].[Store Sales], Order(Filter(Children(CurrentMember([Product])), >(MemberValueCalc([Measures].[Unit Sales]), 1000.0)), MemberValueCalc([Gender].[All Gender].[M]), ASC))");
+            Util.Retrowoven
+                ? "ContextCalc([Measures].[Store Sales], Order(MemberListIterCalc(Filter(Children(CurrentMember([Product])), >(MemberValueCalc([Measures].[Unit Sales]), 1000.0))), MemberValueCalc([Gender].[All Gender].[M]), ASC))"
+                : "ContextCalc([Measures].[Store Sales], Order(Filter(Children(CurrentMember([Product])), >(MemberValueCalc([Measures].[Unit Sales]), 1000.0)), MemberValueCalc([Gender].[All Gender].[M]), ASC))");
     }
 
     /**

@@ -10,7 +10,7 @@ rem Change the following line to point to your ant home.
 set ANT_HOME=C:\open\thirdparty\ant
 
 set PATH=%JAVA_HOME%\bin;%PATH%
-%ANT_HOME%\bin\ant compile.java
+%ANT_HOME%\bin\ant -Dskip.download=true compile.java
 
 rem End buildJdk16.bat
 

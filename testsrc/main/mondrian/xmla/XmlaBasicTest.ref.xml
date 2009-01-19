@@ -19278,6 +19278,16 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>Crossjoin</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Current</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the current member or tuple
+                            of a named set.</DESCRIPTION>
+                        <PARAMETER_LIST>Set</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Current</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>CurrentDateMember</FUNCTION_NAME>
                         <PARAMETER_LIST>Hierarchy, String, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
@@ -19320,6 +19330,16 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>CurrentMember</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>CurrentOrdinal</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the ordinal of the current
+                            iteration through a named set.</DESCRIPTION>
+                        <PARAMETER_LIST>Set</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>CurrentOrdinal</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>DataMember</FUNCTION_NAME>
@@ -20368,15 +20388,31 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>IN</CAPTION>
                     </row>
                     <row>
-                        <FUNCTION_NAME>InStr</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the position of the first
-                            occurrence of one string within another.
-                            Implements very basic form of InStr</DESCRIPTION>
-                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
-                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <FUNCTION_NAME>inStr</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Integer, String, String, Integer</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
-                        <CAPTION>InStr</CAPTION>
+                        <CAPTION>inStr</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>inStr</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Integer, String, String</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>inStr</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>inStr</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <RETURN_TYPE>2</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>inStr</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>inStrRev</FUNCTION_NAME>
@@ -21265,21 +21301,20 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <FUNCTION_NAME>Order</FUNCTION_NAME>
                         <DESCRIPTION>Arranges members of a set,
                             optionally preserving or breaking the hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Set, Value, Symbol</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Order</CAPTION>
                     </row>
                     <row>
-                        <FUNCTION_NAME>Order</FUNCTION_NAME>
-                        <DESCRIPTION>Arranges members of a set,
-                            optionally preserving or breaking the hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Set, Value</PARAMETER_LIST>
+                        <FUNCTION_NAME>OrderKey</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the member order key.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
-                        <CAPTION>Order</CAPTION>
+                        <CAPTION>OrderKey</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Ordinal</FUNCTION_NAME>
@@ -22281,7 +22316,8 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                     </row>
                     <row>
                         <FUNCTION_NAME>Unorder</FUNCTION_NAME>
-                        <DESCRIPTION>Removes any enforced ordering from a specified set.</DESCRIPTION>
+                        <DESCRIPTION>Removes any enforced ordering from
+                            a specified set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
