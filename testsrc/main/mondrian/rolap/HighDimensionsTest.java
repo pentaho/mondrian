@@ -35,6 +35,25 @@ public class HighDimensionsTest extends FoodMartTestCase {
     }
 
     public void testBug1971406() throws Exception {
+        // build up a baseline time value
+        // this is necessary for environments that might
+        // run code coverage / etc
+        // This baseline takes about 1 second on a Dell Latitude D820 Laptop.
+
+        final long nt0 = System.currentTimeMillis();
+        int t = 0;
+        for (int i = 0; i < Integer.MAX_VALUE; i++) {
+            t += i;
+        }
+        final long nt1 = System.currentTimeMillis();
+        long baselineTime = 0;
+
+        // this check is here to make sure the compiler doesn't optimize
+        // out the above loop
+        if (t > 0) {
+            baselineTime = nt1 - nt0;
+        }
+
         final Connection connection = TestContext.instance()
             .getFoodMartConnection();
         Query query = connection.parseQuery(
@@ -50,7 +69,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             assertNotNull(o.get(0));
         }
         final long t1 = System.currentTimeMillis();
-        assertTrue(t1 - t0 < 60000);
+        assertTrue("Query failed to execute within " + (60 * baselineTime) + " milliseconds", t1 - t0 < 60 * baselineTime);
     }
 
 
