@@ -2,16 +2,15 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2008-2008 Julian Hyde
+// Copyright (C) 2008-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
-import mondrian.spi.Dialect;
+import mondrian.spi.*;
 
-import javax.sql.DataSource;
 import java.util.*;
 import java.sql.*;
 import java.sql.Date;
@@ -19,17 +18,54 @@ import java.sql.Date;
 /**
  * Implementation of {@link Dialect} based on a JDBC connection and metadata.
  *
+ * <p>If you are writing a class for a specific database dialect, we recommend
+ * that you use this as a base class, so your dialect class will be
+ * forwards-compatible. If methods are added to {@link Dialect} in future
+ * revisions, default implementations of those methods will be added to this
+ * class.</p>
+ *
+ * <p>Mondrian uses JdbcDialectImpl as a fallback if it cannot find a more
+ * specific dialect. JdbcDialectImpl reads properties from the JDBC driver's
+ * metadata, so can deduce some of the dialect's behavior.</p>
+ *
  * @author jhyde
  * @version $Id$
  * @since Oct 10, 2008
  */
 public class JdbcDialectImpl implements Dialect {
+    /**
+     * String used to quote identifiers.
+     */
     private final String quoteIdentifierString;
+
+    /**
+     * Product name per JDBC driver.
+     */
     private final String productName;
+
+    /**
+     * Product version per JDBC driver.
+     */
     protected final String productVersion;
+
+    /**
+     * Supported result set types.
+     */
     private final Set<List<Integer>> supportedResultSetTypes;
+
+    /**
+     * Whether database is read-only
+     */
     private final boolean readOnly;
+
+    /**
+     * Maximum column name length
+     */
     private final int maxColumnNameLength;
+
+    /**
+     * Major database product (or null if product is not a common one)
+     */
     protected final DatabaseProduct databaseProduct;
 
     private static final int[] RESULT_SET_TYPE_VALUES = {
@@ -54,67 +90,78 @@ public class JdbcDialectImpl implements Dialect {
     /**
      * Creates a JdbcDialectImpl.
      *
-     * @param quoteIdentifierString String used to quote identifiers
-     * @param productName Product name per JDBC driver
-     * @param productVersion Product version per JDBC driver
-     * @param supportedResultSetTypes Supported result set types
-     * @param readOnly Whether database is read-only
-     * @param maxColumnNameLength Maximum column name length
+     * <p>To prevent connection leaks, this constructor does not hold a
+     * reference to the connection after the call returns. It makes a copy of
+     * everything useful during the call.  Derived classes must do the
+     * same.</p>
+     *
+     * @param connection Connection
      */
-    JdbcDialectImpl(
-        String quoteIdentifierString,
-        String productName,
-        String productVersion,
-        Set<List<Integer>> supportedResultSetTypes,
-        boolean readOnly,
-        int maxColumnNameLength)
+    public JdbcDialectImpl(
+        Connection connection)
+        throws SQLException
     {
-        this.quoteIdentifierString = quoteIdentifierString;
-        this.productName = productName;
-        this.productVersion = productVersion;
-        this.supportedResultSetTypes = supportedResultSetTypes;
-        this.readOnly = readOnly;
-        this.maxColumnNameLength = maxColumnNameLength;
-        this.databaseProduct = getProduct(productName, productVersion);
+        final DatabaseMetaData metaData = connection.getMetaData();
+        this.quoteIdentifierString = deduceIdentifierQuoteString(metaData);
+        this.productName = deduceProductName(metaData);
+        this.productVersion = deduceProductVersion(metaData);
+        this.supportedResultSetTypes = deduceSupportedResultSetStyles(metaData);
+        this.readOnly = deduceReadOnly(metaData);
+        this.maxColumnNameLength = deduceMaxColumnNameLength(metaData);
+        this.databaseProduct =
+            getProduct(this.productName, this.productVersion);
     }
 
     public DatabaseProduct getDatabaseProduct() {
         return databaseProduct;
     }
 
-    /**
-     * Creates a {@link Dialect} from a {@link java.sql.DatabaseMetaData}.
-     *
-     * @param databaseMetaData JDBC metadata describing the database
-     * @return Dialect
-     */
-    public static Dialect create(final DatabaseMetaData databaseMetaData) {
-        String productName;
-        try {
-            productName = databaseMetaData.getDatabaseProductName();
-        } catch (SQLException e1) {
-            throw Util.newInternal(e1, "while detecting database product");
-        }
+    public boolean allowsDialectSharing() {
+        return true;
+    }
 
-        String quoteIdentifierString;
+    protected int deduceMaxColumnNameLength(DatabaseMetaData databaseMetaData) {
         try {
-            quoteIdentifierString =
-                    databaseMetaData.getIdentifierQuoteString();
+            return databaseMetaData.getMaxColumnNameLength();
+        } catch (SQLException e) {
+            throw Util.newInternal(e,
+                "while detecting maxColumnNameLength");
+        }
+    }
+
+    protected boolean deduceReadOnly(DatabaseMetaData databaseMetaData) {
+        try {
+            return databaseMetaData.isReadOnly();
+        } catch (SQLException e) {
+            throw Util.newInternal(e,
+                "while detecting isReadOnly");
+        }
+    }
+
+    protected String deduceProductName(DatabaseMetaData databaseMetaData) {
+        try {
+            return databaseMetaData.getDatabaseProductName();
+        } catch (SQLException e) {
+            throw Util.newInternal(e, "while detecting database product");
+        }
+    }
+
+    protected String deduceIdentifierQuoteString(
+        DatabaseMetaData databaseMetaData)
+    {
+        try {
+            final String quoteIdentifierString =
+                databaseMetaData.getIdentifierQuoteString();
+            return "".equals(quoteIdentifierString) ?
+                // quoting not supported
+                null :
+                quoteIdentifierString;
         } catch (SQLException e) {
             throw Util.newInternal(e, "while quoting identifier");
         }
+    }
 
-        if ((quoteIdentifierString == null) ||
-                (quoteIdentifierString.trim().length() == 0)) {
-            if (productName.toUpperCase().equals("MYSQL")) {
-                // mm.mysql.2.0.4 driver lies. We know better.
-                quoteIdentifierString = "`";
-            } else {
-                // Quoting not supported
-                quoteIdentifierString = null;
-            }
-        }
-
+    protected String deduceProductVersion(DatabaseMetaData databaseMetaData) {
         String productVersion;
         try {
             productVersion = databaseMetaData.getDatabaseProductVersion();
@@ -123,7 +170,11 @@ public class JdbcDialectImpl implements Dialect {
                 e11,
                 "while detecting database product version");
         }
+        return productVersion;
+    }
 
+    protected Set<List<Integer>> deduceSupportedResultSetStyles(
+        DatabaseMetaData databaseMetaData) {
         Set<List<Integer>> supports = new HashSet<List<Integer>>();
         try {
             for (int type : RESULT_SET_TYPE_VALUES) {
@@ -154,219 +205,7 @@ public class JdbcDialectImpl implements Dialect {
             throw Util.newInternal(e11,
                 "while detecting result set concurrency");
         }
-
-        final boolean readOnly;
-        try {
-            readOnly = databaseMetaData.isReadOnly();
-        } catch (SQLException e) {
-            throw Util.newInternal(e,
-                "while detecting isReadOnly");
-        }
-
-        final int maxColumnNameLength;
-        try {
-            maxColumnNameLength =
-                databaseMetaData.getMaxColumnNameLength();
-        } catch (SQLException e) {
-            throw Util.newInternal(e,
-                "while detecting maxColumnNameLength");
-        }
-
-        // Detect Infobright. Infobright uses the MySQL driver and appears to
-        // be a MySQL instance. The only difference is the presence of the
-        // BRIGHTHOUSE engine.
-        if (productName.equals("MySQL")
-            && productVersion.compareTo("5.1") >= 0)
-        {
-            Statement statement = null;
-            try {
-                statement = databaseMetaData.getConnection().createStatement();
-                final ResultSet resultSet =
-                    statement.executeQuery(
-                        "select * from INFORMATION_SCHEMA.engines "
-                            + "where ENGINE = 'BRIGHTHOUSE'");
-                if (resultSet.next()) {
-                    productName = "MySQL (Infobright)";
-                }
-            } catch (SQLException e) {
-                throw Util.newInternal(
-                    e,
-                    "while running query to detect Brighthouse engine");
-            } finally {
-                if (statement != null) {
-                    try {
-                        statement.close();
-                    } catch (SQLException e) {
-                        // ignore
-                    }
-                }
-            }
-        }
-
-        DatabaseProduct databaseProduct =
-            getProduct(productName, productVersion);
-        switch (databaseProduct) {
-        case ACCESS:
-            return new AccessDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case DB2:
-        case DB2_AS400:
-            return new Db2Dialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case DB2_OLD_AS400:
-            return new Db2OldAs400Dialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case DERBY:
-            return new DerbyDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case FIREBIRD:
-            return new FirebirdDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case INFORMIX:
-            return new InformixDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case INTERBASE:
-            return new InterbaseDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case LUCIDDB:
-            return new LucidDbDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case MSSQL:
-            return new MicrosoftSqlServerDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case MYSQL:
-            return new MySqlDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case ORACLE:
-            return new OracleDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case INGRES:
-            return new IngresDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case POSTGRES:
-            return new PostgreSqlDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case SYBASE:
-            return new SybaseDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        case TERADATA:
-            return new TeradataDialect(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        default:
-            // TODO: create extension mechanism, and check list of extension
-            // dialects at this point
-            return new JdbcDialectImpl(
-                quoteIdentifierString,
-                productName,
-                productVersion,
-                supports,
-                readOnly,
-                maxColumnNameLength);
-        }
-    }
-
-    /**
-     * Creates a {@link Dialect} from a
-     * {@link javax.sql.DataSource}.
-     *
-     * <p>NOTE: This method is not cheap. The implementation gets a
-     * connection from the connection pool.
-     *
-     * @param dataSource Data source
-     * @return Dialect
-     */
-    public static Dialect create(DataSource dataSource) {
-        Connection conn = null;
-        try {
-            conn = dataSource.getConnection();
-            return create(conn.getMetaData());
-        } catch (SQLException e) {
-            throw Util.newInternal(
-                e, "Error while creating SQL dialect");
-        } finally {
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                // ignore
-            }
-        }
+        return supports;
     }
 
     public String toUpper(String expr) {
@@ -924,7 +763,7 @@ public class JdbcDialectImpl implements Dialect {
         } else if (productName.equals("Oracle")) {
             return DatabaseProduct.ORACLE;
         } else if (productName.toUpperCase().indexOf("POSTGRE") >= 0) {
-            return DatabaseProduct.POSTGRES;
+            return DatabaseProduct.POSTGRESQL;
         } else if (productName.toUpperCase().equals("MYSQL (INFOBRIGHT)")) {
             return DatabaseProduct.INFOBRIGHT;
         } else if (productName.toUpperCase().equals("MYSQL")) {

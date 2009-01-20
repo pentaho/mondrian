@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2008 Julian Hyde and others
+// Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -418,7 +418,7 @@ public class RolapConnectionTest extends TestCase {
                     assertTrue(s, s.indexOf(
                         "Caused by: java.sql.SQLException: Access denied for user 'bogususer'@'localhost' (using password: YES)") >= 0);
                     break;
-                case POSTGRES:
+                case POSTGRESQL:
                     assertTrue(s, s.indexOf(
                         "Caused by: org.postgresql.util.PSQLException: FATAL: password authentication failed for user \"bogususer\"") >= 0);
                     break;

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -18,7 +18,7 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
 import mondrian.spi.Dialect;
-import mondrian.spi.impl.JdbcDialectImpl;
+import mondrian.spi.DialectManager;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -113,6 +113,7 @@ public class SqlQuery {
      * @param formatted Whether to generate SQL formatted on multiple lines
      */
     public SqlQuery(Dialect dialect, boolean formatted) {
+        assert dialect != null;
         this.generateFormattedSql = formatted;
 
         // both select and from allow duplications
@@ -554,34 +555,10 @@ public class SqlQuery {
         return dialect;
     }
 
-    public static SqlQuery newQuery(Connection jdbcConnection, String err) {
-        try {
-            final Dialect dialect =
-                JdbcDialectImpl.create(jdbcConnection.getMetaData());
-            return new SqlQuery(dialect);
-        } catch (SQLException e) {
-            throw Util.newInternal(e, err);
-        }
-    }
-
     public static SqlQuery newQuery(DataSource dataSource, String err) {
-        Connection jdbcConnection = null;
-        try {
-            jdbcConnection = dataSource.getConnection();
-            final Dialect dialect =
-                JdbcDialectImpl.create(jdbcConnection.getMetaData());
-            return new SqlQuery(dialect);
-        } catch (SQLException e) {
-            throw Util.newInternal(e, err);
-        } finally {
-            if (jdbcConnection != null) {
-                try {
-                    jdbcConnection.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-        }
+        final Dialect dialect =
+            DialectManager.createDialect(dataSource, null);
+        return new SqlQuery(dialect);
     }
 
     public void addGroupingSet(List<String> groupingColumnsExpr) {

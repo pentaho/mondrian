@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -53,7 +53,6 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.spi.*;
-import mondrian.spi.impl.JdbcDialectImpl;
 
 import org.apache.log4j.Logger;
 import org.apache.commons.vfs.*;
@@ -387,7 +386,7 @@ public class RolapSchema implements Schema {
      */
     public Dialect getDialect() {
         DataSource dataSource = getInternalConnection().getDataSource();
-        return JdbcDialectImpl.create(dataSource);
+        return DialectManager.createDialect(dataSource, null);
     }
 
     private void load(MondrianDef.Schema xmlSchema) {

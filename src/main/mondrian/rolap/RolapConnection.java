@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -50,11 +50,8 @@ import mondrian.util.MemoryMonitor;
 import mondrian.util.MemoryMonitorFactory;
 import mondrian.util.Pair;
 import mondrian.spi.Dialect;
-import mondrian.spi.impl.JdbcDialectImpl;
+import mondrian.spi.DialectManager;
 
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DataSourceConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.log4j.Logger;
 
 /**
@@ -112,7 +109,8 @@ public class RolapConnection extends ConnectionBase {
     /**
      * Creates a RolapConnection.
      *
-     * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with schema != null (to
+     * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with
+     * schema != null (to
      * create a schema's internal connection). Other uses retrieve a schema
      * from the cache based upon the <code>Catalog</code> property.
      *
@@ -223,7 +221,7 @@ public class RolapConnection extends ConnectionBase {
             try {
                 conn = this.dataSource.getConnection();
                 Dialect dialect =
-                    JdbcDialectImpl.create(conn.getMetaData());
+                    DialectManager.createDialect(this.dataSource, conn);
                 if (dialect.getDatabaseProduct()
                     == Dialect.DatabaseProduct.DERBY) {
                     // Derby requires a little extra prodding to do the
@@ -376,21 +374,9 @@ public class RolapConnection extends ConnectionBase {
                 // mysql driver needs this autoReconnect parameter
                 jdbcProperties.setProperty("autoReconnect", "true");
             }
-            // use the DriverManagerConnectionFactory to create connections
-            ConnectionFactory connectionFactory =
-                new DriverManagerConnectionFactory(
-                    jdbcConnectString,
-                    jdbcProperties);
-            try {
-                return RolapConnectionPool.instance().getPoolingDataSource(
-                    jdbcConnectString + propertyString,
-                    connectionFactory);
-            } catch (Throwable e) {
-                throw Util.newInternal(
-                    e,
-                    "Error while creating connection pool (with URI " +
-                        jdbcConnectString + ")");
-            }
+            return RolapConnectionPool.instance()
+                .getDriverManagerPoolingDataSource(
+                    jdbcConnectString, jdbcProperties);
 
         } else if (dataSourceName != null) {
             appendKeyValue(
@@ -418,26 +404,10 @@ public class RolapConnection extends ConnectionBase {
                         dataSourceName + ")");
             }
             if (poolNeeded) {
-                ConnectionFactory connectionFactory;
-                if (jdbcUser != null || jdbcPassword != null) {
-                    connectionFactory =
-                        new DataSourceConnectionFactory(
-                            dataSource, jdbcUser, jdbcPassword);
-                } else {
-                    connectionFactory =
-                        new DataSourceConnectionFactory(dataSource);
-                }
-                try {
-                    dataSource =
-                        RolapConnectionPool.instance().getPoolingDataSource(
-                            dataSourceName,
-                            connectionFactory);
-                } catch (Exception e) {
-                    throw Util.newInternal(
-                        e,
-                        "Error while creating connection pool (with URI " +
-                            dataSourceName + ")");
-                }
+                dataSource =
+                    RolapConnectionPool.instance()
+                        .getDataSourcePoolingDataSource(
+                            dataSource, dataSourceName, jdbcUser, jdbcPassword);
             } else {
                 if (jdbcUser != null || jdbcPassword != null) {
                     dataSource =
@@ -648,6 +618,9 @@ public class RolapConnection extends ConnectionBase {
     /**
      * Implementation of {@link DataSource} which calls the good ol'
      * {@link java.sql.DriverManager}.
+     *
+     * <p>Overrides {@link #hashCode()} and {@link #equals(Object)} so that
+     * {@link Dialect} objects can be cached more effectively.
      */
     private static class DriverManagerDataSource implements DataSource {
         private final String jdbcConnectString;
@@ -663,6 +636,26 @@ public class RolapConnection extends ConnectionBase {
             this.jdbcProperties = properties;
         }
 
+        @Override
+        public int hashCode() {
+            int h = loginTimeout;
+            h = Util.hash(h, jdbcConnectString);
+            h = Util.hash(h, jdbcProperties);
+            return h;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof DriverManagerDataSource) {
+                DriverManagerDataSource
+                    that = (DriverManagerDataSource) obj;
+                return this.loginTimeout == that.loginTimeout
+                    && this.jdbcConnectString.equals(that.jdbcConnectString)
+                    && this.jdbcProperties.equals(that.jdbcProperties);
+            }
+            return false;
+        }
+
         public Connection getConnection() throws SQLException {
             return new org.apache.commons.dbcp.DelegatingConnection(
                 java.sql.DriverManager.getConnection(
@@ -672,13 +665,14 @@ public class RolapConnection extends ConnectionBase {
         public Connection getConnection(String username, String password)
                 throws SQLException {
             if (jdbcProperties == null) {
-                return java.sql.DriverManager.getConnection(jdbcConnectString,
-                        username, password);
+                return java.sql.DriverManager.getConnection(
+                    jdbcConnectString, username, password);
             } else {
                 Properties temp = (Properties)jdbcProperties.clone();
                 temp.put("user", username);
                 temp.put("password", password);
-                return java.sql.DriverManager.getConnection(jdbcConnectString, temp);
+                return java.sql.DriverManager.getConnection(
+                    jdbcConnectString, temp);
             }
         }
 

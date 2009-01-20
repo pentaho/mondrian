@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2008-2008 Julian Hyde
+// Copyright (C) 2008-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,7 +11,75 @@ package mondrian.spi;
 import java.util.List;
 
 /**
- * Description of a SQL dialect.
+ * Description of an SQL dialect.
+ *
+ * <h3>Instantiating a dialect</h3>
+ *
+ * <p>A dialect is instantiated via a {@link DialectFactory}.</p>
+ *
+ * <p>In JDBC terms, a dialect is analogous to a {@link java.sql.Connection},
+ * and a dialect factory is analogous to a {@link java.sql.Driver}, in the
+ * sense that the JDBC driver manager maintains a chain of registered drivers,
+ * and each driver in turn is given the opportunity to create a connection
+ * that can handle a particular JDBC connect string. For dialects, each
+ * registered dialect factory is given the chance to create a dialect that
+ * matches a particular connection.</p>
+ *
+ * <p>A dialect factory may be explicit or implicit:<ul>
+ *
+ * <li>An <em>explicit factory</em> is declared by creating a <code>public
+ *     static final</code> member in the dialect class called
+ *     "<code>FACTORY</code>".</li>
+ *
+ * <li>If there is no explicit factory, Mondrian requires that the class has
+ *     a public constructor that takes a {@link java.sql.Connection} as its
+ *     sole parameter, and the {@link DialectManager} creates an <em>implicit
+ *     factory</em> that calls that constructor.</li>
+ *
+ * </ul></p>
+ *
+ * <p>Dialect factories can also be the means for caching or pooling dialects.
+ * See {@link #allowsDialectSharing} and
+ * {@link mondrian.spi.DialectFactory} for more details.</p>
+ *
+ * <h3>Registering dialects</h3>
+ *
+ * <p>A dialect needs to be registered with the system in order to be used.
+ * Call {@link mondrian.spi.DialectManager#register(DialectFactory)}
+ * to register a dialect factory, or
+ * {@link mondrian.spi.DialectManager#register(Class)} to register a dialect
+ * class.
+ *
+ * <p>Mondrian can load dialects on startup. To enable this for your dialect,
+ * <ol>
+ * <li>Place your dialect class in a JAR file.
+ * <li>Include in the JAR file a file called
+ *     "<code>META-INF/services/mondrian.spi.Dialect</code>", containing the
+ *     name of your dialect class.</li>
+ * <li>Ensure that the JAR file is on the class path.
+ * </ol>
+ *
+ * <h3>Writing a dialect</h3>
+ *
+ * <p>To implement a dialect, write a class that implements the {@code Dialect}
+ * interface. It is recommended that you subclass
+ * {@link mondrian.spi.impl.JdbcDialectImpl}, to help to make your
+ * dialect is forwards compatible, but it is not mandatory.</p>
+ *
+ * <p>A dialects should be immutable. Mondrian assumes that dialects can safely
+ * be shared between threads that use the same
+ * {@link java.sql.Connection JDBC connection} without synchronization. If
+ * {@link #allowsDialectSharing()} returns true, Mondrian
+ * may use the same dialect for different connections from the same
+ * {@link javax.sql.DataSource JDBC data source}.</p>
+ *
+ * <p>Load the FoodMart data set into your database, and run Mondrian's suite of
+ * regression tests. In particular, get {@code mondrian.test.DialectTest} to run
+ * cleanly first; this will ensure that the dialect's claims are consistent with
+ * the actual behavior of your database.</p>
+ *
+ * @see mondrian.spi.DialectFactory
+ * @see mondrian.spi.DialectManager
  *
  * @author jhyde
  * @version $Id$
@@ -495,6 +563,25 @@ public interface Dialect {
     DatabaseProduct getDatabaseProduct();
 
     /**
+     * Returns whether this Dialect object can be used for all connections
+     * from the same data source.
+     *
+     * <p>The default implementation returns <code>true</code>, and this allows
+     * dialects to be cached and reused in environments where connections are
+     * allocated from a pool based on the same data source.
+     *
+     * <p>Data sources are deemed 'equal' by the same criteria used by Java
+     * collections, namely the {@link #equals(Object)} and {@link #hashCode()}
+     * methods.
+     *
+     * @return Whether this dialect can be used for other connections created
+     * from the same data source
+     *
+     * @see mondrian.spi.DialectFactory#createDialect(javax.sql.DataSource, java.sql.Connection)
+     */
+    boolean allowsDialectSharing();
+
+    /**
      * Enumeration of common database types.
      *
      * <p>Branching on this enumeration allows you to write code which behaves
@@ -525,7 +612,7 @@ public interface Dialect {
         NETEZZA,
         NEOVIEW,
         ORACLE,
-        POSTGRES,
+        POSTGRESQL,
         MYSQL,
         SYBASE,
         TERADATA;

@@ -1,0 +1,15 @@
+mondrian.spi.impl.AccessDialect
+mondrian.spi.impl.Db2Dialect
+mondrian.spi.impl.Db2OldAs400Dialect
+mondrian.spi.impl.DerbyDialect
+mondrian.spi.impl.FirebirdDialect
+mondrian.spi.impl.InformixDialect
+mondrian.spi.impl.IngresDialect
+mondrian.spi.impl.InterbaseDialect
+mondrian.spi.impl.LucidDbDialect
+mondrian.spi.impl.MicrosoftSqlServerDialect
+mondrian.spi.impl.MySqlDialect
+mondrian.spi.impl.OracleDialect
+mondrian.spi.impl.PostgreSqlDialect
+mondrian.spi.impl.SybaseDialect
+mondrian.spi.impl.TeradataDialect

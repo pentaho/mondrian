@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2008 Julian Hyde and others
+// Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,8 +12,10 @@ package mondrian.olap;
 import junit.framework.TestCase;
 
 import java.util.*;
+import java.sql.Driver;
 
 import mondrian.util.UnionIterator;
+import mondrian.util.ServiceDiscovery;
 
 /**
  * Tests for methods in {@link mondrian.olap.Util}.
@@ -472,6 +474,28 @@ public class UtilTestCase extends TestCase {
         assertFalse(Util.areOccurencesEqual(Arrays.asList("x", "y", "x")));
         assertTrue(Util.areOccurencesEqual(Arrays.asList("x", "x", "x")));
         assertFalse(Util.areOccurencesEqual(Arrays.asList("x", "x", "y", "z")));
+    }
+
+    public void testServiceDiscovery() {
+        final ServiceDiscovery<Driver>
+            serviceDiscovery = ServiceDiscovery.forClass(Driver.class);
+        final List<Class<Driver>> list = serviceDiscovery.getImplementor();
+        assertFalse(list.isEmpty());
+
+        // Check that discovered classes include AT LEAST:
+        // JdbcOdbcDriver (in the JDK),
+        // MondrianOlap4jDriver (in mondrian) and
+        // XmlaOlap4jDriver (in olap4j.jar).
+        List<String> expectedClassNames =
+            new ArrayList<String>(
+                Arrays.asList(
+                    "sun.jdbc.odbc.JdbcOdbcDriver",
+                    "mondrian.olap4j.MondrianOlap4jDriver",
+                    "org.olap4j.driver.xmla.XmlaOlap4jDriver"));
+        for (Class<Driver> driverClass : list) {
+            expectedClassNames.remove(driverClass.getName());
+        }
+        assertTrue(expectedClassNames.toString(), expectedClassNames.isEmpty());
     }
 }
 

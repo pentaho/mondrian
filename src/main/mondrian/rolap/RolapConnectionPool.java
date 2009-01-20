@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2006 Robin Bagot, Julian Hyde and others
+// Copyright (C) 2003-2006 Robin Bagot and others
+// Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -15,23 +16,32 @@ import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
 import javax.sql.DataSource;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Singleton class that holds a connection pool.
  * Call RolapConnectionPool.instance().getPoolingDataSource(connectionFactory)
  * to get a DataSource in return that is a pooled data source.
+ *
+ * @author jhyde
+ * @author Robin Bagot
+ * @since 7 July, 2003
+ * @version $Id$
  */
 class RolapConnectionPool {
 
     public static RolapConnectionPool instance() {
         return instance;
     }
-    private static final RolapConnectionPool instance = new RolapConnectionPool();
+
+    private static final RolapConnectionPool instance =
+        new RolapConnectionPool();
 
     private final Map<Object, ObjectPool> mapConnectKeyToPool =
         new HashMap<Object, ObjectPool>();
+
+    private final Map<Object, DataSource> dataSourceMap =
+        new WeakHashMap<Object, DataSource>();
 
     private RolapConnectionPool() {
     }
@@ -41,13 +51,15 @@ class RolapConnectionPool {
      * Sets up a pooling data source for connection pooling.
      * This can be used if the application server does not have a pooling
      * dataSource already configured.
-     * This takes a normal jdbc connection string, and requires a jdbc
+     *
+     * <p>This takes a normal jdbc connection string, and requires a jdbc
      * driver to be loaded, and then uses a
      * {@link DriverManagerConnectionFactory} to create connections to the
      * database.
-     * An alternative method of configuring a pooling driver is to use an external
-     * configuration file. See the the Apache jakarta-commons commons-pool
-     * documentation.
+     *
+     * <p>An alternative method of configuring a pooling driver is to use an
+     * external configuration file. See the the Apache jakarta-commons
+     * commons-pool documentation.
      *
      * @param key Identifies which connection factory to use. A typical key is
      *   a JDBC connect string, since each JDBC connect string requires a
@@ -56,8 +68,10 @@ class RolapConnectionPool {
      *   JDBC connect string or DataSource
      * @return a pooling DataSource object
      */
-    public synchronized DataSource getPoolingDataSource(Object key,
-                                       ConnectionFactory connectionFactory) {
+    public synchronized DataSource getPoolingDataSource(
+        Object key,
+        ConnectionFactory connectionFactory)
+    {
         ObjectPool connectionPool = getPool(key, connectionFactory);
         // create pooling datasource
         return new PoolingDataSource(connectionPool);
@@ -68,6 +82,94 @@ class RolapConnectionPool {
      */
     void clearPool() {
         mapConnectKeyToPool.clear();
+    }
+
+    public synchronized DataSource getDriverManagerPoolingDataSource(
+        String jdbcConnectString,
+        Properties jdbcProperties)
+    {
+        Properties jdbcPropertiesSansUserPwd = jdbcProperties;
+        if (jdbcProperties.containsKey("user")
+            || jdbcProperties.containsKey("password")) {
+            jdbcPropertiesSansUserPwd = new Properties();
+            jdbcPropertiesSansUserPwd.putAll(jdbcProperties);
+            jdbcPropertiesSansUserPwd.remove("user");
+            jdbcPropertiesSansUserPwd.remove("password");
+        }
+        String propertyString = jdbcPropertiesSansUserPwd.toString();
+
+        // First look for a data source with identical specification. This in
+        // turn helps us to use the cache of Dialect objects.
+        List<Object> key =
+            Arrays.<Object>asList(
+                "DriverManagerPoolingDataSource",
+                jdbcConnectString,
+                jdbcProperties);
+        DataSource dataSource = dataSourceMap.get(key);
+        if (dataSource != null) {
+            return dataSource;
+        }
+
+        // use the DriverManagerConnectionFactory to create connections
+        ConnectionFactory connectionFactory =
+            new DriverManagerConnectionFactory(
+                jdbcConnectString,
+                jdbcProperties);
+        try {
+            dataSource = getPoolingDataSource(
+                jdbcConnectString + propertyString,
+                connectionFactory);
+        } catch (Throwable e) {
+            throw Util.newInternal(
+                e,
+                "Error while creating connection pool (with URI " +
+                    jdbcConnectString + ")");
+        }
+        dataSourceMap.put(key, dataSource);
+        return dataSource;
+    }
+
+    public synchronized DataSource getDataSourcePoolingDataSource(
+        DataSource dataSource,
+        String dataSourceName,
+        String jdbcUser,
+        String jdbcPassword)
+    {
+        // First look for a data source with identical specification. This in
+        // turn helps us to use the cache of Dialect objects.
+        List<Object> key =
+            Arrays.asList(
+                "DataSourcePoolingDataSource",
+                dataSource,
+                jdbcUser,
+                jdbcPassword);
+        DataSource pooledDataSource = dataSourceMap.get(key);
+        if (pooledDataSource != null) {
+            return pooledDataSource;
+        }
+
+        ConnectionFactory connectionFactory;
+        if (jdbcUser != null || jdbcPassword != null) {
+            connectionFactory =
+                new DataSourceConnectionFactory(
+                    dataSource, jdbcUser, jdbcPassword);
+        } else {
+            connectionFactory =
+                new DataSourceConnectionFactory(dataSource);
+        }
+        try {
+            pooledDataSource =
+                getPoolingDataSource(
+                    dataSourceName,
+                    connectionFactory);
+        } catch (Exception e) {
+            throw Util.newInternal(
+                e,
+                "Error while creating connection pool (with URI " +
+                    dataSourceName + ")");
+        }
+        dataSourceMap.put(key, pooledDataSource);
+        return dataSource;
     }
 
     /**

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2008 Julian Hyde
+// Copyright (C) 2004-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,7 +13,7 @@ package mondrian.test.loader;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapUtil;
 import mondrian.spi.Dialect;
-import mondrian.spi.impl.JdbcDialectImpl;
+import mondrian.spi.DialectManager;
 
 import org.apache.log4j.Logger;
 
@@ -550,7 +550,7 @@ public abstract class DBLoader {
             }
             if (this == Boolean) {
                 switch (dialect.getDatabaseProduct()) {
-                case POSTGRES:
+                case POSTGRESQL:
                     return name;
                 case MYSQL:
                     return "TINYINT(1)";
@@ -703,8 +703,8 @@ public abstract class DBLoader {
             if (this.userName == null) {
                 this.connection = DriverManager.getConnection(this.jdbcURL);
             } else {
-                this.connection = DriverManager.getConnection(this.jdbcURL,
-                                        this.userName, this.password);
+                this.connection = DriverManager.getConnection(
+                    this.jdbcURL, this.userName, this.password);
             }
         }
 
@@ -715,9 +715,10 @@ public abstract class DBLoader {
 
         LOGGER.info("Output connection is " + productName + ", " + version);
 
-        this.dialect = JdbcDialectImpl.create(metaData);
+        this.dialect = DialectManager.createDialect(null, this.connection);
         this.initialize = true;
     }
+
     public void setConnection(Connection connection) {
         this.connection = connection;
     }

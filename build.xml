@@ -1167,12 +1167,6 @@ must be run under JDK 1.5." />
 
   <target name="jar" depends="version,compile,compile.tests,compileJdk16">
     <mkdir dir="${lib.dir}" />
-    <!-- Declare driver so that it can we loaded implicitly, without using
-         'Class.forName'. Requires JDBC 4.0 (JDK 1.6) and later. -->
-    <mkdir dir="${classes.dir}/META-INF/services" />
-    <echo
-        file="${classes.dir}/META-INF/services/java.sql.Driver"
-        message="mondrian.olap4j.MondrianOlap4jDriver" />
     <jar
         destfile="${jar.file}"
         update="true">

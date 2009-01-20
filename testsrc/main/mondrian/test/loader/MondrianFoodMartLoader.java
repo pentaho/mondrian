@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2008 Julian Hyde
+// Copyright (C) 2004-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,7 +13,7 @@ import mondrian.resource.MondrianResource;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
 import mondrian.spi.Dialect;
-import mondrian.spi.impl.JdbcDialectImpl;
+import mondrian.spi.DialectManager;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -287,7 +287,8 @@ public class MondrianFoodMartLoader {
             if (inputUserName == null) {
                 inputConnection = DriverManager.getConnection(inputJdbcURL);
             } else {
-                inputConnection = DriverManager.getConnection(inputJdbcURL, inputUserName, inputPassword);
+                inputConnection = DriverManager.getConnection(
+                    inputJdbcURL, inputUserName, inputPassword);
             }
         }
         final DatabaseMetaData metaData = connection.getMetaData();
@@ -297,7 +298,7 @@ public class MondrianFoodMartLoader {
 
         LOGGER.info("Output connection is " + productName + ", " + version);
 
-        dialect = JdbcDialectImpl.create(metaData);
+        dialect = DialectManager.createDialect(null, connection);
 
         if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.INFOBRIGHT
             && indexes)
@@ -2196,7 +2197,7 @@ public class MondrianFoodMartLoader {
             }
             if (this == Boolean) {
                 switch (dialect.getDatabaseProduct()) {
-                case POSTGRES:
+                case POSTGRESQL:
                 case LUCIDDB:
                     return name;
                 case MYSQL:

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -23,8 +23,8 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.RolapUtil;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
-import mondrian.spi.impl.JdbcDialectImpl;
 import mondrian.spi.Dialect;
+import mondrian.spi.DialectManager;
 import mondrian.util.DelegatingInvocationHandler;
 
 import javax.sql.DataSource;
@@ -922,22 +922,8 @@ public class TestContext {
     }
 
     private Dialect getDialectInternal() {
-        java.sql.Connection connection = null;
-        try {
-            DataSource dataSource = getConnection().getDataSource();
-            connection = dataSource.getConnection();
-            return JdbcDialectImpl.create(connection.getMetaData());
-        } catch (SQLException e) {
-            throw Util.newInternal(e, "While opening connection");
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-        }
+        DataSource dataSource = getConnection().getDataSource();
+        return DialectManager.createDialect(dataSource, null);
     }
 
     /**
@@ -947,7 +933,7 @@ public class TestContext {
      */
     public static Dialect getFakeDialect()
     {
-        final DatabaseMetaData data =
+        final DatabaseMetaData metaData =
             (DatabaseMetaData) Proxy.newProxyInstance(
                 null,
                 new Class<?>[] {DatabaseMetaData.class},
@@ -971,7 +957,17 @@ public class TestContext {
                     }
                 }
             );
-        return JdbcDialectImpl.create(data);
+        final java.sql.Connection connection =
+            (java.sql.Connection) Proxy.newProxyInstance(
+                null,
+                new Class<?>[] {java.sql.Connection.class},
+                new DelegatingInvocationHandler() {
+                    public DatabaseMetaData getMetaData() {
+                        return metaData;
+                    }
+                }
+            );
+        return DialectManager.createDialect(null, connection);
     }
 
     /**
@@ -1024,7 +1020,7 @@ public class TestContext {
                 search,
                 "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)");
             break;
-        case POSTGRES:
+        case POSTGRESQL:
         case ORACLE:
         case LUCIDDB:
         case TERADATA:

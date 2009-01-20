@@ -20,7 +20,7 @@ import java.util.*;
 
 import mondrian.olap.Util;
 import mondrian.spi.Dialect;
-import mondrian.spi.impl.JdbcDialectImpl;
+import mondrian.spi.DialectManager;
 
 import javax.sql.DataSource;
 
@@ -73,7 +73,7 @@ public class DialectTest extends TestCase {
 
     protected Dialect getDialect() {
         if (dialect == null) {
-            dialect = JdbcDialectImpl.create(getDataSource());
+            dialect = DialectManager.createDialect(getDataSource(), null);
         }
         return dialect;
     }
