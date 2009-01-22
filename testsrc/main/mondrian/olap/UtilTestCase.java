@@ -489,7 +489,8 @@ public class UtilTestCase extends TestCase {
         List<String> expectedClassNames =
             new ArrayList<String>(
                 Arrays.asList(
-                    "sun.jdbc.odbc.JdbcOdbcDriver",
+                    // Usually on the list, but not guaranteed:
+                    // "sun.jdbc.odbc.JdbcOdbcDriver",
                     "mondrian.olap4j.MondrianOlap4jDriver",
                     "org.olap4j.driver.xmla.XmlaOlap4jDriver"));
         for (Class<Driver> driverClass : list) {
