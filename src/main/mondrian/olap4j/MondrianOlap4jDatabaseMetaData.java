@@ -976,7 +976,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         String catalog,
         String schemaPattern,
         String cubeNamePattern,
-        String dimensionNamePattern,
+        String dimensionUniqueName,
         String hierarchyNamePattern)
         throws OlapException
     {
@@ -985,7 +985,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
             "CATALOG_NAME", catalog,
             "SCHEMA_NAME", wildcard(schemaPattern),
             "CUBE_NAME", wildcard(cubeNamePattern),
-            "DIMENSION_NAME", wildcard(dimensionNamePattern),
+            "DIMENSION_UNIQUE_NAME", dimensionUniqueName,
             "HIERARCHY_NAME", wildcard(hierarchyNamePattern));
     }
 
