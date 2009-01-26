@@ -2260,6 +2260,81 @@ public class SchemaTest extends FoodMartTestCase {
             throwable,
             "Alias not unique");
     }
+
+    public void testBug2384825() {
+        // tests fix for [ 2384825 ] ClassCastException when obtaining RolapCubeLevel
+
+        // until bug #2538280 is fixed, this test case only works on MySQL
+        if (TestContext.instance().getDialect().getDatabaseProduct() !=
+            Dialect.DatabaseProduct.MYSQL) {
+            return;
+        }
+
+        // In order to reproduce the problem it was necessary to only have one
+        // non empty member under USA. In the cube definition below we create a cube
+        // with only CA data to achieve this.
+        String salesCube1 =
+        "<Cube name=\"Sales2\" defaultMeasure=\"Unit Sales\">\n" +
+        "  <Table name=\"sales_fact_1997\" >\n" +
+        "    <SQL dialect=\"default\">\n" +
+        "     <![CDATA[`sales_fact_1997`.`store_id` in (select distinct `store_id` from `store` where `store`.`store_state` = \"CA\")]]>\n" +
+        "    </SQL>\n" +
+        "  </Table>\n" +
+        "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n" +
+        "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n" +
+        "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
+        "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
+        "</Cube>\n";
+
+        TestContext testContext =
+        TestContext.create(
+            null,
+            salesCube1,
+            null,
+            null,
+            null,
+            null);
+
+        // First query all children of the USA. This should only return CA since all the
+        // other states were filtered out. CA will be put in the member cache
+        String query1 = "WITH SET [#DataSet#] as " +
+                "'NonEmptyCrossjoin({[Product].[All Products]}, {[Store].[All Stores].[USA].Children})' " +
+                "SELECT {[Measures].[Unit Sales]} on columns, " +
+                "NON EMPTY Hierarchize({[#DataSet#]}) on rows FROM [Sales2]";
+
+        testContext.assertQueryReturns(query1,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products], [Store].[All Stores].[USA].[CA]}\n" +
+                "Row #0: 74,748\n"));
+
+        // Now query the children of CA using the descendants function
+        // This is where the ClassCastException occurs
+        String query2 = "WITH SET [#DataSet#] as " +
+                "'{Descendants([Store].[All Stores], 3)}' " +
+                "SELECT {[Measures].[Unit Sales]} on columns, " +
+                "NON EMPTY Hierarchize({[#DataSet#]}) on rows FROM [Sales2]";
+
+        testContext.assertQueryReturns(query2,
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
+                "Row #0: 21,333\n" +
+                "Row #1: 25,663\n" +
+                "Row #2: 25,635\n" +
+                "Row #3: 2,117\n"));
+    }
 }
 
 // End SchemaTest.java

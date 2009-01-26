@@ -365,7 +365,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
      - RolapCubeHierarchy.RolapCubeHierarchyMemberReader.SmartCacheHelper ->
        This is the inherited shared cache from SmartMemberReader, and is used when
-       a join with the fact table is necessary, SqlContextConstraint.isJoinRequired().
+       a join with the fact table is necessary, aka a SqlContextConstraint is used.
        This cache may be redundant with rolapCubeCacheHelper.
 
      - A Special note regarding RolapCubeHierarchyMemberReader.cubeSource -
@@ -482,9 +482,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             // get member children from shared member reader if possible,
             // if not get them from our own source
             boolean joinReq =
-                (constraint instanceof SqlContextConstraint)
-                && (((SqlContextConstraint)constraint).isJoinRequired() ||
-                    ((SqlContextConstraint)constraint).getEvaluator().isNonEmpty());
+                (constraint instanceof SqlContextConstraint);
             if (joinReq) {
                 super.readMemberChildren(parentMembers, rolapChildren, constraint);
             } else {
@@ -609,10 +607,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 // if a join is required, we need to pass in the RolapCubeLevel
                 // vs. the regular level
                 boolean joinReq =
-                    (constraint instanceof SqlContextConstraint)
-                        && (((SqlContextConstraint)constraint).isJoinRequired() ||
-                        constraint.getEvaluator().isNonEmpty());
-
+                    (constraint instanceof SqlContextConstraint);
                 List<RolapMember> list;
                 final RolapCubeLevel cubeLevel = (RolapCubeLevel) level;
                 if (!joinReq) {
@@ -844,10 +839,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             // get member children from shared member reader if possible,
             // if not get them from our own source
             boolean joinReq =
-                (constraint instanceof SqlContextConstraint)
-                && (((SqlContextConstraint)constraint).isJoinRequired() ||
-                    ((SqlContextConstraint)constraint).getEvaluator().isNonEmpty());
-            if (joinReq) {
+                (constraint instanceof SqlContextConstraint);
+;            if (joinReq) {
                 super.readMemberChildren(parentMembers, rolapChildren, constraint);
             } else {
                 rolapHierarchy.getMemberReader().getMemberChildren(
@@ -929,10 +922,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 // if a join is required, we need to pass in the RolapCubeLevel
                 // vs. the regular level
                 boolean joinReq =
-                    (constraint instanceof SqlContextConstraint)
-                        && (((SqlContextConstraint)constraint).isJoinRequired() ||
-                        constraint.getEvaluator().isNonEmpty());
-
+                    (constraint instanceof SqlContextConstraint);
                 final List<RolapMember> list;
 
                 if (!joinReq) {
