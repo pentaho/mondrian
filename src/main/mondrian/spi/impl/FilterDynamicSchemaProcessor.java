@@ -11,8 +11,6 @@ package mondrian.spi.impl;
 
 import mondrian.spi.DynamicSchemaProcessor;
 import mondrian.olap.Util;
-import org.apache.commons.vfs.FileSystemManager;
-import org.apache.commons.vfs.VFS;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileContent;
 
@@ -60,9 +58,7 @@ public class FilterDynamicSchemaProcessor implements DynamicSchemaProcessor {
         String schemaUrl,
         Util.PropertyList connectInfo) throws Exception
     {
-        FileSystemManager fsManager = VFS.getManager();
-        File userDir = new File("").getAbsoluteFile();
-        FileObject file = fsManager.resolveFile(userDir, schemaUrl);
+        FileObject file = Util.readVirtualFile(schemaUrl);
         FileContent fileContent = file.getContent();
         return filter(schemaUrl, connectInfo, fileContent.getInputStream());
     }

@@ -900,6 +900,18 @@ public class RolapSchema implements Schema {
                 try {
                     if (catalogStr == null) {
                         catalogStr = Util.readURL(catalogUrl);
+                        // Use VFS to get the content
+
+                        FileObject file = Util.readVirtualFile(catalogUrl);
+
+                        StringBuilder buf = new StringBuilder(1000);
+                        FileContent fileContent = file.getContent();
+                        InputStream in = fileContent.getInputStream();
+                        int n;
+                        while ((n = in.read()) != -1) {
+                            buf.append((char) n);
+                        }
+                        catalogStr = buf.toString();
                     }
                     md5Bytes = encodeMD5(catalogStr);
                 } catch (Exception ex) {

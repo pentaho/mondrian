@@ -13,6 +13,7 @@
 
 package mondrian.olap;
 
+import org.apache.commons.vfs.*;
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.XOMUtil;
 
@@ -2120,6 +2121,45 @@ public class Util extends XOMUtil {
         } finally {
             r.close();
         }
+    }
+    /**
+     * Gets content via Apache VFS. File must exist and have content
+     *
+     * @param url String
+     * @return Apache VFS FileObject for further processing
+     * @throws MondrianResource.Internal, FileSystemException
+     */
+    public static FileObject readVirtualFile(String url) throws FileSystemException {
+        // Treat catalogUrl as an Apache VFS (Virtual File System) URL.
+        // VFS handles all of the usual protocols (http:, file:)
+        // and then some.
+        FileSystemManager fsManager = VFS.getManager();
+        if (fsManager == null) {
+            throw newError("Cannot get virtual file system manager");
+        }
+
+        // Workaround VFS bug.
+        if (url.startsWith("file://localhost")) {
+            url = url.substring("file://localhost".length());
+        }
+        if (url.startsWith("file:")) {
+            url = url.substring("file:".length());
+        }
+
+        File userDir = new File("").getAbsoluteFile();
+        FileObject file = fsManager.resolveFile(userDir, url);
+        if (!file.isReadable()) {
+            throw newError("Virtual file is not readable: " +
+                url);
+        }
+
+        FileContent fileContent = file.getContent();
+        if (fileContent == null) {
+            throw newError("Cannot get virtual file content: " +
+                url);
+        }
+
+        return file;
     }
 
     public static Map<String, String> toMap(final Properties properties) {

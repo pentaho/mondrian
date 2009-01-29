@@ -15,6 +15,7 @@ import java.util.Arrays;
 import junit.framework.TestCase;
 import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
+import mondrian.test.TestContext;
 
 
 /**
@@ -82,6 +83,21 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
             assertCubeExists(expectedCubes, cubes);
         } finally {
             connection.close();
+        }
+    }
+
+    public void testConnectUseContentChecksum() {
+        Util.PropertyList properties =
+            TestContext.instance().getFoodMartConnectionProperties();
+        properties.put(RolapConnectionProperties.UseContentChecksum.name(),"true");
+
+        try {
+            DriverManager.getConnection(
+                properties,
+                null);
+        } catch (MondrianException e) {
+            e.printStackTrace();
+            fail("unexpected exception for UseContentChecksum");
         }
     }
 
