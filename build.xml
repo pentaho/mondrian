@@ -1579,7 +1579,7 @@ ${doc.dir}/api/src-html/**/*"/>
 
        After you've run this task, you can invoke 'ant test' from a JDK 1.4
        and all the tests will run. You should also be able replace mondrian.jar
-       with mondrian-jdk14.jar and retroweaver-rt-2.0.7.jar (retroweaver's
+       with mondrian-jdk14.jar and retroweaver-rt-1.2.4.jar (retroweaver's
        runtime library) in your web application and run jpivot, but I haven't
        tried that. Exercise for the reader.
 
@@ -1590,14 +1590,12 @@ ${doc.dir}/api/src-html/**/*"/>
     -->
   <target name="retroweave" depends="jar, compile.tests">
     <taskdef name="retroweaver"
-        classname="net.sourceforge.retroweaver.ant.RetroWeaverTask">
+        classname="com.rc.retroweaver.ant.RetroWeaverTask">
       <classpath>
         <pathelement location="${lib.dir}/asm.jar" />
         <pathelement location="${lib.dir}/asm-commons.jar" />
-        <pathelement location="${lib.dir}/asm-util.jar" />
         <pathelement location="${lib.dir}/retroweaver.jar" />
         <pathelement location="${lib.dir}/retroweaver-rt.jar" />
-        <pathelement location="${lib.dir}/backport-util-concurrent.jar" />
       </classpath>
     </taskdef>
 
