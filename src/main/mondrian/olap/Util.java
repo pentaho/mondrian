@@ -2127,9 +2127,10 @@ public class Util extends XOMUtil {
      *
      * @param url String
      * @return Apache VFS FileObject for further processing
-     * @throws MondrianResource.Internal, FileSystemException
+     * @throws FileSystemException
      */
-    public static FileObject readVirtualFile(String url) throws FileSystemException {
+    public static FileObject readVirtualFile(String url)
+            throws FileSystemException {
         // Treat catalogUrl as an Apache VFS (Virtual File System) URL.
         // VFS handles all of the usual protocols (http:, file:)
         // and then some.

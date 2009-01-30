@@ -89,7 +89,8 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
     public void testConnectUseContentChecksum() {
         Util.PropertyList properties =
             TestContext.instance().getFoodMartConnectionProperties();
-        properties.put(RolapConnectionProperties.UseContentChecksum.name(),"true");
+        properties.put(RolapConnectionProperties.UseContentChecksum.name(),
+                        "true");
 
         try {
             DriverManager.getConnection(
