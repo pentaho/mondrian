@@ -682,6 +682,8 @@ public class FastBatchingCellReader implements CellReader {
             return hasOverlappingBitKeys(other)
                 && constraintsMatch(other)
                 && hasSameMeasureList(other)
+                && !hasDistinctCountMeasure()
+                && !other.hasDistinctCountMeasure()
                 && haveSameStarAndAggregation(other);
         }
 
