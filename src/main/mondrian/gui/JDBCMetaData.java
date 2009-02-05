@@ -202,9 +202,14 @@ public class JDBCMetaData {
                     gotSchema = true;
                 }
             }
-            rs.close();
         } catch (Exception e) {
             LOGGER.debug("Exception : Database does not support schemas." + e.getMessage());
+        } finally {
+            try {
+                rs.close();
+            } catch (Exception e) {
+                // ignore
+            }
         }
 
         if (!gotSchema) {
@@ -222,25 +227,43 @@ public class JDBCMetaData {
         ResultSet rs = null;
         try {
             // Tables and views can be used
-            rs = md.getTables(null, dbs.name, null, new String[]{"TABLE", "VIEW"});
+            try {
+                rs = md.getTables(null, dbs.name, null, new String[]{"TABLE", "VIEW"});
+            } catch (Exception e) {
+                // this is a workaround for databases that throw an exception
+                // when views are requested.
+                rs = md.getTables(null, dbs.name, null, new String[]{"TABLE"});
+            }
             while (rs.next()) {
+                // Oracle 10g Driver returns bogus BIN$ tables that cause
+                // exceptions
                 String tbname = rs.getString("TABLE_NAME");
+                if (!tbname.matches("(?!BIN\\$).+")) {
+                    continue;
+                }
+
                 DbTable dbt;
 
                 /* Note  : Imported keys are foreign keys which are primary keys of in some other tables
                  *       : Exported keys are primary keys which are referenced as foreign keys in other tables.
                  */
                 ResultSet rs_fks = md.getImportedKeys(null, dbs.name, tbname);
-                if (rs_fks.next()) {
-                    dbt = new FactTable();
-                    do  {
-                        ((FactTable) dbt).addFks(rs_fks.getString("FKCOLUMN_NAME"),rs_fks.getString("pktable_name"));
-                    } while (rs_fks.next());
-                } else {
-                    dbt = new DbTable();
+                try {
+                    if (rs_fks.next()) {
+                        dbt = new FactTable();
+                        do  {
+                            ((FactTable) dbt).addFks(rs_fks.getString("FKCOLUMN_NAME"),rs_fks.getString("pktable_name"));
+                        } while (rs_fks.next());
+                    } else {
+                        dbt = new DbTable();
+                    }
+                } finally {
+                    try {
+                        rs_fks.close();
+                    } catch (Exception e) {
+                        // ignore
+                    }
                 }
-                rs_fks.close();
-
                 dbt.schemaName = dbs.name;
                 dbt.name = tbname;
                 setPKey(dbt);
@@ -248,9 +271,14 @@ public class JDBCMetaData {
                 dbs.addDbTable(dbt);
                 db.addDbTable(dbt);
             }
-            rs.close();
         } catch (Exception e) {
             LOGGER.error("setAllTables", e);
+        } finally {
+            try {
+                rs.close();
+            } catch (Exception e) {
+                // ignore
+            }
         }
     }
 
@@ -270,9 +298,14 @@ public class JDBCMetaData {
                 //===dbt.pk = rs.getString("PK_NAME");  // a column may have been given a primary key name
                 dbt.pk = rs.getString("column_name");   // we need the column name which is primary key for the given table.
             }
-            rs.close();
         } catch (Exception e) {
             LOGGER.error("setPKey", e);
+        } finally {
+            try {
+                rs.close();
+            } catch (Exception e) {
+                // ignore
+            }
         }
     }
 
@@ -284,9 +317,14 @@ public class JDBCMetaData {
             while (rs.next()) {
                 dbt.addColsDataType(rs.getString("COLUMN_NAME"), rs.getString("DATA_TYPE"));
             }
-            rs.close();
         } catch (Exception e) {
             LOGGER.error("setColumns", e);
+        } finally {
+            try {
+                rs.close();
+            } catch (Exception e) {
+                // ignore
+            }
         }
     }
 
