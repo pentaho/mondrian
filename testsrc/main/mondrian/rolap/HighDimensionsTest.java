@@ -145,21 +145,21 @@ public class HighDimensionsTest extends FoodMartTestCase {
     }
 
     public void testFilter() throws Exception {
-         execHighCardTest("select [Measures].[Unit Sales] on columns, "
+        if (!Bug.Bug2446228Fixed) {
+            return;
+        }
+        execHighCardTest("select [Measures].[Unit Sales] on columns, "
                     + "filter([Promotions].[Promotion Name].Members, "
                     + "[Measures].[Unit Sales]>0) "
                     + "on rows from [Sales Ragged]", 1, "Promotions",
                     nonEmptyHighCardResults, nonEmptyCells, true);
-         execHighCardTest("select [Measures].[Unit Sales] on columns, "
+
+        execHighCardTest("select [Measures].[Unit Sales] on columns, "
                     + "filter([Promotions].[Promotion Name].Members, "
                     + "[Measures].[Unit Sales]>4000) "
                     + "on rows from [Sales Ragged]", 1, "Promotions",
                     moreThan4000highCardResults, moreThan4000Cells , true);
     }
-
-
-
-
 
     //
     // Private Stuff --------------------------------------------
