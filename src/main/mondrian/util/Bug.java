@@ -98,6 +98,13 @@ public class Bug {
     public static final boolean Bug2446228Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2583015&group_id=35302&atid=414613">bug 2583015, "RolapResultTest disabled"</a>
+     * is fixed.
+     */
+    public static final boolean Bug2583015Fixed = false;
+
+    /**
      * Returns whether to avoid a test because the memory monitor may cause it
      * to fail.
      *

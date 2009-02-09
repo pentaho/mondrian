@@ -252,7 +252,9 @@ public class Main extends TestSuite {
             addTest(suite, RolapAxisTest.class);
             addTest(suite, MemberHelperTest.class);
             addTest(suite, CrossJoinTest.class);
-            addTest(suite, RolapResultTest.class);
+            if (Bug.Bug2583015Fixed) {
+                addTest(suite, RolapResultTest.class);
+            }
             addTest(suite, ConstantCalcTest.class);
             addTest(suite, SharedDimensionTest.class);
             addTest(suite, CellPropertyTest.class);
