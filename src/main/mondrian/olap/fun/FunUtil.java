@@ -15,15 +15,13 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
-import mondrian.calc.Calc;
-import mondrian.calc.ResultStyle;
-import mondrian.calc.DoubleCalc;
-import mondrian.calc.MemberCalc;
+import mondrian.calc.*;
 import mondrian.mdx.*;
 import mondrian.rolap.RolapHierarchy;
 import mondrian.util.FilteredIterableList;
 import mondrian.util.ConcatenableList;
-
+import mondrian.util.Pair;
+import org.apache.commons.collections.ComparatorUtils;
 import org.apache.log4j.Logger;
 import org.apache.commons.collections.comparators.*;
 
@@ -256,7 +254,6 @@ public class FunUtil extends Util {
         final Hierarchy hierarchy)
     {
         // only add accessible levels
-        ;
         for (Level level : schemaReader.getHierarchyLevels(hierarchy)) {
             addMembers(schemaReader, members, level);
         }
@@ -432,6 +429,7 @@ public class FunUtil extends Util {
             return memberList;
         }
 
+        // REVIEW mberkowitz 1/09: test whether precomputing values saves time.
         Map<Member, Object> mapMemberToValue;
         final boolean parentsToo = !brk;
         if (memberList == null) {
@@ -450,16 +448,16 @@ public class FunUtil extends Util {
             comp = new HierarchicalMemberComparator(evaluator, exp, desc);
         }
         comp.preloadValues(mapMemberToValue);
-
         Collections.sort(memberList, comp.wrap());
         return memberList;
     }
 
     /**
-     * Helper function to sort a list of members according to a list
-     * of expressions and a list of sorting flags.
+     * Sorts a list of members according to a list of SortKeySpecs.
+     * An in-place, Stable sort.
+     * Helper function for MDX OrderSet function.
      *
-     * <p>NOTE: This function does not preserve the contents of the validator.
+     * <p>NOTE: Does not preserve the contents of the validator.
      */
     static List<Member> sortMembers(
         Evaluator evaluator,
@@ -500,7 +498,9 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Helper function to a list of tuples according to an expression.
+     * Sorts a list of Tuples by the value of an applied expression. Stable sort.
+     * Helper function for MDX functions TopCount, TopSum, TopPercent, BottomCount,
+     * BottomSum, BottomPercent, but not the MDX function Order.
      *
      * <p>NOTE: This function does not preserve the contents of the validator.
      *
@@ -558,6 +558,35 @@ public class FunUtil extends Util {
     }
 
     /**
+     * Partially sorts a list of Members by the value of an applied expression.
+     * Avoids sorting the whole list, finds only the <i>n</i>top (or bottom) valued
+     * Members, and returns them as a new List. Helper function for MDX functions
+     * TopCount and BottomCount.
+     *
+     * @param list a list of members
+     * @param exp a Calc applied to each member to find its sort-key
+     * @param evaluator
+     * @param limit maximum count of members to return.
+     * @param desc true to sort descending (and find TopCount), false to sort
+     *   ascending (and find BottomCount).
+     * @return the top or bottom members, as a new list.
+     * <p>NOTE: Does not preserve the contents of the validator.
+     */
+    public static  List<Member> partiallySortMembers(
+        Evaluator evaluator,
+        List<Member> list,
+        Calc exp,
+        int limit,
+        boolean desc)
+    {
+        MemberComparator comp = new BreakMemberComparator(evaluator, exp, desc);
+        Map<Member, Object> valueMap =
+            evaluateMembers(evaluator, exp, list, null, false);
+        comp.preloadValues(valueMap);
+        return stablePartialSort(list, comp.wrap(), limit);
+    }
+
+    /**
      * Helper function to sort a list of tuples according to a list
      * of expressions and a list of sorting flags.
      *
@@ -607,6 +636,36 @@ public class FunUtil extends Util {
     }
 
     /**
+     * Partially sorts a list of Tuples by the value of an applied expression. Avoids
+     * sorting the whole list, finds only the <i>n</i> top (or bottom) valued Tuples,
+     * and returns them as a new List. Helper function for MDX functions TopCount and
+     * BottomCount.
+     *
+     * @param list a list of tuples
+     * @param exp a Calc applied to each tple to find its sort-key
+     * @param evaluator
+     * @param limit maximum count of tuples to return.
+     * @param desc true to sort descending (and find TopCount),
+     *  false to sort ascending (and find BottomCount).
+     * @return the top or bottom tuples, as a new list.
+     * <p>NOTE: Does not preserve the contents of the validator.
+     */
+    public static List<Member[]> partiallySortTuples(
+        Evaluator evaluator,
+        List<Member[]> list,
+        Calc exp,
+        int limit,
+        boolean desc,
+        int arity)
+    {
+        Comparator<Member[]> comp = new BreakArrayComparator(evaluator, exp, arity).wrap();
+        if (desc) {
+            comp = new ReverseComparator<Member[]>(comp);
+        }
+        return stablePartialSort(list, comp, limit);
+    }
+
+    /**
      * Sorts a list of members into hierarchical order. The members must belong
      * to the same dimension.
      *
@@ -615,9 +674,7 @@ public class FunUtil extends Util {
      *
      * @see #hierarchizeTupleList(java.util.List, boolean, int)
      */
-    public static void hierarchizeMemberList(
-        List<Member> memberList,
-        boolean post)
+    public static void hierarchizeMemberList(List<Member> memberList, boolean post)
     {
         if (memberList.isEmpty()) {
             return;
@@ -626,7 +683,6 @@ public class FunUtil extends Util {
             return;
         }
         Comparator<Member> comparator = new HierarchizeComparator(post);
-        memberList.toArray(); // REVIEW: why?
         Collections.sort(memberList, comparator);
     }
 
@@ -1292,67 +1348,6 @@ public class FunUtil extends Util {
         }
     }
 
-/*
-    public static int countOld(
-            Evaluator evaluator,
-            List members,
-            boolean includeEmpty) {
-        if (members == null) {
-System.out.println("FunUtil.count List: null 0");
-            return 0;
-        }
-        if (includeEmpty) {
-System.out.println("FunUtil.count List: "+members.size());
-            return members.size();
-        } else {
-            int retval = 0;
-            for (int i = 0; i < members.size(); i++) {
-                final Object member = members.get(i);
-                if (member instanceof Member) {
-                    evaluator.setContext((Member) member);
-                } else {
-                    evaluator.setContext((Member[]) member);
-                }
-                Object o = evaluator.evaluateCurrent();
-                if (o != Util.nullValue && o != null) {
-                    retval++;
-                }
-            }
-System.out.println("FunUtil.count List: "+retval);
-            return retval;
-        }
-    }
-    public static int countIterable(
-            Evaluator evaluator,
-            Iterable iterable,
-            boolean includeEmpty) {
-        if (iterable == null) {
-System.out.println("FunUtil.countIterable Iterable: null 0");
-            return 0;
-        }
-        int retval = 0;
-        Iterator it = iterable.iterator();
-        while (it.hasNext()) {
-            final Object member = it.next();
-            if (member instanceof Member) {
-                evaluator.setContext((Member) member);
-            } else if (member instanceof Member[]) {
-                evaluator.setContext((Member[]) member);
-            }
-            if (includeEmpty) {
-                retval++;
-            } else {
-                Object o = evaluator.evaluateCurrent();
-                if (o != Util.nullValue && o != null) {
-                    retval++;
-                }
-            }
-        }
-System.out.println("FunUtil.countIterable Iterable: "+retval);
-        return retval;
-    }
-*/
-
     /**
      * Evaluates <code>exp</code> (if defined) over <code>members</code> to
      * generate a {@link List} of {@link SetWrapper} objects, which contains
@@ -1985,7 +1980,292 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         return hierarchyMembers(hierarchy, evaluator, includeCalcMembers);
     }
 
+   /**
+    * Partial Sort: sorts in place an array of Objects using a given Comparator, but
+    * only enough so that the N biggest (or smallest) items are at the start of the
+    * array. Not a stable sort, unless the Comparator is so contrived.
+    *
+    * @param items will be partially-sorted in place
+    * @param comp a Comparator; null means use natural comparison
+    * @param limit
+    */
+    static void partialSort(Object[] items, Comparator comp, int limit)
+    {
+        if (comp == null) {
+            comp = ComparatorUtils.naturalComparator();
+        }
+        new Quicksorter(items, comp).partialSort(limit);
+    }
+
+    /**
+     * Stable partial sort of a list. Returns the desired head of the list.
+     */
+    static <T> List<T> stablePartialSort(
+        final List<T> list, final Comparator<T> comp, int limit)
+    {
+        assert limit >= 0;
+
+        // Load an array of pairs {list-item, list-index}.
+        // List-index is a secondary sort key, to give a stable sort.
+        // REVIEW Can we use a simple T[], with the index implied?
+        // REVIEW When limit is big relative to list size, faster to mergesort. Test
+        // for this.
+
+        int n = list.size();            // O(n) to scan list
+        Pair<T,Integer>[] pairs = new Pair[n];
+
+        int i = 0;
+        for (T item : list) {           // O(n) to scan list
+            pairs[i] = new Pair(item, i);
+            ++i;
+        }
+
+        Comparator<Pair<T,Integer>> pairComp = new Comparator<Pair<T,Integer>>() {
+            public int compare(Pair<T,Integer> x, Pair<T,Integer> y) {
+                int val = comp.compare(x.left, y.left);
+                if (val == 0) {
+                    val = x.right.compareTo(y.right);
+                }
+                return val;
+            }
+        };
+
+        limit = Math.min(limit, n);
+        partialSort(pairs, pairComp, limit); // O(n + limit * log(limit)) to quicksort
+
+        List<T> result = new ArrayList<T>();
+        for (i = 0; i < limit; ++i) {
+            result.add((T) pairs[i].left);  // O(limit) to scan
+        }
+        return result;
+    }
+
     // ~ Inner classes ---------------------------------------------------------
+
+    /**
+     * A functional for {@link FunUtil#partialSort}.
+     * Sorts or partially sorts an array in ascending order, using a Comparator.
+     *
+     * Algorithm: quicksort, or partial quicksort (alias "quickselect"), Hoare/Singleton.
+     * Partial quicksort is quicksort that recurs only on one side, which is thus tail-recursion.
+     * Picks pivot as median of three; falls back on insertion sort for small "subfiles".
+     * Partial quicksort is O(n + m log m), instead of O(n log n), where n is the
+     * input size, and m is the desired output size.
+     *
+     * See D Knuth, Art of Computer Programming, 5.2.2 (Algorithm Q); R. Sedgewick, Algorithms in C, ch 5.
+     * Good summary in http://en.wikipedia.org/wiki/Selection_algorithm
+     *
+     * TODO: What is the time-cost of this functor and of the nested Comparators?
+     */
+    static class Quicksorter {
+        public final int TOO_SMALL = 8; // size of smallest set worth a quicksort
+        private static final Logger LOGGER = Logger.getLogger(Quicksorter.class);
+        private final Object[] vec;
+        private final Comparator comp;
+        private final boolean traced;
+        private long partitions, comparisons, exchanges; // stats
+
+        public Quicksorter(Object[] vec, Comparator comp) {
+            this.vec = vec;
+            this.comp = comp;
+            partitions = comparisons = exchanges = 0;
+            traced = LOGGER.isDebugEnabled();
+        }
+
+        private void traceStats(String prefix) {
+            StringBuilder sb = new StringBuilder(prefix);
+            sb.append(": ");
+            sb.append(partitions).append(" partitions, ");
+            sb.append(comparisons).append(" comparisons, ");
+            sb.append(exchanges).append(" exchanges.");
+            LOGGER.debug(sb.toString());
+        }
+
+        // equivalent to operator <
+        private boolean less(Object x, Object y) {
+            comparisons++;
+            return (comp.compare(x, y) < 0);
+        }
+
+        // equivalent to operator >
+        private boolean more(Object x, Object y) {
+            comparisons++;
+            return (comp.compare(x, y) > 0);
+        }
+        // equivalent to operator >
+        private boolean equal(Object x, Object y) {
+            comparisons++;
+            return (comp.compare(x, y) == 0);
+        }
+
+        // swaps two items (identified by index in vec[])
+        private void swap(int i, int j) {
+            exchanges++;
+            Object temp = vec[i];
+            vec[i] = vec[j];
+            vec[j] = temp;
+        }
+
+        // puts into ascending order three items
+        // (identified by index in vec[])
+        // REVIEW: use only 2 comparisons??
+        private void order3(int i, int j, int k) {
+            if (more(vec[i], vec[j])) {
+                swap(i,j);
+            }
+            if (more(vec[i], vec[k])) {
+                swap(i,k);
+            }
+            if (more(vec[j], vec[k])) {
+                swap(j,k);
+            }
+        }
+
+        // runs a selection sort on the array segment VEC[START .. END]
+        private void selectionSort(int start, int end) {
+            for (int i = start; i < end; ++i) {
+                // pick the min of vec[i, end]
+                int pmin = i;
+                for (int j = i + 1; j <= end; ++j) {
+                    if (less(vec[j], vec[pmin])) {
+                        pmin = j;
+                    }
+                }
+                if (pmin != i) {
+                    swap(i, pmin);
+                }
+            }
+        }
+
+        // Runs one pass of quicksort on array segment VEC[START .. END], dividing it
+        // into two parts, the left side VEC[START .. P] none greater than the pivot
+        // value VEC[P], and the right side VEC[P+1 .. END] none less than the
+        // pivot value. Returns P, the index of the pivot element in VEC[].
+        private int partition(int start, int end) {
+            partitions++;
+            assert start <= end;
+
+            // Find median of three (both ends and the middle).
+            // TODO: use pseudo-median of nine when array segment is big enough.
+            int mid = (start + end) / 2;
+            order3(start, mid, end);
+            if (end - start <= 2) {
+                return mid;        // sorted!
+            }
+
+            // Now the left and right ends are in place (ie in the correct
+            // partition), and will serve as sentinels for scanning. Pick middle as
+            // pivot and set it aside, in penultimate position.
+            final Object pivot = vec[mid];
+            swap(mid, end - 1);
+
+            // Scan inward from both ends, swapping misplaced items.
+            int left = start + 1;       // vec[start] is in place
+            int right = end - 2;        // vec[end - 1] is pivot
+            while (left < right) {
+                // scan past items in correct place, but stop at a pivot value
+                // (Sedgewick's idea).
+                while (less(vec[left], pivot)) {
+                    ++left;
+                }
+                while (less(pivot, vec[right])) {
+                    --right;
+                }
+                if (debug) {
+                    assert (left <= end) && (right >= start);
+                }
+                if (left < right) {     // found a misplaced pair
+                    swap(left, right);
+                    ++left; --right;
+                }
+            }
+            if ((left == right) && less(vec[left], pivot)) {
+                ++left;
+            }
+
+            // All scanned. Restore pivot to its rightful place.
+            swap(left, end - 1);
+
+            if (debug) {
+                for (int i = start; i < left; i++) {
+                    assert !more(vec[i], pivot);
+                }
+                assert equal(vec[left], pivot);
+                for (int i = left + 1;  i <= end;  i++) {
+                    assert !less(vec[i], pivot);
+                }
+            }
+            return left;
+        }
+
+
+        // Runs quicksort on VEC[START, END]. Recursive version,
+        // TODO: exploit tail recursion
+        private void sort(int start, int end) {
+            if (end - start < TOO_SMALL) {
+                selectionSort(start, end);
+                return;
+            }
+
+            // Split data, so that left side dominates the right side
+            // (but neither is sorted):
+            int mid = partition(start, end);
+            sort(start, mid - 1);
+            sort(mid + 1, end);
+        }
+
+        // Runs quickselect(LIMIT) on VEC[START, END]. Recursive version,
+        // TODO: exploit tail recursion, unfold.
+        private void select(int limit, int start, int end) {
+            if (limit == 0) {
+                return;
+            }
+            if (end - start < TOO_SMALL) {
+                selectionSort(start, end);
+                return;
+            }
+            int mid = partition(start, end);
+            int leftSize = mid - start + 1;
+            if (limit < leftSize) {
+                // work on the left side, and ignore the right side
+                select(limit, start, mid);
+            } else {
+                limit -= leftSize;
+                // work on the right side, but keep the left side
+                select(limit, mid + 1, end);
+            }
+        }
+
+        public void sort() {
+            int n = vec.length - 1;
+            sort(0, n);
+            if (traced) {
+                traceStats("quicksort on " + n + "items");
+            }
+        }
+
+        /** puts the LIMIT biggest items at the head, not sorted */
+        public void select(int limit) {
+            int n = vec.length - 1;
+            select(limit, 0, n);
+            if (traced) {
+                traceStats("quickselect for " + limit + " from" + n + "items");
+            }
+        }
+
+        public void partialSort(int limit) {
+            int n = vec.length - 1;
+            select(limit, 0, n);
+            if (traced) {
+                traceStats("partial sort: quickselect phase for " +
+                    limit + "from " + n + "items");
+            }
+            sort(0, limit - 1);
+            if (traced) {
+                traceStats("partial sort: quicksort phase on " + n + "items");
+            }
+        }
+    }
 
     // Could generalize this to
     // class<T> MemorizingComparator implements Comparator<T>,

@@ -15,7 +15,6 @@ import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.ResultStyle;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.type.TupleType;
 import mondrian.olap.type.SetType;
 
 import java.util.*;
@@ -62,7 +61,7 @@ class TopBottomCountFunDef extends FunDefBase {
 
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
         // Compile the member list expression. Ask for a mutable list, because
-        // we're going to sortMembers it later.
+        // we're going to sort it later.
         final ListCalc listCalc =
                 compiler.compileList(call.getArg(0), true);
         final IntegerCalc integerCalc =
@@ -84,101 +83,78 @@ class TopBottomCountFunDef extends FunDefBase {
                     return (List) nativeEvaluator.execute(ResultStyle.LIST);
                 }
 
-                List list = listCalc.evaluateList(evaluator);
-                int n = integerCalc.evaluateInteger(evaluator);
+                 // REVIEW mberkowitz Is it necessary to eval the list when n is null or zero?
+                 List list = listCalc.evaluateList(evaluator);
+                 if (list.isEmpty()) {
+                     return list;
+                 }
 
-                if (n == mondrian.olap.fun.FunUtil.IntegerNull) {
-                    return new java.util.ArrayList();
+                 int n = integerCalc.evaluateInteger(evaluator);
+                 if (n == 0 || n == mondrian.olap.fun.FunUtil.IntegerNull) {
+                     return new java.util.ArrayList();
+                 }
+
+                 if (orderCalc == null) {
+                     if (list instanceof AbstractList && list.size() < n) {
+                         return list;
+                     } else {
+                         return list.subList(0, n);
+                     }
+                 }
+
+                 return partiallySortList(evaluator, list, hasHighCardDimension(list), n, arity);
+            }
+
+
+            private List partiallySortList(
+                Evaluator evaluator,
+                List list, boolean highCard, int n, int arity)
+            {
+                if (highCard) {
+                    // sort list in chunks, collect the results
+                    final int chunkSize = 6400; // what is this really?
+                    List allChunkResults = new ArrayList();
+                    Iterator listIter = list.iterator();
+                    while (listIter.hasNext()) {
+                        List chunk = new ArrayList();
+                        for (int count = 0; count < chunkSize && listIter.hasNext(); count++) {
+                            chunk.add(listIter.next());
+                        }
+                        List chunkResult = partiallySortList(evaluator, chunk, false, n, arity);
+                        allChunkResults.addAll(chunkResult);
+                    }
+                    // one last sort, to merge and cull
+                    return partiallySortList(evaluator, allChunkResults, false, n, arity);
                 }
 
-                if (orderCalc != null) {
-                    if (list.isEmpty()) {
-                        return list;
-                    }
-                    final Object trial = list.get(0);
-                    boolean highCard = false;
-                    if (trial instanceof Member) {
-                        if (((Member) trial).getHierarchy().getDimension()
-                                .isHighCardinality()) {
-                            highCard = true;
-                        }
-                    } else {
-                        final Member[] trials = (Member[]) trial;
-                        for (int i = 0; i < trials.length; i++) {
-                            if (trials[i].getHierarchy().getDimension()
-                                    .isHighCardinality()) {
-                                break;
-                            }
-                        }
-                    }
-
-                    if (highCard) {
-                        final List l2 = new ArrayList();
-                        final Iterator iterator = list.iterator();
-                        for (int i = 0; i < n + 1 && iterator.hasNext(); i++) {
-                            final Object o = iterator.next();
-                            l2.add(o);
-                        }
-                        final Evaluator eval = evaluator.push(false);
-                        if (arity == 1) {
-                            for (;;) {
-                                sortMembers(
-                                    eval,
-                                    (List<Member>) l2,
-                                    (List<Member>) l2,
-                                    orderCalc, top, true);
-                                l2.remove(l2.size() - 1);
-                                if (!iterator.hasNext()) {
-                                    break;
-                                }
-                                l2.add(iterator.next());
-                            }
-                            return l2;
-                        } else {
-                            for (;;) {
-                                sortTuples(
-                                    eval,
-                                    (List<mondrian.olap.Member[]>) l2,
-                                    (List<mondrian.olap.Member[]>) l2,
-                                    orderCalc, top, true, arity);
-                                l2.remove(l2.size() - 1);
-                                if (!iterator.hasNext()) {
-                                    break;
-                                }
-                                l2.add(iterator.next());
-                            }
-                            return l2;
-                        }
-                    } else {
-                        if (arity == 1) {
-                            sortMembers(
-                                evaluator.push(false),
-                                (List<Member>) list,
-                                (List<Member>) list,
-                                orderCalc, top, true);
-                        } else {
-                            sortTuples(
-                                evaluator.push(false),
-                                (List<mondrian.olap.Member[]>) list,
-                                (List<mondrian.olap.Member[]>) list,
-                                orderCalc, top, true, arity);
-                        }
-                        if (n < list.size()) {
-                            list = list.subList(0, n);
-                        }
-                        return list;
-                    }
+                // normal case: no need for chunks
+                if (arity == 1) {
+                    return partiallySortMembers(
+                        evaluator.push(), (List<Member>) list, orderCalc, n, top);
                 } else {
-                    if (list instanceof AbstractList && list.size() < n) {
-                        return list;
-                    } else {
-                        return list.subList(0, n);
-                    }
+                    return partiallySortTuples(
+                        evaluator.push(), (List<Member[]>) list, orderCalc, n, top, arity);
                 }
             }
 
+
             public boolean dependsOn(Dimension dimension) {
                 return anyDependsButFirst(getCalcs(), dimension);
+            }
+
+            private boolean hasHighCardDimension(List l) {
+                final Object trial = l.get(0);
+                if (trial instanceof Member) {
+                    Member m = (Member) trial;
+                    return m.getHierarchy().getDimension().isHighCardinality();
+                } else {
+                    for (Member m : (Member[]) trial) {
+                        if (m.getHierarchy().getDimension().isHighCardinality()) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
             }
         };
     }

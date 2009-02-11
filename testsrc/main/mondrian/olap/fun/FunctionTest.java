@@ -21,6 +21,7 @@ import mondrian.util.Bug;
 import mondrian.spi.Dialect;
 
 import org.eigenbase.xom.StringEscaper;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.List;
@@ -35,6 +36,8 @@ import java.util.ArrayList;
  * @version $Id$
  */
 public class FunctionTest extends FoodMartTestCase {
+
+    private static final Logger LOGGER = Logger.getLogger(FunctionTest.class);
 
     private static final String months =
         fold("[Time].[1997].[Q1].[1]\n" +
@@ -7286,6 +7289,37 @@ public class FunctionTest extends FoodMartTestCase {
             getTestContext().assertSetExprDependsOn(fun + "({[Promotion Media].[Media Type].members}, 2)",
                 "{}");
         }
+    }
+
+    /**
+     * Tests TopCount applied to a large result set.
+     * Before optimizing (see FunUtil.partialSort),
+     * on a 2-core 32-bit 2.4GHz machine, the 1st query took 14.5 secs, the 2nd query took 5.0 secs.
+     * After optimizing, who knows?
+     */
+    public void testTopCountHuge() {
+        // TODO convert printfs to trace
+        final String query = "SELECT [Measures].[Store Sales] ON 0,\n" +
+                "TopCount([Time].[Month].members * [Customers].[Name].members, 3, [Measures].[Store Sales]) ON 1\n" +
+                "FROM [Sales]";
+        final String desiredResult = fold(
+                "Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Measures].[Store Sales]}\n" +
+                        "Axis #2:\n" +
+                        "{[Time].[1997].[Q1].[3], [Customers].[All Customers].[USA].[WA].[Spokane].[George Todero]}\n" +
+                        "{[Time].[1997].[Q3].[7], [Customers].[All Customers].[USA].[WA].[Spokane].[James Horvat]}\n" +
+                        "{[Time].[1997].[Q4].[11], [Customers].[All Customers].[USA].[WA].[Olympia].[Charles Stanley]}\n" +
+                        "Row #0: 234.83\n" +
+                        "Row #1: 199.46\n" +
+                        "Row #2: 191.90\n");
+        long now = System.currentTimeMillis();
+        assertQueryReturns(query, desiredResult);
+        LOGGER.info("first query took " + (System.currentTimeMillis() - now));
+        now = System.currentTimeMillis();
+        assertQueryReturns(query, desiredResult);
+        LOGGER.info("second query took " + (System.currentTimeMillis() - now));
     }
 
     public void testTopPercent() {
