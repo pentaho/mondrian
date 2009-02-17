@@ -534,7 +534,7 @@ public class PartialSortTest extends TestCase
 
 
     // compare speed on different sizes of input
-    public void testSpeed() {
+    public void _testSpeed() {
         speedTest(60, 2);               // tiny
         speedTest(600, 12);             // small
         speedTest(600, 200);
