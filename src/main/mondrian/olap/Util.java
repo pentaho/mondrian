@@ -2126,10 +2126,10 @@ public class Util extends XOMUtil {
      * Gets content via Apache VFS. File must exist and have content
      *
      * @param url String
-     * @return Apache VFS FileObject for further processing
+     * @return Apache VFS FileContent for further processing
      * @throws FileSystemException
      */
-    public static FileObject readVirtualFile(String url)
+    public static FileContent readVirtualFile(String url)
             throws FileSystemException {
         // Treat catalogUrl as an Apache VFS (Virtual File System) URL.
         // VFS handles all of the usual protocols (http:, file:)
@@ -2149,6 +2149,13 @@ public class Util extends XOMUtil {
 
         File userDir = new File("").getAbsoluteFile();
         FileObject file = fsManager.resolveFile(userDir, url);
+
+        // Workaround to defect 2613265
+        if (!file.getName().getURI().equals(url)) {
+            fsManager.getFilesCache().removeFile(file.getFileSystem(),  file.getName());
+            file = fsManager.resolveFile(userDir, url);
+        }
+
         if (!file.isReadable()) {
             throw newError("Virtual file is not readable: " +
                 url);
@@ -2160,7 +2167,7 @@ public class Util extends XOMUtil {
                 url);
         }
 
-        return file;
+        return fileContent;
     }
 
     public static Map<String, String> toMap(final Properties properties) {

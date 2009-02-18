@@ -273,40 +273,12 @@ public class RolapSchema implements Schema {
 
             final DOMWrapper def;
             if (catalogStr == null) {
-                // Treat catalogUrl as an Apache VFS (Virtual File System) URL.
-                // VFS handles all of the usual protocols (http:, file:)
-                // and then some.
-                FileSystemManager fsManager = VFS.getManager();
-                if (fsManager == null) {
-                    throw Util.newError("Cannot get virtual file system manager");
-                }
-
-                // Workaround VFS bug.
-                if (catalogUrl.startsWith("file://localhost")) {
-                    catalogUrl = catalogUrl.substring("file://localhost".length());
-                }
-                if (catalogUrl.startsWith("file:")) {
-                    catalogUrl = catalogUrl.substring("file:".length());
-                }
-
-                File userDir = new File("").getAbsoluteFile();
-                FileObject file = fsManager.resolveFile(userDir, catalogUrl);
-                if (!file.isReadable()) {
-                    throw Util.newError("Virtual file is not readable: " +
-                        catalogUrl);
-                }
-
-                FileContent fileContent = file.getContent();
-                if (fileContent == null) {
-                    throw Util.newError("Cannot get virtual file content: " +
-                        catalogUrl);
-                }
+                FileContent fileContent = Util.readVirtualFile(catalogUrl);
 
                 if (getLogger().isDebugEnabled()) {
                     try {
                         StringBuilder buf = new StringBuilder(1000);
-                        FileContent fileContent1 = file.getContent();
-                        InputStream in = fileContent1.getInputStream();
+                        InputStream in = fileContent.getInputStream();
                         int n;
                         while ((n = in.read()) != -1) {
                             buf.append((char) n);
@@ -899,13 +871,9 @@ public class RolapSchema implements Schema {
                 String md5Bytes = null;
                 try {
                     if (catalogStr == null) {
-                        catalogStr = Util.readURL(catalogUrl);
                         // Use VFS to get the content
-
-                        FileObject file = Util.readVirtualFile(catalogUrl);
-
+                        FileContent fileContent = Util.readVirtualFile(catalogUrl);
                         StringBuilder buf = new StringBuilder(1000);
-                        FileContent fileContent = file.getContent();
                         InputStream in = fileContent.getInputStream();
                         int n;
                         while ((n = in.read()) != -1) {
@@ -913,6 +881,7 @@ public class RolapSchema implements Schema {
                         }
                         catalogStr = buf.toString();
                     }
+
                     md5Bytes = encodeMD5(catalogStr);
                 } catch (Exception ex) {
                     // Note, can not throw an Exception from this method
