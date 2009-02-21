@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -31,6 +31,12 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
     private final MondrianOlap4jCellSetMetaData cellSetMetaData;
     private final List<Property> propertyList = new ArrayList<Property>();
 
+    /**
+     * Creates a MondrianOlap4jCellSetAxisMetaData.
+     *
+     * @param cellSetMetaData Cell set axis metadata
+     * @param queryAxis Query axis
+     */
     MondrianOlap4jCellSetAxisMetaData(
         MondrianOlap4jCellSetMetaData cellSetMetaData,
         QueryAxis queryAxis)
@@ -52,12 +58,8 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
     }
 
     public Axis getAxisOrdinal() {
-        switch (queryAxis.getAxisOrdinal()) {
-        case SLICER:
-            return Axis.FILTER;
-        default:
-            return Axis.valueOf(queryAxis.getAxisOrdinal().name());
-        }
+        return Axis.Factory.forOrdinal(
+            queryAxis.getAxisOrdinal().logicalOrdinal());
     }
 
     public List<Hierarchy> getHierarchies() {
@@ -106,6 +108,11 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
         }
     }
 
+    /**
+     * Returns the hierarchies on a non-filter axis.
+     *
+     * @return List of hierarchies, never null
+     */
     private List<Hierarchy> getHierarchiesNonFilter() {
         final Exp exp = queryAxis.getSet();
         if (exp == null) {

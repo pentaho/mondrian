@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -28,6 +28,13 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
     private final mondrian.olap.QueryAxis queryAxis;
     private final mondrian.olap.Axis axis;
 
+    /**
+     * Creates a MondrianOlap4jCellSetAxis.
+     *
+     * @param olap4jCellSet Cell set
+     * @param queryAxis Query axis
+     * @param axis Axis
+     */
     MondrianOlap4jCellSetAxis(
         MondrianOlap4jCellSet olap4jCellSet,
         mondrian.olap.QueryAxis queryAxis,
@@ -42,12 +49,8 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
     }
 
     public Axis getAxisOrdinal() {
-        switch (queryAxis.getAxisOrdinal()) {
-        case SLICER:
-            return Axis.FILTER;
-        default:
-            return Axis.valueOf(queryAxis.getAxisOrdinal().name());
-        }
+        return Axis.Factory.forOrdinal(
+            queryAxis.getAxisOrdinal().logicalOrdinal());
     }
 
     public CellSet getCellSet() {
@@ -66,8 +69,7 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
     }
 
     public List<Position> getPositions() {
-        switch (getAxisOrdinal()) {
-        case FILTER:
+        if (queryAxis.getAxisOrdinal() == AxisOrdinal.SLICER) {
             final List<Hierarchy> hierarchyList =
                 getAxisMetaData().getHierarchies();
             final Member[] members = new Member[hierarchyList.size()];
@@ -86,7 +88,8 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
                 ++k;
                 if (members[k] == null) {
                     members[k] =
-                        ((MondrianOlap4jHierarchy) hierarchy).getDefaultMember();
+                        ((MondrianOlap4jHierarchy) hierarchy)
+                            .getDefaultMember();
                 }
             }
             final Position position = new Position() {
@@ -99,7 +102,7 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
                 }
             };
             return Collections.singletonList(position);
-        default:
+        } else {
             return new AbstractList<Position>() {
                 public Position get(final int index) {
                     final mondrian.olap.Position mondrianPosition =
@@ -126,6 +129,12 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
         private final mondrian.olap.Position mondrianPosition;
         private final int index;
 
+        /**
+         * Creates a MondrianOlap4jPosition.
+         *
+         * @param mondrianPosition Mondrian position
+         * @param index Index
+         */
         public MondrianOlap4jPosition(
             mondrian.olap.Position mondrianPosition, int index) {
             this.mondrianPosition = mondrianPosition;

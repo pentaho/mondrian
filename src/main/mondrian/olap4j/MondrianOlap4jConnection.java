@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -625,13 +625,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         }
     }
 
-    static Axis toOlap4j(String axisName) {
-        if (axisName.equals("SLICER")) {
-            axisName = "FILTER";
-        }
-        return Axis.valueOf(axisName);
-    }
-
     private static class MondrianToOlap4jNodeConverter {
         private final MondrianOlap4jConnection olap4jConnection;
 
@@ -660,7 +653,8 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
             return new AxisNode(
                 null,
                 axis.isNonEmpty(),
-                MondrianOlap4jConnection.toOlap4j(axis.getAxisName()),
+                Axis.Factory.forOrdinal(
+                    axis.getAxisOrdinal().logicalOrdinal()),
                 toOlap4j(axis.getDimensionProperties()),
                 toOlap4j(axis.getSet()));
         }
