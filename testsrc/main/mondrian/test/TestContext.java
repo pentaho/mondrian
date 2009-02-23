@@ -470,6 +470,7 @@ public class TestContext {
      */
     public Result executeQuery(String queryString) {
         Connection connection = getConnection();
+        queryString = upgradeQuery(queryString);
         Query query = connection.parseQuery(queryString);
         return connection.execute(query);
     }
@@ -501,11 +502,15 @@ public class TestContext {
     public void assertExprThrows(String expression, String pattern) {
         Throwable throwable = null;
         try {
+            String cubeName = getDefaultCubeName();
+            if (cubeName.indexOf(' ') >= 0) {
+                cubeName = Util.quoteMdxIdentifier(cubeName);
+            }
             Result result = executeQuery(
-                    "with member [Measures].[Foo] as '" +
+                "with member [Measures].[Foo] as '" +
                     expression +
                     "' select {[Measures].[Foo]} on columns from " +
-                    getDefaultCubeName());
+                    cubeName);
             Cell cell = result.getCell(new int[]{0});
             if (cell.isError()) {
                 throwable = (Throwable) cell.getValue();
@@ -579,7 +584,103 @@ public class TestContext {
         String expected)
     {
         Axis axis = executeAxis(expression);
-        assertEqualsVerbose(expected, toString(axis.getPositions()));
+        assertEqualsVerbose(
+            expected,
+            upgradeActual(toString(axis.getPositions())));
+    }
+
+    /**
+     * Massages the actual result of executing a query to handle differences in
+     * unique names betweeen old and new behavior.
+     *
+     * <p>Even though the new naming is not enabled by default, reference logs
+     * should be in terms of the new naming.
+     *
+     * @see mondrian.olap.MondrianProperties#SsasCompatibleNaming
+     *
+     * @param actual Actual result
+     * @return Expected result massaged for backwards compatibility
+     */
+    public String upgradeActual(String actual) {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            actual = Util.replace(
+                actual,
+                "[Time.Weekly]",
+                "[Time].[Weekly]");
+            actual = Util.replace(
+                actual,
+                "[All Time.Weeklys]",
+                "[All Weeklys]");
+            actual = Util.replace(
+                actual,
+                "<HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>",
+                "<HIERARCHY_NAME>Weekly</HIERARCHY_NAME>");
+
+            // for a few tests in SchemaTest
+            actual = Util.replace(
+                actual,
+                "[Store.MyHierarchy]",
+                "[Store].[MyHierarchy]");
+            actual = Util.replace(
+                actual,
+                "[All Store.MyHierarchys]",
+                "[All MyHierarchys]");
+            actual = Util.replace(
+                actual,
+                "[Store2].[All Store2s]",
+                "[Store2].[Store].[All Stores]");
+            actual = Util.replace(
+                actual,
+                "[TIME.CALENDAR]",
+                "[TIME].[CALENDAR]");
+        }
+        return actual;
+    }
+
+    /**
+     * Massages an MDX query to handle differences in
+     * unique names betweeen old and new behavior.
+     *
+     * <p>The main difference addressed is with level naming. The problem
+     * arises when dimension, hierarchy and level have the same name:<ul>
+     *
+     * <li>In old behavior, the [Gender].[Gender] represents the Gender level,
+     * and [Gender].[Gender].[Gender] is invalid.
+     *
+     * <li>In new behavior, [Gender].[Gender] represents the Gender hierarchy,
+     * and [Gender].[Gender].[Gender].members represents the Gender level.
+     * </ul></p>
+     *
+     * <p>So, {@code upgradeQuery("[Gender]")} returns
+     * "[Gender].[Gender]" for old behavior,
+     * "[Gender].[Gender].[Gender]" for new behavior.</p>
+     *
+     * @see mondrian.olap.MondrianProperties#SsasCompatibleNaming
+     *
+     * @param queryString Original query
+     * @return Massaged query for backwards compatibility
+     */
+    public String upgradeQuery(String queryString) {
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            String[] names = {
+                "[Gender]",
+                "[Education Level]",
+                "[Marital Status]",
+                "[Store Type]",
+                "[Yearly Income]",
+            };
+            for (String name : names) {
+                queryString = Util.replace(
+                    queryString,
+                    name + "." + name,
+                    name + "." + name + "." + name);
+            }
+            queryString = Util.replace(
+                queryString,
+                "[Time.Weekly].[All Time.Weeklys]",
+                "[Time].[Weekly].[All Weeklys]");
+        }
+        return queryString;
     }
 
     /**
@@ -712,7 +813,9 @@ public class TestContext {
         Result result = executeQuery(query);
         String resultString = toString(result);
         if (desiredResult != null) {
-            assertEqualsVerbose(desiredResult, resultString);
+            assertEqualsVerbose(
+                desiredResult,
+                upgradeActual(resultString));
         }
     }
 
@@ -1358,6 +1461,21 @@ public class TestContext {
                     RolapConnectionProperties.Role.name(),
                     roleName);
                 return properties;
+            }
+        };
+    }
+
+    /**
+     * Returns a TestContext similar to this one, but using the given cube as
+     * default for tests such as {@link #assertExprReturns(String, String)}.
+     *
+     * @param cubeName Cube name
+     * @return Test context with the given default cube
+     */
+    public TestContext withCube(final String cubeName) {
+        return new DelegatingTestContext(this) {
+            public String getDefaultCubeName() {
+                return cubeName;
             }
         };
     }

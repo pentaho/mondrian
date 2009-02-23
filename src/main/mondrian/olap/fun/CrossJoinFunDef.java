@@ -13,7 +13,6 @@ package mondrian.olap.fun;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.impl.AbstractTupleIterCalc;
-import mondrian.calc.impl.AbstractMemberIterCalc;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
@@ -2487,7 +2486,10 @@ public class CrossJoinFunDef extends FunDefBase {
         }
 
         public FunDef resolve(
-                Exp[] args, Validator validator, int[] conversionCount) {
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
+        {
             // This function only applies in contexts which require a set.
             // Elsewhere, "*" is the multiplication operator.
             // This means that [Measures].[Unit Sales] * [Gender].[M] is
@@ -2495,7 +2497,7 @@ public class CrossJoinFunDef extends FunDefBase {
             if (validator.requiresExpression()) {
                 return null;
             }
-            return super.resolve(args, validator, conversionCount);
+            return super.resolve(args, validator, conversions);
         }
 
         protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {

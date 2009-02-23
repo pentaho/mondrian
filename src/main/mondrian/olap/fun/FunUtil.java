@@ -248,6 +248,31 @@ public class FunUtil extends Util {
         }
     }
 
+    /**
+     * Returns the default hierarchy of a dimension, or null if there is no
+     * default.
+     *
+     * @see MondrianResource#CannotImplicitlyConvertDimensionToHierarchy
+     *
+     * @param dimension Dimension
+     * @return Default hierarchy, or null
+     */
+    public static Hierarchy getDimensionDefaultHierarchy(Dimension dimension) {
+        final Hierarchy[] hierarchies =
+            dimension.getHierarchies();
+        if (hierarchies.length == 1) {
+            return hierarchies[0];
+        }
+        for (Hierarchy hierarchy : hierarchies) {
+            if (hierarchy.getName() == null
+                || hierarchy.getName().equals(
+                dimension.getName())) {
+                return hierarchy;
+            }
+        }
+        return null;
+    }
+
     static List<Member> addMembers(
         final SchemaReader schemaReader,
         final List<Member> members,
@@ -1793,15 +1818,14 @@ public class FunUtil extends Util {
         for (int i = 0; i < args.length; i++) {
             newArgs[i] = validator.validate(args[i], false);
         }
-        final FunTable funTable = validator.getFunTable();
-        FunDef funDef = funTable.getDef(newArgs, validator, name, syntax);
+        FunDef funDef = validator.getDef(newArgs, name, syntax);
 
         // If the first argument to a function is either:
         // 1) the measures dimension or
         // 2) a measures member where the function returns another member or
         //    a set,
         // then these are functions that dynamically return one or more
-        // members ofthe measures dimension.  In that case, we cannot use
+        // members of the measures dimension.  In that case, we cannot use
         // native cross joins because the functions need to be executed to
         // determine the resultant measures.
         //
@@ -1811,23 +1835,33 @@ public class FunUtil extends Util {
         // However, we do allow functions like isEmpty, rank, and topPercent.
         // Also, the set function is ok since it just enumerates its
         // arguments.
-        if (!(funDef instanceof SetFunDef) && query != null &&
+        if (!(funDef instanceof SetFunDef) &&
+            query != null &&
             query.nativeCrossJoinVirtualCube())
         {
             int[] paramCategories = funDef.getParameterCategories();
-            if (paramCategories.length > 0 &&
-                ((paramCategories[0] == Category.Dimension &&
-                    newArgs[0] instanceof DimensionExpr &&
-                    ((DimensionExpr) newArgs[0]).getDimension().
-                        getOrdinal(cube) == 0) ||
-                (paramCategories[0] == Category.Member &&
-                    newArgs[0] instanceof MemberExpr &&
-                    ((MemberExpr) newArgs[0]).getMember().getDimension().
-                        getOrdinal(cube) == 0 &&
-                    (funDef.getReturnCategory() == Category.Member ||
-                        funDef.getReturnCategory() == Category.Set))))
-            {
-                query.setVirtualCubeNonNativeCrossJoin();
+            if (paramCategories.length > 0) {
+                final int cat0 = paramCategories[0];
+                final Exp arg0 = newArgs[0];
+                switch (cat0) {
+                case Category.Dimension:
+                case Category.Hierarchy:
+                    if (arg0 instanceof DimensionExpr &&
+                        ((DimensionExpr) arg0).getDimension().
+                            getOrdinal(cube) == 0) {
+                        query.setVirtualCubeNonNativeCrossJoin();
+                    }
+                    break;
+                case Category.Member:
+                    if (arg0 instanceof MemberExpr &&
+                        ((MemberExpr) arg0).getMember().getDimension().
+                            getOrdinal(cube) == 0 &&
+                        (funDef.getReturnCategory() == Category.Member ||
+                            funDef.getReturnCategory() == Category.Set)) {
+                        query.setVirtualCubeNonNativeCrossJoin();
+                    }
+                    break;
+                }
             }
         }
 
@@ -2853,10 +2887,6 @@ public class FunUtil extends Util {
         }
 
         public String getDescription() {
-            throw new UnsupportedOperationException();
-        }
-
-        public OlapElement lookupChild(SchemaReader schemaReader,Id.Segment s) {
             throw new UnsupportedOperationException();
         }
 

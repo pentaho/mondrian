@@ -92,7 +92,7 @@ abstract class MondrianOlap4jCellSet implements CellSet {
             // Dummy slicer axis.
             queryAxis =
                 new QueryAxis(
-                    false, null, AxisOrdinal.SLICER,
+                    false, null, AxisOrdinal.StandardAxisOrdinal.SLICER,
                     QueryAxis.SubtotalVisibility.Undefined);
         }
         filterAxis = new MondrianOlap4jCellSetAxis(this, queryAxis, axis);

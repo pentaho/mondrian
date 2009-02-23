@@ -243,6 +243,7 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
         Role role) throws Exception
     {
         String requestText = fileToString("request");
+        requestText = testContext.upgradeQuery(requestText);
         doTestInline(
             requestType, requestText, "${response}",
             props, testContext, role);
@@ -287,7 +288,8 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
                 responseDoc, new String[][] {{"content", "schemadata"}}, ns)
             : null;
         doTests(
-            requestText, props, null, connectString, catalogNameUrls,
+            requestText, props,
+            testContext, null, connectString, catalogNameUrls,
             expectedDoc, XmlaBasicTest.CONTENT_SCHEMADATA, role);
 
         if (requestType.equals("EXECUTE")) {
@@ -299,48 +301,40 @@ System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
                 responseDoc, new String[][] {{"content", "none"}}, ns)
             : null;
 
-        doTests(requestText, props, null, connectString, catalogNameUrls,
-                expectedDoc, XmlaBasicTest.CONTENT_NONE, role);
+        doTests(
+            requestText, props,
+            testContext, null, connectString, catalogNameUrls,
+            expectedDoc, XmlaBasicTest.CONTENT_NONE, role);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
                 responseDoc, new String[][] {{"content", "data"}}, ns)
             : null;
-        doTests(requestText, props, null, connectString, catalogNameUrls,
-                expectedDoc, XmlaBasicTest.CONTENT_DATA, role);
+        doTests(
+            requestText, props,
+            testContext, null, connectString, catalogNameUrls,
+            expectedDoc, XmlaBasicTest.CONTENT_DATA, role);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
                 responseDoc, new String[][] {{"content", "schema"}}, ns)
             : null;
-        doTests(requestText, props, null, connectString, catalogNameUrls,
-                expectedDoc, XmlaBasicTest.CONTENT_SCHEMA, role);
-    }
-
-    protected void doTests(
-            String soapRequestText,
-            Properties props,
-            String soapResponseText,
-            String connectString,
-            Map<String, String> catalogNameUrls,
-            Document expectedDoc,
-            String content) throws Exception
-    {
         doTests(
-            soapRequestText, props, soapResponseText,
-            connectString, catalogNameUrls, expectedDoc,
-                content, null);
+            requestText, props,
+            testContext, null, connectString, catalogNameUrls,
+            expectedDoc, XmlaBasicTest.CONTENT_SCHEMA, role);
     }
 
     protected void doTests(
-            String soapRequestText,
-            Properties props,
-            String soapResponseText,
-            String connectString,
-            Map<String, String> catalogNameUrls,
-            Document expectedDoc,
-            String content,
-            Role role) throws Exception
+        String soapRequestText,
+        Properties props,
+        TestContext testContext,
+        String soapResponseText,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        Document expectedDoc,
+        String content,
+        Role role) throws Exception
     {
         if (content != null) {
             props.setProperty(XmlaBasicTest.CONTENT_PROP, content);
@@ -403,6 +397,7 @@ if (DEBUG) {
         Document gotDoc = ignoreLastUpdateDate(XmlUtil.parse(bytes));
         String gotStr = XmlUtil.toString(gotDoc, true);
         gotStr = Util.maskVersion(gotStr);
+        gotStr = testContext.upgradeActual(gotStr);
         if (expectedDoc != null) {
             String expectedStr = XmlUtil.toString(expectedDoc, true);
 if (DEBUG) {
@@ -418,7 +413,10 @@ System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
                     // a textual difference, and will update the logfile,
                     // XmlaBasicTest.log.xml. If you agree with the change,
                     // copy this file to XmlaBasicTest.ref.xml.
-                    getDiffRepos().assertEquals("response", "${response}", gotStr);
+                    getDiffRepos().assertEquals(
+                        "response",
+                        "${response}",
+                        gotStr);
                 } else {
                     throw e;
                 }

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2009-2009 Julian Hyde
+// Copyright (C) 2009-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
  * <p>Based on the suggested file format, this class reads the service
  * entries in a JAR file and discovers implementors of an interface.
  *
- * @author jhyde
+ * @author Marc Batchelor
  * @version $Id$
  */
 public class ServiceDiscovery<T> {
@@ -42,6 +42,8 @@ public class ServiceDiscovery<T> {
      * Creates a ServiceDiscovery.
      *
      * @param theInterface Interface for service
+     *
+     * @return ServiceDiscovery for finding instances of the given interface
      */
     public static <T> ServiceDiscovery<T> forClass(Class<T> theInterface) {
         return new ServiceDiscovery<T>(theInterface);
@@ -76,10 +78,9 @@ public class ServiceDiscovery<T> {
             // that contains an implementation for the interface, and therefore,
             // more than one list of entries.
             String lookupName = "META-INF/services/" + theInterface.getName();
-            Enumeration<URL> e = cLoader.getResources(lookupName);
-            URL resourceURL = null; // A file containing class names
-            while (e.hasMoreElements()) {
-                resourceURL = e.nextElement();
+            Enumeration<URL> urlEnum = cLoader.getResources(lookupName);
+            while (urlEnum.hasMoreElements()) {
+                URL resourceURL = urlEnum.nextElement();
                 InputStream is = null;
                 try {
                     is = resourceURL.openStream();
@@ -87,19 +88,25 @@ public class ServiceDiscovery<T> {
                         new BufferedReader(new InputStreamReader(is));
 
                     // read each class and parse it
-                    String clazz = null;
+                    String clazz;
                     while ((clazz = reader.readLine()) != null) {
                         parseImplementor(clazz, cLoader, uniqueClasses);
                     }
+                } catch (IOException e) {
+                    logger.warn(
+                        "Error while finding service file " + resourceURL +
+                            " for " + theInterface,
+                        e);
                 } finally {
                     if (is != null) {
                         is.close();
                     }
                 }
             }
-        } catch (IOException ignored) {
-            ignored.printStackTrace();
-            // Log this somewhere
+        } catch (IOException e) {
+            logger.warn(
+                "Error while finding service files for " + theInterface,
+                e);
         }
         List<Class<T>> rtn = new ArrayList<Class<T>>();
         rtn.addAll(uniqueClasses);
@@ -128,27 +135,30 @@ public class ServiceDiscovery<T> {
 
         String[] classList = clazz.trim().split("#");
         String theClass = classList[0].trim(); // maybe overkill, maybe not. :-D
-        if ((theClass != null) && (theClass.length() > 0)) {
-            try {
-                // I want to look up the class but not cause the static
-                // initializer to execute.
-                Class interfaceImplementor =
-                    Class.forName(theClass, false, cLoader);
-                if (theInterface.isAssignableFrom(interfaceImplementor)) {
-                    //noinspection unchecked
-                    uniqueClasses.add((Class<T>) interfaceImplementor);
-                } else {
-                    logger.error(
-                        "Class " + interfaceImplementor
-                            + " cannot be assigned to interface "
-                        + theInterface);
-                }
-            } catch (ClassNotFoundException ignored) {
-                ignored.printStackTrace();
-            } catch (LinkageError ignored) {
-                // including ExceptionInInitializerError
-                ignored.printStackTrace();
+        if (theClass.length() == 0) {
+            // Ignore lines that are empty after removing comments & trailing
+            // spaces.
+            return;
+        }
+        try {
+            // I want to look up the class but not cause the static
+            // initializer to execute.
+            Class interfaceImplementor =
+                Class.forName(theClass, false, cLoader);
+            if (theInterface.isAssignableFrom(interfaceImplementor)) {
+                //noinspection unchecked
+                uniqueClasses.add((Class<T>) interfaceImplementor);
+            } else {
+                logger.error(
+                    "Class " + interfaceImplementor
+                        + " cannot be assigned to interface "
+                    + theInterface);
             }
+        } catch (ClassNotFoundException ignored) {
+            ignored.printStackTrace();
+        } catch (LinkageError ignored) {
+            // including ExceptionInInitializerError
+            ignored.printStackTrace();
         }
     }
 }

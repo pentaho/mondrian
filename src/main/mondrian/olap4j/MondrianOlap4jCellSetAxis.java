@@ -59,17 +59,16 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
 
     public CellSetAxisMetaData getAxisMetaData() {
         final AxisOrdinal axisOrdinal = queryAxis.getAxisOrdinal();
-        switch (axisOrdinal) {
-        case SLICER:
+        if (axisOrdinal.isFilter()) {
             return olap4jCellSet.getMetaData().getFilterAxisMetaData();
-        default:
+        } else {
             return olap4jCellSet.getMetaData().getAxesMetaData().get(
                 axisOrdinal.logicalOrdinal());
         }
     }
 
     public List<Position> getPositions() {
-        if (queryAxis.getAxisOrdinal() == AxisOrdinal.SLICER) {
+        if (queryAxis.getAxisOrdinal().isFilter()) {
             final List<Hierarchy> hierarchyList =
                 getAxisMetaData().getHierarchies();
             final Member[] members = new Member[hierarchyList.size()];

@@ -91,7 +91,10 @@ class CaseMatchFunDef extends FunDefBase {
         }
 
         public FunDef resolve(
-                Exp[] args, Validator validator, int[] conversionCount) {
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
+        {
             if (args.length < 3) {
                 return null;
             }
@@ -100,19 +103,19 @@ class CaseMatchFunDef extends FunDefBase {
             int j = 0;
             int clauseCount = (args.length - 1) / 2;
             int mismatchingArgs = 0;
-            if (!validator.canConvert(args[j++], valueType, conversionCount)) {
+            if (!validator.canConvert(args[j++], valueType, conversions)) {
                 mismatchingArgs++;
             }
             for (int i = 0; i < clauseCount; i++) {
-                if (!validator.canConvert(args[j++], valueType, conversionCount)) {
+                if (!validator.canConvert(args[j++], valueType, conversions)) {
                     mismatchingArgs++;
                 }
-                if (!validator.canConvert(args[j++], returnType, conversionCount)) {
+                if (!validator.canConvert(args[j++], returnType, conversions)) {
                     mismatchingArgs++;
                 }
             }
             if (j < args.length) {
-                if (!validator.canConvert(args[j++], returnType, conversionCount)) {
+                if (!validator.canConvert(args[j++], returnType, conversions)) {
                     mismatchingArgs++;
                 }
             }

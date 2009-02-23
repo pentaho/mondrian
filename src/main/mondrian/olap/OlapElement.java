@@ -20,14 +20,16 @@ package mondrian.olap;
 public interface OlapElement {
     String getUniqueName();
     String getName();
+
     String getDescription();
 
     /**
      * Looks up a child element, returning null if it does not exist.
      */
-    OlapElement lookupChild(SchemaReader schemaReader, Id.Segment s);
     OlapElement lookupChild(
-        SchemaReader schemaReader, Id.Segment s, MatchType matchType);
+        SchemaReader schemaReader,
+        Id.Segment s,
+        MatchType matchType);
 
     /**
      * Returns the name of this element qualified by its class, for example

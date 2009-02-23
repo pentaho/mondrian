@@ -341,7 +341,7 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
             }
             return null;
         case Category.Empty:
-            return new NullType();
+            return new EmptyType();
         default:
             throw Category.instance.badValue(category);
         }

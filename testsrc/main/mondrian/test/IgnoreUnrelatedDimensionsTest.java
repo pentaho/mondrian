@@ -110,7 +110,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
         assertQueryReturns(
             "WITH MEMBER [Measures].[Unit Sales VM] AS " +
             "'ValidMeasure([Measures].[Unit Sales])', SOLVE_ORDER = 3000 " +
-            "MEMBER Gender.G AS 'AGGREGATE(CROSSJOIN({Gender.Gender.MEMBERS}," +
+            "MEMBER Gender.G AS 'AGGREGATE(CROSSJOIN({[Gender].[Gender].MEMBERS}," +
             "[WAREHOUSE].[STATE PROVINCE].MEMBERS))'" +
             "SELECT " +
             "{[MEASURES].[Unit Sales VM]} ON 0," +

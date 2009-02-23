@@ -98,7 +98,7 @@ class DescendantsFunDef extends FunDefBase {
         final boolean depthSpecified = call.getArgCount() >= 2 &&
             call.getArg(1).getType() instanceof NumericType;
         final boolean depthEmpty = call.getArgCount() >= 2 &&
-            call.getArg(1).getType() instanceof NullType;
+            call.getArg(1).getType() instanceof EmptyType;
         if (call.getArgCount() >= 3) {
             flag = FunUtil.getLiteralArg(call, 2, Flag.SELF, Flag.class);
         }

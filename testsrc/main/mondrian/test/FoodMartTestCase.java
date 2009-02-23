@@ -58,20 +58,6 @@ public class FoodMartTestCase extends TestCase {
     }
 
     /**
-     * Returns a {@link TestContext} which uses a given cube for executing
-     * scalar and set expressions.
-     *
-     * @param cubeName Name of cube
-     */
-    protected TestContext getTestContext(final String cubeName) {
-        return new DelegatingTestContext(getTestContext()) {
-            public String getDefaultCubeName() {
-                return cubeName;
-            }
-        };
-    }
-
-    /**
      * Returns a {@link TestContext} which uses a given connection.
      *
      * @param connection Connection

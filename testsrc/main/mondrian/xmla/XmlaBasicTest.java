@@ -279,6 +279,11 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
             // MDSCHEMA_FUNCTIONS produces different output in JDK 1.4.
             return;
         }
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            // <Dimension>.CurrentMember function exists if
+            // SsasCompatibleNaming=false.
+            return;
+        }
         String requestType = "MDSCHEMA_FUNCTIONS";
 
         Properties props = new Properties();

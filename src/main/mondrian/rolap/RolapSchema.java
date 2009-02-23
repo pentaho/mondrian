@@ -376,7 +376,7 @@ public class RolapSchema implements Schema {
             defineFunction(mapNameToUdf, udf.name, udf.className);
         }
         final RolapSchemaFunctionTable funTable =
-                new RolapSchemaFunctionTable(mapNameToUdf.values());
+            new RolapSchemaFunctionTable(mapNameToUdf.values());
         funTable.init();
         this.funTable = funTable;
 
@@ -1646,9 +1646,11 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             }
             return star;
         }
+
         synchronized RolapStar getStar(final String factTableName) {
             return stars.get(factTableName);
         }
+
         synchronized Collection<RolapStar> getStars() {
             return stars.values();
         }
@@ -1671,22 +1673,17 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             udfList = new ArrayList<UserDefinedFunction>(udfs);
         }
 
-        protected void defineFunctions() {
+        public void defineFunctions(Builder builder) {
             final FunTable globalFunTable = GlobalFunTable.instance();
             for (String reservedWord : globalFunTable.getReservedWords()) {
-                defineReserved(reservedWord);
+                builder.defineReserved(reservedWord);
             }
             for (Resolver resolver : globalFunTable.getResolvers()) {
-                define(resolver);
+                builder.define(resolver);
             }
             for (UserDefinedFunction udf : udfList) {
-                define(new UdfResolver(udf));
+                builder.define(new UdfResolver(udf));
             }
-        }
-
-
-        public List<FunInfo> getFunInfoList() {
-            return Collections.unmodifiableList(this.funInfoList);
         }
     }
 

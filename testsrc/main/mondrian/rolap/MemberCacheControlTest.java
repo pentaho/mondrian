@@ -193,7 +193,8 @@ public class MemberCacheControlTest extends FoodMartTestCase {
     {
         return printMemberProperties(
             pw,
-            result.getAxes()[AxisOrdinal.ROWS.logicalOrdinal()]);
+            result.getAxes()[
+                AxisOrdinal.StandardAxisOrdinal.ROWS.logicalOrdinal()]);
     }
 
     private static String getRowMemberPropertiesAsString(Result r) {

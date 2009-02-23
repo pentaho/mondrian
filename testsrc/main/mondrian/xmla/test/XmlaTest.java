@@ -13,9 +13,8 @@ import mondrian.xmla.*;
 import mondrian.xmla.impl.DefaultXmlaRequest;
 import mondrian.xmla.impl.DefaultXmlaResponse;
 import mondrian.olap.*;
-import mondrian.rolap.RolapSchema;
 import mondrian.test.DiffRepository;
-import mondrian.util.Bug;
+import mondrian.test.TestContext;
 
 import junit.framework.*;
 import org.apache.log4j.Logger;
@@ -77,6 +76,13 @@ public class XmlaTest extends TestCase {
     }
 
     protected void runTest() throws Exception {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()
+            && getName().equals("mdschemaLevelsCubeDimRestrictions")) {
+            // Changes in unique names of hierarchies and levels mean that the
+            // output is a different order in the old behavior, and cannot be
+            // fixed by a few sed-like comparisons.
+            return;
+        }
         DiffRepository diffRepos = getDiffRepos();
         String request = diffRepos.expand(null, "${request}");
         String expectedResponse = diffRepos.expand(null, "${response}");
@@ -92,8 +98,9 @@ public class XmlaTest extends TestCase {
         transformer.transform(
             new DOMSource(responseElem), new StreamResult(bufWriter));
         bufWriter.write(Util.nl);
-        String actualResponse = bufWriter.getBuffer().toString();
-
+        String actualResponse =
+            TestContext.instance().upgradeActual(
+                bufWriter.getBuffer().toString());
         try {
             // Start with a purely logical XML diff to avoid test noise
             // from non-determinism in XML generation.

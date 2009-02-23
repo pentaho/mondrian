@@ -543,10 +543,10 @@ public class RolapCube extends CubeBase {
     {
         for (MondrianDef.CalculatedMember xmlCalcMember : calcMemberList) {
             Dimension dimension =
-                (Dimension) lookupDimension(
-                        new Id.Segment(
-                            xmlCalcMember.dimension,
-                            Id.Quoting.UNQUOTED));
+                lookupDimension(
+                    new Id.Segment(
+                        xmlCalcMember.dimension,
+                        Id.Quoting.UNQUOTED));
             if (formula.getName().equals(xmlCalcMember.name) &&
                 formula.getMdxMember().getDimension().getName().equals(
                     dimension.getName())) {
@@ -820,10 +820,10 @@ public class RolapCube extends CubeBase {
 
         // Lookup dimension
         final Dimension dimension =
-                (Dimension) lookupDimension(
-                    new Id.Segment(
-                        xmlCalcMember.dimension,
-                        Id.Quoting.UNQUOTED));
+            lookupDimension(
+                new Id.Segment(
+                    xmlCalcMember.dimension,
+                    Id.Quoting.UNQUOTED));
         if (dimension == null) {
             throw MondrianResource.instance().CalcMemberHasBadDimension.ex(
                 xmlCalcMember.dimension, xmlCalcMember.name, getName());
@@ -1247,6 +1247,11 @@ public class RolapCube extends CubeBase {
      */
     public synchronized HierarchyUsage[] getUsages(Hierarchy hierarchy) {
         String name = hierarchy.getName();
+        if (!name.equals(hierarchy.getDimension().getName())
+            && MondrianProperties.instance().SsasCompatibleNaming.get())
+        {
+            name = hierarchy.getDimension().getName() + "." + name;
+        }
         if (getLogger().isDebugEnabled()) {
             getLogger().debug("RolapCube.getUsages: name=" + name);
         }

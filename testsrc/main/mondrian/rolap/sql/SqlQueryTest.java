@@ -361,38 +361,17 @@ public class SqlQueryTest extends BatchTestCase {
         if (dialect.getDatabaseProduct() != Dialect.DatabaseProduct.LUCIDDB) {
             return;
         }
-        boolean origIgnoreInvalidMembers =
-            prop.IgnoreInvalidMembers.get();
-        boolean origIgnoreInvalidMembersDuringQuery =
-            prop.IgnoreInvalidMembersDuringQuery
-            .get();
 
-        prop.IgnoreInvalidMembers.set(true);
-        prop.IgnoreInvalidMembersDuringQuery.set(true);
-
-        String dimensionSqlExpression;
-
-        String cubeFirstPart;
-
-        String cubeSecondPart;
-
-        String cube;
-
-        String query;
-
-        String loadSqlLucidDB;
-
-        TestContext testContext;
-
-        SqlPattern[] patterns;
+        propSaver.set(prop.IgnoreInvalidMembers, true);
+        propSaver.set(prop.IgnoreInvalidMembersDuringQuery, true);
 
         // assertQuerySql(testContext, query, patterns);
 
         // Test when the double value itself cotnains "E".
-        dimensionSqlExpression =
+        String dimensionSqlExpression =
             "cast(cast(\"salary\" as double)*cast(1000.0 as double)/cast(3.1234567890123456 as double) as double)\n";
 
-        cubeFirstPart =
+        String cubeFirstPart =
             "<Cube name=\"Sales 3\">\n" +
             "  <Table name=\"sales_fact_1997\"/>\n" +
             "  <Dimension name=\"StoreEmpSalary\" foreignKey=\"store_id\">\n" +
@@ -402,7 +381,7 @@ public class SqlQueryTest extends BatchTestCase {
             "        <KeyExpression>\n" +
             "          <SQL dialect=\"luciddb\">\n";
 
-        cubeSecondPart =
+        String cubeSecondPart =
             "          </SQL>\n" +
             "        </KeyExpression>\n" +
             "      </Level>\n" +
@@ -411,12 +390,12 @@ public class SqlQueryTest extends BatchTestCase {
             "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"/>\n" +
             "</Cube>";
 
-        cube =
+        String cube =
             cubeFirstPart +
             dimensionSqlExpression +
             cubeSecondPart;
 
-        query =
+        String query =
             "select " +
             "{[StoreEmpSalary].[All Salary].[6403.162057613773],[StoreEmpSalary].[All Salary].[1184584.980658548],[StoreEmpSalary].[All Salary].[1344664.0320988924], " +
             " [StoreEmpSalary].[All Salary].[1376679.8423869612],[StoreEmpSalary].[All Salary].[1408695.65267503],[StoreEmpSalary].[All Salary].[1440711.462963099], " +
@@ -430,7 +409,7 @@ public class SqlQueryTest extends BatchTestCase {
         // Notice there are a few members missing in this sql. This is a LucidDB bug wrt comparison involving "approximate number literals".
         // Mondrian properties "IgnoreInvalidMembers" and "IgnoreInvalidMembersDuringQuery" are required for this MDX to finished, even though the
         // the generated sql(below) and the final result are both incorrect.
-        loadSqlLucidDB =
+        String loadSqlLucidDB =
             "select cast(cast(\"salary\" as double)*cast(1000.0 as double)/cast(3.1234567890123456 as double) as double) as \"c0\", " +
             "sum(\"sales_fact_1997\".\"store_cost\") as \"m0\" " +
             "from \"employee\" as \"employee\", \"sales_fact_1997\" as \"sales_fact_1997\" " +
@@ -445,10 +424,11 @@ public class SqlQueryTest extends BatchTestCase {
             "2113043.479012545E0, 2145059.289300614E0, 2.5612648230455093E7) " +
             "group by cast(cast(\"salary\" as double)*cast(1000.0 as double)/cast(3.1234567890123456 as double) as double)";
 
-        patterns =
-            new SqlPattern[]{
-                new SqlPattern(Dialect.DatabaseProduct.LUCIDDB, loadSqlLucidDB, loadSqlLucidDB)};
-        testContext =
+        SqlPattern[] patterns = {
+            new SqlPattern(Dialect.DatabaseProduct.LUCIDDB, loadSqlLucidDB, loadSqlLucidDB)
+        };
+
+        TestContext testContext =
             TestContext.create(
                 null,
                 cube,
@@ -458,9 +438,6 @@ public class SqlQueryTest extends BatchTestCase {
                 null);
 
         assertQuerySql(testContext, query, patterns);
-
-        prop.IgnoreInvalidMembers.set(origIgnoreInvalidMembers);
-        prop.IgnoreInvalidMembersDuringQuery.set(origIgnoreInvalidMembersDuringQuery);
     }
 
     public void testInvalidSQLMemberLookup() {
@@ -470,10 +447,9 @@ public class SqlQueryTest extends BatchTestCase {
             "group by `store`.`store_type` " +
             "order by ISNULL(`store`.`store_type`), `store`.`store_type` ASC";
 
-        SqlPattern[] patterns =
-            new SqlPattern[] {
-                new SqlPattern(Dialect.DatabaseProduct.MYSQL, sqlMySql, sqlMySql)
-            };
+        SqlPattern[] patterns = {
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, sqlMySql, sqlMySql)
+        };
 
         assertNoQuerySql(
                 "select {[Time.Weekly].[All Time.Weeklys]} ON COLUMNS from [Sales]",

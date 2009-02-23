@@ -18,6 +18,7 @@ import mondrian.calc.impl.AbstractTupleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
+import java.util.List;
 
 /**
  * <code>TupleFunDef</code> implements the '(...)' operator which builds
@@ -114,7 +115,10 @@ public class TupleFunDef extends FunDefBase {
         }
 
         public FunDef resolve(
-                Exp[] args, Validator validator, int[] conversionCount) {
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
+        {
             // Compare with TupleFunDef.getReturnCategory().  For example,
             //   ([Gender].members) is a set,
             //   ([Gender].[M]) is a member,
@@ -132,7 +136,7 @@ public class TupleFunDef extends FunDefBase {
                     //  OK: ([Gender], [Time])           (dimension, dimension)
                     // Not OK: ([Gender].[S], [Store].[Store City]) (member, level)
                     if (!validator.canConvert(
-                            arg, Category.Member, conversionCount)) {
+                            arg, Category.Member, conversions)) {
                         return null;
                     }
                     argTypes[i] = Category.Member;

@@ -566,18 +566,18 @@ public interface Dialect {
      * Returns whether this Dialect object can be used for all connections
      * from the same data source.
      *
-     * <p>The default implementation returns <code>true</code>, and this allows
+     * <p>The default implementation returns {@code true}, and this allows
      * dialects to be cached and reused in environments where connections are
-     * allocated from a pool based on the same data source.
+     * allocated from a pool based on the same data source.</p>
      *
      * <p>Data sources are deemed 'equal' by the same criteria used by Java
-     * collections, namely the {@link #equals(Object)} and {@link #hashCode()}
-     * methods.
+     * collections, namely the {@link Object#equals(Object)} and
+     * {@link Object#hashCode()} methods.</p>
+     *
+     * @see mondrian.spi.DialectFactory#createDialect(javax.sql.DataSource, java.sql.Connection)
      *
      * @return Whether this dialect can be used for other connections created
      * from the same data source
-     *
-     * @see mondrian.spi.DialectFactory#createDialect(javax.sql.DataSource, java.sql.Connection)
      */
     boolean allowsDialectSharing();
 

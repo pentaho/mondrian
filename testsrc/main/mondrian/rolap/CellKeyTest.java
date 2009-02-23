@@ -299,7 +299,7 @@ public class CellKeyTest extends FoodMartTestCase {
 
         String query =
             "With Set [*NATIVE_CJ_SET] as NonEmptyCrossJoin([Gender].Children, [Address2].Children) " +
-            "Select Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember, [Address2].CurrentMember)}) on rows " +
+            "Select Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember, [Address2].CurrentMember)}) on columns " +
             "From [SalesTest] where ([City].[Redwood City])";
 
         String result =

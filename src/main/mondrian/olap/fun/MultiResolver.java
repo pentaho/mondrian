@@ -13,6 +13,8 @@ package mondrian.olap.fun;
 
 import mondrian.olap.*;
 
+import java.util.List;
+
 /**
  * A <code>MultiResolver</code> considers several overloadings of the same
  * function. If one of these overloadings matches the actual arguments, it
@@ -90,7 +92,9 @@ public abstract class MultiResolver extends FunUtil implements Resolver {
     }
 
     public FunDef resolve(
-        Exp[] args, Validator validator, int[] conversionCount)
+        Exp[] args,
+        Validator validator,
+        List<Conversion> conversions)
     {
 outer:
         for (String signature : signatures) {
@@ -98,9 +102,11 @@ outer:
             if (parameterTypes.length != args.length) {
                 continue;
             }
+            conversions.clear();
             for (int i = 0; i < args.length; i++) {
                 if (!validator.canConvert(
-                    args[i], parameterTypes[i], conversionCount)) {
+                    args[i], parameterTypes[i], conversions))
+                {
                     continue outer;
                 }
             }

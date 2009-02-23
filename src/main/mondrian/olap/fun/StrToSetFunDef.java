@@ -373,14 +373,17 @@ class StrToSetFunDef extends FunDefBase {
     private static class ResolverImpl extends ResolverBase {
         ResolverImpl() {
             super(
-                    "StrToSet",
-                    "StrToSet(<String Expression>)",
-                    "Constructs a set from a string expression.",
-                    Syntax.Function);
+                "StrToSet",
+                "StrToSet(<String Expression>)",
+                "Constructs a set from a string expression.",
+                Syntax.Function);
         }
 
         public FunDef resolve(
-                Exp[] args, Validator validator, int[] conversionCount) {
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
+        {
             if (args.length < 1) {
                 return null;
             }

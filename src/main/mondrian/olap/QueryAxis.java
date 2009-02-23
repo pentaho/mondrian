@@ -16,6 +16,7 @@ package mondrian.olap;
 import mondrian.calc.*;
 import mondrian.mdx.*;
 import mondrian.olap.type.*;
+import mondrian.olap.type.DimensionType;
 import mondrian.resource.MondrianResource;
 
 import java.io.PrintWriter;
@@ -47,21 +48,23 @@ public class QueryAxis extends QueryPart {
      * @param nonEmpty Whether to filter out members of this axis whose cells
      *    are all empty
      * @param set Expression to populate the axis
-     * @param axisDef Which axis (ROWS, COLUMNS, etc.)
+     * @param axisOrdinal Which axis (ROWS, COLUMNS, etc.)
      * @param subtotalVisibility Whether to show subtotals
      * @param dimensionProperties List of dimension properties
      */
     public QueryAxis(
-            boolean nonEmpty,
-            Exp set,
-            AxisOrdinal axisDef,
-            SubtotalVisibility subtotalVisibility,
-            Id[] dimensionProperties) {
+        boolean nonEmpty,
+        Exp set,
+        AxisOrdinal axisOrdinal,
+        SubtotalVisibility subtotalVisibility,
+        Id[] dimensionProperties)
+    {
         assert dimensionProperties != null;
+        assert axisOrdinal != null;
         this.nonEmpty = nonEmpty ||
             MondrianProperties.instance().EnableNonEmptyOnAllAxis.get();
         this.exp = set;
-        this.axisOrdinal = axisDef;
+        this.axisOrdinal = axisOrdinal;
         this.subtotalVisibility = subtotalVisibility;
         this.dimensionProperties = dimensionProperties;
         this.ordered = false;
@@ -73,15 +76,17 @@ public class QueryAxis extends QueryPart {
      * @see #QueryAxis(boolean,Exp,AxisOrdinal,mondrian.olap.QueryAxis.SubtotalVisibility,Id[])
      */
     public QueryAxis(
-            boolean nonEmpty,
-            Exp set,
-            AxisOrdinal axisDef,
-            SubtotalVisibility subtotalVisibility) {
-        this(nonEmpty, set, axisDef, subtotalVisibility, new Id[0]);
+        boolean nonEmpty,
+        Exp set,
+        AxisOrdinal axisOrdinal,
+        SubtotalVisibility subtotalVisibility)
+    {
+        this(nonEmpty, set, axisOrdinal, subtotalVisibility, new Id[0]);
     }
 
     public Object clone() {
-        return new QueryAxis(nonEmpty, exp.clone(), axisOrdinal,
+        return new QueryAxis(
+            nonEmpty, exp.clone(), axisOrdinal,
             subtotalVisibility, dimensionProperties.clone());
     }
 
@@ -104,7 +109,7 @@ public class QueryAxis extends QueryPart {
 
     public Calc compile(ExpCompiler compiler, ResultStyle resultStyle) {
         Exp exp = this.exp;
-        if (axisOrdinal == AxisOrdinal.SLICER) {
+        if (axisOrdinal.isFilter()) {
             exp = normalizeSlicerExpression(exp);
             exp = exp.accept(compiler.getValidator());
         }
@@ -153,7 +158,8 @@ public class QueryAxis extends QueryPart {
     }
 
     /**
-     * Returns the ordinal of this axis, for example {@link AxisOrdinal#ROWS}.
+     * Returns the ordinal of this axis, for example
+     * {@link mondrian.olap.AxisOrdinal.StandardAxisOrdinal#ROWS}.
      */
     public AxisOrdinal getAxisOrdinal() {
         return axisOrdinal;
@@ -208,9 +214,13 @@ public class QueryAxis extends QueryPart {
         final Type type = exp.getType();
         if (!TypeUtil.isSet(type)) {
             // If expression is a member or a tuple, implicitly convert it
-            // into a set.
+            // into a set. Dimensions and hierarchies can be converted to
+            // members, thence to sets.
             if (type instanceof MemberType ||
-                type instanceof TupleType) {
+                type instanceof TupleType ||
+                type instanceof DimensionType ||
+                type instanceof HierarchyType)
+            {
                 exp =
                     new UnresolvedFunCall(
                         "{}",
@@ -245,8 +255,8 @@ public class QueryAxis extends QueryPart {
                 dimensionProperty.unparse(pw);
             }
         }
-        if (axisOrdinal != AxisOrdinal.SLICER) {
-            pw.print(" ON " + axisOrdinal);
+        if (!axisOrdinal.isFilter()) {
+            pw.print(" ON " + axisOrdinal.name());
         }
     }
 
@@ -273,7 +283,7 @@ public class QueryAxis extends QueryPart {
     }
 
     public void validate(Validator validator) {
-        if (axisOrdinal == AxisOrdinal.SLICER) {
+        if (axisOrdinal.isFilter()) {
             if (exp != null) {
                 exp = validator.validate(exp, false);
             }

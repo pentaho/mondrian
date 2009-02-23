@@ -22,8 +22,9 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
     }
 
     public void testWeekly() {
+        // [Time.Weekly] has an 'all' member, but [Time] does not.
         assertAxisReturns("{[Time].CurrentMember}", "[Time].[1997]");
-        assertAxisReturns("{[Time.Weekly].CurrentMember}", "[Time.Weekly].[All Time.Weeklys].[1997]");
+        assertAxisReturns("{[Time.Weekly].CurrentMember}", "[Time].[Weekly].[All Weeklys]");
     }
 
     public void testWeekly2() {
@@ -51,16 +52,16 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
                     "{[Time].[1997].[Q3]}\n" +
                     "{[Time].[1997].[Q4]}\n" +
                     "Row #0: 66,291\n" +
-                    "Row #0: [Time.Weekly].[All Time.Weeklys].[1997]\n" +
+                    "Row #0: [Time].[Weekly].[All Weeklys]\n" +
                     "Row #0: [Time].[1997].[Q1]\n" +
                     "Row #1: 62,610\n" +
-                    "Row #1: [Time.Weekly].[All Time.Weeklys].[1997]\n" +
+                    "Row #1: [Time].[Weekly].[All Weeklys]\n" +
                     "Row #1: [Time].[1997].[Q2]\n" +
                     "Row #2: 65,848\n" +
-                    "Row #2: [Time.Weekly].[All Time.Weeklys].[1997]\n" +
+                    "Row #2: [Time].[Weekly].[All Weeklys]\n" +
                     "Row #2: [Time].[1997].[Q3]\n" +
                     "Row #3: 72,024\n" +
-                    "Row #3: [Time.Weekly].[All Time.Weeklys].[1997]\n" +
+                    "Row #3: [Time].[Weekly].[All Weeklys]\n" +
                     "Row #3: [Time].[1997].[Q4]\n"));
     }
 
@@ -95,7 +96,7 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
 
         assertQueryReturns(
                 "with member [Measures].[Sales to Date] as \n" +
-                " ' Sum(PeriodsToDate([Time.Weekly].[Year], [Time].CurrentMember), [Measures].[Unit Sales])'\n" +
+                " ' Sum(PeriodsToDate([Time.Weekly].[Year], [Time.Weekly].CurrentMember), [Measures].[Unit Sales])'\n" +
                 "select {[Measures].[Sales to Date]} on columns,\n" +
                 " {[Time.Weekly].[1997].[14] : [Time.Weekly].[1997].[16]} on rows\n" +
                 "from [Sales]",
@@ -105,9 +106,9 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
                     "Axis #1:\n" +
                     "{[Measures].[Sales to Date]}\n" +
                     "Axis #2:\n" +
-                    "{[Time.Weekly].[All Time.Weeklys].[1997].[14]}\n" +
-                    "{[Time.Weekly].[All Time.Weeklys].[1997].[15]}\n" +
-                    "{[Time.Weekly].[All Time.Weeklys].[1997].[16]}\n" +
+                    "{[Time].[Weekly].[All Weeklys].[1997].[14]}\n" +
+                    "{[Time].[Weekly].[All Weeklys].[1997].[15]}\n" +
+                    "{[Time].[Weekly].[All Weeklys].[1997].[16]}\n" +
                     "Row #0: 81,670\n" +
                     "Row #1: 86,300\n" +
                     "Row #2: 90,139\n"));

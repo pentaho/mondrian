@@ -46,7 +46,10 @@ class SetItemFunDef extends FunDefBase {
             "Returns a tuple from the set specified in <Set>. The tuple to be returned is specified by the member name (or names) in <String>.",
             Syntax.Method) {
         public FunDef resolve(
-                Exp[] args, Validator validator, int[] conversionCount) {
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
+        {
             if (args.length < 1) {
                 return null;
             }
@@ -64,7 +67,7 @@ class SetItemFunDef extends FunDefBase {
             // All args must be strings.
             for (int i = 1; i < args.length; i++) {
                 if (!validator.canConvert(
-                        args[i], Category.String, conversionCount)) {
+                        args[i], Category.String, conversions)) {
                     return null;
                 }
             }

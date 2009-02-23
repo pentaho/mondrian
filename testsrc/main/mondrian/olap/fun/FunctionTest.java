@@ -18,7 +18,6 @@ import mondrian.udf.CurrentDateMemberExactUdf;
 import mondrian.udf.CurrentDateMemberUdf;
 import mondrian.udf.CurrentDateStringUdf;
 import mondrian.util.Bug;
-import mondrian.spi.Dialect;
 
 import org.eigenbase.xom.StringEscaper;
 import org.apache.log4j.Logger;
@@ -734,7 +733,8 @@ public class FunctionTest extends FoodMartTestCase {
         member = executeSingletonAxis("Ancestor([Store].[USA].[CA].[Los Angeles], 0)");
         Assert.assertEquals("Los Angeles", member.getName());
 
-        final TestContext testContextRagged = getTestContext("[Sales Ragged]");
+        final TestContext testContextRagged =
+            getTestContext().withCube("[Sales Ragged]");
         member = testContextRagged.executeSingletonAxis("Ancestor([Store].[All Stores].[Vatican], 1)");
         Assert.assertEquals("All Stores", member.getName());
 
@@ -775,7 +775,8 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testAncestorWithHiddenParent() {
-        final TestContext testContext = getTestContext("[Sales Ragged]");
+        final TestContext testContext =
+            getTestContext().withCube("[Sales Ragged]");
         Member member = testContext.executeSingletonAxis(
                 "Ancestor([Store].[All Stores].[Israel].[Haifa], [Store].[Store Country])");
 
@@ -801,7 +802,8 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrdinal() {
-        final TestContext testContext = getTestContext("Sales Ragged");
+        final TestContext testContext =
+            getTestContext().withCube("Sales Ragged");
         Cell cell = testContext.executeExprRaw("[Store].[All Stores].[Vatican].ordinal");
         assertEquals("Vatican is at level 1.", 1, ((Number)cell.getValue()).intValue());
 
@@ -1013,7 +1015,7 @@ public class FunctionTest extends FoodMartTestCase {
                 "");
 
         // ragged
-        getTestContext("[Sales Ragged]").assertAxisReturns(
+        getTestContext().withCube("[Sales Ragged]").assertAxisReturns(
                 "ClosingPeriod([Store].[Store City], [Store].[All Stores].[Israel])",
                 "[Store].[All Stores].[Israel].[Israel].[Tel Aviv]");
 
@@ -1023,7 +1025,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         assertAxisReturns("ClosingPeriod()", "[Time].[1997].[Q4]");
 
-        TestContext testContext = getTestContext("[Sales Ragged]");
+        TestContext testContext = getTestContext().withCube("[Sales Ragged]");
         testContext.assertAxisReturns(
                 "ClosingPeriod([Store].[Store State], [Store].[All Stores].[Israel])",
                 "");
@@ -1098,7 +1100,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testParentPC() {
-        final TestContext testContext = getTestContext("HR");
+        final TestContext testContext = getTestContext().withCube("HR");
         if (false) {
         testContext.assertAxisReturns(
             "[Employees].Parent",
@@ -1226,23 +1228,25 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testHierarchyMembers() {
-        assertAxisReturns("Head({[Time.Weekly].Members}, 10)", fold(
-            "[Time.Weekly].[All Time.Weeklys]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[1]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[1].[15]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[1].[16]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[1].[17]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[1].[18]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[1].[19]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[1].[20]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[2]"));
-        assertAxisReturns("Tail({[Time.Weekly].Members}, 5)", fold(
-            "[Time.Weekly].[All Time.Weeklys].[1998].[51].[5]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1998].[51].[29]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1998].[51].[30]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1998].[52]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1998].[52].[6]"));
+        assertAxisReturns(
+            "Head({[Time.Weekly].Members}, 10)",
+            fold("[Time].[Weekly].[All Weeklys]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[1]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[1].[15]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[1].[16]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[1].[17]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[1].[18]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[1].[19]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[1].[20]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[2]"));
+        assertAxisReturns(
+            "Tail({[Time.Weekly].Members}, 5)",
+            fold("[Time].[Weekly].[All Weeklys].[1998].[51].[5]\n" +
+                "[Time].[Weekly].[All Weeklys].[1998].[51].[29]\n" +
+                "[Time].[Weekly].[All Weeklys].[1998].[51].[30]\n" +
+                "[Time].[Weekly].[All Weeklys].[1998].[52]\n" +
+                "[Time].[Weekly].[All Weeklys].[1998].[52].[6]"));
     }
 
     public void testAllMembers() {
@@ -1732,28 +1736,28 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testCurrentMemberMultiHierarchy() {
+        final String hierarchyName =
+            MondrianProperties.instance().SsasCompatibleNaming.get()
+                ? "Weekly"
+                : "Time.Weekly";
         final String queryString =
             "with member [Measures].[Foo] as\n" +
-            " 'IIf(([Time].CurrentMember.Hierarchy.Name = \"Time.Weekly\"), \n" +
+            " 'IIf(([Time].CurrentMember.Hierarchy.Name = \"" + hierarchyName + "\"), \n" +
             "[Measures].[Unit Sales], \n" +
             "- [Measures].[Unit Sales])'\n" +
             "select {[Measures].[Unit Sales], [Measures].[Foo]} ON COLUMNS,\n" +
             "  {[Product].[Food].[Dairy]} ON ROWS\n" +
             "from [Sales]";
-        Result result = executeQuery(
+        Result result =
+            executeQuery(
                 queryString + " where [Time].[1997]");
         final int[] coords = {1, 0};
         Assert.assertEquals("-12,885", result.getCell(coords).getFormattedValue());
 
-        result = executeQuery(
-                queryString + " where [Time.Weekly].[1997]");
-        Assert.assertEquals("12,885", result.getCell(coords).getFormattedValue());
-    }
-
-    public void testCurrentMemberMultiHierarchy2() {
+        // As above, but context provided on rows axis as opposed to slicer.
         final String queryString1 =
             "with member [Measures].[Foo] as\n" +
-            " 'IIf(([Time].CurrentMember.Hierarchy.Name = \"Time.Weekly\"), \n" +
+            " 'IIf(([Time].CurrentMember.Hierarchy.Name = \""  + hierarchyName  + "\"), \n" +
             "[Measures].[Unit Sales], \n" +
             "- [Measures].[Unit Sales])'\n" +
             "select {[Measures].[Unit Sales], [Measures].[Foo]} ON COLUMNS,";
@@ -1762,21 +1766,92 @@ public class FunctionTest extends FoodMartTestCase {
             "from [Sales]\n" +
             "  where [Product].[Food].[Dairy] ";
 
-        Result result = executeQuery(
+        result =
+            executeQuery(
                 queryString1 + " {[Time].[1997]} ON ROWS " + queryString2);
-        final int[] coords = {1, 0};
-        Assert.assertEquals("-12,885", result.getCell(coords).getFormattedValue());
+        Assert.assertEquals(
+            "-12,885",
+            result.getCell(coords).getFormattedValue());
+
+        // In old mondrian, [Time] and [Time].[Weekly] have the same current
+        // member.
+        final String expectedCellValue =
+            MondrianProperties.instance().SsasCompatibleNaming.get()
+                ? "-12,885"
+                : "12,885";
 
         result = executeQuery(
-                queryString1 + " {[Time.Weekly].[1997]} ON ROWS " + queryString2);
-        Assert.assertEquals("12,885", result.getCell(coords).getFormattedValue());
+                queryString + " where [Time.Weekly].[1997]");
+        Assert.assertEquals(
+            expectedCellValue,
+            result.getCell(coords).getFormattedValue());
+
+        result = executeQuery(
+            queryString1 + " {[Time.Weekly].[1997]} ON ROWS " + queryString2);
+        Assert.assertEquals(
+            expectedCellValue,
+            result.getCell(coords).getFormattedValue());
     }
 
     public void testDefaultMember() {
-        Result result = executeQuery(
+        // [Time] has no default member and no all, so the default member is
+        // the first member of the first level.
+        Result result =
+            executeQuery(
+                "select {[Time].DefaultMember} on columns\n" +
+                    "from Sales");
+        Assert.assertEquals(
+            "1997",
+            result.getAxes()[0].getPositions().get(0).get(0).getName());
+
+        // [Time].[Weekly] has an all member and no explicit default.
+        result =
+            executeQuery(
                  "select {[Time.Weekly].DefaultMember} on columns\n" +
-                 "from Sales");
-        Assert.assertEquals("1997", result.getAxes()[0].getPositions().get(0).get(0).getName());
+                     "from Sales");
+        Assert.assertEquals(
+            MondrianProperties.instance().SsasCompatibleNaming.get()
+                ? "All Weeklys"
+                : "All Time.Weeklys",
+            result.getAxes()[0].getPositions().get(0).get(0).getName());
+
+        final String memberUname =
+            MondrianProperties.instance().SsasCompatibleNaming.get()
+                ? "[Time2].[Weekly].[1997].[23]"
+                : "[Time2.Weekly].[1997].[23]";
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name=\"Time2\" type=\"TimeDimension\" foreignKey=\"time_id\">\n" +
+                "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n" +
+                "      <Table name=\"time_by_day\"/>\n" +
+                "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n" +
+                "          levelType=\"TimeYears\"/>\n" +
+                "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n" +
+                "          levelType=\"TimeQuarters\"/>\n" +
+                "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n" +
+                "          levelType=\"TimeMonths\"/>\n" +
+                "    </Hierarchy>\n" +
+                "    <Hierarchy hasAll=\"true\" name=\"Weekly\" primaryKey=\"time_id\"\n" +
+                "          defaultMember=\"" + memberUname + "\">\n" +
+                "      <Table name=\"time_by_day\"/>\n" +
+                "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n" +
+                "          levelType=\"TimeYears\"/>\n" +
+                "      <Level name=\"Week\" column=\"week_of_year\" type=\"Numeric\" uniqueMembers=\"false\"\n" +
+                "          levelType=\"TimeWeeks\"/>\n" +
+                "      <Level name=\"Day\" column=\"day_of_month\" uniqueMembers=\"false\" type=\"Numeric\"\n" +
+                "          levelType=\"TimeDays\"/>\n" +
+                "    </Hierarchy>\n" +
+                "  </Dimension>");
+
+        // In this variant of the schema, Time2.Weekly has an explicit default
+        // member.
+        result =
+            testContext.executeQuery(
+                "select {[Time2.Weekly].DefaultMember} on columns\n" +
+                    "from Sales");
+        Assert.assertEquals(
+            "23",
+            result.getAxes()[0].getPositions().get(0).get(0).getName());
     }
 
     public void testCurrentMemberFromAxis() {
@@ -3554,7 +3629,8 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testDescendantsMLLeavesRagged() {
         // no cities are at leaf level
-        final TestContext raggedContext = getTestContext("[Sales Ragged]");
+        final TestContext raggedContext =
+            getTestContext().withCube("[Sales Ragged]");
         raggedContext.assertAxisReturns(
                 "Descendants([Store].[Israel], [Store].[Store City], leaves)",
                 "");
@@ -3692,18 +3768,19 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendants2ndHier() {
-        assertAxisReturns("Descendants([Time.Weekly].[1997].[10], [Time.Weekly].[Day])",
-            fold("[Time.Weekly].[All Time.Weeklys].[1997].[10].[1]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[10].[23]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[10].[24]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[10].[25]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[10].[26]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[10].[27]\n" +
-                "[Time.Weekly].[All Time.Weeklys].[1997].[10].[28]"));
+        assertAxisReturns(
+            "Descendants([Time.Weekly].[1997].[10], [Time.Weekly].[Day])",
+            fold("[Time].[Weekly].[All Weeklys].[1997].[10].[1]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[10].[23]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[10].[24]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[10].[25]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[10].[26]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[10].[27]\n" +
+                "[Time].[Weekly].[All Weeklys].[1997].[10].[28]"));
     }
 
     public void testDescendantsParentChild() {
-        getTestContext("HR").assertAxisReturns(
+        getTestContext().withCube("HR").assertAxisReturns(
                 "Descendants([Employees], 2)",
                 fold(
                     "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]\n" +
@@ -3716,7 +3793,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendantsParentChildBefore() {
-        getTestContext("HR").assertAxisReturns(
+        getTestContext().withCube("HR").assertAxisReturns(
                 "Descendants([Employees], 2, BEFORE)",
                 fold(
                     "[Employees].[All Employees]\n" +
@@ -3724,7 +3801,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendantsParentChildLeaves() {
-        final TestContext testContext = getTestContext("HR");
+        final TestContext testContext = getTestContext().withCube("HR");
 
         // leaves, restricted by level
         testContext.assertAxisReturns(
@@ -4433,7 +4510,7 @@ public class FunctionTest extends FoodMartTestCase {
         // coerce args (hierarchy, member, member, dimension)
         assertAxisReturns(
                 "{([Time.Weekly], [Measures].[Store Sales], [Marital Status].[M], [Promotion Media])}",
-                "{[Time.Weekly].[All Time.Weeklys].[1997], [Measures].[Store Sales], [Marital Status].[All Marital Status].[M], [Promotion Media].[All Media]}");
+                "{[Time].[Weekly].[All Weeklys], [Measures].[Store Sales], [Marital Status].[All Marital Status].[M], [Promotion Media].[All Media]}");
 
         // two usages of the [Time] dimension
         assertAxisThrows(
@@ -4791,11 +4868,11 @@ public class FunctionTest extends FoodMartTestCase {
         assertAxisReturns("OpeningPeriod([Product].[Product Name], [Product].[All Products].[Drink])",
                 "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]");
 
-        getTestContext("[Sales Ragged]").assertAxisReturns(
+        getTestContext().withCube("[Sales Ragged]").assertAxisReturns(
                 "OpeningPeriod([Store].[Store City], [Store].[All Stores].[Israel])",
                 "[Store].[All Stores].[Israel].[Israel].[Haifa]");
 
-        getTestContext("[Sales Ragged]").assertAxisReturns(
+        getTestContext().withCube("[Sales Ragged]").assertAxisReturns(
                 "OpeningPeriod([Store].[Store State], [Store].[All Stores].[Israel])",
                 "");
 
@@ -4805,7 +4882,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         assertAxisReturns("OpeningPeriod()", "[Time].[1997].[Q1]");
 
-        TestContext testContext = getTestContext("[Sales Ragged]");
+        TestContext testContext = getTestContext().withCube("[Sales Ragged]");
         testContext.assertAxisThrows(
                 "OpeningPeriod([Time].[Year], [Store].[All Stores].[Israel])",
                 "The <level> and <member> arguments to OpeningPeriod must be "
@@ -5472,14 +5549,14 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDistinctTwoMembers() {
-        getTestContext("HR").assertAxisReturns(
+        getTestContext().withCube("HR").assertAxisReturns(
                 "Distinct({[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold],"
                 + "[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold]})",
                 "[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold]");
     }
 
     public void testDistinctThreeMembers() {
-        getTestContext("HR").assertAxisReturns(
+        getTestContext().withCube("HR").assertAxisReturns(
                 "Distinct({[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold],"
                 + "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz],"
                 + "[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold]})",
@@ -5488,7 +5565,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDistinctFourMembers() {
-        getTestContext("HR").assertAxisReturns(
+        getTestContext().withCube("HR").assertAxisReturns(
                 "Distinct({[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold],"
                 + "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz],"
                 + "[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold],"
@@ -5798,7 +5875,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testHierarchizePC() {
-        getTestContext("HR").assertAxisReturns(
+        getTestContext().withCube("HR").assertAxisReturns(
             "Hierarchize(\n" +
                 "   { Subset([Employees].Members, 90, 10),\n" +
                 "     Head([Employees].Members, 5) })",
@@ -5884,7 +5961,7 @@ public class FunctionTest extends FoodMartTestCase {
      * out the cache to solve this.
      */
     public void testHierarchizeOrdinal() {
-        TestContext context = getTestContext("[Sales_Hierarchize]");
+        TestContext context = getTestContext().withCube("[Sales_Hierarchize]");
         final Connection connection = context.getFoodMartConnection();
         connection.getSchema().createCube(
                 fold(
@@ -7817,6 +7894,11 @@ public class FunctionTest extends FoodMartTestCase {
                 "Row #0: 815\n" +
                 "Row #1: 3,497\n" +
                 ""));
+
+        if (false) // TODO: enable
+        assertExprThrows(
+            "Sum(PeriodsToDate([Time.Weekly].[Year], [Time].CurrentMember), [Measures].[Unit Sales])",
+            "wrong dimension");
     }
 
     public void testSetToStr() {
@@ -8116,7 +8198,7 @@ public class FunctionTest extends FoodMartTestCase {
             "member [Measures].[Y] as 'Rank([Gender].[M]," +
             "{[Measures].[X],[Measures].[X],[Measures].[X]}," +
             " [Marital Status].[All Marital Status].Parent)'" +
-            "select {[Measures].[Y]} on rows from Sales",
+            "select {[Measures].[Y]} on columns from Sales",
             fold(
                 "Axis #0:\n" +
                 "{}\n" +

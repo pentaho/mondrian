@@ -550,7 +550,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         String query =
             "select " +
-            "NonEmptyCrossJoin([Gender].Children, [Store].Children) on rows " +
+            "NonEmptyCrossJoin([Gender].Children, [Store].Children) on columns " +
             "from [Sales]";
 
         String result =
@@ -608,7 +608,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testExpandNonNativeResourceLimitFailure() {
         String query =
             "select " +
-            "NonEmptyCrossJoin({[Gender].Children, [Gender].[F]}, {[Store].Children, [Store].[Mexico]}) on rows " +
+            "NonEmptyCrossJoin({[Gender].Children, [Gender].[F]}, {[Store].Children, [Store].[Mexico]}) on columns " +
             "from [Sales]";
 
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
@@ -671,7 +671,7 @@ public class NonEmptyTest extends BatchTestCase {
             "Member [Gender].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Gender].[All Gender]})' " +
             "Select " +
             "NonEmptyCrossJoin({[Gender].[*CTX_MEMBER_SEL~SUM]},{[Product].[*CTX_MEMBER_SEL~SUM]}) " +
-            "on rows " +
+            "on columns " +
             "From [Sales]";
 
         String result =
@@ -730,7 +730,7 @@ public class NonEmptyTest extends BatchTestCase {
             "    [Store Type].[All Store Types].[HeadQuarters], " +
             "    [Store Type].[All Store Types].[S]} " +
             "set [Filtered Enum Store Types] as Filter([Enum Store Types], [Measures].[Unit Sales] > 0)" +
-            "select NonEmptyCrossJoin([Product].[All Products].Children, [Filtered Enum Store Types])  on rows from [Sales]";
+            "select NonEmptyCrossJoin([Product].[All Products].Children, [Filtered Enum Store Types])  on columns from [Sales]";
 
         String result =
             "Axis #0:\n" +
@@ -768,7 +768,7 @@ public class NonEmptyTest extends BatchTestCase {
             "select " +
             "NonEmptyCrossJoin(" +
             "  NonEmptyCrossJoin([Gender].Children, [Store].Children), " +
-            "  [Product].Children) on rows " +
+            "  [Product].Children) on columns " +
             "from [Sales]";
 
         String result =
@@ -805,7 +805,7 @@ public class NonEmptyTest extends BatchTestCase {
         String query =
             "select NonEmptyCrossJoin(" +
             "    Filter([Store Type].Children, [Measures].[Unit Sales] > 10000), " +
-            "    [Product].Children) on rows " +
+            "    [Product].Children) on columns " +
             "from [Sales]";
 
         String result =
@@ -850,7 +850,7 @@ public class NonEmptyTest extends BatchTestCase {
         String query =
             "select NonEmptyCrossJoin(" +
             "    Descendants([Customers].[All Customers].[USA].[WA].[Yakima]), " +
-            "    [Product].Children) on rows " +
+            "    [Product].Children) on columns " +
             "from [Sales]";
 
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
@@ -867,7 +867,7 @@ public class NonEmptyTest extends BatchTestCase {
             "set [Tuple Set] as {([Store Type].[All Store Types].[HeadQuarters], [Product].[All Products].[Drink]), ([Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food])} " +
             "set [Filtered Tuple Set] as Filter([Tuple Set], 1=1) " +
             "set [NECJ] as NonEmptyCrossJoin([Store].Children, [Filtered Tuple Set]) " +
-            "select [NECJ] on rows from [Sales]";
+            "select [NECJ] on columns from [Sales]";
 
         String result =
             "Axis #0:\n" +
@@ -890,7 +890,7 @@ public class NonEmptyTest extends BatchTestCase {
             "set [Tuple Set] as {([Store Type].[All Store Types].[HeadQuarters], [Product].[All Products].[Drink]), ([Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food])} " +
             "set [Filtered Tuple Set] as Filter([Tuple Set], 1=1) " +
             "set [NECJ] as NonEmptyCrossJoin([Filtered Tuple Set], [Store].Children) " +
-            "select [NECJ] on rows from [Sales]";
+            "select [NECJ] on columns from [Sales]";
 
         String result =
             "Axis #0:\n" +
@@ -985,7 +985,7 @@ public class NonEmptyTest extends BatchTestCase {
             "select " +
             "NonEmptyCrossJoin(" +
                 "Filter([All Store Types], ([Measures].[Unit Sales] > 10000)), " +
-                "[All Products]) on rows " +
+                "[All Products]) on columns " +
             "from [Sales]";
 
         String result =
@@ -1030,7 +1030,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         String query =
             "select " +
-            "NonEmptyCrossJoin({[Store].[All Stores]}, {[Product].[All Products]}) on rows " +
+            "NonEmptyCrossJoin({[Store].[All Stores]}, {[Product].[All Products]}) on columns " +
             "from [Sales]";
 
         String result =
@@ -1058,7 +1058,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         String query =
             "select " +
-            "NonEmptyCrossJoin([Product].[All Products].Children, {[Store].[All Stores]}) on rows " +
+            "NonEmptyCrossJoin([Product].[All Products].Children, {[Store].[All Stores]}) on columns " +
             "from [Sales]";
 
         String result =
@@ -1430,7 +1430,7 @@ public class NonEmptyTest extends BatchTestCase {
             " [Store].[USA].[CA].[San Francisco], " +
             " [Store].[USA].[WA].[Tacoma]} " +
             "set [NECJ] as NonEmptyCrossJoin([Filtered Store City Set], {[Product].[Product Family].Food}) " +
-            "select [NECJ] on rows from [Sales]";
+            "select [NECJ] on columns from [Sales]";
 
         String necjSqlDerby =
                 "select " +
@@ -1516,7 +1516,7 @@ public class NonEmptyTest extends BatchTestCase {
             "{[Warehouse2].[#null].[#null].[5617 Saclan Terrace].[Arnold and Sons]," +
             " [Warehouse2].[#null].[#null].[3377 Coachman Place].[Jones International]} " +
             "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) " +
-            "select [NECJ] on rows from [Warehouse2]";
+            "select [NECJ] on columns from [Warehouse2]";
 
         String necjSqlDerby =
             "select \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" " +
@@ -1596,7 +1596,7 @@ public class NonEmptyTest extends BatchTestCase {
             "{[Warehouse2].[#null].[234 West Covina Pkwy].[Freeman And Co]," +
             " [Warehouse2].[971-555-6213].[3377 Coachman Place].[Jones International]} " +
             "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) " +
-            "select [NECJ] on rows from [Warehouse2]";
+            "select [NECJ] on columns from [Warehouse2]";
 
         String necjSqlDerby =
             "select \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" " +
@@ -1682,7 +1682,7 @@ public class NonEmptyTest extends BatchTestCase {
             "{[Warehouse2].[#null].[#null].[#null]," +
             " [Warehouse2].[#null].[#null].[971-555-6213]} " +
             "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) " +
-            "select [NECJ] on rows from [Warehouse2]";
+            "select [NECJ] on columns from [Warehouse2]";
 
         String necjSqlDerby =
             "select \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" " +
@@ -2513,14 +2513,16 @@ public class NonEmptyTest extends BatchTestCase {
             "    [Store Type].[All Store Types].[Small Grocery], " +
             "    [Store Type].[All Store Types].[Supermarket], " +
             "    [Store Type].[All Store Types].[S]}" +
-            "select " +
-            "    NonEmptyCrossJoin([Product].[All Products].Children, [Enum Store Types]) on rows " +
+            "select [Measures] on columns,\n" +
+            "    NonEmptyCrossJoin([Product].[All Products].Children, [Enum Store Types]) on rows\n" +
             "from [Sales]";
 
         String result =
             "Axis #0:\n" +
             "{}\n" +
             "Axis #1:\n" +
+            "{[Measures].[Unit Sales]}\n" +
+            "Axis #2:\n" +
             "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Small Grocery]}\n" +
             "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Supermarket]}\n" +
             "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[S]}\n" +
@@ -2531,14 +2533,14 @@ public class NonEmptyTest extends BatchTestCase {
             "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Supermarket]}\n" +
             "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[S]}\n" +
             "Row #0: 574\n" +
-            "Row #0: 14,092\n" +
-            "Row #0: 24,597\n" +
-            "Row #0: 4,764\n" +
-            "Row #0: 108,188\n" +
-            "Row #0: 191,940\n" +
-            "Row #0: 1,219\n" +
-            "Row #0: 28,275\n" +
-            "Row #0: 50,236\n";
+            "Row #1: 14,092\n" +
+            "Row #2: 24,597\n" +
+            "Row #3: 4,764\n" +
+            "Row #4: 108,188\n" +
+            "Row #5: 191,940\n" +
+            "Row #6: 1,219\n" +
+            "Row #7: 28,275\n" +
+            "Row #8: 50,236\n";
 
         // make sure NECJ is forced to be non-native
         // before the fix, the query is natively evaluated and result
@@ -3329,13 +3331,19 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Make sure the mdx runs correctly and not in native mode.
+     * Makes sure an MDX runs correctly and not in native mode.
      *
      * @param rowCount number of rows returned
-     * @param mdx query
+     * @param MDX query
      * @param expectedResult expected result string
      */
-    private void checkNotNative(int rowCount, String mdx, String expectedResult) {
+    private void checkNotNative(
+        int rowCount,
+        String mdx,
+        String expectedResult)
+    {
+        mdx = TestContext.instance().upgradeQuery(mdx);
+
         getConnection().getCacheControl(null).flushSchemaCache();
         Connection con = getTestContext().getFoodMartConnection(false);
         RolapNativeRegistry reg = getRegistry(con);
@@ -3420,6 +3428,8 @@ public class NonEmptyTest extends BatchTestCase {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             return;
         }
+
+        mdx = TestContext.instance().upgradeQuery(mdx);
 
         getConnection().getCacheControl(null).flushSchemaCache();
         try {

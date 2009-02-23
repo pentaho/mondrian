@@ -139,11 +139,15 @@ public class ParameterTest extends FoodMartTestCase {
         assertExprReturns("Parameter(\"Foo\", [Time.Weekly], [Time.Weekly].[1997].[40],\"Foo\").Name",
                 "40");
         // right dimension, wrong hierarchy
+        final String levelName =
+            MondrianProperties.instance().SsasCompatibleNaming.get()
+                ? "[Time].[Weekly]"
+                : "[Time.Weekly]";
         assertExprThrows("Parameter(\"Foo\",[Time.Weekly],[Time].[1997].[Q1],\"Foo\").Name",
-                "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<hierarchy=[Time.Weekly]>");
+                "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<hierarchy=" + levelName + ">");
         // wrong dimension
         assertExprThrows("Parameter(\"Foo\",[Time.Weekly],[Product].[All Products],\"Foo\").Name",
-                "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<hierarchy=[Time.Weekly]>");
+                "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<hierarchy=" + levelName + ">");
         // garbage
         assertExprThrows("Parameter(\"Foo\",[Time.Weekly],[Widget].[All Widgets],\"Foo\").Name",
                 "MDX object '[Widget].[All Widgets]' not found in cube 'Sales'");

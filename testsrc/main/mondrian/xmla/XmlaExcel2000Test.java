@@ -13,6 +13,7 @@ package mondrian.xmla;
 
 import mondrian.olap.Util;
 import mondrian.test.DiffRepository;
+import mondrian.test.TestContext;
 import mondrian.tui.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -325,6 +326,7 @@ System.out.println("EXPECTED:\n" + expectedStr);
 System.out.println("XXXXXXX");
 }
         gotStr = Util.maskVersion(gotStr);
+        gotStr = TestContext.instance().upgradeActual(gotStr);
         XMLAssert.assertXMLEqual(expectedStr, gotStr);
     }
 

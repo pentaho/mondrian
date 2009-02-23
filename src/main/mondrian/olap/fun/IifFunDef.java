@@ -38,8 +38,29 @@ public class IifFunDef extends FunDefBase {
     }
 
     public Type getResultType(Validator validator, Exp[] args) {
-        return TypeUtil.computeCommonType(
-            true, args[1].getType(), args[2].getType());
+        // This is messy. We have already decided which variant of Iif to use,
+        // and that involves some upcasts. For example, Iif(b, n, NULL) resolves
+        // to the type of n. We don't want to throw it away and take the most
+        // general type. So, for scalar types we create a type based on
+        // returnCategory.
+        //
+        // But for dimensional types (member, level, hierarchy, dimension,
+        // tuple) we want to preserve as much type information as possible, so
+        // we recompute the type based on the common types of all args.
+        //
+        // FIXME: We should pass more info into this method, such as the list
+        // of conversions computed while resolving overloadings.
+        switch (returnCategory) {
+        case Category.Numeric:
+            return new NumericType();
+        case Category.String:
+            return new StringType();
+        case Category.Logical:
+            return new BooleanType();
+        default:
+            return TypeUtil.computeCommonType(
+                true, args[1].getType(), args[2].getType());
+        }
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {

@@ -181,7 +181,7 @@
 </exception>
 
 <exception id="350440" name="MoreThanOneFunctionMatchesSignature">
-    <text>More than one function matches signature ''{0}''</text>
+    <text>More than one function matches signature ''{0}''; they are: {1}</text>
 </exception>
 
 <exception id="350450" name="MemberNotInLevelHierarchy">
@@ -221,11 +221,15 @@
 </exception>
 
 <exception id="350540" name="InvalidAxis">
-    <text>Invalid axis specification. The axis number must be an integer between 0 and {0,number}, but it was {1,number}.</text>
+    <text>Invalid axis specification. The axis number must be non-negative integer, but it was {0,number}.</text>
 </exception>
 
 <exception id="350545" name="DuplicateAxis">
     <text>Duplicate axis name ''{0}''.</text>
+</exception>
+
+<exception id="350547" name="NonContiguousAxis">
+    <text>Axis numbers specified in a query must be sequentially specified, and cannot contain gaps. Axis {0,number} ({1}) is missing.</text>
 </exception>
 
 <exception id="350550" name="DupDimensionsInTuple">
@@ -262,6 +266,10 @@
 
 <exception id="350600" name="NoTimeDimensionInCube">
     <text>Cannot use the function ''{0}'', no time dimension is available for this cube.</text>
+</exception>
+
+<exception id="350610" name="CannotImplicitlyConvertDimensionToHierarchy">
+    <text>The ''{0}'' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.</text>
 </exception>
 
 <!-- ====================================================================== -->

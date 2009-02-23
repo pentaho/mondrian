@@ -52,8 +52,15 @@ public abstract class RolapSchemaReader
     private static final Logger LOGGER =
         Logger.getLogger(RolapSchemaReader.class);
 
+    /**
+     * Creates a RolapSchemaReader.
+     *
+     * @param role Role for access control, must not be null
+     * @param schema Schema
+     */
     RolapSchemaReader(Role role, RolapSchema schema) {
         assert role != null : "precondition: role != null";
+        assert schema != null;
         this.role = role;
         this.schema = schema;
     }
@@ -146,6 +153,13 @@ public abstract class RolapSchemaReader
         return Util.cast(memberList);
     }
 
+    /**
+     * Helper for getMemberChildren.
+     *
+     * @param member Member
+     * @param constraint Constraint
+     * @return List of children
+     */
     private List<RolapMember> internalGetMemberChildren(
         Member member, MemberChildrenConstraint constraint)
     {
@@ -310,6 +324,11 @@ public abstract class RolapSchemaReader
         }
     }
 
+    /**
+     * Returns the default cube in which to look for dimensions etc.
+     *
+     * @return Default cube
+     */
     public abstract Cube getCube();
 
     public OlapElement getElementChild(OlapElement parent, Id.Segment name) {
@@ -359,10 +378,6 @@ public abstract class RolapSchemaReader
     {
         return Util.lookupCompound(
             this, parent, names, failIfNotFound, category, matchType);
-    }
-
-    public Member lookupMemberChildByName(Member parent, Id.Segment childName) {
-        return lookupMemberChildByName(parent, childName, MatchType.EXACT);
     }
 
     public Member lookupMemberChildByName(
@@ -442,6 +457,18 @@ public abstract class RolapSchemaReader
             memberReader.getMembersInLevel(
                 (RolapLevel) level, 0, Integer.MAX_VALUE, constraint);
         return Util.cast(membersInLevel);
+    }
+
+    public List<Dimension> getCubeDimensions(Cube cube) {
+        assert cube != null;
+        // REVIEW: access control?
+        return Arrays.asList(cube.getDimensions());
+    }
+
+    public List<Hierarchy> getDimensionHierarchies(Dimension dimension) {
+        assert dimension != null;
+        // REVIEW: access control?
+        return Arrays.asList(dimension.getHierarchies());
     }
 
     public List<Level> getHierarchyLevels(Hierarchy hierarchy) {
@@ -551,6 +578,11 @@ public abstract class RolapSchemaReader
         return schema.getInternalConnection().getDataSource();
     }
 
+    /**
+     * Returns the schema.
+     *
+     * @return Schema, never null
+     */
     RolapSchema getSchema() {
         return schema;
     }

@@ -353,6 +353,7 @@ System.out.println("EXPECTED:\n" + expectedStr);
 System.out.println("XXXXXXX");
 }
         gotStr = Util.maskVersion(gotStr);
+        gotStr = getTestContext().upgradeActual(gotStr);
         XMLAssert.assertXMLEqual(expectedStr, gotStr);
     }
 

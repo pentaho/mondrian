@@ -10,9 +10,7 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.SetType;
-import mondrian.olap.type.MemberType;
+import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
@@ -49,17 +47,27 @@ class PeriodsToDateFunDef extends FunDefBase {
             Dimension defaultTimeDimension =
                 validator.getQuery().getCube().getTimeDimension();
             if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().
-                            NoTimeDimensionInCube.ex(getName());
+                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+                    getName());
             }
             Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
-            return new SetType(
-                    MemberType.forHierarchy(hierarchy));
+            return new SetType(MemberType.forHierarchy(hierarchy));
+        }
+
+        if (args.length >= 2) {
+            Type hierarchyType = args[0].getType();
+            MemberType memberType = (MemberType) args[1].getType();
+            if (memberType.getHierarchy() != null
+                && hierarchyType.getHierarchy() != null
+                && memberType.getHierarchy() != hierarchyType.getHierarchy()) {
+                throw Util.newError(
+                    "Type mismatch: member must belong to hierarchy " +
+                        hierarchyType.getHierarchy().getUniqueName());
+            }
         }
 
         // If we have at least one arg, it's a level which will
         // tell us the type.
-
         return super.getResultType(validator, args);
     }
 

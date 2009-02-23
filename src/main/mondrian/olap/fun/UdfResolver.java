@@ -16,6 +16,8 @@ import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 
+import java.util.List;
+
 /**
  * Resolver for user-defined functions.
  *
@@ -67,7 +69,10 @@ public class UdfResolver implements Resolver {
     }
 
     public FunDef resolve(
-            Exp[] args, Validator validator, int[] conversionCount) {
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
+    {
         final Type[] parameterTypes = udf.getParameterTypes();
         if (args.length != parameterTypes.length) {
             return null;
@@ -80,7 +85,7 @@ public class UdfResolver implements Resolver {
             final Type argType = arg.getType();
             final int parameterCategory = TypeUtil.typeToCategory(parameterType);
             if (!validator.canConvert(
-                    arg, parameterCategory, conversionCount)) {
+                    arg, parameterCategory, conversions)) {
                 return null;
             }
             parameterCategories[i] = parameterCategory;

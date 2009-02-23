@@ -523,21 +523,24 @@ public class SetFunDef extends FunDefBase {
         }
 
         public FunDef resolve(
-                Exp[] args, Validator validator, int[] conversionCount) {
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
+        {
             int[] parameterTypes = new int[args.length];
             for (int i = 0; i < args.length; i++) {
                 if (validator.canConvert(
-                        args[i], Category.Member, conversionCount)) {
+                        args[i], Category.Member, conversions)) {
                     parameterTypes[i] = Category.Member;
                     continue;
                 }
                 if (validator.canConvert(
-                        args[i], Category.Set, conversionCount)) {
+                        args[i], Category.Set, conversions)) {
                     parameterTypes[i] = Category.Set;
                     continue;
                 }
                 if (validator.canConvert(
-                        args[i], Category.Tuple, conversionCount)) {
+                        args[i], Category.Tuple, conversions)) {
                     parameterTypes[i] = Category.Tuple;
                     continue;
                 }

@@ -564,7 +564,7 @@ public class SchemaTest extends FoodMartTestCase {
                 + "Axis #1:\n"
                 + "{[Customers].[All Customers].[USA].[South West]}\n"
                 + "Axis #2:\n"
-                + "{[Store.MyHierarchy].[All Store.MyHierarchys].[Mexico]}\n"
+                + "{[Store].[MyHierarchy].[All MyHierarchys].[Mexico]}\n"
                 + "Row #0: 51,298\n"));
     }
 
@@ -627,7 +627,7 @@ public class SchemaTest extends FoodMartTestCase {
                "Axis #1:\n" +
                "{[Customers].[All Customers].[USA].[South West]}\n" +
                "Axis #2:\n" +
-               "{[Store.MyHierarchy].[All Store.MyHierarchys].[USA].[South West]}\n" +
+               "{[Store].[MyHierarchy].[All MyHierarchys].[USA].[South West]}\n" +
                "Row #0: 72,631\n"));
     }
 
@@ -913,7 +913,9 @@ public class SchemaTest extends FoodMartTestCase {
                     "Axis #0:\n" +
                     "{}\n" +
                     "Axis #1:\n" +
-                    "{[Time2].[1997]}\n" +
+                    (MondrianProperties.instance().SsasCompatibleNaming.get()
+                        ? "{[Time2].[Time].[1997]}\n"
+                        : "{[Time2].[1997]}\n") +
                     "Axis #2:\n" +
                     "{[Time].[1997].[Q3]}\n" +
                     "Row #0: 16,266\n"));
@@ -1082,10 +1084,21 @@ public class SchemaTest extends FoodMartTestCase {
                     "</Cube>",
                 null, null, null, null);
 
+        // If SsasCompatibleNaming (the new behavior), the usages of the
+        // [Store] dimension create dimensions called [Store]
+        // and [Store2], each with a hierarchy called [Store].
+        // Therefore Store2's all member is [Store2].[Store].[All Stores],
+        // or [Store2].[All Stores] for short.
+        //
+        // Under the old behavior, the member is called [Store2].[All Store2s].
+        final String store2AllMember =
+            MondrianProperties.instance().SsasCompatibleNaming.get()
+            ? "[Store2].[All Stores]"
+            : "[Store2].[All Store2s]";
         testContext.assertQueryReturns(
             "select\n" +
-                " {[Store].[All Stores]} on columns,\n" +
-                " {[Store2].[All Store2s]} on rows\n" +
+                " {[Store].[Store].[All Stores]} on columns,\n" +
+                " {" + store2AllMember + "} on rows\n" +
                 "From [Sales Two Sales Dimensions]",
             fold(
                 "Axis #0:\n" +
@@ -1093,11 +1106,11 @@ public class SchemaTest extends FoodMartTestCase {
                     "Axis #1:\n" +
                     "{[Store].[All Stores]}\n" +
                     "Axis #2:\n" +
-                    "{[Store2].[All Store2s]}\n" +
+                    "{[Store2].[Store].[All Stores]}\n" +
                     "Row #0: 266,773\n"));
 
         final Result result = testContext.executeQuery(
-            "select ([Store].[All Stores], [Store2].[All Store2s]) on 0\n"
+            "select ([Store].[All Stores], " + store2AllMember + ") on 0\n"
                 + "from [Sales Two Sales Dimensions]");
         final Axis axis = result.getAxes()[0];
         final Position position = axis.getPositions().get(0);
@@ -1126,11 +1139,24 @@ public class SchemaTest extends FoodMartTestCase {
                     "</Cube>",
                 null, null, null, null);
 
-       testContext.assertThrows(
-                "select\n" +
-                    " {[Time].[1997]} on columns \n" +
-                    "From [Sales Two Dimensions]",
+        final String query = "select\n" +
+            " {[Time].[1997]} on columns \n" +
+            "From [Sales Two Dimensions]";
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            testContext.assertThrows(
+                query,
                 "In cube \"Sales Two Dimensions\" use of unaliased Dimension name \"[Time]\" rather than the alias name \"Time2\"");
+        } else {
+            // In new behavior, resolves to the hierarchy name [Time] even if
+            // not qualified by dimension name [Time2].
+            testContext.assertQueryReturns(
+                query,
+                fold("Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Time2].[Time].[1997]}\n" +
+                    "Row #0: 266,773\n"));
+        }
     }
 
     /**
@@ -1560,19 +1586,19 @@ public class SchemaTest extends FoodMartTestCase {
                         "{[Measures].[Store Sales]}\n" +
                         "{[Measures].[StoreType]}\n" +
                         "Axis #2:\n" +
-                        "{[Store2.Store2].[All Stores].[2], [Product].[All Products]}\n" +
-                        "{[Store2.Store2].[All Stores].[3], [Product].[All Products]}\n" +
-                        "{[Store2.Store2].[All Stores].[6], [Product].[All Products]}\n" +
-                        "{[Store2.Store2].[All Stores].[7], [Product].[All Products]}\n" +
-                        "{[Store2.Store2].[All Stores].[11], [Product].[All Products]}\n" +
-                        "{[Store2.Store2].[All Stores].[13], [Product].[All Products]}\n" +
-                        "{[Store2.Store2].[All Stores].[14], [Product].[All Products]}\n" +
-                        "{[Store2.Store2].[All Stores].[15], [Product].[All Products]}\n" +
-                        "{[Store2.Store2].[All Stores].[16], [Product].[All Products]}\n" +
-                        "{[Store2.Store2].[All Stores].[17], [Product].[All Products]}\n" +
-                        "{[Store2.Store2].[All Stores].[22], [Product].[All Products]}\n" +
-                        "{[Store2.Store2].[All Stores].[23], [Product].[All Products]}\n" +
-                        "{[Store2.Store2].[All Stores].[24], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[2], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[3], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[6], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[7], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[11], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[13], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[14], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[15], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[16], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[17], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[22], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[23], [Product].[All Products]}\n" +
+                        "{[Store2].[All Stores].[24], [Product].[All Products]}\n" +
                         "Row #0: 4,739.23\n" +
                         "Row #0: Small Grocery\n" +
                         "Row #1: 52,896.30\n" +
@@ -1881,7 +1907,6 @@ public class SchemaTest extends FoodMartTestCase {
                 + "Legal values: {all, custom, none, all_dimensions}");
     }
 
-
     public void testAllMemberNoStringReplace() {
         TestContext testContext = TestContext.create(
                 null,
@@ -1904,13 +1929,14 @@ public class SchemaTest extends FoodMartTestCase {
                 null, null, null, null);
 
 
-        testContext.assertQueryReturns("select [TIME.CALENDAR].[All TIME(CALENDAR)] on rows from [Sales Special Time]",
-                fold(
-                    "Axis #0:\n" +
-                    "{}\n" +
-                    "Axis #1:\n" +
-                    "{[TIME.CALENDAR].[All TIME(CALENDAR)]}\n" +
-                    "Row #0: 266,773\n"));
+        testContext.assertQueryReturns(
+            "select [TIME.CALENDAR].[All TIME(CALENDAR)] on columns\n" +
+                "from [Sales Special Time]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[TIME].[CALENDAR].[All TIME(CALENDAR)]}\n" +
+                "Row #0: 266,773\n"));
     }
 
     public void testUnionRole() {

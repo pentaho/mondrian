@@ -36,6 +36,9 @@ public abstract class HierarchyBase
      * <tr> <td>[Time.Weekly]</td> <td>Time.Weekly</td> <td>Weekly</td></tr>
      * <tr> <td>[Customers]</td>   <td>Customers</td>   <td>null</td></tr>
      * </table>
+     *
+     * <p>If {@link mondrian.olap.MondrianProperties#SsasCompatibleNaming} is
+     * true, name and subName have the same value.
      */
     protected final String subName;
     protected final String name;
@@ -46,28 +49,46 @@ public abstract class HierarchyBase
     protected String allMemberName;
     protected String allLevelName;
 
-    protected HierarchyBase(Dimension dimension,
-                            String subName,
-                            boolean hasAll) {
+    protected HierarchyBase(
+        Dimension dimension,
+        String subName,
+        boolean hasAll)
+    {
         this.dimension = dimension;
         this.hasAll = hasAll;
         this.caption = dimension.getCaption();
 
-        this.subName = subName;
         String name = dimension.getName();
-        if (this.subName != null) {
-            // e.g. "Time.Weekly"
-            this.name = name + "." + subName;
-            // e.g. "[Time.Weekly]"
-            this.uniqueName = Util.makeFqName(this.name);
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            if (subName == null) {
+                // e.g. "Time"
+                subName = name;
+            }
+            this.subName = subName;
+            this.name = subName;
+            // e.g. "[Time].[Weekly]" for dimension "Time", hierarchy "Weekly";
+            // "[Time]" for dimension "Time", hierarchy "Time".
+            this.uniqueName =
+                subName.equals(name)
+                    ? dimension.getUniqueName()
+                    : Util.makeFqName(dimension, this.name);
         } else {
-            // e.g. "Time"
-            this.name = name;
-            // e.g. "[Time]"
-            this.uniqueName = dimension.getUniqueName();
+            this.subName = subName;
+            if (this.subName != null
+                && !this.subName.equals(name))
+            {
+                // e.g. "Time.Weekly"
+                this.name = name + "." + subName;
+                // e.g. "[Time.Weekly]"
+                this.uniqueName = Util.makeFqName(this.name);
+            } else {
+                // e.g. "Time"
+                this.name = name;
+                // e.g. "[Time]"
+                this.uniqueName = dimension.getUniqueName();
+            }
         }
     }
-
 
     /**
      * Returns the name of the hierarchy sans dimension name.
@@ -119,12 +140,10 @@ public abstract class HierarchyBase
         return (this == mdxElement);
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, Id.Segment s) {
-        return lookupChild(schemaReader, s, MatchType.EXACT);
-    }
-
     public OlapElement lookupChild(
-        SchemaReader schemaReader, Id.Segment s, MatchType matchType)
+        SchemaReader schemaReader,
+        Id.Segment s,
+        MatchType matchType)
     {
         OlapElement oe = Util.lookupHierarchyLevel(this, s.name);
         if (oe == null) {
@@ -141,7 +160,7 @@ public abstract class HierarchyBase
             if (oe == null) {
                 buf.append(" returning null");
             } else {
-                buf.append(" returning elementname=" + oe.getName());
+                buf.append(" returning elementname=").append(oe.getName());
             }
             getLogger().debug(buf.toString());
         }

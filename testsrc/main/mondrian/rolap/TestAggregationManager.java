@@ -939,14 +939,14 @@ public class TestAggregationManager extends BatchTestCase {
             "select " +
             "NonEmptyCrossJoin(" +
             "[Product].[Product Family].Members, " +
-            "[Gender].[Gender].Members) on rows " +
+            "[Gender].[Gender].Members) on columns " +
             "from [Sales]";
 
         String query2 =
             "select " +
             "NonEmptyCrossJoin(" +
             "[Store].[Store Country].Members, " +
-            "[Product].[Product Family].Members) on rows " +
+            "[Product].[Product Family].Members) on columns " +
             "from [Warehouse]";
 
         String cardinalitySqlDerby =

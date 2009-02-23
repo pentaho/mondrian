@@ -29,8 +29,7 @@ public class CustomizedParserTest extends FoodMartTestCase {
 
     CustomizedFunctionTable getCustomizedFunctionTable(Set<String> funNameSet) {
         Set<FunDef> specialFunctions = new HashSet<FunDef>();
-        ParenthesesFunDef specialPerentheseFun = new ParenthesesFunDef(Category.Numeric);
-        specialFunctions.add(specialPerentheseFun);
+        specialFunctions.add(new ParenthesesFunDef(Category.Numeric));
 
         CustomizedFunctionTable cftab =
             new CustomizedFunctionTable(funNameSet, specialFunctions);
@@ -53,24 +52,32 @@ public class CustomizedParserTest extends FoodMartTestCase {
     }
 
     private Query getParsedQueryForExpr(
-        CustomizedFunctionTable cftab, String expr, boolean strictValidation) {
+        CustomizedFunctionTable cftab,
+        String expr,
+        boolean strictValidation)
+    {
         String mdx = wrapExpr(expr);
-        Query q = ((ConnectionBase)getConnection()).parseQuery(mdx, cftab, strictValidation);
-        return q;
+        return ((ConnectionBase) getConnection()).parseQuery(
+            mdx, cftab, strictValidation);
     }
 
-    private Query getParsedQueryForExpr(CustomizedFunctionTable cftab, String expr) {
+    private Query getParsedQueryForExpr(
+        CustomizedFunctionTable cftab,
+        String expr)
+    {
         return getParsedQueryForExpr(cftab, expr, false);
     }
 
     public void testAddition() {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("+");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         try {
             Query q =
-                getParsedQueryForExpr(cftab,
+                getParsedQueryForExpr(
+                    cftab,
                     "([Measures].[Store Cost] + [Measures].[Unit Sales])");
             q.resolve(q.createValidator(cftab));
         } catch (Throwable e) {
@@ -81,12 +88,14 @@ public class CustomizedParserTest extends FoodMartTestCase {
     public void testSubtraction() {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("-");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         try {
             Query q =
-                getParsedQueryForExpr(cftab,
-                "([Measures].[Store Cost] - [Measures].[Unit Sales])");
+                getParsedQueryForExpr(
+                    cftab,
+                    "([Measures].[Store Cost] - [Measures].[Unit Sales])");
             q.resolve(q.createValidator(cftab));
         } catch (Throwable e) {
             fail(e.getMessage());
@@ -96,27 +105,30 @@ public class CustomizedParserTest extends FoodMartTestCase {
     public void testSingleMultiplication() {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("*");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         try {
             Query q =
-                getParsedQueryForExpr(cftab,
-                "[Measures].[Store Cost] * [Measures].[Unit Sales]");
+                getParsedQueryForExpr(
+                    cftab,
+                    "[Measures].[Store Cost] * [Measures].[Unit Sales]");
             q.resolve(q.createValidator(cftab));
         } catch (Throwable e) {
             fail(e.getMessage());
         }
     }
 
-
     public void testMultipleMultiplication() {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("*");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         try {
             Query q =
-                getParsedQueryForExpr(cftab,
+                getParsedQueryForExpr(
+                    cftab,
                     "([Measures].[Store Cost] * [Measures].[Unit Sales] * [Measures].[Store Sales])");
             q.resolve(q.createValidator(cftab));
         } catch (Throwable e) {
@@ -127,11 +139,14 @@ public class CustomizedParserTest extends FoodMartTestCase {
     public void testLiterals() {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("+");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         try {
             Query q =
-                getParsedQueryForExpr(cftab, "([Measures].[Store Cost] + 10)");
+                getParsedQueryForExpr(
+                    cftab,
+                    "([Measures].[Store Cost] + 10)");
             q.resolve(q.createValidator(cftab));
         } catch (Throwable e) {
             fail(e.getMessage());
@@ -141,11 +156,14 @@ public class CustomizedParserTest extends FoodMartTestCase {
     public void testMissingObjectFail() {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("+");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         try {
             Query q =
-                getParsedQueryForExpr(cftab, "'[Measures].[Store Cost] + [Measures].[Unit Salese]'");
+                getParsedQueryForExpr(
+                    cftab,
+                    "'[Measures].[Store Cost] + [Measures].[Unit Salese]'");
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here
             fail("Expected error did not occur.");
@@ -166,7 +184,8 @@ public class CustomizedParserTest extends FoodMartTestCase {
     private void testMissingObject(boolean strictValidation) {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("+");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         MondrianProperties properties = MondrianProperties.instance();
         boolean oldIgnoreInvalidMembers =
@@ -198,11 +217,14 @@ public class CustomizedParserTest extends FoodMartTestCase {
     public void testMultiplicationFail() {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("+");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         try {
             Query q =
-                getParsedQueryForExpr(cftab, "([Measures].[Store Cost] * [Measures].[Unit Sales])");
+                getParsedQueryForExpr(
+                    cftab,
+                    "([Measures].[Store Cost] * [Measures].[Unit Sales])");
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here
             fail("Expected error did not occur.");
@@ -215,11 +237,14 @@ public class CustomizedParserTest extends FoodMartTestCase {
     public void testMixingAttributesFail() {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("+");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         try {
             Query q =
-                getParsedQueryForExpr(cftab, "([Measures].[Store Cost] + [Store].[Store Country])");
+                getParsedQueryForExpr(
+                    cftab,
+                    "([Measures].[Store Cost] + [Store].[Store Country])");
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here
             fail("Expected error did not occur.");
@@ -235,11 +260,14 @@ public class CustomizedParserTest extends FoodMartTestCase {
         functionNameSet.add("-");
         functionNameSet.add("*");
         functionNameSet.add("/");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         try {
             Query q =
-                getParsedQueryForExpr(cftab, "CrossJoin([Measures].[Store Cost], [Measures].[Unit Sales])");
+                getParsedQueryForExpr(
+                    cftab,
+                    "CrossJoin([Measures].[Store Cost], [Measures].[Unit Sales])");
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here
             fail("Expected error did not occur.");
@@ -255,11 +283,14 @@ public class CustomizedParserTest extends FoodMartTestCase {
         functionNameSet.add("-");
         functionNameSet.add("*");
         functionNameSet.add("/");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         try {
             Query q =
-                getParsedQueryForExpr(cftab, "([Measures].[Store Cost], [Gender].[F])");
+                getParsedQueryForExpr(
+                    cftab,
+                    "([Measures].[Store Cost], [Gender].[F])");
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here
             fail("Expected error did not occur.");
@@ -275,11 +306,14 @@ public class CustomizedParserTest extends FoodMartTestCase {
         functionNameSet.add("-");
         functionNameSet.add("*");
         functionNameSet.add("/");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         try {
             Query q =
-                getParsedQueryForExpr(cftab, "([Store].[USA], [Gender].[F])");
+                getParsedQueryForExpr(
+                    cftab,
+                    "([Store].[USA], [Gender].[F])");
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here
             fail("Expected error did not occur.");
@@ -299,11 +333,14 @@ public class CustomizedParserTest extends FoodMartTestCase {
     public void testMixingMemberLimitation() {
         Set<String> functionNameSet = new HashSet<String>();
         functionNameSet.add("+");
-        CustomizedFunctionTable cftab = getCustomizedFunctionTable(functionNameSet);
+        CustomizedFunctionTable cftab =
+            getCustomizedFunctionTable(functionNameSet);
 
         try {
             Query q =
-                getParsedQueryForExpr(cftab, "([Measures].[Store Cost] + [Store].[USA])");
+                getParsedQueryForExpr(
+                    cftab,
+                    "([Measures].[Store Cost] + [Store].[USA])");
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here
             fail("Expected error did not occur.");

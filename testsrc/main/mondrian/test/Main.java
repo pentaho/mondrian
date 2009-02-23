@@ -177,12 +177,13 @@ public class Main extends TestSuite {
                 addTest(suite, (Test) o, clazz.getName() + method.getName());
             }
         } else {
+            addTest(suite, RolapConnectionTest.class);
             addTest(suite, FilteredIterableTest.class);
             addTest(suite, HighDimensionsTest.class);
             addTest(suite, IndexedValuesTest.class);
             addTest(suite, MemoryMonitorTest.class);
             addTest(suite, ObjectPoolTest.class);
-            addTest(suite, RolapConnectionTest.class);
+            addTest(suite, Ssas2005CompatibilityTest.OldBehaviorTest.class);
             addTest(suite, DialectTest.class);
             addTest(suite, ResultComparatorTest.class, "suite");
             addTest(suite, DrillThroughTest.class);

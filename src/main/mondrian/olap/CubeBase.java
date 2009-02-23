@@ -15,6 +15,8 @@ package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
 
+import java.util.List;
+
 /**
  * <code>CubeBase</code> is an abstract implementation of {@link Cube}.
  *
@@ -98,25 +100,55 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return null;
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, Id.Segment s)
-    {
-        return lookupChild(schemaReader, s, MatchType.EXACT);
-    }
-
     public OlapElement lookupChild(
-        SchemaReader schemaReader, Id.Segment s, MatchType matchType)
+        SchemaReader schemaReader,
+        Id.Segment s,
+        MatchType matchType)
     {
-        Dimension mdxDimension = (Dimension)lookupDimension(s);
-        if (mdxDimension != null ||
-            MondrianProperties.instance().NeedDimensionPrefix.get()) {
+        Dimension mdxDimension = lookupDimension(s);
+        if (mdxDimension != null) {
             return mdxDimension;
         }
 
-        //maybe this is not a dimension - maybe it's hierarchy, level or name
+        final List<Dimension> dimensions = schemaReader.getCubeDimensions(this);
+
+        // Look for hierarchies named '[dimension.hierarchy]'.
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()
+            && s.name.contains(".")) {
+            for (Dimension dimension : dimensions) {
+                if (!s.name.startsWith(dimension.getName())) {
+                    // Rough check to save time.
+                    continue;
+                }
+                for (Hierarchy hierarchy :
+                    schemaReader.getDimensionHierarchies(dimension))
+                {
+                    if (Util.equalName(
+                        s.name,
+                        dimension.getName()
+                            + "."
+                            + hierarchy.getName()))
+                    {
+                        return hierarchy;
+                    }
+                }
+            }
+        }
+
+        // Try hierarchies, levels and members.
         for (Dimension dimension : dimensions) {
             OlapElement mdxElement = dimension.lookupChild(
                 schemaReader, s, matchType);
             if (mdxElement != null) {
+                if (mdxElement instanceof Member
+                    && MondrianProperties.instance().NeedDimensionPrefix.get())
+                {
+                    // With this property setting, don't allow members to be
+                    // referenced without at least a dimension prefix. We
+                    // allow [Store].[USA].[CA] or even [Store].[CA] but not
+                    // [USA].[CA].
+                    continue;
+                }
                 return mdxElement;
             }
         }
@@ -134,9 +166,9 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return null;
     }
 
-    public OlapElement lookupDimension(Id.Segment s) {
+    public Dimension lookupDimension(Id.Segment s) {
         for (Dimension dimension : dimensions) {
-            if (dimension.getName().equalsIgnoreCase(s.name)) {
+            if (Util.equalName(dimension.getName(), s.name)) {
                 return dimension;
             }
         }

@@ -156,7 +156,7 @@ parser code {:
             slicer == null ?
                 null :
                 new QueryAxis(
-                    false, slicer, AxisOrdinal.SLICER,
+                    false, slicer, AxisOrdinal.StandardAxisOrdinal.SLICER,
                     QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
         return new Query(
             mdxConnection, formulae, axes, cube, slicerAxis, cellProps, load, strictValidation);
@@ -291,6 +291,8 @@ terminal
     CASE,
     CAST,
     CELL,
+    CHAPTERS,
+    COLUMNS,
     DIMENSION,
     ELSE,
     EMPTY,
@@ -305,7 +307,10 @@ terminal
     NULL,
     ON,
     OR,
+    PAGES,
     PROPERTIES,
+    ROWS,
+    SECTIONS,
     SELECT,
     SET,
     THEN,
@@ -375,8 +380,9 @@ non terminal Id
     cube_specification,
     member_name,
     set_name;
+non terminal AxisOrdinal.StandardAxisOrdinal
+    axis_name;
 non terminal String
-    axis_name,
     comp_op,
     keyword;
 non terminal Id.Segment
@@ -1440,9 +1446,8 @@ set_name ::= compound_id ;
 // <axis_specification> ::= [NON EMPTY] <set> [<dim_props>] ON <axis_name>
 axis_specification ::=
         non_empty_opt:b expression:s dim_props_opt:dp ON axis_name:a {:
-            AxisOrdinal axis = AxisOrdinal.valueOf(a.toUpperCase());
             RESULT = new QueryAxis(
-                    b.booleanValue(), s, axis,
+                    b.booleanValue(), s, a,
                     QueryAxis.SubtotalVisibility.Undefined,
                     Parser.toIdArray(dp));
         :}
@@ -1450,15 +1455,16 @@ axis_specification ::=
             double d = n.doubleValue();
             int index = (int)d;
 
-            // AxisOrdinal values go from -2 to 4. The negative values represent
+            // AxisOrdinal values go from -2 to 4 for standard axis, but higher
+            // ordinals are allowed. The negative values represent
             // special cases, so are ignored.
-            if (index < 0 || index != d || index >= AxisOrdinal.MaxLogicalOrdinal) {
+            if (index < 0 || index != d) {
                 throw MondrianResource.instance().InvalidAxis.ex(
-                    AxisOrdinal.MaxLogicalOrdinal,
                     d);
             }
 
-            AxisOrdinal axis = AxisOrdinal.forLogicalOrdinal(index);
+            AxisOrdinal axis =
+                AxisOrdinal.StandardAxisOrdinal.forLogicalOrdinal(index);
             RESULT = new QueryAxis(b.booleanValue(), s, axis,
                     QueryAxis.SubtotalVisibility.Undefined,
                     Parser.toIdArray(dp));
@@ -1485,8 +1491,20 @@ dim_props_opt ::=
 //               | SECTIONS
 //               | AXIS(<index>)
 axis_name ::=
-        identifier:i {:
-            RESULT = i.name;
+        COLUMNS {:
+            RESULT = AxisOrdinal.StandardAxisOrdinal.COLUMNS;
+        :}
+    |   ROWS {:
+            RESULT = AxisOrdinal.StandardAxisOrdinal.ROWS;
+        :}
+    |   PAGES {:
+            RESULT = AxisOrdinal.StandardAxisOrdinal.PAGES;
+        :}
+    |   SECTIONS {:
+            RESULT = AxisOrdinal.StandardAxisOrdinal.SECTIONS;
+        :}
+    |   CHAPTERS {:
+            RESULT = AxisOrdinal.StandardAxisOrdinal.CHAPTERS;
         :}
     ;
 

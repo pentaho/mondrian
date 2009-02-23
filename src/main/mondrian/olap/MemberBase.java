@@ -164,13 +164,6 @@ public abstract class MemberBase
 
     public OlapElement lookupChild(
         SchemaReader schemaReader,
-        Id.Segment childName)
-    {
-        return lookupChild(schemaReader, childName, MatchType.EXACT);
-    }
-
-    public OlapElement lookupChild(
-        SchemaReader schemaReader,
         Id.Segment childName,
         MatchType matchType)
     {

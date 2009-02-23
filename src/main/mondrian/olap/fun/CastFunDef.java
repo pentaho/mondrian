@@ -17,6 +17,8 @@ import mondrian.calc.ExpCompiler;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 
+import java.util.List;
+
 /**
  * Definition of the <code>CAST</code> MDX operator.
  *
@@ -117,7 +119,7 @@ public class CastFunDef extends FunDefBase {
         }
 
         public FunDef resolve(
-            Exp[] args, Validator validator, int[] conversionCount) {
+            Exp[] args, Validator validator, List<Conversion> conversions) {
             if (args.length != 2) {
                 return null;
             }

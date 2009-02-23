@@ -18,6 +18,7 @@ import mondrian.calc.impl.GenericIterCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
+import java.util.List;
 
 /**
  * Definition of the <code>Cache</code> system function, which is smart enough
@@ -95,7 +96,10 @@ public class CacheFunDef extends FunDefBase {
         }
 
         public FunDef resolve(
-                Exp[] args, Validator validator, int[] conversionCount) {
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
+        {
             if (args.length != 1) {
                 return null;
             }

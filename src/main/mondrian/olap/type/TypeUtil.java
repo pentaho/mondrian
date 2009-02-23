@@ -3,15 +3,18 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.type;
 
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Util;
-import mondrian.olap.Category;
+import mondrian.olap.*;
+import mondrian.olap.fun.FunUtil;
+import mondrian.olap.fun.Resolver;
+import mondrian.resource.MondrianResource;
+
+import java.util.List;
 
 /**
  * Utility methods relating to types.
@@ -128,18 +131,21 @@ public class TypeUtil {
         }
     }
 
+    /**
+     * Returns whether two hierarchies are equal.
+     *
+     * @param hierarchy1 First hierarchy
+     * @param hierarchy2 Second hierarchy
+     * @return Whether hierarchies are equal
+     */
     private static boolean equal(
-            final Hierarchy hierarchy1, final Hierarchy hierarchy2) {
-        //noinspection RedundantIfStatement
-        if (hierarchy1 == null ||
-                hierarchy2 == null ||
-                hierarchy2.getUniqueName().equals(
-                        hierarchy1.getUniqueName())) {
-            // They are compatible.
-            return true;
-        } else {
-            return false;
-        }
+        final Hierarchy hierarchy1,
+        final Hierarchy hierarchy2)
+    {
+        return hierarchy1 == null ||
+            hierarchy2 == null ||
+            hierarchy2.getUniqueName().equals(
+                hierarchy1.getUniqueName());
     }
 
     /**
@@ -192,6 +198,8 @@ public class TypeUtil {
     public static int typeToCategory(Type type) {
         if (type instanceof NullType) {
             return Category.Null;
+        } else if (type instanceof EmptyType) {
+            return Category.Empty;
         } else if (type instanceof DateTimeType) {
             return Category.DateTime;
         } else if (type instanceof NumericType) {
@@ -254,21 +262,21 @@ public class TypeUtil {
      * Returns whether we can convert an argument of a given category to a
      * given parameter category.
      *
-     * @param from actual argument category
+     * @param fromType actual argument type
      * @param to   formal parameter category
-     * @param conversionCount in/out count of number of conversions performed;
-     *             is incremented if the conversion is non-trivial (for
-     *             example, converting a member to a level).
+     * @param conversions list of implicit conversions required (out)
      * @return whether can convert from 'from' to 'to'
      */
     public static boolean canConvert(
-        int from,
+        Type fromType,
         int to,
-        int[] conversionCount)
+        List<Resolver.Conversion> conversions)
     {
+        final int from = typeToCategory(fromType);
         if (from == to) {
             return true;
         }
+        RuntimeException e = null;
         switch (from) {
         case Category.Array:
             return false;
@@ -280,13 +288,25 @@ public class TypeUtil {
             switch (to) {
             case Category.Member:
             case Category.Tuple:
-                // It's easier to convert dimension to member than dimension
-                // to hierarchy or level.
-                conversionCount[0]++;
-                return true;
             case Category.Hierarchy:
+                final Dimension dimension = fromType.getDimension();
+                if (dimension != null) {
+                    final Hierarchy hierarchy =
+                        FunUtil.getDimensionDefaultHierarchy(dimension);
+                    if (hierarchy == null) {
+                        e = MondrianResource.instance()
+                            .CannotImplicitlyConvertDimensionToHierarchy.ex(
+                                dimension.getName());
+                    }
+                }
+                // It is more difficult to convert dimension->hierarchy than
+                // hierarchy->dimension
+                conversions.add(new ConversionImpl(from, to, 0, 2, e));
+                return true;
             case Category.Level:
-                conversionCount[0] += 2;
+                // It is more difficult to convert dimension->level than
+                // dimension->member or dimension->hierarchy->member.
+                conversions.add(new ConversionImpl(from, to, 0, 3, null));
                 return true;
             default:
                 return false;
@@ -296,7 +316,7 @@ public class TypeUtil {
             case Category.Dimension:
             case Category.Member:
             case Category.Tuple:
-                conversionCount[0]++;
+                conversions.add(new ConversionImpl(from, to, 0, 1, null));
                 return true;
             default:
                 return false;
@@ -308,10 +328,10 @@ public class TypeUtil {
                 // hierarchy. For example, we want '[Store City].CurrentMember'
                 // to resolve to <Hierarchy>.CurrentMember rather than
                 // <Dimension>.CurrentMember.
-                conversionCount[0] += 2;
+                conversions.add(new ConversionImpl(from, to, 0, 2, null));
                 return true;
             case Category.Hierarchy:
-                conversionCount[0]++;
+                conversions.add(new ConversionImpl(from, to, 0, 1, null));
                 return true;
             default:
                 return false;
@@ -329,65 +349,107 @@ public class TypeUtil {
             case Category.Hierarchy:
             case Category.Level:
             case Category.Tuple:
-                conversionCount[0]++;
+                conversions.add(new ConversionImpl(from, to, 0, 1, null));
                 return true;
             case Category.Numeric:
                 // We assume that members are numeric, so a cast to a numeric
                 // expression is less expensive than a conversion to a string
                 // expression.
-                conversionCount[0]++;
+                conversions.add(new ConversionImpl(from, to, 0, 1, null));
                 return true;
             case Category.Value:
             case Category.String:
-                conversionCount[0] += 2;
+                conversions.add(new ConversionImpl(from, to, 0, 2, null));
                 return true;
             default:
                 return false;
             }
         case Category.Numeric | Category.Constant:
-            return to == Category.Value ||
-                to == Category.Numeric;
+            switch (to) {
+            case Category.Value:
+            case Category.Numeric:
+                return true;
+            default:
+                return false;
+            }
         case Category.Numeric:
             switch (to) {
             case Category.Logical:
-                conversionCount[0]++;
+                conversions.add(new ConversionImpl(from, to, 0, 2, null));
+                return true;
+            case Category.Value:
+            case Category.Integer:
+            case (Category.Integer | Category.Constant):
+            case (Category.Numeric | Category.Constant):
                 return true;
             default:
-                return to == Category.Value ||
-                    to == Category.Integer ||
-                    to == (Category.Integer | Category.Constant) ||
-                    to == (Category.Numeric | Category.Constant);
+                return false;
             }
         case Category.Integer:
-            return to == Category.Value ||
-                to == (Category.Integer | Category.Constant) ||
-                to == Category.Numeric ||
-                to == (Category.Numeric | Category.Constant);
+            switch (to) {
+            case Category.Value:
+            case (Category.Integer | Category.Constant):
+            case Category.Numeric:
+            case (Category.Numeric | Category.Constant):
+                return true;
+            default:
+                return false;
+            }
         case Category.Set:
             return false;
         case Category.String | Category.Constant:
-            return to == Category.Value ||
-                to == Category.String;
+            switch (to) {
+            case Category.Value:
+            case Category.String:
+                return true;
+            default:
+                return false;
+            }
         case Category.String:
-            return to == Category.Value ||
-                to == (Category.String | Category.Constant);
+            switch (to) {
+            case Category.Value:
+            case (Category.String | Category.Constant):
+                return true;
+            default:
+                return false;
+            }
         case Category.DateTime | Category.Constant:
-            return to == Category.Value ||
-                to == Category.DateTime;
+            switch (to) {
+            case Category.Value:
+            case Category.DateTime:
+                return true;
+            default:
+                return false;
+            }
         case Category.DateTime:
-            return to == Category.Value ||
-                to == (Category.DateTime | Category.Constant);
+            switch (to) {
+            case Category.Value:
+            case (Category.DateTime | Category.Constant):
+                return true;
+            default:
+                return false;
+            }
         case Category.Tuple:
             switch (to) {
             case Category.Value:
             case Category.Numeric:
-                conversionCount[0]++;
+                conversions.add(new ConversionImpl(from, to, 0, 1, null));
                 return true;
             default:
                 return false;
             }
         case Category.Value:
-            return false;
+            // We can implicitly cast from value to a more specific scalar type,
+            // but the cost is significant.
+            switch (to) {
+            case Category.String:
+            case Category.Numeric:
+            case Category.Logical:
+                conversions.add(new ConversionImpl(from, to, 0, 2, null));
+                return true;
+            default:
+                return false;
+            }
         case Category.Symbol:
             return false;
         case Category.Null:
@@ -396,7 +458,7 @@ public class TypeUtil {
             if (Category.isScalar(to)) {
                 return true;
             } else if (to == Category.Member) {
-                conversionCount[0] += 2;
+                conversions.add(new ConversionImpl(from, to, 0, 2, null));
                 return true;
             } else {
                 return false;
@@ -404,7 +466,8 @@ public class TypeUtil {
         case Category.Empty:
             return false;
         default:
-            throw Util.newInternal("unknown category " + from);
+            throw Util.newInternal(
+                "unknown category " + from + " for type " + fromType);
         }
     }
 
@@ -413,6 +476,70 @@ public class TypeUtil {
             : t2 == null ? t1
                 : t1.equals(t2) ? t1
                     : null;
+    }
+
+    /**
+     * Implementation of {@link mondrian.olap.fun.Resolver.Conversion}.
+     */
+    private static class ConversionImpl implements Resolver.Conversion {
+        final int from;
+        final int to;
+        /**
+         * Which argument. Arguments are 0-based, and in particular the 'this'
+         * of a call of member or method call syntax is argument 0. Argument -1
+         * is the return.
+         */
+        final int ordinal;
+
+        /**
+         * Score of the conversion. A higher value is more onerous and therefore
+         * a call using such a conversion is less likly to be chosen.
+         */
+        final int cost;
+
+        final RuntimeException e;
+
+        /**
+         * Creates a conversion.
+         *
+         * @param from From type
+         * @param to To type
+         * @param ordinal Ordinal of argument
+         * @param cost Cost of conversion
+         * @param e Exception
+         */
+        public ConversionImpl(
+            int from,
+            int to,
+            int ordinal,
+            int cost,
+            RuntimeException e)
+        {
+            this.from = from;
+            this.to = to;
+            this.ordinal = ordinal;
+            this.cost = cost;
+            this.e = e;
+        }
+
+        public int getCost() {
+            return cost;
+        }
+
+        public void checkValid() {
+            if (e != null) {
+                throw e;
+            }
+        }
+
+        // for debug
+        public String toString() {
+            return "Conversion(from=" + Category.instance().getName(from)
+                + ", to=" + Category.instance().getName(to)
+                + ", ordinal="
+                + ordinal + ", cost="
+                + cost + ", e=" + e + ")";
+        }
     }
 }
 

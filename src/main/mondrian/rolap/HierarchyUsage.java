@@ -71,6 +71,9 @@ public class HierarchyUsage {
      * CubeDimension name; there is no need to use the default dimension name.
      * But, when the dimension has more than one hierachy, then the fullName
      * is the CubeDimension dotted with the dimension hierachy name.
+     *
+     * <p>NOTE: jhyde, 2009/2/2: The only use of this field today is for
+     * {@link RolapCube#getUsageByName}, which is used only for tracing.
      */
     private final String fullName;
 
@@ -143,7 +146,7 @@ public class HierarchyUsage {
             MondrianDef.DimensionUsage du =
                 (MondrianDef.DimensionUsage) cubeDim;
 
-            this.hierarchyName = hierarchy.getName();
+            this.hierarchyName = deriveHierarchyName(hierarchy);
             int index = this.hierarchyName.indexOf('.');
             if (index == -1) {
                 this.fullName = this.name;
@@ -178,7 +181,7 @@ public class HierarchyUsage {
             // caption
             MondrianDef.Dimension d = (MondrianDef.Dimension) cubeDim;
 
-            this.hierarchyName = hierarchy.getName();
+            this.hierarchyName = deriveHierarchyName(hierarchy);
             this.fullName = this.name;
 
             this.source = null;
@@ -223,6 +226,23 @@ public class HierarchyUsage {
             getLogger().debug(toString()
                 + ", cubeDim="
                 + cubeDim.getClass().getName());
+        }
+    }
+
+    private String deriveHierarchyName(RolapHierarchy hierarchy) {
+        final String name = hierarchy.getName();
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return name;
+        } else {
+            final String dimensionName = hierarchy.getDimension().getName();
+            if (name == null
+                || name.equals("")
+                || name.equals(dimensionName))
+            {
+                return name;
+            } else {
+                return dimensionName + '.' + name;
+            }
         }
     }
 
@@ -278,7 +298,7 @@ public class HierarchyUsage {
             HierarchyUsage other = (HierarchyUsage) o;
             return (this.kind == other.kind) &&
                 Util.equals(this.fact, other.fact) &&
-                Util.equalName(this.hierarchyName, other.hierarchyName) &&
+                this.hierarchyName.equals(other.hierarchyName) &&
                 Util.equalName(this.name, other.name) &&
                 Util.equalName(this.source, other.source) &&
                 Util.equalName(this.foreignKey, other.foreignKey);

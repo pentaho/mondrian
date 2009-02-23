@@ -575,10 +575,10 @@ public class Util extends XOMUtil {
             // match, then for an after match, return the first child
             // of each subsequent level; for a before match, return the
             // last child
-            if (child != null && !matchType.isExact() &&
-                !Util.equalName(child.getName(), name.name))
+            if (child instanceof Member
+                && !matchType.isExact()
+                && !Util.equalName(child.getName(), name.name))
             {
-                Util.assertPrecondition(child instanceof Member);
                 Member bestChild = (Member) child;
                 for (int j = i + 1; j < names.size(); j++) {
                     List<Member> childrenList =
@@ -2003,7 +2003,24 @@ public class Util extends XOMUtil {
             public void validate(Formula formula) {
             }
 
-            public boolean canConvert(Exp fromExp, int to, int[] conversionCount) {
+            public FunDef getDef(Exp[] args, String name, Syntax syntax) {
+                // Very simple resolution. Assumes that there is precisely
+                // one resolver (i.e. no overloading) and no argument
+                // conversions are necessary.
+                List<Resolver> resolvers = funTable.getResolvers(name, syntax);
+                final Resolver resolver = resolvers.get(0);
+                final List<Resolver.Conversion> conversionList =
+                    new ArrayList<Resolver.Conversion>();
+                final FunDef def = resolver.resolve(args, this, conversionList);
+                assert conversionList.isEmpty();
+                return def;
+            }
+
+            public boolean canConvert(
+                Exp fromExp,
+                int to,
+                List<Resolver.Conversion> conversions)
+            {
                 return true;
             }
 
@@ -2020,7 +2037,8 @@ public class Util extends XOMUtil {
                 String name,
                 Type type,
                 Exp defaultExp,
-                String description) {
+                String description)
+            {
                 return null;
             }
         };

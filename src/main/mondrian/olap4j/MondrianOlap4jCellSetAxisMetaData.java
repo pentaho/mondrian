@@ -43,7 +43,7 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
     {
         if (queryAxis == null) {
             queryAxis = new QueryAxis(
-                false, null, AxisOrdinal.SLICER,
+                false, null, AxisOrdinal.StandardAxisOrdinal.SLICER,
                 QueryAxis.SubtotalVisibility.Undefined);
         }
         this.queryAxis = queryAxis;
@@ -63,7 +63,7 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
     }
 
     public List<Hierarchy> getHierarchies() {
-        if (queryAxis.getAxisOrdinal() == AxisOrdinal.SLICER) {
+        if (queryAxis.getAxisOrdinal().isFilter()) {
             // Slicer contains all dimensions not mentioned on other axes.
             // The list contains the default hierarchy of
             // each dimension not already in the slicer or in another axes.

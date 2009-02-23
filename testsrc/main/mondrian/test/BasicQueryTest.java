@@ -45,6 +45,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     public BasicQueryTest() {
         super();
     }
+
     public BasicQueryTest(String name) {
         super(name);
     }
@@ -6070,7 +6071,26 @@ public class BasicQueryTest extends FoodMartTestCase {
             "select [Gender].Members on 0,"
                 + " [Measures].Members on 10 "
                 + "from [Sales]",
-            "Invalid axis specification. The axis number must be an integer between 0 and 5, but it was 10.");
+            "Axis numbers specified in a query must be sequentially specified," +
+                " and cannot contain gaps. Axis 1 (ROWS) is missing.");
+
+        assertThrows(
+            "select [Gender].Members on columns,"
+                + " [Measures].Members on foobar\n"
+                + "from [Sales]",
+            "Syntax error at line 1, column 59, token 'foobar'");
+
+        assertThrows(
+            "select [Gender].Members on columns,"
+                + " [Measures].Members on slicer\n"
+                + "from [Sales]",
+            "Syntax error at line 1, column 59, token 'slicer'");
+
+        assertThrows(
+            "select [Gender].Members on columns,"
+                + " [Measures].Members on filter\n"
+                + "from [Sales]",
+            "Syntax error at line 1, column 59, token 'filter'");
     }
 
     /**

@@ -1041,7 +1041,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "   <Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"" +
             "      primaryKey=\"employee_id\" primaryKeyTable=\"employee\">" +
             "      <Table name=\"employee\"/>" +
-            "      <Level name=\"Employee Name\" type=\"String\" uniqueMembers=\"true\"" +
+            "      <Level name=\"Employee Name\" type=\"Numeric\" uniqueMembers=\"true\"" +
             "         column=\"employee_id\" parentColumn=\"supervisor_id\"" +
             "         nameColumn=\"full_name\" nullParentValue=\"0\">" +
             "         <Closure parentColumn=\"supervisor_id\" childColumn=\"employee_id\">" +

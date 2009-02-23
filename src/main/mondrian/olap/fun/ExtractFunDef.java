@@ -36,17 +36,22 @@ class ExtractFunDef extends FunDefBase {
         "Returns a set of tuples from extracted dimension elements. The opposite of Crossjoin.",
         Syntax.Function) {
         public FunDef resolve(
-            Exp[] args, Validator validator, int[] conversionCount) {
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
+        {
             if (args.length < 2) {
                 return null;
             }
             if (!validator.canConvert(
-                args[0], Category.Set, conversionCount)) {
+                args[0], Category.Set, conversions))
+            {
                 return null;
             }
             for (int i = 1; i < args.length; ++i) {
                 if (!validator.canConvert(
-                    args[i], Category.Dimension, conversionCount)) {
+                    args[i], Category.Dimension, conversions))
+                {
                     return null;
                 }
             }

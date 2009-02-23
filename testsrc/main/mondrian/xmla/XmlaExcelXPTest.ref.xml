@@ -1555,7 +1555,7 @@ The default value for this property is an empty string.</PropertyDescription>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in
                             SQFT].[Store Sqft],[Store Type].[Store
-                            Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product
+                            Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product
                             Name],[Promotion Media].[Media
                             Type],[Promotions].[Promotion
                             Name],[Customers].[Name],[Education
@@ -1613,7 +1613,7 @@ The default value for this property is an empty string.</PropertyDescription>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in
                             SQFT].[Store Sqft],[Store Type].[Store
-                            Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product
+                            Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product
                             Name],[Promotion Media].[Media
                             Type],[Promotions].[Promotion
                             Name],[Customers].[Name],[Education
@@ -1635,7 +1635,7 @@ The default value for this property is an empty string.</PropertyDescription>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in
                             SQFT].[Store Sqft],[Store Type].[Store
-                            Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product
+                            Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product
                             Name],[Promotion Media].[Media
                             Type],[Promotions].[Promotion
                             Name],[Customers].[Name],[Education
@@ -1657,7 +1657,7 @@ The default value for this property is an empty string.</PropertyDescription>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in
                             SQFT].[Store Sqft],[Store Type].[Store
-                            Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product
+                            Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product
                             Name],[Promotion Media].[Media
                             Type],[Promotions].[Promotion
                             Name],[Customers].[Name],[Education
@@ -1679,7 +1679,7 @@ The default value for this property is an empty string.</PropertyDescription>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in
                             SQFT].[Store Sqft],[Store Type].[Store
-                            Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product
+                            Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product
                             Name],[Promotion Media].[Media
                             Type],[Promotions].[Promotion
                             Name],[Customers].[Name],[Education
@@ -1701,7 +1701,7 @@ The default value for this property is an empty string.</PropertyDescription>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in
                             SQFT].[Store Sqft],[Store Type].[Store
-                            Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product
+                            Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product
                             Name],[Promotion Media].[Media
                             Type],[Promotions].[Promotion
                             Name],[Customers].[Name],[Education
@@ -2510,7 +2510,7 @@ The default value for this property is an empty string.</PropertyDescription>
             <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
             <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
             <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-            <DESCRIPTION>Sales Cube - Time HierarchyYear Level</DESCRIPTION>
+            <DESCRIPTION>Sales Cube - Time Hierarchy - Year Level</DESCRIPTION>
           </row>
           <row>
             <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -2527,7 +2527,7 @@ The default value for this property is an empty string.</PropertyDescription>
             <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
             <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
             <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-            <DESCRIPTION>Sales Cube - Time HierarchyQuarter Level</DESCRIPTION>
+            <DESCRIPTION>Sales Cube - Time Hierarchy - Quarter Level</DESCRIPTION>
           </row>
           <row>
             <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -2544,7 +2544,7 @@ The default value for this property is an empty string.</PropertyDescription>
             <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
             <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
             <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-            <DESCRIPTION>Sales Cube - Time HierarchyMonth Level</DESCRIPTION>
+            <DESCRIPTION>Sales Cube - Time Hierarchy - Month Level</DESCRIPTION>
           </row>
         </root>
       </xmla:return>
@@ -2793,7 +2793,7 @@ The default value for this property is an empty string.</PropertyDescription>
             <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
             <LEVEL_UNIQUE_SETTINGS>3</LEVEL_UNIQUE_SETTINGS>
             <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-            <DESCRIPTION>Sales Cube - Customers Hierarchy(All) Level</DESCRIPTION>
+            <DESCRIPTION>Sales Cube - Customers Hierarchy - (All) Level</DESCRIPTION>
           </row>
           <row>
             <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -2810,7 +2810,7 @@ The default value for this property is an empty string.</PropertyDescription>
             <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
             <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
             <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-            <DESCRIPTION>Sales Cube - Customers HierarchyCountry Level</DESCRIPTION>
+            <DESCRIPTION>Sales Cube - Customers Hierarchy - Country Level</DESCRIPTION>
           </row>
           <row>
             <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -2827,7 +2827,7 @@ The default value for this property is an empty string.</PropertyDescription>
             <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
             <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
             <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-            <DESCRIPTION>Sales Cube - Customers HierarchyState Province Level</DESCRIPTION>
+            <DESCRIPTION>Sales Cube - Customers Hierarchy - State Province Level</DESCRIPTION>
           </row>
           <row>
             <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -2844,7 +2844,7 @@ The default value for this property is an empty string.</PropertyDescription>
             <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
             <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
             <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-            <DESCRIPTION>Sales Cube - Customers HierarchyCity Level</DESCRIPTION>
+            <DESCRIPTION>Sales Cube - Customers Hierarchy - City Level</DESCRIPTION>
           </row>
           <row>
             <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -2861,7 +2861,7 @@ The default value for this property is an empty string.</PropertyDescription>
             <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
             <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
             <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-            <DESCRIPTION>Sales Cube - Customers HierarchyName Level</DESCRIPTION>
+            <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level</DESCRIPTION>
           </row>
         </root>
       </xmla:return>

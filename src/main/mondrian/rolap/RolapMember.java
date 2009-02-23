@@ -450,9 +450,23 @@ public class RolapMember extends MemberBase {
 
     protected void setUniqueName(Object key) {
         String name = keyToString(key);
-        this.uniqueName = (parentMember == null)
-            ? Util.makeFqName(getHierarchy(), name)
-            : Util.makeFqName(parentMember, name);
+        if (parentMember == null) {
+            final RolapHierarchy hierarchy = getHierarchy();
+            final Dimension dimension = hierarchy.getDimension();
+            if (/* dimension.getHierarchies().length == 1
+                && */ hierarchy.getName().equals(dimension.getName()))
+            {
+                // Kludge to ensure that calc members are called
+                // [Measures].[Foo] not [Measures].[Measures].[Foo]. We can
+                // remove this code when we revisit the scheme to generate
+                // member unique names.
+                this.uniqueName = Util.makeFqName(dimension, name);
+            } else {
+                this.uniqueName = Util.makeFqName(hierarchy, name);
+            }
+        } else {
+            this.uniqueName = Util.makeFqName(parentMember, name);
+        }
     }
 
     public boolean isCalculatedInQuery() {

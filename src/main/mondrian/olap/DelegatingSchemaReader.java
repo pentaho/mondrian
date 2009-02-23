@@ -44,6 +44,14 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getRole();
     }
 
+    public List<Dimension> getCubeDimensions(Cube cube) {
+        return schemaReader.getCubeDimensions(cube);
+    }
+
+    public List<Hierarchy> getDimensionHierarchies(Dimension dimension) {
+        return schemaReader.getDimensionHierarchies(dimension);
+    }
+
     public List<Member> getHierarchyRootMembers(Hierarchy hierarchy) {
         return schemaReader.getHierarchyRootMembers(hierarchy);
     }
@@ -98,7 +106,7 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         boolean failIfNotFound, int category, MatchType matchType)
     {
         return schemaReader.lookupCompound(
-                parent, names, failIfNotFound, category, matchType);
+            parent, names, failIfNotFound, category, matchType);
     }
 
     public Member getCalculatedMember(List<Id.Segment> nameParts) {
@@ -192,10 +200,6 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
 
     public List<Member> getMemberChildren(List<Member> members, Evaluator context) {
       return schemaReader.getMemberChildren(members, context);
-    }
-
-    public Member lookupMemberChildByName(Member member,Id.Segment memberName) {
-        return lookupMemberChildByName(member, memberName, MatchType.EXACT);
     }
 
     public Member lookupMemberChildByName(

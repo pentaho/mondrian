@@ -20,7 +20,7 @@ package mondrian.test;
  */
 public class RaggedHierarchyTest extends FoodMartTestCase {
     private void assertRaggedReturns(String expression, String expected) {
-        getTestContext("[Sales Ragged]").assertAxisReturns(expression, expected);
+        getTestContext().withCube("[Sales Ragged]").assertAxisReturns(expression, expected);
     }
 
     // ~ The tests ------------------------------------------------------------

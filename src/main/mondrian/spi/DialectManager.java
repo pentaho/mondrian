@@ -19,9 +19,9 @@ import java.sql.SQLException;
 import java.util.*;
 import java.lang.reflect.*;
 
-
 /**
- * Manages {@link mondrian.spi.Dialect} and {@link DialectFactory} objects.
+ * Manages {@link mondrian.spi.Dialect} and {@link mondrian.spi.DialectFactory}
+ * objects.
  *
  * @author jhyde
  * @version $Id$
@@ -51,6 +51,8 @@ public abstract class DialectManager {
 
     /**
      * Registers a Dialect class.
+     *
+     * @param dialectClass Dialect class
      */
     public static void register(Class<? extends Dialect> dialectClass) {
         IMPL.register(dialectClass);
@@ -193,6 +195,8 @@ public abstract class DialectManager {
 
         /**
          * Implements {@link DialectManager#register(DialectFactory)}.
+         *
+         * @param factory Dialect factory
          */
         synchronized void register(DialectFactory factory) {
             if (factory == null) {
@@ -203,6 +207,8 @@ public abstract class DialectManager {
 
         /**
          * Implements {@link DialectManager#register(Class)}.
+         *
+         * @param dialectClass Dialect class
          */
         synchronized void register(Class<? extends Dialect> dialectClass) {
             if (dialectClass == null) {
@@ -315,7 +321,6 @@ public abstract class DialectManager {
             }
 
             // Connection is not null. Invoke the constructor.
-            assert connection != null;
             try {
                 return constructor.newInstance(connection);
             } catch (InstantiationException e) {

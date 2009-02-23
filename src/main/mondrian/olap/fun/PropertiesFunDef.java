@@ -14,6 +14,8 @@ import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 
+import java.util.List;
+
 /**
  * Definition of the <code>Properties</code> MDX function.
  *
@@ -75,7 +77,10 @@ class PropertiesFunDef extends FunDefBase {
         }
 
         public FunDef resolve(
-                Exp[] args, Validator validator, int[] conversionCount) {
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
+        {
             final int[] argTypes = new int[]{Category.Member, Category.String};
             final Exp propertyNameExp = args[1];
             final Exp memberExp = args[0];
@@ -86,7 +91,7 @@ class PropertiesFunDef extends FunDefBase {
             }
             int returnType = deducePropertyCategory(memberExp, propertyNameExp);
             return new PropertiesFunDef(
-                getName(), getSignature(), getDescription(),getSyntax(),
+                getName(), getSignature(), getDescription(), getSyntax(),
                 returnType, argTypes);
         }
 

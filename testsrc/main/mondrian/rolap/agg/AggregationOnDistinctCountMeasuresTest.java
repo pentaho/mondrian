@@ -1032,10 +1032,11 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Red Wing],\n" +
             "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Sunset]} *\n" +
             "{[Gender].[Gender].Members})'\n" +
-            "SELECT {Product.Agg} on 0, {[Measures].[Customer Count]} on 1 from Sales";
-        String expected = fold(
-            "Axis #0:\n" +
-            "{}\n" +
+            "SELECT {Product.Agg} on 0, {[Measures].[Customer Count]} on 1\n" +
+            "from Sales\n" +
+            "where [Time.Weekly].[1997]";
+        String expected = fold("Axis #0:\n" +
+            "{[Time].[Weekly].[All Weeklys].[1997]}\n" +
             "Axis #1:\n" +
             "{[Product].[Agg]}\n" +
             "Axis #2:\n" +
@@ -1049,7 +1050,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "\"product\" as \"product\", \"product_class\" as \"product_class\" " +
             "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
             "and \"time_by_day\".\"the_year\" = 1997 and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" " +
-            "and \"product\".\"product_claid\" = \"product_class\".\"product_claid\" " +
+            "and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
             "and (((\"product\".\"brand_name\" = 'Red Wing' and \"product_class\".\"product_subcategory\" = 'Pot Scrubbers' " +
             "and \"product_class\".\"product_category\" = 'Kitchen Products' " +
             "and \"product_class\".\"product_department\" = 'Household' " +
@@ -1074,7 +1075,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "select `d0` as `c0`, count(`m0`) as `c1` from (select distinct `time_by_day`.`the_year` as `d0`, `sales_fact_1997`.`customer_id` as `m0` " +
             "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `product` as `product`, `product_class` as `product_class` " +
             "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 " +
-            "and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_claid` = `product_class`.`product_claid` " +
+            "and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` " +
             "and (((`product`.`brand_name` = 'High Quality' and `product_class`.`product_subcategory` = 'Pot Scrubbers' " +
             "and `product_class`.`product_category` = 'Kitchen Products' and `product_class`.`product_department` = 'Household' " +
             "and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'Denny' " +

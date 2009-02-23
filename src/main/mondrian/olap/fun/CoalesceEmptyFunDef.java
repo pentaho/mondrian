@@ -14,6 +14,8 @@ import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 
+import java.util.List;
+
 /**
  * Definition of the <code>CoalesceEmpty</code> MDX function.
  *
@@ -63,7 +65,10 @@ public class CoalesceEmptyFunDef extends FunDefBase {
         }
 
         public FunDef resolve(
-                Exp[] args, Validator validator, int[] conversionCount) {
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
+        {
             if (args.length < 1) {
                 return null;
             }
@@ -71,9 +76,9 @@ public class CoalesceEmptyFunDef extends FunDefBase {
             final int[] argTypes = new int[args.length];
             for (int type : types) {
                 int matchingArgs = 0;
-                conversionCount[0] = 0;
+                conversions.clear();
                 for (int i = 0; i < args.length; i++) {
-                    if (validator.canConvert(args[i], type, conversionCount)) {
+                    if (validator.canConvert(args[i], type, conversions)) {
                         matchingArgs++;
                     }
                     argTypes[i] = type;

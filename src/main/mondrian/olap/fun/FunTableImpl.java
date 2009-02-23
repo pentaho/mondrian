@@ -3,22 +3,22 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2006 Julian Hyde
+// Copyright (C) 2002-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.mdx.UnresolvedFunCall;
 import mondrian.olap.*;
-import mondrian.resource.MondrianResource;
+import mondrian.util.Pair;
 
 import java.util.*;
 
 /**
  * Abstract implementation of {@link FunTable}.
  *
- * <p>The derived class must implement {@link #defineFunctions()} to define
+ * <p>The derived class must implement
+ * {@link #defineFunctions(mondrian.olap.fun.FunTableImpl.Builder)} to define
  * each function which will be recognized by this table. This method is called
  * from the constructor, after which point, no further functions can be added.
  */
@@ -26,15 +26,13 @@ public abstract class FunTableImpl implements FunTable {
     /**
      * Maps the upper-case name of a function plus its
      * {@link mondrian.olap.Syntax} to an array of
-     * {@link mondrian.olap.Validator} objects for that name.
+     * {@link Resolver} objects for that name.
      */
-    protected final Map<String, List<Resolver>> mapNameToResolvers =
-        new HashMap<String, List<Resolver>>();
-    private final Set<String> reservedWords = new HashSet<String>();
-    private final Set<String> propertyWords = new HashSet<String>();
-    /** used during initialization */
-    protected final List<Resolver> resolverList = new ArrayList<Resolver>();
-    protected final List<FunInfo> funInfoList = new ArrayList<FunInfo>();
+    private Map<Pair<String, Syntax>, List<Resolver>> mapNameToResolvers;
+    private Set<String> reservedWordSet;
+    private List<String> reservedWordList;
+    private Set<String> propertyWords;
+    private List<FunInfo> funInfoList;
 
     protected FunTableImpl() {
     }
@@ -42,125 +40,46 @@ public abstract class FunTableImpl implements FunTable {
     /**
      * Initializes the function table.
      */
-    public void init() {
-        defineFunctions();
-        organizeFunctions();
-    }
+    public final void init() {
+        final BuilderImpl builder = new BuilderImpl();
+        defineFunctions(builder);
+        builder.organizeFunctions();
 
-    protected static String makeResolverKey(String name, Syntax syntax) {
-        return name.toUpperCase() + "$" + syntax;
-    }
-
-    protected void define(FunDef funDef) {
-        define(new SimpleResolver(funDef));
-    }
-
-    protected void define(Resolver resolver) {
-        addFunInfo(resolver);
-        if (resolver.getSyntax() == Syntax.Property) {
-            defineProperty(resolver.getName());
-        }
-        resolverList.add(resolver);
-        final String[] reservedWords = resolver.getReservedWords();
-        for (String reservedWord : reservedWords) {
-            defineReserved(reservedWord);
-        }
-    }
-
-    protected void addFunInfo(Resolver resolver) {
-        this.funInfoList.add(FunInfo.make(resolver));
-    }
-
-    public FunDef getDef(
-            Exp[] args, Validator validator, String funName, Syntax syntax) {
-        String key = makeResolverKey(funName, syntax);
-
-        // Resolve function by its upper-case name first.  If there is only one
-        // function with that name, stop immediately.  If there is more than
-        // function, use some custom method, which generally involves looking
-        // at the type of one of its arguments.
-        String signature = syntax.getSignature(funName,
-                Category.Unknown, ExpBase.getTypes(args));
-        List<Resolver> resolvers = mapNameToResolvers.get(key);
-        if (resolvers == null) {
-            resolvers = Collections.emptyList();
-        }
-
-        int[] conversionCount = new int[] {0};
-        int minConversions = Integer.MAX_VALUE;
-        int matchCount = 0;
-        FunDef matchDef = null;
-        for (Resolver resolver : resolvers) {
-            conversionCount[0] = 0;
-            FunDef def = resolver.resolve(args, validator, conversionCount);
-            if (def != null) {
-                int conversions = conversionCount[0];
-                if (conversions < minConversions) {
-                    minConversions = conversions;
-                    matchCount = 1;
-                    matchDef = def;
-                } else if (conversions == minConversions) {
-                    matchCount++;
-                } else {
-                    // ignore this match -- it required more coercions than
-                    // other overloadings we've seen
-                }
-            }
-        }
-        switch (matchCount) {
-        case 0:
-            throw MondrianResource.instance().NoFunctionMatchesSignature.ex(
-                    signature);
-        case 1:
-            final String matchKey = makeResolverKey(matchDef.getName(),
-                    matchDef.getSyntax());
-            Util.assertTrue(matchKey.equals(key), matchKey);
-            return matchDef;
-        default:
-            throw MondrianResource.instance().MoreThanOneFunctionMatchesSignature.ex(signature);
-        }
-    }
-
-    public boolean requiresExpression(
-            UnresolvedFunCall call,
-            int k,
-            Validator validator) {
-        // The function call has not been resolved yet. In fact, this method
-        // may have been invoked while resolving the child. Consider this:
-        //   CrossJoin([Measures].[Unit Sales] * [Measures].[Store Sales])
-        //
-        // In order to know whether to resolve '*' to the multiplication
-        // operator (which returns a scalar) or the crossjoin operator (which
-        // returns a set) we have to know what kind of expression is expected.
-        String key = makeResolverKey(call.getFunName(), call.getSyntax());
-        List<Resolver> resolvers = mapNameToResolvers.get(key);
-        if (resolvers == null) {
-            resolvers = Collections.emptyList();
-        }
-        for (Resolver resolver2 : resolvers) {
-            if (!resolver2.requiresExpression(k)) {
-                // This resolver accepts a set in this argument position,
-                // therefore we don't REQUIRE a scalar expression.
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public List<String> getReservedWords() {
-        return new ArrayList<String>(reservedWords);
-    }
-
-    public boolean isReserved(String s) {
-        return reservedWords.contains(s.toUpperCase());
+        // Copy information out of builder into this.
+        this.funInfoList = Collections.unmodifiableList(builder.funInfoList);
+        this.mapNameToResolvers =
+            Collections.unmodifiableMap(builder.mapNameToResolvers);
+        this.reservedWordSet = builder.reservedWords;
+        final String[] reservedWords =
+            builder.reservedWords.toArray(
+                new String[builder.reservedWords.size()]);
+        Arrays.sort(reservedWords);
+        this.reservedWordList =
+            Collections.unmodifiableList(Arrays.asList(reservedWords));
+        this.propertyWords = Collections.unmodifiableSet(builder.propertyWords);
     }
 
     /**
-     * Defines a reserved word.
-     * @see #isReserved
+     * Creates a key to look up an operator in the resolver map. The key
+     * consists of the uppercase function name and the syntax.
+     *
+     * @param name Function/operator name
+     * @param syntax Syntax
+     * @return Key
      */
-    protected void defineReserved(String s) {
-        reservedWords.add(s.toUpperCase());
+    private static Pair<String, Syntax> makeResolverKey(
+        String name,
+        Syntax syntax)
+    {
+        return new Pair<String, Syntax>(name.toUpperCase(), syntax);
+    }
+
+    public List<String> getReservedWords() {
+        return reservedWordList;
+    }
+
+    public boolean isReserved(String s) {
+        return reservedWordSet.contains(s.toUpperCase());
     }
 
     public List<Resolver> getResolvers() {
@@ -175,46 +94,94 @@ public abstract class FunTableImpl implements FunTable {
         return propertyWords.contains(s.toUpperCase());
     }
 
-    /**
-     * Defines a word matching a property function name.
-     * @see #isProperty
-     */
-    protected void defineProperty(String s) {
-        propertyWords.add(s.toUpperCase());
-    }
-
     public List<FunInfo> getFunInfoList() {
-        return Collections.unmodifiableList(this.funInfoList);
+        return funInfoList;
+    }
+
+    public List<Resolver> getResolvers(String name, Syntax syntax) {
+        Pair<String, Syntax> key = makeResolverKey(name, syntax);
+        List<Resolver> resolvers = mapNameToResolvers.get(key);
+        if (resolvers == null) {
+            resolvers = Collections.emptyList();
+        }
+        return resolvers;
     }
 
     /**
-     * Indexes the collection of functions.
+     * Implementation of {@link Builder}. Functions are added to lists each time
+     * {@link #define(Resolver)} is called, then {@link #organizeFunctions()}
+     * sorts and indexes the map.
      */
-    protected void organizeFunctions() {
-        Collections.sort(funInfoList);
-        // Map upper-case function names to resolvers.
-        for (Resolver resolver : resolverList) {
-            String key = makeResolverKey(resolver.getName(),
-                resolver.getSyntax());
-            List<Resolver> list = mapNameToResolvers.get(key);
-            if (list == null) {
-                list = new ArrayList<Resolver>();
-                mapNameToResolvers.put(key, list);
+    private class BuilderImpl implements Builder {
+        private final List<Resolver> resolverList = new ArrayList<Resolver>();
+        private final List<FunInfo> funInfoList = new ArrayList<FunInfo>();
+        private final Map<Pair<String, Syntax>, List<Resolver>>
+            mapNameToResolvers =
+            new HashMap<Pair<String, Syntax>, List<Resolver>>();
+        private final Set<String> reservedWords = new HashSet<String>();
+        private final Set<String> propertyWords = new HashSet<String>();
+
+        public void define(FunDef funDef) {
+            define(new SimpleResolver(funDef));
+        }
+
+        public void define(Resolver resolver) {
+            funInfoList.add(FunInfo.make(resolver));
+            if (resolver.getSyntax() == Syntax.Property) {
+                propertyWords.add(resolver.getName().toUpperCase());
             }
-            list.add(resolver);
+            resolverList.add(resolver);
+            final String[] reservedWords = resolver.getReservedWords();
+            for (String reservedWord : reservedWords) {
+                defineReserved(reservedWord);
+            }
+        }
+
+        public void define(FunInfo funInfo) {
+            funInfoList.add(funInfo);
+        }
+
+        public void defineReserved(String s) {
+            reservedWords.add(s.toUpperCase());
+        }
+
+        /**
+         * Indexes the collection of functions.
+         */
+        protected void organizeFunctions() {
+            Collections.sort(funInfoList);
+
+            // Map upper-case function names to resolvers.
+            final List<List<Resolver>> nonSingletonResolverLists =
+                new ArrayList<List<Resolver>>();
+            for (Resolver resolver : resolverList) {
+                Pair<String, Syntax> key =
+                    makeResolverKey(
+                        resolver.getName(),
+                        resolver.getSyntax());
+                List<Resolver> list = mapNameToResolvers.get(key);
+                if (list == null) {
+                    list = new ArrayList<Resolver>();
+                    mapNameToResolvers.put(key, list);
+                }
+                list.add(resolver);
+                if (list.size() == 2) {
+                    nonSingletonResolverLists.add(list);
+                }
+            }
+
+            // Sort lists by signature (skipping singleton lists)
+            final Comparator<Resolver> comparator =
+                new Comparator<Resolver>() {
+                    public int compare(Resolver o1, Resolver o2) {
+                        return o1.getSignature().compareTo(o2.getSignature());
+                    }
+                };
+            for (List<Resolver> resolverList : nonSingletonResolverLists) {
+                Collections.sort(resolverList, comparator);
+            }
         }
     }
-
-    /**
-     * This method is called from the constructor, to define the set of
-     * functions and reserved words recognized.
-     *
-     * <p>Each function is declared by calling {@link #define}. Each reserved
-     * word is declared by calling {@link #defineReserved(String)}.
-     *
-     * <p>Derived class can override this method to add more functions.
-     */
-    protected abstract void defineFunctions();
 }
 
 // End FunTableImpl.java

@@ -346,6 +346,8 @@ public class BatchTestCase extends FoodMartTestCase {
     {
         Connection connection = testContext.getConnection();
 
+        mdxQuery = testContext.upgradeQuery(mdxQuery);
+
         // Run the test once for each pattern in this dialect.
         // (We could optimize and run it once, collecting multiple queries, and
         // comparing all queries at the end.)

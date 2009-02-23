@@ -3315,17 +3315,6 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <FUNCTION_NAME>AllMembers</FUNCTION_NAME>
                         <DESCRIPTION>Returns a set that contains all
                             members, including calculated members, of
-                            the specified dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>AllMembers</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>AllMembers</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a set that contains all
-                            members, including calculated members, of
                             the specified hierarchy.</DESCRIPTION>
                         <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
@@ -3909,16 +3898,6 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <FUNCTION_NAME>CurrentMember</FUNCTION_NAME>
                         <DESCRIPTION>Returns the current member along a
-                            dimension during an iteration.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>CurrentMember</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>CurrentMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the current member along a
                             hierarchy during an iteration.</DESCRIPTION>
                         <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
@@ -4088,15 +4067,6 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>DDB</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>DefaultMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the default member of a dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>DefaultMember</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>DefaultMember</FUNCTION_NAME>
@@ -5700,15 +5670,6 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Median</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>Members</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of members in a dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>Members</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Members</FUNCTION_NAME>
@@ -7725,13 +7686,13 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Time.Weekly]</HIERARCHY_UNIQUE_NAME>
+                        <HIERARCHY_NAME>Weekly</HIERARCHY_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
                         <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
                         <DIMENSION_TYPE>1</DIMENSION_TYPE>
                         <HIERARCHY_CARDINALITY>837</HIERARCHY_CARDINALITY>
-                        <DEFAULT_MEMBER>[Time.Weekly].[All Time.Weeklys].[1997]</DEFAULT_MEMBER>
-                        <ALL_MEMBER>[Time.Weekly].[All Time.Weeklys]</ALL_MEMBER>
+                        <DEFAULT_MEMBER>[Time].[Weekly].[All Weeklys]</DEFAULT_MEMBER>
+                        <ALL_MEMBER>[Time].[Weekly].[All Weeklys]</ALL_MEMBER>
                         <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy</DESCRIPTION>
                         <STRUCTURE>0</STRUCTURE>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
@@ -7889,7 +7850,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>3</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy(All) Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -7906,7 +7867,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Customers HierarchyCountry Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -7923,7 +7884,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Customers HierarchyState Province Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy - State Province Level</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -7940,7 +7901,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Customers HierarchyCity Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy - City Level</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -7957,7 +7918,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Customers HierarchyName Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level</DESCRIPTION>
                     </row>
                 </root>
             </xmla:return>
@@ -8087,8 +8048,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Customers
-                            HierarchyState Province Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy - State Province Level</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -8105,8 +8065,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Customers
-                            HierarchyCity Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy - City Level</DESCRIPTION>
                     </row>
                 </root>
             </cxmla:return>
@@ -8220,7 +8179,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_AGGREGATOR>0</MEASURE_AGGREGATOR>
                         <DATA_TYPE>3</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Customer Count Member</DESCRIPTION>
                     </row>
                     <row>
@@ -8269,7 +8228,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Promotion Sales Member</DESCRIPTION>
                     </row>
                     <row>
@@ -8282,7 +8241,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_AGGREGATOR>2</MEASURE_AGGREGATOR>
                         <DATA_TYPE>3</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Sales Count Member</DESCRIPTION>
                     </row>
                     <row>
@@ -8295,7 +8254,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Store Cost Member</DESCRIPTION>
                     </row>
                     <row>
@@ -8308,7 +8267,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Store Sales Member</DESCRIPTION>
                     </row>
                     <row>
@@ -8321,7 +8280,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Unit Sales Member</DESCRIPTION>
                     </row>
                 </root>
@@ -12312,7 +12271,7 @@ The default value of this property is the empty string,in which case, all fields
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>3</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Marital Status Hierarchy(All) Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Marital Status Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -12329,7 +12288,7 @@ The default value of this property is the empty string,in which case, all fields
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Marital Status HierarchyMarital Status Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Marital Status Hierarchy - Marital Status Level</DESCRIPTION>
                     </row>
                 </root>
             </cxmla:return>

@@ -151,10 +151,6 @@ public class TestMember implements Member {
         throw new UnsupportedOperationException();
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, Id.Segment s) {
-        throw new UnsupportedOperationException();
-    }
-
     public OlapElement lookupChild(
         SchemaReader schemaReader, Id.Segment s, MatchType matchType) {
         throw new UnsupportedOperationException();
@@ -206,11 +202,6 @@ public class TestMember implements Member {
         }
 
         public String getDescription() {
-            throw new UnsupportedOperationException();
-        }
-
-        public OlapElement lookupChild(SchemaReader schemaReader,
-                Id.Segment s) {
             throw new UnsupportedOperationException();
         }
 

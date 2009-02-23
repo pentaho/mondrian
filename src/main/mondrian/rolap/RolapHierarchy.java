@@ -77,26 +77,55 @@ public class RolapHierarchy extends HierarchyBase {
     RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll) {
         super(dimension, subName, hasAll);
         this.allLevelName = "(All)";
-        this.allMemberName = "All " + name + "s";
+        this.allMemberName =
+            subName != null
+                && MondrianProperties.instance().SsasCompatibleNaming.get()
+                ? "All " + subName + "s"
+                : "All " + name + "s";
         if (hasAll) {
             this.levels = new RolapLevel[1];
-            this.levels[0] = new RolapLevel(
-                    this, 0, this.allLevelName, null, null, null, null,
-                    null, null, null, RolapProperty.emptyArray, RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE, null,
-                    RolapLevel.HideMemberCondition.Never, LevelType.Regular, "");
+            this.levels[0] =
+                new RolapLevel(
+                    this,
+                    0,
+                    this.allLevelName,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    RolapProperty.emptyArray,
+                    RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE,
+                    null,
+                    RolapLevel.HideMemberCondition.Never,
+                    LevelType.Regular,
+                    "");
         } else {
             this.levels = new RolapLevel[0];
         }
 
         // The null member belongs to a level with very similar properties to
         // the 'all' level.
-        this.nullLevel = new RolapLevel(
-                this, 0, this.allLevelName, null, null, null, null, null, null,
-                null, RolapProperty.emptyArray,
+        this.nullLevel =
+            new RolapLevel(
+                this,
+                0,
+                this.allLevelName,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                RolapProperty.emptyArray,
                 RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE,
                 null,
                 RolapLevel.HideMemberCondition.Never,
-                LevelType.Null, "");
+                LevelType.Null,
+                "");
     }
 
     /**
@@ -235,18 +264,27 @@ public class RolapHierarchy extends HierarchyBase {
             List<Id.Segment> uniqueNameParts =
                 Util.parseIdentifier(defaultMemberName);
 
-            // We strip off the parent dimension name if the defaultMemberName
-            // is the full unique name, [Time].[2004] rather than simply
-            // [2004].
-            //Dimension dim = getDimension();
-            // What we should strip off is hierarchy name
-            if (this.name.equals(uniqueNameParts.get(0).name)) {
-                uniqueNameParts =
-                    uniqueNameParts.subList(1, uniqueNameParts.size());
-            }
+            // First look up from within this hierarchy. Works for unqualified
+            // names, e.g. [USA].[CA].
+            defaultMember = (Member) Util.lookupCompound(
+                getRolapSchema().getSchemaReader(),
+                this,
+                uniqueNameParts,
+                false,
+                Category.Member,
+                MatchType.EXACT);
 
-            // Now lookup the name from the hierarchy's members.
-            defaultMember = memberReader.lookupMember(uniqueNameParts, false);
+            // Next look up within global context. Works for qualified names,
+            // e.g. [Store].[USA].[CA] or [Time].[Weekly].[1997].[Q2].
+            if (defaultMember == null) {
+                defaultMember = (Member) Util.lookupCompound(
+                    getRolapSchema().getSchemaReader(),
+                    new DummyElement(),
+                    uniqueNameParts,
+                    false,
+                    Category.Member,
+                    MatchType.EXACT);
+            }
             if (defaultMember == null) {
                 throw Util.newInternal(
                     "Can not find Default Member with name \""
@@ -752,7 +790,7 @@ public class RolapHierarchy extends HierarchyBase {
             dimension.isHighCardinality());
 
         // Create a peer hierarchy.
-        RolapHierarchy peerHier = peerDimension.newHierarchy(subName, true);
+        RolapHierarchy peerHier = peerDimension.newHierarchy(null, true);
         peerHier.allMemberName = getAllMemberName();
         peerHier.allMember = getAllMember();
         peerHier.allLevelName = getAllLevelName();
@@ -1000,6 +1038,56 @@ public class RolapHierarchy extends HierarchyBase {
                 new DummyExp(returnType),
                 listCalc,
                 new ValueCalc(new DummyExp(returnType)));
+        }
+    }
+
+    /**
+     * Dummy element that acts as a namespace for resolving member names within
+     * shared hierarchies. Acts like a cube that has a single child, the
+     * hierarchy in question.
+     */
+    private class DummyElement implements OlapElement {
+        public String getUniqueName() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getName() {
+            return "$";
+        }
+
+        public String getDescription() {
+            throw new UnsupportedOperationException();
+        }
+
+        public OlapElement lookupChild(
+            SchemaReader schemaReader,
+            Id.Segment s,
+            MatchType matchType)
+        {
+            if (Util.equalName(s.name, dimension.getName())) {
+                return dimension;
+            }
+            // Archaic form <dimension>.<hierarchy>, e.g. [Time.Weekly].[1997]
+            if (Util.equalName(s.name, dimension.getName() + "." + subName)) {
+                return RolapHierarchy.this;
+            }
+            return null;
+        }
+
+        public String getQualifiedName() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getCaption() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Hierarchy getHierarchy() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Dimension getDimension() {
+            throw new UnsupportedOperationException();
         }
     }
 }

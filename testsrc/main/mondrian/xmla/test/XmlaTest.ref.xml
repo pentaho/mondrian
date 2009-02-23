@@ -1234,13 +1234,13 @@
         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-        <HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>
-        <HIERARCHY_UNIQUE_NAME>[Time.Weekly]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_NAME>Weekly</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
         <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
         <DIMENSION_TYPE>1</DIMENSION_TYPE>
         <HIERARCHY_CARDINALITY>837</HIERARCHY_CARDINALITY>
-        <DEFAULT_MEMBER>[Time.Weekly].[All Time.Weeklys].[1997]</DEFAULT_MEMBER>
-        <ALL_MEMBER>[Time.Weekly].[All Time.Weeklys]</ALL_MEMBER>
+        <DEFAULT_MEMBER>[Time].[Weekly].[All Weeklys]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Time].[Weekly].[All Weeklys]</ALL_MEMBER>
         <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy</DESCRIPTION>
         <STRUCTURE>0</STRUCTURE>
         <IS_VIRTUAL>false</IS_VIRTUAL>
@@ -1589,13 +1589,13 @@
         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-        <HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>
-        <HIERARCHY_UNIQUE_NAME>[Time.Weekly]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_NAME>Weekly</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
         <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
         <DIMENSION_TYPE>1</DIMENSION_TYPE>
         <HIERARCHY_CARDINALITY>837</HIERARCHY_CARDINALITY>
-        <DEFAULT_MEMBER>[Time.Weekly].[All Time.Weeklys].[1997]</DEFAULT_MEMBER>
-        <ALL_MEMBER>[Time.Weekly].[All Time.Weeklys]</ALL_MEMBER>
+        <DEFAULT_MEMBER>[Time].[Weekly].[All Weeklys]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Time].[Weekly].[All Weeklys]</ALL_MEMBER>
         <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy</DESCRIPTION>
         <STRUCTURE>0</STRUCTURE>
         <IS_VIRTUAL>false</IS_VIRTUAL>
@@ -1699,74 +1699,6 @@
         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-        <HIERARCHY_UNIQUE_NAME>[Time.Weekly]</HIERARCHY_UNIQUE_NAME>
-        <LEVEL_NAME>(All)</LEVEL_NAME>
-        <LEVEL_UNIQUE_NAME>[Time.Weekly].[(All)]</LEVEL_UNIQUE_NAME>
-        <LEVEL_CAPTION>(All)</LEVEL_CAPTION>
-        <LEVEL_NUMBER>0</LEVEL_NUMBER>
-        <LEVEL_CARDINALITY>1</LEVEL_CARDINALITY>
-        <LEVEL_TYPE>1</LEVEL_TYPE>
-        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
-        <LEVEL_UNIQUE_SETTINGS>3</LEVEL_UNIQUE_SETTINGS>
-        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-        <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy(All) Level</DESCRIPTION>
-      </row>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-        <CUBE_NAME>Sales</CUBE_NAME>
-        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-        <HIERARCHY_UNIQUE_NAME>[Time.Weekly]</HIERARCHY_UNIQUE_NAME>
-        <LEVEL_NAME>Year</LEVEL_NAME>
-        <LEVEL_UNIQUE_NAME>[Time.Weekly].[Year]</LEVEL_UNIQUE_NAME>
-        <LEVEL_CAPTION>Year</LEVEL_CAPTION>
-        <LEVEL_NUMBER>1</LEVEL_NUMBER>
-        <LEVEL_CARDINALITY>2</LEVEL_CARDINALITY>
-        <LEVEL_TYPE>20</LEVEL_TYPE>
-        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
-        <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
-        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-        <DESCRIPTION>Sales Cube - Time.Weekly HierarchyYear Level</DESCRIPTION>
-      </row>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-        <CUBE_NAME>Sales</CUBE_NAME>
-        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-        <HIERARCHY_UNIQUE_NAME>[Time.Weekly]</HIERARCHY_UNIQUE_NAME>
-        <LEVEL_NAME>Week</LEVEL_NAME>
-        <LEVEL_UNIQUE_NAME>[Time.Weekly].[Week]</LEVEL_UNIQUE_NAME>
-        <LEVEL_CAPTION>Week</LEVEL_CAPTION>
-        <LEVEL_NUMBER>2</LEVEL_NUMBER>
-        <LEVEL_CARDINALITY>104</LEVEL_CARDINALITY>
-        <LEVEL_TYPE>260</LEVEL_TYPE>
-        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
-        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
-        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-        <DESCRIPTION>Sales Cube - Time.Weekly HierarchyWeek Level</DESCRIPTION>
-      </row>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-        <CUBE_NAME>Sales</CUBE_NAME>
-        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-        <HIERARCHY_UNIQUE_NAME>[Time.Weekly]</HIERARCHY_UNIQUE_NAME>
-        <LEVEL_NAME>Day</LEVEL_NAME>
-        <LEVEL_UNIQUE_NAME>[Time.Weekly].[Day]</LEVEL_UNIQUE_NAME>
-        <LEVEL_CAPTION>Day</LEVEL_CAPTION>
-        <LEVEL_NUMBER>3</LEVEL_NUMBER>
-        <LEVEL_CARDINALITY>730</LEVEL_CARDINALITY>
-        <LEVEL_TYPE>516</LEVEL_TYPE>
-        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
-        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
-        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-        <DESCRIPTION>Sales Cube - Time.Weekly HierarchyDay Level</DESCRIPTION>
-      </row>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-        <CUBE_NAME>Sales</CUBE_NAME>
-        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
         <LEVEL_NAME>Year</LEVEL_NAME>
         <LEVEL_UNIQUE_NAME>[Time].[Year]</LEVEL_UNIQUE_NAME>
@@ -1777,7 +1709,7 @@
         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
         <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-        <DESCRIPTION>Sales Cube - Time HierarchyYear Level</DESCRIPTION>
+        <DESCRIPTION>Sales Cube - Time Hierarchy - Year Level</DESCRIPTION>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1794,7 +1726,7 @@
         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
         <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-        <DESCRIPTION>Sales Cube - Time HierarchyQuarter Level</DESCRIPTION>
+        <DESCRIPTION>Sales Cube - Time Hierarchy - Quarter Level</DESCRIPTION>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1811,7 +1743,75 @@
         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
         <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-        <DESCRIPTION>Sales Cube - Time HierarchyMonth Level</DESCRIPTION>
+        <DESCRIPTION>Sales Cube - Time Hierarchy - Month Level</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_NAME>(All)</LEVEL_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Weekly].[(All)]</LEVEL_UNIQUE_NAME>
+        <LEVEL_CAPTION>(All)</LEVEL_CAPTION>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <LEVEL_CARDINALITY>1</LEVEL_CARDINALITY>
+        <LEVEL_TYPE>1</LEVEL_TYPE>
+        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>3</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_NAME>Year</LEVEL_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Weekly].[Year]</LEVEL_UNIQUE_NAME>
+        <LEVEL_CAPTION>Year</LEVEL_CAPTION>
+        <LEVEL_NUMBER>1</LEVEL_NUMBER>
+        <LEVEL_CARDINALITY>2</LEVEL_CARDINALITY>
+        <LEVEL_TYPE>20</LEVEL_TYPE>
+        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy - Year Level</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_NAME>Week</LEVEL_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Weekly].[Week]</LEVEL_UNIQUE_NAME>
+        <LEVEL_CAPTION>Week</LEVEL_CAPTION>
+        <LEVEL_NUMBER>2</LEVEL_NUMBER>
+        <LEVEL_CARDINALITY>104</LEVEL_CARDINALITY>
+        <LEVEL_TYPE>260</LEVEL_TYPE>
+        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy - Week Level</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_NAME>Day</LEVEL_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Weekly].[Day]</LEVEL_UNIQUE_NAME>
+        <LEVEL_CAPTION>Day</LEVEL_CAPTION>
+        <LEVEL_NUMBER>3</LEVEL_NUMBER>
+        <LEVEL_CARDINALITY>730</LEVEL_CARDINALITY>
+        <LEVEL_TYPE>516</LEVEL_TYPE>
+        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy - Day Level</DESCRIPTION>
       </row>
     </root>
   </xmla:return>
@@ -1885,7 +1885,7 @@
         <MEASURE_AGGREGATOR>0</MEASURE_AGGREGATOR>
         <DATA_TYPE>3</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <DESCRIPTION>Sales Cube - Customer Count Member</DESCRIPTION>
       </row>
       <row>
@@ -1934,7 +1934,7 @@
         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
         <DATA_TYPE>5</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <DESCRIPTION>Sales Cube - Promotion Sales Member</DESCRIPTION>
       </row>
       <row>
@@ -1947,7 +1947,7 @@
         <MEASURE_AGGREGATOR>2</MEASURE_AGGREGATOR>
         <DATA_TYPE>3</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <DESCRIPTION>Sales Cube - Sales Count Member</DESCRIPTION>
       </row>
       <row>
@@ -1960,7 +1960,7 @@
         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
         <DATA_TYPE>5</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <DESCRIPTION>Sales Cube - Store Cost Member</DESCRIPTION>
       </row>
       <row>
@@ -1973,7 +1973,7 @@
         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
         <DATA_TYPE>5</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <DESCRIPTION>Sales Cube - Store Sales Member</DESCRIPTION>
       </row>
       <row>
@@ -1986,7 +1986,7 @@
         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
         <DATA_TYPE>5</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <DESCRIPTION>Sales Cube - Unit Sales Member</DESCRIPTION>
       </row>
     </root>

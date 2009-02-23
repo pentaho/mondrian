@@ -89,6 +89,19 @@ public class FunInfo implements Comparable<FunInfo> {
                 new String[] {signature};
     }
 
+    FunInfo(
+        String name,
+        String description,
+        String flags)
+    {
+        this.name = name;
+        this.description = description;
+        this.syntax = FunUtil.decodeSyntacticType(flags);
+        this.returnTypes = new int[] {FunUtil.decodeReturnCategory(flags)};
+        this.parameterTypes =
+            new int[][] {FunUtil.decodeParameterCategories(flags)};
+    }
+
     public String[] getSignatures() {
         return sigs;
     }

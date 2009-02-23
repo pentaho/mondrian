@@ -70,10 +70,6 @@ class SetBase extends OlapElementBase implements NamedSet {
         return getHierarchy().getDimension();
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, Id.Segment s) {
-        return null;
-    }
-
     public OlapElement lookupChild(
         SchemaReader schemaReader, Id.Segment s, MatchType matchType) {
         return null;

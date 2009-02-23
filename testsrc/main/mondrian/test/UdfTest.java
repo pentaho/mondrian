@@ -330,15 +330,20 @@ public class UdfTest extends FoodMartTestCase {
 
     public void testCurrentDateMemberHierarchy()
     {
+        final String query =
+            MondrianProperties.instance().SsasCompatibleNaming.get()
+                ? "SELECT { CurrentDateMember([Time.Weekly], " +
+                "\"[Ti\\me\\.Weekl\\y]\\.[All Weekl\\y\\s]\\.[yyyy]\\.[ww]\", BEFORE)} " +
+                "ON COLUMNS FROM [Sales]"
+                : "SELECT { CurrentDateMember([Time.Weekly], " +
+                "\"[Ti\\me\\.Weekl\\y]\\.[All Ti\\me\\.Weekl\\y\\s]\\.[yyyy]\\.[ww]\", BEFORE)} " +
+                "ON COLUMNS FROM [Sales]";
         assertQueryReturns(
-            "SELECT { CurrentDateMember([Time.Weekly], " +
-            "\"[Ti\\me\\.Weekl\\y]\\.[All Ti\\me\\.Weekl\\y\\s]\\.[yyyy]\\.[ww]\", BEFORE)} " +
-            "ON COLUMNS FROM [Sales]",
-            fold(
-                "Axis #0:\n" +
+            query,
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
-                "{[Time.Weekly].[All Time.Weeklys].[1998].[52]}\n" +
+                "{[Time].[Weekly].[All Weeklys].[1998].[52]}\n" +
                 "Row #0: \n"));
     }
 
@@ -678,7 +683,7 @@ public class UdfTest extends FoodMartTestCase {
     public void testCachingCurrentDate() {
         assertQueryReturns(
             "SELECT {filter([Time].[Month].Members, " +
-            "[Time].CurrentMember in {CurrentDateMember([Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', BEFORE)})} ON ROWS " +
+            "[Time].CurrentMember in {CurrentDateMember([Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', BEFORE)})} ON COLUMNS " +
             "from [Sales]",
             "Axis #0:" + nl +
             "{}" + nl +

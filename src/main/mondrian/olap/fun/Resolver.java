@@ -14,6 +14,8 @@ package mondrian.olap.fun;
 
 import mondrian.olap.*;
 
+import java.util.List;
+
 /**
  * A <code>Resolver</code> converts a function name, invocation type, and set
  * of arguments into a {@link FunDef}.
@@ -42,21 +44,22 @@ public interface Resolver {
      * Given a particular set of arguments the function is applied to, returns
      * the correct overloaded form of the function.
      *
-     * <p>The method must increment <code>conversionCount</code> argument every
+     * <p>The method adds an item to <code>conversions</code> every
      * time it performs an implicit type-conversion. If there are several
      * candidate functions with the same signature, the validator will choose
-     * the one which used the fewest implicit conversions.
+     * the one which used the fewest implicit conversions.</p>
      *
      * @param args Expressions which this function call is applied to.
      * @param validator Validator
-     * @param conversionCount This argument must be an  <code>int</code> array
-     *   with a single element; in effect, it is an in/out parameter. It
-     *   The method increments the count every time it performs a conversion.
+     * @param conversions List of implicit conversions performed (out)
      *
      * @return The function definition which matches these arguments, or null
      *   if no function definition that this resolver knows about matches.
      */
-    FunDef resolve(Exp[] args, Validator validator, int[] conversionCount);
+    FunDef resolve(
+        Exp[] args,
+        Validator validator,
+        List<Conversion> conversions);
 
     /**
      * Returns whether a particular argument must be a scalar expression.
@@ -90,6 +93,26 @@ public interface Resolver {
      * a way to describe itself in more detail.
      */
     FunDef getFunDef();
+
+    /**
+     * Description of an implicit conversion that occurred while resolving an
+     * operator call.
+     */
+    public interface Conversion {
+        /**
+         * Returns the cost of the conversion. If there are several matching
+         * overloads, the one with the lowest overall cost will be preferred.
+         *
+         * @return Cost of conversion
+         */
+        int getCost();
+
+        /**
+         * Checks the viability of implicit conversions. Converting from a
+         * dimension to a hierarchy is valid if is only one hierarchy.
+         */
+        void checkValid();
+    }
 }
 
 // End Resolver.java

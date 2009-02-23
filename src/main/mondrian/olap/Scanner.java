@@ -243,9 +243,9 @@ public class Scanner {
         initResword(ParserSym.CASE                ,"CASE");
         initResword(ParserSym.CELL                ,"CELL");
 //      initResword(ParserSym.CELL_ORDINAL        ,"CELL_ORDINAL");
-//      initResword(ParserSym.CHAPTERS            ,"CHAPTERS");
+        initResword(ParserSym.CHAPTERS            ,"CHAPTERS");
 //      initResword(ParserSym.CHILDREN            ,"CHILDREN");
-//      initResword(ParserSym.COLUMNS             ,"COLUMNS");
+        initResword(ParserSym.COLUMNS             ,"COLUMNS");
 //      initResword(ParserSym.DESC                ,"DESC");
         initResword(ParserSym.DIMENSION           ,"DIMENSION");
         initResword(ParserSym.ELSE                ,"ELSE");
@@ -275,13 +275,13 @@ public class Scanner {
         initResword(ParserSym.NULL                ,"NULL");
         initResword(ParserSym.ON                  ,"ON");
         initResword(ParserSym.OR                  ,"OR");
-//      initResword(ParserSym.PAGES               ,"PAGES");
+        initResword(ParserSym.PAGES               ,"PAGES");
 //      initResword(ParserSym.PARENT              ,"PARENT");
 //      initResword(ParserSym.PREVMEMBER          ,"PREVMEMBER");
         initResword(ParserSym.PROPERTIES          ,"PROPERTIES");
 //      initResword(ParserSym.RECURSIVE           ,"RECURSIVE");
-//      initResword(ParserSym.ROWS                ,"ROWS");
-//      initResword(ParserSym.SECTIONS            ,"SECTIONS");
+        initResword(ParserSym.ROWS                ,"ROWS");
+        initResword(ParserSym.SECTIONS            ,"SECTIONS");
         initResword(ParserSym.SELECT              ,"SELECT");
         initResword(ParserSym.SET                 ,"SET");
 //      initResword(ParserSym.SOLVE_ORDER         ,"SOLVE_ORDER");

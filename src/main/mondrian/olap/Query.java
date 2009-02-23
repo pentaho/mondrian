@@ -289,27 +289,36 @@ public class Query extends QueryPart {
         resolve();
     }
 
+    /**
+     * Creates a validator for this query.
+     *
+     * @return Validator
+     */
     public Validator createValidator() {
-        return new StackValidator(connection.getSchema().getFunTable());
+        return new QueryValidator(connection.getSchema().getFunTable());
     }
 
+    /**
+     * Creates a validator for this query that uses a given function table.
+     *
+     * @param functionTable Function table
+     * @return Validator
+     */
     public Validator createValidator(FunTable functionTable) {
-        StackValidator validator;
-        validator = new StackValidator(functionTable);
-        return validator;
+        return new QueryValidator(functionTable);
     }
 
     public Object clone() {
         return new Query(
-                connection,
-                cube,
-                Formula.cloneArray(formulas),
-                QueryAxis.cloneArray(axes),
-                (slicerAxis == null) ? null : (QueryAxis) slicerAxis.clone(),
-                cellProps,
-                parameters.toArray(new Parameter[parameters.size()]),
-                load,
-                strictValidation);
+            connection,
+            cube,
+            Formula.cloneArray(formulas),
+            QueryAxis.cloneArray(axes),
+            (slicerAxis == null) ? null : (QueryAxis) slicerAxis.clone(),
+            cellProps,
+            parameters.toArray(new Parameter[parameters.size()]),
+            load,
+            strictValidation);
     }
 
     public Query safeClone() {
@@ -401,7 +410,8 @@ public class Query extends QueryPart {
 
     private void normalizeAxes() {
         for (int i = 0; i < axes.length; i++) {
-            AxisOrdinal correctOrdinal = AxisOrdinal.forLogicalOrdinal(i);
+            AxisOrdinal correctOrdinal =
+                AxisOrdinal.StandardAxisOrdinal.forLogicalOrdinal(i);
             if (axes[i].getAxisOrdinal() != correctOrdinal) {
                 for (int j = i + 1; j < axes.length; j++) {
                     if (axes[j].getAxisOrdinal() == correctOrdinal) {
@@ -429,7 +439,9 @@ public class Query extends QueryPart {
         resolve(validator); // resolve self and children
         // Create a dummy result so we can use its evaluator
         final Evaluator evaluator = RolapUtil.createEvaluator(this);
-        ExpCompiler compiler = createCompiler(evaluator, validator, Collections.singletonList(resultStyle));
+        ExpCompiler compiler =
+            createCompiler(
+                evaluator, validator, Collections.singletonList(resultStyle));
         compile(compiler);
     }
 
@@ -444,7 +456,8 @@ public class Query extends QueryPart {
         MondrianProperties props = MondrianProperties.instance();
         return
             !strictValidation &&
-            ((load && props.IgnoreInvalidMembers.get()) || (!load && props.IgnoreInvalidMembersDuringQuery.get()));
+            ((load && props.IgnoreInvalidMembers.get()) ||
+                (!load && props.IgnoreInvalidMembersDuringQuery.get()));
     }
 
     /**
@@ -565,13 +578,28 @@ public class Query extends QueryPart {
 
         // Validate axes.
         if (axes != null) {
-            Set<String> axisNames = new HashSet<String>();
+            Set<Integer> axisNames = new HashSet<Integer>();
             for (QueryAxis axis : axes) {
                 validator.validate(axis);
-                if (!axisNames.add(axis.getAxisName())) {
+                if (!axisNames.add(axis.getAxisOrdinal().logicalOrdinal())) {
                     throw MondrianResource.instance().DuplicateAxis.ex(
                         axis.getAxisName());
                 }
+            }
+
+            // Make sure that there are no gaps. If there are N axes, then axes
+            // 0 .. N-1 should exist.
+            int seekOrdinal = AxisOrdinal.StandardAxisOrdinal.COLUMNS.logicalOrdinal();
+            for (QueryAxis axis : axes) {
+                if (!axisNames.contains(seekOrdinal)) {
+                    AxisOrdinal axisName =
+                        AxisOrdinal.StandardAxisOrdinal.forLogicalOrdinal(
+                            seekOrdinal);
+                    throw MondrianResource.instance().NonContiguousAxis.ex(
+                        seekOrdinal,
+                        axisName.name());
+                }
+                ++seekOrdinal;
             }
         }
         if (slicerAxis != null) {
@@ -1029,7 +1057,8 @@ public class Query extends QueryPart {
             throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.
                 ex(axis.logicalOrdinal());
         }
-        QueryAxis queryAxis = (axis == AxisOrdinal.SLICER) ?
+        QueryAxis queryAxis =
+            axis.isFilter() ?
                 slicerAxis :
                 axes[axis.logicalOrdinal()];
         return collectHierarchies(queryAxis.getSet());
@@ -1200,248 +1229,6 @@ public class Query extends QueryPart {
     }
 
     /**
-     * Default implementation of {@link Validator}.
-     *
-     * <p>Uses a stack to help us guess the type of our parent expression
-     * before we've completely resolved our children -- necessary,
-     * unfortunately, when figuring out whether the "*" operator denotes
-     * multiplication or crossjoin.
-     *
-     * <p>Keeps track of which nodes have already been resolved, so we don't
-     * try to resolve nodes which have already been resolved. (That would not
-     * be wrong, but can cause resolution to be an <code>O(2^N)</code>
-     * operation.)
-     */
-    private class StackValidator implements Validator {
-        private final Stack<QueryPart> stack = new Stack<QueryPart>();
-        private final FunTable funTable;
-        private final Map<QueryPart, QueryPart> resolvedNodes =
-            new HashMap<QueryPart, QueryPart>();
-        private final QueryPart placeHolder = Literal.zero;
-
-        /**
-         * Creates a StackValidator.
-         *
-         * @pre funTable != null
-         */
-        public StackValidator(FunTable funTable) {
-            Util.assertPrecondition(funTable != null, "funTable != null");
-            this.funTable = funTable;
-        }
-
-        public Query getQuery() {
-            return Query.this;
-        }
-
-        public Exp validate(Exp exp, boolean scalar) {
-            Exp resolved;
-            try {
-                resolved = (Exp) resolvedNodes.get(exp);
-            } catch (ClassCastException e) {
-                // A classcast exception will occur if there is a String
-                // placeholder in the map. This is an internal error -- should
-                // not occur for any query, valid or invalid.
-                throw Util.newInternal(
-                    e,
-                    "Infinite recursion encountered while validating '" +
-                        Util.unparse(exp) + "'");
-            }
-            if (resolved == null) {
-                try {
-                    stack.push((QueryPart) exp);
-                    // To prevent recursion, put in a placeholder while we're
-                    // resolving.
-                    resolvedNodes.put((QueryPart) exp, placeHolder);
-                    resolved = exp.accept(this);
-                    Util.assertTrue(resolved != null);
-                    resolvedNodes.put((QueryPart) exp, (QueryPart) resolved);
-                } finally {
-                    stack.pop();
-                }
-            }
-
-            if (scalar) {
-                final Type type = resolved.getType();
-                if (!TypeUtil.canEvaluate(type)) {
-                    String exprString = Util.unparse(resolved);
-                    throw MondrianResource.instance().MdxMemberExpIsSet.ex(exprString);
-                }
-            }
-
-            return resolved;
-        }
-
-        public void validate(ParameterExpr parameterExpr) {
-            ParameterExpr resolved =
-                (ParameterExpr) resolvedNodes.get(parameterExpr);
-            if (resolved != null) {
-                return; // already resolved
-            }
-            try {
-                stack.push(parameterExpr);
-                resolvedNodes.put(parameterExpr, placeHolder);
-                resolved = (ParameterExpr) parameterExpr.accept(this);
-                assert resolved != null;
-                resolvedNodes.put(parameterExpr, resolved);
-            } finally {
-                stack.pop();
-            }
-        }
-
-        public void validate(MemberProperty memberProperty) {
-            MemberProperty resolved =
-                    (MemberProperty) resolvedNodes.get(memberProperty);
-            if (resolved != null) {
-                return; // already resolved
-            }
-            try {
-                stack.push(memberProperty);
-                resolvedNodes.put(memberProperty, placeHolder);
-                memberProperty.resolve(this);
-                resolvedNodes.put(memberProperty, memberProperty);
-            } finally {
-                stack.pop();
-            }
-        }
-
-        public void validate(QueryAxis axis) {
-            final QueryAxis resolved = (QueryAxis) resolvedNodes.get(axis);
-            if (resolved != null) {
-                return; // already resolved
-            }
-            try {
-                stack.push(axis);
-                resolvedNodes.put(axis, placeHolder);
-                axis.resolve(this);
-                resolvedNodes.put(axis, axis);
-            } finally {
-                stack.pop();
-            }
-        }
-
-        public void validate(Formula formula) {
-            final Formula resolved = (Formula) resolvedNodes.get(formula);
-            if (resolved != null) {
-                return; // already resolved
-            }
-            try {
-                stack.push(formula);
-                resolvedNodes.put(formula, placeHolder);
-                formula.accept(this);
-                resolvedNodes.put(formula, formula);
-            } finally {
-                stack.pop();
-            }
-        }
-
-        public boolean canConvert(Exp fromExp, int to, int[] conversionCount) {
-            return TypeUtil.canConvert(
-                fromExp.getCategory(),
-                to,
-                conversionCount);
-        }
-
-        public boolean requiresExpression() {
-            return requiresExpression(stack.size() - 1);
-        }
-
-        private boolean requiresExpression(int n) {
-            if (n < 1) {
-                return false;
-            }
-            final Object parent = stack.get(n - 1);
-            if (parent instanceof Formula) {
-                return ((Formula) parent).isMember();
-            } else if (parent instanceof ResolvedFunCall) {
-                final ResolvedFunCall funCall = (ResolvedFunCall) parent;
-                if (funCall.getFunDef().getSyntax() == Syntax.Parentheses) {
-                    return requiresExpression(n - 1);
-                } else {
-                    int k = whichArg(funCall, (Exp) stack.get(n));
-                    if (k < 0) {
-                        // Arguments of call have mutated since call was placed
-                        // on stack. Presumably the call has already been
-                        // resolved correctly, so the answer we give here is
-                        // irrelevant.
-                        return false;
-                    }
-                    final FunDef funDef = funCall.getFunDef();
-                    final int[] parameterTypes = funDef.getParameterCategories();
-                    return parameterTypes[k] != Category.Set;
-                }
-            } else if (parent instanceof UnresolvedFunCall) {
-                final UnresolvedFunCall funCall = (UnresolvedFunCall) parent;
-                if (funCall.getSyntax() == Syntax.Parentheses ||
-                    funCall.getFunName() == "*") {
-                    return requiresExpression(n - 1);
-                } else {
-                    int k = whichArg(funCall, (Exp) stack.get(n));
-                    if (k < 0) {
-                        // Arguments of call have mutated since call was placed
-                        // on stack. Presumably the call has already been
-                        // resolved correctly, so the answer we give here is
-                        // irrelevant.
-                        return false;
-                    }
-                    return funTable.requiresExpression(funCall, k, this);
-                }
-            } else {
-                return false;
-            }
-        }
-
-        public FunTable getFunTable() {
-            return funTable;
-        }
-
-        public Parameter createOrLookupParam(
-            boolean definition,
-            String name,
-            Type type,
-            Exp defaultExp,
-            String description)
-        {
-            final SchemaReader schemaReader = getSchemaReader(false);
-            Parameter param = schemaReader.getParameter(name);
-
-            if (definition) {
-                if (param != null) {
-                    if (param.getScope() == Parameter.Scope.Statement) {
-                        ParameterImpl paramImpl = (ParameterImpl) param;
-                        paramImpl.setDescription(description);
-                        paramImpl.setDefaultExp(defaultExp);
-                        paramImpl.setType(type);
-                    }
-                    return param;
-                }
-                param = new ParameterImpl(
-                    name,
-                    defaultExp, description, type);
-
-                // Append it to the list of known parameters.
-                parameters.add(param);
-                parametersByName.put(name, param);
-                return param;
-            } else {
-                if (param != null) {
-                    return param;
-                }
-                throw MondrianResource.instance().UnknownParameter.ex(name);
-            }
-        }
-
-        private int whichArg(final FunCall node, final Exp arg) {
-            final Exp[] children = node.getArgs();
-            for (int i = 0; i < children.length; i++) {
-                if (children[i] == arg) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-    }
-
-    /**
      * Source of metadata within the scope of a query.
      *
      * <p>Note especially that {@link #getCalculatedMember(java.util.List)}
@@ -1528,7 +1315,9 @@ public class Query extends QueryPart {
         }
 
         public OlapElement getElementChild(
-            OlapElement parent, Id.Segment s, MatchType matchType)
+            OlapElement parent,
+            Id.Segment s,
+            MatchType matchType)
         {
             // first look in cube
             OlapElement mdxElement =
@@ -1570,11 +1359,11 @@ public class Query extends QueryPart {
         }
 
         public OlapElement lookupCompound(
-                OlapElement parent,
-                List<Id.Segment> names,
-                boolean failIfNotFound,
-                int category,
-                MatchType matchType)
+            OlapElement parent,
+            List<Id.Segment> names,
+            boolean failIfNotFound,
+            int category,
+            MatchType matchType)
         {
             // First look to ourselves.
             switch (category) {
@@ -1661,6 +1450,31 @@ public class Query extends QueryPart {
         public void setValue(Object value) {
             throw MondrianResource.instance().ParameterIsNotModifiable.ex(
                 getName(), getScope().name());
+        }
+    }
+
+    /**
+     * Implementation of {@link mondrian.olap.Validator} that works within a
+     * particular query.
+     *
+     * <p>It's unlikely that we would want a validator that is
+     * NOT within a particular query, but by organizing the code this way, with
+     * the majority of the code in {@link mondrian.olap.ValidatorImpl}, the
+     * dependencies between Validator and Query are explicit.
+     */
+    private class QueryValidator extends ValidatorImpl {
+        public QueryValidator(FunTable functionTable) {
+            super(functionTable);
+        }
+
+        protected void defineParameter(Parameter param) {
+            final String name = param.getName();
+            parameters.add(param);
+            parametersByName.put(name, param);
+        }
+
+        public Query getQuery() {
+            return Query.this;
         }
     }
 }

@@ -1137,6 +1137,17 @@ public class MondrianProperties extends TriggerableProperties {
          */
         SCOPED
     }
+
+    /**
+     * Property that defines
+     * whether to enable new naming behavior.
+     *
+     * <p>If true, hierarchies are named [Dimension].[Hierarchy]; if false,
+     * [Dimension.Hierarchy].
+     */
+    public transient final BooleanProperty SsasCompatibleNaming =
+            new BooleanProperty(
+                    this, "mondrian.olap.SsasCompatibleNaming", false);
 }
 
 // End MondrianProperties.java

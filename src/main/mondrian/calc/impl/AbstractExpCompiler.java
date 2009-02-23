@@ -148,8 +148,8 @@ public class AbstractExpCompiler implements ExpCompiler {
         final Type type = exp.getType();
         if (type instanceof DimensionType) {
             final DimensionCalc dimensionCalc = compileDimension(exp);
-            return new DimensionCurrentMemberFunDef.CalcImpl(
-                    new DummyExp(TypeUtil.toMemberType(type)), dimensionCalc);
+            return new DimensionCurrentMemberCalc(
+                new DummyExp(TypeUtil.toMemberType(type)), dimensionCalc);
         } else if (type instanceof HierarchyType) {
             final HierarchyCalc hierarchyCalc = compileHierarchy(exp);
             return new HierarchyCurrentMemberFunDef.CalcImpl(
@@ -188,20 +188,36 @@ public class AbstractExpCompiler implements ExpCompiler {
 
     public HierarchyCalc compileHierarchy(Exp exp) {
         final Type type = exp.getType();
-        if (type instanceof DimensionType ||
-                type instanceof MemberType) {
-            // <Dimension> --> <Dimension>.CurrentMember.Hierarchy
+        if (type instanceof DimensionType) {
+            // <Dimension> --> unique Hierarchy else error
+            // Resolve at compile time if constant
+            final Dimension dimension = type.getDimension();
+            if (dimension != null) {
+                final Hierarchy hierarchy =
+                    FunUtil.getDimensionDefaultHierarchy(dimension);
+                if (hierarchy != null) {
+                    return (HierarchyCalc) ConstantCalc.constantHierarchy(
+                        hierarchy);
+                }
+            }
+            final DimensionCalc dimensionCalc = compileDimension(exp);
+            return new DimensionHierarchyCalc(
+                new DummyExp(HierarchyType.forType(type)),
+                dimensionCalc);
+        }
+        if (type instanceof MemberType) {
+            // <Member> --> <Member>.Hierarchy
             final MemberCalc memberCalc = compileMember(exp);
             return new MemberHierarchyFunDef.CalcImpl(
-                    new DummyExp(HierarchyType.forType(type)),
-                    memberCalc);
+                new DummyExp(HierarchyType.forType(type)),
+                memberCalc);
         }
         if (type instanceof LevelType) {
             // <Level> --> <Level>.Hierarchy
             final LevelCalc levelCalc = compileLevel(exp);
             return new LevelHierarchyFunDef.CalcImpl(
-                    new DummyExp(HierarchyType.forType(type)),
-                    levelCalc);
+                new DummyExp(HierarchyType.forType(type)),
+                levelCalc);
         }
         assert type instanceof HierarchyType;
         return (HierarchyCalc) compile(exp);
@@ -383,7 +399,7 @@ public class AbstractExpCompiler implements ExpCompiler {
             final DimensionCalc dimensionCalc = compileDimension(exp);
             MemberType memberType = MemberType.forType(type);
             final MemberCalc dimensionCurrentMemberCalc =
-                    new DimensionCurrentMemberFunDef.CalcImpl(
+                    new DimensionCurrentMemberCalc(
                             new DummyExp(memberType),
                             dimensionCalc);
             return new MemberValueCalc(
@@ -544,6 +560,59 @@ public class AbstractExpCompiler implements ExpCompiler {
 
         public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
             return tupleListCalc.evaluateTupleList(evaluator);
+        }
+    }
+
+    /**
+     * Computes the hierarchy of a dimension
+     */
+    private static class DimensionHierarchyCalc extends AbstractHierarchyCalc {
+        private final DimensionCalc dimensionCalc;
+
+        protected DimensionHierarchyCalc(Exp exp, DimensionCalc dimensionCalc) {
+            super(exp, new Calc[] {dimensionCalc});
+            this.dimensionCalc = dimensionCalc;
+        }
+
+        public Hierarchy evaluateHierarchy(Evaluator evaluator) {
+            Dimension dimension =
+                dimensionCalc.evaluateDimension(evaluator);
+            final Hierarchy hierarchy =
+                FunUtil.getDimensionDefaultHierarchy(dimension);
+            if (hierarchy != null) {
+                return hierarchy;
+            }
+            throw FunUtil.newEvalException(
+                MondrianResource.instance()
+                    .CannotImplicitlyConvertDimensionToHierarchy
+                    .ex(
+                    dimension.getName()));
+        }
+    }
+
+    /**
+     * Computation that returns the current member of a dimension.
+     */
+    public static class DimensionCurrentMemberCalc extends AbstractMemberCalc {
+        private final DimensionCalc dimensionCalc;
+
+        public DimensionCurrentMemberCalc(Exp exp, DimensionCalc dimensionCalc) {
+            super(exp, new Calc[] {dimensionCalc});
+            this.dimensionCalc = dimensionCalc;
+        }
+
+        protected String getName() {
+            return "CurrentMember";
+        }
+
+        public Member evaluateMember(Evaluator evaluator) {
+            Dimension dimension =
+                    dimensionCalc.evaluateDimension(evaluator);
+            return evaluator.getContext(dimension);
+        }
+
+        public boolean dependsOn(Dimension dimension) {
+            return dimensionCalc.getType().usesDimension(dimension, true) ;
         }
     }
 }

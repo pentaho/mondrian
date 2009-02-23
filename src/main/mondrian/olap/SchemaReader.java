@@ -35,6 +35,22 @@ public interface SchemaReader {
     Role getRole();
 
     /**
+     * Returns the accessible dimensions of a cube.
+     *
+     * @pre dimension != null
+     * @post return != null
+     */
+    List<Dimension> getCubeDimensions(Cube cube);
+
+    /**
+     * Returns the accessible hierarchies of a dimension.
+     *
+     * @pre dimension != null
+     * @post return != null
+     */
+    List<Hierarchy> getDimensionHierarchies(Dimension dimension);
+
+    /**
      * Returns an array of the root members of <code>hierarchy</code>.
      *
      * @param hierarchy Hierarchy
@@ -122,7 +138,6 @@ public interface SchemaReader {
      * @return null if member is a root member
      */
     Member getMemberParent(Member member);
-
 
     /**
      * Returns the depth of a member.
@@ -227,7 +242,6 @@ public interface SchemaReader {
         boolean failIfNotFound,
         int category);
 
-
     /**
      * Looks up a calculated member by name. If the name is not found in the
      * current scope, returns null.
@@ -271,18 +285,43 @@ public interface SchemaReader {
     int compareMembersHierarchically(Member m1, Member m2);
 
     /**
-     * Looks up the child of <code>parent</code> called <code>s</code>; returns
+     * Looks up the child of <code>parent</code> called <code>name</code>, or
+     * an approximation according to <code>matchType</code>, returning
      * null if no element is found.
+     *
+     * @param parent Parent element to search in
+     * @param name Compound in compound name, such as "[Product]" or "&[1]"
+     * @param matchType Match type
+     *
+     * @return Element with given name, or null
      */
     OlapElement getElementChild(
-        OlapElement parent, Id.Segment name, MatchType matchType);
+        OlapElement parent,
+        Id.Segment name,
+        MatchType matchType);
 
-    OlapElement getElementChild(OlapElement parent, Id.Segment name);
+    /**
+     * Looks up the child of <code>parent</code> <code>name</code>, returning
+     * null if no element is found.
+     *
+     * <p>Always equivalent to
+     * <code>getElementChild(parent, name, MatchType.EXACT)</code>.
+     *
+     * @param parent Parent element to search in
+     * @param name Compound in compound name, such as "[Product]" or "&[1]"
+     *
+     * @return Element with given name, or null
+     */
+    OlapElement getElementChild(
+        OlapElement parent,
+        Id.Segment name);
 
     /**
      * Returns the members of a level, optionally including calculated members.
      */
-    List<Member> getLevelMembers(Level level, boolean includeCalculated);
+    List<Member> getLevelMembers(
+        Level level,
+        boolean includeCalculated);
 
     /**
      * Returns the members of a level, optionally filtering out members which
@@ -292,10 +331,14 @@ public interface SchemaReader {
      * @param context Context for filtering
      * @return Members of this level
      */
-    List<Member> getLevelMembers(Level level, Evaluator context);
+    List<Member> getLevelMembers(
+        Level level,
+        Evaluator context);
 
     /**
      * Returns the accessible levels of a hierarchy.
+     *
+     * @param hierarchy Hierarchy
      *
      * @pre hierarchy != null
      * @post return.length >= 1
@@ -305,6 +348,10 @@ public interface SchemaReader {
     /**
      * Returns the default member of a hierarchy. If the default member is in
      * an inaccessible level, returns the nearest ascendant/descendant member.
+     *
+     * @param hierarchy Hierarchy
+     *
+     * @return Default member of hierarchy
      */
     Member getHierarchyDefaultMember(Hierarchy hierarchy);
 
@@ -342,9 +389,9 @@ public interface SchemaReader {
      * Finds a child of a member with a given name.
      */
     Member lookupMemberChildByName(
-        Member parent, Id.Segment childName, MatchType matchType);
-
-    Member lookupMemberChildByName(Member parent, Id.Segment childName);
+        Member parent,
+        Id.Segment childName,
+        MatchType matchType);
 
     /**
      * Returns an object which can evaluate an expression in native SQL, or
@@ -356,7 +403,10 @@ public interface SchemaReader {
      * @param calc
      */
     NativeEvaluator getNativeSetEvaluator(
-            FunDef fun, Exp[] args, Evaluator evaluator, Calc calc);
+        FunDef fun,
+        Exp[] args,
+        Evaluator evaluator,
+        Calc calc);
 
     /**
      * Returns the definition of a parameter with a given name, or null if not
@@ -365,7 +415,6 @@ public interface SchemaReader {
     Parameter getParameter(String name);
 
     DataSource getDataSource();
-
 }
 
 // End SchemaReader.java

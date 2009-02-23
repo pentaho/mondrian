@@ -71,7 +71,7 @@ public class HierarchyCurrentMemberFunDef extends FunDefBase {
         }
 
         public boolean dependsOn(Dimension dimension) {
-            return hierarchyCalc.getType().usesDimension(dimension, true);
+            return hierarchyCalc.getType().usesDimension(dimension, false);
         }
     }
 }

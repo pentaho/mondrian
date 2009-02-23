@@ -110,10 +110,6 @@ public abstract class LevelBase
         return hierarchy.getName().equals("Measures");
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, Id.Segment s) {
-        return lookupChild(schemaReader, s, MatchType.EXACT);
-    }
-
     public OlapElement lookupChild(
         SchemaReader schemaReader, Id.Segment s, MatchType matchType)
     {

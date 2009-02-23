@@ -3089,7 +3089,7 @@ TODO: see above
         {
             String schemaName = cube.getSchema().getName();
             String cubeName = cube.getName();
-            String hierarchyName = hierarchy.getName();
+            String hierarchyName = getHierarchyName(hierarchy);
             String levelName = level.getName();
 
             String tableName = cubeName +
@@ -4486,7 +4486,7 @@ TODO: see above
             if (desc == null) {
                 desc = cube.getName() +
                     " Cube - " +
-                    hierarchy.getName() +
+                    getHierarchyName(hierarchy) +
                     " Hierarchy";
             }
 
@@ -4855,8 +4855,8 @@ TODO: see above
             if (desc == null) {
                 desc = cube.getName() +
                     " Cube - " +
-                    hierarchy.getName() +
-                    " Hierarchy" +
+                    getHierarchyName(hierarchy) +
+                    " Hierarchy - " +
                     level.getName() +
                     " Level";
             }
@@ -6417,7 +6417,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
 
             String desc = cube.getName() +
                 " Cube - " +
-                hierarchy.getName() +
+                getHierarchyName(hierarchy) +
                 " Hierarchy - " +
                 level.getName() +
                 " Level - " +
@@ -6486,6 +6486,17 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                 }
             }
         );
+    }
+
+    private static String getHierarchyName(Hierarchy hierarchy) {
+        String hierarchyName = hierarchy.getName();
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()
+            && !hierarchyName.equals(hierarchy.getDimension().getName()))
+        {
+            hierarchyName =
+                hierarchy.getDimension().getName() + "." + hierarchyName;
+        }
+        return hierarchyName;
     }
 }
 

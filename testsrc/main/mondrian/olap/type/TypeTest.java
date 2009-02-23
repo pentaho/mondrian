@@ -10,6 +10,7 @@ package mondrian.olap.type;
 
 import mondrian.test.TestContext;
 import mondrian.olap.*;
+import mondrian.olap.fun.Resolver;
 import junit.framework.TestCase;
 import java.util.List;
 import java.util.ArrayList;
@@ -127,15 +128,15 @@ public class TypeTest extends TestCase {
                     assertEquals(desc, type, type2);
                 }
 
-                final int fromCategory = TypeUtil.typeToCategory(fromType);
                 final int toCategory = TypeUtil.typeToCategory(toType);
-                final int[] conversions = new int[] {0};
+                final List<Resolver.Conversion> conversions =
+                    new ArrayList<Resolver.Conversion>();
                 final boolean canConvert =
                     TypeUtil.canConvert(
-                        fromCategory,
+                        fromType,
                         toCategory,
                         conversions);
-                if (canConvert && conversions[0] == 0 && type == null) {
+                if (canConvert && conversions.size() == 0 && type == null) {
                     if (!(fromType == memberType && toType == tupleType
                         || fromType == tupleSetType && toType == setType
                         || fromType == setType && toType == tupleSetType))
