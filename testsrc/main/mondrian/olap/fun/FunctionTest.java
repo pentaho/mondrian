@@ -1101,7 +1101,6 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testParentPC() {
         final TestContext testContext = getTestContext().withCube("HR");
-        if (false) {
         testContext.assertAxisReturns(
             "[Employees].Parent",
             "");
@@ -1113,8 +1112,7 @@ public class FunctionTest extends FoodMartTestCase {
             "[Employees].[All Employees].[Sheri Nowmer]");
         testContext.assertAxisReturns(
             "[Employees].Members.Item(3)",
-            "[Employees].[All Employees].[Michael Spence]");
-        }
+            "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]");
         testContext.assertAxisReturns(
             "[Employees].Members.Item(3).Parent",
             "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]");
