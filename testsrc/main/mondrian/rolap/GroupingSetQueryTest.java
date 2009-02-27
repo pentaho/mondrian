@@ -456,20 +456,6 @@ public class GroupingSetQueryTest extends BatchTestCase {
         CellRequest request3 = createRequest(cubeNameSales2,
             measureCustomerCount, tableTime, fieldYear, "1997", constraint);
 
-        String sqlWithGS =
-            "select \"time_by_day\".\"the_year\" as \"c0\", " +
-            "\"customer\".\"gender\" as \"c1\", " +
-            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\", " +
-            "grouping(\"customer\".\"gender\") as \"g0\" " +
-            "from \"time_by_day\" =as= \"time_by_day\", " +
-            "\"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\", " +
-            "\"store\" =as= \"store\" " +
-            "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-            "and \"time_by_day\".\"the_year\" = 1997 and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-            "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and ((\"store\".\"store_country\" = 'USA' " +
-            "and \"store\".\"store_state\" = 'OR') or " +
-            "(\"store\".\"store_country\" = 'CANADA' and \"store\".\"store_state\" = 'BC')) " +
-            "group by grouping sets ((\"time_by_day\".\"the_year\",\"customer\".\"gender\"),(\"time_by_day\".\"the_year\"))";
         String sqlWithoutGS =
             "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
             "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" from \"time_by_day\" =as= \"time_by_day\", " +
@@ -484,10 +470,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternsGSDisabled = {
             new SqlPattern(ORACLE_TERADATA, sqlWithoutGS, sqlWithoutGS)
         };
-
-        SqlPattern[] patternsGSEnabled = {
-            new SqlPattern(ORACLE_TERADATA, sqlWithGS, sqlWithGS)
-        };
+        // as of change 12310 GS has been removed from distinct count queries, since there is
+        // little or no performance benefit and there is a bug related to it (2207515)
+        SqlPattern[] patternsGSEnabled = patternsGSDisabled;
 
         prop.EnableGroupingSets.set(true);
 
@@ -498,108 +483,6 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
         assertRequestSql(
             new CellRequest[]{request3, request1, request2}, patternsGSDisabled);
-    }
-
-    public void testSQLForTotalOnCJofMembersWithDistinctCount() {
-        prop.EnableGroupingSets.set(true);
-        String mdxQuery = "WITH \n" +
-            "SET [COG_OQP_INT_s2] AS 'CROSSJOIN(" +
-            "{[Store].MEMBERS}, " +
-            "{{[Gender].MEMBERS}, " +
-            "{([Gender].[COG_OQP_USR_Aggregate(Gender)])}})' \n" +
-            "SET [COG_OQP_INT_s1] AS 'CROSSJOIN({[Store].MEMBERS}, {[Gender].MEMBERS})' \n" +
-            "\n" +
-            "MEMBER [Store].[COG_OQP_USR_Aggregate(Store)] AS '\n" +
-            "AGGREGATE({COG_OQP_INT_s1})', SOLVE_ORDER = 4 \n" +
-            "\n" +
-            "MEMBER [Gender].[COG_OQP_USR_Aggregate(Gender)] AS '\n" +
-            "AGGREGATE({[Gender].DEFAULTMEMBER})', SOLVE_ORDER = 8 \n" +
-            "\n" +
-            "\n" +
-            "SELECT {[Measures].[Customer Count]} ON AXIS(0), \n" +
-            "{[COG_OQP_INT_s2], HEAD({([Store].[COG_OQP_USR_Aggregate(Store)], [Gender].DEFAULTMEMBER)}, " +
-            "IIF(COUNT([COG_OQP_INT_s1], INCLUDEEMPTY) > 0, 1, 0))} ON AXIS(1) \n" +
-            "FROM [sales]";
-
-        String oraTeraSql = "select \"store\".\"store_country\" as \"c0\", " +
-            "\"time_by_day\".\"the_year\" " +
-            "as \"c1\", \"customer\".\"gender\" as \"c2\", " +
-            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\", " +
-            "grouping(\"customer\".\"gender\") as \"g0\", " +
-            "grouping(\"store\".\"store_country\") as \"g1\" " +
-            "from \"store\" =as= \"store\", " +
-            "\"sales_fact_1997\" =as= \"sales_fact_1997\", " +
-            "\"time_by_day\" =as= \"time_by_day\", " +
-            "\"customer\" =as= \"customer\" " +
-            "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-            "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-            "and \"time_by_day\".\"the_year\" = 1997 " +
-            "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-            "group by grouping sets " +
-            "((\"store\".\"store_country\",\"time_by_day\".\"the_year\",\"customer\".\"gender\")," +
-            "(\"store\".\"store_country\",\"time_by_day\".\"the_year\"),(\"time_by_day\".\"the_year\")," +
-            "(\"time_by_day\".\"the_year\",\"customer\".\"gender\"))";
-
-
-        SqlPattern[] patterns1 = {
-            new SqlPattern(ORACLE_TERADATA, oraTeraSql, oraTeraSql)};
-
-        assertQuerySql(mdxQuery,patterns1);
-    }
-
-    public void testAggregationOnMembersAndDefaultMemberForDistinctCount() {
-        prop.EnableGroupingSets.set(true);
-        String mdxQueryWithMembers = "WITH " +
-            "MEMBER [Gender].[COG_OQP_USR_Aggregate(Gender)] " +
-            "AS 'AGGREGATE({[Gender].MEMBERS})', SOLVE_ORDER = 8" +
-            "SELECT {[Measures].[Customer Count]} ON AXIS(0), " +
-            "{[Gender].MEMBERS, [Gender].[COG_OQP_USR_Aggregate(Gender)]} " +
-            "ON AXIS(1) " +
-            "FROM [Sales]";
-
-        String mdxQueryWithDefaultMember = "WITH " +
-            "MEMBER [Gender].[COG_OQP_USR_Aggregate(Gender)] " +
-            "AS 'AGGREGATE({[Gender].DEFAULTMEMBER})', SOLVE_ORDER = 8" +
-            "SELECT {[Measures].[Customer Count]} ON AXIS(0), \n" +
-            "{[Gender].MEMBERS, [Gender].[COG_OQP_USR_Aggregate(Gender)]} " +
-            "ON AXIS(1) \n" +
-            "FROM [sales]";
-
-        String desiredResult = fold(
-            "Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Customer Count]}\n" +
-                "Axis #2:\n" +
-                "{[Gender].[All Gender]}\n" +
-                "{[Gender].[All Gender].[F]}\n" +
-                "{[Gender].[All Gender].[M]}\n" +
-                "{[Gender].[COG_OQP_USR_Aggregate(Gender)]}\n" +
-                "Row #0: 5,581\n" +
-                "Row #1: 2,755\n" +
-                "Row #2: 2,826\n" +
-                "Row #3: 5,581\n");
-
-
-        String  oraTeraSql = "select \"time_by_day\".\"the_year\" as \"c0\", " +
-            "\"customer\".\"gender\" as \"c1\", " +
-            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\", " +
-            "grouping(\"customer\".\"gender\") as \"g0\" " +
-            "from \"time_by_day\" =as= \"time_by_day\", " +
-            "\"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\" " +
-            "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-            "and \"time_by_day\".\"the_year\" = 1997 " +
-            "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-            "group by grouping sets " +
-            "((\"time_by_day\".\"the_year\",\"customer\".\"gender\"),(\"time_by_day\".\"the_year\"))";
-
-        SqlPattern[] patterns = {
-            new SqlPattern(ORACLE_TERADATA, oraTeraSql, oraTeraSql)};
-
-        assertQueryReturns(mdxQueryWithMembers, desiredResult);
-        assertQuerySql(mdxQueryWithMembers, patterns);
-        assertQueryReturns(mdxQueryWithDefaultMember, desiredResult);
-        assertQuerySql(mdxQueryWithDefaultMember, patterns);
     }
 
     /**
