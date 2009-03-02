@@ -7,7 +7,12 @@ Linux) PS=: ;;
 *) PS=\; ;;
 esac
 
-export CP="lib/mondrian.jar${PS}lib/log4j.jar${PS}lib/eigenbase-properties.jar${PS}lib/eigenbase-xom.jar${PS}lib/eigenbase-resgen.jar"
+export CP="lib/mondrian.jar"
+export CP="${CP}${PS}lib/log4j.jar"
+export CP="${CP}${PS}lib/commons-logging.jar"
+export CP="${CP}${PS}lib/eigenbase-properties.jar"
+export CP="${CP}${PS}lib/eigenbase-xom.jar"
+export CP="${CP}${PS}lib/eigenbase-resgen.jar"
 
 oracle() {
     #export ORACLE_HOME=G:/oracle/product/10.1.0/Db_1

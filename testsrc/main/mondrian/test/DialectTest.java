@@ -48,6 +48,10 @@ import javax.sql.DataSource;
 public class DialectTest extends TestCase {
     private Connection connection;
     private Dialect dialect;
+    private static final
+    String
+        INFOBRIGHT_UNSUPPORTED =
+        "The query includes syntax that is not supported by the Infobright Optimizer. Either restructure the query with supported syntax, or enable the MySQL Query Path in the brighthouse.ini file to execute the query with reduced performance.";
 
     public DialectTest(String name) {
         super(name);
@@ -104,6 +108,8 @@ public class DialectTest extends TestCase {
                 "Syntax error: Encountered \",\" at line 1, column 36.",
                 // access
                 "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression '.*'.",
+                // infobright
+                INFOBRIGHT_UNSUPPORTED,
                 // postgres
                 "ERROR: function count\\(integer, integer\\) does not exist",
                 // LucidDb
@@ -254,7 +260,11 @@ public class DialectTest extends TestCase {
                 "FROM [sales_fact_1997]\n" +
                 "ORDER BY [unit_sales] + [store_id]");
         if (getDialect().requiresOrderByAlias()) {
-            assertQueryFails(sql, new String[] {});
+            final String[] errs = {
+                // infobright
+                INFOBRIGHT_UNSUPPORTED,
+            };
+            assertQueryFails(sql, errs);
         } else {
             assertQuerySucceeds(sql);
         }
@@ -273,7 +283,9 @@ public class DialectTest extends TestCase {
                 // oracle
                 "(?s)ORA-03001: unimplemented feature.*",
                 // access
-                "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Too few parameters. Expected 1."
+                "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Too few parameters. Expected 1.",
+                // infobright
+                INFOBRIGHT_UNSUPPORTED,
             };
             assertQueryFails(sql, errs);
         }
@@ -336,18 +348,7 @@ public class DialectTest extends TestCase {
                 "FROM [sales_fact_1997]\n" +
                 "WHERE ([unit_sales], [time_id]) IN ((1, 371), (2, 394))");
 
-        boolean supports = getDialect().supportsMultiValueInExpr();
-
-        // Infobright supports this syntax but is too slow for general use so
-        // the dialect pretends that it does not.
-        switch (getDialect().getDatabaseProduct()) {
-        case INFOBRIGHT:
-            assertFalse(supports);
-            supports = true;
-            break;
-        }
-
-        if (supports) {
+        if (getDialect().supportsMultiValueInExpr()) {
             assertQuerySucceeds(sql);
         } else {
             String[] errs = {
@@ -355,6 +356,8 @@ public class DialectTest extends TestCase {
                 "Syntax error: Encountered \",\" at line 3, column 20.",
                 // access
                 "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(comma\\) in query expression '.*'.",
+                // infobright
+                INFOBRIGHT_UNSUPPORTED,
                 // teradata
                 ".*Syntax error, expected something like a 'SELECT' keyword or '\\(' between '\\(' and the integer '1'\\.",
                 // netezza

@@ -5,7 +5,7 @@
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
   == Copyright (C) 2001-2002 Kana Software, Inc.
-  == Copyright (C) 2002-2008 Julian Hyde and others
+  == Copyright (C) 2002-2009 Julian Hyde and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -259,7 +259,7 @@ given, assumes data comes from this file of INSERT statements.</td>
     </tbody>
   </table>
 
-<h4>Examples</h4>
+<h4>Examples<a name="2_3_Examples">&nbsp;</a></h4>
 
 <p>Here are some examples to give you a general idea how
 <code>MondrianFoodMartLoader</code> is invoked. The command line you use
@@ -289,7 +289,7 @@ user:</p>
 
 <blockquote>
   <code><b><i>$</i></b> java -cp
-"/mondrian/lib/mondrian.jar:/mondrian/lib/log4j.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-5.0.5-bin.jar"<br>
+"/mondrian/lib/mondrian.jar:/mondrian/lib/log4j.jar:/mondrian/lib/commons-logging.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-5.0.5-bin.jar"<br>
 &nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=com.mysql.jdbc.Driver<br>
@@ -305,7 +305,7 @@ dataset in the Access database:</p>
 
 <blockquote>
 	<code><i><b>C:\mondrian&gt;</b></i> java -cp
-"C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j.jar; C:\mondrian\lib\eigenbase-xom.jar; C:\mondrian\lib\eigenbase-resgen.jar; C:\mondrian\lib\eigenbase-properties.jar; C:\mondrian\lib\postgres-jdbc.jar"<br>
+"C:\mondrian\lib\mondrian.jar; C:\mondrian\lib\log4j.jar; C:\mondrian\lib\commons-logging.jar; C:\mondrian\lib\eigenbase-xom.jar; C:\mondrian\lib\eigenbase-resgen.jar; C:\mondrian\lib\eigenbase-properties.jar; C:\mondrian\lib\postgres-jdbc.jar"<br>
 &nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers="org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver"<br>
@@ -636,7 +636,7 @@ Mondrian WAR.</p>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/install.html?ac=22">log</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc.<br/>
-    Copyright (C) 2002-2008 Julian Hyde and others
+    Copyright (C) 2002-2009 Julian Hyde and others
 </p>
 
 <br/>
