@@ -14,6 +14,7 @@
 package mondrian.olap;
 
 import org.apache.commons.vfs.*;
+import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.XOMUtil;
 
@@ -2168,8 +2169,11 @@ public class Util extends XOMUtil {
         File userDir = new File("").getAbsoluteFile();
         FileObject file = fsManager.resolveFile(userDir, url);
 
-        // Workaround to defect 2613265
-        if (!file.getName().getURI().equals(url)) {
+        // Workaround to defect 2613265.  For HttpFileObjects, verifies the URL
+        // of the file retrieved matches the URL passed in.  A VFS cache bug
+        // can cause it to treat URLs with different parameters as the same
+        // file (e.g. http://blah.com?param=A, http://blah.com?param=B)
+        if (file instanceof HttpFileObject && !file.getName().getURI().equals(url)) {
             fsManager.getFilesCache().removeFile(file.getFileSystem(),  file.getName());
             file = fsManager.resolveFile(userDir, url);
         }
