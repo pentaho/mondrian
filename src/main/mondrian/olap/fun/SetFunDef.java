@@ -215,19 +215,26 @@ public class SetFunDef extends FunDefBase {
             for (VoidCalc voidCalc : voidCalcs) {
                 voidCalc.evaluateVoid(evaluator);
             }
-            // REVIEW: What the heck is this code doing? Why is it OK to
-            // ignore IndexOutOfBoundsException and NullPointerException?
-            try {
-                if (result.get(0) instanceof Member) {
-                    if (!((Member)result.get(0)).getDimension()
-                            .isHighCardinality()) {
-                        result.toArray();
-                    }
-                }
-            } catch (IndexOutOfBoundsException iooe) {
-            } catch (NullPointerException npe) {
+            if (!isItemZeroHighCardDim(result)) {
+                // For non-high cardinality dims set the ConcatenableList to use an ArrayList internally
+                result.toArray();
             }
             return result;
+        }
+
+        /**
+         * Determines whether the first item of the list is a member from a highCardinality dimension.
+         * Note that if the list contains a Member[] that it will return false, even if all members
+         * are from high cardinality dimensions.
+         * @param result
+         * @return
+         */
+        private boolean isItemZeroHighCardDim(List result) {
+            if (result.isEmpty()) {
+                return false;
+            }
+            Object item0 = result.get(0);
+            return item0 instanceof Member && ((Member) item0).getDimension().isHighCardinality();
         }
     }
 
