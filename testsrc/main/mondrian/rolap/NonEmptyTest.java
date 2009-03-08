@@ -3334,7 +3334,7 @@ public class NonEmptyTest extends BatchTestCase {
      * Makes sure an MDX runs correctly and not in native mode.
      *
      * @param rowCount number of rows returned
-     * @param MDX query
+     * @param mdx MDX query
      * @param expectedResult expected result string
      */
     private void checkNotNative(

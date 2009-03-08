@@ -1085,18 +1085,20 @@ public class CrossJoinFunDef extends FunDefBase {
             }
             return (ListCalc) calc;
         } else {
-            return new SetFunDef.ListSetCalc(
-                    new DummyExp(new SetType(type)),
-                    new Exp[] {exp},
-                    compiler,
-                    ResultStyle.LIST_MUTABLELIST);
+            return new SetFunDef.MemberSetListCalc(
+                new DummyExp(new SetType(type)),
+                new Exp[] {exp},
+                compiler,
+                ResultStyle.LIST_MUTABLELIST);
         }
     }
 
     abstract class BaseListCalc extends AbstractListCalc {
-        protected BaseListCalc(ResolvedFunCall call,
-                    Calc[] calcs,
-                    boolean mutable) {
+        protected BaseListCalc(
+            ResolvedFunCall call,
+            Calc[] calcs,
+            boolean mutable)
+        {
             super(call, calcs, mutable);
         }
 

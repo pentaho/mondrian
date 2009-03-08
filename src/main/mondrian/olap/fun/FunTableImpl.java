@@ -18,7 +18,7 @@ import java.util.*;
  * Abstract implementation of {@link FunTable}.
  *
  * <p>The derived class must implement
- * {@link #defineFunctions(mondrian.olap.fun.FunTableImpl.Builder)} to define
+ * {@link #defineFunctions(mondrian.olap.FunTable.Builder)} to define
  * each function which will be recognized by this table. This method is called
  * from the constructor, after which point, no further functions can be added.
  */
@@ -34,6 +34,9 @@ public abstract class FunTableImpl implements FunTable {
     private Set<String> propertyWords;
     private List<FunInfo> funInfoList;
 
+    /**
+     * Creates a FunTableImpl.
+     */
     protected FunTableImpl() {
     }
 
@@ -108,9 +111,9 @@ public abstract class FunTableImpl implements FunTable {
     }
 
     /**
-     * Implementation of {@link Builder}. Functions are added to lists each time
-     * {@link #define(Resolver)} is called, then {@link #organizeFunctions()}
-     * sorts and indexes the map.
+     * Implementation of {@link mondrian.olap.FunTable.Builder}.
+     * Functions are added to lists each time {@link #define(Resolver)} is
+     * called, then {@link #organizeFunctions()} sorts and indexes the map.
      */
     private class BuilderImpl implements Builder {
         private final List<Resolver> resolverList = new ArrayList<Resolver>();

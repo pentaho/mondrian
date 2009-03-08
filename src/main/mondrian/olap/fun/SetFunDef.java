@@ -70,6 +70,12 @@ public class SetFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final Exp[] args = call.getArgs();
+        if (args.length == 0) {
+            // Special treatment for empty set, because we don't know whether it
+            // is a set of members or tuples, and so we need it to implement
+            // both MemberListCalc and TupleListCalc.
+            return new EmptyListCalc(call);
+        }
         if (args.length == 1
             && args[0].getType() instanceof SetType)
         {
@@ -78,28 +84,34 @@ public class SetFunDef extends FunDefBase {
             // write 'Foo.Children on 1'.
             return args[0].accept(compiler);
         }
-        return new ListSetCalc(
-            call, args, compiler,
-            ResultStyle.LIST_MUTABLELIST);
+        if (((SetType) call.getType()).getArity() == 1) {
+            return new MemberSetListCalc(
+                call, args, compiler,
+                ResultStyle.LIST_MUTABLELIST);
+        } else {
+            return new TupleSetListCalc(
+                call, args, compiler,
+                ResultStyle.LIST_MUTABLELIST);
+        }
     }
 
     /**
      * Compiled expression to implement the MDX set function, <code>{ ...
-     * }</code>.
+     * }</code>, applied to a set of members, as a list.
      *
      * <p>The set function can contain expressions which yield sets together
-     * with expressions which yield individual members/tuples, provided that
+     * with expressions which yield individual members, provided that
      * they all have the same type. It automatically removes null members
-     * or partially-null tuples from the list.
+     * from the list.
      *
      * <p>The implementation uses {@link VoidCalc} objects with side-effects
      * to avoid generating lots of intermediate lists.
      */
-    public static class ListSetCalc extends AbstractListCalc {
-        private List result = new ConcatenableList();
+    public static class MemberSetListCalc extends AbstractMemberListCalc {
+        private List<Member> result = new ConcatenableList<Member>();
         private final VoidCalc[] voidCalcs;
 
-        public ListSetCalc(
+        public MemberSetListCalc(
             Exp exp, Exp[] args, ExpCompiler compiler,
             List<ResultStyle> resultStyles)
         {
@@ -111,9 +123,11 @@ public class SetFunDef extends FunDefBase {
             return voidCalcs;
         }
 
-        private VoidCalc[] compileSelf(Exp[] args,
-                ExpCompiler compiler,
-                List<ResultStyle> resultStyles) {
+        private VoidCalc[] compileSelf(
+            Exp[] args,
+            ExpCompiler compiler,
+            List<ResultStyle> resultStyles)
+        {
             VoidCalc[] voidCalcs = new VoidCalc[args.length];
             for (int i = 0; i < args.length; i++) {
                 voidCalcs[i] = createCalc(args[i], compiler, resultStyles);
@@ -130,57 +144,30 @@ public class SetFunDef extends FunDefBase {
             if (type instanceof SetType) {
                 // TODO use resultStyles
                 final ListCalc listCalc = compiler.compileList(arg);
-                if (((SetType) type).getArity() == 1) {
-                    final MemberListCalc memberListCalc =
-                        (MemberListCalc) listCalc;
-                    return new AbstractVoidCalc(arg, new Calc[] {listCalc}) {
-                        public void evaluateVoid(Evaluator evaluator) {
-                            final List<Member> memberList =
-                                memberListCalc.evaluateMemberList(evaluator);
-                            final List<Member> list =
-                                new FilteredIterableList<Member>(
-                                    memberList,
-                                    new FilteredIterableList.Filter<Member>() {
-                                        public boolean accept(Member m) {
-                                            return m != null && !m.isNull();
-                                        }
-                                    }
-                                );
-                            result.addAll(list);
-                        }
-
-                        protected String getName() {
-                            return "Sublist";
-                        }
-                    };
-                } else {
-                    final TupleListCalc tupleListCalc =
-                        (TupleListCalc) listCalc;
-                    return new AbstractVoidCalc(arg, new Calc[] {listCalc}) {
-                        public void evaluateVoid(Evaluator evaluator) {
-                            List<Member[]> list =
-                                tupleListCalc.evaluateTupleList(evaluator);
-                            // Add only tuples which are not null. Tuples with
-                            // any null members are considered null.
-                            outer:
-                            for (Member[] members : list) {
-                                for (Member member : members) {
-                                    if (member == null || member.isNull()) {
-                                        continue outer;
+                final MemberListCalc memberListCalc = (MemberListCalc) listCalc;
+                return new AbstractVoidCalc(arg, new Calc[] {listCalc}) {
+                    public void evaluateVoid(Evaluator evaluator) {
+                        final List<Member> memberList =
+                            memberListCalc.evaluateMemberList(evaluator);
+                        final List<Member> list =
+                            new FilteredIterableList<Member>(
+                                memberList,
+                                new FilteredIterableList.Filter<Member>() {
+                                    public boolean accept(Member m) {
+                                        return m != null && !m.isNull();
                                     }
                                 }
-                                result.add(members);
-                            }
-                        }
+                            );
+                        result.addAll(list);
+                    }
 
-                        protected String getName() {
-                            return "Sublist";
-                        }
-                    };
-                }
-            } else if (TypeUtil.couldBeMember(type)) {
+                    protected String getName() {
+                        return "Sublist";
+                    }
+                };
+            } else {
                 final MemberCalc listCalc = compiler.compileMember(arg);
-                return new AbstractVoidCalc(arg, new Calc[] {listCalc}) {
+                return new AbstractVoidCalc(arg, new Calc[]{listCalc}) {
                     public void evaluateVoid(Evaluator evaluator) {
                         Member member = listCalc.evaluateMember(evaluator);
                         if (member == null || member.isNull()) {
@@ -193,9 +180,103 @@ public class SetFunDef extends FunDefBase {
                         return "Sublist";
                     }
                 };
+            }
+        }
+
+        public List<Member> evaluateMemberList(final Evaluator evaluator) {
+            this.result = new ConcatenableList<Member>();
+            for (VoidCalc voidCalc : voidCalcs) {
+                voidCalc.evaluateVoid(evaluator);
+            }
+
+            // For non-high cardinality dimensions, consolidate the lists
+            // inside the ConcatenableList. High-cardinality dimensions should
+            // be kept intact, because enumerating the sublists is expensive.
+            if (!result.isEmpty()
+                && !result.get(0).getDimension().isHighCardinality())
+            {
+                result.toArray();
+            }
+            return result;
+        }
+    }
+
+    /**
+     * Compiled expression to implement the MDX set function, <code>{ ...
+     * }</code>, applied to a set of tuples, as a list.
+     *
+     * <p>The set function can contain expressions which yield sets together
+     * with expressions which yield individual tuples, provided that
+     * they all have the same type. It automatically removes null
+     * or partially-null tuples from the list.
+     *
+     * <p>Analogous to {@link mondrian.olap.fun.SetFunDef.MemberSetListCalc},
+     * except processes tuples instead of members.
+     *
+     * <p>Also, does not process high-cardinality dimensions specially.
+     */
+    public static class TupleSetListCalc extends AbstractTupleListCalc {
+        private List<Member[]> result = new ConcatenableList<Member[]>();
+        private final VoidCalc[] voidCalcs;
+
+        public TupleSetListCalc(
+            Exp exp, Exp[] args, ExpCompiler compiler,
+            List<ResultStyle> resultStyles)
+        {
+            super(exp, null);
+            voidCalcs = compileSelf(args, compiler, resultStyles);
+        }
+
+        public Calc[] getCalcs() {
+            return voidCalcs;
+        }
+
+        private VoidCalc[] compileSelf(
+            Exp[] args,
+            ExpCompiler compiler,
+            List<ResultStyle> resultStyles)
+        {
+            VoidCalc[] voidCalcs = new VoidCalc[args.length];
+            for (int i = 0; i < args.length; i++) {
+                voidCalcs[i] = createCalc(args[i], compiler, resultStyles);
+            }
+            return voidCalcs;
+        }
+
+        private VoidCalc createCalc(
+            Exp arg,
+            ExpCompiler compiler,
+            List<ResultStyle> resultStyles)
+        {
+            final Type type = arg.getType();
+            if (type instanceof SetType) {
+                // TODO use resultStyles
+                final ListCalc listCalc = compiler.compileList(arg);
+                final TupleListCalc tupleListCalc = (TupleListCalc) listCalc;
+                return new AbstractVoidCalc(arg, new Calc[] {listCalc}) {
+                    public void evaluateVoid(Evaluator evaluator) {
+                        List<Member[]> list =
+                            tupleListCalc.evaluateTupleList(evaluator);
+                        // Add only tuples which are not null. Tuples with
+                        // any null members are considered null.
+                        outer:
+                        for (Member[] members : list) {
+                            for (Member member : members) {
+                                if (member == null || member.isNull()) {
+                                    continue outer;
+                                }
+                            }
+                            result.add(members);
+                        }
+                    }
+
+                    protected String getName() {
+                        return "Sublist";
+                    }
+                };
             } else {
                 final TupleCalc tupleCalc = compiler.compileTuple(arg);
-                return new AbstractVoidCalc(arg, new Calc[] {tupleCalc}) {
+                return new AbstractVoidCalc(arg, new Calc[]{tupleCalc}) {
                     public void evaluateVoid(Evaluator evaluator) {
                         // Don't add null or partially null tuple to result.
                         Member[] members = tupleCalc.evaluateTuple(evaluator);
@@ -210,31 +291,12 @@ public class SetFunDef extends FunDefBase {
             }
         }
 
-        public List evaluateList(final Evaluator evaluator) {
-            this.result = new ConcatenableList();
+        public List<Member[]> evaluateTupleList(final Evaluator evaluator) {
+            this.result = new ConcatenableList<Member[]>();
             for (VoidCalc voidCalc : voidCalcs) {
                 voidCalc.evaluateVoid(evaluator);
             }
-            if (!isItemZeroHighCardDim(result)) {
-                // For non-high cardinality dims set the ConcatenableList to use an ArrayList internally
-                result.toArray();
-            }
             return result;
-        }
-
-        /**
-         * Determines whether the first item of the list is a member from a highCardinality dimension.
-         * Note that if the list contains a Member[] that it will return false, even if all members
-         * are from high cardinality dimensions.
-         * @param result
-         * @return
-         */
-        private boolean isItemZeroHighCardDim(List result) {
-            if (result.isEmpty()) {
-                return false;
-            }
-            Object item0 = result.get(0);
-            return item0 instanceof Member && ((Member) item0).getDimension().isHighCardinality();
         }
     }
 
@@ -554,6 +616,24 @@ public class SetFunDef extends FunDefBase {
                 return null;
             }
             return new SetFunDef(this, parameterTypes);
+        }
+    }
+
+    /**
+     * Compiled expression that returns an empty list of members or tuples.
+     */
+    private static class EmptyListCalc extends AbstractListCalc {
+        /**
+         * Creates an EmptyListCalc.
+         *
+         * @param call Expression which was compiled
+         */
+        EmptyListCalc(ResolvedFunCall call) {
+            super(call, new Calc[0]);
+        }
+
+        public List evaluateList(Evaluator evaluator) {
+            return Collections.EMPTY_LIST;
         }
     }
 }

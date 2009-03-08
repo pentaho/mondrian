@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -172,8 +172,7 @@ class ExtractFunDef extends FunDefBase {
         Util.assertTrue(
             extractedOrdinalList.size() == extractedDimensionList.size());
         Exp arg = call.getArg(0);
-        final TupleListCalc listCalc =
-            (TupleListCalc) compiler.compileList(arg, false);
+        final ListCalc listCalc = (ListCalc) compiler.compileList(arg, false);
         int inArity = ((SetType) arg.getType()).getArity();
         final int outArity = extractedOrdinalList.size();
         if (inArity == 1) {
@@ -182,12 +181,14 @@ class ExtractFunDef extends FunDefBase {
             Util.assertTrue(outArity == 1);
             return new DistinctFunDef.CalcImpl(call, listCalc);
         }
+        final TupleListCalc tupleListCalc = (TupleListCalc) listCalc;
         final int[] extractedOrdinals = toIntArray(extractedOrdinalList);
         if (outArity == 1) {
             return new AbstractListCalc(call, new Calc[] {listCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     List<Member> result = new ArrayList<Member>();
-                    List<Member[]> list = listCalc.evaluateTupleList(evaluator);
+                    List<Member[]> list =
+                        tupleListCalc.evaluateTupleList(evaluator);
                     Set<Member> emittedMembers = new HashSet<Member>();
                     for (Member[] members : list) {
                         Member outMember = members[extractedOrdinals[0]];
@@ -202,8 +203,10 @@ class ExtractFunDef extends FunDefBase {
             return new AbstractListCalc(call, new Calc[] {listCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     List<Member[]> result = new ArrayList<Member[]>();
-                    List<Member[]> list = listCalc.evaluateTupleList(evaluator);
-                    Set<List<Member>> emittedTuples = new HashSet<List<Member>>();
+                    List<Member[]> list =
+                        tupleListCalc.evaluateTupleList(evaluator);
+                    Set<List<Member>> emittedTuples =
+                        new HashSet<List<Member>>();
                     for (Member[] members : list) {
                         Member[] outMembers = new Member[outArity];
                         for (int i = 0; i < outMembers.length; i++) {

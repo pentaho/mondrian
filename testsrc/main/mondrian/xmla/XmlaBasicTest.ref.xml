@@ -18704,17 +18704,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <FUNCTION_NAME>AllMembers</FUNCTION_NAME>
                         <DESCRIPTION>Returns a set that contains all
                             members, including calculated members, of
-                            the specified dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>AllMembers</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>AllMembers</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a set that contains all
-                            members, including calculated members, of
                             the specified hierarchy.</DESCRIPTION>
                         <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
@@ -19431,15 +19420,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>dDB</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>DefaultMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the default member of a dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>DefaultMember</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>DefaultMember</FUNCTION_NAME>
@@ -20970,15 +20950,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Median</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>Members</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of members in a dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>Members</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Members</FUNCTION_NAME>
