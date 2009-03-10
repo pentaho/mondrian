@@ -302,6 +302,13 @@ public class ValidationUtils {
             }
 
             MondrianGuiDef.Hierarchy hierarchy = ((MondrianGuiDef.Hierarchy) value);
+            MondrianGuiDef.Level[] levels = hierarchy.levels;
+            if (levels == null || levels.length == 0) {
+                return messages.getFormattedString(
+                        "schemaExplorer.hierarchyElementLevels.title",
+                        "Hierarchy {0} must have levels", new String[] { hierarchy.name});
+            }
+
             // Validates that value in primaryKey exists in Table.
             String pkTable = null;
             if (hierarchy.relation instanceof MondrianGuiDef.Join) {
