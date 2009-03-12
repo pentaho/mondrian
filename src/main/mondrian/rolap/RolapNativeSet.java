@@ -774,16 +774,31 @@ public abstract class RolapNativeSet extends RolapNative {
         if (args.length != 2) {
             return null;
         }
-        ExpCompiler compiler = evaluator.getQuery().createCompiler();
-
         // Check if the arguments can be natively evaluated.
         // If not, try evaluating this argument and turning the result into
         // MemberListCrossJoinArg.
-        // If either the inputs can be natively evaluated, or the result list
-        CrossJoinArg[] arg0 = checkCrossJoinArg(evaluator, args[0]);
-        if (arg0 == null) {
-            if (MondrianProperties.instance().ExpandNonNative.get()) {
-                ListCalc listCalc0 = compiler.compileList(args[0]);
+        CrossJoinArg[][] argArray = new CrossJoinArg[2][];
+        for (int i = 0; i < 2; i++) {
+            argArray[i] = checkCrossJoinArg(evaluator, args[i]);
+            if (argArray[i] == null) {
+                argArray[i] = expandNonNative(evaluator, args[i]);
+            }
+            if (argArray[i] == null) {
+                return null;
+            }
+        }
+        CrossJoinArg[] ret = new CrossJoinArg[argArray[0].length + argArray[1].length];
+        System.arraycopy(argArray[0], 0, ret, 0, argArray[0].length);
+        System.arraycopy(argArray[1], 0, ret, argArray[0].length, argArray[1].length);
+        return ret;
+    }
+
+    private CrossJoinArg[] expandNonNative(RolapEvaluator evaluator,
+        Exp exp) {
+        ExpCompiler compiler = evaluator.getQuery().createCompiler();
+        CrossJoinArg[] arg0 = null;
+        if (MondrianProperties.instance().ExpandNonNative.get()) {
+                ListCalc listCalc0 = compiler.compileList(exp);
                 List<RolapMember> list0 = Util.cast(listCalc0.evaluateList(evaluator));
                 // Prevent the case when the second argument size is too large
                 if (list0 != null) {
@@ -793,42 +808,10 @@ public abstract class RolapNativeSet extends RolapNative {
                     MemberListCrossJoinArg.create(evaluator, list0, restrictMemberTypes());
                 if (arg != null) {
                     arg0 = new CrossJoinArg[] {arg};
-                } else {
-                    return null;
                 }
-            } else {
-                return null;
             }
-        }
-
-        CrossJoinArg[] arg1 = checkCrossJoinArg(evaluator, args[1]);
-        if (arg1 == null) {
-            if (MondrianProperties.instance().ExpandNonNative.get()) {
-                ListCalc listCalc1 = compiler.compileList(args[1]);
-                List<RolapMember> list1 = Util.cast(listCalc1.evaluateList(evaluator));
-                // Prevent the case when the second argument size is too large
-                if (list1 != null) {
-                    Util.checkCJResultLimit(list1.size());
-                }
-
-                CrossJoinArg arg =
-                    MemberListCrossJoinArg.create(evaluator, list1, restrictMemberTypes());
-                if (arg != null) {
-                    arg1 = new CrossJoinArg[] {arg};
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
-            }
-        }
-
-        CrossJoinArg[] ret = new CrossJoinArg[arg0.length + arg1.length];
-        System.arraycopy(arg0, 0, ret, 0, arg0.length);
-        System.arraycopy(arg1, 0, ret, arg0.length, arg1.length);
-        return ret;
+            return arg0;
     }
-
     /**
      * Scans for memberChildren, levelMembers, memberDescendants, crossJoin.
      */
@@ -847,8 +830,10 @@ public abstract class RolapNativeSet extends RolapNative {
         FunDef fun = funCall.getFunDef();
         Exp[] args = funCall.getArgs();
 
+
         final Role role = evaluator.getSchemaReader().getRole();
         CrossJoinArg arg;
+
         arg = checkMemberChildren(role, fun, args);
         if (arg != null) {
             return new CrossJoinArg[] {arg};
@@ -864,6 +849,11 @@ public abstract class RolapNativeSet extends RolapNative {
         arg = checkEnumeration(evaluator, fun, args);
         if (arg != null) {
             return new CrossJoinArg[] {arg};
+        }
+        // strip off redundant set braces, for example
+        // { Gender.Gender.members }, or {{{ Gender.M }}}
+        if ("{}".equalsIgnoreCase(fun.getName()) && args.length == 1) {
+            return checkCrossJoinArg(evaluator, args[0]);
         }
         return checkCrossJoin(evaluator, fun, args);
     }

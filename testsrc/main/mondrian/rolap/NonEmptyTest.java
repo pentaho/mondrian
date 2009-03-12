@@ -538,6 +538,28 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
+     *  verifies that redundant set braces do not prevent native evaluation
+     *  for example, {[Store].[Store Name].members} and
+     *  {{[Store Type].[Store Type].members}}
+     */
+    public void testNativeCJWithRedundantSetBraces() {
+            String query =
+                "select non empty {CrossJoin({[Store].[Store Name].members}, " +
+                "                        {{[Store Type].[Store Type].members}})}" +
+                "                         on rows, " +
+                "{[Measures].[Store Sqft]} on columns " +
+                "from [Store]";
+
+            propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, true);
+
+            // Get a fresh connection; Otherwise the mondrian property setting
+            // is not refreshed for this parameter.
+            boolean requestFreshConnection = true;
+            checkNative(0, 20, query, null, requestFreshConnection);
+        }
+
+
+    /**
      * Verify that CrossJoins with two non native inputs can be natively evaluated.
      */
     public void testExpandAllNonNativeInputs() {
