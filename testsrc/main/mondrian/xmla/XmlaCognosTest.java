@@ -13,6 +13,7 @@ import mondrian.olap.MondrianProperties;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
+import mondrian.spi.Dialect;
 import org.eigenbase.util.property.BooleanProperty;
 
 /**
@@ -76,12 +77,14 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
         executeMDX();
     }
 
-    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_009()
+    // disabled because runs out of memory/hangs
+    public void _testCognosMDXSuiteConvertedAdventureWorksToFoodMart_009()
             throws Exception {
         executeMDX();
     }
 
-    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_012()
+    // disabled because runs out of memory/hangs
+    public void _testCognosMDXSuiteConvertedAdventureWorksToFoodMart_012()
             throws Exception {
         executeMDX();
     }
@@ -91,7 +94,8 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
         executeMDX();
     }
 
-    public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_014()
+    // disabled because runs out of memory/hangs
+    public void _testCognosMDXSuiteConvertedAdventureWorksToFoodMart_014()
             throws Exception {
         executeMDX();
     }
@@ -186,6 +190,15 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
     }
 
     public void testWithFilter() throws Exception {
+        if (getTestContext().getDialect().getDatabaseProduct()
+            == Dialect.DatabaseProduct.ACCESS)
+        {
+            // Disabled because of bug on access: generates query with
+            // distinct-count even though access does not support it. Bug
+            // 2685902, "Mondrian generates invalid count distinct on access"
+            // logged.
+            return;
+        }
         executeMDX();
     }
 
