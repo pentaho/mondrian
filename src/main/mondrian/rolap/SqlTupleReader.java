@@ -477,7 +477,7 @@ public class SqlTupleReader implements TupleReader {
             if (stmt == null) {
                 throw Util.newError(e, message);
             } else {
-                stmt.handle(e);
+                throw stmt.handle(e);
             }
         } finally {
             if (stmt != null) {

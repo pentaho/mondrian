@@ -138,7 +138,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
             readNextTuple();
         } catch (SQLException sqle) {
             if (stmt != null) {
-                stmt.handle(sqle);
+                throw stmt.handle(sqle);
             } else {
                 throw Util.newError(sqle, message);
             }
@@ -202,8 +202,8 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         try {
             this.moreRows = this.resultLoader.loadResult();
         } catch (SQLException sqle) {
-            this.resultLoader.handle(sqle);
             this.moreRows = false;
+            throw this.resultLoader.handle(sqle);
         }
         if (!this.moreRows) {
             this.resultLoader.close();

@@ -2992,7 +2992,7 @@ public class XmlaHandler implements XmlaConstants {
                         ++smt.rowCount;
                     }
                 } catch (SQLException e) {
-                    smt.handle(e);
+                    throw smt.handle(e);
                 } finally {
                     smt.close();
                 }

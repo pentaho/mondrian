@@ -1290,7 +1290,7 @@ public class AggStar {
                     numberOfRows = Integer.MAX_VALUE / getTotalColumnSize();
                 }
             } catch (SQLException e) {
-                stmt.handle(e);
+                throw stmt.handle(e);
             } finally {
                 stmt.close();
             }

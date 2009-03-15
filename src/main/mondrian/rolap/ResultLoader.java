@@ -122,13 +122,14 @@ public class ResultLoader {
 
 
     /**
-     * Handles error
+     * Handles an error, and returns an exception that the caller should then
+     * throw.
      */
-    public void handle(Exception e) {
+    public RuntimeException handle(Exception e) {
         if (stmt != null) {
-            stmt.handle(e);
+            return stmt.handle(e);
         } else {
-            throw Util.newError(e, message);
+            return Util.newError(e, message);
         }
     }
 
