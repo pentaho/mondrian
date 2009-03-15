@@ -348,7 +348,7 @@ public class RolapConnection extends ConnectionBase {
                 // FIXME ordering is non-deterministic
                 appendKeyValue(buf, (String) entry.getKey(), entry.getValue());
             }
-            String propertyString = jdbcProperties.toString();
+
             if (jdbcUser != null) {
                 jdbcProperties.put("user", jdbcUser);
             }

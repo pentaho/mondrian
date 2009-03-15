@@ -88,18 +88,14 @@ class RolapConnectionPool {
         String jdbcConnectString,
         Properties jdbcProperties)
     {
-        Properties jdbcPropertiesSansUserPwd = jdbcProperties;
-        if (jdbcProperties.containsKey("user")
-            || jdbcProperties.containsKey("password")) {
-            jdbcPropertiesSansUserPwd = new Properties();
-            jdbcPropertiesSansUserPwd.putAll(jdbcProperties);
-            jdbcPropertiesSansUserPwd.remove("user");
-            jdbcPropertiesSansUserPwd.remove("password");
-        }
-        String propertyString = jdbcPropertiesSansUserPwd.toString();
-
         // First look for a data source with identical specification. This in
         // turn helps us to use the cache of Dialect objects.
+
+        // Need to include user name to define the pool key as some DBMSs
+        // like Oracle don't include schemas in the JDBC URL - instead the
+        // user drives the schema. This makes JDBC pools act like JNDI pools,
+        // with, in effect, a pool per DB user.
+
         List<Object> key =
             Arrays.<Object>asList(
                 "DriverManagerPoolingDataSource",
@@ -115,7 +111,9 @@ class RolapConnectionPool {
             new DriverManagerConnectionFactory(
                 jdbcConnectString,
                 jdbcProperties);
+
         try {
+            String propertyString = jdbcProperties.toString();
             dataSource = getPoolingDataSource(
                 jdbcConnectString + propertyString,
                 connectionFactory);
