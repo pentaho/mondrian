@@ -33,9 +33,9 @@
     <ol>
     <li><a href="#MySQL_on_Linux_example">MySQL on Linux</a></li>
     <li><a href="#PostgreSQL_on_Windows_example">PostgreSQL on Windows</a></li>
-    <ul>
-    <li><a href="#2_3_Optional_data_sets">Optional data sets</a></li>
     </ol>
+    </ul>
+    <li><a href="#2_3_Optional_data_sets">Optional data sets</a></li>
   </ol>
   <li><a href="#3_Deploy_and_run_the_web_app">Deploy and run the web application
 with a non-embedded database</a></li>
@@ -322,8 +322,14 @@ dataset in the Access database:</p>
 
 <p>The Steel Wheels data set is optional. To install the Steel Wheels
 data set on MySQL, run <code>demo/mysql/SteelWheels.sql</code> in
-MySQL. There is no supported process to load the data set on other
-databases.</p>
+MySQL:</p>
+
+<blockquote>
+  <code><i><b>$</b></i> mysql -ufoodmart -pfoodmart < demo/mysql/SteelWheels.sql</code>
+</blockquote>
+
+<p>There is no supported process to load the data set on other
+databases. (Contributions welcome!)</p>
 
 <p>Mondrian's test suite assumes that the data set is in a MySQL
 database called 'steelwheels', and uses the schema definition

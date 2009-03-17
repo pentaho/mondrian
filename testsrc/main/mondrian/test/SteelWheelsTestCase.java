@@ -59,13 +59,13 @@ public class SteelWheelsTestCase extends TestCase {
                     Util.replace(
                         propertyList.get("Jdbc"),
                         "/foodmart",
-                        "/sampledata"));
+                        "/steelwheels"));
                 propertyList.put(
                     "Catalog",
                     Util.replace(
                         propertyList.get("Catalog"),
                         "FoodMart.xml",
-                        "steelwheels.mondrian.xml"));
+                        "SteelWheels.mondrian.xml"));
                 return propertyList;
             }
 
