@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -170,6 +170,55 @@ public class SchemaTest extends FoodMartTestCase {
                 "Row #0: 131,558\n"));
     }
 
+    /**
+     * Tests that an error occurs if a hierarchy is based on a non-existent
+     * table.
+     */
+    public void testHierarchyTableNotFound() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Yearly Income3\" foreignKey=\"product_id\">\n" +
+            "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n" +
+            "    <Table name=\"customer_not_found\"/>\n" +
+            "    <Level name=\"Yearly Income\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n" +
+            "  </Hierarchy>\n" +
+            "</Dimension>");
+        // FIXME: This should validate the schema, and fail.
+        testContext.assertSimpleQuery();
+        // FIXME: Should give better error.
+        testContext.assertThrows(
+            "select [Yearly Income3].Children from [Sales]",
+            "Error while parsing MDX statement");
+    }
+
+    public void testPrimaryKeyTableNotFound() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Yearly Income4\" foreignKey=\"product_id\">\n" +
+            "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\" primaryKeyTable=\"customer_not_found\">\n" +
+            "    <Table name=\"customer\"/>\n" +
+            "    <Level name=\"Yearly Income\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n" +
+            "  </Hierarchy>\n" +
+            "</Dimension>");
+        testContext.assertThrows(
+            "select from [Sales]",
+            "no table 'customer_not_found' found in hierarchy [Yearly Income4]");
+    }
+
+    public void testLevelTableNotFound() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Yearly Income5\" foreignKey=\"product_id\">\n" +
+            "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n" +
+            "    <Table name=\"customer\"/>\n" +
+            "    <Level name=\"Yearly Income\" table=\"customer_not_found\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n" +
+            "  </Hierarchy>\n" +
+            "</Dimension>");
+        testContext.assertThrows(
+            "select from [Sales]",
+            "Table 'customer_not_found' not found");
+    }
+
     public void testHierarchyBadDefaultMember() {
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",
@@ -188,9 +237,10 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     /**
-     * WG: Note, this no longer throws an exception with the new RolapCubeMember functionality.
+     * WG: Note, this no longer throws an exception with the new RolapCubeMember
+     * functionality.
      *
-     * Tests that an error is issued if two dimensions use the same table via
+     * <p>Tests that an error is issued if two dimensions use the same table via
      * different drill-paths and do not use a different alias. If this error is
      * not issued, the generated SQL can be missing a join condition, as in
      * <a href="https://sourceforge.net/tracker/?func=detail&atid=414613&aid=1583462&group_id=35302">

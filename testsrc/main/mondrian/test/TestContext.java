@@ -139,7 +139,8 @@ public class TestContext {
      * </ul>
      */
     public static String getDefaultConnectString() {
-        String connectString = MondrianProperties.instance().TestConnectString.get();
+        String connectString =
+            MondrianProperties.instance().TestConnectString.get();
         final Util.PropertyList connectProperties;
         if (connectString == null || connectString.equals("")) {
             connectProperties = new Util.PropertyList();
@@ -155,7 +156,8 @@ public class TestContext {
         if (jdbcUser != null) {
             connectProperties.put("JdbcUser", jdbcUser);
         }
-        String jdbcPassword = MondrianProperties.instance().TestJdbcPassword.get();
+        String jdbcPassword =
+            MondrianProperties.instance().TestJdbcPassword.get();
         if (jdbcPassword != null) {
             connectProperties.put("JdbcPassword", jdbcPassword);
         }
@@ -1553,6 +1555,23 @@ public class TestContext {
             java.sql.DriverManager.getConnection(
                 "jdbc:mondrian:" + connectString);
         return ((OlapWrapper) connection).unwrap(OlapConnection.class);
+    }
+
+    /**
+     * Tests whether the database is valid. Allows tests that depend on optional
+     * databases to figure out whether to proceed.
+     *
+     * @return whether a database is present and correct
+     */
+    public boolean databaseIsValid() {
+        try {
+            Connection connection = getConnection();
+            connection.close();
+            return true;
+        } catch (RuntimeException e) {
+            Util.discard(e);
+            return false;
+        }
     }
 
     public static class SnoopingSchemaProcessor

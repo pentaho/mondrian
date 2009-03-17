@@ -28,10 +28,13 @@
   <li><a href="#2_Set_up_test_data">Set up test data with a non-embedded database</a><ol>
     <li><a href="#2_1_Microsoft_Access">Microsoft Access</a></li>
     <li><a href="#2_2_Non_Access_setup">Other database</a></li>
-    <li><a href="#2_3_Examples">Examples</a></li>
+    <ul>
+    <li><a href="#Examples">Examples</a></li>
     <ol>
     <li><a href="#MySQL_on_Linux_example">MySQL on Linux</a></li>
     <li><a href="#PostgreSQL_on_Windows_example">PostgreSQL on Windows</a></li>
+    <ul>
+    <li><a href="#2_3_Optional_data_sets">Optional data sets</a></li>
     </ol>
   </ol>
   <li><a href="#3_Deploy_and_run_the_web_app">Deploy and run the web application
@@ -259,7 +262,7 @@ given, assumes data comes from this file of INSERT statements.</td>
     </tbody>
   </table>
 
-<h4>Examples<a name="2_3_Examples">&nbsp;</a></h4>
+<h4>Examples<a name="Examples">&nbsp;</a></h4>
 
 <p>Here are some examples to give you a general idea how
 <code>MondrianFoodMartLoader</code> is invoked. The command line you use
@@ -314,6 +317,19 @@ dataset in the Access database:</p>
 &nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcUser=postgres<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcPassword=password</code>
 </blockquote>
+
+<h3>2.3. Optional data sets<a name="2_3_Optional_data_sets">&nbsp;</a></h3>
+
+<p>The Steel Wheels data set is optional. To install the Steel Wheels
+data set on MySQL, run <code>demo/mysql/SteelWheels.sql</code> in
+MySQL. There is no supported process to load the data set on other
+databases.</p>
+
+<p>Mondrian's test suite assumes that the data set is in a MySQL
+database called 'steelwheels', and uses the schema definition
+'SteelWheels.mondrian.xml'. If Mondrian detects the schema, the test
+suite will run some additional tests; if not, those tests will
+trivially succeed.</p>
 
 <h2>3. Deploy and run the web application with a non-embedded database<a name="3_Deploy_and_run_the_web_app">&nbsp;</a></h2>
 
@@ -632,7 +648,7 @@ Mondrian WAR.</p>
 <hr>
 
 <p>
-    Author: Julian Hyde and others; last updated July, 2008.<br/>
+    Author: Julian Hyde and others; last updated March, 2009.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/install.html?ac=22">log</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc.<br/>
