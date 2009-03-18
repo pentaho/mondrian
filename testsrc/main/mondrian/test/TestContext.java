@@ -67,9 +67,10 @@ public class TestContext {
     private Dialect dialect;
 
     protected static final String nl = Util.nl;
+    private static final String indent = "                ";
     private static final String lineBreak = "\"," + nl + "\"";
-    private static final String lineBreak2 = "\\\\n\" +" + nl + "\"";
-    private static final String lineBreak3 = "\\n\" +" + nl + "\"";
+    private static final String lineBreak2 = "\\\\n\"" + nl + indent + "+ \"";
+    private static final String lineBreak3 = "\\n\"" + nl + indent + "+ \"";
     private static final Pattern LineBreakPattern =
         Pattern.compile("\r\n|\r|\n");
     private static final Pattern TabPattern = Pattern.compile("\t");
@@ -633,6 +634,10 @@ public class TestContext {
                 "[Store2].[Store].[All Stores]");
             actual = Util.replace(
                 actual,
+                "[Store Type 2.Store Type 2].[All Store Type 2.Store Type 2s]",
+                "[Store Type 2].[All Store Type 2s]");
+            actual = Util.replace(
+                actual,
                 "[TIME.CALENDAR]",
                 "[TIME].[CALENDAR]");
         }
@@ -884,19 +889,19 @@ public class TestContext {
     private static String toJavaString(String s) {
         // Convert [string with "quotes" split
         // across lines]
-        // into ["string with \"quotes\" split\n" +
-        // "across lines
+        // into ["string with \"quotes\" split\n"
+        //                 + "across lines
         //
         s = Util.replace(s, "\"", "\\\"");
         s = LineBreakPattern.matcher(s).replaceAll(lineBreak2);
         s = TabPattern.matcher(s).replaceAll("\\\\t");
         s = "\"" + s + "\"";
-        String spurious = " +" + nl + "\"\"";
+        String spurious = nl + indent + "+ \"\"";
         if (s.endsWith(spurious)) {
             s = s.substring(0, s.length() - spurious.length());
         }
         if (s.indexOf(lineBreak3) >= 0) {
-            s = "fold(" + nl + s + ")";
+            s = "fold(" + nl + indent + s + ")";
         }
         return s;
     }
@@ -1566,6 +1571,13 @@ public class TestContext {
     public boolean databaseIsValid() {
         try {
             Connection connection = getConnection();
+            String cubeName = getDefaultCubeName();
+            if (cubeName.indexOf(' ') >= 0) {
+                cubeName = Util.quoteMdxIdentifier(cubeName);
+            }
+            Query query = connection.parseQuery("select from " + cubeName);
+            Result result = connection.execute(query);
+            Util.discard(result);
             connection.close();
             return true;
         } catch (RuntimeException e) {

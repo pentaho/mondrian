@@ -814,6 +814,42 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
                 "from [Warehouse and Sales]");
     }
 
+    /**
+     * Test case for bug 2688790, "Hierarchy Naming Compatibility issue".
+     * Occurs when dimension and hierarchy have the same name and are used with
+     * [name.name].
+     */
+    public void testDimensionDotHierarchySameNameInBrackets() {
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Store Type 2\" foreignKey=\"store_id\">"
+            + " <Hierarchy name=\"Store Type 2\" hasAll=\"true\" primaryKey=\"store_id\">"
+            + " <Table name=\"store\"/>"
+            + " <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>"
+            + " </Hierarchy>"
+            + "</Dimension>",
+            null);
+        testContext.assertQueryReturns(
+            "select [Store Type 2.Store Type 2].[Store Type].members ON columns "
+            + "from [Sales] where [Time].[1997]",
+            fold(
+                "Axis #0:\n"
+                + "{[Time].[1997]}\n"
+                + "Axis #1:\n"
+                + "{[Store Type 2].[All Store Type 2s].[Deluxe Supermarket]}\n"
+                + "{[Store Type 2].[All Store Type 2s].[Gourmet Supermarket]}\n"
+                + "{[Store Type 2].[All Store Type 2s].[HeadQuarters]}\n"
+                + "{[Store Type 2].[All Store Type 2s].[Mid-Size Grocery]}\n"
+                + "{[Store Type 2].[All Store Type 2s].[Small Grocery]}\n"
+                + "{[Store Type 2].[All Store Type 2s].[Supermarket]}\n"
+                + "Row #0: 76,837\n"
+                + "Row #0: 21,333\n"
+                + "Row #0: \n"
+                + "Row #0: 11,491\n"
+                + "Row #0: 6,557\n"
+                + "Row #0: 150,555\n"));
+    }
+
     public void testDimensionDotLevelDotHierarchyInBrackets() {
         // [dimension.hierarchy.level]
         // SSAS2005 gives error:

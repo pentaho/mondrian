@@ -74,13 +74,15 @@ public abstract class HierarchyBase
                     : Util.makeFqName(dimension, this.name);
         } else {
             this.subName = subName;
-            if (this.subName != null
-                && !this.subName.equals(name))
-            {
+            if (this.subName != null) {
                 // e.g. "Time.Weekly"
                 this.name = name + "." + subName;
-                // e.g. "[Time.Weekly]"
-                this.uniqueName = Util.makeFqName(this.name);
+                if (this.subName.equals(name)) {
+                    this.uniqueName = dimension.getUniqueName();
+                } else {
+                    // e.g. "[Time.Weekly]"
+                    this.uniqueName = Util.makeFqName(this.name);
+                }
             } else {
                 // e.g. "Time"
                 this.name = name;
