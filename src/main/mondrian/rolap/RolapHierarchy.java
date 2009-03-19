@@ -79,7 +79,8 @@ public class RolapHierarchy extends HierarchyBase {
         this.allLevelName = "(All)";
         this.allMemberName =
             subName != null
-                && MondrianProperties.instance().SsasCompatibleNaming.get()
+            && (MondrianProperties.instance().SsasCompatibleNaming.get()
+                || name.equals(subName + "." + subName))
                 ? "All " + subName + "s"
                 : "All " + name + "s";
         if (hasAll) {
