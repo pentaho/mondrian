@@ -406,22 +406,45 @@ public interface Dialect {
     boolean allowsDdl();
 
     /**
-     * Returns whether NULL values appear last when sorted using ORDER BY.
-     * According to the SQL standard, this is implementation-specific.
+     * Returns the rule which determines whether NULL values appear first or
+     * last when sorted using ORDER BY.
      *
-     * @return Whether NULL values collate last
+     * <p>According to the SQL standard, this is implementation-specific.
+     * The default behavior is
+     * {@link mondrian.spi.Dialect.NullCollation#POSINF}.
+     *
+     * @return Rule which determines whether NULL values collate first or last
      */
-    boolean isNullsCollateLast();
+    NullCollation getNullCollation();
 
     /**
-     * Modifies an expression in the ORDER BY clause to ensure that NULL
-     * values collate after all non-NULL values.
-     * If {@link #isNullsCollateLast()} is true, there's nothing to do.
+     * Generates an item for an ORDER BY clause, sorting in the required
+     * direction, and ensuring that NULL values collate after all non-NULL
+     * values.
+     *
+     * <p>By default, {@code generateOrderItem(expr, true)} generates "expr ASC"
+     * and {@code generateOrderItem(expr, false)} generates "expr DESC". But
+     * depending on {@link #getNullCollation()} and {@code ascending}, there
+     * may need to be additional code.
+     *
+     * <p>For example, on Oracle, where NULLs collate higher than all other
+     * values, {@code generateOrderItem(expr, true)} generates "expr ASC" and
+     * {@code generateOrderItem(expr, false)} generates "expr DESC NULLS LAST".
+     *
+     * <p>On MySQL, where NULLs collate lower than all other values,
+     * {@code generateOrderItem(expr, true)} generates "ISNULL(expr), expr ASC"
+     * and {@code generateOrderItem(expr, false)} generates "expr DESC".
      *
      * @param expr Expression
+     * @param nullable Whether expression may have NULL values
+     * @param ascending Whether to sort expression ascending
+     *
      * @return Expression modified so that NULL values collate last
      */
-    String forceNullsCollateLast(String expr);
+    String generateOrderItem(
+        String expr,
+        boolean nullable,
+        boolean ascending);
 
     /**
      * Returns whether this Dialect supports expressions in the GROUP BY
@@ -727,6 +750,27 @@ public interface Dialect {
         public boolean isNumeric() {
             return false;
         }
+    }
+
+    /**
+     * Description of how {@code NULL} values are ordered in an {@code ORDER BY}
+     * clause.
+     *
+     * <p>Values such as {@code FIRST}, {@code LAST}, and {@code BEFORE_ZERO}
+     * are possible, but no known database that has these behaviors.
+     */
+    enum NullCollation {
+        /**
+         * Null values order as negative infinity.
+         * They appear first with ASC, last with DESC.
+         */
+        NEGINF,
+
+        /**
+         * Null values order as positive infinity.
+         * They appear last with ASC, first with DESC.
+         */
+        POSINF;
     }
 }
 

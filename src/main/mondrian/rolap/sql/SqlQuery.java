@@ -23,7 +23,6 @@ import mondrian.spi.DialectManager;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.*;
 import java.util.*;
 
 /**
@@ -439,19 +438,11 @@ public class SqlQuery {
         boolean prepend,
         boolean nullable)
     {
-        if (nullable && !dialect.isNullsCollateLast()) {
-            expr = dialect.forceNullsCollateLast(expr);
-        }
-
-        if (ascending) {
-            expr = expr + " ASC";
-        } else {
-            expr = expr + " DESC";
-        }
+        String orderExpr = dialect.generateOrderItem(expr, nullable, ascending);
         if (prepend) {
-            orderBy.add(0, expr);
+            orderBy.add(0, orderExpr);
         } else {
-            orderBy.add(expr);
+            orderBy.add(orderExpr);
         }
     }
 

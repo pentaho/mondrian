@@ -653,14 +653,43 @@ public class JdbcDialectImpl implements Dialect {
         return !readOnly;
     }
 
-    public boolean isNullsCollateLast() {
-        return true;
+    public NullCollation getNullCollation() {
+        return NullCollation.POSINF;
     }
 
-    public String forceNullsCollateLast(String expr) {
-        // If we need to support other DBMSes, note that the SQL standard
-        // provides the syntax 'ORDER BY x ASC NULLS LAST'.
-        return expr;
+    public String generateOrderItem(
+        String expr,
+        boolean nullable,
+        boolean ascending)
+    {
+        if (nullable) {
+            NullCollation collateLast = getNullCollation();
+            switch (collateLast) {
+            case NEGINF:
+                // For DESC, NULLs already appear last.
+                // For ASC, we need to reverse the order.
+                // Use the SQL standard syntax 'ORDER BY x ASC NULLS LAST'.
+                if (ascending) {
+                    return expr + " ASC NULLS LAST";
+                } else {
+                    return expr + " DESC";
+                }
+            case POSINF:
+                if (ascending) {
+                    return expr + " ASC";
+                } else {
+                    return expr + " DESC NULLS LAST";
+                }
+            default:
+                throw Util.unexpected(collateLast);
+            }
+        } else {
+            if (ascending) {
+                return expr + " ASC";
+            } else {
+                return expr + " DESC";
+            }
+        }
     }
 
     public boolean supportsGroupByExpressions() {

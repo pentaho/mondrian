@@ -48,11 +48,17 @@ import javax.sql.DataSource;
 public class DialectTest extends TestCase {
     private Connection connection;
     private Dialect dialect;
-    private static final
-    String
-        INFOBRIGHT_UNSUPPORTED =
-        "The query includes syntax that is not supported by the Infobright Optimizer. Either restructure the query with supported syntax, or enable the MySQL Query Path in the brighthouse.ini file to execute the query with reduced performance.";
+    private static final String INFOBRIGHT_UNSUPPORTED =
+        "The query includes syntax that is not supported by the Infobright"
+        + " Optimizer. Either restructure the query with supported syntax, or"
+        + " enable the MySQL Query Path in the brighthouse.ini file to execute"
+        + " the query with reduced performance.";
 
+    /**
+     * Creates a DialectTest.
+     *
+     * @param name Test case name
+     */
     public DialectTest(String name) {
         super(name);
     }
@@ -85,7 +91,7 @@ public class DialectTest extends TestCase {
     protected Connection getConnection() {
         if (connection == null) {
             try {
-            connection = getDataSource().getConnection();
+                connection = getDataSource().getConnection();
             } catch (SQLException e) {
                 throw Util.newInternal(e, "while creating connection");
             }
@@ -434,6 +440,56 @@ public class DialectTest extends TestCase {
         assertInline(
             nameList, typeList2,
             new String[]{"a", "2008-04-29"}, new String[]{"b", "2007-01-02"});
+    }
+
+    /**
+     * Tests that the method {@link mondrian.spi.Dialect#getNullCollation()}
+     * is accurate.
+     */
+    public void testNullCollation() throws SQLException {
+        Dialect dialect = getDialect();
+        String ascQuery =
+            "select "
+            + dialect.quoteIdentifier("grocery_sqft")
+            + " from "
+            + dialect.quoteIdentifier("store")
+            + " order by "
+            + dialect.quoteIdentifier("grocery_sqft");
+        String descQuery = ascQuery + " DESC";
+        Dialect.NullCollation nullCollation = getDialect().getNullCollation();
+        switch (nullCollation) {
+        case NEGINF:
+            assertFirstLast(ascQuery, null, 30351);
+            assertFirstLast(descQuery, 30351, null);
+            break;
+        case POSINF:
+            assertFirstLast(ascQuery, 13305, null);
+            assertFirstLast(descQuery, null, 13305);
+            break;
+        default:
+            fail("unexpected value " + nullCollation);
+        }
+    }
+
+    private void assertFirstLast(
+        String query,
+        Integer expectedFirst,
+        Integer expectedLast) throws SQLException
+    {
+        ResultSet resultSet =
+            getConnection().createStatement().executeQuery(query);
+        List<Integer> values = new ArrayList<Integer>();
+        while (resultSet.next()) {
+            values.add(resultSet.getInt(1));
+            if (resultSet.wasNull()) {
+                values.set(values.size() - 1, null);
+            }
+        }
+        resultSet.close();
+        Integer actualFirst = values.get(0);
+        Integer actualLast = values.get(values.size() - 1);
+        assertEquals(expectedFirst, actualFirst);
+        assertEquals(expectedLast, actualLast);
     }
 
     private void assertInline(

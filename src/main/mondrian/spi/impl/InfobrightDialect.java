@@ -44,11 +44,20 @@ public class InfobrightDialect extends MySqlDialect {
         return false;
     }
 
-    public boolean isNullsCollateLast() {
-        // Infobright is similar to MySQL, but apparently NULLs collate
-        // last. This is good news, because the workaround that we use on MySQL
-        // to force NULLs to collate last would kill Infobright's performance.an
-        return true;
+    public String generateOrderItem(
+        String expr,
+        boolean nullable,
+        boolean ascending)
+    {
+        // Like MySQL, Infobright collates NULL values as negative-infinity
+        // (first in ASC, last in DESC). But we can't generate ISNULL to
+        // correct the NULL ordering, as we do for MySQL, because Infobright
+        // does not support this function.
+        if (ascending) {
+            return expr + " ASC";
+        } else {
+            return expr + " DESC";
+        }
     }
 
     public boolean supportsGroupByExpressions() {

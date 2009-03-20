@@ -146,14 +146,29 @@ public class MySqlDialect extends JdbcDialectImpl {
             columnNames, columnTypes, valueList, null, false);
     }
 
-    public boolean isNullsCollateLast() {
-        return false;
+    public NullCollation getNullCollation() {
+        return NullCollation.NEGINF;
     }
 
-    public String forceNullsCollateLast(String expr) {
-        String addIsNull = "ISNULL(" + expr + "), ";
-        expr = addIsNull + expr;
-        return expr;
+    public String generateOrderItem(
+        String expr,
+        boolean nullable,
+        boolean ascending)
+    {
+        if (nullable) {
+            assert getNullCollation() == NullCollation.NEGINF;
+            if (ascending) {
+                return "ISNULL(" + expr + "), " + expr;
+            } else {
+                return expr + " DESC";
+            }
+        } else {
+            if (ascending) {
+                return expr + " ASC";
+            } else {
+                return expr + " DESC";
+            }
+        }
     }
 
     public boolean requiresOrderByAlias() {
