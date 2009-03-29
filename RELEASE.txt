@@ -1,13 +1,15 @@
-Mondrian 3.0.1.10736 production release notes
+Mondrian 3.1.0.12477 production release notes
 =============================================
 
 Introduction
 ------------
 
-Mondrian 3.0 is a major new version of the leading
+Mondrian 3.1 is a minor release version of the leading
 open-source OLAP engine. To find out more about mondrian, go
 to http://mondrian.pentaho.org.
 
+Mondrian-3.1.0.12477 is the first release candidate for
+release Mondrian 3.1.
 
 Contents
 --------
@@ -36,210 +38,102 @@ or the included file doc/installation.html.
 Main functionality in this release
 ----------------------------------
 
-* olap4j API. olap4j is the Open Java API for OLAP
-  (http://www.olap4j.org). From mondrian-3.0 onwards, olap4j
-  is the main API for connecting to mondrian, browsing
-  metadata and executing queries.
-
-  Mondrian's previous API (classes in the mondrian.olap
-  package) still exists but is deprecated; from mondrian-3.1
-  onwards, classes and methods in this API may not exist,
-  may not work, or may change.
-
-* Rollup policy controls how a cell's value is calculated if
-  some of its children are hidden by access-control.  Before
-  mondrian-3.0 the only policy was 'full': if access to a
-  hierarchy was restricted, the value of a member would be
-  equal to the sum of its children; from mondrian-3.0, we
-  also allow 'partial' (the sum is the sum of the visible
-  children) or 'hidden' (the cell's value is unknown if any
-  of the children are hidden). The policy is expressed by the
-  rollupPolicy attribute of the <HierarchyGrant> element.
-
-* Aggregate roles. You can now define a role in the schema
-  that has the sum of the privileges of two or more roles;
-  and you can connect to mondrian with one or more roles.
-  This facility enables closer integration with Pentaho
-  access-control, where a user can already exist in multiple
-  roles.
-
-* Allow distinct-count measures to be aggregated. For
-  example, mondrian can now compute the number of distinct
-  customers who bought beer or diapers in Q2 or Q3. For
-  efficiency, cell values are loaded in batches and a
-  special cache allows aggregate cell values to be reused
-  between queries.
-
-* Improved dimension sharing. Allow a shared dimension to be
-  used more than once within the same cube.
-
-* Virtual cube enhancements. When a cube that uses the same
-  dimension twice is involved in a virtual cube,
-  disambiguate which usage of the dimension is involved.
-  Allow the virtual cube to use the same cube more than
-  once.
-
-* Scalar functions. Many scalar functions have been added in
-  mondrian-3.0, to the the specification of the Visual Basic
-  for Applications (VBA) and Excel libraries that are
-  available by default in Microsoft SQL Server Analysis
-  Services (SSAS) and that many MDX users assume are part of
-  the core MDX language.
-
-  New functions: Abs, Acosh, Asc, AscB, AscW, Asin, Asinh,
-  Atan2, Atanh, Atn, Cache, CBool, CByte, CDate, CDbl, Chr,
-  ChrB, ChrW, CInt, Cos, Cosh, Date, DateAdd, DateDiff,
-  DatePart, DateSerial, DateValue, Day, DDB, Degrees,
-  DrilldownLevel, DrilldownLevelBottom, DrilldownLevelTop,
-  Exp, Fix, FormatCurrency, FormatDateTime, FormatNumber,
-  FormatPercent, FV, Hex, Hour, InStrRev, Int, IPmt, IRR,
-  IsDate, LCase, Log, Log10, LTrim, Minute, MIRR, Month,
-  MonthName, Now, NPer, NPV, Oct, Percentile, Pi, Pmt,
-  Power, PPmt, PV, Radians, Rate, Replace, Right, Round,
-  RTrim, Second, Sgn, Sin, Sinh, SLN, Space, Sqr, SqrtPi,
-  Str, StrComp, String, StrReverse, SYD, Tan, Tanh, Time,
-  Timer, TimeSerial, TimeValue, Trim, TypeName, Val,
-  Weekday, WeekdayName, Year.
-
-  We have added additional forms to existing functions:
-  Descendants(<Member>, , LEAVES); Format can now be applied
-  to DateTime values; Iif can be applied to member, level,
-  hierarchy, dimension and tuple and set values; Levels can
-  be applied to a string expression.
-
-* JNDI in connect string. JDBC data sources can be specified
-  by their JNDI name.
+ - Tuple Aggregate Support
+ - Database Dialecting Architecture. Database dialects are
+   now pluggable, which means that they can be added to the
+   classpath and Mondrian will use the most appropriate one.
+ - Infobright Dialect Support
+ - General performance improvements (SQL generation and
+   sorting algorithms)
+ - Allow SSAS2005-compatible syntax for resolving names
+   of dimensions, hierarchies, levels, members, and in
+   particular multiple hierarchies in a
+ dimension. Since
+   this is a minor release, we wish to avoid breaking
+   changes, so this functionality is off by default. To
+   enable, set mondrian.olap.SsasCompatibleNaming=true.
 
 API changes in this release
 ---------------------------
-
-* Removed various deprecated methods which used String or
-  String[] to lookup multi-part identifiers. Methods:
-   * Formula.Formula(String[], exp)
-   * Formula.Formula(String[], Exp, MemberProperty[])
-   * QueryPart.addFormula(String[], Exp, MemberProperty[])
-   * SchemaReader.lookupCompound(OlapElement, String[],
-     boolean, int)
-   * SchemaReader.getMemberByUniqueName(String[], boolean)
-   * SchemaReader.getMemberByUniqueName(String[], boolean,
-     MatchType)
-   * Util.explode(String)
-   * Util.lookupCompound(SchemaReader, OlapElement, String[],
-     boolean, int)
-   * Util.lookup(Query, String[])
-
-* Removed other deprecated methods:
-   * Query.getQueryString()
-   * QueryPart.toMdx()
-   * RolapSchema.flushSchema(String, String, String, String)
-   * RolapSchema.flushSchema(String, DataSource)
-   * RolapSchema.clearCache()
-   * RolapSchema.flushRolapStarCaches(boolean)
-   * RolapSchema.flushAllRolapStarCachedAggregations()
-   * CachePool.flush()
-   * MondrianServer.flushSchemaCache()
-   * MondrianServer.flushDataCache()
-   * DriverManager.getConnection(String, CatalogLocator,
-     boolean)
-   * DriverManager.getConnection(Util.PropertyList, boolean)
-   * DriverManager.getConnection(Util.PropertyList,
-     CatalogLocator, boolean)
-   * DriverManager.getConnection(Util.PropertyList,
-     CatalogLocator, DataSource, boolean)
-   * RolapMember.getSqlKey()
-   * MondrianProperties.CachePoolCostLimit (property
-     "mondrian.rolap.CachePool.costLimit")
-   * MondrianProperties.FlushAfterQuery (property
-     "mondrian.rolap.RolapResult.flushAfterEachQuery")
+ - High cardinality related array to list changes
+ - Database dialect changes
+ - AxisOrdinal changes. mondrian.olap.AxisOrdinal used to
+   be an enum, is now an interface. Code that explicitly
+   depends on this class will need to be recompiled.
+ - Upgrade to olap4-0.9.7.145.
 
 
-Bugs and feature requests fixed since mondrian-2.4
---------------------------------------------------
+Other changes
+-------------
+ - 
+
+See CHANGES.txt for a list of all source code changes
+since the previous release.
+
+Bugs and feature requests fixed since mondrian-3.0.3
+----------------------------------------------------
 
 Bugs:
- * Bug 1888821  Non Empty Crossjoin fails to enforce role
-                access
- * Bug 1686848  Incorrect Data by "Drill Replace" with a Role
- * Bug 1901465  ClassCastException when using int typed cols
-                for caption
- * Bug 1755778  CrossJoin / Filter query returns null row in
-                result set
- * Bug 1792393  XMLA Parent Child Hierarchy Problem
- * Bug 1907809  IndexOutOfBoundException when filtering
-                aggregation list
- * Bug 1893959  Generated drill-through columns too long for
-                DBMS
- * Bug 1722959  NON EMPTY <Level>.MEMBERS fails if
-                nonempty.enable=false
- * Bug 1904496  No implementation of caption attribute in
-                DimensionUsage
- * Bug 1904544  Distinct count aggregation gives incorrect
-                results
- * Bug 1904613  Issue with IgnoreMeasureForUnrelatedDimension
- * Bug 1782799  use the same shared dimension multiple times
-                in the same cub
- * Bug 1897855  IgnoreMeasureForNonJoiningDimension
-                limitation
- * Bug 1839568  Mondrian Internal error related to the
-                Hierarchize function
- * Bug 1801069  Issues with calculated members
- * Bug 1889745  StackOverflowError while resolving crossjoin
- * Bug 1883611  exception when Iif has a tuple and a member
-                as its arguments
- * Bug 1681255  RolapNativeFilter:can not restrict SQL to
-                calculated Members
- * Bug 1728980  Query generated by Excel 2007 gives
-                incorrect results
- * Bug 1732824  Cube getTimeDimension use when Cube has no
-                Time dimension
- * Bug 1743819  document MondrianProperties.JdbcFactoryClass
- * Bug 1791524  Virtual Cubes dont support Named sets in the
-                Schema
- * Bug 1838148  Allow drill-through from trivial calc
-                members
- * Bug 1852359  Error when we use hierarchy name on the
-                'HierarchyGrant' for
- * Bug 1881739  ClassCastException while compiling an
-                Integer Expression
- * Bug 1797159  Potential MDX Order Non Empty Problem
- * Bug 1689592  max constraints sql exception
- * Bug 1862024  com.tonbeller.jpivot.olap.model.OlapException:
-                mondrian.olap
- * Bug 1735827  Shared Tables and native NonEmptyCrossJoin
- * Bug 1833532  mondrian.rolap.star.disableCaching out of
-                memory errors
- * Bug 1833526  Member Cache Not Clearing As Expected
- * Bug 1833528  Dimensions with re-aliased table names in
-                virtual cubes fail
- * Bug 1835125  Caption is not set on RolapVirtualCubeMesure
- * Bug 1785406  "Query already contains alias" exception
- * Bug 1746362  property column shifting when use
-                captionColumn
- * Bug 1801945  DrillDownMemberTop / DrillDownMemberBottom
-                are not supported
- * Bug 1816112  MSAS Compatibility issue, Empty Params in
-                Functions
- * Bug 1812123  Incorrect XmlaResponse from XmlaHandler
- * Bug 1796732  RolapMember keyToString not returning name
-                for Id.Segment
- * Bug 1801218  XMLA execute + tabular format
- * Bug 1784617  Using StrToTuple() in schema errors out
- * Bug 1799050  XMLA Failure
- * Bug 1799391  Case Test function throws class cast
-                exception
+1971406 - perf regression from change for large dimensions
+1998598 - Non empty function doesn't work for high
+          cardinality
+2046318 - olap4j driver should throw OlapException on
+          validate error
+2062790 - Inline tables do not work on Microsoft SQL Server
+2118478 - periodstodate w/level ought not require dim of
+          type
+ time
+2141337 - Roles and virtual cubes
+2150537 - error deducing type of Ytd/Qtd/Mtd functions
+          within Generate
+2186217 - NPE for dimension with Join (patch attached)
+2141503 - Strange SQL condition appears when executing query
+2189467 - ParallelPeriod applied to Levels or StrToMember
+          gives NPE
+2026930 - MondrianOlap4jMember.getCaption() throws exception
+2279539 - mondrian.xsd line 69 MemeberGrant -> MemberGrant
+2414144 - Incorrect getting parent member in parent-child
+          hierarchy
+2489311 - BitKey.compareTo is inefficient
+2488492 - Union between calc mem and head function throws
+          exception
+1961163 - NON EMPTY and Filter() breaking aggregate
+          calculations
+2527862 - Failed to get Hierarchy list for particular
+          dimension
+2384825 - ClassCastException when obtaining RolapCubeLevel
+2207515 - Aggregates incorrect with grouping sets
+2106108 - Schema Workbench setAllTables assumes
+          {"TABLE","VIEW"} 
+2561069 - Schema workbench JDBC Explorer does not work with
+          Oracle
+ 10g
+2613265 - readVirtualFile() can return the incorrect file
+2645300 - Move Infobright dialect from EE to CE
+2666196 - Performance degradation with change 11049
+2684180 - mondrian.rolap.SqlTupleReader Swallows Exceptions
+2688790 - Hierarchy Naming Compatibility issue
+2138156 - Workbench Publish name issue
+2138161 - Workbench Dimension selection issue
+2153098 - Mondrian exceptions when clicking on Dimension
+          in Workbench
+2153653 - Database preferences not enforced when modified
+          in Workbench
+2208219 - Workbench fails if the Mondrian schema has a
+          <view> <sql> element
+2208312 - Mouse right click doesn’t work on MAC OS X or
+          Linux
 
-Features:
- * RFE 1756302  Add more arithmetic functions (power, log,
-                sqrt)
- * RFE 1239106  Add string functions (substring etc.)
- * RFE 1863097  Log For Mdx
- * RFE  692482  Graphical schema editor
- * RFE  778424  getDrillThroughSQL() fix/mod
- * RFE 1111052  Exploit sql rollup and cube group-by options
- * RFE 1824609  Support for Aggregating Distinct Count
-                Measures over list of
- * RFE 1604972  Retrieve list of named sets by xmla request
- * RFE 1863108  Log For Mdx
- * RFE 1407747  Formatters for calculated members
+Feature Requests:
+1579663 - Read tuples from aggregate tables
+2155850 - Workbench Database Schema Option
 
+Pentaho Related Bugs (found at jira.pentaho.com):
+
+BISERVER-2379 - Workbench- The MDX Query window fails when
+          connected to SQL server 2000
+BISERVER-2491 - Mondrian: rollupPolicy=partial and queries
+          to upper members don't work
+BISERVER-2786 - Schema Workbench: Provide more information
+          when schema is invalid due to invalid hierarchies
 ------------------------------------------------------------
