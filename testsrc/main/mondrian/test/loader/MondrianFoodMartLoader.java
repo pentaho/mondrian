@@ -87,16 +87,19 @@ import org.apache.log4j.*;
 public class MondrianFoodMartLoader {
     // Constants
 
-    private static final Logger LOGGER = Logger.getLogger(MondrianFoodMartLoader.class);
+    private static final Logger LOGGER =
+        Logger.getLogger(MondrianFoodMartLoader.class);
     private static final String nl = Util.nl;
 
     // Fields
 
-    private static final Pattern decimalDataTypeRegex = Pattern.compile("DECIMAL\\((.*),(.*)\\)");
-    private static final DecimalFormat integerFormatter = new DecimalFormat(decimalFormat(15, 0));
+    private static final Pattern decimalDataTypeRegex =
+        Pattern.compile("DECIMAL\\((.*),(.*)\\)");
+    private static final DecimalFormat integerFormatter =
+        new DecimalFormat(decimalFormat(15, 0));
     private static final String dateFormatString = "yyyy-MM-dd";
-    private static final String oracleDateFormatString = "YYYY-MM-DD";
-    private static final DateFormat dateFormatter = new SimpleDateFormat(dateFormatString);
+    private static final DateFormat dateFormatter =
+        new SimpleDateFormat(dateFormatString);
 
     private String jdbcDrivers;
     private String jdbcURL;
@@ -111,11 +114,14 @@ public class MondrianFoodMartLoader {
     private boolean tables = false;
     private boolean indexes = false;
     private boolean data = false;
+    private long pauseMillis = 0;
     private boolean jdbcInput = false;
     private boolean jdbcOutput = false;
     private boolean populationQueries = false;
+    private Pattern include = null;
+    private Pattern exclude = null;
     private boolean generateUniqueConstraints = false;
-    private int inputBatchSize = -1;
+    private int outputBatchSize = -1;
     private Connection connection;
     private Connection inputConnection;
 
@@ -130,6 +136,7 @@ public class MondrianFoodMartLoader {
         new HashMap<String, List<UniqueConstraint>>();
     private Dialect dialect;
     private boolean batchFile;
+    private long lastUpdate = 0;
 
     /**
      * Creates an instance of the loader and parses the command-line options.
@@ -168,10 +175,18 @@ public class MondrianFoodMartLoader {
                 tables = true;
             } else if (arg.equals("-data")) {
                 data = true;
+            } else if (arg.startsWith("-pauseMillis=")) {
+                pauseMillis =
+                    Long.parseLong(
+                        arg.substring("-pauseMillis=".length()));
             } else if (arg.equals("-indexes")) {
                 indexes = true;
             } else if (arg.equals("-populationQueries")) {
                 populationQueries = true;
+            } else if (arg.startsWith("-include=")) {
+                include = Pattern.compile(arg.substring("-include=".length()));
+            } else if (arg.startsWith("-exclude=")) {
+                exclude = Pattern.compile(arg.substring("-exclude=".length()));
             } else if (arg.startsWith("-jdbcDrivers=")) {
                 jdbcDrivers = arg.substring("-jdbcDrivers=".length());
             } else if (arg.startsWith("-outputJdbcURL=")) {
@@ -191,8 +206,9 @@ public class MondrianFoodMartLoader {
             } else if (arg.startsWith("-outputDirectory=")) {
                 outputDirectory = arg.substring("-outputDirectory=".length());
             } else if (arg.startsWith("-outputJdbcBatchSize=")) {
-                inputBatchSize = Integer.parseInt(arg.substring(
-                    "-outputJdbcBatchSize=".length()));
+                outputBatchSize =
+                    Integer.parseInt(
+                        arg.substring("-outputJdbcBatchSize=".length()));
             } else {
                 errorMessage.append("unknown arg: ").append(arg).append(nl);
             }
@@ -204,7 +220,8 @@ public class MondrianFoodMartLoader {
         if (inputJdbcURL != null) {
             jdbcInput = true;
             if (inputFile != null) {
-                errorMessage.append("Specified both an input JDBC connection and an input file");
+                errorMessage.append(
+                    "Specified both an input JDBC connection and an input file");
             }
         }
         if (jdbcURL != null && outputDirectory == null) {
@@ -212,7 +229,8 @@ public class MondrianFoodMartLoader {
         }
         if (errorMessage.length() > 0) {
             usage();
-            throw MondrianResource.instance().MissingArg.ex(errorMessage.toString());
+            throw MondrianResource.instance().MissingArg.ex(
+                errorMessage.toString());
         }
 
         if (LOGGER.isInfoEnabled()) {
@@ -220,10 +238,18 @@ public class MondrianFoodMartLoader {
         }
     }
 
+    /**
+     * Prints help.
+     */
     public void usage() {
-        System.out.println("Usage: MondrianFoodMartLoader " +
-                "[-verbose] [-tables] [-data] [-indexes] [-populationQueries]" +
-                "-jdbcDrivers=<jdbcDriver> " +
+        String[] lines = {
+            "Usage: MondrianFoodMartLoader " +
+                "[-verbose] [-tables] [-data] [-indexes] [-populationQueries] " +
+                "[-pauseMillis=<n>] " +
+                "[-include=<regexp>] " +
+                "[-exclude=<regexp>] " +
+                "[-pauseMillis=<n>] " +
+                "-jdbcDrivers=<jdbcDrivers> " +
                 "-outputJdbcURL=<jdbcURL> " +
                 "[-outputJdbcUser=user] " +
                 "[-outputJdbcPassword=password] " +
@@ -234,28 +260,52 @@ public class MondrianFoodMartLoader {
                 "   [-inputJdbcURL=<jdbcURL> [-inputJdbcUser=user] [-inputJdbcPassword=password]]" +
                 "   | " +
                 "   [-inputfile=<file name>]" +
-                "]");
-        System.out.println("");
-        System.out.println("  <jdbcURL>             JDBC connect string for DB.");
-        System.out.println("  [user]                JDBC user name for DB.");
-        System.out.println("  [password]            JDBC password for user for DB.");
-        System.out.println("                        If no source DB parameters are given, assumes data comes from file.");
-        System.out.println("  [file name]           File containing test data - INSERT statements in MySQL format.");
-        System.out.println("                        If no input file name or input JDBC parameters are given,");
-        System.out.println("                        assume insert statements come from demo/FoodMartCreateData.zip file");
-        System.out.println("  [outputDirectory]     Where FoodMartCreateTables.sql, FoodMartCreateData.sql");
-        System.out.println("                        and FoodMartCreateIndexes.sql will be created.");
-        System.out.println("  <batch size>          Size of JDBC batch updates - default to 50 inserts.");
-        System.out.println("  <jdbcDrivers>         Comma-separated list of JDBC drivers;");
-        System.out.println("                        they must be on the classpath.");
-        System.out.println("  -verbose              Verbose mode.");
-        System.out.println("  -aggregates           If specified, create aggregate tables and indexes for them.");
-        System.out.println("  -tables               If specified, drop and create the tables.");
-        System.out.println("  -data                 If specified, load the data.");
-        System.out.println("  -indexes              If specified, drop and create the tables.");
-        System.out.println("  -populationQueries    If specified, run the data loading queries. Runs by default if -data is specified.");
+                "]",
+            "",
+            "  <jdbcURL>             JDBC connect string for DB.",
+            "  [user]                JDBC user name for DB.",
+            "  [password]            JDBC password for user for DB.",
+            "                        If no source DB parameters are given, assumes data",
+            "                        comes from file.",
+            "  [file name]           File containing test data - INSERT statements in MySQL",
+            "                        format. If no input file name or input JDBC parameters",
+            "                        are given, assume insert statements come from",
+            "                        demo/FoodMartCreateData.zip file",
+            "  [outputDirectory]     Where FoodMartCreateTables.sql, FoodMartCreateData.sql",
+            "                        and FoodMartCreateIndexes.sql will be created.",
+            "  -outputJdbcBatchSize=<batch size>",
+            "                        Size of JDBC batch updates (default 50 records).",
+            "  -jdbcDrivers=<jdbcDrivers>",
+            "                        Comma-separated list of JDBC drivers;",
+            "                        they must be on the classpath.",
+            "  -verbose              Verbose mode.",
+            "  -aggregates           If specified, create aggregate tables and indexes for them.",
+            "  -tables               If specified, drop and create the tables.",
+            "  -data                 If specified, load the data.",
+            "  -indexes              If specified, drop and create the tables.",
+            "  -populationQueries    If specified, run the data loading queries. Runs by",
+            "                        default if -data is specified.",
+            "  -pauseMillis=<n>      Pause n milliseconds between batches;",
+            "                        if not specified, or 0, do not pause.",
+            "  -include=<regexp>     Create, load, and index only tables whose name",
+            "                        matches regular expression",
+            "  -exclude=<regexp>     Create, load, and index only tables whose name",
+            "                        does not match regular expression",
+            "                        if not specified, or 0, do not pause.",
+            "",
+            "To load data in trickle mode, first run with '-exclude=sales_fact_1997'",
+            "then run with '-include=sales_fact_1997 -pauseMillis=1 -outputJdbcBatchSize=1",
+        };
+        for (String s : lines) {
+            System.out.println(s);
+        }
     }
 
+    /**
+     * Command-line entry point.
+     *
+     * @param args Command-line arguments
+     */
     public static void main(String[] args) {
         // Set locale to English, so that '.' and ',' in numbers are parsed
         // correctly.
@@ -307,14 +357,14 @@ public class MondrianFoodMartLoader {
             indexes = false;
         }
 
-        if (inputBatchSize == -1) {
+        if (outputBatchSize == -1) {
             // No explicit batch size was set by user, so assign a good
             // default now
             if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB) {
                 // LucidDB column-store writes perform better with large batches
-                inputBatchSize = 1000;
+                outputBatchSize = 1000;
             } else {
-                inputBatchSize = 50;
+                outputBatchSize = 50;
             }
         }
 
@@ -325,35 +375,69 @@ public class MondrianFoodMartLoader {
         }
 
         try {
-            if (generateUniqueConstraints) {
-                // Initialize tableConstraints
-                createIndexes(false, false);
+            final Condition<String> tableFilter;
+            if (include != null || exclude != null) {
+                tableFilter = new Condition<String>() {
+                    public boolean test(String tableName) {
+                        if (include != null) {
+                            if (!include.matcher(tableName).matches()) {
+                                return false;
+                            }
+                        }
+                        if (exclude != null) {
+                            if (!exclude.matcher(tableName).matches()) {
+                                return true;
+                            }
+                        }
+                        // Table name matched the inclusion criterion
+                        // (or everything was included)
+                        // and did not match the exclusion criterion
+                        // (or nothing was excluded),
+                        // therefore is included.
+                        return true;
+                    }
+                };
+            } else {
+                tableFilter = new Condition<String>() {
+                    public boolean test(String s) {
+                        return true;
+                    }
+                };
             }
 
-            createTables();  // This also initializes tableMetadataToLoad
+            if (generateUniqueConstraints) {
+                // Initialize tableConstraints
+                createIndexes(false, false, tableFilter);
+            }
+
+            // This also initializes tableMetadataToLoad
+            createTables(tableFilter);
+
             if (data) {
                 if (!populationQueries) {
                     if (jdbcInput) {
-                        loadDataFromJdbcInput();
+                        loadDataFromJdbcInput(
+                            tableFilter, pauseMillis, outputBatchSize);
                     } else {
-                        loadDataFromFile();
+                        loadDataFromFile(
+                            tableFilter, pauseMillis, outputBatchSize);
                     }
                 }
                 // Index the base tables before running queries to populate
                 // the summary tables.
                 if (indexes) {
-                    createIndexes(true, false);
+                    createIndexes(true, false, tableFilter);
                 }
-                loadFromSQLInserts();
+                loadFromSqlInserts();
             } else {
                 // Create indexes without loading data.
                 if (indexes) {
-                    createIndexes(true, false);
+                    createIndexes(true, false, tableFilter);
                 }
             }
 
             if (indexes && aggregates) {
-                createIndexes(false, true);
+                createIndexes(false, true, tableFilter);
             }
         } finally {
             if (connection != null) {
@@ -385,8 +469,17 @@ public class MondrianFoodMartLoader {
      * -inputJdbcURL=jdbc:odbc:MondrianFoodMart
      * -outputJdbcURL=jdbc:mysql://localhost/textload?user=root&password=myAdmin
      * -outputDirectory=C:\Temp\wip\Loader-Output</pre></blockquote>
+     *
+     * @param tableFilter Condition whether to load rows from a given table
+     * @param pauseMillis How many milliseconds to pause between rows
+     * @param batchSize How often to write/commit to the database
      */
-    private void loadDataFromFile() throws Exception {
+    private void loadDataFromFile(
+        Condition<String> tableFilter,
+        long pauseMillis,
+        int batchSize)
+        throws Exception
+    {
         InputStream is = openInputStream();
 
         if (is == null) {
@@ -421,7 +514,7 @@ public class MondrianFoodMartLoader {
             String quotedColumnNames = null;
             Column[] orderedColumns = null;
             StringBuilder massagedLine = new StringBuilder();
-            List<String> batch = new ArrayList<String>(inputBatchSize);
+            final List<String> batch = new ArrayList<String>(batchSize);
 
             Pattern regex = null;
             String quoteChar = null;
@@ -456,10 +549,15 @@ public class MondrianFoodMartLoader {
                 String columnNames = matcher.group(2);
                 String values = matcher.group(3);
 
+                // This is a table we're not interested in. Ignore the line.
+                if (!tableFilter.test(tableName)) {
+                    continue;
+                }
+
                 // If table just changed, flush the previous batch.
                 if (!tableName.equals(prevTable)) {
-                    writeBatch(batch);
-                    batch = new ArrayList<String>(inputBatchSize);
+                    writeBatch(batch, pauseMillis);
+                    batch.clear();
                     afterTable(prevTable, tableRowCount);
                     tableRowCount = 0;
                     prevTable = tableName;
@@ -493,11 +591,15 @@ public class MondrianFoodMartLoader {
                 }
 
                 ++tableRowCount;
+                if (pauseMillis > 0) {
+                    Thread.sleep(pauseMillis);
+                }
 
                 if (batchFile) {
                     massagedLine.setLength(0);
                     getMassagedValues(massagedLine, orderedColumns, values);
-                    fileOutput.write(massagedLine.toString().replace('\'', '"').trim());
+                    fileOutput.write(
+                        massagedLine.toString().replace('\'', '"').trim());
                     fileOutput.write(nl);
                 } else {
                     massagedLine.setLength(0);
@@ -513,15 +615,26 @@ public class MondrianFoodMartLoader {
                     line = massagedLine.toString();
 
                     batch.add(line);
-                    if (batch.size() >= inputBatchSize) {
-                        writeBatch(batch);
-                        batch = new ArrayList<String>(inputBatchSize);
+                    if (batch.size() >= batchSize) {
+                        writeBatch(batch, pauseMillis);
+                        batch.clear();
+                        if (pauseMillis > 0) {
+                            // Every ten seconds print an update.
+                            final long t = System.currentTimeMillis();
+                            if (t - lastUpdate > 10000) {
+                                lastUpdate = t;
+                                LOGGER.debug(
+                                    tableName + ": wrote row #"
+                                    + tableRowCount + ".");
+                            }
+                            Thread.sleep(pauseMillis);
+                        }
                     }
                 }
             }
 
             // Print summary of the final table.
-            writeBatch(batch);
+            writeBatch(batch, pauseMillis);
             afterTable(prevTable, tableRowCount);
             tableRowCount = 0;
         } finally {
@@ -538,7 +651,11 @@ public class MondrianFoodMartLoader {
      * @param tableRowCount Number of rows in the table
      * @throws IOException
      */
-    private void afterTable(String table, int tableRowCount) throws IOException {
+    private void afterTable(
+        String table,
+        int tableRowCount)
+        throws IOException
+    {
         if (table == null) {
             return;
         }
@@ -612,7 +729,8 @@ public class MondrianFoodMartLoader {
                 } else {
                     // at end
                     if (inQuote) {
-                        individualValues[valuesPos] = individualValues[valuesPos] + "," + splitValues[i];
+                        individualValues[valuesPos] =
+                            individualValues[valuesPos] + "," + splitValues[i];
                         inQuote = inQuote(splitValues[i], inQuote);
                     } else {
                         valuesPos++;
@@ -637,6 +755,13 @@ public class MondrianFoodMartLoader {
         }
     }
 
+    /**
+     * Returns whether we are inside a quoted string after reading a string.
+     *
+     * @param str String
+     * @param nowInQuote Whether we are inside a quoted string initially
+     * @return whether we are inside a quoted string after reading the string
+     */
     private boolean inQuote(String str, boolean nowInQuote) {
         if (str.indexOf('\'') == -1) {
             // No quote, so stay the same
@@ -651,7 +776,20 @@ public class MondrianFoodMartLoader {
         return nowInQuote;
     }
 
-    private void loadDataFromJdbcInput() throws Exception {
+    /**
+     * Loads data from a JDBC source.
+     *
+     * @param tableFilter Condition whether to load rows from a given table
+     * @param pauseMillis How many milliseconds to pause between batches
+     * @param batchSize How often to write/commit to the database
+     * @throws Exception
+     */
+    private void loadDataFromJdbcInput(
+        Condition<String> tableFilter,
+        long pauseMillis,
+        int batchSize)
+        throws Exception
+    {
         if (outputDirectory != null) {
             file = new File(outputDirectory, "createData.sql");
             fileOutput = new FileWriter(file);
@@ -664,12 +802,18 @@ public class MondrianFoodMartLoader {
          * For each row, insert a row
          */
 
-        for (Map.Entry<String, Column[]> tableEntry : tableMetadataToLoad.entrySet()) {
+        for (Map.Entry<String, Column[]> tableEntry
+            : tableMetadataToLoad.entrySet())
+        {
+            final String tableName = tableEntry.getKey();
+            if (!tableFilter.test(tableName)) {
+                continue;
+            }
+            final Column[] tableColumns = tableEntry.getValue();
             int rowsAdded = loadTable(
-                tableEntry.getKey(),
-                tableEntry.getValue());
-            LOGGER.info("Table " + tableEntry.getKey() +
-                ": loaded " + rowsAdded + " rows.");
+                tableName, tableColumns, pauseMillis, batchSize);
+            LOGGER.info(
+                "Table " + tableName + ": loaded " + rowsAdded + " rows.");
         }
 
         if (outputDirectory != null) {
@@ -678,10 +822,10 @@ public class MondrianFoodMartLoader {
     }
 
     /**
-     * After data has been loaded from a file or via JDBC, create any derived data
-     *
+     * After data has been loaded from a file or via JDBC, creates any derived
+     * data.
      */
-    private void loadFromSQLInserts() throws Exception {
+    private void loadFromSqlInserts() throws Exception {
         InputStream is = getClass().getResourceAsStream("insert.sql");
         if (is == null) {
             is = new FileInputStream(
@@ -749,11 +893,19 @@ public class MondrianFoodMartLoader {
      * Read the given table from the input RDBMS and output to destination
      * RDBMS or file
      *
-     * @param name      name of table
-     * @param columns   columns to be read/output
+     * @param name      Name of table
+     * @param columns   Columns to be read/output
+     * @param pauseMillis How many milliseconds to pause between rows
+     * @param batchSize How often to write/commit to the database
      * @return          #rows inserted
      */
-    private int loadTable(String name, Column[] columns) throws Exception {
+    private int loadTable(
+        String name,
+        Column[] columns,
+        long pauseMillis,
+        int batchSize)
+        throws Exception
+    {
         int rowsAdded = 0;
         StringBuilder buf = new StringBuilder();
 
@@ -776,7 +928,7 @@ public class MondrianFoodMartLoader {
 
             rs = statement.executeQuery(ddl);
 
-            List<String> batch = new ArrayList<String>(inputBatchSize);
+            List<String> batch = new ArrayList<String>(batchSize);
             boolean displayedInsert = false;
 
             while (rs.next()) {
@@ -787,13 +939,24 @@ public class MondrianFoodMartLoader {
                     displayedInsert = true;
                 }
                 batch.add(insertStatement);
-                if (batch.size() >= inputBatchSize) {
-                    rowsAdded += writeBatch(batch);
+                if (batch.size() >= batchSize) {
+                    final int rowCount = writeBatch(batch, pauseMillis);
+                    rowsAdded += rowCount;
+                    batch.clear();
+                    if (pauseMillis > 0) {
+                        final long t = System.currentTimeMillis();
+                        if (t - lastUpdate > 10000) {
+                            lastUpdate = t;
+                            LOGGER.debug(
+                                name + ": wrote row #" + rowsAdded + ".");
+                        }
+                        Thread.sleep(pauseMillis);
+                    }
                 }
             }
 
             if (batch.size() > 0) {
-                rowsAdded += writeBatch(batch);
+                rowsAdded += writeBatch(batch, pauseMillis);
             }
         } finally {
             if (rs != null) {
@@ -816,14 +979,19 @@ public class MondrianFoodMartLoader {
     }
 
     /**
-     * Create a SQL INSERT statement in the dialect of the output RDBMS.
+     * Creates a SQL INSERT statement in the dialect of the output RDBMS.
      *
      * @param rs            ResultSet of input RDBMS
      * @param name          name of table
      * @param columns       column definitions for INSERT statement
      * @return String       the INSERT statement
      */
-    private String createInsertStatement(ResultSet rs, String name, Column[] columns) throws Exception {
+    private String createInsertStatement(
+        ResultSet rs,
+        String name,
+        Column[] columns)
+        throws Exception
+    {
         StringBuilder buf = new StringBuilder();
 
         buf.append("INSERT INTO ")
@@ -856,9 +1024,14 @@ public class MondrianFoodMartLoader {
      *      output the statements to a file.
      *
      * @param batch         SQL statements to execute
+     * @param pauseMillis   How many milliseconds to pause between batches
      * @return              # SQL statements executed
      */
-    private int writeBatch(List<String> batch) throws IOException, SQLException {
+    private int writeBatch(
+        List<String> batch,
+        long pauseMillis)
+        throws IOException, SQLException
+    {
         if (batch.size() == 0) {
             // nothing to do
             return batch.size();
@@ -875,15 +1048,20 @@ public class MondrianFoodMartLoader {
                 fileOutput.write(";" + nl);
             }
         } else {
-            boolean useTxn = connection.getMetaData().supportsTransactions();
-
-            switch (dialect.getDatabaseProduct()) {
-            case NEOVIEW:
+            final boolean useTxn;
+            if (dialect.getDatabaseProduct()
+                == Dialect.DatabaseProduct.NEOVIEW)
+            {
                 // setAutoCommit can not changed to true again, throws
                 // "com.hp.t4jdbc.HPT4Exception: SetAutoCommit not possible",
                 // since a transaction is active
                 useTxn = false;
-                break;
+            } else if (pauseMillis > 0) {
+                // No point trickling in data if we don't commit it as we write.
+                useTxn = false;
+                connection.setAutoCommit(true);
+            } else {
+                useTxn = connection.getMetaData().supportsTransactions();
             }
 
             if (useTxn) {
@@ -923,7 +1101,7 @@ public class MondrianFoodMartLoader {
                 for (int i = 0; i < batch.size(); i++) {
                     stmt.addBatch(batch.get(i));
                 }
-                int [] updateCounts;
+                int[] updateCounts;
 
                 try {
                     updateCounts = stmt.executeBatch();
@@ -934,15 +1112,17 @@ public class MondrianFoodMartLoader {
                     throw e;
                 }
                 int updates = 0;
-                for (int i = 0; i < updateCounts.length; updates += updateCounts[i], i++) {
+                for (int i = 0; i < updateCounts.length;
+                    updates += updateCounts[i], i++)
+                {
                     if (updateCounts[i] == 0) {
                         LOGGER.error("Error in SQL: " + batch.get(i));
                     }
                 }
                 if (updates < batch.size()) {
                     throw new RuntimeException(
-                        "Failed to execute batch: " + batch.size()
-                            + " versus " + updates);
+                        "Failed to execute batch: " + batch.size() + " versus "
+                        + updates);
                 }
             }
             stmt.close();
@@ -962,7 +1142,10 @@ public class MondrianFoodMartLoader {
     private InputStream openInputStream() throws Exception {
         final String defaultZipFileName = "FoodMartCreateData.zip";
         final String defaultDataFileName = "FoodMartCreateData.sql";
-        final File file = (inputFile != null) ? new File(inputFile) : new File("demo", defaultZipFileName);
+        final File file =
+            (inputFile != null)
+                ? new File(inputFile)
+                : new File("demo", defaultZipFileName);
         if (!file.exists()) {
             LOGGER.error("No input file: " + file);
             return null;
@@ -977,123 +1160,125 @@ public class MondrianFoodMartLoader {
     }
 
     /**
-     * Create all indexes for the FoodMart database
+     * Create all indexes for the FoodMart database.
      *
      * @param baseTables Whether to create indexes on base tables
      * @param summaryTables Whether to create indexes on agg tables
      */
     private void createIndexes(
-            boolean baseTables,
-            boolean summaryTables)
-            throws Exception {
+        boolean baseTables,
+        boolean summaryTables,
+        Condition<String> tableFilter)
+        throws Exception
+    {
         if (outputDirectory != null) {
             file = new File(outputDirectory, "createIndexes.sql");
             fileOutput = new FileWriter(file);
         }
 
-        createIndex(true, "account", "i_account_id", new String[] {"account_id"}, baseTables, summaryTables);
-        createIndex(false, "account", "i_account_parent", new String[] {"account_parent"}, baseTables, summaryTables);
-        createIndex(true, "category", "i_category_id", new String[] {"category_id"}, baseTables, summaryTables);
-        createIndex(false, "category", "i_category_parent", new String[] {"category_parent"}, baseTables, summaryTables);
-        createIndex(true, "currency", "i_currency", new String[] {"currency_id", "date"}, baseTables, summaryTables);
-        createIndex(false, "customer", "i_cust_acct_num", new String[] {"account_num"}, baseTables, summaryTables);
-        createIndex(false, "customer", "i_customer_fname", new String[] {"fname"}, baseTables, summaryTables);
-        createIndex(false, "customer", "i_customer_lname", new String[] {"lname"}, baseTables, summaryTables);
-        createIndex(false, "customer", "i_cust_child_home", new String[] {"num_children_at_home"}, baseTables, summaryTables);
-        createIndex(true, "customer", "i_customer_id", new String[] {"customer_id"}, baseTables, summaryTables);
-        createIndex(false, "customer", "i_cust_postal_code", new String[] {"postal_code"}, baseTables, summaryTables);
-        createIndex(false, "customer", "i_cust_region_id", new String[] {"customer_region_id"}, baseTables, summaryTables);
-        createIndex(true, "department", "i_department_id", new String[] {"department_id"}, baseTables, summaryTables);
-        createIndex(true, "employee", "i_employee_id", new String[] {"employee_id"}, baseTables, summaryTables);
-        createIndex(false, "employee", "i_empl_dept_id", new String[] {"department_id"}, baseTables, summaryTables);
-        createIndex(false, "employee", "i_empl_store_id", new String[] {"store_id"}, baseTables, summaryTables);
-        createIndex(false, "employee", "i_empl_super_id", new String[] {"supervisor_id"}, baseTables, summaryTables);
-        createIndex(true, "employee_closure", "i_empl_closure", new String[] {"supervisor_id", "employee_id"}, baseTables, summaryTables);
-        createIndex(false, "employee_closure", "i_empl_closure_emp", new String[] {"employee_id"}, baseTables, summaryTables);
-        createIndex(false, "expense_fact", "i_expense_store_id", new String[] {"store_id"}, baseTables, summaryTables);
-        createIndex(false, "expense_fact", "i_expense_acct_id", new String[] {"account_id"}, baseTables, summaryTables);
-        createIndex(false, "expense_fact", "i_expense_time_id", new String[] {"time_id"}, baseTables, summaryTables);
-        createIndex(false, "inventory_fact_1997", "i_inv_97_prod_id", new String[] {"product_id"}, baseTables, summaryTables);
-        createIndex(false, "inventory_fact_1997", "i_inv_97_store_id", new String[] {"store_id"}, baseTables, summaryTables);
-        createIndex(false, "inventory_fact_1997", "i_inv_97_time_id", new String[] {"time_id"}, baseTables, summaryTables);
-        createIndex(false, "inventory_fact_1997", "i_inv_97_wrhse_id", new String[] {"warehouse_id"}, baseTables, summaryTables);
-        createIndex(false, "inventory_fact_1998", "i_inv_98_prod_id", new String[] {"product_id"}, baseTables, summaryTables);
-        createIndex(false, "inventory_fact_1998", "i_inv_98_store_id", new String[] {"store_id"}, baseTables, summaryTables);
-        createIndex(false, "inventory_fact_1998", "i_inv_98_time_id", new String[] {"time_id"}, baseTables, summaryTables);
-        createIndex(false, "inventory_fact_1998", "i_inv_98_wrhse_id", new String[] {"warehouse_id"}, baseTables, summaryTables);
-        createIndex(true, "position", "i_position_id", new String[] {"position_id"}, baseTables, summaryTables);
-        createIndex(false, "product", "i_prod_brand_name", new String[] {"brand_name"}, baseTables, summaryTables);
-        createIndex(true, "product", "i_product_id", new String[] {"product_id"}, baseTables, summaryTables);
-        createIndex(false, "product", "i_prod_class_id", new String[] {"product_class_id"}, baseTables, summaryTables);
-        createIndex(false, "product", "i_product_name", new String[] {"product_name"}, baseTables, summaryTables);
-        createIndex(false, "product", "i_product_SKU", new String[] {"SKU"}, baseTables, summaryTables);
-        createIndex(true, "promotion", "i_promotion_id", new String[] {"promotion_id"}, baseTables, summaryTables);
-        createIndex(false, "promotion", "i_promo_dist_id", new String[] {"promotion_district_id"}, baseTables, summaryTables);
-        createIndex(true, "reserve_employee", "i_rsrv_empl_id", new String[] {"employee_id"}, baseTables, summaryTables);
-        createIndex(false, "reserve_employee", "i_rsrv_empl_dept", new String[] {"department_id"}, baseTables, summaryTables);
-        createIndex(false, "reserve_employee", "i_rsrv_empl_store", new String[] {"store_id"}, baseTables, summaryTables);
-        createIndex(false, "reserve_employee", "i_rsrv_empl_sup", new String[] {"supervisor_id"}, baseTables, summaryTables);
-        createIndex(false, "salary", "i_salary_pay_date", new String[] {"pay_date"}, baseTables, summaryTables);
-        createIndex(false, "salary", "i_salary_employee", new String[] {"employee_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_1997", "i_sls_97_cust_id", new String[] {"customer_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_1997", "i_sls_97_prod_id", new String[] {"product_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_1997", "i_sls_97_promo_id", new String[] {"promotion_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_1997", "i_sls_97_store_id", new String[] {"store_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_1997", "i_sls_97_time_id", new String[] {"time_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_cust", new String[] {"customer_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_prod", new String[] {"product_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_promo", new String[] {"promotion_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_store", new String[] {"store_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_time", new String[] {"time_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_1998", "i_sls_98_cust_id", new String[] {"customer_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_1998", "i_sls_1998_prod_id", new String[] {"product_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_1998", "i_sls_1998_promo", new String[] {"promotion_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_1998", "i_sls_1998_store", new String[] {"store_id"}, baseTables, summaryTables);
-        createIndex(false, "sales_fact_1998", "i_sls_1998_time_id", new String[] {"time_id"}, baseTables, summaryTables);
-        createIndex(true, "store", "i_store_id", new String[] {"store_id"}, baseTables, summaryTables);
-        createIndex(false, "store", "i_store_region_id", new String[] {"region_id"}, baseTables, summaryTables);
-        createIndex(true, "store_ragged", "i_store_raggd_id", new String[] {"store_id"}, baseTables, summaryTables);
-        createIndex(false, "store_ragged", "i_store_rggd_reg", new String[] {"region_id"}, baseTables, summaryTables);
-        createIndex(true, "time_by_day", "i_time_id", new String[] {"time_id"}, baseTables, summaryTables);
-        createIndex(true, "time_by_day", "i_time_day", new String[] {"the_date"}, baseTables, summaryTables);
-        createIndex(false, "time_by_day", "i_time_year", new String[] {"the_year"}, baseTables, summaryTables);
-        createIndex(false, "time_by_day", "i_time_quarter", new String[] {"quarter"}, baseTables, summaryTables);
-        createIndex(false, "time_by_day", "i_time_month", new String[] {"month_of_year"}, baseTables, summaryTables);
+        createIndex(true, "account", "i_account_id", new String[] {"account_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "account", "i_account_parent", new String[] {"account_parent"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "category", "i_category_id", new String[] {"category_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "category", "i_category_parent", new String[] {"category_parent"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "currency", "i_currency", new String[] {"currency_id", "date"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "customer", "i_cust_acct_num", new String[] {"account_num"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "customer", "i_customer_fname", new String[] {"fname"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "customer", "i_customer_lname", new String[] {"lname"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "customer", "i_cust_child_home", new String[] {"num_children_at_home"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "customer", "i_customer_id", new String[] {"customer_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "customer", "i_cust_postal_code", new String[] {"postal_code"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "customer", "i_cust_region_id", new String[] {"customer_region_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "department", "i_department_id", new String[] {"department_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "employee", "i_employee_id", new String[] {"employee_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "employee", "i_empl_dept_id", new String[] {"department_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "employee", "i_empl_store_id", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "employee", "i_empl_super_id", new String[] {"supervisor_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "employee_closure", "i_empl_closure", new String[] {"supervisor_id", "employee_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "employee_closure", "i_empl_closure_emp", new String[] {"employee_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "expense_fact", "i_expense_store_id", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "expense_fact", "i_expense_acct_id", new String[] {"account_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "expense_fact", "i_expense_time_id", new String[] {"time_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "inventory_fact_1997", "i_inv_97_prod_id", new String[] {"product_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "inventory_fact_1997", "i_inv_97_store_id", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "inventory_fact_1997", "i_inv_97_time_id", new String[] {"time_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "inventory_fact_1997", "i_inv_97_wrhse_id", new String[] {"warehouse_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "inventory_fact_1998", "i_inv_98_prod_id", new String[] {"product_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "inventory_fact_1998", "i_inv_98_store_id", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "inventory_fact_1998", "i_inv_98_time_id", new String[] {"time_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "inventory_fact_1998", "i_inv_98_wrhse_id", new String[] {"warehouse_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "position", "i_position_id", new String[] {"position_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "product", "i_prod_brand_name", new String[] {"brand_name"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "product", "i_product_id", new String[] {"product_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "product", "i_prod_class_id", new String[] {"product_class_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "product", "i_product_name", new String[] {"product_name"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "product", "i_product_SKU", new String[] {"SKU"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "promotion", "i_promotion_id", new String[] {"promotion_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "promotion", "i_promo_dist_id", new String[] {"promotion_district_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "reserve_employee", "i_rsrv_empl_id", new String[] {"employee_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "reserve_employee", "i_rsrv_empl_dept", new String[] {"department_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "reserve_employee", "i_rsrv_empl_store", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "reserve_employee", "i_rsrv_empl_sup", new String[] {"supervisor_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "salary", "i_salary_pay_date", new String[] {"pay_date"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "salary", "i_salary_employee", new String[] {"employee_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_1997", "i_sls_97_cust_id", new String[] {"customer_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_1997", "i_sls_97_prod_id", new String[] {"product_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_1997", "i_sls_97_promo_id", new String[] {"promotion_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_1997", "i_sls_97_store_id", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_1997", "i_sls_97_time_id", new String[] {"time_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_cust", new String[] {"customer_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_prod", new String[] {"product_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_promo", new String[] {"promotion_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_store", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_time", new String[] {"time_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_1998", "i_sls_98_cust_id", new String[] {"customer_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_1998", "i_sls_1998_prod_id", new String[] {"product_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_1998", "i_sls_1998_promo", new String[] {"promotion_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_1998", "i_sls_1998_store", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "sales_fact_1998", "i_sls_1998_time_id", new String[] {"time_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "store", "i_store_id", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "store", "i_store_region_id", new String[] {"region_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "store_ragged", "i_store_raggd_id", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "store_ragged", "i_store_rggd_reg", new String[] {"region_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "time_by_day", "i_time_id", new String[] {"time_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(true, "time_by_day", "i_time_day", new String[] {"the_date"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "time_by_day", "i_time_year", new String[] {"the_year"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "time_by_day", "i_time_quarter", new String[] {"quarter"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "time_by_day", "i_time_month", new String[] {"month_of_year"}, baseTables, summaryTables, tableFilter);
 
-        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01cust", new String[] {"customer_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01prod", new String[] {"product_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01time", new String[] {"time_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01cust", new String[] {"customer_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01prod", new String[] {"product_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01time", new String[] {"time_id"}, baseTables, summaryTables, tableFilter);
 
-        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01cust", new String[] {"customer_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01prod", new String[] {"product_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01time", new String[] {"time_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01cust", new String[] {"customer_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01prod", new String[] {"product_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01time", new String[] {"time_id"}, baseTables, summaryTables, tableFilter);
 
-        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05cust", new String[] {"customer_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05prod", new String[] {"product_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05promo", new String[] {"promotion_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05store", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05cust", new String[] {"customer_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05prod", new String[] {"product_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05promo", new String[] {"promotion_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05store", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
 
-        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14cust", new String[] {"customer_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14prod", new String[] {"product_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14promo", new String[] {"promotion_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14store", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14cust", new String[] {"customer_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14prod", new String[] {"product_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14promo", new String[] {"promotion_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14store", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
 
-        createIndex(false, "agg_lc_100_sales_fact_1997", "i_sls97lc100cust", new String[] {"customer_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_lc_100_sales_fact_1997", "i_sls97lc100prod", new String[] {"product_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_lc_100_sales_fact_1997", "i_sls97lc100cust", new String[] {"customer_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_lc_100_sales_fact_1997", "i_sls97lc100prod", new String[] {"product_id"}, baseTables, summaryTables, tableFilter);
 
-        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97speccust", new String[] {"customer_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specprod", new String[] {"product_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specpromo", new String[] {"promotion_id"}, baseTables, summaryTables);
-        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specstore", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97speccust", new String[] {"customer_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specprod", new String[] {"product_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specpromo", new String[] {"promotion_id"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specstore", new String[] {"store_id"}, baseTables, summaryTables, tableFilter);
 
-        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_gender", new String[] {"gender"}, baseTables, summaryTables);
-        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_ms", new String[] {"marital_status"}, baseTables, summaryTables);
-        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_pfam", new String[] {"product_family"}, baseTables, summaryTables);
-        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_pdept", new String[] {"product_department"}, baseTables, summaryTables);
-        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_pcat", new String[] {"product_category"}, baseTables, summaryTables);
-        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_tmonth", new String[] {"month_of_year"}, baseTables, summaryTables);
-        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_tquarter", new String[] {"quarter"}, baseTables, summaryTables);
-        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_tyear", new String[] {"the_year"}, baseTables, summaryTables);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_gender", new String[] {"gender"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_ms", new String[] {"marital_status"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_pfam", new String[] {"product_family"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_pdept", new String[] {"product_department"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_pcat", new String[] {"product_category"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_tmonth", new String[] {"month_of_year"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_tquarter", new String[] {"quarter"}, baseTables, summaryTables, tableFilter);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_tyear", new String[] {"the_year"}, baseTables, summaryTables, tableFilter);
 
         if (outputDirectory != null) {
             fileOutput.close();
@@ -1101,21 +1286,23 @@ public class MondrianFoodMartLoader {
     }
 
     /**
+     * Creates an index.
      *
-     * If we are outputting to JDBC,
-     *      Execute the CREATE INDEX statement
-     *
-     * Otherwise,
-     *      output the statement to a file.
+     * <p>If we are outputting to JDBC, executes the CREATE INDEX statement;
+     * otherwise, outputs the statement to a file.
      */
     private void createIndex(
-            boolean isUnique,
-            String tableName,
-            String indexName,
-            String[] columnNames,
-            boolean baseTables,
-            boolean aggregateTables)
+        boolean isUnique,
+        String tableName,
+        String indexName,
+        String[] columnNames,
+        boolean baseTables,
+        boolean aggregateTables,
+        Condition<String> tableFilter)
     {
+        if (!tableFilter.test(tableName)) {
+            return;
+        }
         if (!baseTables && !aggregateTables) {
             // This is just a dry run to record the unique indexes
             // so that we can implement them as standard
@@ -1215,14 +1402,17 @@ public class MondrianFoodMartLoader {
      *
      * <p>Also initializes {@link #tableMetadataToLoad} and
      * {@link #aggregateTableMetadataToLoad}.
+     *
+     * @param tableFilter Condition whether to load a particular table
      */
-    private void createTables() throws Exception  {
+    private void createTables(Condition<String> tableFilter) throws Exception {
         if (outputDirectory != null) {
             file = new File(outputDirectory, "createTables.sql");
             fileOutput = new FileWriter(file);
         }
 
-        createTable("sales_fact_1997", new Column[] {
+        createTable(
+            "sales_fact_1997", tableFilter,
             new Column("product_id", Type.Integer, false),
             new Column("time_id", Type.Integer, false),
             new Column("customer_id", Type.Integer, false),
@@ -1230,9 +1420,9 @@ public class MondrianFoodMartLoader {
             new Column("store_id", Type.Integer, false),
             new Column("store_sales", Type.Currency, false),
             new Column("store_cost", Type.Currency, false),
-            new Column("unit_sales", Type.Currency, false),
-        });
-        createTable("sales_fact_1998", new Column[] {
+            new Column("unit_sales", Type.Currency, false));
+        createTable(
+            "sales_fact_1998", tableFilter,
             new Column("product_id", Type.Integer, false),
             new Column("time_id", Type.Integer, false),
             new Column("customer_id", Type.Integer, false),
@@ -1240,9 +1430,9 @@ public class MondrianFoodMartLoader {
             new Column("store_id", Type.Integer, false),
             new Column("store_sales", Type.Currency, false),
             new Column("store_cost", Type.Currency, false),
-            new Column("unit_sales", Type.Currency, false),
-        });
-        createTable("sales_fact_dec_1998", new Column[] {
+            new Column("unit_sales", Type.Currency, false));
+        createTable(
+            "sales_fact_dec_1998", tableFilter,
             new Column("product_id", Type.Integer, false),
             new Column("time_id", Type.Integer, false),
             new Column("customer_id", Type.Integer, false),
@@ -1250,9 +1440,9 @@ public class MondrianFoodMartLoader {
             new Column("store_id", Type.Integer, false),
             new Column("store_sales", Type.Currency, false),
             new Column("store_cost", Type.Currency, false),
-            new Column("unit_sales", Type.Currency, false),
-        });
-        createTable("inventory_fact_1997", new Column[] {
+            new Column("unit_sales", Type.Currency, false));
+        createTable(
+            "inventory_fact_1997", tableFilter,
             new Column("product_id", Type.Integer, false),
             new Column("time_id", Type.Integer, true),
             new Column("warehouse_id", Type.Integer, true),
@@ -1262,9 +1452,9 @@ public class MondrianFoodMartLoader {
             new Column("warehouse_sales", Type.Currency, true),
             new Column("warehouse_cost", Type.Currency, true),
             new Column("supply_time", Type.Smallint, true),
-            new Column("store_invoice", Type.Currency, true),
-        });
-        createTable("inventory_fact_1998", new Column[] {
+            new Column("store_invoice", Type.Currency, true));
+        createTable(
+            "inventory_fact_1998", tableFilter,
             new Column("product_id", Type.Integer, false),
             new Column("time_id", Type.Integer, true),
             new Column("warehouse_id", Type.Integer, true),
@@ -1274,46 +1464,51 @@ public class MondrianFoodMartLoader {
             new Column("warehouse_sales", Type.Currency, true),
             new Column("warehouse_cost", Type.Currency, true),
             new Column("supply_time", Type.Smallint, true),
-            new Column("store_invoice", Type.Currency, true),
-        });
+            new Column("store_invoice", Type.Currency, true));
 
         //  Aggregate tables
 
-        createTable("agg_pl_01_sales_fact_1997", new Column[] {
+        createTable(
+            "agg_pl_01_sales_fact_1997", tableFilter, false,
+            true,
             new Column("product_id", Type.Integer, false),
             new Column("time_id", Type.Integer, false),
             new Column("customer_id", Type.Integer, false),
             new Column("store_sales_sum", Type.Currency, false),
             new Column("store_cost_sum", Type.Currency, false),
             new Column("unit_sales_sum", Type.Currency, false),
-            new Column("fact_count", Type.Integer, false),
-        }, false, true);
-        createTable("agg_ll_01_sales_fact_1997", new Column[] {
+            new Column("fact_count", Type.Integer, false));
+        createTable(
+            "agg_ll_01_sales_fact_1997", tableFilter, false,
+            true,
             new Column("product_id", Type.Integer, false),
             new Column("time_id", Type.Integer, false),
             new Column("customer_id", Type.Integer, false),
             new Column("store_sales", Type.Currency, false),
             new Column("store_cost", Type.Currency, false),
             new Column("unit_sales", Type.Currency, false),
-            new Column("fact_count", Type.Integer, false),
-        }, false, true);
-        createTable("agg_l_03_sales_fact_1997", new Column[] {
+            new Column("fact_count", Type.Integer, false));
+        createTable(
+            "agg_l_03_sales_fact_1997", tableFilter, false,
+            true,
             new Column("time_id", Type.Integer, false),
             new Column("customer_id", Type.Integer, false),
             new Column("store_sales", Type.Currency, false),
             new Column("store_cost", Type.Currency, false),
             new Column("unit_sales", Type.Currency, false),
-            new Column("fact_count", Type.Integer, false),
-        }, false, true);
-        createTable("agg_l_04_sales_fact_1997", new Column[] {
+            new Column("fact_count", Type.Integer, false));
+        createTable(
+            "agg_l_04_sales_fact_1997", tableFilter, false,
+            true,
             new Column("time_id", Type.Integer, false),
             new Column("store_sales", Type.Currency, false),
             new Column("store_cost", Type.Currency, false),
             new Column("unit_sales", Type.Currency, false),
             new Column("customer_count", Type.Integer, false),
-            new Column("fact_count", Type.Integer, false),
-        }, false, true);
-        createTable("agg_l_05_sales_fact_1997", new Column[] {
+            new Column("fact_count", Type.Integer, false));
+        createTable(
+            "agg_l_05_sales_fact_1997", tableFilter, false,
+            true,
             new Column("product_id", Type.Integer, false),
             new Column("customer_id", Type.Integer, false),
             new Column("promotion_id", Type.Integer, false),
@@ -1321,9 +1516,10 @@ public class MondrianFoodMartLoader {
             new Column("store_sales", Type.Currency, false),
             new Column("store_cost", Type.Currency, false),
             new Column("unit_sales", Type.Currency, false),
-            new Column("fact_count", Type.Integer, false),
-        }, false, true);
-        createTable("agg_c_10_sales_fact_1997", new Column[] {
+            new Column("fact_count", Type.Integer, false));
+        createTable(
+            "agg_c_10_sales_fact_1997", tableFilter, false,
+            true,
             new Column("month_of_year", Type.Smallint, false),
             new Column("quarter", Type.Varchar30, false),
             new Column("the_year", Type.Smallint, false),
@@ -1331,9 +1527,10 @@ public class MondrianFoodMartLoader {
             new Column("store_cost", Type.Currency, false),
             new Column("unit_sales", Type.Currency, false),
             new Column("customer_count", Type.Integer, false),
-            new Column("fact_count", Type.Integer, false),
-        }, false, true);
-        createTable("agg_c_14_sales_fact_1997", new Column[] {
+            new Column("fact_count", Type.Integer, false));
+        createTable(
+            "agg_c_14_sales_fact_1997", tableFilter, false,
+            true,
             new Column("product_id", Type.Integer, false),
             new Column("customer_id", Type.Integer, false),
             new Column("store_id", Type.Integer, false),
@@ -1344,9 +1541,10 @@ public class MondrianFoodMartLoader {
             new Column("store_sales", Type.Currency, false),
             new Column("store_cost", Type.Currency, false),
             new Column("unit_sales", Type.Currency, false),
-            new Column("fact_count", Type.Integer, false),
-        }, false, true);
-        createTable("agg_lc_100_sales_fact_1997", new Column[] {
+            new Column("fact_count", Type.Integer, false));
+        createTable(
+            "agg_lc_100_sales_fact_1997", tableFilter, false,
+            true,
             new Column("product_id", Type.Integer, false),
             new Column("customer_id", Type.Integer, false),
             new Column("quarter", Type.Varchar30, false),
@@ -1354,9 +1552,10 @@ public class MondrianFoodMartLoader {
             new Column("store_sales", Type.Currency, false),
             new Column("store_cost", Type.Currency, false),
             new Column("unit_sales", Type.Currency, false),
-            new Column("fact_count", Type.Integer, false),
-        }, false, true);
-        createTable("agg_c_special_sales_fact_1997", new Column[] {
+            new Column("fact_count", Type.Integer, false));
+        createTable(
+            "agg_c_special_sales_fact_1997", tableFilter, false,
+            true,
             new Column("product_id", Type.Integer, false),
             new Column("promotion_id", Type.Integer, false),
             new Column("customer_id", Type.Integer, false),
@@ -1367,9 +1566,10 @@ public class MondrianFoodMartLoader {
             new Column("store_sales_sum", Type.Currency, false),
             new Column("store_cost_sum", Type.Currency, false),
             new Column("unit_sales_sum", Type.Currency, false),
-            new Column("fact_count", Type.Integer, false),
-        }, false, true);
-        createTable("agg_g_ms_pcat_sales_fact_1997", new Column[] {
+            new Column("fact_count", Type.Integer, false));
+        createTable(
+            "agg_g_ms_pcat_sales_fact_1997", tableFilter, false,
+            true,
             new Column("gender", Type.Varchar30, false),
             new Column("marital_status", Type.Varchar30, false),
             new Column("product_family", Type.Varchar30, true),
@@ -1382,9 +1582,10 @@ public class MondrianFoodMartLoader {
             new Column("store_cost", Type.Currency, false),
             new Column("unit_sales", Type.Currency, false),
             new Column("customer_count", Type.Integer, false),
-            new Column("fact_count", Type.Integer, false),
-        }, false, true);
-        createTable("agg_lc_06_sales_fact_1997", new Column[] {
+            new Column("fact_count", Type.Integer, false));
+        createTable(
+            "agg_lc_06_sales_fact_1997", tableFilter, false,
+            true,
             new Column("time_id", Type.Integer, false),
             new Column("city", Type.Varchar30, false),
             new Column("state_province", Type.Varchar30, false),
@@ -1392,30 +1593,29 @@ public class MondrianFoodMartLoader {
             new Column("store_sales", Type.Currency, false),
             new Column("store_cost", Type.Currency, false),
             new Column("unit_sales", Type.Currency, false),
-            new Column("fact_count", Type.Integer, false),
-        }, false, true);
-
-        createTable("currency", new Column[] {
+            new Column("fact_count", Type.Integer, false));
+        createTable(
+            "currency", tableFilter,
             new Column("currency_id", Type.Integer, false),
             new Column("date", Type.Date, false),
             new Column("currency", Type.Varchar30, false),
-            new Column("conversion_ratio", Type.Currency, false),
-        });
-        createTable("account", new Column[] {
+            new Column("conversion_ratio", Type.Currency, false));
+        createTable(
+            "account", tableFilter,
             new Column("account_id", Type.Integer, false),
             new Column("account_parent", Type.Integer, true),
             new Column("account_description", Type.Varchar30, true),
             new Column("account_type", Type.Varchar30, false),
             new Column("account_rollup", Type.Varchar30, false),
-            new Column("Custom_Members", Type.Varchar255, true),
-        });
-        createTable("category", new Column[] {
+            new Column("Custom_Members", Type.Varchar255, true));
+        createTable(
+            "category", tableFilter,
             new Column("category_id", Type.Varchar30, false),
             new Column("category_parent", Type.Varchar30, true),
             new Column("category_description", Type.Varchar30, false),
-            new Column("category_rollup", Type.Varchar30, true),
-        });
-        createTable("customer", new Column[] {
+            new Column("category_rollup", Type.Varchar30, true));
+        createTable(
+            "customer", tableFilter,
             new Column("customer_id", Type.Integer, false),
             new Column("account_num", Type.Bigint, false),
             new Column("lname", Type.Varchar30, false),
@@ -1444,17 +1644,17 @@ public class MondrianFoodMartLoader {
             new Column("occupation", Type.Varchar30, true),
             new Column("houseowner", Type.Varchar30, true),
             new Column("num_cars_owned", Type.Integer, true),
-            new Column("fullname", Type.Varchar60, false),
-        });
-        createTable("days", new Column[] {
+            new Column("fullname", Type.Varchar60, false));
+        createTable(
+            "days", tableFilter,
             new Column("day", Type.Integer, false),
-            new Column("week_day", Type.Varchar30, false),
-        });
-        createTable("department", new Column[] {
+            new Column("week_day", Type.Varchar30, false));
+        createTable(
+            "department", tableFilter,
             new Column("department_id", Type.Integer, false),
-            new Column("department_description", Type.Varchar30, false),
-        });
-        createTable("employee", new Column[] {
+            new Column("department_description", Type.Varchar30, false));
+        createTable(
+            "employee", tableFilter,
             new Column("employee_id", Type.Integer, false),
             new Column("full_name", Type.Varchar30, false),
             new Column("first_name", Type.Varchar30, false),
@@ -1471,31 +1671,31 @@ public class MondrianFoodMartLoader {
             new Column("education_level", Type.Varchar30, false),
             new Column("marital_status", Type.Varchar30, false),
             new Column("gender", Type.Varchar30, false),
-            new Column("management_role", Type.Varchar30, true),
-        });
-        createTable("employee_closure", new Column[] {
+            new Column("management_role", Type.Varchar30, true));
+        createTable(
+            "employee_closure", tableFilter,
             new Column("employee_id", Type.Integer, false),
             new Column("supervisor_id", Type.Integer, false),
-            new Column("distance", Type.Integer, true),
-        });
-        createTable("expense_fact", new Column[] {
+            new Column("distance", Type.Integer, true));
+        createTable(
+            "expense_fact", tableFilter,
             new Column("store_id", Type.Integer, false),
             new Column("account_id", Type.Integer, false),
             new Column("exp_date", Type.Timestamp, false),
             new Column("time_id", Type.Integer, false),
             new Column("category_id", Type.Varchar30, false),
             new Column("currency_id", Type.Integer, false),
-            new Column("amount", Type.Currency, false),
-        });
-        createTable("position", new Column[] {
+            new Column("amount", Type.Currency, false));
+        createTable(
+            "position", tableFilter,
             new Column("position_id", Type.Integer, false),
             new Column("position_title", Type.Varchar30, false),
             new Column("pay_type", Type.Varchar30, false),
             new Column("min_scale", Type.Currency, false),
             new Column("max_scale", Type.Currency, false),
-            new Column("management_role", Type.Varchar30, false),
-        });
-        createTable("product", new Column[] {
+            new Column("management_role", Type.Varchar30, false));
+        createTable(
+            "product", tableFilter,
             new Column("product_class_id", Type.Integer, false),
             new Column("product_id", Type.Integer, false),
             new Column("brand_name", Type.Varchar60, true),
@@ -1510,34 +1710,34 @@ public class MondrianFoodMartLoader {
             new Column("cases_per_pallet", Type.Smallint, true),
             new Column("shelf_width", Type.Real, true),
             new Column("shelf_height", Type.Real, true),
-            new Column("shelf_depth", Type.Real, true),
-        });
-        createTable("product_class", new Column[] {
+            new Column("shelf_depth", Type.Real, true));
+        createTable(
+            "product_class", tableFilter,
             new Column("product_class_id", Type.Integer, false),
             new Column("product_subcategory", Type.Varchar30, true),
             new Column("product_category", Type.Varchar30, true),
             new Column("product_department", Type.Varchar30, true),
-            new Column("product_family", Type.Varchar30, true),
-        });
-        createTable("promotion", new Column[] {
+            new Column("product_family", Type.Varchar30, true));
+        createTable(
+            "promotion", tableFilter,
             new Column("promotion_id", Type.Integer, false),
             new Column("promotion_district_id", Type.Integer, true),
             new Column("promotion_name", Type.Varchar30, true),
             new Column("media_type", Type.Varchar30, true),
             new Column("cost", Type.Currency, true),
             new Column("start_date", Type.Timestamp, true),
-            new Column("end_date", Type.Timestamp, true),
-        });
-        createTable("region", new Column[] {
+            new Column("end_date", Type.Timestamp, true));
+        createTable(
+            "region", tableFilter,
             new Column("region_id", Type.Integer, false),
             new Column("sales_city", Type.Varchar30, true),
             new Column("sales_state_province", Type.Varchar30, true),
             new Column("sales_district", Type.Varchar30, true),
             new Column("sales_region", Type.Varchar30, true),
             new Column("sales_country", Type.Varchar30, true),
-            new Column("sales_district_id", Type.Integer, true),
-        });
-        createTable("reserve_employee", new Column[] {
+            new Column("sales_district_id", Type.Integer, true));
+        createTable(
+            "reserve_employee", tableFilter,
             new Column("employee_id", Type.Integer, false),
             new Column("full_name", Type.Varchar30, false),
             new Column("first_name", Type.Varchar30, false),
@@ -1553,9 +1753,9 @@ public class MondrianFoodMartLoader {
             new Column("supervisor_id", Type.Integer, true),
             new Column("education_level", Type.Varchar30, false),
             new Column("marital_status", Type.Varchar30, false),
-            new Column("gender", Type.Varchar30, false),
-        });
-        createTable("salary", new Column[] {
+            new Column("gender", Type.Varchar30, false));
+        createTable(
+            "salary", tableFilter,
             new Column("pay_date", Type.Timestamp, false),
             new Column("employee_id", Type.Integer, false),
             new Column("department_id", Type.Integer, false),
@@ -1563,9 +1763,9 @@ public class MondrianFoodMartLoader {
             new Column("salary_paid", Type.Currency, false),
             new Column("overtime_paid", Type.Currency, false),
             new Column("vacation_accrued", Type.Real, false),
-            new Column("vacation_used", Type.Real, false),
-        });
-        createTable("store", new Column[] {
+            new Column("vacation_used", Type.Real, false));
+        createTable(
+            "store", tableFilter,
             new Column("store_id", Type.Integer, false),
             new Column("store_type", Type.Varchar30, true),
             new Column("region_id", Type.Integer, true),
@@ -1589,9 +1789,9 @@ public class MondrianFoodMartLoader {
             new Column("video_store", Type.Boolean, true),
             new Column("salad_bar", Type.Boolean, true),
             new Column("prepared_food", Type.Boolean, true),
-            new Column("florist", Type.Boolean, true),
-        });
-        createTable("store_ragged", new Column[] {
+            new Column("florist", Type.Boolean, true));
+        createTable(
+            "store_ragged", tableFilter,
             new Column("store_id", Type.Integer, false),
             new Column("store_type", Type.Varchar30, true),
             new Column("region_id", Type.Integer, true),
@@ -1615,9 +1815,9 @@ public class MondrianFoodMartLoader {
             new Column("video_store", Type.Boolean, true),
             new Column("salad_bar", Type.Boolean, true),
             new Column("prepared_food", Type.Boolean, true),
-            new Column("florist", Type.Boolean, true),
-        });
-        createTable("time_by_day", new Column[] {
+            new Column("florist", Type.Boolean, true));
+        createTable(
+            "time_by_day", tableFilter,
             new Column("time_id", Type.Integer, false),
             new Column("the_date", Type.Timestamp, true),
             new Column("the_day", Type.Varchar30, true),
@@ -1627,9 +1827,9 @@ public class MondrianFoodMartLoader {
             new Column("week_of_year", Type.Integer, true),
             new Column("month_of_year", Type.Smallint, true),
             new Column("quarter", Type.Varchar30, true),
-            new Column("fiscal_period", Type.Varchar30, true),
-        });
-        createTable("warehouse", new Column[] {
+            new Column("fiscal_period", Type.Varchar30, true));
+        createTable(
+            "warehouse", tableFilter,
             new Column("warehouse_id", Type.Integer, false),
             new Column("warehouse_class_id", Type.Integer, true),
             new Column("stores_id", Type.Integer, true),
@@ -1644,12 +1844,11 @@ public class MondrianFoodMartLoader {
             new Column("warehouse_country", Type.Varchar30, true),
             new Column("warehouse_owner_name", Type.Varchar30, true),
             new Column("warehouse_phone", Type.Varchar30, true),
-            new Column("warehouse_fax", Type.Varchar30, true),
-        });
-        createTable("warehouse_class", new Column[] {
+            new Column("warehouse_fax", Type.Varchar30, true));
+        createTable(
+            "warehouse_class", tableFilter,
             new Column("warehouse_class_id", Type.Integer, false),
-            new Column("description", Type.Varchar30, true),
-        });
+            new Column("description", Type.Varchar30, true));
         if (outputDirectory != null) {
             fileOutput.close();
         }
@@ -1658,28 +1857,40 @@ public class MondrianFoodMartLoader {
     /**
      * If we are outputting to JDBC, and not creating tables, delete all rows.
      *
-     * Otherwise:
+     * <p>Otherwise:
      *
-     * Generate the SQL CREATE TABLE statement.
+     * <p>Generate the SQL CREATE TABLE statement.
      *
-     * If we are outputting to JDBC,
+     * <p>If we are outputting to JDBC,
      *      Execute a DROP TABLE statement
      *      Execute the CREATE TABLE statement
      *
-     * Otherwise,
+     * <p>Otherwise,
      *      output the statement to a file.
-     *
      */
-
-    private void createTable(String name, Column[] columns) {
-        createTable(name, columns,  true, false);
-    }
-
     private void createTable(
         String name,
-        Column[] columns,
+        Condition<String> tableFilter,
+        Column... columns)
+    {
+        createTable(name, tableFilter, true, false, columns);
+    }
+
+    /**
+     * Creates a table definition.
+     *
+     * @param name    Table name
+     * @param tableFilter Table filter
+     * @param loadData Whether to load data
+     * @param aggregate Whether it is an aggregate table
+     * @param columns Column definitions
+     */
+    private void createTable(
+        String name,
+        Condition<String> tableFilter,
         boolean loadData,
-        boolean aggregate)
+        boolean aggregate,
+        Column... columns)
     {
         try {
             // Initialize columns
@@ -1687,9 +1898,12 @@ public class MondrianFoodMartLoader {
                 column1.init(dialect);
             }
 
+            if (!tableFilter.test(name)) {
+                return;
+            }
+
             // Store this metadata if we are going to load the table
             // from JDBC or a file
-
 
             if (loadData) {
                 tableMetadataToLoad.put(name, columns);
@@ -1779,6 +1993,12 @@ public class MondrianFoodMartLoader {
         }
     }
 
+    /**
+     * Executes a DDL statement.
+     *
+     * @param ddl DDL statement
+     * @throws Exception on error
+     */
     private void executeDDL(String ddl) throws Exception {
         LOGGER.info(ddl);
 
@@ -1848,15 +2068,19 @@ public class MondrianFoodMartLoader {
                     Double result = (Double) obj;
                     return integerFormatter.format(result.doubleValue());
                 } catch (ClassCastException cce) {
-                    LOGGER.error("CCE: "  + column.name + " to Long from: " + obj.getClass().getName() + " - " + obj.toString());
+                    LOGGER.error(
+                        "CCE: "  + column.name + " to Long from: "
+                        + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             } else {
                 try {
-                    Integer result = (Integer) obj;
-                    return result.toString();
+                    int result = ((Number) obj).intValue();
+                    return Integer.toString(result);
                 } catch (ClassCastException cce) {
-                    LOGGER.error("CCE: "  + column.name + " to Integer from: " + obj.getClass().getName() + " - " + obj.toString());
+                    LOGGER.error(
+                        "CCE: "  + column.name + " to Integer from: "
+                        + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             }
@@ -1873,7 +2097,9 @@ public class MondrianFoodMartLoader {
                     Integer result = (Integer) obj;
                     return result.toString();
                 } catch (ClassCastException cce) {
-                    LOGGER.error("CCE: "  + column.name + " to Integer from: " + obj.getClass().getName() + " - " + obj.toString());
+                    LOGGER.error(
+                        "CCE: "  + column.name + " to Integer from: "
+                        + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             }
@@ -1887,7 +2113,9 @@ public class MondrianFoodMartLoader {
                     Double result = (Double) obj;
                     return integerFormatter.format(result.doubleValue());
                 } catch (ClassCastException cce) {
-                    LOGGER.error("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
+                    LOGGER.error(
+                        "CCE: "  + column.name + " to Double from: "
+                        + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             } else {
@@ -1895,7 +2123,9 @@ public class MondrianFoodMartLoader {
                     Long result = (Long) obj;
                     return result.toString();
                 } catch (ClassCastException cce) {
-                    LOGGER.error("CCE: "  + column.name + " to Long from: " + obj.getClass().getName() + " - " + obj.toString());
+                    LOGGER.error(
+                        "CCE: "  + column.name + " to Long from: "
+                        + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             }
@@ -1953,15 +2183,20 @@ public class MondrianFoodMartLoader {
             } else if (columnType.startsWith("DECIMAL")) {
                 final Matcher matcher = decimalDataTypeRegex.matcher(columnType);
                 if (!matcher.matches()) {
-                    throw new Exception("Bad DECIMAL column type for " + columnType);
+                    throw new Exception(
+                        "Bad DECIMAL column type for " + columnType);
                 }
-                DecimalFormat formatter = new DecimalFormat(decimalFormat(matcher.group(1), matcher.group(2)));
+                DecimalFormat formatter =
+                    new DecimalFormat(
+                        decimalFormat(matcher.group(1), matcher.group(2)));
                 if (obj.getClass() == Double.class) {
                     try {
                         Double result = (Double) obj;
                         return formatter.format(result.doubleValue());
                     } catch (ClassCastException cce) {
-                        LOGGER.error("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
+                        LOGGER.error(
+                            "CCE: "  + column.name + " to Double from: "
+                            + obj.getClass().getName() + " - " + obj.toString());
                         throw cce;
                     }
                 } else {
@@ -1970,7 +2205,9 @@ public class MondrianFoodMartLoader {
                         BigDecimal result = (BigDecimal) obj;
                         return formatter.format(result);
                     } catch (ClassCastException cce) {
-                        LOGGER.error("CCE: "  + column.name + " to BigDecimal from: " + obj.getClass().getName() + " - " + obj.toString());
+                        LOGGER.error(
+                            "CCE: "  + column.name + " to BigDecimal from: "
+                            + obj.getClass().getName() + " - " + obj.toString());
                         throw cce;
                     }
                 }
@@ -1978,7 +2215,9 @@ public class MondrianFoodMartLoader {
             /*
              * Output for a BOOLEAN (Postgres) or BIT (other DBMSs)
              */
-            } else if (columnType.startsWith("BOOLEAN") || columnType.startsWith("BIT")) {
+            } else if (columnType.startsWith("BOOLEAN")
+                       || columnType.startsWith("BIT"))
+            {
                 Boolean result = (Boolean) obj;
                 return result.toString();
             /*
@@ -1988,7 +2227,9 @@ public class MondrianFoodMartLoader {
                 return (Boolean) obj ? "1" : "0";
             }
         }
-        throw new Exception("Unknown column type: " + columnType + " for column: " + column.name);
+        throw new Exception(
+            "Unknown column type: " + columnType
+            + " for column: " + column.name);
     }
 
     private String columnValue(String columnValue, Column column) throws Exception {
@@ -2055,13 +2296,12 @@ public class MondrianFoodMartLoader {
             }
         }
         return columnValue;
-        //throw new Exception("Unknown column type: " + columnType + " for column: " + column.name);
     }
 
     /**
      * Generate an appropriate string to use in an SQL insert statement for
-     * a VARCHAR colummn, taking into account NULL strings and strings with embedded
-     * quotes
+     * a VARCHAR colummn, taking into account NULL strings and strings with
+     * embedded quotes.
      *
      * @param original  String to transform
      * @return NULL if null string, otherwise massaged string with doubled quotes
@@ -2086,14 +2326,14 @@ public class MondrianFoodMartLoader {
     }
 
     /**
-     * Generate an appropriate number format string for doubles etc
+     * Generates an appropriate number format string for doubles etc
      * to be used to include a number in an SQL insert statement.
      *
-     * Calls decimalFormat(int length, int places) to do the work.
+     * <p>For example, {@code decimalFormat("6", "2")} returns "###0.00".
      *
      * @param lengthStr  String representing integer: number of digits to format
      * @param placesStr  String representing integer: number of decimal places
-     * @return number format, ie. length = 6, places = 2 => "####.##"
+     * @return numeric format string
      */
     private static String decimalFormat(String lengthStr, String placesStr) {
         int length = Integer.parseInt(lengthStr);
@@ -2102,12 +2342,14 @@ public class MondrianFoodMartLoader {
     }
 
     /**
-     * Generate an appropriate number format string for doubles etc
+     * Generates an appropriate number format string for doubles etc.
      * to be used to include a number in an SQL insert statement.
+     *
+     * <p>For example, {@code decimalFormat(6, 2)} returns "###0.00".
      *
      * @param length  int: number of digits to format
      * @param places  int: number of decimal places
-     * @return number format, ie. length = 6, places = 2 => "###0.00"
+     * @return numeric format string
      */
     private static String decimalFormat(int length, int places) {
         StringBuilder buf = new StringBuilder();
@@ -2244,7 +2486,19 @@ public class MondrianFoodMartLoader {
         }
     }
 
+    /**
+     * Functor that evaluates a condition.
+     *
+     * @param <T> Argument type
+     */
+    private interface Condition<T> {
+        /**
+         * Evaluates the condition.
+         * @param t Argument
+         * @return Whether condition holds
+         */
+        boolean test(T t);
+    }
 }
-
 
 // End MondrianFoodMartLoader.java

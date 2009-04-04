@@ -12,5 +12,6 @@ mondrian.spi.impl.MicrosoftSqlServerDialect
 mondrian.spi.impl.MySqlDialect
 mondrian.spi.impl.OracleDialect
 mondrian.spi.impl.PostgreSqlDialect
+mondrian.spi.impl.SqlStreamDialect
 mondrian.spi.impl.SybaseDialect
 mondrian.spi.impl.TeradataDialect

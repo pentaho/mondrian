@@ -1,6 +1,13 @@
 #!/bin/bash
 # $Id$
-# Scripts to load Mondrian's database for various databases.
+# This software is subject to the terms of the Common Public License
+# Agreement, available at the following URL:
+# http://www.opensource.org/licenses/cpl.html.
+# Copyright (C) 2008-2009 Julian Hyde and others.
+# All Rights Reserved.
+# You must accept the terms of that agreement to use this software.
+#
+# Sample scripts to load Mondrian's database for various databases.
 
 case $(uname) in
 Linux) PS=: ;;
@@ -22,6 +29,26 @@ oracle() {
          -jdbcDrivers=oracle.jdbc.OracleDriver \
          -inputFile=demo/FoodMartCreateData.sql \
          -outputJdbcURL="jdbc:oracle:thin:foodmart/foodmart@//localhost:1521/XE"
+}
+
+# Load into Oracle, creating dimension tables first, then trickling data into
+# fact tables.
+oracleTrickle() {
+    java -cp "${CP}${PS}${ORACLE_HOME}/jdbc/lib/ojdbc14.jar" \
+         mondrian.test.loader.MondrianFoodMartLoader \
+         -verbose -tables -indexes -data -exclude=sales_fact_1997 \
+         -jdbcDrivers=oracle.jdbc.OracleDriver \
+         -inputJdbcURL="jdbc:oracle:thin:foodmart/foodmart@//localhost:1521/XE" \
+         -outputJdbcURL="jdbc:oracle:thin:slurpmart/slurpmart@//localhost:1521/XE"
+
+    # Write 10 rows each second into the sales fact table.
+    java -cp "${CP}${PS}${ORACLE_HOME}/jdbc/lib/ojdbc14.jar" \
+         mondrian.test.loader.MondrianFoodMartLoader \
+         -verbose -tables -indexes -data -pauseMillis=100 -include=sales_fact_1997 \
+         -jdbcDrivers=oracle.jdbc.OracleDriver \
+         -inputJdbcURL="jdbc:oracle:thin:foodmart/foodmart@//localhost:1521/XE" \
+         -outputJdbcBatchSize=100 \
+         -outputJdbcURL="jdbc:oracle:thin:slurpmart/slurpmart@//localhost:1521/XE"
 }
 
 mysql() {
@@ -64,6 +91,7 @@ postgresql() {
          -outputJdbcPassword=foodmart
 }
 
+# Load farrago (a LucidDB variant)
 farrago() {
     java -cp "${CP}${PS}../farrago/classes" \
         mondrian.test.loader.MondrianFoodMartLoader \
@@ -91,4 +119,4 @@ teradata() {
 cd $(dirname $0)/..
 infobright
 
-# End loadFoodMart
+# End loadFoodMart.sh

@@ -637,6 +637,7 @@ public interface Dialect {
         ORACLE,
         POSTGRESQL,
         MYSQL,
+        SQLSTREAM,
         SYBASE,
         TERADATA;
 
