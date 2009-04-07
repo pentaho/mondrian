@@ -40,19 +40,32 @@ class SumFunDef extends AbstractAggregateFunDef {
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         // What is the desired type to use to get the underlying values
         for (ResultStyle r : compiler.getAcceptableResultStyles()) {
+            Calc calc;
             switch (r) {
             case ITERABLE:
             case ANY:
                 // Consumer wants ITERABLE or ANY to be used
                 //return compileCallIterable(call, compiler);
-                return compileCall(call, compiler, ResultStyle.ITERABLE);
+                calc = compileCall(call, compiler, ResultStyle.ITERABLE);
+                if (calc != null) {
+                    return calc;
+                }
+                break;
             case MUTABLE_LIST:
                 // Consumer wants MUTABLE_LIST
-                return compileCall(call, compiler, ResultStyle.MUTABLE_LIST);
+                calc = compileCall(call, compiler, ResultStyle.MUTABLE_LIST);
+                if (calc != null) {
+                    return calc;
+                }
+                break;
             case LIST:
                 // Consumer wants LIST to be used
                 //return compileCallList(call, compiler);
-                return compileCall(call, compiler, ResultStyle.LIST);
+                calc = compileCall(call, compiler, ResultStyle.LIST);
+                if (calc != null) {
+                    return calc;
+                }
+                break;
             }
         }
         throw ResultStyleException.generate(
@@ -65,10 +78,10 @@ class SumFunDef extends AbstractAggregateFunDef {
         ExpCompiler compiler,
         ResultStyle resultStyle)
     {
-        final Calc ncalc = compiler.compileAs(
-            call.getArg(0),
-            null,
-            Collections.singletonList(resultStyle));
+        final Calc ncalc = compiler.compileIter(call.getArg(0));
+        if (ncalc == null) {
+            return null;
+        }
         final Calc calc = call.getArgCount() > 1 ?
             compiler.compileScalar(call.getArg(1), true) :
             new ValueCalc(call);

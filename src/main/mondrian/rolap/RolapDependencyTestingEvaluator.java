@@ -180,6 +180,13 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
                     ((List) o1).toArray(),
                     ((List) o2).toArray());
         }
+        if (o1 instanceof Iterable) {
+            if (o2 instanceof Iterable) {
+                return equals(toList((Iterable) o1), toList((Iterable) o2));
+            } else {
+                return false;
+            }
+        }
         return o1.equals(o2);
     }
 
@@ -188,6 +195,14 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         PrintWriter pw = new PrintWriter(sw);
         toString(o, pw);
         return sw.toString();
+    }
+
+    private <T> List<T> toList(Iterable<T> iterable) {
+        final ArrayList<T> list = new ArrayList<T>();
+        for (T t : iterable) {
+            list.add(t);
+        }
+        return list;
     }
 
     private void toString(Object o, PrintWriter pw) {
@@ -368,15 +383,15 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
             Dimension[] dimensions = getIndependentDimensions(calc);
             calc = super.afterCompile(exp, calc, mutable);
             if (calc.getType() instanceof SetType) {
-                return new DteScalarCalcImpl(
-                    calc,
-                    dimensions,
-                    Util.unparse(exp));
-            } else {
                 return new DteIterCalcImpl(
                     calc,
                     dimensions,
                     mutable,
+                    Util.unparse(exp));
+            } else {
+                return new DteScalarCalcImpl(
+                    calc,
+                    dimensions,
                     Util.unparse(exp));
             }
         }
