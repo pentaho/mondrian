@@ -21,6 +21,9 @@ import java.awt.event.MouseEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
@@ -40,9 +43,9 @@ import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
+
 import mondrian.olap.Util.PropertyList;
 import mondrian.rolap.agg.AggregationManager;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -134,8 +137,11 @@ public class QueryPanel extends javax.swing.JPanel {
 
         schemaScrollPane1 = new javax.swing.JScrollPane();
         schemaLabel = new javax.swing.JLabel();
-        schemaList = new JComboBox(new String[] {getResourceConverter().getString("common.join.title","Join"),
-                                                    getResourceConverter().getString("common.table.title","Table")});
+        schemaList = new JComboBox(
+                new String[] {getResourceConverter().getString(
+                                            "common.join.title","Join"),
+                              getResourceConverter().getString(
+                                            "common.table.title","Table")});
         //schemaScrollPane1.setViewportView(schemaList);
         schemaPanel = new JPanel();
         //schemaPanel.setLayout(new BorderLayout(25,0));
@@ -144,9 +150,11 @@ public class QueryPanel extends javax.swing.JPanel {
         setLayout(new java.awt.BorderLayout());
 
         schemaLabel.setFont(new Font("Dialog", 1, 12));
-        schemaLabel.setForeground((Color) UIManager.getDefaults().get("CheckBoxMenuItem.acceleratorForeground"));
+        schemaLabel.setForeground((Color) UIManager.getDefaults().get(
+                "CheckBoxMenuItem.acceleratorForeground"));
         schemaLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        schemaLabel.setText(getResourceConverter().getString("common.schema.title","Schema"));
+        schemaLabel.setText(getResourceConverter().getString(
+                "common.schema.title","Schema"));
         //schemaLabel.setBorder(new EtchedBorder());
 
         schemaList.setBackground(Color.white);
@@ -156,7 +164,9 @@ public class QueryPanel extends javax.swing.JPanel {
                 public void itemStateChanged(ItemEvent e) {
                 }
             });
-        connectButton.setText(getResourceConverter().getString("queryPanel.connect.title","Connect"));
+        connectButton.setText(getResourceConverter().getString(
+                "queryPanel.connect.title",
+                "Connect"));
         connectButton.addActionListener(
             new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -170,7 +180,9 @@ public class QueryPanel extends javax.swing.JPanel {
 
         add(schemaPanel, java.awt.BorderLayout.NORTH);
 
-        executeButton.setText(getResourceConverter().getString("queryPanel.execute.title","Execute"));
+        executeButton.setText(getResourceConverter().getString(
+                "queryPanel.execute.title",
+                "Execute"));
         executeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 executeButtonActionPerformed(evt);
@@ -223,15 +235,22 @@ public class QueryPanel extends javax.swing.JPanel {
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
     }
 
-    private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:T://event_executeButtonActionPerformed
+    private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {
         //run the query, and show the results.
         try {
             if (connection == null) {
-                JOptionPane.showMessageDialog(this, getResourceConverter().getString("queryPanel.noConnection.alert","No Mondrian connection. Select a Schema to connect."),
-                        getResourceConverter().getString("common.alertDialog.title","Alert"), JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        getResourceConverter().getString(
+                            "queryPanel.noConnection.alert",
+                            "No Mondrian connection. Select a Schema to connect."),
+                        getResourceConverter().getString(
+                            "common.alertDialog.title",
+                            "Alert"),
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             } //common.alertDialog.title
             Query q = connection.parseQuery(queryTextPane.getText());
+
             Result r = connection.execute(q);
 
             //document = DOMBuilder.build(getResult());
@@ -260,9 +279,7 @@ public class QueryPanel extends javax.swing.JPanel {
 
             resultTextPane.setText(os.toString());
         }
-
-    } //GEN-LAST:T://event_executeButtonActionPerformed
-
+    }
 
     private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {
         File sfile = null;
@@ -281,8 +298,14 @@ public class QueryPanel extends javax.swing.JPanel {
 
             if (sf == null) {
                 // this case may arise when a schema file is opened, mdx query is opened and the schema frame is closed
-                JOptionPane.showMessageDialog(this, getResourceConverter().getString("queryPanel.schemaNotOpen.alert","Schema file is not open"),
-                                getResourceConverter().getString("common.errorDialog.title","Error"), JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        getResourceConverter().getString(
+                            "queryPanel.schemaNotOpen.alert",
+                            "Schema file is not open"),
+                        getResourceConverter().getString(
+                            "common.errorDialog.title",
+                            "Error"),
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
 

@@ -38,25 +38,7 @@ public class JDBCMetaData {
 
     Workbench workbench;
 
-    /* Map of Schema and its fact tables ::
-     * allFactTableDimensions = [Schema1, Schema2] -> [FactTableT8, FactTable9] -> [ForeignKeys -> PrimaryKeyTable]
-     *
-     * Map of Schema, its tables and their Primary Keys ::
-     * allTablesPKs = [Schema1, Schema2] -> [Tables -> PrimaryKey]
-     *
-     * Map of Schemas, its tables and their columns with their data types
-     * allTablesCols = [Schema1, Schema2] -> [Table1, Table2] -> [Columns -> DataType]
-     *
-     * Map of schemas and their tables
-     * allSchemasMap = [Schema1, Schema2] -> [Table1, Table2]
-     *
-     */
-    private Map allFactTableDimensions = new HashMap(); //unsynchronized, permits null values and null key
-    private Map allTablesPKs        = new HashMap();
-    private Map allTablesCols       = new HashMap();
-    private Map allSchemasMap       = new HashMap();
-
-    private Vector allSchemas = new Vector();   // Vector of all schemas in the connected database
+    public static final String LEVEL_SEPARATOR = "->";
 
     private String errMsg = null;
     private Database db = new Database();
@@ -87,6 +69,20 @@ public class JDBCMetaData {
      */
     public I18n getResourceConverter() {
         return workbench.getResourceConverter();
+    }
+
+    /**
+     * tests database connection. Called from Preferences dialog button test connection
+     */
+    public JDBCMetaData(String jdbcDriverClassName, String jdbcConnectionUrl, String jdbcUsername, String jdbcPassword) {
+        this.jdbcConnectionUrl = jdbcConnectionUrl;
+        this.jdbcDriverClassName = jdbcDriverClassName;
+        this.jdbcUsername = jdbcUsername;
+        this.jdbcPassword = jdbcPassword;
+
+        if (initConnection() == null) {
+            closeConnection();
+        }
     }
 
     /* Creates a database connection and initializes the meta data details */
@@ -147,12 +143,18 @@ public class JDBCMetaData {
     }
 
     public void closeConnection() {
+        if (conn == null) {
+            return;
+        }
+
+        md = null;
         try {
             conn.close();
             LOGGER.debug("JDBC connection CLOSE");
         } catch (Exception e) {
             LOGGER.error(e);
         }
+        conn = null;
     }
 
     /**
@@ -169,12 +171,46 @@ public class JDBCMetaData {
 
         String schemas[] = jdbcSchema.split("[,;]");
         for (String schema : schemas) {
-            if (schema.trim().equals(schemaName)) {
+            if (schema.trim().equalsIgnoreCase(schemaName)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /* list all schemas in the currently connected database */
+    public List<String> listAllSchemas() {
+        LOGGER.debug("JDBCMetaData: listAllSchemas");
+
+        if (initConnection() != null) {
+            return null;
+        }
+
+        List<String> schemaNames = new ArrayList<String>();
+        ResultSet rs = null;
+
+        try {
+            rs = md.getSchemas();
+
+            while (rs.next()) {
+                String schemaName = rs.getString("TABLE_SCHEM");
+                schemaNames.add(schemaName);
+            }
+        } catch (Exception e) {
+            LOGGER.debug("Exception : Database does not support schemas." + e.getMessage());
+            return null;
+        } finally {
+            try {
+                rs.close();
+                closeConnection();
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+
+
+        return schemaNames;
     }
 
     /* set all schemas in the currently connected database */
@@ -267,7 +303,8 @@ public class JDBCMetaData {
                 dbt.schemaName = dbs.name;
                 dbt.name = tbname;
                 setPKey(dbt);
-                setColumns(dbt);
+                // Lazy loading
+                // setColumns(dbt);
                 dbs.addDbTable(dbt);
                 db.addDbTable(dbt);
             }
@@ -309,13 +346,45 @@ public class JDBCMetaData {
         }
     }
 
+    private void setColumns(String schemaName, String tableName) {
+        LOGGER.debug("setColumns: <" + tableName + "> in schema <" + schemaName + ">");
+
+        DbSchema dbs = db.getSchema(schemaName);
+
+        if (dbs == null) {
+            throw new RuntimeException("No schema with name: <" + schemaName + ">");
+        }
+
+        DbTable dbt = dbs.getTable(tableName);
+
+        if (dbt == null) {
+            throw new RuntimeException("No table with name: <" + tableName + "> in schema <" + schemaName + ">");
+        }
+
+        setColumns(dbt);
+
+        LOGGER.debug("got " + dbt.colsDataType.size() + " columns");
+    }
+
     /* get all columns for a given table name */
     private void setColumns(DbTable dbt) {
+        if (initConnection() != null) {
+            return;
+        }
+
         ResultSet rs = null;
         try {
             rs = md.getColumns(null, dbt.schemaName, dbt.name, null);
             while (rs.next()) {
-                dbt.addColsDataType(rs.getString("COLUMN_NAME"), rs.getString("DATA_TYPE"));
+                DbColumn col = new DbColumn();
+
+                col.dataType = rs.getInt("DATA_TYPE");
+                col.name = rs.getString("COLUMN_NAME");
+                col.typeName = rs.getString("TYPE_NAME");
+                col.columnSize = rs.getInt("COLUMN_SIZE");
+                col.decimalDigits = rs.getInt("DECIMAL_DIGITS");
+
+                dbt.addColsDataType(col);
             }
         } catch (Exception e) {
             LOGGER.error("setColumns", e);
@@ -326,6 +395,7 @@ public class JDBCMetaData {
                 // ignore
             }
         }
+        closeConnection();
     }
 
 /* ===================================================================================================
@@ -389,6 +459,10 @@ public class JDBCMetaData {
         if (tableName == null || colName == null) {
             return true;
         } else {
+            if (!db.hasColumns(schemaName, tableName)) {
+                setColumns(schemaName, tableName);
+            }
+
             return db.colExists(schemaName, tableName, colName);
         }
     }
@@ -422,19 +496,22 @@ public class JDBCMetaData {
                 for (int i = 0; i < allTables.size(); i++) {
                     String tab = allTables.get(i);
                     Vector<String> cols;
-                    if (tab.indexOf("->") == -1) {
+                    if (tab.indexOf(LEVEL_SEPARATOR) == -1) {
                         cols = getAllColumns(schemaName, tab);
                     } else {
-                        String [] names = tab.split("->");
+                        String [] names = tab.split(LEVEL_SEPARATOR);
                         cols = getAllColumns(names[0], names[1]);
                     }
                     for (int j = 0; j < cols.size(); j++) {
                         String col = cols.get(j);
-                        allcols.add(tab + "->" + col);
+                        allcols.add(tab + LEVEL_SEPARATOR + col);
                     }
                 }
             return allcols;
         } else {
+            if (!db.hasColumns(schemaName, tableName)) {
+                setColumns(schemaName, tableName);
+            }
             return db.getAllColumns(schemaName, tableName);
         }
     }
@@ -444,9 +521,25 @@ public class JDBCMetaData {
         if (tableName == null || colName == null) {
             return -1;
         } else {
+            if (!db.hasColumns(schemaName, tableName)) {
+                setColumns(schemaName, tableName);
+            }
             return db.getColumnDataType(schemaName, tableName, colName);
         }
     }
+
+    // get column definition of given table and its col
+    public DbColumn getColumnDefinition(String schemaName, String tableName, String colName) {
+        if (tableName == null || colName == null) {
+            return null;
+        } else {
+            if (!db.hasColumns(schemaName, tableName)) {
+                setColumns(schemaName, tableName);
+            }
+            return db.getColumnDefinition(schemaName, tableName, colName);
+        }
+    }
+
     public String getDbCatalogName() {
         return db.catalogName;
     }
@@ -455,28 +548,60 @@ public class JDBCMetaData {
         return db.productName;
     }
 
+    public String getJdbcConnectionUrl() {
+        return jdbcConnectionUrl;
+    }
+
     public String getErrMsg() {
         return errMsg;
     }
 
     public static void main(String[] args) {
-        /*
-        JDBCMetaData sb = new JDBCMetaData("org.postgresql.Driver","jdbc:postgresql://localhost:5432/testdb?user=admin&password=admin");
-        System.out.println("allSchemas="+sb.allSchemas);
-        System.out.println("allSchemasMap="+sb.allSchemasMap);
-        System.out.println("allTablesCols="+sb.allTablesCols);
-        System.out.println("allTablesPKs="+sb.allTablesPKs);
-        System.out.println("allFactTableDimensions="+sb.allFactTableDimensions);
-        System.out.println("getAllTables(null, part)="+sb.getAllTables(null, "part"));
-        System.out.println("sb.getColumnDataType(null, part,part_nbr)="+sb.getColumnDataType(null, "part","part_nbr"));
-         */
-        String s = "somita->namita";
-        String [] p = s.split("->");
-        if (LOGGER.isDebugEnabled()) {
-            if (p.length >= 2) {
-                LOGGER.debug("p0=" + p[0] + ", p1=" + p[1]);
+        if (args.length < 2) {
+            throw new RuntimeException("need at least 2 args: driver class and jdbcUrl");
+        }
+
+        String driverClass = args[0];
+        String jdbcUrl = args[1];
+
+        String username = null;
+        String password = null;
+
+        if (args.length > 2) {
+
+            if (args.length != 4) {
+                throw new RuntimeException("need 4 args: including user name and password");
+            }
+            username = args[2];
+            password = args[3];
+        }
+
+        JDBCMetaData sb = new JDBCMetaData(null, driverClass, jdbcUrl, username, password, "", false);
+
+        Vector<String> foundSchemas = sb.getAllSchemas();
+        System.out.println("allSchemas = " + foundSchemas);
+
+        for (String schemaName : foundSchemas) {
+            Vector<String> foundTables = sb.getAllTables(schemaName);
+
+            if (foundTables != null && foundTables.size() > 0) {
+                System.out.println("schema = " + schemaName);
+                for (String tableName : foundTables) {
+                    System.out.println("\t" + tableName);
+
+                    Vector<String> foundColumns = sb.getAllColumns(schemaName, tableName);
+
+                    for (String columnName : foundColumns) {
+                        System.out.println("\t\t" + columnName);
+                    }
+                }
             }
         }
+        //System.out.println("allTablesCols="+sb.allTablesCols);
+        //System.out.println("allTablesPKs="+sb.allTablesPKs);
+        //System.out.println("allFactTableDimensions="+sb.allFactTableDimensions);
+        //System.out.println("getAllTables(null, part)="+sb.getAllTables(null, "part"));
+        //System.out.println("sb.getColumnDataType(null, part,part_nbr)="+sb.getColumnDataType(null, "part","part_nbr"));
     }
 
 /* ===================================================================================================
@@ -488,142 +613,138 @@ public class JDBCMetaData {
         String productVersion =    "";
 
         // list of all schemas in database
-        List<DbSchema> schemas = new ArrayList<DbSchema>(); //ordered collection, allows duplicates and null
-        List<DbTable> tables  = new ArrayList<DbTable>(); // list of all tables in all schemas in database
-        Map<String, Integer> tablesCount = new TreeMap<String, Integer>(); // map of table names and the count of tables with this name in the database.
+        Map<String, DbSchema> schemas = new TreeMap<String, DbSchema>(); //ordered collection, allows duplicates and null
+        Map<String, TableTracker> tables  = new TreeMap<String, TableTracker>(); // list of all tables in all schemas in database
 
         Vector<String> allSchemas ;
 
         private void addDbSchema(DbSchema dbs) {
-            schemas.add(dbs);
+            schemas.put(dbs.name != null ? dbs.name : "", dbs);
+        }
+
+        class TableTracker {
+            List<DbTable> namedTable = new ArrayList<DbTable>();
+
+            public void add(DbTable table) {
+                namedTable.add(table);
+            }
+
+            public int count() {
+                return namedTable.size();
+            }
         }
 
         private void addDbTable(DbTable dbs) {
-            tables.add(dbs);
-            Integer count = tablesCount.get(dbs.name);
-            if (count == null) {
-                count = Integer.valueOf(1);
-            } else {
-                count = Integer.valueOf(count.intValue() + 1);
+            TableTracker tracker = tables.get(dbs.name);
+
+            if (tracker == null) {
+                tracker = new TableTracker();
+                tables.put(dbs.name, tracker);
             }
-            tablesCount.put(dbs.name, count);
+            tracker.add(dbs);
         }
 
         private boolean schemaNameEquals(String a, String b) {
             return (a != null && a.equals(b));
         }
 
+        private DbSchema getSchema(String schemaName) {
+            return schemas.get(schemaName != null ? schemaName : "");
+        }
+
         private Vector<String> getAllSchemas() {
             if (allSchemas == null) {
                 allSchemas = new Vector<String>();
-                if (schemas.size() > 0) {
-                    for (DbSchema s : schemas) {
-                        allSchemas.add((s).name);
-                    }
-                }
+
+                allSchemas.addAll(schemas.keySet());
             }
             return allSchemas;
         }
 
         private boolean tableExists(String sname, String tableName) {
+            return getTable(sname, tableName) != null;
+        }
+
+        private DbTable getTable(String sname, String tableName) {
             if (sname == null || sname.equals("")) {
-                return tablesCount.containsKey(tableName);
+                TableTracker t = tables.get(tableName);
+                if (t != null) {
+                    return t.namedTable.get(0);
+                } else {
+                    return null;
+                }
             } else {
-                for (DbSchema s : schemas) {
-                    if (schemaNameEquals(s.name, sname)) {
-                        for (DbTable d : s.tables) {
-                            if (d.name.equals(tableName)) {
-                                return true;
-                            }
-                        }
-                        break;
-                    }
+                DbSchema s = schemas.get(sname);
+
+                if (s == null) {
+                    return null;
+                }
+
+                return s.getTable(tableName);
+            }
+        }
+
+        private boolean hasColumns(String schemaName, String tableName) {
+            DbSchema dbs = getSchema(schemaName);
+
+            if (dbs != null) {
+                DbTable t = dbs.getTable(tableName);
+
+                if (t != null) {
+                    return t.hasColumns();
                 }
             }
             return false;
         }
 
         private boolean colExists(String sname, String tableName, String colName) {
-            if (sname == null || sname.equals("")) {
-                Iterator<DbTable> ti = tables.iterator();
-                for (DbTable t : tables) {
-                    if (t.name.equals(tableName)) {
-                        return t.colsDataType.containsKey(colName);
-                    }
-                }
-            } else {
-                // return a vector of "fk col name" string objects if schema is given
-                for (DbSchema s : schemas) {
-                    if (schemaNameEquals(s.name, sname)) {
-                        for (DbTable t : s.tables) {
-                            if (t.name.equals(tableName)) {
-                                return t.colsDataType.containsKey(colName);
-                            }
-                        }
-                        break;
-                    }
-                }
+            DbTable t = getTable(sname, tableName);
+
+            if (t == null) {
+                return false;
             }
 
-            return false;
+            return t.getColumn(colName) != null;
         }
 
         private Vector<String> getAllTables(String sname) {
+            return getAllTables(sname, false);
+        }
+
+        private Vector<String> getFactTables(String sname) {
+            return getAllTables(sname, true);
+        }
+
+        private Vector<String> getAllTables(String sname, boolean factOnly) {
             Vector<String> v = new Vector<String>();
 
             if (sname == null || sname.equals("")) {
                 // return a vector of "schemaname -> table name" string objects
-                for (DbTable d : tables) {
-                    if (d.schemaName == null) {
-                        v.add(d.name);
-                    } else {
-                        v.add(d.schemaName + "->" + d.name);
+                for (TableTracker tt : tables.values()) {
+                    for (DbTable t : tt.namedTable) {
+                        if (!factOnly || (factOnly && t instanceof FactTable)) {
+                            if (t.schemaName == null) {
+                                v.add(t.name);
+                            } else {
+                                v.add(t.schemaName + LEVEL_SEPARATOR + t.name);
+                            }
+                        }
                     }
                 }
             } else {
                 // return a vector of "tablename" string objects
-                for (DbSchema s : schemas) {
-                    if (schemaNameEquals(s.name, sname)) {
-                        for (DbTable d : s.tables) {
-                            v.add(d.name);
+
+                DbSchema s = getSchema(sname);
+
+                if (s != null) {
+                    for (DbTable t : s.tables.values()) {
+                        if (!factOnly || (factOnly && t instanceof FactTable)) {
+                            v.add(t.name);
                         }
-                        break;
                     }
                 }
             }
             return v;
-        }
-
-        private Vector<String> getFactTables(String sname) {
-            Vector<String> f = new Vector<String>();
-
-            if (sname == null || sname.equals("")) {
-                // return a vector of "schemaname -> table name" string objects if schema is not given
-                Iterator<DbTable> ti = tables.iterator();
-                for (DbTable t : tables) {
-                    if (t instanceof FactTable) {
-                        if (t.schemaName == null) {
-                            f.add(t.name);
-                        } else {
-                            f.add(t.schemaName + "->" + t.name);
-                        }
-                    }
-                }
-            } else {
-                // return a vector of "fact tablename" string objects if schema is given
-                for (DbSchema s : schemas) {
-                    if (schemaNameEquals(s.name, sname)) {
-                        for (DbTable t : s.tables) {
-                            if (t instanceof FactTable) {
-                                f.add(((FactTable) t).name);
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-
-            return f;
         }
 
         /* get all foreign keys in given fact table */
@@ -631,21 +752,27 @@ public class JDBCMetaData {
             Vector<String> f = new Vector<String>();
 
             if (sname == null || sname.equals("")) {
-                // return a vector of "schemaname -> table name -> fk col" string objects if schema is not given
-                boolean duplicate = (tablesCount.containsKey(factTable)) && ((tablesCount.get(factTable)).intValue() > 1);
+                TableTracker tracker = tables.get(factTable);
 
-                for (DbTable t : tables) {
-                    if (t instanceof FactTable && t.name.equals(factTable)) {
+                if (tracker == null) {
+                    return f;
+                }
+
+                // return a vector of "schemaname -> table name -> fk col" string objects if schema is not given
+                boolean duplicate = tracker.count() > 1;
+
+                for (DbTable t : tracker.namedTable) {
+                    if (t instanceof FactTable) {
                         if (duplicate) {
                             for (String fk : ((FactTable) t).fks.keySet()) {
                                 if (t.schemaName == null) {
-                                    f.add(t.name + "->" + fk);
+                                    f.add(t.name + LEVEL_SEPARATOR + fk);
                                 } else {
                                     f.add(
                                         t.schemaName
-                                            + "->"
+                                            + LEVEL_SEPARATOR
                                             + t.name
-                                            + "->"
+                                            + LEVEL_SEPARATOR
                                             + fk);
                                 }
                             }
@@ -655,68 +782,78 @@ public class JDBCMetaData {
                     }
                 }
             } else {
+                DbSchema s = getSchema(sname);
+
+                if (s == null) {
+                    return f;
+                }
+
+                DbTable t = s.getTable(factTable);
+
+                if (t == null) {
+                    return f;
+                }
+
                 // return a vector of "fk col name" string objects if schema is given
-                for (DbSchema s : schemas) {
-                    if (schemaNameEquals(s.name, sname)) {
-                        for (DbTable t : s.tables) {
-                            if (t instanceof FactTable && t.name
-                                .equals(factTable)) {
-                                f.addAll(((FactTable) t).fks.keySet());
-                                break;
-                            }
-                        }
-                        break;
-                    }
+                if (t instanceof FactTable &&
+                        t.name.equals(factTable)) {
+                    f.addAll(((FactTable) t).fks.keySet());
                 }
             }
             return f;
         }
-
         private Vector<String> getDimensionTables(String sname, String factTable) {
             Vector<String> f = new Vector<String>();
 
             if (sname == null || sname.equals("")) {
-                // return a vector of "schemaname -> table name -> dimension table name" string objects if schema is not given
-                boolean duplicate =  (tablesCount.containsKey(factTable))  &&  ((tablesCount.get(factTable)).intValue() > 1);
+                TableTracker tracker = tables.get(factTable);
 
-                for (DbTable t : tables) {
-                    if (t instanceof FactTable && t.name.equals(factTable)) {
+                if (tracker == null) {
+                    return f;
+                }
+
+                // return a vector of "schemaname -> table name -> fk col" string objects if schema is not given
+                boolean duplicate = tracker.count() > 1;
+
+                for (DbTable t : tracker.namedTable) {
+                    if (t instanceof FactTable) {
                         if (duplicate) {
-                            Iterator<String> fki =
-                                ((FactTable) t).fks.values().iterator();
                             for (String fkt : ((FactTable) t).fks.values()) {
                                 if (t.schemaName == null) {
-                                    f.add(t.name + "->" + fkt);
+                                    f.add(t.name + LEVEL_SEPARATOR + fkt);
                                 } else {
                                     f.add(
                                         t
                                             .schemaName
-                                            + "->"
+                                            + LEVEL_SEPARATOR
                                             + t
                                             .name
-                                            + "->"
+                                            + LEVEL_SEPARATOR
                                             + fkt);
                                 }
                             }
                         } else {
-                            f.addAll(((FactTable) t).fks.values());
-                            break;
+                            f.addAll(((FactTable) t).fks.keySet());
                         }
                     }
                 }
             } else {
+                DbSchema s = getSchema(sname);
+
+                if (s == null) {
+                    return f;
+                }
+
+                DbTable t = s.getTable(factTable);
+
+                if (t == null) {
+                    return f;
+                }
+
                 // return a vector of "fk col name" string objects if schema is given
-                for (DbSchema s : schemas) {
-                    if (schemaNameEquals(s.name, sname)) {
-                        for (DbTable t : s.tables) {
-                            if (t instanceof FactTable && t.name
-                                .equals(factTable)) {
-                                f.addAll(((FactTable) t).fks.values());
-                                break;
-                            }
-                        }
-                        break;
-                    }
+                if (t instanceof FactTable &&
+                        t.name.equals(factTable)) {
+                    f.addAll(((FactTable) t).fks.values());
                 }
             }
             return f;
@@ -724,106 +861,220 @@ public class JDBCMetaData {
 
         private String getTablePK(String sname, String tableName) {
             if (sname == null || sname.equals("")) {
-                // return a vector of "schemaname -> table name -> dimension table name" string objects if schema is not given
-                for (DbTable t : tables) {
-                    if (t.name.equals(tableName)) {
-                        return t.pk;
-                    }
+                TableTracker tracker = tables.get(tableName);
+
+                if (tracker == null) {
+                    return null;
                 }
+
+                // return a vector of "schemaname -> table name ->
+                // dimension table name" string objects if schema is not given
+                return tracker.namedTable.get(0).pk;
             } else {
-                // return a vector of "fk col name" string objects if schema is given
-                for (DbSchema s : schemas) {
-                    if (schemaNameEquals(s.name, sname)) {
-                        for (DbTable t : s.tables) {
-                            if (t.name.equals(tableName)) {
-                                return t.pk;
-                            }
-                        }
-                        break;
-                    }
+                DbTable t = getTable(sname, tableName);
+
+                if (t == null) {
+                    return null;
                 }
+
+                return t.pk;
             }
-            return null;
         }
 
         private Vector<String> getAllColumns(String sname, String tableName) {
             Vector<String> f = new Vector<String>();
 
             if (sname == null || sname.equals("")) {
-                // return a vector of "schemaname -> table name -> cols" string objects if schema is not given
-                boolean duplicate =  (tablesCount.containsKey(tableName))  && ((tablesCount.get(tableName)).intValue() > 1);
+                TableTracker tracker = tables.get(tableName);
 
-                for (DbTable t : tables) {
-                    if (t.name.equals(tableName)) {
-                        if (duplicate) {
-                            for (String c : t.colsDataType.keySet()) {
-                                if (t.schemaName == null) {
-                                    f.add(t.name + "->" + c);
-                                } else {
-                                    f.add(
-                                        t.schemaName
-                                            + "->"
-                                            + t.name
-                                            + "->"
-                                            + c);
-                                }
-                            }
-                        } else {
-                            f.addAll(t.colsDataType.keySet());      //display only col names
-                            break;
+                if (tracker == null) {
+                    return f;
+                }
+
+                // return a vector of "schemaname -> table name -> cols"
+                // string objects if schema is not given
+                boolean duplicate = tracker.count() > 1;
+
+                for (DbTable t : tracker.namedTable) {
+                    for (Map.Entry<String, DbColumn> c : t.colsDataType.entrySet()) {
+                        StringBuffer sb = new StringBuffer();
+
+                        if (t.schemaName != null && !duplicate) {
+                            sb.append(t.schemaName)
+                                    .append(LEVEL_SEPARATOR);
                         }
+                        sb.append(t.name)
+                              .append(LEVEL_SEPARATOR)
+                              .append(c.getKey())
+                              .append(" - ")
+                              .append(c.getValue().displayType());
+
+                        f.add(sb.toString());
                     }
                 }
             } else {
-                // return a vector of "col name" string objects if schema is given
-                for (DbSchema s : schemas) {
-                    if (schemaNameEquals(s.name, sname)) {
-                        for (DbTable t : s.tables) {
-                            if (t.name.equals(tableName)) {
-                                f.addAll(t.colsDataType.keySet());
-                                break;
-                            }
-                        }
-                        break;
-                    }
+                DbTable t = getTable(sname, tableName);
+
+                if (t == null) {
+                    return f;
                 }
+                // return a vector of "col name" string objects if schema is given
+                f.addAll(t.colsDataType.keySet());
             }
             return f;
         }
 
         private int getColumnDataType(String sname, String tableName, String colName) {
-            if (sname == null || sname.equals("")) {
-                for (DbTable t : tables) {
-                    if (t.name.equals(tableName)) {
-                        return Integer.parseInt(t.colsDataType.get(colName));
-                    }
-                }
-            } else {
-                // return a vector of "fk col name" string objects if schema is given
-                for (DbSchema s : schemas) {
-                    if (schemaNameEquals(s.name, sname)) {
-                        for (DbTable t : s.tables) {
-                            if (t.name.equals(tableName)) {
-                                return Integer.parseInt(
-                                    t.colsDataType.get(colName));
-                            }
-                        }
-                        break;
-                    }
-                }
+            DbColumn result = getColumnDefinition(sname, tableName, colName);
+
+            if (result == null) {
+                return -1;
             }
 
-            return -1;
+            return result.dataType;
+        }
+
+        private DbColumn getColumnDefinition(String sname, String tableName, String colName) {
+            DbTable t = getTable(sname, tableName);
+
+            if (t == null) {
+                return null;
+            }
+            return t.colsDataType.get(colName);
         }
     }
 
     class DbSchema {
         String name;
         /** ordered collection, allows duplicates and null */
-        final List<DbTable> tables = new ArrayList<DbTable>();
+        final Map<String, DbTable> tables = new TreeMap<String, DbTable>();
+
+        private DbTable getTable(String tableName) {
+            return tables.get(tableName);
+        }
 
         private void addDbTable(DbTable dbt) {
-            tables.add(dbt);
+            tables.put(dbt.name, dbt);
+        }
+    }
+
+    public class DbColumn {
+        public String name;
+        public int dataType;
+        public String typeName;
+        public int columnSize;
+        public int decimalDigits;
+
+        public String displayType() {
+            StringBuffer sb = new StringBuffer();
+            switch (dataType) {
+            case Types.ARRAY:
+                sb.append("ARRAY(" + columnSize + ")");
+                break;
+            case Types.BIGINT:
+                sb.append("BIGINT");
+                break;
+            case Types.BINARY:
+                sb.append("BINARY(" + columnSize + ")");
+                break;
+            case Types.BLOB:
+                sb.append("BLOB(" + columnSize + ")");
+                break;
+            case Types.BIT:
+                sb.append("BIT");
+                break;
+            case Types.BOOLEAN:
+                sb.append("BOOLEAN");
+                break;
+            case Types.CHAR:
+                sb.append("CHAR");
+                break;
+            case Types.CLOB:
+                sb.append("CLOB(" + columnSize + ")");
+                break;
+            case Types.DATE:
+                sb.append("DATE");
+                break;
+            case Types.DECIMAL:
+                sb.append("DECIMAL(" + columnSize + ", " + decimalDigits + ")");
+                break;
+            case Types.DISTINCT:
+                sb.append("DISTINCT");
+                break;
+            case Types.DOUBLE:
+                sb.append("DOUBLE(" + columnSize + ", " + decimalDigits + ")");
+                break;
+            case Types.FLOAT:
+                sb.append("FLOAT(" + columnSize + ", " + decimalDigits + ")");
+                break;
+            case Types.INTEGER:
+                sb.append("INTEGER(" + columnSize + ")");
+                break;
+            case Types.JAVA_OBJECT:
+                sb.append("JAVA_OBJECT(" + columnSize + ")");
+                break;
+            case Types.LONGNVARCHAR:
+                sb.append("LONGNVARCHAR(" + columnSize + ")");
+                break;
+            case Types.LONGVARBINARY:
+                sb.append("LONGVARBINARY(" + columnSize + ")");
+                break;
+            case Types.LONGVARCHAR:
+                sb.append("LONGVARCHAR(" + columnSize + ")");
+                break;
+            case Types.NCHAR:
+                sb.append("NCHAR(" + columnSize + ")");
+                break;
+            case Types.NCLOB:
+                sb.append("NCLOB(" + columnSize + ")");
+                break;
+            case Types.NULL:
+                sb.append("NULL");
+                break;
+            case Types.NUMERIC:
+                sb.append("NUMERIC(" + columnSize + ", " + decimalDigits + ")");
+                break;
+            case Types.NVARCHAR:
+                sb.append("NCLOB(" + columnSize + ")");
+                break;
+            case Types.OTHER:
+                sb.append("OTHER");
+                break;
+            case Types.REAL:
+                sb.append("REAL(" + columnSize + ", " + decimalDigits + ")");
+                break;
+            case Types.REF:
+                sb.append("REF");
+                break;
+            case Types.ROWID:
+                sb.append("ROWID");
+                break;
+            case Types.SMALLINT:
+                sb.append("SMALLINT(" + columnSize + ")");
+                break;
+            case Types.SQLXML:
+                sb.append("SQLXML(" + columnSize + ")");
+                break;
+            case Types.STRUCT:
+                sb.append("STRUCT");
+                break;
+            case Types.TIME:
+                sb.append("TIME");
+                break;
+            case Types.TIMESTAMP:
+                sb.append("TIMESTAMP");
+                break;
+            case Types.TINYINT:
+                sb.append("TINYINT(" + columnSize + ")");
+                break;
+            case Types.VARBINARY:
+                sb.append("VARBINARY(" + columnSize + ")");
+                break;
+            case Types.VARCHAR:
+                sb.append("VARCHAR(" + columnSize + ")");
+                break;
+            }
+            return sb.toString();
         }
     }
 
@@ -832,10 +1083,18 @@ public class JDBCMetaData {
         String name;
         String pk;
         /** sorted map key=column, value=data type of column */
-        final Map<String, String> colsDataType = new TreeMap<String, String>();
+        final Map<String, DbColumn> colsDataType = new TreeMap<String, DbColumn>();
 
-        private void addColsDataType(String col, String dataType) {
-            colsDataType.put(col, dataType);
+        private void addColsDataType(DbColumn columnDefinition) {
+            colsDataType.put(columnDefinition.name, columnDefinition);
+        }
+
+        private DbColumn getColumn(String cname) {
+            return colsDataType.get(cname);
+        }
+
+        private boolean hasColumns() {
+            return colsDataType.size() > 0;
         }
     }
 
@@ -848,6 +1107,4 @@ public class JDBCMetaData {
         }
     }
 }
-
-
 // End JDBCMetaData.java

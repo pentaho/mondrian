@@ -10,10 +10,12 @@
 */
 package mondrian.gui;
 
+import java.io.StringReader;
 import javax.swing.*;
 import java.awt.*;
 import javax.swing.border.*;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.text.PlainDocument;
 
 /**
  *
@@ -29,6 +31,10 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
     JLabel integerRenderer;
     JTable tableRenderer;
     JComboBox listRenderer;
+
+    JScrollPane jScrollPaneCDATA;
+    // JEditorPane jEditorPaneCDATA;
+    JTextArea cdataTextArea;
 
     JComboBox relationList;  // Join, Table
     JTable relationTable;
@@ -48,6 +54,19 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
 
         stringRenderer = new JLabel();
         stringRenderer.setFont(Font.decode("Dialog"));
+
+        // cdata multi-line
+
+        cdataTextArea = new JTextArea();
+        cdataTextArea.setLineWrap(true);
+        cdataTextArea.setWrapStyleWord(true);
+        cdataTextArea.setLayout(new java.awt.BorderLayout());
+        cdataTextArea.setEditable(true);
+        cdataTextArea.setPreferredSize(new java.awt.Dimension(100,300));
+        cdataTextArea.setMinimumSize(new java.awt.Dimension(100,100));
+
+        jScrollPaneCDATA = new JScrollPane(cdataTextArea);
+        jScrollPaneCDATA.setMaximumSize(cdataTextArea.getPreferredSize());
 
         booleanRenderer = new JCheckBox();
         booleanRenderer.setBackground(Color.white);
@@ -124,15 +143,23 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
         int column)
     {
         if (column == 1) {
-            /*if ((((PropertyTableModel) table.getModel()).target.getClass() == MondrianGuiDef.Measure.class) && (row==1)) {
-                listRenderer.setSelectedItem((String)value);
-                return listRenderer;
-            } else */
+            PropertyTableModel tableModel = (PropertyTableModel) table.getModel();
+            Class targetClassz = tableModel.target.getClass();
+            String propertyName = tableModel.getRowName(row);
+
             stringRenderer.setOpaque(false);
             stringRenderer.setToolTipText(null);
             stringRenderer.setBackground(Color.white);
 
-            if (value instanceof String) {
+            //targetClassz == MondrianGuiDef.Formula.class &&
+            if (propertyName.equals("cdata")) {
+                try {
+//                    jEditorPaneCDATA.read(new StringReader((String) value),null);
+//                    jEditorPaneCDATA.getDocument().putProperty(PlainDocument.tabSizeAttribute, new Integer(2) );
+                    cdataTextArea.read(new StringReader((String) value),null);
+                } catch (Exception ex) {}
+                return jScrollPaneCDATA;
+            } else if (value instanceof String) {
                 stringRenderer.setText((String)value);
                 return stringRenderer;
             } else if (value instanceof Boolean) {
@@ -194,14 +221,6 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
                 tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
                 return tableRenderer;
-            } else if (value.getClass() == MondrianGuiDef.RelationOrJoin.class) {
-                // REVIEW: Seems impossible to get here: RelationOrJoin is an
-                // abstract class.
-                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
-                tableRenderer.setDefaultRenderer(Object.class, spcr);
-                PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_RELATION);
-                tableRenderer.setModel(ptm);
-                return tableRenderer;
             } else if (value.getClass() == MondrianGuiDef.Table.class) {
                 SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
@@ -209,6 +228,13 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 tableRenderer.setModel(ptm);
                 tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
                 tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
+                return tableRenderer;
+            } else if (value.getClass() == MondrianGuiDef.RelationOrJoin.class) {
+                // REVIEW: Covers View and InlineTable, since Table and Join are managed above
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);
+                tableRenderer.setDefaultRenderer(Object.class, spcr);
+                PropertyTableModel ptm = new PropertyTableModel(workbench, value,SchemaExplorer.DEF_RELATION);
+                tableRenderer.setModel(ptm);
                 return tableRenderer;
             } else if (value.getClass() == MondrianGuiDef.AggFactCount.class) {
                 SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer(workbench);

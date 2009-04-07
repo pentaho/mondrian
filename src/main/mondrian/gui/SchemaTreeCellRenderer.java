@@ -91,19 +91,22 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
             super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("parent"))));
             setText(workbench.getResourceConverter().getString("common.parentExpression.title","Parent Expression"));
         } else if (value instanceof MondrianGuiDef.Expression) {
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("expression"))));
             setText(workbench.getResourceConverter().getString("common.expression.title","Expression"));
         } else if (value instanceof MondrianGuiDef.ExpressionView) {
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("expression"))));
             setText(workbench.getResourceConverter().getString("common.expressionView.title","Expression View"));
         } else if (value instanceof MondrianGuiDef.Hierarchy) {
-            setText(invalidFlag, workbench.getResourceConverter().getString("common.hierarchy.title","Hierarchy"));
-            //setText(((MondrianGuiDef.Hierarchy) value).name);    // hierarchies do not have names
+            String name = ((MondrianGuiDef.Hierarchy) value).name;
+
+            if (name == null || name.trim().length() == 0) {
+                setText(invalidFlag, workbench.getResourceConverter().getString("common.hierarchy.default.name","default"));
+            } else {
+                setText(invalidFlag, name);
+            }
             super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("hierarchy"))));
             this.setPreferredSize(new java.awt.Dimension(this.getPreferredSize().width + 1, 25)); //Do not remove this
-        } else if ((value instanceof MondrianGuiDef.Table)) {
-            setText(invalidFlag, ((MondrianGuiDef.Table) value).name);
-        } else if ((value instanceof MondrianGuiDef.RelationOrJoin) ||
-            // REVIEW: '||' is superfluous - a Table is always a RelationOrJoin
-                (value instanceof MondrianGuiDef.Table)) {
+        } else if (value instanceof MondrianGuiDef.RelationOrJoin) {
             TreePath tpath = tree.getPathForRow(row);
             String prefix = "";
             if (tpath != null) {
@@ -114,10 +117,10 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                         int indexOfChild = tree.getModel().getIndexOfChild(parent, value);
                         switch (indexOfChild) {
                         case 0:
-                            prefix = workbench.getResourceConverter().getString("common.leftPrefix.title","Left") + " ";
+                            prefix = workbench.getResourceConverter().getString("common.left.title","Left") + " ";
                             break;
                         case 1:
-                            prefix = workbench.getResourceConverter().getString("common.rightPrefix.title","Right") + " ";
+                            prefix = workbench.getResourceConverter().getString("common.right.title","Right") + " ";
                             break;
                         }
                     }
@@ -125,7 +128,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
             }
             if (value instanceof MondrianGuiDef.Join) {
                 setText(workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.join.title",
-                        "{0} : Join", new String[] {prefix}));
+                        "{0}Join", new String[] {prefix}));
                 //setText(prefix + " " + workbench.getResourceConverter().getString("common.join.title","Join"));
                 super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("join"))));
             } else if (value instanceof MondrianGuiDef.Table) {
@@ -136,8 +139,13 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
                 setText(workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.table.title",
                         "{0}Table: {1}", new String[] {(prefix.length() == 0 ? "" : prefix + " : "),theName}));
                 super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("table"))));
+            } else if (value instanceof MondrianGuiDef.View) {
+                setText(workbench.getResourceConverter().getFormattedString("schemaTreeCellRenderer.view.title",
+                        "View", new String[] {}));
+                //setText(prefix + " " + workbench.getResourceConverter().getString("common.join.title","Join"));
+                //super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("join"))));
             }
-            // REVIEW: Need to deal with InlineTable and View here
+            // REVIEW: Need to deal with InlineTable here
             this.getPreferredSize();
             this.setPreferredSize(new Dimension(this.getPreferredSize().width + 35, 24)); //Do not remove this
             //this.setSize(new Dimension(this.getPreferredSize().width, 24)); //Do not remove this
@@ -160,6 +168,9 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
         } else if (value instanceof MondrianGuiDef.Measure) {
             setText(invalidFlag, ((MondrianGuiDef.Measure) value).name);
             super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("measure"))));
+        } else if (value instanceof MondrianGuiDef.Formula) {
+            setText(invalidFlag, ((MondrianGuiDef.Formula) value).getName());
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("formula"))));
         } else if (value instanceof MondrianGuiDef.MemberReaderParameter) {
             setText(invalidFlag, ((MondrianGuiDef.MemberReaderParameter) value).name);
         } else if (value instanceof MondrianGuiDef.Property) {
@@ -183,6 +194,9 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
         } else if (value instanceof MondrianGuiDef.Role) {
             setText(invalidFlag, ((MondrianGuiDef.Role) value).name);
             super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("role"))));
+        } else if (value instanceof MondrianGuiDef.Parameter) {
+            setText(invalidFlag, ((MondrianGuiDef.Parameter) value).name);
+            super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("parameter"))));
         } else if (value instanceof MondrianGuiDef.SchemaGrant) {
             setText(invalidFlag, workbench.getResourceConverter().getString("common.schemaGrant.title","Schema Grant"));
             super.setIcon(new ImageIcon(myClassLoader.getResource(workbench.getResourceConverter().getGUIReference("schemaGrant"))));

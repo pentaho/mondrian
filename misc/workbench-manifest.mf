@@ -1,6 +1,5 @@
 Manifest-Version: 1.0
 Main-Class: mondrian.gui.Workbench
-Class-Path: . jlfgr-1_0.jar eigenbase-xom.jar eigenbase-resgen.jar eigenbase-properties.jar log4j-1.2.9.jar javacup.jar jmi.jar mm.mysql-2.0.14-bin.jar mof.jar junit.jar mondrian.jar
 
 Name: Mondrian Workbench
 

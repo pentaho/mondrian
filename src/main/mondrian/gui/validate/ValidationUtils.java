@@ -304,19 +304,24 @@ public class ValidationUtils {
             MondrianGuiDef.Hierarchy hierarchy = ((MondrianGuiDef.Hierarchy) value);
             MondrianGuiDef.Level[] levels = hierarchy.levels;
             if (levels == null || levels.length == 0) {
-                return messages.getFormattedString(
-                        "schemaExplorer.hierarchyElementLevels.title",
-                        "Hierarchy {0} must have levels", new String[] { hierarchy.name});
+                return messages.getString(
+                        "schemaTreeCellRenderer.atLeastOneLevelForHierarchy.alert",
+                        "At least one Level must be set for Hierarchy");
             }
 
             // Validates that value in primaryKey exists in Table.
+            String schema = null;
             String pkTable = null;
             if (hierarchy.relation instanceof MondrianGuiDef.Join) {
-                pkTable = SchemaExplorer.getTableNameForAlias(hierarchy.relation, hierarchy.primaryKeyTable);
+                String[] schemaAndTable = SchemaExplorer.getTableNameForAlias(hierarchy.relation, hierarchy.primaryKeyTable);
+                schema = schemaAndTable[0];
+                pkTable = schemaAndTable[1];
             } else if (hierarchy.relation instanceof MondrianGuiDef.Table) {
                 pkTable = ((MondrianGuiDef.Table) hierarchy.relation).name;
+                schema = ((MondrianGuiDef.Table) hierarchy.relation).schema;
             }
-            if (!jdbcValidator.isColExists(null, pkTable, hierarchy.primaryKey)) {
+
+            if (pkTable != null && !jdbcValidator.isColExists(schema, pkTable, hierarchy.primaryKey)) {
                 return messages.getFormattedString(
                         "schemaTreeCellRenderer.columnInTableDoesNotExist.alert",
                         "Column {0} defined in field {1} does not exist in table {2}",
@@ -358,7 +363,11 @@ public class ValidationUtils {
             if (isEmpty(((MondrianGuiDef.NamedSet) value).name)) {
                 return nameMustBeSet;
             }
-            if (isEmpty(((MondrianGuiDef.NamedSet) value).formula)) {
+            if (isEmpty(((MondrianGuiDef.NamedSet) value).formula) && isEmpty(((MondrianGuiDef.NamedSet) value).formulaElement)) {
+                return messages.getString("schemaTreeCellRenderer.formulaMustBeSet.alert", "Formula must be set");
+            }
+        } else if (value instanceof MondrianGuiDef.Formula) {
+            if (isEmpty(((MondrianGuiDef.Formula) value).cdata)) {
                 return messages.getString("schemaTreeCellRenderer.formulaMustBeSet.alert", "Formula must be set");
             }
         } else if (value instanceof MondrianGuiDef.UserDefinedFunction) {
@@ -374,6 +383,9 @@ public class ValidationUtils {
             }
             if (isEmpty(((MondrianGuiDef.CalculatedMember) value).dimension)) {
                 return messages.getString("schemaTreeCellRenderer.dimensionMustBeSet.alert", "Dimension must be set");
+            }
+            if (isEmpty(((MondrianGuiDef.CalculatedMember) value).formula) && isEmpty(((MondrianGuiDef.CalculatedMember) value).formulaElement)) {
+                return messages.getString("schemaTreeCellRenderer.formulaMustBeSet.alert", "Formula must be set");
             }
         } else if (value instanceof MondrianGuiDef.Join) {
             if (isEmpty(((MondrianGuiDef.Join) value).leftKey)) {
@@ -544,6 +556,13 @@ public class ValidationUtils {
                     }
                 }
 
+                if (!isEmpty(table) && (parentHierarchy != null &&
+                    parentHierarchy.relation instanceof MondrianGuiDef.View)) {
+                    return messages.getString(
+                        "schemaTreeCellRenderer.noTableForView",
+                        "Table for column cannot be set in View");
+                }
+
                 if (isEmpty(table)) {
                     if (parentHierarchy != null) {
                         if (parentHierarchy.relation == null && cube != null) { // case of degenerate dimension within cube, hierarchy table not specified
@@ -569,11 +588,14 @@ public class ValidationUtils {
                         }
                     }
                 } else {
+                    String schema = null;
                     //EC: if using Joins then gets the table name for isColExists validation.
                     if (parentHierarchy != null && parentHierarchy.relation instanceof MondrianGuiDef.Join) {
-                       table = SchemaExplorer.getTableNameForAlias(parentHierarchy.relation, table);
+                        String[] schemaAndTable = SchemaExplorer.getTableNameForAlias(parentHierarchy.relation, table);
+                        schema = schemaAndTable[0];
+                        table = schemaAndTable[1];
                     }
-                    if (!jdbcValidator.isColExists(null, table, column)) {
+                    if (!jdbcValidator.isColExists(schema, table, column)) {
                         return messages.getFormattedString(
                                 "schemaTreeCellRenderer.columnInTableDoesNotExist.alert",
                                 "Column {0} defined in field {1} does not exist in table {2}", new String[] { isEmpty(column.trim()) ? "' '" : column, fieldName, table });

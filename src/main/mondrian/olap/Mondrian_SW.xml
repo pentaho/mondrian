@@ -171,6 +171,12 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="defaultMeasure" required="false">
+            <Doc>
+                The name of the measure that would be taken as the default
+                measure of the cube.
+            </Doc>
+        </Attribute>
         <Attribute name="cache" type="Boolean" default="true">
             <Doc>
                 Should the Fact table data for this Cube be cached
@@ -239,12 +245,18 @@
             </Doc>
         </Attribute>
         <Attribute name="name"><Doc></Doc></Attribute>
+        <Attribute name="defaultMeasure" required="false">
+            <Doc>The name of the measure that would be taken as the default
+                measure of the cube.
+            </Doc>
+         </Attribute>
         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the cube's name.
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Object name="cubeUsage" type="CubeUsages"><Doc></Doc></Object>
         <Array name="dimensions" type="VirtualCubeDimension"><Doc></Doc></Array>
         <Array name="measures" type="VirtualCubeMeasure"><Doc></Doc></Array>
         <Array name="calculatedMembers" type="CalculatedMember">
@@ -254,11 +266,39 @@
                 in this list.)
             </Doc>
         </Array>
+        <Array name="namedSets" type="NamedSet">
+            <Doc>
+                Named sets in this cube.
+            </Doc>
+        </Array>
         <Code><![CDATA[
             public boolean isEnabled() {
                 return enabled.booleanValue();
             }]]>
         </Code>
+    </Element>
+
+    <!-- CubeUsages ============================================= -->
+    <Element type="CubeUsages">
+        <Doc>
+            List of base cubes used by the virtual cube.
+        </Doc>
+        <Array name="cubeUsages" type="CubeUsage" min="1"><Doc></Doc></Array>
+    </Element>
+
+    <!-- CubeUsage ============================================= -->
+    <Element type="CubeUsage">
+        <Attribute name="cubeName" required="true">
+            <Doc>
+                Name of the cube which the virtualCube uses.
+            </Doc>
+        </Attribute>
+        <Attribute name="ignoreUnrelatedDimensions" type="Boolean" default="false">
+            <Doc>
+                Unrelated dimensions to measures in this cube will be pushed to
+                top level member.
+            </Doc>
+        </Attribute>
     </Element>
 
     <!-- VirtualCubeDimension ============================================= -->
@@ -1066,9 +1106,27 @@
     </Element>
 
     <Element type="SQL">
-        <Attribute name="dialect" default="generic">
+        <Attribute name="dialect" required="true" default="generic">
             <Doc>
-                Dialect of SQL the view is intended for.
+                Dialect of SQL the view is intended for. Valid values include,
+                but are not limited to:
+                <ul>
+                <li>generic</li>
+                <li>access</li>
+                <li>db2</li>
+                <li>derby</li>
+                <li>firebird</li>
+                <li>hsqldb</li>
+                <li>mssql</li>
+                <li>mysql</li>
+                <li>oracle</li>
+                <li>postgres</li>
+                <li>sybase</li>
+                <li>teradata</li>
+                <li>ingres</li>
+                <li>infobright</li>
+                <li>luciddb</li>
+                </ul>
             </Doc>
             <Value>generic</Value>
             <Value>access</Value>
@@ -1083,6 +1141,7 @@
             <Value>sybase</Value>
             <Value>teradata</Value>
             <Value>ingres</Value>
+            <Value>infobright</Value>
             <Value>luciddb</Value>
         </Attribute>
         <CData/>
@@ -1601,9 +1660,11 @@
                 this.table = table;
                 this.name = name;
             }
+
             public String getExpression(SqlQuery query) {
                 return query.getDialect().quoteIdentifier(table, name);
             }
+
             public String getGenericExpression() {
                 if (table == null) {
                     return name;
@@ -1611,6 +1672,7 @@
                     return table + "." + name;
                 }
             }
+
             public String getColumnName() {
                 return name;
             }
@@ -1701,6 +1763,7 @@
         </Doc>
         <Attribute name="name" required="true"/>
         <Array name="schemaGrants" type="SchemaGrant"/>
+        <Object name="union" type="Union" required="false" />
     </Element>
 
     <Class class="Grant">
@@ -1775,6 +1838,12 @@
             the <code>HierarchyGrant.access</code> is "custom". If not
             specified, role can see members down to the leaf level.</Doc>
         </Attribute>
+        <Attribute name="rollupPolicy" required="false">
+            <Doc>Policy which determines how cell values are calculated if
+                not all of the children of the current cell are visible to
+                the current role. Allowable values are 'full' (the default),
+                'partial', and 'hidden'.</Doc>
+        </Attribute>
         <Array name="memberGrants" type="MemberGrant"/>
     </Element>
 
@@ -1794,7 +1863,25 @@
         </Attribute>
     </Element>
 
-    <!-- UserDefinedFunction ====================================================== -->
+    <!-- Union ============================================================ -->
+    <Element type="Union">
+        <Doc>
+            Body of a Role definition which defines a Role to be the union
+            of several Roles. The RoleUsage elements must refer to Roles that
+            have been declared earlier in this schema file.
+        </Doc>
+        <Array name="roleUsages" type="RoleUsage" required="true"/>
+    </Element>
+
+    <!-- RoleUsage ======================================================== -->
+    <Element type="RoleUsage">
+        <Doc>
+            Usage of a Role in a union Role.
+        </Doc>
+        <Attribute name="roleName" required="true"/>
+    </Element>
+
+    <!-- UserDefinedFunction ============================================== -->
     <Element type="UserDefinedFunction">
         <Doc>
             A <code>UserDefinedFunction</code> is a function which

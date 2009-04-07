@@ -11,6 +11,11 @@
 */
 package mondrian.gui;
 
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.swing.JOptionPane;
+
 
 /**
  *
@@ -84,6 +89,9 @@ public class PreferencesDialog extends javax.swing.JDialog {
      * @return the workbench i18n converter
      */
     public I18n getResourceConverter() {
+        if (getParent() == null && getParent().getClass() != Workbench.class) {
+            return Workbench.getGlobalResourceConverter();
+        }
         return ((Workbench) getParent()).getResourceConverter();
     }
 
@@ -112,12 +120,14 @@ public class PreferencesDialog extends javax.swing.JDialog {
         driverClassTextField = new javax.swing.JTextField();
         schemaTextField = new javax.swing.JTextField();
         requireSchemaButton = new javax.swing.JCheckBox();
+        testButton = new javax.swing.JButton();
         acceptButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        selectSchemasButton = new javax.swing.JButton();
 
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        setTitle(getResourceConverter().getString("preferences.pane.title","Workbench Preferences"));
+        setTitle(getResourceConverter().getString("preferences.pane.title","Database Connection"));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 closeDialog(evt);
@@ -171,7 +181,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(urlTextField, gridBagConstraints);
 
-        jLabel5.setText(getResourceConverter().getString("preferences.schema.title","Schema (Optional)"));
+        jLabel5.setText(getResourceConverter().getString("preferences.schema.title","Schemas (Optional, comma separated)"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -219,6 +229,21 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(schemaTextField, gridBagConstraints);
 
+        selectSchemasButton.setText(getResourceConverter().getString("preferences.selectSchemasButton.title","Select Schemas"));
+        selectSchemasButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 180);
+        jPanel1.add(selectSchemasButton, gridBagConstraints);
+
         requireSchemaButton.setSelected(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -247,6 +272,20 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         getContentPane().add(jTabbedPane1, gridBagConstraints);
+
+        testButton.setText(getResourceConverter().getString("preferences.testButton.title","Test Connection"));
+        testButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 180);
+        getContentPane().add(testButton, gridBagConstraints);
 
         cancelButton.setText(getResourceConverter().getString("preferences.cancelButton.title","Cancel"));
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -280,6 +319,91 @@ public class PreferencesDialog extends javax.swing.JDialog {
         pack();
     } //GEN-END:initComponents
 
+    private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testButtonActionPerformed
+        JDBCMetaData jdbcMetaData = new JDBCMetaData(getJDBCDriverClassName(),
+                getJDBCConnectionUrl(), getJDBCUsername(), getJDBCPassword());
+        if (jdbcMetaData.getErrMsg() != null) {
+            JOptionPane.showMessageDialog(this,
+                    getResourceConverter()
+                        .getFormattedString("preferences.unsuccessfulTestConnection.alert",
+                            "Database connection could not be done.\n{0}",
+                            new String[] { jdbcMetaData.getErrMsg() }),
+                        "" , JOptionPane.WARNING_MESSAGE);
+            accepted = false;
+            return;
+        }
+
+        List<String> allSchemaNames = jdbcMetaData.listAllSchemas();
+
+        String currentSchemas = schemaTextField.getText();
+
+        // If (schemas entered  or schemas required) and
+        // DB does not support schemas
+        // -> error
+        if (allSchemaNames == null || allSchemaNames.size() == 0) {
+            if (currentSchemas != null && currentSchemas.trim().length() > 0) {
+                JOptionPane.showMessageDialog(this,
+                        getResourceConverter()
+                            .getString("preferences.noSchemas.butSchemasEntered.alert",
+                                "No schemas available for this database connection, but schemas entered"),
+                            "" , JOptionPane.WARNING_MESSAGE);
+                accepted = false;
+                return;
+            }
+
+            if (requireSchemaButton.isSelected()) {
+                JOptionPane.showMessageDialog(this,
+                        getResourceConverter()
+                            .getString("preferences.noSchemas.butSchemasRequired.alert",
+                                "No schemas available for this database connection, but schemas are required"),
+                            "" , JOptionPane.WARNING_MESSAGE);
+                accepted = false;
+                return;
+            }
+        }
+
+        // Validate entered schemas
+        if (currentSchemas != null && currentSchemas.trim().length() > 0) {
+            String schemasArray[] = currentSchemas.trim().split("[,;]");
+
+            Set<String> validSchemas = new TreeSet<String>();
+            StringBuffer schemasInError = new StringBuffer();
+
+            for (int i = 0; i < schemasArray.length; i++) {
+                // trim the names, removing empties
+                String enteredSchemaName = schemasArray[i].trim();
+
+                if (enteredSchemaName.length() > 0) {
+                    for (String actualSchemaName : allSchemaNames) {
+                        if (actualSchemaName.equalsIgnoreCase(enteredSchemaName)) {
+                            validSchemas.add(enteredSchemaName);
+                            break;
+                        }
+                    }
+                }
+
+                if (!validSchemas.contains(enteredSchemaName)) {
+                    schemasInError.append(" ").append(enteredSchemaName);
+                }
+            }
+
+            if (schemasInError.length() > 0) {
+                JOptionPane.showMessageDialog(this,
+                    getResourceConverter().getFormattedString("preferences.invalidSchemas.alert",
+                                "The following entered schemas are invalid.\n{0}",
+                                new String[] { schemasInError.toString() }),
+                    "" , JOptionPane.WARNING_MESSAGE);
+                accepted = false;
+                return;
+            }
+        }
+
+        JOptionPane.showMessageDialog(this,
+                getResourceConverter().getString("preferences.successfulTestConnection.alert",
+                        "Database connection successful"),"" , JOptionPane.INFORMATION_MESSAGE);
+        accepted = true;
+    } //GEN-LAST:event_testButtonActionPerformed
+
     private void acceptButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptButtonActionPerformed
         accepted = true;
         setVisible(false);
@@ -305,8 +429,10 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private javax.swing.JTextField schemaTextField;
     private javax.swing.JCheckBox requireSchemaButton;
     private javax.swing.JButton acceptButton;
+    private javax.swing.JButton testButton;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JButton selectSchemasButton;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel4;
