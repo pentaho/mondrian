@@ -1013,6 +1013,8 @@ public class JDBCMetaData {
             case Types.JAVA_OBJECT:
                 sb.append("JAVA_OBJECT(" + columnSize + ")");
                 break;
+            /*
+             * No Java 1.6 SQL types for now
             case Types.LONGNVARCHAR:
                 sb.append("LONGNVARCHAR(" + columnSize + ")");
                 break;
@@ -1028,15 +1030,19 @@ public class JDBCMetaData {
             case Types.NCLOB:
                 sb.append("NCLOB(" + columnSize + ")");
                 break;
+             */
             case Types.NULL:
                 sb.append("NULL");
                 break;
             case Types.NUMERIC:
                 sb.append("NUMERIC(" + columnSize + ", " + decimalDigits + ")");
                 break;
+            /*
+             * No Java 1.6 SQL types for now
             case Types.NVARCHAR:
                 sb.append("NCLOB(" + columnSize + ")");
                 break;
+             */
             case Types.OTHER:
                 sb.append("OTHER");
                 break;
@@ -1046,15 +1052,21 @@ public class JDBCMetaData {
             case Types.REF:
                 sb.append("REF");
                 break;
+            /*
+             * No Java 1.6 SQL types for now
             case Types.ROWID:
                 sb.append("ROWID");
                 break;
+             */
             case Types.SMALLINT:
                 sb.append("SMALLINT(" + columnSize + ")");
                 break;
-            case Types.SQLXML:
+            /*
+             * No Java 1.6 SQL types for now
+           case Types.SQLXML:
                 sb.append("SQLXML(" + columnSize + ")");
                 break;
+             */
             case Types.STRUCT:
                 sb.append("STRUCT");
                 break;
