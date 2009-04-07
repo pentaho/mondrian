@@ -1155,6 +1155,9 @@ RME is this right
                 List<RolapMember> list = new ArrayList<RolapMember>();
                 list.add(dataMember);
                 RolapHierarchy hierarchy = getHierarchy();
+                if (hierarchy instanceof RolapCubeHierarchy) {
+                    hierarchy = ((RolapCubeHierarchy)hierarchy).getRolapHierarchy();
+                }
                 hierarchy.getMemberReader().getMemberChildren(dataMember, list);
                 return list;
             } else {

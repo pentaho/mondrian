@@ -1087,6 +1087,44 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Row #0: 152.76\n" +
                 "Row #0: 60\n"));
     }
+
+    /**
+     * This test verifies the fix for MONDRIAN-519, a class cast exception when using
+     * non-closure parent child hierarchies.
+     */
+    public void testClosureVsNoClosure() {
+        String cubestart =
+            "<Cube name=\"HR4C\">\n" +
+            "  <Table name=\"salary\"/>\n" +
+            "  <Dimension name=\"Employees\" foreignKey=\"employee_id\">\n" +
+            "    <Hierarchy hasAll=\"true\" allMemberName=\"All\"\n" +
+            "        primaryKey=\"employee_id\">\n" +
+            "      <Table name=\"employee\"/>\n" +
+            "      <Level name=\"Employee Id\" type=\"Numeric\" uniqueMembers=\"true\"\n" +
+            "          column=\"employee_id\" parentColumn=\"supervisor_id\"\n" +
+            "          nameColumn=\"full_name\" nullParentValue=\"0\">\n";
+        String closure =
+            "        <Closure parentColumn=\"supervisor_id\" childColumn=\"employee_id\">\n" +
+            "          <Table name=\"employee_closure\"/>\n" +
+            "        </Closure>\n";
+        String cubeend =
+            "      </Level>\n" +
+            "    </Hierarchy>\n" +
+            "  </Dimension>\n" +
+            "\n" +
+            "  <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\" />\n" +
+            "</Cube>\n";
+        String mdx =
+            "select {[Measures].[Count]} ON COLUMNS, NON EMPTY {[Employees].AllMembers} ON ROWS from [HR4C]";
+        TestContext testClosureContext = TestContext.create(
+                null,
+                cubestart + closure + cubeend, null, null, null, null);
+        String expect = TestContext.toString(testClosureContext.executeQuery(mdx));
+        TestContext testNoClosureContext = TestContext.create(
+                null,
+                cubestart + cubeend, null, null, null, null);
+        testNoClosureContext.assertQueryReturns(mdx, expect);
+    }
 }
 
 // End ParentChildHierarchyTest.java
