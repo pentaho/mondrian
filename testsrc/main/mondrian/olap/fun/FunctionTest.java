@@ -8982,6 +8982,17 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
     }
 
     /**
+     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-524">
+     * MONDRIAN-524, "VB functions: expected primitive type, got
+     * java.lang.Object"</a>.
+     */
+    public void testCastBug524() {
+        assertExprReturns(
+            "Cast(Int([Measures].[Store Sales] / 3600) as String)",
+            "157.00");
+    }
+
+    /**
      * Tests {@link mondrian.olap.FunTable#getFunInfoList()}, but more
      * importantly, generates an HTML table of all implemented functions into
      * a file called "functions.html". You can manually include that table

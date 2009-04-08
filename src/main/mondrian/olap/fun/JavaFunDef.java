@@ -250,6 +250,8 @@ public class JavaFunDef extends FunDefBase {
             }
         } else if (clazz == double.class) {
             return compiler.compileDouble(exp);
+        } else if (clazz == Object.class) {
+            return compiler.compileScalar(exp, false);
         } else {
             throw newInternal("expected primitive type, got " + clazz);
         }
