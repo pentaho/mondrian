@@ -29,6 +29,13 @@ class RolapCell implements Cell {
     protected final int[] pos;
     protected RolapResult.CellInfo ci;
 
+    /**
+     * Creates a RolapCell.
+     *
+     * @param result Result cell belongs to
+     * @param pos Coordinates of cell
+     * @param ci Cell information, containing value et cetera
+     */
     RolapCell(RolapResult result, int[] pos, RolapResult.CellInfo ci) {
         this.result = result;
         this.pos = pos;
@@ -36,6 +43,9 @@ class RolapCell implements Cell {
     }
 
     public Object getValue() {
+        if (ci.value == Util.nullValue) {
+            return null;
+        }
         return ci.value;
     }
 

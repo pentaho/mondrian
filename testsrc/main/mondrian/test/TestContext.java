@@ -19,6 +19,7 @@ import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.olap.Member;
+import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.RolapUtil;
@@ -26,6 +27,7 @@ import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 import mondrian.util.DelegatingInvocationHandler;
+import mondrian.util.CoordinateIterator;
 
 import javax.sql.DataSource;
 import java.io.*;
@@ -475,8 +477,88 @@ public class TestContext {
         Connection connection = getConnection();
         queryString = upgradeQuery(queryString);
         Query query = connection.parseQuery(queryString);
-        return connection.execute(query);
+        final Result result = connection.execute(query);
+
+        // If we're deep testing, check that we never return the dummy null
+        // value when cells are null. TestExpDependencies isn't the perfect
+        // switch to enable this, but it will do for now.
+        if (MondrianProperties.instance().TestExpDependencies.booleanValue()) {
+            assertResultValid(result);
+        }
+        return result;
     }
+
+    /**
+     * Checks that a {@link Result} is valid.
+     *
+     * @param result Query result
+     */
+    private void assertResultValid(Result result) {
+        for (Cell cell : cellIter(result)) {
+            final Object value = cell.getValue();
+
+            // Check that the dummy value used to represent null cells never
+            // leaks into the outside world.
+            Assert.assertNotSame(value, Util.nullValue);
+            Assert.assertFalse(
+                value instanceof Number
+                && ((Number) value).doubleValue() == FunUtil.DoubleNull);
+
+            // Similarly empty values.
+            Assert.assertNotSame(value, Util.EmptyValue);
+            Assert.assertFalse(
+                value instanceof Number
+                && ((Number) value).doubleValue() == FunUtil.DoubleEmpty);
+
+            // Cells should be null if and only if they are null or empty.
+            if (cell.getValue() == null) {
+                Assert.assertTrue(cell.isNull());
+            } else {
+                Assert.assertFalse(cell.isNull());
+            }
+        }
+
+        // There should be no null members.
+        for (Axis axis : result.getAxes()) {
+            for (Position position : axis.getPositions()) {
+                for (Member member : position) {
+                    Assert.assertNotNull(member);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns an iterator over cells in a result.
+     */
+    Iterable<Cell> cellIter(final Result result) {
+        return new Iterable<Cell>() {
+            public Iterator<Cell> iterator() {
+                int[] axisDimensions = new int[result.getAxes().length];
+                int k = 0;
+                for (Axis axis : result.getAxes()) {
+                    axisDimensions[k++] = axis.getPositions().size();
+                }
+                final CoordinateIterator
+                    coordIter = new CoordinateIterator(axisDimensions);
+                return new Iterator<Cell>() {
+                    public boolean hasNext() {
+                        return coordIter.hasNext();
+                    }
+
+                    public Cell next() {
+                        final int[] ints = coordIter.next();
+                        return result.getCell(ints);
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        };
+    }
+
 
     /**
      * Executes a query, and asserts that it throws an exception which contains
