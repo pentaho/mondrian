@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -641,8 +641,8 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     /**
-     * Testcase for <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1410383&group_id=35302&atid=414613">
-     * bug 1410383, "error if calc member in schema file contains single quotes"</a>.
+     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-137">
+     * MONDRIAN-137, "error if calc member in schema file contains single quotes"</a>.
      */
     public void testQuoteInCalcMember() {
         final String cubeName = "Sales_Bug1410383";
@@ -793,8 +793,8 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     /**
-     * Testcase for <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1669104&group_id=35302&atid=414613">
-     * bug 1669104, Negative Solve Orders broken</a>.
+     * Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-263">
+     * bug MONDRIAN-263, Negative Solve Orders broken</a>.
      */
     public void testNegativeSolveOrder() {
         // Negative solve orders are OK.

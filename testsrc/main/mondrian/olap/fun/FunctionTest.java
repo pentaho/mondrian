@@ -513,7 +513,7 @@ public class FunctionTest extends FoodMartTestCase {
         // Not a runtime exception.
         assertBooleanExprReturns("[Gender].CurrentMember.Parent.NextMember IS NULL", true);
 
-        if (!Bug.Bug1530543Fixed) {
+        if (!Bug.BugMondrian207Fixed) {
             return;
         }
 
@@ -7672,8 +7672,8 @@ public class FunctionTest extends FoodMartTestCase {
 
     /**
      * Testcase for
-     * <a href="https://sourceforge.net/tracker/?func=detail&atid=414613&aid=2150537&group_id=35302">
-     * bug 2150537, "error deducing type of Ytd/Qtd/Mtd functions within
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-458">
+     * bug MONDRIAN-458, "error deducing type of Ytd/Qtd/Mtd functions within
      * Generate"</a>.
      */
     public void testGeneratePlusXtd() {

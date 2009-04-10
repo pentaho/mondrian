@@ -243,8 +243,8 @@ public class SchemaTest extends FoodMartTestCase {
      * <p>Tests that an error is issued if two dimensions use the same table via
      * different drill-paths and do not use a different alias. If this error is
      * not issued, the generated SQL can be missing a join condition, as in
-     * <a href="https://sourceforge.net/tracker/?func=detail&atid=414613&aid=1583462&group_id=35302">
-     * Bug 1583462, "Mondrian generates invalid SQL"</a>.
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-236">
+     * Bug MONDRIAN-236, "Mondrian generates invalid SQL"</a>.
      */
     public void testDuplicateTableAlias() {
         final TestContext testContext = TestContext.createSubstitutingCube(
@@ -558,7 +558,7 @@ public class SchemaTest extends FoodMartTestCase {
         // due to a known limitation
         if ((MondrianProperties.instance().ReadAggregates.get() ||
                 MondrianProperties.instance().UseAggregates.get())
-                && !Bug.Bug1867953Fixed) {
+                && !Bug.BugMondrian361Fixed) {
             return;
         }
 
@@ -1401,8 +1401,8 @@ public class SchemaTest extends FoodMartTestCase {
 
     /**
      * Testcase for
-     * <a href="https://sourceforge.net/tracker/?func=detail&atid=414613&aid=1583462&group_id=35302">
-     * Bug 1721514, "'unknown usage' messages"</a>.
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-291">
+     * Bug MONDRIAN-291, "'unknown usage' messages"</a>.
      */
     public void testUnknownUsages() {
         if (!MondrianProperties.instance().ReadAggregates.get()) {
@@ -1829,7 +1829,7 @@ public class SchemaTest extends FoodMartTestCase {
      * this test triggers an exception out of the aggregate table manager
      */
     public void testAggTableSupportOfSharedDims() {
-        if (Bug.Bug1867953Fixed) {
+        if (Bug.BugMondrian361Fixed) {
             TestContext testContext = TestContext.create(
                     null,
                     "<Cube name=\"Sales Two Dimensions\">\n" +

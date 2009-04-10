@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde and others
+// Copyright (C) 2005-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,7 +14,8 @@ import mondrian.olap.Result;
 
 /**
  * Testcase for
- * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1541077&group_id=35302&atid=414613">bug 1541077</a>
+ * <a href="http://jira.pentaho.com/browse/MONDRIAN-214">MONDRIAN-214</a>
+ * (formerly SourceForge bug 1541077)
  * and a couple of other aggregate table ExplicitRecognizer conditions.
  *
  * @author Richard M. Emberson

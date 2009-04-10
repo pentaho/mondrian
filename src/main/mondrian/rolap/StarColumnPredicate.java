@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -86,8 +86,8 @@ public interface StarColumnPredicate extends StarPredicate {
      * {@link #toSql(mondrian.rolap.sql.SqlQuery, StringBuilder)}.
      *
      * <p>todo: remove this method when
-     * {@link mondrian.util.Bug#Bug1767775Fixed bug 1767776} and
-     * {@link mondrian.util.Bug#Bug1767779Fixed bug 1767779} are fixed.
+     * {@link mondrian.util.Bug#BugMondrian313Fixed bug MONDRIAN-313} and
+     * {@link mondrian.util.Bug#BugMondrian314Fixed bug MONDRIAN-314} are fixed.
      */
     StarColumnPredicate cloneWithColumn(RolapStar.Column column);
 

@@ -36,7 +36,6 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
-import mondrian.test.PropertySaver;
 import mondrian.util.Bug;
 import mondrian.spi.Dialect;
 
@@ -2625,7 +2624,7 @@ public class NonEmptyTest extends BatchTestCase {
      * member of a hierarchy is not 'all' or the first child.
      */
     public void testNonEmptyWithWeirdDefaultMember() {
-        if (!Bug.Bug1574942Fixed) {
+        if (!Bug.BugMondrian229Fixed) {
             return;
         }
         TestContext testContext = TestContext.createSubstitutingCube(
@@ -3123,7 +3122,7 @@ public class NonEmptyTest extends BatchTestCase {
      * member".
      */
     public void testBug1791609NonEmptyCrossJoinEliminatesCalcMember() {
-        if (!Bug.Bug1791609Fixed) {
+        if (!Bug.BugMondrian328Fixed) {
             return;
         }
         // From the bug:
@@ -3276,7 +3275,7 @@ public class NonEmptyTest extends BatchTestCase {
                         "Row #1: 142,277.07\n" +
                         "Row #1: 263,793.22\n"));
 
-            if (Bug.Bug2076407Fixed) {
+            if (Bug.BugMondrian446Fixed) {
                 MondrianProperties.instance().EnableNativeNonEmpty.set(true);
                 assertQueryReturns(
                     "WITH MEMBER [Measures].[One] AS '1' " +

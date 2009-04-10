@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2008 Julian Hyde
+// Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1387,8 +1387,8 @@ public class AccessControlTest extends FoodMartTestCase {
     /**
      * Tests that hierarchy-level access control works on a virtual cube.
      * See bug
-     * <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=2141337&group_id=35302&atid=414613">
-     * 2141337, "Roles and virtual cubes"</a>.
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-456">
+     * MONDRIAN-456, "Roles and virtual cubes"</a>.
      */
     public void testVirtualCube() {
         TestContext testContext = TestContext.create(

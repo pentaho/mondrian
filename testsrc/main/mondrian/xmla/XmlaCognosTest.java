@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde and others
+// Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -161,7 +161,7 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
             enableNonEmptyOnAllAxes.set(true);
             enableNativeNonEmpty.set(false);
             executeMDX();
-            if (Bug.Bug2076407Fixed) {
+            if (Bug.BugMondrian446Fixed) {
                 enableNativeNonEmpty.set(true);
                 executeMDX();
             }

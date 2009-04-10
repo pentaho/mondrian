@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2006 Julian Hyde
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -115,8 +115,8 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests <a href="https://sourceforge.net/tracker/?func=detail&atid=414613&aid=1501533&group_id=35302">
-     * bug 1501533, "Properties not working with multiple hierarchies"</a>.
+     * Tests <a href="http://jira.pentaho.com/browse/MONDRIAN-191">
+     * bug MONDRIAN-191, "Properties not working with multiple hierarchies"</a>.
      */
     public void testProperty() {
         TestContext testContext = TestContext.createSubstitutingCube("Sales",
