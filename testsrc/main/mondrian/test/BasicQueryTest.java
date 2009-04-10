@@ -6394,6 +6394,27 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * Tests bug <a href="http://jira.pentaho.com/browse/MONDRIAN-7">MONDRIAN-7,
+     * "Heterogeneous axis gives wrong results"</a>. The bug is a misnomer;
+     * heterogeneous axes should give an error.
+     */
+    public void testHeterogeneousAxis() {
+        // SSAS2005 gives error:
+        //   Query (1, 8) Two sets specified in the  function have different
+        //   dimensionality.
+        assertThrows(
+            "select {[Measures].[Unit Sales], [Gender].Members} on 0,\n"
+            + " [Store].[USA].Children on 1\n"
+            + "from [Sales]",
+            "All arguments to function '{}' must have same hierarchy.");
+        assertThrows(
+            "select {[Marital Status].Members, [Gender].Members} on 0,\n"
+            + " [Store].[USA].Children on 1\n"
+            + "from [Sales]",
+            "All arguments to function '{}' must have same hierarchy.");
+    }
+
+    /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.
      */
