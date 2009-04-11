@@ -15,8 +15,7 @@ import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 
 import java.sql.*;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * <code>RolapCell</code> implements {@link mondrian.olap.Cell} within a
@@ -40,6 +39,18 @@ class RolapCell implements Cell {
         this.result = result;
         this.pos = pos;
         this.ci = ci;
+    }
+
+    public List<Integer> getCoordinateList() {
+        return new AbstractList<Integer>() {
+            public Integer get(int index) {
+                return pos[index];
+            }
+
+            public int size() {
+                return pos.length;
+            }
+        };
     }
 
     public Object getValue() {
