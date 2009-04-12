@@ -229,10 +229,13 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(schemaTextField, gridBagConstraints);
 
-        selectSchemasButton.setText(getResourceConverter().getString("preferences.selectSchemasButton.title","Select Schemas"));
+        selectSchemasButton.setText(
+                getResourceConverter()
+                .getString("preferences.selectSchemasButton.title",
+                "Select Schemas"));
         selectSchemasButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                testButtonActionPerformed(evt);
+                selectSchemasButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -243,6 +246,9 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 180);
         jPanel1.add(selectSchemasButton, gridBagConstraints);
+
+        // Disable the select schemas button for now
+        selectSchemasButton.setEnabled(false);
 
         requireSchemaButton.setSelected(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -319,9 +325,50 @@ public class PreferencesDialog extends javax.swing.JDialog {
         pack();
     } //GEN-END:initComponents
 
-    private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testButtonActionPerformed
-        JDBCMetaData jdbcMetaData = new JDBCMetaData(getJDBCDriverClassName(),
+    private void selectSchemasButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        JDBCMetaData jdbcMetaData = getTestingJDBCMetadata();
+        if (jdbcMetaData.getErrMsg() != null) {
+            JOptionPane.showMessageDialog(this,
+                getResourceConverter()
+                    .getFormattedString("preferences.unsuccessfulTestConnection.alert",
+                        "Database connection could not be done.\n{0}",
+                        new String[] { jdbcMetaData.getErrMsg() }),
+                    "" , JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        List<String> allSchemaNames = jdbcMetaData.listAllSchemas();
+        if (allSchemaNames == null || allSchemaNames.size() == 0) {
+            JOptionPane.showMessageDialog(this,
+                getResourceConverter()
+                .getString("preferences.noSchemas.cantSetSchemas.alert",
+                 "No schemas available for this database connection"),
+                "",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        PreferencesSchemasDialog psd = new PreferencesSchemasDialog(this, jdbcMetaData);
+
+        setVisible(false);
+        setModal(false);
+        psd.setVisible(true);
+
+        if (psd.isAccepted()) {
+            // update list of schemas
+        }
+
+        setModal(true);
+        setVisible(true);
+    }
+
+    public JDBCMetaData getTestingJDBCMetadata() {
+        return new JDBCMetaData(getJDBCDriverClassName(),
                 getJDBCConnectionUrl(), getJDBCUsername(), getJDBCPassword());
+    }
+
+    private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testButtonActionPerformed
+        JDBCMetaData jdbcMetaData = getTestingJDBCMetadata();
         if (jdbcMetaData.getErrMsg() != null) {
             JOptionPane.showMessageDialog(this,
                     getResourceConverter()

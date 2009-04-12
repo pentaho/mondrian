@@ -486,7 +486,9 @@ public class JDBCMetaData {
         }
     }
 
-    /* get all columns of given table in schema */
+    /* get all columns of given table in schema
+     * column string is formatted
+     */
     public Vector<String> getAllColumns(String schemaName, String tableName) {
         Vector<String> allcols = new Vector<String>();
 
@@ -513,6 +515,35 @@ public class JDBCMetaData {
                 setColumns(schemaName, tableName);
             }
             return db.getAllColumns(schemaName, tableName);
+        }
+    }
+
+    /* get all columns of given table in schema
+     * column string is formatted
+     */
+    public Vector<DbColumn> getAllDbColumns(String schemaName, String tableName) {
+        Vector<DbColumn> allcols = new Vector<DbColumn>();
+
+        if (tableName == null) {
+                Vector<String> allTables = getAllTables(schemaName);
+
+                for (int i = 0; i < allTables.size(); i++) {
+                    String tab = allTables.get(i);
+                    Vector<DbColumn> cols;
+                    if (tab.indexOf(LEVEL_SEPARATOR) == -1) {
+                        cols = getAllDbColumns(schemaName, tab);
+                    } else {
+                        String [] names = tab.split(LEVEL_SEPARATOR);
+                        cols = getAllDbColumns(names[0], names[1]);
+                    }
+                    allcols.addAll(cols);
+                }
+            return allcols;
+        } else {
+            if (!db.hasColumns(schemaName, tableName)) {
+                setColumns(schemaName, tableName);
+            }
+            return db.getAllDbColumns(schemaName, tableName);
         }
     }
 
@@ -920,6 +951,35 @@ public class JDBCMetaData {
                 }
                 // return a vector of "col name" string objects if schema is given
                 f.addAll(t.colsDataType.keySet());
+            }
+            return f;
+        }
+
+        private Vector<DbColumn> getAllDbColumns(String sname, String tableName) {
+            Vector<DbColumn> f = new Vector<DbColumn>();
+
+            if (sname == null || sname.equals("")) {
+                TableTracker tracker = tables.get(tableName);
+
+                if (tracker == null) {
+                    return f;
+                }
+
+                for (DbTable t : tracker.namedTable) {
+                    for (Map.Entry<String, DbColumn> c : t.colsDataType.entrySet()) {
+                        f.add(c.getValue());
+                    }
+                }
+            } else {
+                DbTable t = getTable(sname, tableName);
+
+                if (t == null) {
+                    return f;
+                }
+
+                for (Map.Entry<String, DbColumn> c : t.colsDataType.entrySet()) {
+                    f.add(c.getValue());
+                }
             }
             return f;
         }

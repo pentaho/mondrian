@@ -17,6 +17,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.MutableTreeNode;
+import mondrian.gui.JDBCMetaData.DbColumn;
 import org.apache.log4j.Logger;
 
 /**
@@ -120,15 +121,13 @@ public class JDBCExplorer extends javax.swing.JPanel
 
         Enumeration children = theTreeNode.children();
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(message + ": " + theNode + ", " + theNode.type
-                    + ", parent " + theParentNode +
-                    (theParentNode == null ? "" : ", " + theParentNode.type));
-            while (children.hasMoreElements()) {
-                Object o = children.nextElement();
-                Node child = (Node) ((DefaultMutableTreeNode) o).getUserObject();
-                LOGGER.debug("\t" + child.toString() + ", " + child.type);
-            }
+        LOGGER.debug(message + ": " + theNode + ", " + theNode.type
+                + ", parent " + theParentNode +
+                (theParentNode == null ? "" : ", " + theParentNode.type));
+        while (children.hasMoreElements()) {
+            Object o = children.nextElement();
+            Node child = (Node) ((DefaultMutableTreeNode) o).getUserObject();
+            LOGGER.debug("\t" + child.toString() + ", " + child.type);
         }
     }
 
@@ -227,11 +226,10 @@ public class JDBCExplorer extends javax.swing.JPanel
 
                     // This is a table, parent is a schema
 
-                    Vector<String> columnNames = jdbcMetaData.getAllColumns(theParentNode.name, name);
-                    for (String columnName : columnNames) {
-                        JDBCMetaData.DbColumn columnInfo = jdbcMetaData.getColumnDefinition(theParentNode.name, name, columnName);
-                        Node column = new Node(columnName, NodeType.COLUMN, treeNode, columnInfo);
-                        MutableTreeNode columnTreeNode = new DefaultMutableTreeNode(column, false);
+                    Vector<DbColumn> columns = jdbcMetaData.getAllDbColumns(theParentNode.name, name);
+                    for (DbColumn column : columns) {
+                        Node columnNode = new Node(column.name, NodeType.COLUMN, treeNode, column);
+                        MutableTreeNode columnTreeNode = new DefaultMutableTreeNode(columnNode, false);
                         treeNode.add(columnTreeNode);
                     }
                 }
