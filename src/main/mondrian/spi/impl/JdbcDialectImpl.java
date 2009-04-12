@@ -28,6 +28,16 @@ import java.sql.Date;
  * specific dialect. JdbcDialectImpl reads properties from the JDBC driver's
  * metadata, so can deduce some of the dialect's behavior.</p>
  *
+ * <p>Implementing a Dialect will include changing the getProduct method in this
+ * class and changing the list of Dialects in the {@link Dialect} interface. If
+ * dialect specific SQL is required in the schema, the Mondrian schema will need
+ * to be updated.</p>
+ *
+ * <p>Note that subclasses of JdbcDialectImpl will be instantiated with JDBC
+ * connections that are not of the actual database product the subclass
+ * supports. This is done as part of determining the correct dialect for the
+ * connection.</p>
+ *
  * @author jhyde
  * @version $Id$
  * @since Oct 10, 2008
