@@ -44,7 +44,7 @@ application with the embedded test database</a>
   </li>
   <li><a href="#5_How_to_configure_Mondrian_as_an_XMLA_provider">How to
 configure Mondrian as an XML/A provider</a><ol>
-  <li><a href="#5_1_Describe_the_data_sources_in_datasources.xml">Describe the 
+  <li><a href="#5_1_Describe_the_data_sources_in_datasources.xml">Describe the
   data sources in <code>datasources.xml</code></a></li>
   <li><a href="#5_2_Configure_XmlaServlet_in_your_web.xml">Configure <code>
   XmlaServlet</code> in your <code>web.xml</code></a></li>
@@ -159,12 +159,12 @@ log4j:WARN Please initialize the log4j system properly.</code>
 &nbsp;&nbsp;&nbsp; -jdbcDrivers=&lt;jdbcDrivers&gt;<br>
 &nbsp;&nbsp;&nbsp; -outputJdbcURL=&lt;jdbcURL&gt;<br>
 &nbsp;&nbsp;&nbsp; [ [ [-outputJdbcUser=user]
-[-outputJdbcPassword=password] [-outputJdbcBatchSize=&lt;batch
+[-outputJdbcPassword=password] [-outputJdbcSchema=schema] [-outputJdbcBatchSize=&lt;batch
 size&gt;] ]<br>
 &nbsp;&nbsp;&nbsp; | -outputDirectory=&lt;directory name&gt;<br>
 &nbsp;&nbsp;&nbsp; ]<br>
 &nbsp;&nbsp;&nbsp; [ [-inputJdbcURL=&lt;jdbcURL&gt;
-[-inputJdbcUser=user] [-inputJdbcPassword=password] ]<br>
+[-inputJdbcUser=user] [-inputJdbcPassword=password] [-inputJdbcSchema=schema] ]<br>
 &nbsp;&nbsp;&nbsp; | [-inputFile=&lt;file name&gt;]<br>
 &nbsp;&nbsp;&nbsp; ]</code>
 </blockquote>
@@ -226,6 +226,11 @@ argument to the <code>java</code> command).</td>
         <td style="vertical-align: top;">Password for target database</td>
       </tr>
       <tr>
+        <td style="vertical-align: top;"><code>-outputJdbcSchema=<i>&lt;schema&gt;</i></code></td>
+        <td style="vertical-align: top;">Optional. For databases that use schemas, the destination schema. If not provided,
+        the default schema for the user/database will be used.</td>
+      </tr>
+      <tr>
         <td style="vertical-align: top;" nowrap="nowrap"><code>-outputDirectory=<i>&lt;directory
 name&gt;</i></code></td>
         <td style="vertical-align: top;">Optional. Directory where DB
@@ -253,6 +258,11 @@ used.</td>
         <td style="vertical-align: top;">Password for source database</td>
       </tr>
       <tr>
+        <td style="vertical-align: top;"><code>-inputJdbcSchema=<i>&lt;schema&gt;</i></code></td>
+        <td style="vertical-align: top;">Optional. For databases that use schemas, the source schema. If not provided,
+        the default schema for the user/database will be used.</td>
+      </tr>
+      <tr>
         <td style="vertical-align: top;"><code>-inputFile=<i>&lt;file
 name&gt;</i></code></td>
         <td style="vertical-align: top;">Optional. If no input DB
@@ -274,13 +284,13 @@ source and target data sources.</p>
 <p>The following example is a Linux command line to
 create a MySQL schema called 'foodmart', and create
 FoodMart tables from the test dataset in the SQL
-scripts. First, create a <code>foodmart</code> database and a <code>foodmart</code> 
+scripts. First, create a <code>foodmart</code> database and a <code>foodmart</code>
 user:</p>
 
 <blockquote>
   <code><i><b>$</b></i> mysqladmin create foodmart<b><i><br>
   $</i></b> mysql<b><br>
-  <i>mysql&gt;</i> grant all privileges on *.* to 'foodmart'@'localhost' identified 
+  <i>mysql&gt;</i> grant all privileges on *.* to 'foodmart'@'localhost' identified
   by 'foodmart';<br>
   <i>Query OK, 0 rows affected (0.00 sec)<br>
   <br>
@@ -343,27 +353,27 @@ trivially succeed.</p>
   <li>Install Tomcat (version 5.0.25 or later).</li>
   <li>From the unzipped binary release, explode <code>lib/mondrian.war</code>
 to <code><i>TOMCAT_HOME</i>/webapps/mondrian</code></li>
-  <li>Create or open the mondrian.properties file in <code><i>TOMCAT_HOME</i>/webapps/mondrian</code> and customize the&nbsp; 
+  <li>Create or open the mondrian.properties file in <code><i>TOMCAT_HOME</i>/webapps/mondrian</code> and customize the&nbsp;
   <code>mondrian.jdbcDrivers</code>
 properties for the database you set up from the instructions above.</li>
   <li>Open the web.xml file in <code><i>TOMCAT_HOME</i>/webapps/mondrian/WEB-INF</code> and customize the two
-connect strings there to the same database parameters for the FoodMart database 
+connect strings there to the same database parameters for the FoodMart database
   you installed as per the above instructions. That is,
 
   <blockquote>
     <code>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;</code>
   </blockquote>
-  
+
   becomes
-  
+
   <blockquote>
       <code>Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=com.mysql.jdbc.Driver;</code>
   </blockquote>
   </li>
 
   <li>Modify the <code>fourhier.jsp</code>, <code>mondrian.jsp</code>, <code>colors.jsp</code>
-and <code>arrows.jsp </code>files in the <code><i>TOMCAT_HOME</i>/webapps/mondrian/WEB-INF/queries</code> 
-  folder. 
+and <code>arrows.jsp </code>files in the <code><i>TOMCAT_HOME</i>/webapps/mondrian/WEB-INF/queries</code>
+  folder.
   Modify the line
 
 <blockquote>
@@ -467,17 +477,17 @@ Multiple data sources and multiple catalogs</h4>
 
 <p>
 If you intend to use Mondrian with Microsoft's ADOMD.NET client library or
-<a href="http://www.simba.com/Technologies/odbotoxmla.htm">Simba's O2X bridge</a>, 
-the data sources file must have precisely one <code>&lt;DataSource&gt;</code> element. 
+<a href="http://www.simba.com/Technologies/odbotoxmla.htm">Simba's O2X bridge</a>,
+the data sources file must have precisely one <code>&lt;DataSource&gt;</code> element.
 These clients will ignore all but one data source. Other XML/A clients, such as
-<a href="http://sourceforge.net/projects/whex">Rex</a>, work fine with multiple 
+<a href="http://sourceforge.net/projects/whex">Rex</a>, work fine with multiple
 data sources.</p>
 
-<p>Note that each catalog has a name attribute, and the URI (path) of an XML schema 
-file. The name of the catalog must match the name attribute in the schema file 
+<p>Note that each catalog has a name attribute, and the URI (path) of an XML schema
+file. The name of the catalog must match the name attribute in the schema file
 (for example <code>&lt;Schema name=&quot;FoodMart&quot;&gt;</code>).</p>
 
-<p>Whether&nbsp; you use one data source or several, the catalogs in the <code>datasources.xml</code> file must 
+<p>Whether&nbsp; you use one data source or several, the catalogs in the <code>datasources.xml</code> file must
 have unique names.</p>
 
 <h3>5.2. Configure XmlaServlet in your <code>web.xml</code><a name="5_2_Configure_XmlaServlet_in_your_web.xml">&nbsp;</a></h3>
@@ -495,7 +505,7 @@ have unique names.</p>
 
 <h3>6.1. Configuring <code>mondrian.properties</code><a name="6_1_mondrian_properties">&nbsp;</a></h3>
 
-<p>Properties are described in the <a href="configuration.html">Configuration 
+<p>Properties are described in the <a href="configuration.html">Configuration
 Guide</a>.</p>
 
 <h3>6.2. Cache setup<a name="6_2_Cache_setup">&nbsp;</a></h3>
@@ -568,8 +578,8 @@ connect string.</p>
     <br>
     &gt; <code>perl -pi -e &quot;s/:00\.0/:00/g&quot; FoodMartCreateData.sql</code><br>
     <br>
-    That drops the &quot;.0&quot; off each timestamp to make it a valid DATE. Our next 
-    release will support timestamps, so this is a short-term fix that could go 
+    That drops the &quot;.0&quot; off each timestamp to make it a valid DATE. Our next
+    release will support timestamps, so this is a short-term fix that could go
     into Release Notes.</p>
 </blockquote>
 
@@ -605,7 +615,7 @@ connect string.</p>
 <p><a href="http://forums.pentaho.org/showthread.php?t=47918">mizar_sf writes</a>:</p>
 <blockquote>
 
-  <p>I tried some solutions to get mondrian (I used 2.1RC) connected with a Sybase 
+  <p>I tried some solutions to get mondrian (I used 2.1RC) connected with a Sybase
   ASE [version 12.5] server. Finally I found this solutions:</p>
   <ul>
     <li>Downloaded a jdbc3 compliant driver like jtds-1.2.jar from sourceforge.</li>
@@ -616,7 +626,7 @@ connect string.</p>
     I modified the parameters line in this way:<blockquote>
       <code>Provider=mondrian; JdbcUser=userName; JdbcPassword=userPass; Jdbc=jdbc:jtds:sybase://xxx.xxx.xxx.xxx:port/dbName; JdbcDrivers=net.sourceforge.jtds.jdbc.Driver; Catalog=/WEB-INF/queries/myCatalog.xml</code>
     </blockquote>
-    (The datasources.xml doesn't need to be modified if you are only testing 
+    (The datasources.xml doesn't need to be modified if you are only testing
     the db, but if you are using something like OPENI you have to.)</li>
   </ul>
 </blockquote>

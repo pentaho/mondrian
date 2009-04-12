@@ -235,7 +235,9 @@ the test. The important properties are:</p>
 </table>
 
 <p>There is a target in the build script, load-foodmart, that will load the Foodmart data into an empty
-database configured through your mondrian.properties settings.</p>
+database configured through your mondrian.properties settings. For this target, you can set an additional property
+in mondrian.properties, mondrian.foodmart.jdbcSchema=&lt;your schema&gt; if you are using a database that
+supports schemas and you want to load Foodmart into a particular schema.</p>
 
 
 <h2>Running the test suite<a name="6_Run_the_test_suite">&nbsp;</a></h2>

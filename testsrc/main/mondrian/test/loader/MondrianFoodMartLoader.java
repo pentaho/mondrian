@@ -105,9 +105,11 @@ public class MondrianFoodMartLoader {
     private String jdbcURL;
     private String userName;
     private String password;
+    private String schema = null;
     private String inputJdbcURL;
     private String inputUserName;
     private String inputPassword;
+    private String inputSchema = null;
     private String inputFile;
     private String outputDirectory;
     private boolean aggregates = false;
@@ -135,7 +137,7 @@ public class MondrianFoodMartLoader {
     private final Map<String, List<UniqueConstraint>> tableConstraints =
         new HashMap<String, List<UniqueConstraint>>();
     private Dialect dialect;
-    private boolean batchFile;
+    private boolean infobrightLoad;
     private long lastUpdate = 0;
 
     /**
@@ -195,12 +197,22 @@ public class MondrianFoodMartLoader {
                 userName = arg.substring("-outputJdbcUser=".length());
             } else if (arg.startsWith("-outputJdbcPassword=")) {
                 password = arg.substring("-outputJdbcPassword=".length());
+            } else if (arg.startsWith("-outputJdbcSchema=")) {
+                schema = arg.substring("-outputJdbcSchema=".length());
+                if (schema.trim().length() == 0) {
+                    schema = null;
+                }
             } else if (arg.startsWith("-inputJdbcURL=")) {
                 inputJdbcURL = arg.substring("-inputJdbcURL=".length());
             } else if (arg.startsWith("-inputJdbcUser=")) {
                 inputUserName = arg.substring("-inputJdbcUser=".length());
             } else if (arg.startsWith("-inputJdbcPassword=")) {
                 inputPassword = arg.substring("-inputJdbcPassword=".length());
+            } else if (arg.startsWith("-inputJdbcSchema=")) {
+                inputSchema = arg.substring("-inputJdbcSchema=".length());
+                if (inputSchema.trim().length() == 0) {
+                    inputSchema = null;
+                }
             } else if (arg.startsWith("-inputFile=")) {
                 inputFile = arg.substring("-inputFile=".length());
             } else if (arg.startsWith("-outputDirectory=")) {
@@ -253,11 +265,13 @@ public class MondrianFoodMartLoader {
                 "-outputJdbcURL=<jdbcURL> " +
                 "[-outputJdbcUser=user] " +
                 "[-outputJdbcPassword=password] " +
+                "[-outputJdbcSchema=schema] " +
                 "[-outputJdbcBatchSize=<batch size>] " +
                 "| " +
                 "[-outputDirectory=<directory name>] " +
                 "[" +
-                "   [-inputJdbcURL=<jdbcURL> [-inputJdbcUser=user] [-inputJdbcPassword=password]]" +
+                "   [-inputJdbcURL=<jdbcURL> [-inputJdbcUser=user] " +
+                " [-inputJdbcPassword=password] [-inputJdbcSchema=schema]]" +
                 "   | " +
                 "   [-inputfile=<file name>]" +
                 "]",
@@ -267,6 +281,7 @@ public class MondrianFoodMartLoader {
             "  [password]            JDBC password for user for DB.",
             "                        If no source DB parameters are given, assumes data",
             "                        comes from file.",
+            "  [schema]              schema overriding connection defaults",
             "  [file name]           File containing test data - INSERT statements in MySQL",
             "                        format. If no input file name or input JDBC parameters",
             "                        are given, assume insert statements come from",
@@ -487,11 +502,11 @@ public class MondrianFoodMartLoader {
         }
 
         if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.INFOBRIGHT) {
-            batchFile = true;
+            infobrightLoad = true;
             file = File.createTempFile("tmpfile", ".csv");
             fileOutput = new FileWriter(file);
         } else {
-            batchFile = false;
+            infobrightLoad = false;
             if (outputDirectory != null) {
                 file = new File(outputDirectory, "createData.sql");
                 fileOutput = new FileWriter(file);
@@ -561,7 +576,7 @@ public class MondrianFoodMartLoader {
                     afterTable(prevTable, tableRowCount);
                     tableRowCount = 0;
                     prevTable = tableName;
-                    quotedTableName = quoteId(tableName);
+                    quotedTableName = quoteId(schema, tableName);
                     quotedColumnNames =
                         columnNames.replaceAll(
                             quoteChar,
@@ -595,7 +610,7 @@ public class MondrianFoodMartLoader {
                     Thread.sleep(pauseMillis);
                 }
 
-                if (batchFile) {
+                if (infobrightLoad) {
                     massagedLine.setLength(0);
                     getMassagedValues(massagedLine, orderedColumns, values);
                     fileOutput.write(
@@ -659,16 +674,20 @@ public class MondrianFoodMartLoader {
         if (table == null) {
             return;
         }
-        LOGGER.info(
-            "Table " + table +
-            ": loaded " + tableRowCount + " rows.");
-        if (!batchFile) {
+        if (!infobrightLoad) {
+            LOGGER.info(
+                "Table " + table +
+                ": loaded " + tableRowCount + " rows.");
             return;
         }
         fileOutput.close();
+        LOGGER.info(
+            "Infobright bulk load: Table " + table +
+            ": loaded " + tableRowCount + " rows.");
         final String sql = "LOAD DATA INFILE '"
-            + file.getAbsolutePath()
+            + file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\")
             + "' INTO TABLE "
+            + (schema != null ? schema + "." : "")
             + table
             + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'";
         Statement statement = null;
@@ -870,6 +889,9 @@ public class MondrianFoodMartLoader {
                 if (line.charAt(line.length() - 1) == ';') {
                     buf.append(" ")
                         .append(line.substring(0, line.length() - 1));
+
+                    buf = updateSQLLineForSchema(buf);
+
                     executeDDL(buf.toString());
                     buf.setLength(0);
 
@@ -887,6 +909,65 @@ public class MondrianFoodMartLoader {
                 is.close();
             }
         }
+    }
+
+    private StringBuilder updateSQLLineForSchema(StringBuilder buf) {
+        if (schema == null) {
+            return buf;
+        }
+
+        final String INSERT_INTO_CLAUSE = "INSERT INTO ";
+
+        // Replace INSERT INTO "table" with
+        // INSERT INTO "schema"."table"
+        // Case has to match!
+
+        StringBuilder insertSb = insertSchema(buf, INSERT_INTO_CLAUSE,
+                                                true, true);
+
+        // Prepend schema to all known table names.
+        // These will be in the FROM clause
+        // Case has to match!
+
+        for (String tableName : tableMetadataToLoad.keySet()) {
+            insertSb = insertSchema(insertSb, quoteId(tableName),
+                                                false, false);
+        }
+
+        LOGGER.debug(insertSb.toString());
+        return insertSb;
+    }
+
+    private StringBuilder insertSchema(StringBuilder sb,
+            String toFind, boolean mandatory, boolean insertBefore) {
+        int pos = sb.indexOf(toFind);
+
+        if (pos < 0) {
+            if (mandatory) {
+                throw new RuntimeException("insert.sql error: No insert clause in " +
+                    sb.toString());
+            } else {
+                return sb;
+            }
+        }
+
+        StringBuilder insertSb = new StringBuilder();
+
+        if (insertBefore) {
+            insertSb.append(sb.substring(0, pos))
+                .append(toFind)
+                .append(quoteId(schema))
+                .append(".")
+                .append(sb.substring(pos + toFind.length()));
+        } else {
+            insertSb.append(sb.substring(0, pos))
+                .append(quoteId(schema))
+                .append(".")
+                .append(toFind)
+                .append(sb.substring(pos + toFind.length()));
+        }
+
+        return insertSb;
     }
 
     /**
@@ -917,8 +998,10 @@ public class MondrianFoodMartLoader {
             }
             buf.append(quoteId(dialect, column.name));
         }
+
         buf.append(" from ")
-            .append(quoteId(dialect, name));
+            .append(quoteId(dialect, inputSchema, name));
+
         String ddl = buf.toString();
         Statement statement = null;
         ResultSet rs = null;
@@ -995,7 +1078,7 @@ public class MondrianFoodMartLoader {
         StringBuilder buf = new StringBuilder();
 
         buf.append("INSERT INTO ")
-            .append(quoteId(name))
+            .append(quoteId(schema, name))
             .append(" (");
         for (int i = 0; i < columns.length; i++) {
             Column column = columns[i];
@@ -1355,13 +1438,13 @@ public class MondrianFoodMartLoader {
             if (jdbcOutput && !tables) {
                 try {
                     buf.append("DROP INDEX ")
-                        .append(quoteId(indexName));
+                        .append(quoteId(schema, indexName));
                     switch (dialect.getDatabaseProduct()) {
                     case MYSQL:
                     case INFOBRIGHT:
                     case TERADATA:
                         buf.append(" ON ")
-                            .append(quoteId(tableName));
+                            .append(quoteId(schema, tableName));
                         break;
                     }
                     final String deleteDDL = buf.toString();
@@ -1375,7 +1458,7 @@ public class MondrianFoodMartLoader {
             buf.append(isUnique ? "CREATE UNIQUE INDEX " : "CREATE INDEX ")
                 .append(quoteId(indexName));
             if (dialect.getDatabaseProduct() != Dialect.DatabaseProduct.TERADATA) {
-                buf.append(" ON ").append(quoteId(tableName));
+                buf.append(" ON ").append(quoteId(schema, tableName));
             }
             buf.append(" (");
             for (int i = 0; i < columnNames.length; i++) {
@@ -1387,7 +1470,7 @@ public class MondrianFoodMartLoader {
             }
             buf.append(")");
             if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.TERADATA) {
-                buf.append(" ON ").append(quoteId(tableName));
+                buf.append(" ON ").append(quoteId(schema, tableName));
             }
             final String createDDL = buf.toString();
             executeDDL(createDDL);
@@ -1921,7 +2004,7 @@ public class MondrianFoodMartLoader {
                     // We're going to load the data without [re]creating
                     // the table, so let's remove the data.
                     try {
-                        executeDDL("DELETE FROM " + quoteId(name));
+                        executeDDL("DELETE FROM " + quoteId(schema, name));
                     } catch (SQLException e) {
                         throw MondrianResource.instance().CreateTableFailed.ex(name, e);
                     }
@@ -1935,14 +2018,14 @@ public class MondrianFoodMartLoader {
             }
             // If table does not exist, that is OK
             try {
-                executeDDL("DROP TABLE " + quoteId(name));
+                executeDDL("DROP TABLE " + quoteId(schema, name));
             } catch (Exception e) {
                 LOGGER.debug("Drop of " + name + " failed. Ignored");
             }
 
             // Define the table.
             StringBuilder buf = new StringBuilder();
-            buf.append("CREATE TABLE ").append(quoteId(name)).append("(");
+            buf.append("CREATE TABLE ").append(quoteId(schema, name)).append("(");
 
             for (int i = 0; i < columns.length; i++) {
                 Column column = columns[i];
@@ -2034,6 +2117,22 @@ public class MondrianFoodMartLoader {
      */
     private String quoteId(Dialect dialect, String name) {
         return dialect.quoteIdentifier(name);
+    }
+
+    /**
+     * Quote the given SQL identifier suitable for the output DBMS,
+     * with schema.
+     */
+    private String quoteId(String schemaName, String name) {
+        return quoteId(dialect, schemaName, name);
+    }
+
+    /**
+     * Quote the given SQL identifier suitable for the given DBMS type,
+     * with schema.
+     */
+    private String quoteId(Dialect dialect, String schemaName, String name) {
+        return dialect.quoteIdentifier(schemaName, name);
     }
 
     /**
