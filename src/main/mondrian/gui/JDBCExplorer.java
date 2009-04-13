@@ -217,7 +217,7 @@ public class JDBCExplorer extends javax.swing.JPanel
             return sb.toString();
         }
 
-        public Enumeration setChildren() {
+        public void setChildren() {
             if (!gotChildren) {
                 if (type == NodeType.TABLE) {
                     DefaultMutableTreeNode theParentTreeNode = (DefaultMutableTreeNode) treeNode.getParent();
@@ -235,7 +235,6 @@ public class JDBCExplorer extends javax.swing.JPanel
                 }
             }
             gotChildren = true;
-            return treeNode.children();
         }
     }
 

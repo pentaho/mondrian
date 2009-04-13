@@ -2544,10 +2544,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             for (parentIndex = tpath.getPathCount() - 1;
                  parentIndex >= 0;
                  parentIndex--) {
-                Object o = tpath.getPathComponent(parentIndex);
-                if (o instanceof MondrianGuiDef.Hierarchy ||
-                       o instanceof MondrianGuiDef.Cube) {
-                    path = 0;
+                Object obj = tpath.getPathComponent(parentIndex);
+                if (obj instanceof MondrianGuiDef.Hierarchy ||
+                       obj instanceof MondrianGuiDef.Cube) {
+                    path = obj;
                     break;
                 }
             }
