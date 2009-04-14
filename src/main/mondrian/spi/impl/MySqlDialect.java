@@ -11,6 +11,7 @@ package mondrian.spi.impl;
 import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 
+import javax.sql.DataSource;
 import java.util.List;
 import java.sql.*;
 
@@ -26,7 +27,27 @@ public class MySqlDialect extends JdbcDialectImpl {
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
             MySqlDialect.class,
-            DatabaseProduct.MYSQL);
+            DatabaseProduct.MYSQL)
+        {
+            @Override
+            public Dialect createDialect(
+                DataSource dataSource,
+                Connection connection)
+            {
+                final Dialect dialect =
+                    super.createDialect(
+                        dataSource, connection);
+                // Infobright looks a lot like MySQL. If this is an Infobright
+                // connection, yield to the Infobright dialect.
+                if (dialect != null &&
+                    dialect instanceof MySqlDialect &&
+                    ((MySqlDialect) dialect).getDatabaseProduct() ==
+                    DatabaseProduct.INFOBRIGHT) {
+                    return null;
+                }
+                return dialect;
+            }
+        };
 
     /**
      * Creates a MySqlDialect.
@@ -52,16 +73,8 @@ public class MySqlDialect extends JdbcDialectImpl {
     {
         Statement statement = null;
         try {
-            String productName =
-                databaseMetaData.getDatabaseProductName();
             String productVersion =
                 databaseMetaData.getDatabaseProductVersion();
-
-            if (JdbcDialectImpl.getProduct(productName, productVersion) !=
-                    DatabaseProduct.MYSQL) {
-                return false;
-            }
-
             if (productVersion.compareTo("5.1") >= 0) {
                 statement = databaseMetaData.getConnection().createStatement();
                 final ResultSet resultSet =

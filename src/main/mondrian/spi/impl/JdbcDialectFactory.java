@@ -110,17 +110,6 @@ public class JdbcDialectFactory implements DialectFactory {
         }
     }
 
-    /**
-     * Generate a valid dialect for the connection, or null if
-     * the connection is not for the given DatabaseProduct.
-     *
-     * Instantiates a Dialect and tests it. Dialects may run queries and other
-     * operations to determine the database product behind the connection.
-     *
-     * @param dataSource JDBC data source, if null need connection
-     * @param connection JDBC connection, if null nee data source
-     * @return Dialect, or null if factory cannot create suitable dialect
-     */
     public Dialect createDialect(DataSource dataSource, Connection connection) {
         // If connection is null, create a temporary connection and
         // recursively call this method.
@@ -129,26 +118,40 @@ public class JdbcDialectFactory implements DialectFactory {
         }
 
         assert connection != null;
-
-        Dialect newDialect = null;
-        try {
-            newDialect = constructor.newInstance(connection);
-        } catch (InstantiationException e) {
-            throw Util.newError(
-                e, "Error while instantiating dialect");
-        } catch (IllegalAccessException e) {
-            throw Util.newError(
-                e, "Error while instantiating dialect");
-        } catch (InvocationTargetException e) {
-            throw Util.newError(
-                e, "Error while instantiating dialect");
+        if (acceptsConnection(connection)) {
+            try {
+                return constructor.newInstance(connection);
+            } catch (InstantiationException e) {
+                throw Util.newError(
+                    e, "Error while instantiating dialect");
+            } catch (IllegalAccessException e) {
+                throw Util.newError(
+                    e, "Error while instantiating dialect");
+            } catch (InvocationTargetException e) {
+                throw Util.newError(
+                    e, "Error while instantiating dialect");
+            }
         }
+        return null;
+    }
 
-        if (newDialect == null ||
-                newDialect.getDatabaseProduct() != this.databaseProduct) {
-            return null;
-        } else {
-            return newDialect;
+    /**
+     * Returns whether this dialect is suitable for the given connection.
+     *
+     * @param connection Connection
+     * @return Whether suitable
+     */
+    private boolean acceptsConnection(Connection connection) {
+        try {
+            final DatabaseMetaData metaData = connection.getMetaData();
+            final String productName = metaData.getDatabaseProductName();
+            final String productVersion = metaData.getDatabaseProductVersion();
+            final Dialect.DatabaseProduct product =
+                JdbcDialectImpl.getProduct(productName, productVersion);
+            return product == this.databaseProduct;
+        } catch (SQLException e) {
+            throw Util.newError(
+                e, "Error while instantiating dialect");
         }
     }
 }

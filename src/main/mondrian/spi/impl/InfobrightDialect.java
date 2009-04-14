@@ -23,7 +23,9 @@ public class InfobrightDialect extends MySqlDialect {
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
             InfobrightDialect.class,
-            DatabaseProduct.INFOBRIGHT);
+            // While we're choosing dialects, this still looks like a MySQL
+            // connection.
+            DatabaseProduct.MYSQL);
 
     /**
      * Creates an InfobrightDialect.
@@ -32,6 +34,10 @@ public class InfobrightDialect extends MySqlDialect {
      */
     public InfobrightDialect(Connection connection) throws SQLException {
         super(connection);
+    }
+
+    public DatabaseProduct getDatabaseProduct() {
+        return DatabaseProduct.INFOBRIGHT;
     }
 
     public boolean allowsCompoundCountDistinct() {
