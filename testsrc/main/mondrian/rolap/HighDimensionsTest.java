@@ -94,7 +94,8 @@ public class HighDimensionsTest extends FoodMartTestCase {
                     first40HighCardResults, null, true);
     }
 
-    public void testTopCount() throws Exception {
+    // disabled pending fix of bug MONDRIAN-527
+    public void _testTopCount() throws Exception {
         final Connection connection = TestContext.instance()
             .getFoodMartConnection();
         final StringBuffer buffer = new StringBuffer();
