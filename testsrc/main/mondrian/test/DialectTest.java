@@ -12,15 +12,14 @@ package mondrian.test;
 import junit.framework.TestCase;
 import junit.framework.AssertionFailedError;
 
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.SQLException;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.*;
 
 import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
+import mondrian.spi.impl.MySqlDialect;
+import mondrian.spi.impl.InfobrightDialect;
 
 import javax.sql.DataSource;
 
@@ -97,6 +96,35 @@ public class DialectTest extends TestCase {
             }
         }
         return connection;
+    }
+
+    public void testMySqlVersusInfobright() throws SQLException {
+        final Dialect dialect = getDialect();
+        final Dialect.DatabaseProduct databaseProduct =
+            dialect.getDatabaseProduct();
+        final DatabaseMetaData databaseMetaData = getConnection().getMetaData();
+        switch (databaseProduct) {
+        case MYSQL:
+            // Dialect has identified that it is MySQL.
+            assertTrue(dialect instanceof MySqlDialect);
+            assertFalse(dialect instanceof InfobrightDialect);
+            assertFalse(MySqlDialect.isInfobright(databaseMetaData));
+            assertEquals("MySQL", databaseMetaData.getDatabaseProductName());
+            break;
+        case INFOBRIGHT:
+            // Dialect has identified that it is MySQL.
+            assertTrue(dialect instanceof MySqlDialect);
+            assertTrue(dialect instanceof InfobrightDialect);
+            assertTrue(MySqlDialect.isInfobright(databaseMetaData));
+            assertEquals("MySQL", databaseMetaData.getDatabaseProductName());
+            break;
+        default:
+            // Neither MySQL nor Infobright.
+            assertFalse(dialect instanceof MySqlDialect);
+            assertFalse(dialect instanceof InfobrightDialect);
+            assertNotSame("MySQL", databaseMetaData.getDatabaseProductName());
+            break;
+        }
     }
 
     public void testAllowsCompoundCountDistinct() {

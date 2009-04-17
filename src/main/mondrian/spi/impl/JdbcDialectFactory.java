@@ -141,7 +141,7 @@ public class JdbcDialectFactory implements DialectFactory {
      * @param connection Connection
      * @return Whether suitable
      */
-    private boolean acceptsConnection(Connection connection) {
+    protected boolean acceptsConnection(Connection connection) {
         try {
             final DatabaseMetaData metaData = connection.getMetaData();
             final String productName = metaData.getDatabaseProductName();

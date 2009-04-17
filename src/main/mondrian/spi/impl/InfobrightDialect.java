@@ -8,6 +8,8 @@
 */
 package mondrian.spi.impl;
 
+import mondrian.olap.Util;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -25,7 +27,18 @@ public class InfobrightDialect extends MySqlDialect {
             InfobrightDialect.class,
             // While we're choosing dialects, this still looks like a MySQL
             // connection.
-            DatabaseProduct.MYSQL);
+            DatabaseProduct.MYSQL)
+        {
+            protected boolean acceptsConnection(Connection connection) {
+                try {
+                    return super.acceptsConnection(connection)
+                        && isInfobright(connection.getMetaData());
+                } catch (SQLException e) {
+                    throw Util.newError(
+                        e, "Error while instantiating dialect");
+                }
+            }
+        };
 
     /**
      * Creates an InfobrightDialect.
