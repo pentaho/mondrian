@@ -24,6 +24,24 @@ import mondrian.spi.Dialect;
  */
 public class Bug {
     /**
+     * Whether Mondrian is 100% compatible with Microsoft Analysis Services
+     * 2005. We know that it is not, so this constant is {@code false}.
+     *
+     * <p>Use this
+     * field to flag test cases whose behavior is intentionally different from
+     * SSAS. If the behavior is <em>un</em>intentionally different and something
+     * we want to fix, log a bug, add a new {@code BugMondrianXxxFixed} constant
+     * to this class, and make the test case conditional on that constant
+     * instead.
+     *
+     * <p>See also the property
+     * {@link mondrian.olap.MondrianProperties#SsasCompatibleNaming},
+     * which allows the user to choose certain behaviors which are compatible
+     * with SSAS 2005 but incompatible with Mondrian's previous behavior.
+     */
+    public static final boolean Ssas2005Compatible = false;
+
+    /**
      * Whether
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-229">MONDRIAN-229, "NON EMPTY when hierarchy's default member is not 'all'"</a>
      * is fixed.

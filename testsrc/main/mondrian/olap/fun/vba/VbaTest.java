@@ -16,6 +16,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import mondrian.olap.InvalidArgumentException;
+import mondrian.util.Bug;
 
 /**
  * Unit tests for implementations of Visual Basic for Applications (VBA)
@@ -1062,23 +1063,105 @@ public class VbaTest extends TestCase {
     // NOTE: BuiltinFunTable already implements Left; todo: use this
     public void testLeft() {
         assertEquals("abc", Vba.left("abcxyz", 3));
+        // length=0 is OK
         assertEquals("", Vba.left("abcxyz", 0));
         // Spec says: "If greater than or equal to the number of characters in
         // string, the entire string is returned."
         assertEquals("abcxyz", Vba.left("abcxyz", 8));
         assertEquals("", Vba.left("", 3));
-        try {
-            String s = Vba.left("xyz", -2);
-            fail("expected error, got " + s);
-        } catch (RuntimeException e) {
-            assertMessage(e, "StringIndexOutOfBoundsException");
+
+        // Length<0 is illegal.
+        // Note: SSAS 2005 allows length<0, giving the same result as length=0.
+        // We favor the VBA spec over SSAS 2005.
+        if (Bug.Ssas2005Compatible) {
+            assertEquals("", Vba.left("xyz", -2));
+        } else {
+            try {
+                String s = Vba.left("xyz", -2);
+                fail("expected error, got " + s);
+            } catch (RuntimeException e) {
+                assertMessage(e, "StringIndexOutOfBoundsException");
+            }
         }
+
+        assertEquals("Hello", Vba.left("Hello World!", 5));
     }
 
     public void testLTrim() {
         assertEquals("", Vba.lTrim(""));
         assertEquals("", Vba.lTrim("  "));
         assertEquals("abc  \r", Vba.lTrim(" \n\tabc  \r"));
+    }
+
+    public void testMid() {
+        String testString = "Mid Function Demo";
+        assertEquals("Mid", Vba.mid(testString, 1, 3));
+        assertEquals("Demo", Vba.mid(testString, 14, 4));
+        // It's OK if start+length = string.length
+        assertEquals("Demo", Vba.mid(testString, 14, 5));
+        // It's OK if start+length > string.length
+        assertEquals("Demo", Vba.mid(testString, 14, 500));
+        assertEquals("Function Demo", Vba.mid(testString, 5));
+        assertEquals("o", Vba.mid("yahoo", 5, 1));
+
+        // Start=0 illegal
+        // Note: SSAS 2005 accepts start<=0, treating it as 1, therefore gives
+        // different results. We favor the VBA spec over SSAS 2005.
+        if (Bug.Ssas2005Compatible) {
+            assertEquals("Mid Function Demo", Vba.mid(testString, 0));
+            assertEquals("Mid Function Demo", Vba.mid(testString, -2));
+            assertEquals("Mid Function Demo", Vba.mid(testString, -2, 5));
+        } else {
+            try {
+                String s = Vba.mid(testString, 0);
+                fail("expected error, got " + s);
+            } catch (RuntimeException e) {
+                assertMessage(
+                    e,
+                    "Invalid parameter. Start parameter of Mid function must "
+                    + "be positive");
+            }
+            // Start<0 illegal
+            try {
+                String s = Vba.mid(testString, -2);
+                fail("expected error, got " + s);
+            } catch (RuntimeException e) {
+                assertMessage(
+                    e,
+                    "Invalid parameter. Start parameter of Mid function must "
+                    + "be positive");
+            }
+            // Start<0 illegal to 3 args version
+            try {
+                String s = Vba.mid(testString, -2, 5);
+                fail("expected error, got " + s);
+            } catch (RuntimeException e) {
+                assertMessage(
+                    e,
+                    "Invalid parameter. Start parameter of Mid function must "
+                    + "be positive");
+            }
+        }
+
+        // Length=0 OK
+        assertEquals("", Vba.mid(testString, 14, 0));
+
+        // Length<0 illegal
+        // Note: SSAS 2005 accepts length<0, treating it as 0, therefore gives
+        // different results. We favor the VBA spec over SSAS 2005.
+        if (Bug.Ssas2005Compatible) {
+            assertEquals("", Vba.mid(testString, 14, -1));
+        } else {
+            try {
+                String s = Vba.mid(testString, 14, -1);
+                fail("expected error, got " + s);
+            } catch (RuntimeException e) {
+                assertMessage(
+                    e,
+                    "Invalid parameter. Length parameter of Mid function must "
+                    + "be non-negative");
+            }
+        }
     }
 
     public void testMonthName() {
@@ -1133,17 +1216,28 @@ public class VbaTest extends TestCase {
 
     public void testRight() {
         assertEquals("xyz", Vba.right("abcxyz", 3));
+        // length=0 is OK
         assertEquals("", Vba.right("abcxyz", 0));
         // Spec says: "If greater than or equal to the number of characters in
         // string, the entire string is returned."
         assertEquals("abcxyz", Vba.right("abcxyz", 8));
         assertEquals("", Vba.right("", 3));
-        try {
-            String s = Vba.right("xyz", -2);
-            fail("expected error, got " + s);
-        } catch (RuntimeException e) {
-            assertMessage(e, "StringIndexOutOfBoundsException");
+
+        // The VBA spec says that length<0 is error.
+        // Note: SSAS 2005 allows length<0, giving the same result as length=0.
+        // We favor the VBA spec over SSAS 2005.
+        if (Bug.Ssas2005Compatible) {
+            assertEquals("", Vba.right("xyz", -2));
+        } else {
+            try {
+                String s = Vba.right("xyz", -2);
+                fail("expected error, got " + s);
+            } catch (RuntimeException e) {
+                assertMessage(e, "StringIndexOutOfBoundsException");
+            }
         }
+
+        assertEquals("World!", Vba.right("Hello World!", 6));
     }
 
     public void testRTrim() {

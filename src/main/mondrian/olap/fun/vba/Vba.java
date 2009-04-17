@@ -2,7 +2,7 @@
  // This software is subject to the terms of the Common Public License
  // Agreement, available at the following URL:
  // http://www.opensource.org/licenses/cpl.html.
- // Copyright (C) 2007-2008 Julian Hyde
+ // Copyright (C) 2007-2009 Julian Hyde
  // All Rights Reserved.
  // You must accept the terms of that agreement to use this software.
  */
@@ -21,6 +21,10 @@ import java.text.*;
  * Implementations of functions in the Visual Basic for Applications (VBA)
  * specification.
  *
+ * <p>The functions are defined in
+ * <a href="http://msdn.microsoft.com/en-us/library/32s6akha(VS.80).aspx">MSDN
+ * </a>.
+ *
  * @author jhyde
  * @version $Id$
  * @since Dec 31, 2007
@@ -29,7 +33,7 @@ public class Vba {
     private static final long MILLIS_IN_A_DAY = 24 * 60 * 60 * 1000;
 
     private static final DateFormatSymbols DATE_FORMAT_SYMBOLS
-                            = new DateFormatSymbols(Locale.getDefault());
+        = new DateFormatSymbols(Locale.getDefault());
 
     // Conversion
 
@@ -1659,22 +1663,25 @@ public class Vba {
     @Signature("Mid(value, beginIndex[, length])")
     @Description("Returns a specified number of characters from a string.")
     public static String mid(String value, int beginIndex, int length) {
-        if (beginIndex < 0) {
-            throw new InvalidArgumentException("Invalid parameter. "
-                    + "Start parameter of Mid function can't " + "be negative");
+        // Arguments are 1-based. Spec says that the function gives an error if
+        // Start <= 0 or Length < 0.
+        if (beginIndex <= 0) {
+            throw new InvalidArgumentException(
+                "Invalid parameter. "
+                + "Start parameter of Mid function must be positive");
         }
         if (length < 0) {
-            throw new InvalidArgumentException("Invalid parameter. "
-                    + "Length parameter of Mid function can't " + "be negative");
+            throw new InvalidArgumentException(
+                "Invalid parameter. "
+                + "Length parameter of Mid function must be non-negative");
         }
 
-        if (beginIndex >= value.length()) {
+        if (beginIndex > value.length()) {
             return "";
         }
 
-        if (beginIndex != 0) {
-            --beginIndex;
-        }
+        // Shift from 1-based to 0-based.
+        --beginIndex;
         int endIndex = beginIndex + length;
         return endIndex >= value.length() ? value.substring(beginIndex) : value
                 .substring(beginIndex, endIndex);

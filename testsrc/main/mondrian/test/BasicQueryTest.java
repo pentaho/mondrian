@@ -3374,12 +3374,86 @@ public class BasicQueryTest extends FoodMartTestCase {
      * those members from the Product dimension that contain the substring
      * "fruit" in their names.
      */
-    public void _testStringComparisons() {
+    public void testStringComparisons() {
         assertQueryReturns(
-                "SELECT {Measures.[Unit Sales]} ON COLUMNS,\n" +
-                "  FILTER([Product].[Product Name].MEMBERS,\n" +
-                "         INSTR(LCASE([Product].CURRENTMEMBER.NAME), \"fruit\") <> 0) ON ROWS \n" +
-                "FROM Sales", "");
+            "SELECT {Measures.[Unit Sales]} ON COLUMNS,\n" +
+            "  FILTER([Product].[Product Name].MEMBERS,\n" +
+            "         INSTR(LCASE([Product].CURRENTMEMBER.NAME), \"fruit\") <> 0) ON ROWS \n" +
+            "FROM Sales",
+            fold(
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Product].[All Products].[Food].[Canned Products].[Fruit].[Canned Fruit].[Applause].[Applause Canned Mixed Fruit]}\n"
+                + "{[Product].[All Products].[Food].[Canned Products].[Fruit].[Canned Fruit].[Big City].[Big City Canned Mixed Fruit]}\n"
+                + "{[Product].[All Products].[Food].[Canned Products].[Fruit].[Canned Fruit].[Green Ribbon].[Green Ribbon Canned Mixed Fruit]}\n"
+                + "{[Product].[All Products].[Food].[Canned Products].[Fruit].[Canned Fruit].[Swell].[Swell Canned Mixed Fruit]}\n"
+                + "{[Product].[All Products].[Food].[Canned Products].[Fruit].[Canned Fruit].[Toucan].[Toucan Canned Mixed Fruit]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Best Choice].[Best Choice Apple Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Best Choice].[Best Choice Grape Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Best Choice].[Best Choice Raspberry Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Best Choice].[Best Choice Strawberry Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fast].[Fast Apple Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fast].[Fast Grape Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fast].[Fast Raspberry Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fast].[Fast Strawberry Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Apple Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Grape Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Strawberry Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Horatio].[Horatio Apple Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Horatio].[Horatio Grape Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Horatio].[Horatio Raspberry Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Horatio].[Horatio Strawberry Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Nationeel].[Nationeel Apple Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Nationeel].[Nationeel Grape Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Nationeel].[Nationeel Raspberry Fruit Roll]}\n"
+                + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Nationeel].[Nationeel Strawberry Fruit Roll]}\n"
+                + "Row #0: 205\n"
+                + "Row #1: 204\n"
+                + "Row #2: 142\n"
+                + "Row #3: 204\n"
+                + "Row #4: 187\n"
+                + "Row #5: 174\n"
+                + "Row #6: 114\n"
+                + "Row #7: 110\n"
+                + "Row #8: 150\n"
+                + "Row #9: 149\n"
+                + "Row #10: 173\n"
+                + "Row #11: 163\n"
+                + "Row #12: 154\n"
+                + "Row #13: 181\n"
+                + "Row #14: 178\n"
+                + "Row #15: 210\n"
+                + "Row #16: 189\n"
+                + "Row #17: 177\n"
+                + "Row #18: 191\n"
+                + "Row #19: 149\n"
+                + "Row #20: 169\n"
+                + "Row #21: 185\n"
+                + "Row #22: 216\n"
+                + "Row #23: 167\n"
+                + "Row #24: 138\n"));
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-539">MONDRIAN-539,
+     * "Problem with the MID function getting last character in a string."</a>.
+     */
+    public void testMid() {
+        assertQueryReturns(
+            "with\n"
+            + "member measures.x as 'Mid(\"yahoo\",5, 1)'\n"
+            + "select {measures.x} ON COLUMNS from [Sales] ",
+            fold(
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[x]}\n"
+                + "Row #0: o\n"));
     }
 
     /**

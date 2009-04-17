@@ -591,6 +591,7 @@ public class TestContext {
             if (cubeName.indexOf(' ') >= 0) {
                 cubeName = Util.quoteMdxIdentifier(cubeName);
             }
+            expression = Util.replace(expression, "'", "''");
             Result result = executeQuery(
                 "with member [Measures].[Foo] as '" +
                     expression +

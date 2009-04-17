@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2008-2008 Julian Hyde
+// Copyright (C) 2008-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -459,6 +459,26 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             "select [Measures].[Unit Sales] on 0,\n" +
                 "  [Products].[Food] on 1\n" +
                 "from [Warehouse and Sales]");
+    }
+
+    /**
+     * Tests that time functions such as Ytd behave correctly when there are
+     * multiple time hierarchies.
+     */
+    public void testYtd() {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
+        // We use 'Generate' to establish context for Ytd without passing it
+        // an explicit argument.
+        // SSAS returns [Q1], [Q2], [Q3].
+        assertQueryReturns(
+            "select Generate(\n"
+            + "  {[Time].[Time2].[1997].[Q3]},\n"
+            + "  {Ytd()}) on 0,\n"
+            + " [Products].Children on 1\n"
+            + "from [Warehouse and Sales]",
+            "xxx");
     }
 
     public void testAxesOutOfOrder() {
