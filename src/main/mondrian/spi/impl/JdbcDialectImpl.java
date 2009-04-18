@@ -793,6 +793,8 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.ORACLE;
         } else if (productName.toUpperCase().indexOf("POSTGRE") >= 0) {
             return DatabaseProduct.POSTGRESQL;
+        } else if (productName.toUpperCase().indexOf("NETEZZA") >= 0) {
+            return DatabaseProduct.NETEZZA;
         } else if (productName.toUpperCase().equals("MYSQL (INFOBRIGHT)")) {
             return DatabaseProduct.INFOBRIGHT;
         } else if (productName.toUpperCase().equals("MYSQL")) {

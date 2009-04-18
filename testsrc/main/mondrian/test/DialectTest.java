@@ -22,6 +22,8 @@ import mondrian.spi.impl.MySqlDialect;
 import mondrian.spi.impl.InfobrightDialect;
 
 import javax.sql.DataSource;
+import mondrian.spi.impl.NetezzaDialect;
+import mondrian.spi.impl.PostgreSqlDialect;
 
 /**
  * Unit test which checks that {@link mondrian.spi.Dialect}
@@ -98,7 +100,7 @@ public class DialectTest extends TestCase {
         return connection;
     }
 
-    public void testMySqlVersusInfobright() throws SQLException {
+    public void testDialectVsDatabaseProduct() throws SQLException {
         final Dialect dialect = getDialect();
         final Dialect.DatabaseProduct databaseProduct =
             dialect.getDatabaseProduct();
@@ -117,6 +119,21 @@ public class DialectTest extends TestCase {
             assertTrue(dialect instanceof InfobrightDialect);
             assertTrue(MySqlDialect.isInfobright(databaseMetaData));
             assertEquals("MySQL", databaseMetaData.getDatabaseProductName());
+            break;
+        case POSTGRESQL:
+            // Dialect has identified that it is PostgreSQL.
+            assertTrue(dialect instanceof PostgreSqlDialect);
+            assertFalse(dialect instanceof NetezzaDialect);
+            assertTrue(databaseMetaData.getDatabaseProductName()
+                    .indexOf("PostgreSQL") >= 0);
+            break;
+        case NETEZZA:
+            // Dialect has identified that it is Netezza and a sub class of
+            // PostgreSql.
+            assertTrue(dialect instanceof PostgreSqlDialect);
+            assertTrue(dialect instanceof NetezzaDialect);
+            assertTrue(databaseMetaData.getDatabaseProductName()
+                    .indexOf("Netezza") >= 0);
             break;
         default:
             // Neither MySQL nor Infobright.
