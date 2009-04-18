@@ -361,9 +361,13 @@ public class MondrianFoodMartLoader {
         String productName = metaData.getDatabaseProductName();
         String version = metaData.getDatabaseProductVersion();
 
-        LOGGER.info("Output connection is " + productName + ", " + version);
+        LOGGER.info("Output connection is " + productName +
+                ", version: " + version);
 
         dialect = DialectManager.createDialect(null, connection);
+
+        LOGGER.info("Mondrian Dialect is " + dialect +
+                ", detected database product: " + dialect.getDatabaseProduct());
 
         if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.INFOBRIGHT
             && indexes)
@@ -2540,6 +2544,7 @@ public class MondrianFoodMartLoader {
                 switch (dialect.getDatabaseProduct()) {
                 case POSTGRESQL:
                 case LUCIDDB:
+                case NETEZZA:
                     return name;
                 case MYSQL:
                 case INFOBRIGHT:
