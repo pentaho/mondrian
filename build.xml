@@ -70,6 +70,7 @@
   <property name="workbench.jar.file" value="${lib.dir}/workbench.jar"/>
   <property name="workbench.dist.name" value="workbench-${version}"/>
   <property name="workbench.dist.file" value="${workbench.dist.name}.zip"/>
+  <property name="workbench.main.class" value="mondrian.gui.Workbench"/>
   <property name="resource.jar.file" value="${lib.dir}/eigenbase-resgen.jar"/>
   <property name="xom.jar.file" value="${lib.dir}/eigenbase-xom.jar"/>
   <property name="war.file" value="${lib.dir}/${name}.war"/>
@@ -77,9 +78,9 @@
   <property name="jdk.home" value="${env.JAVA_HOME}"/>
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
   <property name="junit.home" value="${env.JUNIT_HOME}"/>
-<!--
+
   <property name="log4j.configuration" value="log4j.properties" />
-  -->
+  
   <property name="mondrian.webapp.deploy" value="${env.JBOSS_HOME}/server/default/deploy"/>
   <property name="mondrian.retroweave" value="false"
       description="Tells mondrian to use retroweaver even if the JDK is later than 1.4"/>
@@ -194,6 +195,8 @@ demo/access/MondrianFoodMart.mdb"/>
       <include name="junit.jar"/>
     </fileset>
     <pathelement path="${driver.classpath}"/>
+    <!-- this picks up the default log4.properties -->
+    <pathelement path="${basedir}"/>
   </path>
 
   <path id="project.test.classpath-jdk14">
@@ -210,6 +213,8 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/retroweaver-rt.jar" />
     <pathelement location="${lib.dir}/backport-util-concurrent.jar" />
     <pathelement path="${driver.classpath}"/>
+    <!-- this picks up the default log4.properties -->
+    <pathelement path="${basedir}"/>
   </path>
 
   <condition property="jdk" id="jdk" value="jdk14">
@@ -239,6 +244,9 @@ demo/access/MondrianFoodMart.mdb"/>
   </condition>
 
   <path id="project.test.classpath" refid="project.test.classpath-${jdk}"/>
+
+  <available classname="${mondrian.jdbcDrivers}"
+           classpathref="project.test.classpath" property="driver.present"/>
 
   <target name="define-tasks" depends="prepare">
     <taskdef name="javacup" classname="java_cup.JavaCUPTask">
@@ -458,6 +466,14 @@ demo/access/MondrianFoodMart.mdb"/>
 
     <delete dir="${crtmp.dir}" quiet="true"/>
   </target>
+
+  <target name="cmdrunner-run" depends="jar,compile.tests">
+    <java fork="yes" classpathref="project.test.classpath" classname="mondrian.tui.CmdRunner">
+        <sysproperty key="log4j.configuration" value="${log4j.configuration}"/>
+        <!-- <arg value="-d"/> -->
+    </java>
+  </target>
+
 
     <target name="all" depends="
 compile,
@@ -1021,6 +1037,10 @@ buildJdk16.sh" />
         depends="info"
         description="load the foodmart database from the data file using the Mondrian loader. Assumes empty database exists">
 
+    <available classname="${mondrian.jdbcDrivers}"
+           classpathref="project.test.classpath" property="driver.present.for.load-foodmart"/>
+
+    <echo message="Driver present: ${driver.present.for.load-foodmart}"/>
     <!--
         Load from demo/FoodMartCreateData.zip directly - no need to unzip
         
@@ -1034,6 +1054,7 @@ buildJdk16.sh" />
     -->
 
     <property name="mondrian.foodmart.loaderBatchSize" value="50" />
+    <property name="mondrian.foodmart.jdbcSchema" value="" />
 
     <java classname="mondrian.test.loader.MondrianFoodMartLoader"
             classpathref="project.test.classpath"
@@ -1041,11 +1062,12 @@ buildJdk16.sh" />
         <arg value="-tables"/>
         <arg value="-data"/>
         <arg value="-indexes"/>
-        <arg value="-outputJdbcBatchSize=${mondrian.foodmart.loaderBatchSize}"/>
         <arg value="-jdbcDrivers=${mondrian.jdbcDrivers}"/>
         <arg value="-outputJdbcURL=${mondrian.foodmart.jdbcURL}"/>
         <arg value="-outputJdbcUser=${mondrian.foodmart.jdbcUser}"/>
         <arg value="-outputJdbcPassword=${mondrian.foodmart.jdbcPassword}"/>
+        <arg value="-outputJdbcSchema=${mondrian.foodmart.jdbcSchema}"/>
+        <arg value="-outputJdbcBatchSize=${mondrian.foodmart.loaderBatchSize}"/>
     </java>
      
   </target>
@@ -1172,7 +1194,9 @@ must be run under JDK 1.5." />
 
   <target name="compileJdk16">
     <exec osfamily="unix" executable="${unix.script}"/>
-    <exec osfamily="windows" executable="buildJdk16.bat"/>
+    <exec osfamily="windows" dir="." executable="cmd">
+      <arg line="/c .\buildJdk16.bat"/>
+    </exec>
   </target>
 
   <target name="jar" depends="version,compile,compile.tests,compileJdk16">
@@ -1516,21 +1540,45 @@ xalan.jar"/>
   </target>
 
   <target name="workbench" depends="jar">
-    <jar jarfile="${workbench.jar.file}" manifest="misc/workbench-manifest.mf" update="true">
+    <jar jarfile="${workbench.jar.file}" update="true">
       <fileset
           dir="${classes.dir}"
           includes="mondrian/gui/**/*.class"/>
       <fileset
           dir="${java.dir}"
           includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
+      <manifest>
+          <attribute name="Main-Class" value="${workbench.main.class}"/>
+      </manifest>
     </jar>
+    <copy todir="${classes.dir}">
+      <fileset
+          dir="${java.dir}"
+          includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
+    </copy>
   </target>
 
+  <path id="workbench.run.classpath">
+    <pathelement path="${workbench.jar.file}"/>
+    <path refid="project.test.classpath"/>
+    <pathelement path="lib/jlfgr.jar"/>
+  </path>
+
   <target name="workbench-run" >
+
+    <available classname="${mondrian.jdbcDrivers}"
+           classpathref="workbench.run.classpath" property="driver.present.for.workbench"/>
+
+    <available classname="${workbench.main.class}"
+           classpathref="workbench.run.classpath" property="workbench.main.present"/>
+
     <!-- check if mondrian.jar and workbench jar file exists -->
     <available file="${jar.file}" property="mondrian.jar.exists"/>
     <available file="${workbench.jar.file}" property="workbench.jar.exists"/>
-    <java  jar="${workbench.jar.file}"  fork="yes"/>
+
+    <java  classpathref="workbench.run.classpath"  classname="${workbench.main.class}"  fork="yes">
+        <sysproperty key="log4j.configuration" value="${log4j.configuration}"/>
+    </java>
   </target>
 
   <target name="workbench-dist" 
