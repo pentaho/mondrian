@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2008 Julian Hyde
+// Copyright (C) 2004-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -307,29 +307,27 @@ public class CsvDBLoader extends DBLoader {
                         String s = value0.substring(
                                 index + ACTION_BEFORE_TAG.length());
                         if (s.length() == 0) {
-                            String msg = "CSV File parse Error: " +
-                                " no action before sql" +
-                                ", linenos "  + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no action before sql"
+                                + ", linenos " + lineNos);
                         }
                         s = s.trim();
                         if (! s.startsWith(DROP_INDEX_TAG)) {
                             // only support dropping indexes currently
-                            String msg = "CSV File parse Error: " +
-                                " unknown before action" +
-                                s +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " unknown before action" + s
+                                + ", linenos " + lineNos);
                         }
                         // get index name
                         index = s.indexOf(' ');
                         if (index < 0) {
                             // only support dropping indexes currently
-                            String msg = "CSV File parse Error: " +
-                                " no index name in before action" +
-                                s +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no index name in before action" + s
+                                + ", linenos " + lineNos);
                         }
                         s = s.substring(index + 1);
                         s = s.trim();
@@ -342,29 +340,27 @@ public class CsvDBLoader extends DBLoader {
                         String s = value0.substring(
                                 index + ACTION_AFTER_TAG.length());
                         if (s.length() == 0) {
-                            String msg = "CSV File parse Error: " +
-                                " no action after sql" +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no action after sql"
+                                + ", linenos " + lineNos);
                         }
                         s = s.trim();
                         if (! s.startsWith(CREATE_INDEX_TAG)) {
                             // only support creating indexes currently
-                            String msg = "CSV File parse Error: " +
-                                " unknown before action" +
-                                s +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " unknown before action" + s
+                                + ", linenos " + lineNos);
                         }
                         // get index name
                         index = s.indexOf(' ');
                         if (index < 0) {
                             // only support creating indexes currently
-                            String msg = "CSV File parse Error: " +
-                                " no index_name/column_name in after action" +
-                                s +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no index_name/column_name in after action"
+                                + s + ", linenos " + lineNos);
                         }
                         // CreateIndex index_name column_name
                         s = s.substring(index + 1);
@@ -373,12 +369,11 @@ public class CsvDBLoader extends DBLoader {
                         // just check that there is a space and
                         if (index < 0) {
                             // only support creating indexes currently
-                            String msg = "CSV File parse Error: " +
-                                " no column_name after index_name "+
-                                "in after action" +
-                                s +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no column_name after index_name "
+                                + "in after action" + s
+                                + ", linenos " + lineNos);
                         }
                         afterActionList.add(s);
                         continue;
@@ -389,20 +384,19 @@ public class CsvDBLoader extends DBLoader {
                         String s = value0.substring(
                                 index + TABLE_NAME_TAG.length());
                         if (s.length() == 0) {
-                            String msg = "CSV File parse Error: " +
-                                " no table name" +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no table name"
+                                + ", linenos " + lineNos);
                         }
                         s = s.trim();
                         if (tableName != null) {
-                            String msg = "CSV File parse Error: " +
-                                " new table name \"" +
-                                s +
-                                "\" while processing table name \"" +
-                                tableName +
-                                "\", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " new table name \"" + s
+                                + "\" while processing table name \""
+                                + tableName
+                                + "\", linenos " + lineNos);
                         }
                         tableName = s;
                         continue;
@@ -412,16 +406,16 @@ public class CsvDBLoader extends DBLoader {
                         String s = value0.substring(
                                 index + COLUMN_NAMES_TAG.length());
                         if (s.length() == 0) {
-                            String msg = "CSV File parse Error: " +
-                                " no column names" +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no column names"
+                                + ", linenos " + lineNos);
                         }
                         if (tableName == null) {
-                            String msg = "CSV File parse Error: " +
-                                " no table name for columns " +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no table name for columns "
+                                + ", linenos " + lineNos);
                         }
                         values[0] = s.trim();
                         columnNames = values;
@@ -432,29 +426,29 @@ public class CsvDBLoader extends DBLoader {
                         String s = value0.substring(
                                 index + COLUMN_TYPES_TAG.length());
                         if (s.length() == 0) {
-                            String msg = "CSV File parse Error: " +
-                                " no column types" +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no column types"
+                                + ", linenos " + lineNos);
                         }
                         if (columnNames == null) {
-                            String msg = "CSV File parse Error: " +
-                                " no column names for columns types" +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no column names for columns types"
+                                + ", linenos " + lineNos);
                         }
                         values[0] = s.trim();
                         columnTypes = values;
 
                         if (columnNames.length != columnTypes.length) {
-                            String msg = "CSV File parse Error: " +
-                                " number of column names \"" +
-                                columnNames.length +
-                                "\" does not equal " +
-                                " number of column types \"" +
-                                columnTypes.length +
-                                "\", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " number of column names \""
+                                + columnNames.length
+                                + "\" does not equal "
+                                + " number of column types \""
+                                + columnTypes.length
+                                + "\", linenos " + lineNos);
                         }
                         continue;
                     }
@@ -466,16 +460,16 @@ public class CsvDBLoader extends DBLoader {
                         String s = value0.substring(
                                 index + FILE_NAME_TAG.length());
                         if (s.length() == 0) {
-                            String msg = "CSV File parse Error: " +
-                                " no file name " +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no file name "
+                                + ", linenos " + lineNos);
                         }
                         if (columnTypes == null) {
-                            String msg = "CSV File parse Error: " +
-                                " no column types for file name" +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no column types for file name"
+                                + ", linenos " + lineNos);
                         }
                         fileName = s.trim();
                         continue;
@@ -485,16 +479,16 @@ public class CsvDBLoader extends DBLoader {
                         String s = value0.substring(
                                 index + NOS_OF_ROWS_TAG.length());
                         if (s.length() == 0) {
-                            String msg = "CSV File parse Error: " +
-                                " no number of rows" +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no number of rows"
+                                + ", linenos " + lineNos);
                         }
                         if (columnTypes == null) {
-                            String msg = "CSV File parse Error: " +
-                                " no column types for file name" +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no column types for file name"
+                                + ", linenos " + lineNos);
                         }
                         nosOfRowsStr = Integer.parseInt(s.trim());
                         continue;
@@ -506,22 +500,22 @@ public class CsvDBLoader extends DBLoader {
                     // rows
                     if (! ok) {
                         if (tableName == null) {
-                            String msg = "CSV File parse Error: " +
-                                " no table name before rows" +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no table name before rows"
+                                + ", linenos " + lineNos);
                         }
                         if (columnNames == null) {
-                            String msg = "CSV File parse Error: " +
-                                " no column names before rows" +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no column names before rows"
+                                + ", linenos " + lineNos);
                         }
                         if (columnTypes == null) {
-                            String msg = "CSV File parse Error: " +
-                                " no column types before rows" +
-                                ", linenos " + lineNos;
-                            throw new IOException(msg);
+                            throw new IOException(
+                                "CSV File parse Error: "
+                                + " no column types before rows"
+                                + ", linenos " + lineNos);
                         }
                     }
                     columns = loadColumns(columnNames, columnTypes, lineNos);
@@ -552,10 +546,10 @@ public class CsvDBLoader extends DBLoader {
 
                         while (nosOfRowsStr-- > 0) {
                             if (! csvloader.hasNextLine()) {
-                                String msg = "CSV File parse Error: " +
-                                    " not enough lines in file " +
-                                    lineNos;
-                                throw new Exception(msg);
+                                throw new Exception(
+                                    "CSV File parse Error: "
+                                    + " not enough lines in file "
+                                    + lineNos);
                             }
                             values = csvloader.nextLine();
 value0 = values[0];
@@ -611,13 +605,13 @@ if (value0.startsWith("# ")) {
                 if (nullString.equalsIgnoreCase("NULL")) {
                     nullsAllowed = true;
                 } else {
-                    String msg = "CSV File parse Error: " +
-                        " for type name \"" +
-                        columnType +
-                        "\" expecting \"null\" not \"" +
-                        nullString +
-                        "\", linenos " + lineNos;
-                    throw new IOException(msg);
+                    throw new IOException(
+                        "CSV File parse Error: "
+                        + " for type name \""
+                        + columnType
+                        + "\" expecting \"null\" not \""
+                        + nullString
+                        + "\", linenos " + lineNos);
                 }
                 columnType = columnType.substring(0,index).trim();
 //System.out.println("columnType="+columnType);
@@ -630,11 +624,11 @@ if (value0.startsWith("# ")) {
                 type = Type.makeType(columnType);
             }
             if (type == null) {
-                String msg = "CSV File parse Error: " +
-                    " no type found for type name \"" +
-                    columnType +
-                    "\", linenos " + lineNos;
-                throw new IOException(msg);
+                throw new IOException(
+                    "CSV File parse Error: "
+                    + " no type found for type name \""
+                    + columnType
+                    + "\", linenos " + lineNos);
             }
             Column column = new Column(columnName, type, nullsAllowed);
             list.add(column);
@@ -647,18 +641,18 @@ if (value0.startsWith("# ")) {
 
         if (this.inputDirectory != null) {
             if (this.inputFiles != null) {
-                throw new Exception("Both input Directory and input files " +
-                    "can not be set");
+                throw new Exception(
+                    "Both input Directory and input files can not be set");
             }
             if (this.inputFile != null) {
-                throw new Exception("Both input Directory and input file " +
-                    "can not be set");
+                throw new Exception(
+                    "Both input Directory and input file can not be set");
             }
         }
         if (this.inputFiles != null) {
             if (this.inputFile != null) {
-                throw new Exception("Both input input files and input file " +
-                    "can not be set");
+                throw new Exception(
+                    "Both input input files and input file can not be set");
             }
         }
     }

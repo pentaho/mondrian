@@ -255,26 +255,26 @@ public class MondrianFoodMartLoader {
      */
     public void usage() {
         String[] lines = {
-            "Usage: MondrianFoodMartLoader " +
-                "[-verbose] [-tables] [-data] [-indexes] [-populationQueries] " +
-                "[-pauseMillis=<n>] " +
-                "[-include=<regexp>] " +
-                "[-exclude=<regexp>] " +
-                "[-pauseMillis=<n>] " +
-                "-jdbcDrivers=<jdbcDrivers> " +
-                "-outputJdbcURL=<jdbcURL> " +
-                "[-outputJdbcUser=user] " +
-                "[-outputJdbcPassword=password] " +
-                "[-outputJdbcSchema=schema] " +
-                "[-outputJdbcBatchSize=<batch size>] " +
-                "| " +
-                "[-outputDirectory=<directory name>] " +
-                "[" +
-                "   [-inputJdbcURL=<jdbcURL> [-inputJdbcUser=user] " +
-                " [-inputJdbcPassword=password] [-inputJdbcSchema=schema]]" +
-                "   | " +
-                "   [-inputfile=<file name>]" +
-                "]",
+            "Usage: MondrianFoodMartLoader "
+            + "[-verbose] [-tables] [-data] [-indexes] [-populationQueries] "
+            + "[-pauseMillis=<n>] "
+            + "[-include=<regexp>] "
+            + "[-exclude=<regexp>] "
+            + "[-pauseMillis=<n>] "
+            + "-jdbcDrivers=<jdbcDrivers> "
+            + "-outputJdbcURL=<jdbcURL> "
+            + "[-outputJdbcUser=user] "
+            + "[-outputJdbcPassword=password] "
+            + "[-outputJdbcSchema=schema] "
+            + "[-outputJdbcBatchSize=<batch size>] "
+            + "| "
+            + "[-outputDirectory=<directory name>] "
+            + "["
+            + "   [-inputJdbcURL=<jdbcURL> [-inputJdbcUser=user] "
+            + " [-inputJdbcPassword=password] [-inputJdbcSchema=schema]]"
+            + "   | "
+            + "   [-inputfile=<file name>]"
+            + "]",
             "",
             "  <jdbcURL>             JDBC connect string for DB.",
             "  [user]                JDBC user name for DB.",
@@ -948,8 +948,8 @@ public class MondrianFoodMartLoader {
 
         if (pos < 0) {
             if (mandatory) {
-                throw new RuntimeException("insert.sql error: No insert clause in " +
-                    sb.toString());
+                throw new RuntimeException(
+                    "insert.sql error: No insert clause in " + sb.toString());
             } else {
                 return sb;
             }

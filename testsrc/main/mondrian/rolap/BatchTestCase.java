@@ -242,18 +242,17 @@ public class BatchTestCase extends FoodMartTestCase {
                 replaceQuotes(bomb.sql));
         }
 
-        /*
-         * Print warning message that no pattern was specified for the current dialect.
-         */
+        // Print warning message that no pattern was specified for the current
+        // dialect.
         if (!patternFound) {
             String warnDialect =
                 MondrianProperties.instance().WarnIfNoPatternForDialect.get();
 
             if (warnDialect.equals(d.toString())) {
                 System.out.println(
-                    "[No expected sqls found for dialect \"" +
-                    sqlDialect.toString() +
-                    "\" and test not run]");
+                    "[No expected SQL statements found for dialect \""
+                    + sqlDialect.toString()
+                    + "\" and test not run]");
             }
         }
     }
@@ -404,18 +403,17 @@ public class BatchTestCase extends FoodMartTestCase {
             }
         }
 
-        /*
-         * Print warning message that no pattern was specified for the current dialect.
-         */
+        // Print warning message that no pattern was specified for the current
+        // dialect.
         if (!patternFound) {
             String warnDialect =
                 MondrianProperties.instance().WarnIfNoPatternForDialect.get();
 
             if (warnDialect.equals(d.toString())) {
                 System.out.println(
-                    "[No expected sqls found for dialect \"" +
-                    dialect.toString() +
-                    "\" and test not run]");
+                    "[No expected SQL statements found for dialect \""
+                    + dialect.toString()
+                    + "\" and test not run]");
             }
         }
     }

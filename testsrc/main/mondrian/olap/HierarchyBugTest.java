@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2006 Julian Hyde
+// Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -36,14 +36,14 @@ public class HierarchyBugTest extends FoodMartTestCase {
      */
     public void testNoHierarchy() {
         String queryString =
-            "select NON EMPTY " +
-            "Crossjoin(Hierarchize(Union({[Time].LastSibling}, " +
-            "[Time].LastSibling.Children)), " +
-            "{[Measures].[Unit Sales],      " +
-            "[Measures].[Store Cost]}) ON columns, " +
-            "NON EMPTY Hierarchize(Union({[Store].[All Stores]}, " +
-            "[Store].[All Stores].Children)) ON rows " +
-            "from [Sales]";
+            "select NON EMPTY "
+            + "Crossjoin(Hierarchize(Union({[Time].LastSibling}, "
+            + "[Time].LastSibling.Children)), "
+            + "{[Measures].[Unit Sales],      "
+            + "[Measures].[Store Cost]}) ON columns, "
+            + "NON EMPTY Hierarchize(Union({[Store].[All Stores]}, "
+            + "[Store].[All Stores].Children)) ON rows "
+            + "from [Sales]";
 
         Connection conn = getConnection();
         Query query = conn.parseQuery(queryString);
@@ -60,8 +60,9 @@ public class HierarchyBugTest extends FoodMartTestCase {
                 for (Hierarchy h : hs) {
                     // This should NEVER be null, but it is.
                     if (h == null) {
-                        failStr = "Got a null Hierarchy, " +
-                            "Should be Time Hierarchy";
+                        failStr =
+                            "Got a null Hierarchy, "
+                            + "Should be Time Hierarchy";
                     }
                 }
             }

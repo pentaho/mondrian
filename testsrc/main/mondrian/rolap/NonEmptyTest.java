@@ -70,81 +70,82 @@ public class NonEmptyTest extends BatchTestCase {
     public void testBugCantRestrictSlicerToCalcMember() throws Exception {
         TestContext ctx = TestContext.instance();
         ctx.assertQueryReturns(
-        "WITH MEMBER [Time].[Aggr] AS 'Aggregate({[Time].[1998].[Q1], [Time].[1998].[Q2]})' " +
-        "SELECT {[Measures].[Store Sales]} ON COLUMNS, " +
-        "NON EMPTY Order(TopCount([Customers].[Name].Members,3,[Measures].[Store Sales]),[Measures].[Store Sales],BASC) ON ROWS " +
-        "FROM [Sales] " +
-        "WHERE ([Time].[Aggr])",
+            "WITH MEMBER [Time].[Aggr] AS 'Aggregate({[Time].[1998].[Q1], [Time].[1998].[Q2]})' "
+            + "SELECT {[Measures].[Store Sales]} ON COLUMNS, "
+            + "NON EMPTY Order(TopCount([Customers].[Name].Members,3,[Measures].[Store Sales]),[Measures].[Store Sales],BASC) ON ROWS "
+            + "FROM [Sales] "
+            + "WHERE ([Time].[Aggr])",
 
-        fold("Axis #0:\n" +
-        "{[Time].[Aggr]}\n" +
-        "Axis #1:\n" +
-        "{[Measures].[Store Sales]}\n" +
-        "Axis #2:\n"));
+            "Axis #0:\n"
+            + "{[Time].[Aggr]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n");
     }
+
     public void testBug1961163() throws Exception {
         TestContext ctx = TestContext.instance();
         ctx.assertQueryReturns(
-        "with member [Measures].[AvgRevenue] as 'Avg([Store].[Store Name].Members, [Measures].[Store Sales])' " +
-        "select NON EMPTY {[Measures].[Store Sales], [Measures].[AvgRevenue]} ON COLUMNS, " +
-        "NON EMPTY Filter([Store].[Store Name].Members, ([Measures].[AvgRevenue] < [Measures].[Store Sales])) ON ROWS " +
-        "from [Sales]",
+            "with member [Measures].[AvgRevenue] as 'Avg([Store].[Store Name].Members, [Measures].[Store Sales])' "
+            + "select NON EMPTY {[Measures].[Store Sales], [Measures].[AvgRevenue]} ON COLUMNS, "
+            + "NON EMPTY Filter([Store].[Store Name].Members, ([Measures].[AvgRevenue] < [Measures].[Store Sales])) ON ROWS "
+            + "from [Sales]",
 
-        "Axis #0:" + nl +
-        "{}" + nl +
-        "Axis #1:" + nl +
-        "{[Measures].[Store Sales]}" + nl +
-        "{[Measures].[AvgRevenue]}" + nl +
-        "Axis #2:" + nl +
-        "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}" + nl +
-        "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}" + nl +
-        "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}" + nl +
-        "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}" + nl +
-        "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}" + nl +
-        "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}" + nl +
-        "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}" + nl +
-        "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}" + nl +
-        "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}" + nl +
-        "Row #0: 45,750.24" + nl +
-        "Row #0: 43,479.86" + nl +
-        "Row #1: 54,545.28" + nl +
-        "Row #1: 43,479.86" + nl +
-        "Row #2: 54,431.14" + nl +
-        "Row #2: 43,479.86" + nl +
-        "Row #3: 55,058.79" + nl +
-        "Row #3: 43,479.86" + nl +
-        "Row #4: 87,218.28" + nl +
-        "Row #4: 43,479.86" + nl +
-        "Row #5: 52,896.30" + nl +
-        "Row #5: 43,479.86" + nl +
-        "Row #6: 52,644.07" + nl +
-        "Row #6: 43,479.86" + nl +
-        "Row #7: 49,634.46" + nl +
-        "Row #7: 43,479.86" + nl +
-        "Row #8: 74,843.96" + nl +
-        "Row #8: 43,479.86" + nl);
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[AvgRevenue]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "Row #0: 45,750.24\n"
+            + "Row #0: 43,479.86\n"
+            + "Row #1: 54,545.28\n"
+            + "Row #1: 43,479.86\n"
+            + "Row #2: 54,431.14\n"
+            + "Row #2: 43,479.86\n"
+            + "Row #3: 55,058.79\n"
+            + "Row #3: 43,479.86\n"
+            + "Row #4: 87,218.28\n"
+            + "Row #4: 43,479.86\n"
+            + "Row #5: 52,896.30\n"
+            + "Row #5: 43,479.86\n"
+            + "Row #6: 52,644.07\n"
+            + "Row #6: 43,479.86\n"
+            + "Row #7: 49,634.46\n"
+            + "Row #7: 43,479.86\n"
+            + "Row #8: 74,843.96\n"
+            + "Row #8: 43,479.86\n");
     }
 
     public void testTopCountWithCalcMemberInSlicer() {
         // Internal error: can not restrict SQL to calculated Members
         TestContext ctx = TestContext.instance();
         ctx.assertQueryReturns(
-            "with member [Time].[First Term] as 'Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})' " +
-            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
-            "TopCount([Product].[Product Subcategory].Members, 3, [Measures].[Unit Sales]) ON ROWS " +
-            "from [Sales] " +
-            "where ([Time].[First Term]) ",
-            "Axis #0:" + nl +
-            "{[Time].[First Term]}" + nl +
-            "Axis #1:" + nl +
-            "{[Measures].[Unit Sales]}" + nl +
-            "Axis #2:" + nl +
-            "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables]}" + nl +
-            "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit]}" + nl +
-            "{[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup]}" + nl +
-            "Row #0: 10,215" + nl +
-            "Row #1: 5,711" + nl +
-            "Row #2: 3,926" + nl);
+            "with member [Time].[First Term] as 'Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})' "
+            + "select {[Measures].[Unit Sales]} ON COLUMNS, "
+            + "TopCount([Product].[Product Subcategory].Members, 3, [Measures].[Unit Sales]) ON ROWS "
+            + "from [Sales] "
+            + "where ([Time].[First Term]) ",
+            "Axis #0:\n"
+            + "{[Time].[First Term]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables]}\n"
+            + "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit]}\n"
+            + "{[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup]}\n"
+            + "Row #0: 10,215\n"
+            + "Row #1: 5,711\n"
+            + "Row #2: 3,926\n");
     }
 
     public void testTopCountCacheKeyMustIncludeCount() {
@@ -155,132 +156,136 @@ public class NonEmptyTest extends BatchTestCase {
         TestContext ctx = TestContext.instance();
         // fill cache
         ctx.assertQueryReturns(
-            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
-            "TopCount([Product].[Product Subcategory].Members, 2, [Measures].[Unit Sales]) ON ROWS " +
-            "from [Sales]",
-            "Axis #0:" + nl +
-            "{}" + nl +
-            "Axis #1:" + nl +
-            "{[Measures].[Unit Sales]}" + nl +
-            "Axis #2:" + nl +
-            "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables]}" + nl +
-            "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit]}" + nl +
-            "Row #0: 20,739" + nl +
-            "Row #1: 11,767" + nl);
+            "select {[Measures].[Unit Sales]} ON COLUMNS, "
+            + "TopCount([Product].[Product Subcategory].Members, 2, [Measures].[Unit Sales]) ON ROWS "
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables]}\n"
+            + "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit]}\n"
+            + "Row #0: 20,739\n"
+            + "Row #1: 11,767\n");
         // run again with different count
         ctx.assertQueryReturns(
-            "select {[Measures].[Unit Sales]} ON COLUMNS, " +
-            "TopCount([Product].[Product Subcategory].Members, 3, [Measures].[Unit Sales]) ON ROWS " +
-            "from [Sales]",
-            "Axis #0:" + nl +
-            "{}" + nl +
-            "Axis #1:" + nl +
-            "{[Measures].[Unit Sales]}" + nl +
-            "Axis #2:" + nl +
-            "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables]}" + nl +
-            "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit]}" + nl +
-            "{[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup]}" + nl +
-            "Row #0: 20,739" + nl +
-            "Row #1: 11,767" + nl +
-            "Row #2: 8,006" + nl);
+            "select {[Measures].[Unit Sales]} ON COLUMNS, "
+            + "TopCount([Product].[Product Subcategory].Members, 3, [Measures].[Unit Sales]) ON ROWS "
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables]}\n"
+            + "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit]}\n"
+            + "{[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup]}\n"
+            + "Row #0: 20,739\n"
+            + "Row #1: 11,767\n"
+            + "Row #2: 8,006\n");
     }
 
     public void testStrMeasure() {
         TestContext ctx = TestContext.create(
             null,
-            "<Cube name=\"StrMeasure\"> \n" +
-            "  <Table name=\"promotion\"/> \n" +
-            "  <Dimension name=\"Promotions\"> \n" +
-            "    <Hierarchy hasAll=\"true\" > \n" +
-            "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n" +
-            "    </Hierarchy> \n" +
-            "  </Dimension> \n" +
-            "  <Measure name=\"Media\" column=\"media_type\" aggregator=\"max\" datatype=\"String\"/> \n" +
-            "</Cube> \n",
-            null, null, null, null);
+            "<Cube name=\"StrMeasure\"> \n"
+            + "  <Table name=\"promotion\"/> \n"
+            + "  <Dimension name=\"Promotions\"> \n"
+            + "    <Hierarchy hasAll=\"true\" > \n"
+            + "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n"
+            + "    </Hierarchy> \n"
+            + "  </Dimension> \n"
+            + "  <Measure name=\"Media\" column=\"media_type\" aggregator=\"max\" datatype=\"String\"/> \n"
+            + "</Cube> \n",
+            null,
+            null,
+            null,
+            null);
 
         ctx.assertQueryReturns(
-            "select {[Measures].[Media]} on columns " +
-            "from [StrMeasure]",
-            fold("Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Media]}\n" +
-            "Row #0: TV\n"));
+            "select {[Measures].[Media]} on columns " + "from [StrMeasure]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Media]}\n"
+            + "Row #0: TV\n");
     }
 
     public void testBug1515302() {
         TestContext ctx = TestContext.create(
-                null,
-                "<Cube name=\"Bug1515302\"> \n" +
-                "  <Table name=\"sales_fact_1997\"/> \n" +
-                "  <Dimension name=\"Promotions\" foreignKey=\"promotion_id\"> \n" +
-                "    <Hierarchy hasAll=\"false\" primaryKey=\"promotion_id\"> \n" +
-                "      <Table name=\"promotion\"/> \n" +
-                "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n" +
-                "    </Hierarchy> \n" +
-                "  </Dimension> \n" +
-                "  <Dimension name=\"Customers\" foreignKey=\"customer_id\"> \n" +
-                "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\"> \n" +
-                "      <Table name=\"customer\"/> \n" +
-                "      <Level name=\"Country\" column=\"country\" uniqueMembers=\"true\"/> \n" +
-                "      <Level name=\"State Province\" column=\"state_province\" uniqueMembers=\"true\"/> \n" +
-                "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/> \n" +
-                "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/> \n" +
-                "    </Hierarchy> \n" +
-                "  </Dimension> \n" +
-                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/> \n" +
-                "</Cube> \n",
-                null, null, null, null);
+            null,
+            "<Cube name=\"Bug1515302\"> \n"
+            + "  <Table name=\"sales_fact_1997\"/> \n"
+            + "  <Dimension name=\"Promotions\" foreignKey=\"promotion_id\"> \n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"promotion_id\"> \n"
+            + "      <Table name=\"promotion\"/> \n"
+            + "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n"
+            + "    </Hierarchy> \n"
+            + "  </Dimension> \n"
+            + "  <Dimension name=\"Customers\" foreignKey=\"customer_id\"> \n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\"> \n"
+            + "      <Table name=\"customer\"/> \n"
+            + "      <Level name=\"Country\" column=\"country\" uniqueMembers=\"true\"/> \n"
+            + "      <Level name=\"State Province\" column=\"state_province\" uniqueMembers=\"true\"/> \n"
+            + "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/> \n"
+            + "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/> \n"
+            + "    </Hierarchy> \n"
+            + "  </Dimension> \n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/> \n"
+            + "</Cube> \n",
+            null,
+            null,
+            null,
+            null);
 
         ctx.assertQueryReturns(
-                "select {[Measures].[Unit Sales]} on columns, " +
-                "non empty crossjoin({[Promotions].[Big Promo]}, " +
-                "Descendants([Customers].[USA], [City], " +
-                "SELF_AND_BEFORE)) on rows " +
-                "from [Bug1515302]",
-            fold(
-                "Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Unit Sales]}\n" +
-                "Axis #2:\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Anacortes]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Ballard]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Bellingham]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Burien]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Everett]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Issaquah]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Kirkland]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Lynnwood]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Marysville]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Olympia]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Puyallup]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Redmond]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Renton]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Seattle]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Sedro Woolley]}\n" +
-                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Tacoma]}\n" +
-                "Row #0: 1,789\n" +
-                "Row #1: 1,789\n" +
-                "Row #2: 20\n" +
-                "Row #3: 35\n" +
-                "Row #4: 15\n" +
-                "Row #5: 18\n" +
-                "Row #6: 60\n" +
-                "Row #7: 42\n" +
-                "Row #8: 36\n" +
-                "Row #9: 79\n" +
-                "Row #10: 58\n" +
-                "Row #11: 520\n" +
-                "Row #12: 438\n" +
-                "Row #13: 14\n" +
-                "Row #14: 20\n" +
-                "Row #15: 65\n" +
-                "Row #16: 3\n" +
-                "Row #17: 366\n"));
+            "select {[Measures].[Unit Sales]} on columns, "
+            + "non empty crossjoin({[Promotions].[Big Promo]}, "
+            + "Descendants([Customers].[USA], [City], "
+            + "SELF_AND_BEFORE)) on rows "
+            + "from [Bug1515302]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Anacortes]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Ballard]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Bellingham]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Burien]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Everett]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Issaquah]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Kirkland]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Lynnwood]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Marysville]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Olympia]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Puyallup]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Redmond]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Renton]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Seattle]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Sedro Woolley]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Tacoma]}\n"
+            + "Row #0: 1,789\n"
+            + "Row #1: 1,789\n"
+            + "Row #2: 20\n"
+            + "Row #3: 35\n"
+            + "Row #4: 15\n"
+            + "Row #5: 18\n"
+            + "Row #6: 60\n"
+            + "Row #7: 42\n"
+            + "Row #8: 36\n"
+            + "Row #9: 79\n"
+            + "Row #10: 58\n"
+            + "Row #11: 520\n"
+            + "Row #12: 438\n"
+            + "Row #13: 14\n"
+            + "Row #14: 20\n"
+            + "Row #15: 65\n"
+            + "Row #16: 3\n"
+            + "Row #17: 366\n");
     }
 
     /**
@@ -292,10 +297,12 @@ public class NonEmptyTest extends BatchTestCase {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             return;
         }
-        TestCase c = new TestCase(99, 3,
-                "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Warehouse Sales]} ON COLUMNS, " +
-                "NON EMPTY [Product].[All Products].Children ON ROWS " +
-                "from [Warehouse and Sales]");
+        TestCase c = new TestCase(
+            99,
+            3,
+            "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Warehouse Sales]} ON COLUMNS, "
+            + "NON EMPTY [Product].[All Products].Children ON ROWS "
+            + "from [Warehouse and Sales]");
         c.run();
     }
 
@@ -304,10 +311,12 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
         // ok to use native sql optimization for members on a virtual cube
-        TestCase c = new TestCase(6, 3,
-                "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Warehouse Sales]} ON COLUMNS, " +
-                "NON EMPTY {[Product].[Product Family].Members} ON ROWS " +
-                "from [Warehouse and Sales]");
+        TestCase c = new TestCase(
+            6,
+            3,
+            "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Warehouse Sales]} ON COLUMNS, "
+            + "NON EMPTY {[Product].[Product Family].Members} ON ROWS "
+            + "from [Warehouse and Sales]");
         c.run();
     }
 
@@ -317,9 +326,9 @@ public class NonEmptyTest extends BatchTestCase {
         // product join
         checkNotNative(
             1,
-            "select non empty {[Customers].[Country].members} on columns, " +
-            "{[Measures].[Units Ordered]} on rows from " +
-            "[Warehouse and Sales]");
+            "select non empty {[Customers].[Country].members} on columns, "
+            + "{[Measures].[Units Ordered]} on rows from "
+            + "[Warehouse and Sales]");
     }
 
     public void testNativeFilter() {
@@ -341,179 +350,169 @@ public class NonEmptyTest extends BatchTestCase {
      * Executes a Filter() whose condition contains a calculated member.
      */
     public void testCmNativeFilter() {
-        String query =
-            "with member [Measures].[Rendite] as '([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]' "
-          + "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Rendite], [Measures].[Store Sales]} ON COLUMNS, "
-          + "NON EMPTY Order(Filter([Product].[Product Name].Members, ([Measures].[Rendite] > 1.8)), [Measures].[Rendite], BDESC) ON ROWS "
-          + "from [Sales] "
-          + "where ([Store].[All Stores].[USA].[CA], [Time].[1997])";
-
-        String result =
-              "Axis #0:\n" +
-              "{[Store].[All Stores].[USA].[CA], [Time].[1997]}\n" +
-              "Axis #1:\n" +
-              "{[Measures].[Unit Sales]}\n" +
-              "{[Measures].[Store Cost]}\n" +
-              "{[Measures].[Rendite]}\n" +
-              "{[Measures].[Store Sales]}\n" +
-              "Axis #2:\n" +
-              "{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[Plato].[Plato Extra Chunky Peanut Butter]}\n" +
-              "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Horatio].[Horatio Buttered Popcorn]}\n" +
-              "{[Product].[All Products].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Better].[Better Canned Tuna in Oil]}\n" +
-              "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit].[High Top].[High Top Cantelope]}\n" +
-              "{[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[Denny].[Denny 75 Watt Lightbulb]}\n" +
-              "{[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Johnson].[Johnson Oatmeal]}\n" +
-              "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Light Wine]}\n" +
-              "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony].[Ebony Squash]}\n" +
-              "Row #0: 42\n" +
-              "Row #0: 24.06\n" +
-              "Row #0: 1.93\n" +
-              "Row #0: 70.56\n" +
-              "Row #1: 36\n" +
-              "Row #1: 29.02\n" +
-              "Row #1: 1.91\n" +
-              "Row #1: 84.60\n" +
-              "Row #2: 39\n" +
-              "Row #2: 20.55\n" +
-              "Row #2: 1.85\n" +
-              "Row #2: 58.50\n" +
-              "Row #3: 25\n" +
-              "Row #3: 21.76\n" +
-              "Row #3: 1.84\n" +
-              "Row #3: 61.75\n" +
-              "Row #4: 43\n" +
-              "Row #4: 59.62\n" +
-              "Row #4: 1.83\n" +
-              "Row #4: 168.99\n" +
-              "Row #5: 34\n" +
-              "Row #5: 7.20\n" +
-              "Row #5: 1.83\n" +
-              "Row #5: 20.40\n" +
-              "Row #6: 36\n" +
-              "Row #6: 33.10\n" +
-              "Row #6: 1.83\n" +
-              "Row #6: 93.60\n" +
-              "Row #7: 46\n" +
-              "Row #7: 28.34\n" +
-              "Row #7: 1.81\n" +
-              "Row #7: 79.58\n";
-
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
-        checkNative(0, 8, query, fold(result), requestFreshConnection);
+        checkNative(
+            0,
+            8,
+            "with member [Measures].[Rendite] as '([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]' "
+            + "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Rendite], [Measures].[Store Sales]} ON COLUMNS, "
+            + "NON EMPTY Order(Filter([Product].[Product Name].Members, ([Measures].[Rendite] > 1.8)), [Measures].[Rendite], BDESC) ON ROWS "
+            + "from [Sales] "
+            + "where ([Store].[All Stores].[USA].[CA], [Time].[1997])",
+            "Axis #0:\n"
+            + "{[Store].[All Stores].[USA].[CA], [Time].[1997]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Store Cost]}\n"
+            + "{[Measures].[Rendite]}\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[Plato].[Plato Extra Chunky Peanut Butter]}\n"
+            + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Horatio].[Horatio Buttered Popcorn]}\n"
+            + "{[Product].[All Products].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Better].[Better Canned Tuna in Oil]}\n"
+            + "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit].[High Top].[High Top Cantelope]}\n"
+            + "{[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[Denny].[Denny 75 Watt Lightbulb]}\n"
+            + "{[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Johnson].[Johnson Oatmeal]}\n"
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Light Wine]}\n"
+            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony].[Ebony Squash]}\n"
+            + "Row #0: 42\n"
+            + "Row #0: 24.06\n"
+            + "Row #0: 1.93\n"
+            + "Row #0: 70.56\n"
+            + "Row #1: 36\n"
+            + "Row #1: 29.02\n"
+            + "Row #1: 1.91\n"
+            + "Row #1: 84.60\n"
+            + "Row #2: 39\n"
+            + "Row #2: 20.55\n"
+            + "Row #2: 1.85\n"
+            + "Row #2: 58.50\n"
+            + "Row #3: 25\n"
+            + "Row #3: 21.76\n"
+            + "Row #3: 1.84\n"
+            + "Row #3: 61.75\n"
+            + "Row #4: 43\n"
+            + "Row #4: 59.62\n"
+            + "Row #4: 1.83\n"
+            + "Row #4: 168.99\n"
+            + "Row #5: 34\n"
+            + "Row #5: 7.20\n"
+            + "Row #5: 1.83\n"
+            + "Row #5: 20.40\n"
+            + "Row #6: 36\n"
+            + "Row #6: 33.10\n"
+            + "Row #6: 1.83\n"
+            + "Row #6: 93.60\n"
+            + "Row #7: 46\n"
+            + "Row #7: 28.34\n"
+            + "Row #7: 1.81\n"
+            + "Row #7: 79.58\n",
+            requestFreshConnection);
     }
 
     public void testNonNativeFilterWithNullMeasure() {
-        String query =
-            "select Filter([Store].[Store Name].members, " +
-            "              Not ([Measures].[Store Sqft] - [Measures].[Grocery Sqft] < 10000)) on rows, " +
-            "{[Measures].[Store Sqft], [Measures].[Grocery Sqft]} on columns " +
-            "from [Store]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Store Sqft]}\n" +
-            "{[Measures].[Grocery Sqft]}\n" +
-            "Axis #2:\n" +
-            "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n" +
-            "{[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]}\n" +
-            "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n" +
-            "{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}\n" +
-            "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n" +
-            "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n" +
-            "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n" +
-            "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n" +
-            "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n" +
-            "Row #0: 36,509\n" +
-            "Row #0: 22,450\n" +
-            "Row #1: \n" +
-            "Row #1: \n" +
-            "Row #2: 30,797\n" +
-            "Row #2: 20,141\n" +
-            "Row #3: \n" +
-            "Row #3: \n" +
-            "Row #4: \n" +
-            "Row #4: \n" +
-            "Row #5: 39,696\n" +
-            "Row #5: 24,390\n" +
-            "Row #6: 33,858\n" +
-            "Row #6: 22,123\n" +
-            "Row #7: \n" +
-            "Row #7: \n" +
-            "Row #8: \n" +
-            "Row #8: \n";
-
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, false);
-        checkNotNative(9, query, fold(result));
+        checkNotNative(
+            9,
+            "select Filter([Store].[Store Name].members, "
+            + "              Not ([Measures].[Store Sqft] - [Measures].[Grocery Sqft] < 10000)) on rows, "
+            + "{[Measures].[Store Sqft], [Measures].[Grocery Sqft]} on columns "
+            + "from [Store]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sqft]}\n"
+            + "{[Measures].[Grocery Sqft]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n"
+            + "{[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]}\n"
+            + "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n"
+            + "Row #0: 36,509\n"
+            + "Row #0: 22,450\n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #2: 30,797\n"
+            + "Row #2: 20,141\n"
+            + "Row #3: \n"
+            + "Row #3: \n"
+            + "Row #4: \n"
+            + "Row #4: \n"
+            + "Row #5: 39,696\n"
+            + "Row #5: 24,390\n"
+            + "Row #6: 33,858\n"
+            + "Row #6: 22,123\n"
+            + "Row #7: \n"
+            + "Row #7: \n"
+            + "Row #8: \n"
+            + "Row #8: \n");
     }
 
     public void testNativeFilterWithNullMeasure() {
         // Currently this behaves differently from the non-native evaluation.
-        String query =
-            "select Filter([Store].[Store Name].members, " +
-            "              Not ([Measures].[Store Sqft] - [Measures].[Grocery Sqft] < 10000)) on rows, " +
-            "{[Measures].[Store Sqft], [Measures].[Grocery Sqft]} on columns " +
-            "from [Store]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Store Sqft]}\n" +
-            "{[Measures].[Grocery Sqft]}\n" +
-            "Axis #2:\n" +
-            "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n" +
-            "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n" +
-            "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n" +
-            "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n" +
-            "Row #0: 36,509\n" +
-            "Row #0: 22,450\n" +
-            "Row #1: 30,797\n" +
-            "Row #1: 20,141\n" +
-            "Row #2: 39,696\n" +
-            "Row #2: 24,390\n" +
-            "Row #3: 33,858\n" +
-            "Row #3: 22,123\n";
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);
-        context.assertQueryReturns(query, fold(result));
+        context.assertQueryReturns(
+            "select Filter([Store].[Store Name].members, "
+            + "              Not ([Measures].[Store Sqft] - [Measures].[Grocery Sqft] < 10000)) on rows, "
+            + "{[Measures].[Store Sqft], [Measures].[Grocery Sqft]} on columns "
+            + "from [Store]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sqft]}\n"
+            + "{[Measures].[Grocery Sqft]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n"
+            + "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "Row #0: 36,509\n"
+            + "Row #0: 22,450\n"
+            + "Row #1: 30,797\n"
+            + "Row #1: 20,141\n"
+            + "Row #2: 39,696\n"
+            + "Row #2: 24,390\n"
+            + "Row #3: 33,858\n"
+            + "Row #3: 22,123\n");
     }
 
     public void testNonNativeFilterWithCalcMember() {
         // Currently this query cannot run natively
-        String query =
-            "with\n" +
-            "member [Time].[Date Range] as 'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q4]})'\n" +
-            "select\n" +
-            "{[Measures].[Unit Sales]} ON columns,\n" +
-            "Filter ([Store].[Store State].members, [Measures].[Store Cost] > 100) ON rows\n" +
-            "from [Sales]\n" +
-            "where [Time].[Date Range]\n";
-
-        String result =
-            "Axis #0:\n" +
-            "{[Time].[Date Range]}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Unit Sales]}\n" +
-            "Axis #2:\n" +
-            "{[Store].[All Stores].[USA].[CA]}\n" +
-            "{[Store].[All Stores].[USA].[OR]}\n" +
-            "{[Store].[All Stores].[USA].[WA]}\n" +
-            "Row #0: 74,748\n" +
-            "Row #1: 67,659\n" +
-            "Row #2: 124,366\n";
-
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, false);
-        checkNotNative(3, query, fold(result));
+        checkNotNative(
+            3,
+            "with\n"
+            + "member [Time].[Date Range] as 'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q4]})'\n"
+            + "select\n"
+            + "{[Measures].[Unit Sales]} ON columns,\n"
+            + "Filter ([Store].[Store State].members, [Measures].[Store Cost] > 100) ON rows\n"
+            + "from [Sales]\n"
+            + "where [Time].[Date Range]\n",
+            "Axis #0:\n"
+            + "{[Time].[Date Range]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "{[Store].[All Stores].[USA].[OR]}\n"
+            + "{[Store].[All Stores].[USA].[WA]}\n"
+            + "Row #0: 74,748\n"
+            + "Row #1: 67,659\n"
+            + "Row #2: 124,366\n");
     }
 
     /**
@@ -521,19 +520,21 @@ public class NonEmptyTest extends BatchTestCase {
      * evaluated.
      */
     public void testNativeFilterNonEmpty() {
-        String query =
-            "select Filter(CrossJoin([Store].[Store Name].members, " +
-            "                        [Store Type].[Store Type].members), " +
-            "                        Not IsEmpty([Measures].[Store Sqft])) on rows, " +
-            "{[Measures].[Store Sqft]} on columns " +
-            "from [Store]";
-
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
-        checkNative(0, 20, query, null, requestFreshConnection);
+        checkNative(
+            0,
+            20,
+            "select Filter(CrossJoin([Store].[Store Name].members, "
+            + "                        [Store Type].[Store Type].members), "
+            + "                        Not IsEmpty([Measures].[Store Sqft])) on rows, "
+            + "{[Measures].[Store Sqft]} on columns "
+            + "from [Store]",
+            null,
+            requestFreshConnection);
     }
 
     /**
@@ -542,21 +543,23 @@ public class NonEmptyTest extends BatchTestCase {
      *  {{[Store Type].[Store Type].members}}
      */
     public void testNativeCJWithRedundantSetBraces() {
-            String query =
-                "select non empty {CrossJoin({[Store].[Store Name].members}, " +
-                "                        {{[Store Type].[Store Type].members}})}" +
-                "                         on rows, " +
-                "{[Measures].[Store Sqft]} on columns " +
-                "from [Store]";
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
 
-            propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, true);
-
-            // Get a fresh connection; Otherwise the mondrian property setting
-            // is not refreshed for this parameter.
-            boolean requestFreshConnection = true;
-            checkNative(0, 20, query, null, requestFreshConnection);
-        }
-
+        // Get a fresh connection; Otherwise the mondrian property setting
+        // is not refreshed for this parameter.
+        boolean requestFreshConnection = true;
+        checkNative(
+            0,
+            20,
+            "select non empty {CrossJoin({[Store].[Store Name].members}, "
+            + "                        {{[Store Type].[Store Type].members}})}"
+            + "                         on rows, "
+            + "{[Measures].[Store Sqft]} on columns "
+            + "from [Store]",
+            null,
+            requestFreshConnection);
+    }
 
     /**
      * Verify that CrossJoins with two non native inputs can be natively evaluated.
@@ -568,28 +571,27 @@ public class NonEmptyTest extends BatchTestCase {
         // Note: Both dimensions only have one hierarchy, which has the All
         // member. <Dimension>.Children is interpreted as the children of
         // the All member.
-
-        String query =
-            "select " +
-            "NonEmptyCrossJoin([Gender].Children, [Store].Children) on columns " +
-            "from [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Gender].[All Gender].[F], [Store].[All Stores].[USA]}\n" +
-            "{[Gender].[All Gender].[M], [Store].[All Stores].[USA]}\n" +
-            "Row #0: 131,558\n" +
-            "Row #0: 135,215\n";
-
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
-        checkNative(0, 2, query, fold(result), requestFreshConnection);
+        checkNative(
+            0,
+            2,
+            "select "
+            + "NonEmptyCrossJoin([Gender].Children, [Store].Children) on columns "
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[All Gender].[F], [Store].[All Stores].[USA]}\n"
+            + "{[Gender].[All Gender].[M], [Store].[All Stores].[USA]}\n"
+            + "Row #0: 131,558\n"
+            + "Row #0: 135,215\n",
+            requestFreshConnection);
     }
 
     /**
@@ -598,28 +600,26 @@ public class NonEmptyTest extends BatchTestCase {
     public void testExpandOneNonNativeInput() {
         // This query will not be evaluated natively unless the Filter
         // expression is expanded to a member list.
-
-        String query =
-            "With " +
-            "Set [*Filtered_Set] as Filter([Product].[Product Name].Members, [Product].CurrentMember IS [Product].[Product Name].[Fast Raisins]) " +
-            "Set [*NECJ_Set] as NonEmptyCrossJoin([Store].[Store Country].Members, [*Filtered_Set]) " +
-            "select [*NECJ_Set] on columns " +
-            "From [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Store].[All Stores].[USA], [Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fast].[Fast Raisins]}\n" +
-            "Row #0: 152\n";
-
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
-        checkNative(0, 1, query, fold(result), requestFreshConnection);
+        checkNative(
+            0, 1,
+            "With "
+            + "Set [*Filtered_Set] as Filter([Product].[Product Name].Members, [Product].CurrentMember IS [Product].[Product Name].[Fast Raisins]) "
+            + "Set [*NECJ_Set] as NonEmptyCrossJoin([Store].[Store Country].Members, [*Filtered_Set]) "
+            + "select [*NECJ_Set] on columns "
+            + "From [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores].[USA], [Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fast].[Fast Raisins]}\n"
+            + "Row #0: 152\n",
+            requestFreshConnection);
     }
 
     /**
@@ -627,17 +627,16 @@ public class NonEmptyTest extends BatchTestCase {
      * containing large number of members.
      */
     public void testExpandNonNativeResourceLimitFailure() {
-        String query =
-            "select " +
-            "NonEmptyCrossJoin({[Gender].Children, [Gender].[F]}, {[Store].Children, [Store].[Mexico]}) on columns " +
-            "from [Sales]";
-
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
         propSaver.set(MondrianProperties.instance().ResultLimit, 2);
 
         try {
-            executeQuery(query);
+            executeQuery(
+                "select "
+                + "NonEmptyCrossJoin({[Gender].Children, [Gender].[F]}, {[Store].Children, [Store].[Mexico]}) on columns "
+                + "from [Sales]");
             fail("Expected error did not occur");
         } catch (Throwable e) {
             String expectedErrorMsg =
@@ -654,27 +653,23 @@ public class NonEmptyTest extends BatchTestCase {
         // This query will not be evaluated natively, even if the Hierarchize
         // expression is expanded to a member list. The reason is that the
         // expanded list contains ALL members.
-
-        String query =
-            "select NON EMPTY {[Time].[1997]} ON COLUMNS,\n" +
-            "       NON EMPTY Crossjoin(Hierarchize(Union({[Store].[All Stores]},\n" +
-            "           [Store].[USA].[CA].[San Francisco].[Store 14].Children)), {[Product].[All Products]}) \n" +
-            "           ON ROWS\n" +
-            "    from [Sales]\n" +
-            "    where [Measures].[Unit Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{[Measures].[Unit Sales]}\n" +
-            "Axis #1:\n" +
-            "{[Time].[1997]}\n" +
-            "Axis #2:\n" +
-            "{[Store].[All Stores], [Product].[All Products]}\n" +
-            "Row #0: 266,773\n";
-
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, true);
-        checkNotNative(1, query, fold(result));
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
+        checkNotNative(
+            1, "select NON EMPTY {[Time].[1997]} ON COLUMNS,\n"
+               + "       NON EMPTY Crossjoin(Hierarchize(Union({[Store].[All Stores]},\n"
+               + "           [Store].[USA].[CA].[San Francisco].[Store 14].Children)), {[Product].[All Products]}) \n"
+               + "           ON ROWS\n"
+               + "    from [Sales]\n"
+               + "    where [Measures].[Unit Sales]",
+            "Axis #0:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores], [Product].[All Products]}\n"
+            + "Row #0: 266,773\n");
     }
 
     /**
@@ -685,26 +680,23 @@ public class NonEmptyTest extends BatchTestCase {
         // This query will not be evaluated natively, even if the Hierarchize
         // expression is expanded to a member list. The reason is that the
         // expanded list contains ALL members.
-
-        String query =
-            "With " +
-            "Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Product Family].Members})' " +
-            "Member [Gender].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Gender].[All Gender]})' " +
-            "Select " +
-            "NonEmptyCrossJoin({[Gender].[*CTX_MEMBER_SEL~SUM]},{[Product].[*CTX_MEMBER_SEL~SUM]}) " +
-            "on columns " +
-            "From [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Gender].[*CTX_MEMBER_SEL~SUM], [Product].[*CTX_MEMBER_SEL~SUM]}\n" +
-            "Row #0: 266,773\n";
-
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, true);
-        checkNotNative(1, query, fold(result));
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
+        checkNotNative(
+            1,
+            "With "
+            + "Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Product Family].Members})' "
+            + "Member [Gender].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Gender].[All Gender]})' "
+            + "Select "
+            + "NonEmptyCrossJoin({[Gender].[*CTX_MEMBER_SEL~SUM]},{[Product].[*CTX_MEMBER_SEL~SUM]}) "
+            + "on columns "
+            + "From [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[*CTX_MEMBER_SEL~SUM], [Product].[*CTX_MEMBER_SEL~SUM]}\n"
+            + "Row #0: 266,773\n");
     }
 
     /**
@@ -714,27 +706,24 @@ public class NonEmptyTest extends BatchTestCase {
      * native CJ is not used.
      */
     public void testExpandCalcMemberInputNECJ() {
-        String query =
-            "With \n" +
-            "Member [Product].[All Products].[Food].[CalcSum] as \n" +
-            "'Sum({[Product].[All Products].[Food]})', SOLVE_ORDER=-100\n" +
-            "Select\n" +
-            "{[Measures].[Store Cost]} on columns,\n" +
-            "NonEmptyCrossJoin({[Product].[All Products].[Food].[CalcSum]},\n" +
-            "                  {[Education Level].DefaultMember}) on rows\n" +
-            "From [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Store Cost]}\n" +
-            "Axis #2:\n" +
-            "{[Product].[All Products].[Food].[CalcSum], [Education Level].[All Education Levels]}\n" +
-            "Row #0: 163,270.72\n";
-
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        checkNotNative(1, query, fold(result));
+        checkNotNative(
+            1,
+            "With \n"
+            + "Member [Product].[All Products].[Food].[CalcSum] as \n"
+            + "'Sum({[Product].[All Products].[Food]})', SOLVE_ORDER=-100\n"
+            + "Select\n"
+            + "{[Measures].[Store Cost]} on columns,\n"
+            + "NonEmptyCrossJoin({[Product].[All Products].[Food].[CalcSum]},\n"
+            + "                  {[Education Level].DefaultMember}) on rows\n"
+            + "From [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Cost]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Food].[CalcSum], [Education Level].[All Education Levels]}\n"
+            + "Row #0: 163,270.72\n");
     }
 
     /**
@@ -742,42 +731,39 @@ public class NonEmptyTest extends BatchTestCase {
      * {@link #testCjEnumCalcMembersBug()} test.
      */
     public void testExpandCalcMembers() {
-        String query =
-            "with " +
-            "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) " +
-            "set [Enum Store Types] as {" +
-            "    [Store Type].[All Store Types].[Small Grocery], " +
-            "    [Store Type].[All Store Types].[Supermarket], " +
-            "    [Store Type].[All Store Types].[HeadQuarters], " +
-            "    [Store Type].[All Store Types].[S]} " +
-            "set [Filtered Enum Store Types] as Filter([Enum Store Types], [Measures].[Unit Sales] > 0)" +
-            "select NonEmptyCrossJoin([Product].[All Products].Children, [Filtered Enum Store Types])  on columns from [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Small Grocery]}\n" +
-            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Supermarket]}\n" +
-            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[S]}\n" +
-            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Small Grocery]}\n" +
-            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Supermarket]}\n" +
-            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[S]}\n" +
-            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Small Grocery]}\n" +
-            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Supermarket]}\n" +
-            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[S]}\n" +
-            "Row #0: 574\n" +
-            "Row #0: 14,092\n" +
-            "Row #0: 24,597\n" +
-            "Row #0: 4,764\n" +
-            "Row #0: 108,188\n" +
-            "Row #0: 191,940\n" +
-            "Row #0: 1,219\n" +
-            "Row #0: 28,275\n" +
-            "Row #0: 50,236\n";
-
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        checkNotNative(9, query, fold(result));
+        checkNotNative(
+            9,
+            "with "
+            + "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) "
+            + "set [Enum Store Types] as {"
+            + "    [Store Type].[All Store Types].[Small Grocery], "
+            + "    [Store Type].[All Store Types].[Supermarket], "
+            + "    [Store Type].[All Store Types].[HeadQuarters], "
+            + "    [Store Type].[All Store Types].[S]} "
+            + "set [Filtered Enum Store Types] as Filter([Enum Store Types], [Measures].[Unit Sales] > 0)"
+            + "select NonEmptyCrossJoin([Product].[All Products].Children, [Filtered Enum Store Types])  on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Small Grocery]}\n"
+            + "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Supermarket]}\n"
+            + "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[S]}\n"
+            + "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Small Grocery]}\n"
+            + "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Supermarket]}\n"
+            + "{[Product].[All Products].[Food], [Store Type].[All Store Types].[S]}\n"
+            + "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Small Grocery]}\n"
+            + "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Supermarket]}\n"
+            + "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[S]}\n"
+            + "Row #0: 574\n"
+            + "Row #0: 14,092\n"
+            + "Row #0: 24,597\n"
+            + "Row #0: 4,764\n"
+            + "Row #0: 108,188\n"
+            + "Row #0: 191,940\n"
+            + "Row #0: 1,219\n"
+            + "Row #0: 28,275\n"
+            + "Row #0: 50,236\n");
     }
 
     /**
@@ -785,37 +771,37 @@ public class NonEmptyTest extends BatchTestCase {
      * inputs that preduce MemberList results.
      */
     public void testExpandNestedNonNativeInputs() {
-        String query =
-            "select " +
-            "NonEmptyCrossJoin(" +
-            "  NonEmptyCrossJoin([Gender].Children, [Store].Children), " +
-            "  [Product].Children) on columns " +
-            "from [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Gender].[All Gender].[F], [Store].[All Stores].[USA], [Product].[All Products].[Drink]}\n" +
-            "{[Gender].[All Gender].[F], [Store].[All Stores].[USA], [Product].[All Products].[Food]}\n" +
-            "{[Gender].[All Gender].[F], [Store].[All Stores].[USA], [Product].[All Products].[Non-Consumable]}\n" +
-            "{[Gender].[All Gender].[M], [Store].[All Stores].[USA], [Product].[All Products].[Drink]}\n" +
-            "{[Gender].[All Gender].[M], [Store].[All Stores].[USA], [Product].[All Products].[Food]}\n" +
-            "{[Gender].[All Gender].[M], [Store].[All Stores].[USA], [Product].[All Products].[Non-Consumable]}\n" +
-            "Row #0: 12,202\n" +
-            "Row #0: 94,814\n" +
-            "Row #0: 24,542\n" +
-            "Row #0: 12,395\n" +
-            "Row #0: 97,126\n" +
-            "Row #0: 25,694\n";
-
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
-        checkNative(0, 6, query, fold(result), requestFreshConnection);
+        checkNative(
+            0,
+            6,
+            "select "
+            + "NonEmptyCrossJoin("
+            + "  NonEmptyCrossJoin([Gender].Children, [Store].Children), "
+            + "  [Product].Children) on columns "
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[All Gender].[F], [Store].[All Stores].[USA], [Product].[All Products].[Drink]}\n"
+            + "{[Gender].[All Gender].[F], [Store].[All Stores].[USA], [Product].[All Products].[Food]}\n"
+            + "{[Gender].[All Gender].[F], [Store].[All Stores].[USA], [Product].[All Products].[Non-Consumable]}\n"
+            + "{[Gender].[All Gender].[M], [Store].[All Stores].[USA], [Product].[All Products].[Drink]}\n"
+            + "{[Gender].[All Gender].[M], [Store].[All Stores].[USA], [Product].[All Products].[Food]}\n"
+            + "{[Gender].[All Gender].[M], [Store].[All Stores].[USA], [Product].[All Products].[Non-Consumable]}\n"
+            + "Row #0: 12,202\n"
+            + "Row #0: 94,814\n"
+            + "Row #0: 24,542\n"
+            + "Row #0: 12,395\n"
+            + "Row #0: 97,126\n"
+            + "Row #0: 25,694\n",
+            requestFreshConnection);
     }
 
     /**
@@ -823,44 +809,41 @@ public class NonEmptyTest extends BatchTestCase {
      * even when ExpandNonNative is true.
      */
     public void testExpandLowMaxConstraints() {
-        String query =
-            "select NonEmptyCrossJoin(" +
-            "    Filter([Store Type].Children, [Measures].[Unit Sales] > 10000), " +
-            "    [Product].Children) on columns " +
-            "from [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Drink]}\n" +
-            "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Food]}\n" +
-            "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Non-Consumable]}\n" +
-            "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Drink]}\n" +
-            "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Food]}\n" +
-            "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Non-Consumable]}\n" +
-            "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Drink]}\n" +
-            "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Food]}\n" +
-            "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Non-Consumable]}\n" +
-            "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Drink]}\n" +
-            "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food]}\n" +
-            "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Non-Consumable]}\n" +
-            "Row #0: 6,827\n" +
-            "Row #0: 55,358\n" +
-            "Row #0: 14,652\n" +
-            "Row #0: 1,945\n" +
-            "Row #0: 15,438\n" +
-            "Row #0: 3,950\n" +
-            "Row #0: 1,159\n" +
-            "Row #0: 8,192\n" +
-            "Row #0: 2,140\n" +
-            "Row #0: 14,092\n" +
-            "Row #0: 108,188\n" +
-            "Row #0: 28,275\n";
-
         propSaver.set(MondrianProperties.instance().MaxConstraints, 2);
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        checkNotNative(12, query, fold(result));
+        checkNotNative(
+            12,
+            "select NonEmptyCrossJoin("
+            + "    Filter([Store Type].Children, [Measures].[Unit Sales] > 10000), "
+            + "    [Product].Children) on columns "
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Drink]}\n"
+            + "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Food]}\n"
+            + "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Non-Consumable]}\n"
+            + "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Drink]}\n"
+            + "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Food]}\n"
+            + "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Non-Consumable]}\n"
+            + "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Drink]}\n"
+            + "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Food]}\n"
+            + "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Non-Consumable]}\n"
+            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Drink]}\n"
+            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food]}\n"
+            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Non-Consumable]}\n"
+            + "Row #0: 6,827\n"
+            + "Row #0: 55,358\n"
+            + "Row #0: 14,652\n"
+            + "Row #0: 1,945\n"
+            + "Row #0: 15,438\n"
+            + "Row #0: 3,950\n"
+            + "Row #0: 1,159\n"
+            + "Row #0: 8,192\n"
+            + "Row #0: 2,140\n"
+            + "Row #0: 14,092\n"
+            + "Row #0: 108,188\n"
+            + "Row #0: 28,275\n");
     }
 
     /**
@@ -868,14 +851,14 @@ public class NonEmptyTest extends BatchTestCase {
      * contain members from different levels, even if ExpandNonNative is set.
      */
     public void testExpandDifferentLevels() {
-        String query =
-            "select NonEmptyCrossJoin(" +
-            "    Descendants([Customers].[All Customers].[USA].[WA].[Yakima]), " +
-            "    [Product].Children) on columns " +
-            "from [Sales]";
-
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        checkNotNative(278, query, null);
+        checkNotNative(
+            278,
+            "select NonEmptyCrossJoin("
+            + "    Descendants([Customers].[All Customers].[USA].[WA].[Yakima]), "
+            + "    [Product].Children) on columns "
+            + "from [Sales]",
+            null);
     }
 
     /**
@@ -883,22 +866,19 @@ public class NonEmptyTest extends BatchTestCase {
      * ExpandNonNative is set.
      */
     public void testExpandTupleInputs1() {
-        String query =
-            "with " +
-            "set [Tuple Set] as {([Store Type].[All Store Types].[HeadQuarters], [Product].[All Products].[Drink]), ([Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food])} " +
-            "set [Filtered Tuple Set] as Filter([Tuple Set], 1=1) " +
-            "set [NECJ] as NonEmptyCrossJoin([Store].Children, [Filtered Tuple Set]) " +
-            "select [NECJ] on columns from [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food]}\n" +
-            "Row #0: 108,188\n";
-
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        checkNotNative(1, query, fold(result));
+        checkNotNative(
+            1,
+            "with "
+            + "set [Tuple Set] as {([Store Type].[All Store Types].[HeadQuarters], [Product].[All Products].[Drink]), ([Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food])} "
+            + "set [Filtered Tuple Set] as Filter([Tuple Set], 1=1) "
+            + "set [NECJ] as NonEmptyCrossJoin([Store].Children, [Filtered Tuple Set]) "
+            + "select [NECJ] on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food]}\n"
+            + "Row #0: 108,188\n");
     }
 
     /**
@@ -906,22 +886,19 @@ public class NonEmptyTest extends BatchTestCase {
      * ExpandNonNative is set.
      */
     public void testExpandTupleInputs2() {
-        String query =
-            "with " +
-            "set [Tuple Set] as {([Store Type].[All Store Types].[HeadQuarters], [Product].[All Products].[Drink]), ([Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food])} " +
-            "set [Filtered Tuple Set] as Filter([Tuple Set], 1=1) " +
-            "set [NECJ] as NonEmptyCrossJoin([Filtered Tuple Set], [Store].Children) " +
-            "select [NECJ] on columns from [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food], [Store].[All Stores].[USA]}\n" +
-            "Row #0: 108,188\n";
-
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        checkNotNative(1, query, fold(result));
+        checkNotNative(
+            1,
+            "with "
+            + "set [Tuple Set] as {([Store Type].[All Store Types].[HeadQuarters], [Product].[All Products].[Drink]), ([Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food])} "
+            + "set [Filtered Tuple Set] as Filter([Tuple Set], 1=1) "
+            + "set [NECJ] as NonEmptyCrossJoin([Filtered Tuple Set], [Store].Children) "
+            + "select [NECJ] on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food], [Store].[All Stores].[USA]}\n"
+            + "Row #0: 108,188\n");
     }
 
     /**
@@ -930,59 +907,54 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testExpandWithOneEmptyInput() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        String query =
-            "With " +
-            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],[*BASE_MEMBERS_Product])' " +
-            "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' " +
-            "Set [*BASE_MEMBERS_Gender] as 'Filter([Gender].[Gender].Members,[Gender].CurrentMember.Name Matches (\"abc\"))' " +
-            "Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})' " +
-            "Set [*BASE_MEMBERS_Product] as '[Product].[Product Name].Members' " +
-            "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' " +
-            "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 " +
-            "Select " +
-            "[*BASE_MEMBERS_Measures] on columns, " +
-            "Non Empty Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember,[Product].CurrentMember)}) on rows " +
-            "From [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
-            "Axis #2:\n";
-
         boolean requestFreshConnection = true;
         // Query should return empty result.
-        checkNative(0, 0, fold(query), fold(result), requestFreshConnection);
+        checkNative(
+            0,
+            0,
+            "With "
+            + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],[*BASE_MEMBERS_Product])' "
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' "
+            + "Set [*BASE_MEMBERS_Gender] as 'Filter([Gender].[Gender].Members,[Gender].CurrentMember.Name Matches (\"abc\"))' "
+            + "Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})' "
+            + "Set [*BASE_MEMBERS_Product] as '[Product].[Product Name].Members' "
+            + "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' "
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 "
+            + "Select "
+            + "[*BASE_MEMBERS_Measures] on columns, "
+            + "Non Empty Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember,[Product].CurrentMember)}) on rows "
+            + "From [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n",
+            requestFreshConnection);
     }
 
     public void testExpandWithTwoEmptyInputs() {
         getConnection().getCacheControl(null).flushSchemaCache();
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-
-        String query =
-            "With " +
-            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],[*BASE_MEMBERS_Product])' " +
-            "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' " +
-            "Set [*BASE_MEMBERS_Gender] as 'Filter([Gender].[Gender].Members,[Gender].CurrentMember.Name Matches (\"abc\"))' " +
-            "Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})' " +
-            "Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Name].Members, [Product].[Product Name].CurrentMember.Name Matches (\"abc\"))' " +
-            "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' " +
-            "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 " +
-            "Select " +
-            "[*BASE_MEMBERS_Measures] on columns, " +
-            "Non Empty Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember,[Product].CurrentMember)}) on rows " +
-            "From [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
-            "Axis #2:\n";
-
         // Query should return empty result.
-        checkNotNative(0, fold(query), fold(result));
+        checkNotNative(
+            0,
+            "With "
+            + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],[*BASE_MEMBERS_Product])' "
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' "
+            + "Set [*BASE_MEMBERS_Gender] as 'Filter([Gender].[Gender].Members,[Gender].CurrentMember.Name Matches (\"abc\"))' "
+            + "Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})' "
+            + "Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Name].Members, [Product].[Product Name].CurrentMember.Name Matches (\"abc\"))' "
+            + "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' "
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 "
+            + "Select "
+            + "[*BASE_MEMBERS_Measures] on columns, "
+            + "Non Empty Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember,[Product].CurrentMember)}) on rows "
+            + "From [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n");
     }
 
     /**
@@ -991,55 +963,52 @@ public class NonEmptyTest extends BatchTestCase {
      * evaluations will be turned off.
      */
     public void testEnumLowMaxConstraints() {
-        String query =
-            "with " +
-            "set [All Store Types] as {" +
-                "[Store Type].[All Store Types].[Deluxe Supermarket], " +
-                "[Store Type].[All Store Types].[Gourmet Supermarket], " +
-                "[Store Type].[All Store Types].[Mid-Size Grocery], " +
-                "[Store Type].[All Store Types].[Small Grocery], " +
-                "[Store Type].[All Store Types].[Supermarket]} " +
-            "set [All Products] as {" +
-                "[Product].[All Products].[Drink], " +
-                "[Product].[All Products].[Food], " +
-                "[Product].[All Products].[Non-Consumable]} " +
-            "select " +
-            "NonEmptyCrossJoin(" +
-                "Filter([All Store Types], ([Measures].[Unit Sales] > 10000)), " +
-                "[All Products]) on columns " +
-            "from [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Drink]}\n" +
-            "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Food]}\n" +
-            "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Non-Consumable]}\n" +
-            "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Drink]}\n" +
-            "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Food]}\n" +
-            "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Non-Consumable]}\n" +
-            "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Drink]}\n" +
-            "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Food]}\n" +
-            "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Non-Consumable]}\n" +
-            "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Drink]}\n" +
-            "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food]}\n" +
-            "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Non-Consumable]}\n" +
-            "Row #0: 6,827\n" +
-            "Row #0: 55,358\n" +
-            "Row #0: 14,652\n" +
-            "Row #0: 1,945\n" +
-            "Row #0: 15,438\n" +
-            "Row #0: 3,950\n" +
-            "Row #0: 1,159\n" +
-            "Row #0: 8,192\n" +
-            "Row #0: 2,140\n" +
-            "Row #0: 14,092\n" +
-            "Row #0: 108,188\n" +
-            "Row #0: 28,275\n";
-
         propSaver.set(MondrianProperties.instance().MaxConstraints, 2);
-        checkNotNative(12, query, fold(result));
+        checkNotNative(
+            12,
+            "with "
+            + "set [All Store Types] as {"
+            + "[Store Type].[All Store Types].[Deluxe Supermarket], "
+            + "[Store Type].[All Store Types].[Gourmet Supermarket], "
+            + "[Store Type].[All Store Types].[Mid-Size Grocery], "
+            + "[Store Type].[All Store Types].[Small Grocery], "
+            + "[Store Type].[All Store Types].[Supermarket]} "
+            + "set [All Products] as {"
+            + "[Product].[All Products].[Drink], "
+            + "[Product].[All Products].[Food], "
+            + "[Product].[All Products].[Non-Consumable]} "
+            + "select "
+            + "NonEmptyCrossJoin("
+            + "Filter([All Store Types], ([Measures].[Unit Sales] > 10000)), "
+            + "[All Products]) on columns "
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Drink]}\n"
+            + "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Food]}\n"
+            + "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Non-Consumable]}\n"
+            + "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Drink]}\n"
+            + "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Food]}\n"
+            + "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Non-Consumable]}\n"
+            + "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Drink]}\n"
+            + "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Food]}\n"
+            + "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Non-Consumable]}\n"
+            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Drink]}\n"
+            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food]}\n"
+            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Non-Consumable]}\n"
+            + "Row #0: 6,827\n"
+            + "Row #0: 55,358\n"
+            + "Row #0: 14,652\n"
+            + "Row #0: 1,945\n"
+            + "Row #0: 15,438\n"
+            + "Row #0: 3,950\n"
+            + "Row #0: 1,159\n"
+            + "Row #0: 8,192\n"
+            + "Row #0: 2,140\n"
+            + "Row #0: 14,092\n"
+            + "Row #0: 108,188\n"
+            + "Row #0: 28,275\n");
     }
 
     /**
@@ -1048,21 +1017,18 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testAllMembersNECJ1() {
         // This query cannot be evaluated natively because of the "All" member.
-
-        String query =
-            "select " +
-            "NonEmptyCrossJoin({[Store].[All Stores]}, {[Product].[All Products]}) on columns " +
-            "from [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Store].[All Stores], [Product].[All Products]}\n" +
-            "Row #0: 266,773\n";
-
-        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, true);
-        checkNotNative(1, query, fold(result));
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
+        checkNotNative(
+            1,
+            "select "
+            + "NonEmptyCrossJoin({[Store].[All Stores]}, {[Product].[All Products]}) on columns "
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores], [Product].[All Products]}\n"
+            + "Row #0: 266,773\n");
     }
 
     /**
@@ -1076,29 +1042,28 @@ public class NonEmptyTest extends BatchTestCase {
         // It can also be rewritten to use
         // Filter([Product].[All Products].Children, Is NotEmpty([Measures].[Unit Sales]))
         // which can be natively evaluated
-
-        String query =
-            "select " +
-            "NonEmptyCrossJoin([Product].[All Products].Children, {[Store].[All Stores]}) on columns " +
-            "from [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Product].[All Products].[Drink], [Store].[All Stores]}\n" +
-            "{[Product].[All Products].[Food], [Store].[All Stores]}\n" +
-            "{[Product].[All Products].[Non-Consumable], [Store].[All Stores]}\n" +
-            "Row #0: 24,597\n" +
-            "Row #0: 191,940\n" +
-            "Row #0: 50,236\n";
-
-        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
-        checkNative(0, 3, query, fold(result), requestFreshConnection);
+        checkNative(
+            0,
+            3,
+            "select "
+            + "NonEmptyCrossJoin([Product].[All Products].Children, {[Store].[All Stores]}) on columns "
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[All Products].[Drink], [Store].[All Stores]}\n"
+            + "{[Product].[All Products].[Food], [Store].[All Stores]}\n"
+            + "{[Product].[All Products].[Non-Consumable], [Store].[All Stores]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #0: 191,940\n"
+            + "Row #0: 50,236\n",
+            requestFreshConnection);
     }
 
     /**
@@ -1117,10 +1082,13 @@ public class NonEmptyTest extends BatchTestCase {
      * enum sets {} containing ALL
      */
     public void testCjDescendantsEnumAllOnly() {
-        checkNative(9, 9, "select {[Measures].[Unit Sales]} ON COLUMNS, " + "NON EMPTY Crossjoin("
-                + "  Descendants([Customers].[All Customers].[USA], [Customers].[City]), "
-                + "  {[Product].[All Products]}) ON ROWS " + "from [Sales] "
-                + "where ([Promotions].[All Promotions].[Bag Stuffers])");
+        checkNative(
+            9,
+            9,
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " + "NON EMPTY Crossjoin("
+            + "  Descendants([Customers].[All Customers].[USA], [Customers].[City]), "
+            + "  {[Product].[All Products]}) ON ROWS " + "from [Sales] "
+            + "where ([Promotions].[All Promotions].[Bag Stuffers])");
     }
 
     /**
@@ -1192,55 +1160,51 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testMeasureAndAggregateInSlicer() {
-        String result = fold(
-            "Axis #0:\n"
-                + "{[Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink]}\n"
-                + "Axis #1:\n"
-                + "{[Time].[1997]}\n"
-                + "Axis #2:\n"
-                + "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n"
-                + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
-                + "{[Store].[All Stores].[USA].[CA].[San Diego]}\n"
-                + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
-                + "Row #0: 1,945\n"
-                + "Row #1: 2,422\n"
-                + "Row #2: 2,560\n"
-                + "Row #3: 175\n");
         assertQueryReturns(
-                "with member [Store Type].[All Store Types].[All Types] as 'Aggregate({[Store Type].[All Store Types].[Deluxe Supermarket],  "
-                        + "[Store Type].[All Store Types].[Gourmet Supermarket],  "
-                        + "[Store Type].[All Store Types].[HeadQuarters],  "
-                        + "[Store Type].[All Store Types].[Mid-Size Grocery],  "
-                        + "[Store Type].[All Store Types].[Small Grocery],  "
-                        + "[Store Type].[All Store Types].[Supermarket]})'  "
-                        + "select NON EMPTY {[Time].[1997]} ON COLUMNS,   "
-                        + "NON EMPTY [Store].[All Stores].[USA].[CA].Children ON ROWS   "
-                        + "from [Sales] "
-                        + "where ([Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink])  ",
-                result);
+            "with member [Store Type].[All Store Types].[All Types] as 'Aggregate({[Store Type].[All Store Types].[Deluxe Supermarket],  "
+            + "[Store Type].[All Store Types].[Gourmet Supermarket],  "
+            + "[Store Type].[All Store Types].[HeadQuarters],  "
+            + "[Store Type].[All Store Types].[Mid-Size Grocery],  "
+            + "[Store Type].[All Store Types].[Small Grocery],  "
+            + "[Store Type].[All Store Types].[Supermarket]})'  "
+            + "select NON EMPTY {[Time].[1997]} ON COLUMNS,   "
+            + "NON EMPTY [Store].[All Stores].[USA].[CA].Children ON ROWS   "
+            + "from [Sales] "
+            + "where ([Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink])  ",
+            "Axis #0:\n"
+            + "{[Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink]}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 1,945\n"
+            + "Row #1: 2,422\n"
+            + "Row #2: 2,560\n"
+            + "Row #3: 175\n");
     }
 
     public void testMeasureInSlicer() {
-        String result = fold(
-            "Axis #0:\n"
-                + "{[Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink]}\n"
-                + "Axis #1:\n"
-                + "{[Time].[1997]}\n"
-                + "Axis #2:\n"
-                + "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n"
-                + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
-                + "{[Store].[All Stores].[USA].[CA].[San Diego]}\n"
-                + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
-                + "Row #0: 1,945\n"
-                + "Row #1: 2,422\n"
-                + "Row #2: 2,560\n"
-                + "Row #3: 175\n");
         assertQueryReturns(
-                "select NON EMPTY {[Time].[1997]} ON COLUMNS,   "
-                        + "NON EMPTY [Store].[All Stores].[USA].[CA].Children ON ROWS  "
-                        + "from [Sales]  "
-                        + "where ([Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink])",
-                result);
+            "select NON EMPTY {[Time].[1997]} ON COLUMNS,   "
+            + "NON EMPTY [Store].[All Stores].[USA].[CA].Children ON ROWS  "
+            + "from [Sales]  "
+            + "where ([Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink])",
+            "Axis #0:\n"
+            + "{[Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink]}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 1,945\n"
+            + "Row #1: 2,422\n"
+            + "Row #2: 2,560\n"
+            + "Row #3: 175\n");
     }
 
     /**
@@ -1444,46 +1408,47 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMultiLevelMemberConstraintNonNullParent() {
         String query =
-            "with " +
-            "set [Filtered Store City Set] as " +
-            "{[Store].[USA].[OR].[Portland], " +
-            " [Store].[USA].[OR].[Salem], " +
-            " [Store].[USA].[CA].[San Francisco], " +
-            " [Store].[USA].[WA].[Tacoma]} " +
-            "set [NECJ] as NonEmptyCrossJoin([Filtered Store City Set], {[Product].[Product Family].Food}) " +
-            "select [NECJ] on columns from [Sales]";
+            "with "
+            + "set [Filtered Store City Set] as "
+            + "{[Store].[USA].[OR].[Portland], "
+            + " [Store].[USA].[OR].[Salem], "
+            + " [Store].[USA].[CA].[San Francisco], "
+            + " [Store].[USA].[WA].[Tacoma]} "
+            + "set [NECJ] as NonEmptyCrossJoin([Filtered Store City Set], {[Product].[Product Family].Food}) "
+            + "select [NECJ] on columns from [Sales]";
 
         String necjSqlDerby =
-                "select " +
-                "\"store\".\"store_country\", \"store\".\"store_state\", \"store\".\"store_city\", " +
-                "\"product_class\".\"product_family\" " +
-                "from " +
-                "\"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
-                "\"product\" as \"product\", \"product_class\" as \"product_class\" " +
-                "where " +
-                "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
-                "and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" " +
-                "and ((\"store\".\"store_state\" = 'OR' and \"store\".\"store_city\" in ('Portland', 'Salem'))" +
-                " or (\"store\".\"store_state\" = 'CA' and \"store\".\"store_city\" = 'San Francisco')" +
-                " or (\"store\".\"store_state\" = 'WA' and \"store\".\"store_city\" = 'Tacoma')) " +
-                "and (\"product_class\".\"product_family\" = 'Food') " +
-                "group by \"store\".\"store_country\", \"store\".\"store_state\", \"store\".\"store_city\", \"product_class\".\"product_family\" " +
-                "order by \"store\".\"store_country\" ASC, \"store\".\"store_state\" ASC, \"store\".\"store_city\" ASC, \"product_class\".\"product_family\" ASC";
+            "select "
+            + "\"store\".\"store_country\", \"store\".\"store_state\", \"store\".\"store_city\", "
+            + "\"product_class\".\"product_family\" "
+            + "from "
+            + "\"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", "
+            + "\"product\" as \"product\", \"product_class\" as \"product_class\" "
+            + "where "
+            + "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" "
+            + "and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" "
+            + "and ((\"store\".\"store_state\" = 'OR' and \"store\".\"store_city\" in ('Portland', 'Salem'))"
+            + " or (\"store\".\"store_state\" = 'CA' and \"store\".\"store_city\" = 'San Francisco')"
+            + " or (\"store\".\"store_state\" = 'WA' and \"store\".\"store_city\" = 'Tacoma')) "
+            + "and (\"product_class\".\"product_family\" = 'Food') "
+            + "group by \"store\".\"store_country\", \"store\".\"store_state\", \"store\".\"store_city\", \"product_class\".\"product_family\" "
+            + "order by \"store\".\"store_country\" ASC, \"store\".\"store_state\" ASC, \"store\".\"store_city\" ASC, \"product_class\".\"product_family\" ASC";
+
         String necjSqlMySql =
-            "select " +
-            "`store`.`store_country` as `c0`, `store`.`store_state` as `c1`, " +
-            "`store`.`store_city` as `c2`, `product_class`.`product_family` as `c3` " +
-            "from " +
-            "`store` as `store`, `sales_fact_1997` as `sales_fact_1997`, " +
-            "`product` as `product`, `product_class` as `product_class` " +
-            "where " +
-            "`sales_fact_1997`.`store_id` = `store`.`store_id` and `product`.`product_class_id` = `product_class`.`product_class_id` " +
-            "and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
-            "and ((`store`.`store_city`,`store`.`store_state`) in (('Portland','OR'),('Salem','OR'),('San Francisco','CA'),('Tacoma','WA'))) " +
-            "and (`product_class`.`product_family` = 'Food') " +
-            "group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `product_class`.`product_family` " +
-            "order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC, ISNULL(`store`.`store_state`), `store`.`store_state` ASC, " +
-            "ISNULL(`store`.`store_city`), `store`.`store_city` ASC, ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+            "select "
+            + "`store`.`store_country` as `c0`, `store`.`store_state` as `c1`, "
+            + "`store`.`store_city` as `c2`, `product_class`.`product_family` as `c3` "
+            + "from "
+            + "`store` as `store`, `sales_fact_1997` as `sales_fact_1997`, "
+            + "`product` as `product`, `product_class` as `product_class` "
+            + "where "
+            + "`sales_fact_1997`.`store_id` = `store`.`store_id` and `product`.`product_class_id` = `product_class`.`product_class_id` "
+            + "and `sales_fact_1997`.`product_id` = `product`.`product_id` "
+            + "and ((`store`.`store_city`,`store`.`store_state`) in (('Portland','OR'),('Salem','OR'),('San Francisco','CA'),('Tacoma','WA'))) "
+            + "and (`product_class`.`product_family` = 'Food') "
+            + "group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `product_class`.`product_family` "
+            + "order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC, ISNULL(`store`.`store_state`), `store`.`store_state` ASC, "
+            + "ISNULL(`store`.`store_city`), `store`.`store_city` ASC, ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
 
         if (MondrianProperties.instance().UseAggregates.get() &&
             MondrianProperties.instance().ReadAggregates.get()) {
@@ -1512,55 +1477,55 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
         String dimension =
-            "<Dimension name=\"Warehouse2\">\n" +
-            "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n" +
-            "    <Table name=\"warehouse\"/>\n" +
-            "    <Level name=\"address3\" column=\"wa_address3\" uniqueMembers=\"true\"/>\n" +
-            "    <Level name=\"address2\" column=\"wa_address2\" uniqueMembers=\"true\"/>\n" +
-            "    <Level name=\"address1\" column=\"wa_address1\" uniqueMembers=\"false\"/>\n" +
-            "    <Level name=\"name\" column=\"warehouse_name\" uniqueMembers=\"false\"/>\n" +
-            "  </Hierarchy>\n" +
-            "</Dimension>\n";
+            "<Dimension name=\"Warehouse2\">\n"
+            + "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n"
+            + "    <Table name=\"warehouse\"/>\n"
+            + "    <Level name=\"address3\" column=\"wa_address3\" uniqueMembers=\"true\"/>\n"
+            + "    <Level name=\"address2\" column=\"wa_address2\" uniqueMembers=\"true\"/>\n"
+            + "    <Level name=\"address1\" column=\"wa_address1\" uniqueMembers=\"false\"/>\n"
+            + "    <Level name=\"name\" column=\"warehouse_name\" uniqueMembers=\"false\"/>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>\n";
 
         String cube =
-            "<Cube name=\"Warehouse2\">\n" +
-            "  <Table name=\"inventory_fact_1997\"/>\n" +
-            "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n" +
-            "  <DimensionUsage name=\"Warehouse2\" source=\"Warehouse2\" foreignKey=\"warehouse_id\"/>\n" +
-            "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n" +
-            "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n" +
-            "</Cube>";
+            "<Cube name=\"Warehouse2\">\n"
+            + "  <Table name=\"inventory_fact_1997\"/>\n"
+            + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
+            + "  <DimensionUsage name=\"Warehouse2\" source=\"Warehouse2\" foreignKey=\"warehouse_id\"/>\n"
+            + "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n"
+            + "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n"
+            + "</Cube>";
 
         String query =
-            "with\n" +
-            "set [Filtered Warehouse Set] as " +
-            "{[Warehouse2].[#null].[#null].[5617 Saclan Terrace].[Arnold and Sons]," +
-            " [Warehouse2].[#null].[#null].[3377 Coachman Place].[Jones International]} " +
-            "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) " +
-            "select [NECJ] on columns from [Warehouse2]";
+            "with\n"
+            + "set [Filtered Warehouse Set] as "
+            + "{[Warehouse2].[#null].[#null].[5617 Saclan Terrace].[Arnold and Sons],"
+            + " [Warehouse2].[#null].[#null].[3377 Coachman Place].[Jones International]} "
+            + "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) "
+            + "select [NECJ] on columns from [Warehouse2]";
 
         String necjSqlDerby =
-            "select \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" " +
-            "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" " +
-            "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
-            "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" and " +
-            "((\"warehouse\".\"wa_address1\" = '5617 Saclan Terrace' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"warehouse_name\" = 'Arnold and Sons') " +
-            "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"warehouse_name\" = 'Jones International')) " +
-            "and (\"product_class\".\"product_family\" = 'Food') group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", " +
-            "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, " +
-            "\"warehouse\".\"wa_address1\" ASC, \"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
+            "select \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
+            + "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" "
+            + "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" "
+            + "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" and "
+            + "((\"warehouse\".\"wa_address1\" = '5617 Saclan Terrace' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"warehouse_name\" = 'Arnold and Sons') "
+            + "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"warehouse_name\" = 'Jones International')) "
+            + "and (\"product_class\".\"product_family\" = 'Food') group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", "
+            + "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, "
+            + "\"warehouse\".\"wa_address1\" ASC, \"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
-            "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`wa_address1` as `c2`, `warehouse`.`warehouse_name` as `c3`, " +
-            "`product_class`.`product_family` as `c4` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, `product` as `product`, " +
-            "`product_class` as `product_class` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and " +
-            "`product`.`product_class_id` = `product_class`.`product_class_id` and `inventory_fact_1997`.`product_id` = `product`.`product_id` and " +
-            "((`warehouse`.`wa_address2` is null and (`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`) in (('Arnold and Sons','5617 Saclan Terrace')," +
-            "('Jones International','3377 Coachman Place')))) and (`product_class`.`product_family` = 'Food') group by `warehouse`.`wa_address3`, " +
-            "`warehouse`.`wa_address2`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`, `product_class`.`product_family` " +
-            "order by ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`), `warehouse`.`wa_address2` ASC, " +
-            "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`), `warehouse`.`warehouse_name` ASC, " +
-            "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+            "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`wa_address1` as `c2`, `warehouse`.`warehouse_name` as `c3`, "
+            + "`product_class`.`product_family` as `c4` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, `product` as `product`, "
+            + "`product_class` as `product_class` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and "
+            + "`product`.`product_class_id` = `product_class`.`product_class_id` and `inventory_fact_1997`.`product_id` = `product`.`product_id` and "
+            + "((`warehouse`.`wa_address2` is null and (`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`) in (('Arnold and Sons','5617 Saclan Terrace'),"
+            + "('Jones International','3377 Coachman Place')))) and (`product_class`.`product_family` = 'Food') group by `warehouse`.`wa_address3`, "
+            + "`warehouse`.`wa_address2`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`, `product_class`.`product_family` "
+            + "order by ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`), `warehouse`.`wa_address2` ASC, "
+            + "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`), `warehouse`.`warehouse_name` ASC, "
+            + "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
 
         TestContext testContext =
             TestContext.create(
@@ -1593,60 +1558,60 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
         String dimension =
-            "<Dimension name=\"Warehouse2\">\n" +
-            "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n" +
-            "    <Table name=\"warehouse\"/>\n" +
-            "    <Level name=\"fax\" column=\"warehouse_fax\" uniqueMembers=\"true\"/>\n" +
-            "    <Level name=\"address1\" column=\"wa_address1\" uniqueMembers=\"false\"/>\n" +
-            "    <Level name=\"name\" column=\"warehouse_name\" uniqueMembers=\"false\"/>\n" +
-            "  </Hierarchy>\n" +
-            "</Dimension>\n";
+            "<Dimension name=\"Warehouse2\">\n"
+            + "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n"
+            + "    <Table name=\"warehouse\"/>\n"
+            + "    <Level name=\"fax\" column=\"warehouse_fax\" uniqueMembers=\"true\"/>\n"
+            + "    <Level name=\"address1\" column=\"wa_address1\" uniqueMembers=\"false\"/>\n"
+            + "    <Level name=\"name\" column=\"warehouse_name\" uniqueMembers=\"false\"/>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>\n";
 
         String cube =
-            "<Cube name=\"Warehouse2\">\n" +
-            "  <Table name=\"inventory_fact_1997\"/>\n" +
-            "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n" +
-            "  <DimensionUsage name=\"Warehouse2\" source=\"Warehouse2\" foreignKey=\"warehouse_id\"/>\n" +
-            "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n" +
-            "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n" +
-            "</Cube>";
+            "<Cube name=\"Warehouse2\">\n"
+            + "  <Table name=\"inventory_fact_1997\"/>\n"
+            + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
+            + "  <DimensionUsage name=\"Warehouse2\" source=\"Warehouse2\" foreignKey=\"warehouse_id\"/>\n"
+            + "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n"
+            + "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n"
+            + "</Cube>";
 
         String query =
-            "with\n" +
-            "set [Filtered Warehouse Set] as " +
-            "{[Warehouse2].[#null].[234 West Covina Pkwy].[Freeman And Co]," +
-            " [Warehouse2].[971-555-6213].[3377 Coachman Place].[Jones International]} " +
-            "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) " +
-            "select [NECJ] on columns from [Warehouse2]";
+            "with\n"
+            + "set [Filtered Warehouse Set] as "
+            + "{[Warehouse2].[#null].[234 West Covina Pkwy].[Freeman And Co],"
+            + " [Warehouse2].[971-555-6213].[3377 Coachman Place].[Jones International]} "
+            + "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) "
+            + "select [NECJ] on columns from [Warehouse2]";
 
         String necjSqlDerby =
-            "select \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" " +
-            "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" " +
-            "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
-            "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" and " +
-            "((\"warehouse\".\"wa_address1\" = '234 West Covina Pkwy' and \"warehouse\".\"warehouse_fax\" is null and \"warehouse\".\"warehouse_name\" = 'Freeman And Co') " +
-            "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"warehouse_fax\" = '971-555-6213' and \"warehouse\".\"warehouse_name\" = 'Jones International')) " +
-            "and (\"product_class\".\"product_family\" = 'Food') " +
-            "group by \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" " +
-            "order by \"warehouse\".\"warehouse_fax\" ASC, \"warehouse\".\"wa_address1\" ASC, " +
-            "\"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
+            "select \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
+            + "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" "
+            + "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" "
+            + "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" and "
+            + "((\"warehouse\".\"wa_address1\" = '234 West Covina Pkwy' and \"warehouse\".\"warehouse_fax\" is null and \"warehouse\".\"warehouse_name\" = 'Freeman And Co') "
+            + "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"warehouse_fax\" = '971-555-6213' and \"warehouse\".\"warehouse_name\" = 'Jones International')) "
+            + "and (\"product_class\".\"product_family\" = 'Food') "
+            + "group by \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
+            + "order by \"warehouse\".\"warehouse_fax\" ASC, \"warehouse\".\"wa_address1\" ASC, "
+            + "\"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
-            "select `warehouse`.`warehouse_fax` as `c0`, `warehouse`.`wa_address1` as `c1`, " +
-            "`warehouse`.`warehouse_name` as `c2`, `product_class`.`product_family` as `c3` " +
-            "from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, " +
-            "`product` as `product`, `product_class` as `product_class` " +
-            "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and " +
-            "`product`.`product_class_id` = `product_class`.`product_class_id` and " +
-            "`inventory_fact_1997`.`product_id` = `product`.`product_id` and " +
-            "((`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`,`warehouse`.`warehouse_fax`) in (('Jones International','3377 Coachman Place','971-555-6213')) " +
-            "or (`warehouse`.`warehouse_fax` is null and " +
-            "(`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`) in (('Freeman And Co','234 West Covina Pkwy')))) " +
-            "and (`product_class`.`product_family` = 'Food') " +
-            "group by `warehouse`.`warehouse_fax`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`, `product_class`.`product_family` " +
-            "order by ISNULL(`warehouse`.`warehouse_fax`), `warehouse`.`warehouse_fax` ASC, " +
-            "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`), " +
-            "`warehouse`.`warehouse_name` ASC, ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+            "select `warehouse`.`warehouse_fax` as `c0`, `warehouse`.`wa_address1` as `c1`, "
+            + "`warehouse`.`warehouse_name` as `c2`, `product_class`.`product_family` as `c3` "
+            + "from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, "
+            + "`product` as `product`, `product_class` as `product_class` "
+            + "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and "
+            + "`product`.`product_class_id` = `product_class`.`product_class_id` and "
+            + "`inventory_fact_1997`.`product_id` = `product`.`product_id` and "
+            + "((`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`,`warehouse`.`warehouse_fax`) in (('Jones International','3377 Coachman Place','971-555-6213')) "
+            + "or (`warehouse`.`warehouse_fax` is null and "
+            + "(`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`) in (('Freeman And Co','234 West Covina Pkwy')))) "
+            + "and (`product_class`.`product_family` = 'Food') "
+            + "group by `warehouse`.`warehouse_fax`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`, `product_class`.`product_family` "
+            + "order by ISNULL(`warehouse`.`warehouse_fax`), `warehouse`.`warehouse_fax` ASC, "
+            + "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`), "
+            + "`warehouse`.`warehouse_name` ASC, ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
 
         TestContext testContext =
             TestContext.create(
@@ -1679,58 +1644,58 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
         String dimension =
-            "<Dimension name=\"Warehouse2\">\n" +
-            "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n" +
-            "    <Table name=\"warehouse\"/>\n" +
-            "    <Level name=\"address3\" column=\"wa_address3\" uniqueMembers=\"true\"/>\n" +
-            "    <Level name=\"address2\" column=\"wa_address2\" uniqueMembers=\"false\"/>\n" +
-            "    <Level name=\"fax\" column=\"warehouse_fax\" uniqueMembers=\"false\"/>\n" +
-            "  </Hierarchy>\n" +
-            "</Dimension>\n";
+            "<Dimension name=\"Warehouse2\">\n"
+            + "  <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n"
+            + "    <Table name=\"warehouse\"/>\n"
+            + "    <Level name=\"address3\" column=\"wa_address3\" uniqueMembers=\"true\"/>\n"
+            + "    <Level name=\"address2\" column=\"wa_address2\" uniqueMembers=\"false\"/>\n"
+            + "    <Level name=\"fax\" column=\"warehouse_fax\" uniqueMembers=\"false\"/>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>\n";
 
         String cube =
-            "<Cube name=\"Warehouse2\">\n" +
-            "  <Table name=\"inventory_fact_1997\"/>\n" +
-            "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n" +
-            "  <DimensionUsage name=\"Warehouse2\" source=\"Warehouse2\" foreignKey=\"warehouse_id\"/>\n" +
-            "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n" +
-            "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n" +
-            "</Cube>";
+            "<Cube name=\"Warehouse2\">\n"
+            + "  <Table name=\"inventory_fact_1997\"/>\n"
+            + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
+            + "  <DimensionUsage name=\"Warehouse2\" source=\"Warehouse2\" foreignKey=\"warehouse_id\"/>\n"
+            + "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n"
+            + "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n"
+            + "</Cube>";
 
         String query =
-            "with\n" +
-            "set [Filtered Warehouse Set] as " +
-            "{[Warehouse2].[#null].[#null].[#null]," +
-            " [Warehouse2].[#null].[#null].[971-555-6213]} " +
-            "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) " +
-            "select [NECJ] on columns from [Warehouse2]";
+            "with\n"
+            + "set [Filtered Warehouse Set] as "
+            + "{[Warehouse2].[#null].[#null].[#null],"
+            + " [Warehouse2].[#null].[#null].[971-555-6213]} "
+            + "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) "
+            + "select [NECJ] on columns from [Warehouse2]";
 
         String necjSqlDerby =
-            "select \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" " +
-            "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" " +
-            "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and " +
-            "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" " +
-            "and ((\"warehouse\".\"warehouse_fax\" = '971-555-6213' or \"warehouse\".\"warehouse_fax\" is null) and " +
-            "\"warehouse\".\"wa_address2\" is null and \"warehouse\".\"wa_address3\" is null) and " +
-            "(\"product_class\".\"product_family\" = 'Food') " +
-            "group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" " +
-            "order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, \"warehouse\".\"warehouse_fax\" ASC, " +
-            "\"product_class\".\"product_family\" ASC";
+            "select \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" "
+            + "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" "
+            + "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and "
+            + "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" "
+            + "and ((\"warehouse\".\"warehouse_fax\" = '971-555-6213' or \"warehouse\".\"warehouse_fax\" is null) and "
+            + "\"warehouse\".\"wa_address2\" is null and \"warehouse\".\"wa_address3\" is null) and "
+            + "(\"product_class\".\"product_family\" = 'Food') "
+            + "group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" "
+            + "order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, \"warehouse\".\"warehouse_fax\" ASC, "
+            + "\"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
-            "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`warehouse_fax` as `c2`, " +
-            "`product_class`.`product_family` as `c3` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, " +
-            "`product` as `product`, `product_class` as `product_class` " +
-            "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and " +
-            "`inventory_fact_1997`.`product_id` = `product`.`product_id` and " +
-            "((`warehouse`.`warehouse_fax` = '971-555-6213' or `warehouse`.`warehouse_fax` is null) and " +
-            "`warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null) and " +
-            "(`product_class`.`product_family` = 'Food') " +
-            "group by `warehouse`.`wa_address3`, `warehouse`.`wa_address2`, `warehouse`.`warehouse_fax`, " +
-            "`product_class`.`product_family` " +
-            "order by ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`), " +
-            "`warehouse`.`wa_address2` ASC, ISNULL(`warehouse`.`warehouse_fax`), `warehouse`.`warehouse_fax` ASC, " +
-            "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+            "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`warehouse_fax` as `c2`, "
+            + "`product_class`.`product_family` as `c3` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, "
+            + "`product` as `product`, `product_class` as `product_class` "
+            + "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and "
+            + "`inventory_fact_1997`.`product_id` = `product`.`product_id` and "
+            + "((`warehouse`.`warehouse_fax` = '971-555-6213' or `warehouse`.`warehouse_fax` is null) and "
+            + "`warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null) and "
+            + "(`product_class`.`product_family` = 'Food') "
+            + "group by `warehouse`.`wa_address3`, `warehouse`.`wa_address2`, `warehouse`.`warehouse_fax`, "
+            + "`product_class`.`product_family` "
+            + "order by ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`), "
+            + "`warehouse`.`wa_address2` ASC, ISNULL(`warehouse`.`warehouse_fax`), `warehouse`.`warehouse_fax` ASC, "
+            + "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
 
         TestContext testContext =
             TestContext.create(
@@ -1751,18 +1716,19 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testNonEmptyUnionQuery() {
         Result result = executeQuery(
-                "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,\n" +
-                " NON EMPTY Hierarchize(\n" +
-                "   Union(\n" +
-                "     Crossjoin(\n" +
-                "       Crossjoin([Gender].[All Gender].children,\n" +
-                "                 [Marital Status].[All Marital Status].children),\n" +
-                "       Crossjoin([Customers].[All Customers].children,\n" +
-                "                 [Product].[All Products].children) ),\n" +
-                "     Crossjoin({([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M])},\n" +
-                "       Crossjoin(\n" + "         [Customers].[All Customers].[USA].children,\n" +
-                "         [Product].[All Products].children) ) )) on rows\n" +
-                "from Sales where ([Time].[1997])");
+            "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,\n"
+            + " NON EMPTY Hierarchize(\n"
+            + "   Union(\n"
+            + "     Crossjoin(\n"
+            + "       Crossjoin([Gender].[All Gender].children,\n"
+            + "                 [Marital Status].[All Marital Status].children),\n"
+            + "       Crossjoin([Customers].[All Customers].children,\n"
+            + "                 [Product].[All Products].children) ),\n"
+            + "     Crossjoin({([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M])},\n"
+            + "       Crossjoin(\n"
+            + "         [Customers].[All Customers].[USA].children,\n"
+            + "         [Product].[All Products].children) ) )) on rows\n"
+            + "from Sales where ([Time].[1997])");
         final Axis rowsAxis = result.getAxes()[1];
         Assert.assertEquals(21, rowsAxis.getPositions().size());
     }
@@ -1789,10 +1755,13 @@ public class NonEmptyTest extends BatchTestCase {
         clearAndHardenCache(rcsmrch);
         clearAndHardenCache(ssmrch);
 
-        RolapResult result = (RolapResult) executeQuery(
+        RolapResult result =
+            (RolapResult) executeQuery(
                 "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
-        assertTrue("no additional members should be read:" + ssmrch.mapKeyToMember.size(),
-                ssmrch.mapKeyToMember.size() <= 5);
+        assertTrue(
+            "no additional members should be read:"
+            + ssmrch.mapKeyToMember.size(),
+            ssmrch.mapKeyToMember.size() <= 5);
         RolapMember sf = (RolapMember) result.getAxes()[0].getPositions().get(0).get(0);
         RolapMember ca = sf.getParentMember();
 
@@ -2115,11 +2084,13 @@ public class NonEmptyTest extends BatchTestCase {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             return;
         }
-        TestCase c = new TestCase(3, 1,
-                "select " +
-                " {[Measures].[Count]} ON columns," +
-                " {[Time].[1997].[Q2].[April]} on rows " +
-                "from [HR]");
+        TestCase c = new TestCase(
+            3,
+            1,
+            "select "
+            + " {[Measures].[Count]} ON columns,"
+            + " {[Time].[1997].[Q2].[April]} on rows "
+            + "from [HR]");
         c.run();
     }
 
@@ -2218,55 +2189,55 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testBug1412384() {
         // Bug 1412384 causes a NPE in SqlConstraintUtils.
-        assertQueryReturns("select NON EMPTY {[Time].[1997]} ON COLUMNS,\n" +
-                "NON EMPTY Hierarchize(Union({[Customers].[All Customers]},\n" +
-                "[Customers].[All Customers].Children)) ON ROWS\n" +
-                "from [Sales]\n" +
-                "where [Measures].[Profit]",
-                fold(
-                    "Axis #0:\n" +
-                    "{[Measures].[Profit]}\n" +
-                    "Axis #1:\n" +
-                    "{[Time].[1997]}\n" +
-                    "Axis #2:\n" +
-                    "{[Customers].[All Customers]}\n" +
-                    "{[Customers].[All Customers].[USA]}\n" +
-                    "Row #0: $339,610.90\n" +
-                    "Row #1: $339,610.90\n"));
+        assertQueryReturns(
+            "select NON EMPTY {[Time].[1997]} ON COLUMNS,\n"
+            + "NON EMPTY Hierarchize(Union({[Customers].[All Customers]},\n"
+            + "[Customers].[All Customers].Children)) ON ROWS\n"
+            + "from [Sales]\n"
+            + "where [Measures].[Profit]",
+            "Axis #0:\n"
+            + "{[Measures].[Profit]}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[All Customers]}\n"
+            + "{[Customers].[All Customers].[USA]}\n"
+            + "Row #0: $339,610.90\n"
+            + "Row #1: $339,610.90\n");
     }
 
     public void testVirtualCubeCrossJoin() {
         checkNative(
             18,
             3,
-            "select " +
-            "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, " +
-            "non empty crossjoin([Product].[All Products].children, " +
-            "[Store].[All Stores].children) on rows " +
-            "from [Warehouse and Sales]");
+            "select "
+            + "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, "
+            + "non empty crossjoin([Product].[All Products].children, "
+            + "[Store].[All Stores].children) on rows "
+            + "from [Warehouse and Sales]");
     }
 
     public void testVirtualCubeNonEmptyCrossJoin() {
         checkNative(
             18,
             3,
-            "select " +
-            "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, " +
-            "NonEmptyCrossJoin([Product].[All Products].children, " +
-            "[Store].[All Stores].children) on rows " +
-            "from [Warehouse and Sales]");
+            "select "
+            + "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, "
+            + "NonEmptyCrossJoin([Product].[All Products].children, "
+            + "[Store].[All Stores].children) on rows "
+            + "from [Warehouse and Sales]");
     }
 
     public void testVirtualCubeNonEmptyCrossJoin3Args() {
         checkNative(
             3,
             3,
-            "select " +
-            "{[Measures].[Store Sales]} on columns, " +
-            "nonEmptyCrossJoin([Product].[All Products].children, " +
-            "nonEmptyCrossJoin([Customers].[All Customers].children," +
-            "[Store].[All Stores].children)) on rows " +
-            "from [Warehouse and Sales]");
+            "select "
+            + "{[Measures].[Store Sales]} on columns, "
+            + "nonEmptyCrossJoin([Product].[All Products].children, "
+            + "nonEmptyCrossJoin([Customers].[All Customers].children,"
+            + "[Store].[All Stores].children)) on rows "
+            + "from [Warehouse and Sales]");
     }
 
     public void testVirtualCubeCrossJoinNonConformingDim() {
@@ -2282,11 +2253,11 @@ public class NonEmptyTest extends BatchTestCase {
         // product join
         checkNotNative(
             0,
-            "select " +
-                "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, " +
-                "NonEmptyCrossJoin([Customers].[All Customers].children, " +
-                "[Warehouse].[All Warehouses].children) on rows " +
-                "from [Warehouse and Sales]");
+            "select "
+            + "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, "
+            + "NonEmptyCrossJoin([Customers].[All Customers].children, "
+            + "[Warehouse].[All Warehouses].children) on rows "
+            + "from [Warehouse and Sales]");
     }
 
     public void testNotNativeVirtualCubeCrossJoin1() {
@@ -2304,22 +2275,22 @@ public class NonEmptyTest extends BatchTestCase {
         // native cross join cannot be used due to AllMembers
         checkNotNative(
             3,
-            "select " +
-                "{[Measures].AllMembers} on columns, " +
-                "non empty crossjoin([Product].[All Products].children, " +
-                "[Store].[All Stores].children) on rows " +
-                "from [Warehouse and Sales]");
+            "select "
+            + "{[Measures].AllMembers} on columns, "
+            + "non empty crossjoin([Product].[All Products].children, "
+            + "[Store].[All Stores].children) on rows "
+            + "from [Warehouse and Sales]");
     }
 
     public void testNotNativeVirtualCubeCrossJoin2() {
         // native cross join cannot be used due to the range operator
         checkNotNative(
             3,
-            "select " +
-            "{[Measures].[Sales Count] : [Measures].[Unit Sales]} on columns, " +
-            "non empty crossjoin([Product].[All Products].children, " +
-            "[Store].[All Stores].children) on rows " +
-            "from [Warehouse and Sales]");
+            "select "
+            + "{[Measures].[Sales Count] : [Measures].[Unit Sales]} on columns, "
+            + "non empty crossjoin([Product].[All Products].children, "
+            + "[Store].[All Stores].children) on rows "
+            + "from [Warehouse and Sales]");
     }
 
     public void testNotNativeVirtualCubeCrossJoinUnsupported() {
@@ -2339,28 +2310,27 @@ public class NonEmptyTest extends BatchTestCase {
         }
 
         String mdx =
-            "select " +
-            "{[Measures].AllMembers} on columns, " +
-            "NonEmptyCrossJoin([Product].[All Products].children, " +
-            "[Store].[All Stores].children) on rows " +
-            "from [Warehouse and Sales]";
+            "select "
+            + "{[Measures].AllMembers} on columns, "
+            + "NonEmptyCrossJoin([Product].[All Products].children, "
+            + "[Store].[All Stores].children) on rows "
+            + "from [Warehouse and Sales]";
 
         final List<LoggingEvent> events = new ArrayList<LoggingEvent>();
 
         // set up log4j listener to detect alerts
-        Appender alertListener =
-            new AppenderSkeleton() {
-                protected void append(LoggingEvent event) {
-                    events.add(event);
-                }
+        Appender alertListener = new AppenderSkeleton() {
+            protected void append(LoggingEvent event) {
+                events.add(event);
+            }
 
-                public void close() {
-                }
+            public void close() {
+            }
 
-                public boolean requiresLayout() {
-                    return false;
-                }
-            };
+            public boolean requiresLayout() {
+                return false;
+            }
+        };
         Logger rolapUtilLogger = Logger.getLogger(RolapUtil.class);
         rolapUtilLogger.addAppender(alertListener);
         String expectedMessage =
@@ -2368,8 +2338,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // verify that exception is thrown if alerting is set to ERROR
         propSaver.set(
-            alertProperty,
-            org.apache.log4j.Level.ERROR.toString());
+            alertProperty, org.apache.log4j.Level.ERROR.toString());
         try {
             checkNotNative(3, mdx);
             fail("Expected NativeEvaluationUnsupportedException");
@@ -2381,17 +2350,14 @@ public class NonEmptyTest extends BatchTestCase {
 
         // should have gotten one ERROR
         int nEvents = countFilteredEvents(
-            events,
-            org.apache.log4j.Level.ERROR,
-            expectedMessage);
+            events, org.apache.log4j.Level.ERROR, expectedMessage);
         assertEquals(1, nEvents);
         events.clear();
 
         // verify that exactly one warning is posted but execution succeeds
         // if alerting is set to WARN
         propSaver.set(
-            alertProperty,
-            org.apache.log4j.Level.WARN.toString());
+            alertProperty, org.apache.log4j.Level.WARN.toString());
         try {
             checkNotNative(3, mdx);
         } finally {
@@ -2400,20 +2366,16 @@ public class NonEmptyTest extends BatchTestCase {
 
         // should have gotten one WARN
         nEvents = countFilteredEvents(
-            events,
-            org.apache.log4j.Level.WARN,
-            expectedMessage);
+            events, org.apache.log4j.Level.WARN, expectedMessage);
         assertEquals(1, nEvents);
         events.clear();
 
         // verify that no warning is posted if native evaluation is
         // explicitly disabled
         propSaver.set(
-            alertProperty,
-            org.apache.log4j.Level.WARN.toString());
+            alertProperty, org.apache.log4j.Level.WARN.toString());
         propSaver.set(
-            enableProperty,
-            false);
+            enableProperty, false);
         try {
             checkNotNative(3, mdx);
         } finally {
@@ -2422,9 +2384,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // should have gotten no WARN
         nEvents = countFilteredEvents(
-            events,
-            org.apache.log4j.Level.WARN,
-            expectedMessage);
+            events, org.apache.log4j.Level.WARN, expectedMessage);
         assertEquals(0, nEvents);
         events.clear();
 
@@ -2456,13 +2416,13 @@ public class NonEmptyTest extends BatchTestCase {
         checkNative(
             18,
             3,
-            "WITH MEMBER [Measures].[Total Cost] as " +
-            "'[Measures].[Store Cost] + [Measures].[Warehouse Cost]' " +
-            "select " +
-            "{[Measures].[Total Cost]} on columns, " +
-            "non empty crossjoin([Product].[All Products].children, " +
-            "[Store].[All Stores].children) on rows " +
-            "from [Warehouse and Sales]");
+            "WITH MEMBER [Measures].[Total Cost] as "
+            + "'[Measures].[Store Cost] + [Measures].[Warehouse Cost]' "
+            + "select "
+            + "{[Measures].[Total Cost]} on columns, "
+            + "non empty crossjoin([Product].[All Products].children, "
+            + "[Store].[All Stores].children) on rows "
+            + "from [Warehouse and Sales]");
     }
 
     public void testVirtualCubeCrossJoinCalculatedMember2() {
@@ -2470,11 +2430,11 @@ public class NonEmptyTest extends BatchTestCase {
         checkNative(
             18,
             3,
-            "select " +
-            "{[Measures].[Profit Per Unit Shipped]} on columns, " +
-            "non empty crossjoin([Product].[All Products].children, " +
-            "[Store].[All Stores].children) on rows " +
-            "from [Warehouse and Sales]");
+            "select "
+            + "{[Measures].[Profit Per Unit Shipped]} on columns, "
+            + "non empty crossjoin([Product].[All Products].children, "
+            + "[Store].[All Stores].children) on rows "
+            + "from [Warehouse and Sales]");
     }
 
     public void testNotNativeVirtualCubeCrossJoinCalculatedMember() {
@@ -2482,13 +2442,13 @@ public class NonEmptyTest extends BatchTestCase {
         // calculated member
         checkNotNative(
             3,
-            "WITH MEMBER [Measures].[CurrMember] as " +
-            "'[Measures].CurrentMember' " +
-            "select " +
-            "{[Measures].[CurrMember]} on columns, " +
-            "non empty crossjoin([Product].[All Products].children, " +
-            "[Store].[All Stores].children) on rows " +
-            "from [Warehouse and Sales]");
+            "WITH MEMBER [Measures].[CurrMember] as "
+            + "'[Measures].CurrentMember' "
+            + "select "
+            + "{[Measures].[CurrMember]} on columns, "
+            + "non empty crossjoin([Product].[All Products].children, "
+            + "[Store].[All Stores].children) on rows "
+            + "from [Warehouse and Sales]");
     }
 
     public void testCjEnumCalcMembers() {
@@ -2497,126 +2457,127 @@ public class NonEmptyTest extends BatchTestCase {
         // should be non-native due to the fix to testCjEnumCalcMembersBug()
         checkNotNative(
             30,
-            "with " +
-            "member [Product].[All Products].[Drink].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
-            "    'sum({[Product].[All Products].[Drink]})' " +
-            "member [Product].[All Products].[Non-Consumable].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
-            "    'sum({[Product].[All Products].[Non-Consumable]})' " +
-            "member [Customers].[All Customers].[USA].[CA].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
-            "    'sum({[Customers].[All Customers].[USA].[CA]})' " +
-            "member [Customers].[All Customers].[USA].[OR].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
-            "    'sum({[Customers].[All Customers].[USA].[OR]})' " +
-            "member [Customers].[All Customers].[USA].[WA].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
-            "    'sum({[Customers].[All Customers].[USA].[WA]})' " +
-            "select " +
-            "{[Measures].[Unit Sales]} on columns, " +
-            "non empty " +
-            "    crossjoin(" +
-            "        crossjoin(" +
-            "            crossjoin(" +
-            "                {[Product].[All Products].[Drink].[*SUBTOTAL_MEMBER_SEL~SUM], " +
-            "                    [Product].[All Products].[Non-Consumable].[*SUBTOTAL_MEMBER_SEL~SUM]}, " +
-            "                [Education Level].[Education Level].Members), " +
-            "            {[Customers].[All Customers].[USA].[CA].[*SUBTOTAL_MEMBER_SEL~SUM], " +
-            "                [Customers].[All Customers].[USA].[OR].[*SUBTOTAL_MEMBER_SEL~SUM], " +
-            "                [Customers].[All Customers].[USA].[WA].[*SUBTOTAL_MEMBER_SEL~SUM]}), " +
-            "        [Time].[Year].members)" +
-            "    on rows " +
-            "from [Sales]");
+            "with "
+            + "member [Product].[All Products].[Drink].[*SUBTOTAL_MEMBER_SEL~SUM] as "
+            + "    'sum({[Product].[All Products].[Drink]})' "
+            + "member [Product].[All Products].[Non-Consumable].[*SUBTOTAL_MEMBER_SEL~SUM] as "
+            + "    'sum({[Product].[All Products].[Non-Consumable]})' "
+            + "member [Customers].[All Customers].[USA].[CA].[*SUBTOTAL_MEMBER_SEL~SUM] as "
+            + "    'sum({[Customers].[All Customers].[USA].[CA]})' "
+            + "member [Customers].[All Customers].[USA].[OR].[*SUBTOTAL_MEMBER_SEL~SUM] as "
+            + "    'sum({[Customers].[All Customers].[USA].[OR]})' "
+            + "member [Customers].[All Customers].[USA].[WA].[*SUBTOTAL_MEMBER_SEL~SUM] as "
+            + "    'sum({[Customers].[All Customers].[USA].[WA]})' "
+            + "select "
+            + "{[Measures].[Unit Sales]} on columns, "
+            + "non empty "
+            + "    crossjoin("
+            + "        crossjoin("
+            + "            crossjoin("
+            + "                {[Product].[All Products].[Drink].[*SUBTOTAL_MEMBER_SEL~SUM], "
+            + "                    [Product].[All Products].[Non-Consumable].[*SUBTOTAL_MEMBER_SEL~SUM]}, "
+            + "                [Education Level].[Education Level].Members), "
+            + "            {[Customers].[All Customers].[USA].[CA].[*SUBTOTAL_MEMBER_SEL~SUM], "
+            + "                [Customers].[All Customers].[USA].[OR].[*SUBTOTAL_MEMBER_SEL~SUM], "
+            + "                [Customers].[All Customers].[USA].[WA].[*SUBTOTAL_MEMBER_SEL~SUM]}), "
+            + "        [Time].[Year].members)"
+            + "    on rows "
+            + "from [Sales]");
     }
 
     public void testCjEnumCalcMembersBug() {
-        String query =
-            "with " +
-            "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) " +
-            "set [Enum Store Types] as {" +
-            "    [Store Type].[All Store Types].[HeadQuarters], " +
-            "    [Store Type].[All Store Types].[Small Grocery], " +
-            "    [Store Type].[All Store Types].[Supermarket], " +
-            "    [Store Type].[All Store Types].[S]}" +
-            "select [Measures] on columns,\n" +
-            "    NonEmptyCrossJoin([Product].[All Products].Children, [Enum Store Types]) on rows\n" +
-            "from [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Unit Sales]}\n" +
-            "Axis #2:\n" +
-            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Small Grocery]}\n" +
-            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Supermarket]}\n" +
-            "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[S]}\n" +
-            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Small Grocery]}\n" +
-            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Supermarket]}\n" +
-            "{[Product].[All Products].[Food], [Store Type].[All Store Types].[S]}\n" +
-            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Small Grocery]}\n" +
-            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Supermarket]}\n" +
-            "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[S]}\n" +
-            "Row #0: 574\n" +
-            "Row #1: 14,092\n" +
-            "Row #2: 24,597\n" +
-            "Row #3: 4,764\n" +
-            "Row #4: 108,188\n" +
-            "Row #5: 191,940\n" +
-            "Row #6: 1,219\n" +
-            "Row #7: 28,275\n" +
-            "Row #8: 50,236\n";
-
         // make sure NECJ is forced to be non-native
         // before the fix, the query is natively evaluated and result
         // has empty rows for [Store Type].[All Store Types].[HeadQuarters]
-        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        checkNotNative(9, query, fold(result));
+        checkNotNative(
+            9,
+            "with "
+            + "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) "
+            + "set [Enum Store Types] as {"
+            + "    [Store Type].[All Store Types].[HeadQuarters], "
+            + "    [Store Type].[All Store Types].[Small Grocery], "
+            + "    [Store Type].[All Store Types].[Supermarket], "
+            + "    [Store Type].[All Store Types].[S]}"
+            + "select [Measures] on columns,\n"
+            + "    NonEmptyCrossJoin([Product].[All Products].Children, [Enum Store Types]) on rows\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Small Grocery]}\n"
+            + "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Supermarket]}\n"
+            + "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[S]}\n"
+            + "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Small Grocery]}\n"
+            + "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Supermarket]}\n"
+            + "{[Product].[All Products].[Food], [Store Type].[All Store Types].[S]}\n"
+            + "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Small Grocery]}\n"
+            + "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Supermarket]}\n"
+            + "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[S]}\n"
+            + "Row #0: 574\n"
+            + "Row #1: 14,092\n"
+            + "Row #2: 24,597\n"
+            + "Row #3: 4,764\n"
+            + "Row #4: 108,188\n"
+            + "Row #5: 191,940\n"
+            + "Row #6: 1,219\n"
+            + "Row #7: 28,275\n"
+            + "Row #8: 50,236\n");
     }
 
     public void testCjEnumEmptyCalcMembers() {
         // Make sure maxConstraint settting is high enough
         int minConstraints = 3;
-        if (MondrianProperties.instance().MaxConstraints.get() < minConstraints) {
-            propSaver.set(MondrianProperties.instance().MaxConstraints, minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get()
+            < minConstraints)
+        {
+            propSaver.set(
+                MondrianProperties.instance().MaxConstraints, minConstraints);
         }
 
         // enumerated list of calculated members results in some empty cells
         checkNotNative(
             5,
-            "with " +
-            "member [Customers].[All Customers].[USA].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
-            "    'sum({[Customers].[All Customers].[USA]})' " +
-            "member [Customers].[All Customers].[Mexico].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
-            "    'sum({[Customers].[All Customers].[Mexico]})' " +
-            "member [Customers].[All Customers].[Canada].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
-            "    'sum({[Customers].[All Customers].[Canada]})' " +
-            "select " +
-            "{[Measures].[Unit Sales]} on columns, " +
-            "non empty " +
-            "    crossjoin(" +
-            "        {[Customers].[All Customers].[Mexico].[*SUBTOTAL_MEMBER_SEL~SUM], " +
-            "            [Customers].[All Customers].[Canada].[*SUBTOTAL_MEMBER_SEL~SUM], " +
-            "            [Customers].[All Customers].[USA].[*SUBTOTAL_MEMBER_SEL~SUM]}, " +
-            "        [Education Level].[Education Level].Members) " +
-            "    on rows " +
-            "from [Sales]");
+            "with "
+            + "member [Customers].[All Customers].[USA].[*SUBTOTAL_MEMBER_SEL~SUM] as "
+            + "    'sum({[Customers].[All Customers].[USA]})' "
+            + "member [Customers].[All Customers].[Mexico].[*SUBTOTAL_MEMBER_SEL~SUM] as "
+            + "    'sum({[Customers].[All Customers].[Mexico]})' "
+            + "member [Customers].[All Customers].[Canada].[*SUBTOTAL_MEMBER_SEL~SUM] as "
+            + "    'sum({[Customers].[All Customers].[Canada]})' "
+            + "select "
+            + "{[Measures].[Unit Sales]} on columns, "
+            + "non empty "
+            + "    crossjoin("
+            + "        {[Customers].[All Customers].[Mexico].[*SUBTOTAL_MEMBER_SEL~SUM], "
+            + "            [Customers].[All Customers].[Canada].[*SUBTOTAL_MEMBER_SEL~SUM], "
+            + "            [Customers].[All Customers].[USA].[*SUBTOTAL_MEMBER_SEL~SUM]}, "
+            + "        [Education Level].[Education Level].Members) "
+            + "    on rows "
+            + "from [Sales]");
     }
 
     public void testCjUnionEnumCalcMembers() {
         // non-native due to the fix to testCjEnumCalcMembersBug()
         checkNotNative(
             46,
-            "with " +
-            "member [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
-            "    'sum({[Education Level].[All Education Levels]})' " +
-            "member [Education Level].[*SUBTOTAL_MEMBER_SEL~AVG] as " +
-            "   'avg([Education Level].[Education Level].Members)' select " +
-            "{[Measures].[Unit Sales]} on columns, " +
-            "non empty union (Crossjoin(" +
-            "    [Product].[Product Department].Members, " +
-            "    {[Education Level].[*SUBTOTAL_MEMBER_SEL~AVG]}), " +
-            "crossjoin(" +
-            "    [Product].[Product Department].Members, " +
-            "    {[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]})) on rows " +
-            "from [Sales]");
+            "with "
+            + "member [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM] as "
+            + "    'sum({[Education Level].[All Education Levels]})' "
+            + "member [Education Level].[*SUBTOTAL_MEMBER_SEL~AVG] as "
+            + "   'avg([Education Level].[Education Level].Members)' select "
+            + "{[Measures].[Unit Sales]} on columns, "
+            + "non empty union (Crossjoin("
+            + "    [Product].[Product Department].Members, "
+            + "    {[Education Level].[*SUBTOTAL_MEMBER_SEL~AVG]}), "
+            + "crossjoin("
+            + "    [Product].[Product Department].Members, "
+            + "    {[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]})) on rows "
+            + "from [Sales]");
     }
 
     /**
@@ -2629,73 +2590,77 @@ public class NonEmptyTest extends BatchTestCase {
         }
         TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",
-            "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n" +
-                "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\" defaultMember=\"[Time].[1997].[Q1].[1]\" >\n" +
-                "      <Table name=\"time_by_day\"/>\n" +
-                "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n" +
-                "          levelType=\"TimeYears\"/>\n" +
-                "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n" +
-                "          levelType=\"TimeQuarters\"/>\n" +
-                "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n" +
-                "          levelType=\"TimeMonths\"/>\n" +
-                "    </Hierarchy>\n" +
-                "  </Dimension>");
+            "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\" defaultMember=\"[Time].[1997].[Q1].[1]\" >\n"
+            + "      <Table name=\"time_by_day\"/>\n"
+            + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+            + "          levelType=\"TimeYears\"/>\n"
+            + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+            + "          levelType=\"TimeQuarters\"/>\n"
+            + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+            + "          levelType=\"TimeMonths\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>");
 
         // Check that the grand total is different than when [Time].[1997] is
         // the default member.
-        testContext.assertQueryReturns("select from [Sales]",
-            fold("Axis #0:\n" +
-                    "{}\n" +
-                    "21,628"));
+        testContext.assertQueryReturns(
+            "select from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "21,628");
 
         // Results of this query agree with MSAS 2000 SP1.
         // The query gives the same results if the default member of [Time]
         // is [Time].[1997] or [Time].[1997].[Q1].[1].
-        testContext.assertQueryReturns("select\n" +
-            "NON EMPTY Crossjoin({[Time].[1997].[Q2].[4]}, [Customers].[Country].members) on columns,\n" +
-            "NON EMPTY [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].children on rows\n" +
-            "from sales",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Time].[1997].[Q2].[4], [Customers].[All Customers].[USA]}\n" +
-                "Axis #2:\n" +
-                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer]}\n" +
-                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Light Beer]}\n" +
-                "Row #0: 3\n" +
-                "Row #1: 21\n"));
+        testContext.assertQueryReturns(
+            "select\n"
+            + "NON EMPTY Crossjoin({[Time].[1997].[Q2].[4]}, [Customers].[Country].members) on columns,\n"
+            + "NON EMPTY [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].children on rows\n"
+            + "from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997].[Q2].[4], [Customers].[All Customers].[USA]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer]}\n"
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Light Beer]}\n"
+            + "Row #0: 3\n"
+            + "Row #1: 21\n");
     }
 
     public void testCrossJoinNamedSets1() {
         checkNative(
             3,
             3,
-            "with " +
-            "SET [ProductChildren] as '[Product].[All Products].children' " +
-            "SET [StoreMembers] as '[Store].[Store Country].members' " +
-            "select {[Measures].[Store Sales]} on columns, " +
-            "non empty crossjoin([ProductChildren], [StoreMembers]) " +
-            "on rows from [Sales]");
+            "with "
+            + "SET [ProductChildren] as '[Product].[All Products].children' "
+            + "SET [StoreMembers] as '[Store].[Store Country].members' "
+            + "select {[Measures].[Store Sales]} on columns, "
+            + "non empty crossjoin([ProductChildren], [StoreMembers]) "
+            + "on rows from [Sales]");
     }
 
     public void testCrossJoinNamedSets2() {
         // Make sure maxConstraint settting is high enough
         int minConstraints = 3;
-        if (MondrianProperties.instance().MaxConstraints.get() < minConstraints) {
-            propSaver.set(MondrianProperties.instance().MaxConstraints, minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get()
+            < minConstraints)
+        {
+            propSaver.set(
+                MondrianProperties.instance().MaxConstraints, minConstraints);
         }
 
         checkNative(
-            3,
-            3,
-            "with " +
-            "SET [ProductChildren] as '{[Product].[All Products].[Drink], " +
-            "[Product].[All Products].[Food], " +
-            "[Product].[All Products].[Non-Consumable]}' " +
-            "SET [StoreChildren] as '[Store].[All Stores].children' " +
-            "select {[Measures].[Store Sales]} on columns, " +
-            "non empty crossjoin([ProductChildren], [StoreChildren]) on rows from " +
-            "[Sales]");
+            3, 3,
+            "with "
+            + "SET [ProductChildren] as '{[Product].[All Products].[Drink], "
+            + "[Product].[All Products].[Food], "
+            + "[Product].[All Products].[Non-Consumable]}' "
+            + "SET [StoreChildren] as '[Store].[All Stores].children' "
+            + "select {[Measures].[Store Sales]} on columns, "
+            + "non empty crossjoin([ProductChildren], [StoreChildren]) on rows from "
+            + "[Sales]");
     }
 
     public void testCrossJoinSetWithDifferentParents() {
@@ -2705,79 +2670,85 @@ public class NonEmptyTest extends BatchTestCase {
         checkNative(
             5,
             5,
-            "select " +
-            "{[Measures].[Unit Sales]} on columns, " +
-            "NonEmptyCrossJoin([Education Level].[Education Level].Members, " +
-            "{[Time].[1997].[Q1], [Time].[1998].[Q2]}) on rows from Sales");
+            "select "
+            + "{[Measures].[Unit Sales]} on columns, "
+            + "NonEmptyCrossJoin([Education Level].[Education Level].Members, "
+            + "{[Time].[1997].[Q1], [Time].[1998].[Q2]}) on rows from Sales");
     }
 
     public void testCrossJoinSetWithCrossProdMembers() {
         // Make sure maxConstraint settting is high enough
         int minConstraints = 6;
-        if (MondrianProperties.instance().MaxConstraints.get() < minConstraints) {
-            propSaver.set(MondrianProperties.instance().MaxConstraints, minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get()
+            < minConstraints)
+        {
+            propSaver.set(
+                MondrianProperties.instance().MaxConstraints, minConstraints);
         }
 
         // members in set are a cross product of (1997, 1998) and (Q1, Q2, Q3)
         checkNative(
-            15,
-            15,
-            "select " +
-            "{[Measures].[Unit Sales]} on columns, " +
-            "NonEmptyCrossJoin([Education Level].[Education Level].Members, " +
-            "{[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997].[Q3], " +
-            "[Time].[1998].[Q1], [Time].[1998].[Q2], [Time].[1998].[Q3]})" +
-            "on rows from Sales");
+            15, 15,
+            "select "
+            + "{[Measures].[Unit Sales]} on columns, "
+            + "NonEmptyCrossJoin([Education Level].[Education Level].Members, "
+            + "{[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997].[Q3], "
+            + "[Time].[1998].[Q1], [Time].[1998].[Q2], [Time].[1998].[Q3]})"
+            + "on rows from Sales");
     }
 
     public void testCrossJoinSetWithSameParent() {
         // Make sure maxConstraint settting is high enough
         int minConstraints = 2;
-        if (MondrianProperties.instance().MaxConstraints.get() < minConstraints) {
-            propSaver.set(MondrianProperties.instance().MaxConstraints, minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get()
+            < minConstraints)
+        {
+            propSaver.set(
+                MondrianProperties.instance().MaxConstraints, minConstraints);
         }
 
         // members in set have the same parent
         checkNative(
-            10,
-            10,
-            "select " +
-            "{[Measures].[Unit Sales]} on columns, " +
-            "NonEmptyCrossJoin([Education Level].[Education Level].Members, " +
-            "{[Store].[All Stores].[USA].[CA].[Beverly Hills], " +
-            "[Store].[All Stores].[USA].[CA].[San Francisco]}) " +
-            "on rows from Sales");
+            10, 10,
+            "select "
+            + "{[Measures].[Unit Sales]} on columns, "
+            + "NonEmptyCrossJoin([Education Level].[Education Level].Members, "
+            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills], "
+            + "[Store].[All Stores].[USA].[CA].[San Francisco]}) "
+            + "on rows from Sales");
     }
 
     public void testCrossJoinSetWithUniqueLevel() {
         // Make sure maxConstraint settting is high enough
         int minConstraints = 2;
-        if (MondrianProperties.instance().MaxConstraints.get() < minConstraints) {
-            propSaver.set(MondrianProperties.instance().MaxConstraints, minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get()
+            < minConstraints)
+        {
+            propSaver.set(
+                MondrianProperties.instance().MaxConstraints, minConstraints);
         }
 
         // members in set have different parents but there is a unique level
         checkNative(
-            10,
-            10,
-            "select " +
-            "{[Measures].[Unit Sales]} on columns, " +
-            "NonEmptyCrossJoin([Education Level].[Education Level].Members, " +
-            "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6], " +
-            "[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}) " +
-            "on rows from Sales");
+            10, 10,
+            "select "
+            + "{[Measures].[Unit Sales]} on columns, "
+            + "NonEmptyCrossJoin([Education Level].[Education Level].Members, "
+            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6], "
+            + "[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}) "
+            + "on rows from Sales");
     }
 
     public void testCrossJoinMultiInExprAllMember() {
         checkNative(
             10,
             10,
-            "select " +
-            "{[Measures].[Unit Sales]} on columns, " +
-            "NonEmptyCrossJoin([Education Level].[Education Level].Members, " +
-            "{[Product].[All Products].[Drink].[Alcoholic Beverages], " +
-            "[Product].[All Products].[Food].[Breakfast Foods]}) " +
-            "on rows from Sales");
+            "select "
+            + "{[Measures].[Unit Sales]} on columns, "
+            + "NonEmptyCrossJoin([Education Level].[Education Level].Members, "
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages], "
+            + "[Product].[All Products].[Food].[Breakfast Foods]}) "
+            + "on rows from Sales");
     }
 
     public void testCrossJoinEvaluatorContext1() {
@@ -2789,125 +2760,126 @@ public class NonEmptyTest extends BatchTestCase {
         // and the calculated member references the cross join, resulting
         // in the loop
         assertQueryReturns(
-            "With " +
-            "Set [*NATIVE_CJ_SET] as " +
-            "'NonEmptyCrossJoin([*BASE_MEMBERS_Store], [*BASE_MEMBERS_Products])' " +
-            "Set [*TOP_BOTTOM_SET] as " +
-            "'Order([*GENERATED_MEMBERS_Store], ([Measures].[Unit Sales], " +
-            "[Product].[All Products].[*TOP_BOTTOM_MEMBER]), BDESC)' " +
-            "Set [*BASE_MEMBERS_Store] as '[Store].members' " +
-            "Set [*GENERATED_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' " +
-            "Set [*BASE_MEMBERS_Products] as " +
-            "'{[Product].[All Products].[Food], [Product].[All Products].[Drink], " +
-            "[Product].[All Products].[Non-Consumable]}' " +
-            "Set [*GENERATED_MEMBERS_Products] as " +
-            "'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' " +
-            "Member [Product].[All Products].[*TOP_BOTTOM_MEMBER] as " +
-            "'Aggregate([*GENERATED_MEMBERS_Products])'" +
-            "Member [Measures].[*TOP_BOTTOM_MEMBER] as 'Rank([Store].CurrentMember,[*TOP_BOTTOM_SET])' " +
-            "Member [Store].[All Stores].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
-            "'sum(Filter([*GENERATED_MEMBERS_Store], [Measures].[*TOP_BOTTOM_MEMBER] <= 10))'" +
-            "Select {[Measures].[Store Cost]} on columns, " +
-            "Non Empty Filter(Generate([*NATIVE_CJ_SET], {([Store].CurrentMember)}), " +
-            "[Measures].[*TOP_BOTTOM_MEMBER] <= 10) on rows From [Sales]",
+            "With "
+            + "Set [*NATIVE_CJ_SET] as "
+            + "'NonEmptyCrossJoin([*BASE_MEMBERS_Store], [*BASE_MEMBERS_Products])' "
+            + "Set [*TOP_BOTTOM_SET] as "
+            + "'Order([*GENERATED_MEMBERS_Store], ([Measures].[Unit Sales], "
+            + "[Product].[All Products].[*TOP_BOTTOM_MEMBER]), BDESC)' "
+            + "Set [*BASE_MEMBERS_Store] as '[Store].members' "
+            + "Set [*GENERATED_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' "
+            + "Set [*BASE_MEMBERS_Products] as "
+            + "'{[Product].[All Products].[Food], [Product].[All Products].[Drink], "
+            + "[Product].[All Products].[Non-Consumable]}' "
+            + "Set [*GENERATED_MEMBERS_Products] as "
+            + "'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' "
+            + "Member [Product].[All Products].[*TOP_BOTTOM_MEMBER] as "
+            + "'Aggregate([*GENERATED_MEMBERS_Products])'"
+            + "Member [Measures].[*TOP_BOTTOM_MEMBER] as 'Rank([Store].CurrentMember,[*TOP_BOTTOM_SET])' "
+            + "Member [Store].[All Stores].[*SUBTOTAL_MEMBER_SEL~SUM] as "
+            + "'sum(Filter([*GENERATED_MEMBERS_Store], [Measures].[*TOP_BOTTOM_MEMBER] <= 10))'"
+            + "Select {[Measures].[Store Cost]} on columns, "
+            + "Non Empty Filter(Generate([*NATIVE_CJ_SET], {([Store].CurrentMember)}), "
+            + "[Measures].[*TOP_BOTTOM_MEMBER] <= 10) on rows From [Sales]",
 
-            fold(
-                "Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Store Cost]}\n" +
-                "Axis #2:\n" +
-                "{[Store].[All Stores]}\n" +
-                "{[Store].[All Stores].[USA]}\n" +
-                "{[Store].[All Stores].[USA].[CA]}\n" +
-                "{[Store].[All Stores].[USA].[OR]}\n" +
-                "{[Store].[All Stores].[USA].[OR].[Portland]}\n" +
-                "{[Store].[All Stores].[USA].[OR].[Salem]}\n" +
-                "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n" +
-                "{[Store].[All Stores].[USA].[WA]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n" +
-                "Row #0: 225,627.23\n" +
-                "Row #1: 225,627.23\n" +
-                "Row #2: 63,530.43\n" +
-                "Row #3: 56,772.50\n" +
-                "Row #4: 21,948.94\n" +
-                "Row #5: 34,823.56\n" +
-                "Row #6: 34,823.56\n" +
-                "Row #7: 105,324.31\n" +
-                "Row #8: 29,959.28\n" +
-                "Row #9: 29,959.28\n"));
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Cost]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[All Stores].[USA]}\n"
+            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "{[Store].[All Stores].[USA].[OR]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Portland]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Salem]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[All Stores].[USA].[WA]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "Row #0: 225,627.23\n"
+            + "Row #1: 225,627.23\n"
+            + "Row #2: 63,530.43\n"
+            + "Row #3: 56,772.50\n"
+            + "Row #4: 21,948.94\n"
+            + "Row #5: 34,823.56\n"
+            + "Row #6: 34,823.56\n"
+            + "Row #7: 105,324.31\n"
+            + "Row #8: 29,959.28\n"
+            + "Row #9: 29,959.28\n");
     }
 
     public void testCrossJoinEvaluatorContext2() {
         // Make sure maxConstraint settting is high enough
         int minConstraints = 2;
-        if (MondrianProperties.instance().MaxConstraints.get() < minConstraints) {
-            propSaver.set(MondrianProperties.instance().MaxConstraints, minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get()
+            < minConstraints)
+        {
+            propSaver.set(
+                MondrianProperties.instance().MaxConstraints, minConstraints);
         }
 
         // calculated measure contains a calculated member
         assertQueryReturns(
-            "With Set [*NATIVE_CJ_SET] as " +
-                "'NonEmptyCrossJoin([*BASE_MEMBERS_Dates], [*BASE_MEMBERS_Stores])' " +
-                "Set [*BASE_MEMBERS_Dates] as '{[Time].[1997].[Q1], [Time].[1997].[Q2]}' " +
-                "Set [*GENERATED_MEMBERS_Dates] as " +
-                "'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' " +
-                "Set [*GENERATED_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0]}' " +
-                "Set [*BASE_MEMBERS_Stores] as '{[Store].[USA].[CA], [Store].[USA].[WA]}' " +
-                "Set [*GENERATED_MEMBERS_Stores] as " +
-                "'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' " +
-                "Member [Time].[*SM_CTX_SEL] as 'Aggregate([*GENERATED_MEMBERS_Dates])' " +
-                "Member [Measures].[*SUMMARY_METRIC_0] as " +
-                "'[Measures].[Unit Sales]/([Measures].[Unit Sales],[Time].[*SM_CTX_SEL])', " +
-                "FORMAT_STRING = '0.00%' " +
-                "Member [Time].[*SUBTOTAL_MEMBER_SEL~SUM] as 'sum([*GENERATED_MEMBERS_Dates])' " +
-                "Member [Store].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
-                "'sum(Filter([*GENERATED_MEMBERS_Stores], " +
-                "([Measures].[Unit Sales], [Time].[*SUBTOTAL_MEMBER_SEL~SUM]) > 0.0))' " +
-                "Select Union " +
-                "(CrossJoin " +
-                "(Filter " +
-                "(Generate([*NATIVE_CJ_SET], {([Time].CurrentMember)}), " +
-                "Not IsEmpty ([Measures].[Unit Sales])), " +
-                "[*GENERATED_MEMBERS_Measures]), " +
-                "CrossJoin " +
-                "(Filter " +
-                "({[Time].[*SUBTOTAL_MEMBER_SEL~SUM]}, " +
-                "Not IsEmpty ([Measures].[Unit Sales])), " +
-                "[*GENERATED_MEMBERS_Measures])) on columns, " +
-                "Non Empty Union " +
-                "(Filter " +
-                "(Filter " +
-                "(Generate([*NATIVE_CJ_SET], " +
-                "{([Store].CurrentMember)}), " +
-                "([Measures].[Unit Sales], " +
-                "[Time].[*SUBTOTAL_MEMBER_SEL~SUM]) > 0.0), " +
-                "Not IsEmpty ([Measures].[Unit Sales])), " +
-                "Filter(" +
-                "{[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}, " +
-                "Not IsEmpty ([Measures].[Unit Sales]))) on rows " +
-                "From [Sales]",
-                fold(
-                    "Axis #0:\n" +
-                    "{}\n" +
-                    "Axis #1:\n" +
-                    "{[Time].[1997].[Q1], [Measures].[*SUMMARY_METRIC_0]}\n" +
-                    "{[Time].[1997].[Q2], [Measures].[*SUMMARY_METRIC_0]}\n" +
-                    "{[Time].[*SUBTOTAL_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}\n" +
-                    "Axis #2:\n" +
-                    "{[Store].[All Stores].[USA].[CA]}\n" +
-                    "{[Store].[All Stores].[USA].[WA]}\n" +
-                    "{[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}\n" +
-                    "Row #0: 48.34%\n" +
-                    "Row #0: 51.66%\n" +
-                    "Row #0: 100.00%\n" +
-                    "Row #1: 50.53%\n" +
-                    "Row #1: 49.47%\n" +
-                    "Row #1: 100.00%\n" +
-                    "Row #2: 49.72%\n" +
-                    "Row #2: 50.28%\n" +
-                    "Row #2: 100.00%\n"));
+            "With Set [*NATIVE_CJ_SET] as "
+            + "'NonEmptyCrossJoin([*BASE_MEMBERS_Dates], [*BASE_MEMBERS_Stores])' "
+            + "Set [*BASE_MEMBERS_Dates] as '{[Time].[1997].[Q1], [Time].[1997].[Q2]}' "
+            + "Set [*GENERATED_MEMBERS_Dates] as "
+            + "'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' "
+            + "Set [*GENERATED_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0]}' "
+            + "Set [*BASE_MEMBERS_Stores] as '{[Store].[USA].[CA], [Store].[USA].[WA]}' "
+            + "Set [*GENERATED_MEMBERS_Stores] as "
+            + "'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' "
+            + "Member [Time].[*SM_CTX_SEL] as 'Aggregate([*GENERATED_MEMBERS_Dates])' "
+            + "Member [Measures].[*SUMMARY_METRIC_0] as "
+            + "'[Measures].[Unit Sales]/([Measures].[Unit Sales],[Time].[*SM_CTX_SEL])', "
+            + "FORMAT_STRING = '0.00%' "
+            + "Member [Time].[*SUBTOTAL_MEMBER_SEL~SUM] as 'sum([*GENERATED_MEMBERS_Dates])' "
+            + "Member [Store].[*SUBTOTAL_MEMBER_SEL~SUM] as "
+            + "'sum(Filter([*GENERATED_MEMBERS_Stores], "
+            + "([Measures].[Unit Sales], [Time].[*SUBTOTAL_MEMBER_SEL~SUM]) > 0.0))' "
+            + "Select Union "
+            + "(CrossJoin "
+            + "(Filter "
+            + "(Generate([*NATIVE_CJ_SET], {([Time].CurrentMember)}), "
+            + "Not IsEmpty ([Measures].[Unit Sales])), "
+            + "[*GENERATED_MEMBERS_Measures]), "
+            + "CrossJoin "
+            + "(Filter "
+            + "({[Time].[*SUBTOTAL_MEMBER_SEL~SUM]}, "
+            + "Not IsEmpty ([Measures].[Unit Sales])), "
+            + "[*GENERATED_MEMBERS_Measures])) on columns, "
+            + "Non Empty Union "
+            + "(Filter "
+            + "(Filter "
+            + "(Generate([*NATIVE_CJ_SET], "
+            + "{([Store].CurrentMember)}), "
+            + "([Measures].[Unit Sales], "
+            + "[Time].[*SUBTOTAL_MEMBER_SEL~SUM]) > 0.0), "
+            + "Not IsEmpty ([Measures].[Unit Sales])), "
+            + "Filter("
+            + "{[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}, "
+            + "Not IsEmpty ([Measures].[Unit Sales]))) on rows "
+            + "From [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997].[Q1], [Measures].[*SUMMARY_METRIC_0]}\n"
+            + "{[Time].[1997].[Q2], [Measures].[*SUMMARY_METRIC_0]}\n"
+            + "{[Time].[*SUBTOTAL_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "{[Store].[All Stores].[USA].[WA]}\n"
+            + "{[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}\n"
+            + "Row #0: 48.34%\n"
+            + "Row #0: 51.66%\n"
+            + "Row #0: 100.00%\n"
+            + "Row #1: 50.53%\n"
+            + "Row #1: 49.47%\n"
+            + "Row #1: 100.00%\n"
+            + "Row #2: 49.72%\n"
+            + "Row #2: 50.28%\n"
+            + "Row #2: 100.00%\n");
     }
 
     public void testVCNativeCJWithIsEmptyOnMeasure() {
@@ -2917,42 +2889,41 @@ public class NonEmptyTest extends BatchTestCase {
         // A measures member is referenced in the IsEmpty() function.  This
         // shouldn't prevent native cross join from being used.
         assertQueryReturns(
-            "with " +
-            "set BM_PRODUCT as {[Product].[All Products].[Drink]} " +
-            "set BM_EDU as [Education Level].[Education Level].Members " +
-            "set BM_GENDER as {[Gender].[Gender].[M]} " +
-            "set CJ as NonEmptyCrossJoin(BM_GENDER,NonEmptyCrossJoin(BM_EDU,BM_PRODUCT)) " +
-            "set GM_PRODUCT as Generate(CJ, {[Product].CurrentMember}) " +
-            "set GM_EDU as Generate(CJ, {[Education Level].CurrentMember}) " +
-            "set GM_GENDER as Generate(CJ, {[Gender].CurrentMember}) " +
-            "set GM_MEASURE as {[Measures].[Unit Sales]} " +
-            "member [Education Level].FILTER1 as Aggregate(GM_EDU) " +
-            "member [Gender].FILTER2 as Aggregate(GM_GENDER) " +
-            "select " +
-            "Filter(GM_PRODUCT, Not IsEmpty([Measures].[Unit Sales])) on rows, " +
-            "GM_MEASURE on columns " +
-            "from [Warehouse and Sales] " +
-            "where ([Education Level].FILTER1, [Gender].FILTER2)",
-            fold(
-                "Axis #0:\n" +
-                "{[Education Level].[FILTER1], [Gender].[FILTER2]}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Unit Sales]}\n" +
-                "Axis #2:\n" +
-                "{[Product].[All Products].[Drink]}\n" +
-                "Row #0: 12,395\n"));
+            "with "
+            + "set BM_PRODUCT as {[Product].[All Products].[Drink]} "
+            + "set BM_EDU as [Education Level].[Education Level].Members "
+            + "set BM_GENDER as {[Gender].[Gender].[M]} "
+            + "set CJ as NonEmptyCrossJoin(BM_GENDER,NonEmptyCrossJoin(BM_EDU,BM_PRODUCT)) "
+            + "set GM_PRODUCT as Generate(CJ, {[Product].CurrentMember}) "
+            + "set GM_EDU as Generate(CJ, {[Education Level].CurrentMember}) "
+            + "set GM_GENDER as Generate(CJ, {[Gender].CurrentMember}) "
+            + "set GM_MEASURE as {[Measures].[Unit Sales]} "
+            + "member [Education Level].FILTER1 as Aggregate(GM_EDU) "
+            + "member [Gender].FILTER2 as Aggregate(GM_GENDER) "
+            + "select "
+            + "Filter(GM_PRODUCT, Not IsEmpty([Measures].[Unit Sales])) on rows, "
+            + "GM_MEASURE on columns "
+            + "from [Warehouse and Sales] "
+            + "where ([Education Level].FILTER1, [Gender].FILTER2)",
+            "Axis #0:\n"
+            + "{[Education Level].[FILTER1], [Gender].[FILTER2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Drink]}\n"
+            + "Row #0: 12,395\n");
     }
 
     public void testVCNativeCJWithTopPercent() {
         // The reference to [Store Sales] inside the topPercent function
         // should not prevent native cross joins from being used
         checkNative(
-                92,
-                1,
-                "select {topPercent(nonemptycrossjoin([Product].[Product Department].members, " +
-                        "[Time].[1997].children),10,[Measures].[Store Sales])} on columns, " +
-                        "{[Measures].[Store Sales]} on rows from " +
-                        "[Warehouse and Sales]");
+            92,
+            1,
+            "select {topPercent(nonemptycrossjoin([Product].[Product Department].members, "
+            + "[Time].[1997].children),10,[Measures].[Store Sales])} on columns, "
+            + "{[Measures].[Store Sales]} on rows from "
+            + "[Warehouse and Sales]");
     }
 
     public void testVCOrdinalExpression() {
@@ -2962,11 +2933,11 @@ public class NonEmptyTest extends BatchTestCase {
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY Crossjoin([Customers].[Name].Members,"
-                + "    [Product].[Product Name].Members) ON rows "
-                + " from [Warehouse and Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+            + "  NON EMPTY Crossjoin([Customers].[Name].Members,"
+            + "    [Product].[Product Name].Members) ON rows "
+            + " from [Warehouse and Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     /**
@@ -2977,29 +2948,29 @@ public class NonEmptyTest extends BatchTestCase {
         checkNative(
             15,
             6,
-        "With " +
-        "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store],NonEmptyCrossJoin([*BASE_MEMBERS_Education Level],[*BASE_MEMBERS_Product]))' " +
-        "Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Store Sales_SEL~SUM] > 50000.0 And [Measures].[*Unit Sales_SEL~MAX] > 50000.0)' " +
-        "Set [*BASE_MEMBERS_Store] as '[Store].[Store Country].Members' " +
-        "Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' " +
-        "Set [*METRIC_MEMBERS_Store] as 'Generate([*METRIC_CJ_SET], {[Store].CurrentMember})' " +
-        "Set [*BASE_MEMBERS_Measures] as '{[Measures].[Store Sales],[Measures].[Unit Sales]}' " +
-        "Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members' " +
-        "Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})' " +
-        "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' " +
-        "Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members' " +
-        "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' " +
-        "Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})' " +
-        "Member [Product].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})' " +
-        "Member [Store].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Store].[All Stores]})' " +
-        "Member [Measures].[*Store Sales_SEL~SUM] as '([Measures].[Store Sales],[Education Level].CurrentMember,[Product].[*CTX_METRIC_MEMBER_SEL~SUM],[Store].[*CTX_METRIC_MEMBER_SEL~SUM])' " +
-        "Member [Product].[*CTX_METRIC_MEMBER_SEL~MAX] as 'Max([*NATIVE_MEMBERS_Product])' " +
-        "Member [Store].[*CTX_METRIC_MEMBER_SEL~MAX] as 'Max([*NATIVE_MEMBERS_Store])' " +
-        "Member [Measures].[*Unit Sales_SEL~MAX] as '([Measures].[Unit Sales],[Education Level].CurrentMember,[Product].[*CTX_METRIC_MEMBER_SEL~MAX],[Store].[*CTX_METRIC_MEMBER_SEL~MAX])' " +
-        "Select " +
-        "CrossJoin(Generate([*METRIC_CJ_SET], {([Store].CurrentMember)}),[*BASE_MEMBERS_Measures]) on columns, " +
-        "Non Empty Generate([*METRIC_CJ_SET], {([Education Level].CurrentMember,[Product].CurrentMember)}) on rows " +
-        "From [Sales]");
+            "With "
+            + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store],NonEmptyCrossJoin([*BASE_MEMBERS_Education Level],[*BASE_MEMBERS_Product]))' "
+            + "Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Store Sales_SEL~SUM] > 50000.0 And [Measures].[*Unit Sales_SEL~MAX] > 50000.0)' "
+            + "Set [*BASE_MEMBERS_Store] as '[Store].[Store Country].Members' "
+            + "Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' "
+            + "Set [*METRIC_MEMBERS_Store] as 'Generate([*METRIC_CJ_SET], {[Store].CurrentMember})' "
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[Store Sales],[Measures].[Unit Sales]}' "
+            + "Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members' "
+            + "Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})' "
+            + "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' "
+            + "Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members' "
+            + "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' "
+            + "Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})' "
+            + "Member [Product].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})' "
+            + "Member [Store].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Store].[All Stores]})' "
+            + "Member [Measures].[*Store Sales_SEL~SUM] as '([Measures].[Store Sales],[Education Level].CurrentMember,[Product].[*CTX_METRIC_MEMBER_SEL~SUM],[Store].[*CTX_METRIC_MEMBER_SEL~SUM])' "
+            + "Member [Product].[*CTX_METRIC_MEMBER_SEL~MAX] as 'Max([*NATIVE_MEMBERS_Product])' "
+            + "Member [Store].[*CTX_METRIC_MEMBER_SEL~MAX] as 'Max([*NATIVE_MEMBERS_Store])' "
+            + "Member [Measures].[*Unit Sales_SEL~MAX] as '([Measures].[Unit Sales],[Education Level].CurrentMember,[Product].[*CTX_METRIC_MEMBER_SEL~MAX],[Store].[*CTX_METRIC_MEMBER_SEL~MAX])' "
+            + "Select "
+            + "CrossJoin(Generate([*METRIC_CJ_SET], {([Store].CurrentMember)}),[*BASE_MEMBERS_Measures]) on columns, "
+            + "Non Empty Generate([*METRIC_CJ_SET], {([Education Level].CurrentMember,[Product].CurrentMember)}) on rows "
+            + "From [Sales]");
     }
 
     public void testCalculatedSlicerMember() {
@@ -3012,21 +2983,23 @@ public class NonEmptyTest extends BatchTestCase {
         // Bcause native evaluation already ignores calculated members on
         // the slicer, both native and non-native evaluation should return
         // the same result.
-        checkNative(20, 1,
-            "With " +
-            "Set BM_PRODUCT as '{[Product].[All Products].[Drink]}' " +
-            "Set BM_EDU as '[Education Level].[Education Level].Members' " +
-            "Set BM_GENDER as '{[Gender].[Gender].[M]}' " +
-            "Set NECJ_SET as 'NonEmptyCrossJoin(BM_GENDER, NonEmptyCrossJoin(BM_EDU,BM_PRODUCT))' " +
-            "Set GM_PRODUCT as 'Generate(NECJ_SET, {[Product].CurrentMember})' " +
-            "Set GM_EDU as 'Generate(NECJ_SET, {[Education Level].CurrentMember})' " +
-            "Set GM_GENDER as 'Generate(NECJ_SET, {[Gender].CurrentMember})' " +
-            "Set GM_MEASURE as '{[Measures].[Unit Sales]}' " +
-            "Member [Education Level].FILTER1 as 'Aggregate(GM_EDU)' " +
-            "Member [Gender].FILTER2 as 'Aggregate(GM_GENDER)' " +
-            "Select " +
-            "GM_PRODUCT on rows, GM_MEASURE on columns " +
-            "From [Sales] Where ([Education Level].FILTER1, [Gender].FILTER2)");
+        checkNative(
+            20,
+            1,
+            "With "
+            + "Set BM_PRODUCT as '{[Product].[All Products].[Drink]}' "
+            + "Set BM_EDU as '[Education Level].[Education Level].Members' "
+            + "Set BM_GENDER as '{[Gender].[Gender].[M]}' "
+            + "Set NECJ_SET as 'NonEmptyCrossJoin(BM_GENDER, NonEmptyCrossJoin(BM_EDU,BM_PRODUCT))' "
+            + "Set GM_PRODUCT as 'Generate(NECJ_SET, {[Product].CurrentMember})' "
+            + "Set GM_EDU as 'Generate(NECJ_SET, {[Education Level].CurrentMember})' "
+            + "Set GM_GENDER as 'Generate(NECJ_SET, {[Gender].CurrentMember})' "
+            + "Set GM_MEASURE as '{[Measures].[Unit Sales]}' "
+            + "Member [Education Level].FILTER1 as 'Aggregate(GM_EDU)' "
+            + "Member [Gender].FILTER2 as 'Aggregate(GM_GENDER)' "
+            + "Select "
+            + "GM_PRODUCT on rows, GM_MEASURE on columns "
+            + "From [Sales] Where ([Education Level].FILTER1, [Gender].FILTER2)");
     }
 
     // next two verify that when NECJ references dimension from slicer,
@@ -3042,25 +3015,6 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     private void checkIndependentSlicerMemberNative(boolean useNative) {
-        String query =
-            "with set [p] as '[Product].[Product Family].members' " +
-            "set [s] as '[Store].[Store Country].members' " +
-            "set [ne] as 'nonemptycrossjoin([p],[s])' " +
-            "set [nep] as 'Generate([ne],{[Product].CurrentMember})' " +
-            "select [nep] on columns from sales " +
-            "where ([Store].[Store Country].[Mexico])";
-
-        String expectedResult =
-            "Axis #0:\n" +
-            "{[Store].[All Stores].[Mexico]}\n" +
-            "Axis #1:\n" +
-            "{[Product].[All Products].[Drink]}\n" +
-            "{[Product].[All Products].[Food]}\n" +
-            "{[Product].[All Products].[Non-Consumable]}\n" +
-            "Row #0: \n" +
-            "Row #0: \n" +
-            "Row #0: \n";
-
         propSaver.set(
             MondrianProperties.instance().EnableNativeCrossJoin, useNative);
 
@@ -3068,53 +3022,62 @@ public class NonEmptyTest extends BatchTestCase {
         // is not refreshed for this parameter.
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);
-        context.assertQueryReturns(query, fold(expectedResult));
+        context.assertQueryReturns(
+            "with set [p] as '[Product].[Product Family].members' "
+            + "set [s] as '[Store].[Store Country].members' "
+            + "set [ne] as 'nonemptycrossjoin([p],[s])' "
+            + "set [nep] as 'Generate([ne],{[Product].CurrentMember})' "
+            + "select [nep] on columns from sales "
+            + "where ([Store].[Store Country].[Mexico])",
+            "Axis #0:\n"
+            + "{[Store].[All Stores].[Mexico]}\n"
+            + "Axis #1:\n"
+            + "{[Product].[All Products].[Drink]}\n"
+            + "{[Product].[All Products].[Food]}\n"
+            + "{[Product].[All Products].[Non-Consumable]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n");
     }
 
     public void testDependentSlicerMemberNonNative() {
-        String query =
-            "with set [p] as '[Product].[Product Family].members' " +
-            "set [s] as '[Store].[Store Country].members' " +
-            "set [ne] as 'nonemptycrossjoin([p],[s])' " +
-            "set [nep] as 'Generate([ne],{[Product].CurrentMember})' " +
-            "select [nep] on columns from sales " +
-            "where ([Time].[1998])";
-
-        String resultNonNative =
-            "Axis #0:\n" +
-            "{[Time].[1998]}\n" +
-            "Axis #1:\n";
-
-        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, false);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, false);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);
-        context.assertQueryReturns(query, fold(resultNonNative));
+        context.assertQueryReturns(
+            "with set [p] as '[Product].[Product Family].members' "
+            + "set [s] as '[Store].[Store Country].members' "
+            + "set [ne] as 'nonemptycrossjoin([p],[s])' "
+            + "set [nep] as 'Generate([ne],{[Product].CurrentMember})' "
+            + "select [nep] on columns from sales "
+            + "where ([Time].[1998])",
+            "Axis #0:\n"
+            + "{[Time].[1998]}\n"
+            + "Axis #1:\n");
     }
 
     public void testDependentSlicerMemberNative() {
-        String query =
-            "with set [p] as '[Product].[Product Family].members' " +
-            "set [s] as '[Store].[Store Country].members' " +
-            "set [ne] as 'nonemptycrossjoin([p],[s])' " +
-            "set [nep] as 'Generate([ne],{[Product].CurrentMember})' " +
-            "select [nep] on columns from sales " +
-            "where ([Time].[1998])";
-
-        String resultNative =
-            "Axis #0:\n" +
-            "{[Time].[1998]}\n" +
-            "Axis #1:\n";
-
-        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);
-        context.assertQueryReturns(query, fold(resultNative));
+        context.assertQueryReturns(
+            "with set [p] as '[Product].[Product Family].members' "
+            + "set [s] as '[Store].[Store Country].members' "
+            + "set [ne] as 'nonemptycrossjoin([p],[s])' "
+            + "set [nep] as 'Generate([ne],{[Product].CurrentMember})' "
+            + "select [nep] on columns from sales "
+            + "where ([Time].[1998])",
+            "Axis #0:\n"
+            + "{[Time].[1998]}\n"
+            + "Axis #1:\n");
     }
 
     /**
@@ -3129,91 +3092,92 @@ public class NonEmptyTest extends BatchTestCase {
         //   With NON EMPTY (mondrian.rolap.nonempty) behavior set to true
         //   the following mdx return no result. The same mdx returns valid
         // result when NON EMPTY is turned off.
-        assertQueryReturns("WITH \n" +
-            "MEMBER Measures.Calc AS '[Measures].[Profit] * 2', SOLVE_ORDER=1000\n" +
-            "MEMBER Product.Conditional as 'Iif (Measures.CurrentMember IS Measures.[Calc], " +
-            "Measures.CurrentMember, null)', SOLVE_ORDER=2000\n" +
-            "SET [S2] AS '{[Store].MEMBERS}' \n" +
-            "SET [S1] AS 'CROSSJOIN({[Customers].[All Customers]},{Product.Conditional})' \n" +
-            "SELECT \n" +
-            "NON EMPTY GENERATE({Measures.[Calc]}, \n" +
-            "          CROSSJOIN(HEAD( {([Measures].CURRENTMEMBER)}, \n" +
-            "                           1\n" +
-            "                        ), \n" +
-            "                     {[S1]}\n" +
-            "                  ), \n" +
-            "                   ALL\n" +
-            "                 ) \n" +
-            "                                   ON AXIS(0), \n" +
-            "NON EMPTY [S2] ON AXIS(1) \n" +
-            "FROM [Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Calc], [Customers].[All Customers], [Product].[Conditional]}\n" +
-                "Axis #2:\n" +
-                "{[Store].[All Stores]}\n" +
-                "{[Store].[All Stores].[USA]}\n" +
-                "{[Store].[All Stores].[USA].[CA]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}\n" +
-                "{[Store].[All Stores].[USA].[OR]}\n" +
-                "{[Store].[All Stores].[USA].[OR].[Portland]}\n" +
-                "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n" +
-                "{[Store].[All Stores].[USA].[OR].[Salem]}\n" +
-                "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n" +
-                "{[Store].[All Stores].[USA].[WA]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Bremerton]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Seattle]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Spokane]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Walla Walla]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Yakima]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n" +
-                "Row #0: $679,221.79\n" +
-                "Row #1: $679,221.79\n" +
-                "Row #2: $191,274.83\n" +
-                "Row #3: $54,967.60\n" +
-                "Row #4: $54,967.60\n" +
-                "Row #5: $65,547.49\n" +
-                "Row #6: $65,547.49\n" +
-                "Row #7: $65,435.21\n" +
-                "Row #8: $65,435.21\n" +
-                "Row #9: $5,324.53\n" +
-                "Row #10: $5,324.53\n" +
-                "Row #11: $171,009.14\n" +
-                "Row #12: $66,219.69\n" +
-                "Row #13: $66,219.69\n" +
-                "Row #14: $104,789.45\n" +
-                "Row #15: $104,789.45\n" +
-                "Row #16: $316,937.82\n" +
-                "Row #17: $5,685.23\n" +
-                "Row #18: $5,685.23\n" +
-                "Row #19: $63,548.67\n" +
-                "Row #20: $63,548.67\n" +
-                "Row #21: $63,374.53\n" +
-                "Row #22: $63,374.53\n" +
-                "Row #23: $59,677.94\n" +
-                "Row #24: $59,677.94\n" +
-                "Row #25: $89,769.36\n" +
-                "Row #26: $89,769.36\n" +
-                "Row #27: $5,651.26\n" +
-                "Row #28: $5,651.26\n" +
-                "Row #29: $29,230.83\n" +
-                "Row #30: $29,230.83\n"));
+        assertQueryReturns(
+            "WITH \n"
+            + "MEMBER Measures.Calc AS '[Measures].[Profit] * 2', SOLVE_ORDER=1000\n"
+            + "MEMBER Product.Conditional as 'Iif (Measures.CurrentMember IS Measures.[Calc], "
+            + "Measures.CurrentMember, null)', SOLVE_ORDER=2000\n"
+            + "SET [S2] AS '{[Store].MEMBERS}' \n"
+            + "SET [S1] AS 'CROSSJOIN({[Customers].[All Customers]},{Product.Conditional})' \n"
+            + "SELECT \n"
+            + "NON EMPTY GENERATE({Measures.[Calc]}, \n"
+            + "          CROSSJOIN(HEAD( {([Measures].CURRENTMEMBER)}, \n"
+            + "                           1\n"
+            + "                        ), \n"
+            + "                     {[S1]}\n"
+            + "                  ), \n"
+            + "                   ALL\n"
+            + "                 ) \n"
+            + "                                   ON AXIS(0), \n"
+            + "NON EMPTY [S2] ON AXIS(1) \n"
+            + "FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Calc], [Customers].[All Customers], [Product].[Conditional]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[All Stores].[USA]}\n"
+            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "{[Store].[All Stores].[USA].[OR]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Portland]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Salem]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[All Stores].[USA].[WA]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Bremerton]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Seattle]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Spokane]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Walla Walla]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Yakima]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n"
+            + "Row #0: $679,221.79\n"
+            + "Row #1: $679,221.79\n"
+            + "Row #2: $191,274.83\n"
+            + "Row #3: $54,967.60\n"
+            + "Row #4: $54,967.60\n"
+            + "Row #5: $65,547.49\n"
+            + "Row #6: $65,547.49\n"
+            + "Row #7: $65,435.21\n"
+            + "Row #8: $65,435.21\n"
+            + "Row #9: $5,324.53\n"
+            + "Row #10: $5,324.53\n"
+            + "Row #11: $171,009.14\n"
+            + "Row #12: $66,219.69\n"
+            + "Row #13: $66,219.69\n"
+            + "Row #14: $104,789.45\n"
+            + "Row #15: $104,789.45\n"
+            + "Row #16: $316,937.82\n"
+            + "Row #17: $5,685.23\n"
+            + "Row #18: $5,685.23\n"
+            + "Row #19: $63,548.67\n"
+            + "Row #20: $63,548.67\n"
+            + "Row #21: $63,374.53\n"
+            + "Row #22: $63,374.53\n"
+            + "Row #23: $59,677.94\n"
+            + "Row #24: $59,677.94\n"
+            + "Row #25: $89,769.36\n"
+            + "Row #26: $89,769.36\n"
+            + "Row #27: $5,651.26\n"
+            + "Row #28: $5,651.26\n"
+            + "Row #29: $29,230.83\n"
+            + "Row #30: $29,230.83\n");
     }
 
     /**
@@ -3232,94 +3196,92 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().EnableNativeNonEmpty.set(false);
             MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(true);
             assertQueryReturns(
-                "WITH MEMBER [Measures].[One] AS '1' " +
-                    "SELECT " +
-                    "NON EMPTY {[Measures].[One], [Measures].[Store Sales]} ON rows, " +
-                    "NON EMPTY [Store].[Store State].MEMBERS on columns " +
-                    "FROM sales",
-                fold(
-                    "Axis #0:\n" +
-                        "{}\n" +
-                        "Axis #1:\n" +
-                        "{[Store].[All Stores].[Canada].[BC]}\n" +
-                        "{[Store].[All Stores].[Mexico].[DF]}\n" +
-                        "{[Store].[All Stores].[Mexico].[Guerrero]}\n" +
-                        "{[Store].[All Stores].[Mexico].[Jalisco]}\n" +
-                        "{[Store].[All Stores].[Mexico].[Veracruz]}\n" +
-                        "{[Store].[All Stores].[Mexico].[Yucatan]}\n" +
-                        "{[Store].[All Stores].[Mexico].[Zacatecas]}\n" +
-                        "{[Store].[All Stores].[USA].[CA]}\n" +
-                        "{[Store].[All Stores].[USA].[OR]}\n" +
-                        "{[Store].[All Stores].[USA].[WA]}\n" +
-                        "Axis #2:\n" +
-                        "{[Measures].[One]}\n" +
-                        "{[Measures].[Store Sales]}\n" +
-                        "Row #0: 1\n" +
-                        "Row #0: 1\n" +
-                        "Row #0: 1\n" +
-                        "Row #0: 1\n" +
-                        "Row #0: 1\n" +
-                        "Row #0: 1\n" +
-                        "Row #0: 1\n" +
-                        "Row #0: 1\n" +
-                        "Row #0: 1\n" +
-                        "Row #0: 1\n" +
-                        "Row #1: \n" +
-                        "Row #1: \n" +
-                        "Row #1: \n" +
-                        "Row #1: \n" +
-                        "Row #1: \n" +
-                        "Row #1: \n" +
-                        "Row #1: \n" +
-                        "Row #1: 159,167.84\n" +
-                        "Row #1: 142,277.07\n" +
-                        "Row #1: 263,793.22\n"));
+                "WITH MEMBER [Measures].[One] AS '1' "
+                + "SELECT "
+                + "NON EMPTY {[Measures].[One], [Measures].[Store Sales]} ON rows, "
+                + "NON EMPTY [Store].[Store State].MEMBERS on columns "
+                + "FROM sales",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Store].[All Stores].[Canada].[BC]}\n"
+                + "{[Store].[All Stores].[Mexico].[DF]}\n"
+                + "{[Store].[All Stores].[Mexico].[Guerrero]}\n"
+                + "{[Store].[All Stores].[Mexico].[Jalisco]}\n"
+                + "{[Store].[All Stores].[Mexico].[Veracruz]}\n"
+                + "{[Store].[All Stores].[Mexico].[Yucatan]}\n"
+                + "{[Store].[All Stores].[Mexico].[Zacatecas]}\n"
+                + "{[Store].[All Stores].[USA].[CA]}\n"
+                + "{[Store].[All Stores].[USA].[OR]}\n"
+                + "{[Store].[All Stores].[USA].[WA]}\n"
+                + "Axis #2:\n"
+                + "{[Measures].[One]}\n"
+                + "{[Measures].[Store Sales]}\n"
+                + "Row #0: 1\n"
+                + "Row #0: 1\n"
+                + "Row #0: 1\n"
+                + "Row #0: 1\n"
+                + "Row #0: 1\n"
+                + "Row #0: 1\n"
+                + "Row #0: 1\n"
+                + "Row #0: 1\n"
+                + "Row #0: 1\n"
+                + "Row #0: 1\n"
+                + "Row #1: \n"
+                + "Row #1: \n"
+                + "Row #1: \n"
+                + "Row #1: \n"
+                + "Row #1: \n"
+                + "Row #1: \n"
+                + "Row #1: \n"
+                + "Row #1: 159,167.84\n"
+                + "Row #1: 142,277.07\n"
+                + "Row #1: 263,793.22\n");
 
             if (Bug.BugMondrian446Fixed) {
                 MondrianProperties.instance().EnableNativeNonEmpty.set(true);
                 assertQueryReturns(
-                    "WITH MEMBER [Measures].[One] AS '1' " +
-                        "SELECT " +
-                        "NON EMPTY {[Measures].[One], [Measures].[Store Sales]} ON rows, " +
-                        "NON EMPTY [Store].[Store State].MEMBERS on columns " +
-                        "FROM sales",
-                    fold(
-                        "Axis #0:\n" +
-                            "{}\n" +
-                            "Axis #1:\n" +
-                            "{[Store].[All Stores].[Canada].[BC]}\n" +
-                            "{[Store].[All Stores].[Mexico].[DF]}\n" +
-                            "{[Store].[All Stores].[Mexico].[Guerrero]}\n" +
-                            "{[Store].[All Stores].[Mexico].[Jalisco]}\n" +
-                            "{[Store].[All Stores].[Mexico].[Veracruz]}\n" +
-                            "{[Store].[All Stores].[Mexico].[Yucatan]}\n" +
-                            "{[Store].[All Stores].[Mexico].[Zacatecas]}\n" +
-                            "{[Store].[All Stores].[USA].[CA]}\n" +
-                            "{[Store].[All Stores].[USA].[OR]}\n" +
-                            "{[Store].[All Stores].[USA].[WA]}\n" +
-                            "Axis #2:\n" +
-                            "{[Measures].[One]}\n" +
-                            "{[Measures].[Store Sales]}\n" +
-                            "Row #0: 1\n" +
-                            "Row #0: 1\n" +
-                            "Row #0: 1\n" +
-                            "Row #0: 1\n" +
-                            "Row #0: 1\n" +
-                            "Row #0: 1\n" +
-                            "Row #0: 1\n" +
-                            "Row #0: 1\n" +
-                            "Row #0: 1\n" +
-                            "Row #0: 1\n" +
-                            "Row #1: \n" +
-                            "Row #1: \n" +
-                            "Row #1: \n" +
-                            "Row #1: \n" +
-                            "Row #1: \n" +
-                            "Row #1: \n" +
-                            "Row #1: \n" +
-                            "Row #1: 159,167.84\n" +
-                            "Row #1: 142,277.07\n" +
-                            "Row #1: 263,793.22\n"));
+                    "WITH MEMBER [Measures].[One] AS '1' "
+                    + "SELECT "
+                    + "NON EMPTY {[Measures].[One], [Measures].[Store Sales]} ON rows, "
+                    + "NON EMPTY [Store].[Store State].MEMBERS on columns "
+                    + "FROM sales",
+                    "Axis #0:\n"
+                    + "{}\n"
+                    + "Axis #1:\n"
+                    + "{[Store].[All Stores].[Canada].[BC]}\n"
+                    + "{[Store].[All Stores].[Mexico].[DF]}\n"
+                    + "{[Store].[All Stores].[Mexico].[Guerrero]}\n"
+                    + "{[Store].[All Stores].[Mexico].[Jalisco]}\n"
+                    + "{[Store].[All Stores].[Mexico].[Veracruz]}\n"
+                    + "{[Store].[All Stores].[Mexico].[Yucatan]}\n"
+                    + "{[Store].[All Stores].[Mexico].[Zacatecas]}\n"
+                    + "{[Store].[All Stores].[USA].[CA]}\n"
+                    + "{[Store].[All Stores].[USA].[OR]}\n"
+                    + "{[Store].[All Stores].[USA].[WA]}\n"
+                    + "Axis #2:\n"
+                    + "{[Measures].[One]}\n"
+                    + "{[Measures].[Store Sales]}\n"
+                    + "Row #0: 1\n"
+                    + "Row #0: 1\n"
+                    + "Row #0: 1\n"
+                    + "Row #0: 1\n"
+                    + "Row #0: 1\n"
+                    + "Row #0: 1\n"
+                    + "Row #0: 1\n"
+                    + "Row #0: 1\n"
+                    + "Row #0: 1\n"
+                    + "Row #0: 1\n"
+                    + "Row #1: \n"
+                    + "Row #1: \n"
+                    + "Row #1: \n"
+                    + "Row #1: \n"
+                    + "Row #1: \n"
+                    + "Row #1: \n"
+                    + "Row #1: \n"
+                    + "Row #1: 159,167.84\n"
+                    + "Row #1: 142,277.07\n"
+                    + "Row #1: 263,793.22\n");
             }
         } finally {
             MondrianProperties.instance().EnableNativeNonEmpty.set(currentNativeNonEmpty);
@@ -3332,13 +3294,13 @@ public class NonEmptyTest extends BatchTestCase {
         // after the highcardinality feature was added, I've included it
         // here to make sure it continues to work.
         assertQueryReturns(
-                "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Store Cost]} ON columns, "
-                + "NON EMPTY Filter([Product].[Brand Name].Members, ([Measures].[Unit Sales] > 100000.0)) ON rows "
-                + "from [Sales] where [Time].[1997]",
-                fold("Axis #0:\n" +
-                "{[Time].[1997]}\n" +
-                "Axis #1:\n" +
-                "Axis #2:\n"));
+            "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Store Cost]} ON columns, "
+            + "NON EMPTY Filter([Product].[Brand Name].Members, ([Measures].[Unit Sales] > 100000.0)) ON rows "
+            + "from [Sales] where [Time].[1997]",
+            "Axis #0:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #1:\n"
+            + "Axis #2:\n");
     }
 
     /**
@@ -3387,16 +3349,20 @@ public class NonEmptyTest extends BatchTestCase {
             String nonNativeResult = toString(result);
             if (!nonNativeResult.equals(expectedResult)) {
                 TestContext.assertEqualsVerbose(
-                    expectedResult, nonNativeResult, false,
-                    "Non Native implementation returned different result than " +
-                    "expected; MDX=" + mdx);
+                    TestContext.fold(expectedResult),
+                    nonNativeResult,
+                    false,
+                    "Non Native implementation returned different result than "
+                    + "expected; MDX=" + mdx);
             }
         }
     }
 
     RolapNativeRegistry getRegistry(Connection connection) {
-        RolapCube cube = (RolapCube) connection.getSchema().lookupCube("Sales", true);
-        RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
+        RolapCube cube = (RolapCube) connection.getSchema().lookupCube(
+            "Sales", true);
+        RolapSchemaReader schemaReader =
+            (RolapSchemaReader) cube.getSchemaReader();
         return schemaReader.getSchema().getNativeRegistry();
     }
 
@@ -3499,17 +3465,26 @@ public class NonEmptyTest extends BatchTestCase {
 
             if (expectedResult != null) {
                 TestContext.assertEqualsVerbose(
-                    expectedResult, nativeResult, false,
-                    "Native implementation returned different result than expected; MDX=" + mdx);
+                    TestContext.fold(expectedResult),
+                    nativeResult,
+                    false,
+                    "Native implementation returned different result than "
+                    + "expected; MDX=" + mdx);
                 TestContext.assertEqualsVerbose(
-                    expectedResult, interpretedResult, false,
-                    "Interpreter implementation returned different result than expected; MDX=" + mdx);
+                    TestContext.fold(expectedResult),
+                    interpretedResult,
+                    false,
+                    "Interpreter implementation returned different result than "
+                    + "expected; MDX=" + mdx);
             }
 
             if (!nativeResult.equals(interpretedResult)) {
                 TestContext.assertEqualsVerbose(
-                    interpretedResult, nativeResult, false,
-                    "Native implementation returned different result than interpreter; MDX=" + mdx);
+                    TestContext.fold(interpretedResult),
+                    nativeResult,
+                    false,
+                    "Native implementation returned different result than "
+                    + "interpreter; MDX=" + mdx);
             }
         } finally {
             Connection con = getConnection();

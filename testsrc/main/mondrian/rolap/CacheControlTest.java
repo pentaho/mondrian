@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -95,153 +95,152 @@ public class CacheControlTest extends FoodMartTestCase {
      */
     private void standardQuery(TestContext testContext) {
         testContext.assertQueryReturns(
-            "select {[Time].Members} on columns,\n" +
-                " {[Product].Children} on rows\n" +
-                "from [Sales]",
-            fold(
-                "Axis #0:\n" +
-                    "{}\n" +
-                    "Axis #1:\n" +
-                    "{[Time].[1997]}\n" +
-                    "{[Time].[1997].[Q1]}\n" +
-                    "{[Time].[1997].[Q1].[1]}\n" +
-                    "{[Time].[1997].[Q1].[2]}\n" +
-                    "{[Time].[1997].[Q1].[3]}\n" +
-                    "{[Time].[1997].[Q2]}\n" +
-                    "{[Time].[1997].[Q2].[4]}\n" +
-                    "{[Time].[1997].[Q2].[5]}\n" +
-                    "{[Time].[1997].[Q2].[6]}\n" +
-                    "{[Time].[1997].[Q3]}\n" +
-                    "{[Time].[1997].[Q3].[7]}\n" +
-                    "{[Time].[1997].[Q3].[8]}\n" +
-                    "{[Time].[1997].[Q3].[9]}\n" +
-                    "{[Time].[1997].[Q4]}\n" +
-                    "{[Time].[1997].[Q4].[10]}\n" +
-                    "{[Time].[1997].[Q4].[11]}\n" +
-                    "{[Time].[1997].[Q4].[12]}\n" +
-                    "{[Time].[1998]}\n" +
-                    "{[Time].[1998].[Q1]}\n" +
-                    "{[Time].[1998].[Q1].[1]}\n" +
-                    "{[Time].[1998].[Q1].[2]}\n" +
-                    "{[Time].[1998].[Q1].[3]}\n" +
-                    "{[Time].[1998].[Q2]}\n" +
-                    "{[Time].[1998].[Q2].[4]}\n" +
-                    "{[Time].[1998].[Q2].[5]}\n" +
-                    "{[Time].[1998].[Q2].[6]}\n" +
-                    "{[Time].[1998].[Q3]}\n" +
-                    "{[Time].[1998].[Q3].[7]}\n" +
-                    "{[Time].[1998].[Q3].[8]}\n" +
-                    "{[Time].[1998].[Q3].[9]}\n" +
-                    "{[Time].[1998].[Q4]}\n" +
-                    "{[Time].[1998].[Q4].[10]}\n" +
-                    "{[Time].[1998].[Q4].[11]}\n" +
-                    "{[Time].[1998].[Q4].[12]}\n" +
-                    "Axis #2:\n" +
-                    "{[Product].[All Products].[Drink]}\n" +
-                    "{[Product].[All Products].[Food]}\n" +
-                    "{[Product].[All Products].[Non-Consumable]}\n" +
-                    "Row #0: 24,597\n" +
-                    "Row #0: 5,976\n" +
-                    "Row #0: 1,910\n" +
-                    "Row #0: 1,951\n" +
-                    "Row #0: 2,115\n" +
-                    "Row #0: 5,895\n" +
-                    "Row #0: 1,948\n" +
-                    "Row #0: 2,039\n" +
-                    "Row #0: 1,908\n" +
-                    "Row #0: 6,065\n" +
-                    "Row #0: 2,205\n" +
-                    "Row #0: 1,921\n" +
-                    "Row #0: 1,939\n" +
-                    "Row #0: 6,661\n" +
-                    "Row #0: 1,898\n" +
-                    "Row #0: 2,344\n" +
-                    "Row #0: 2,419\n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #0: \n" +
-                    "Row #1: 191,940\n" +
-                    "Row #1: 47,809\n" +
-                    "Row #1: 15,604\n" +
-                    "Row #1: 15,142\n" +
-                    "Row #1: 17,063\n" +
-                    "Row #1: 44,825\n" +
-                    "Row #1: 14,393\n" +
-                    "Row #1: 15,055\n" +
-                    "Row #1: 15,377\n" +
-                    "Row #1: 47,440\n" +
-                    "Row #1: 17,036\n" +
-                    "Row #1: 15,741\n" +
-                    "Row #1: 14,663\n" +
-                    "Row #1: 51,866\n" +
-                    "Row #1: 14,232\n" +
-                    "Row #1: 18,278\n" +
-                    "Row #1: 19,356\n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #1: \n" +
-                    "Row #2: 50,236\n" +
-                    "Row #2: 12,506\n" +
-                    "Row #2: 4,114\n" +
-                    "Row #2: 3,864\n" +
-                    "Row #2: 4,528\n" +
-                    "Row #2: 11,890\n" +
-                    "Row #2: 3,838\n" +
-                    "Row #2: 3,987\n" +
-                    "Row #2: 4,065\n" +
-                    "Row #2: 12,343\n" +
-                    "Row #2: 4,522\n" +
-                    "Row #2: 4,035\n" +
-                    "Row #2: 3,786\n" +
-                    "Row #2: 13,497\n" +
-                    "Row #2: 3,828\n" +
-                    "Row #2: 4,648\n" +
-                    "Row #2: 5,021\n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n" +
-                    "Row #2: \n"));
+            "select {[Time].Members} on columns,\n"
+            + " {[Product].Children} on rows\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997]}\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q1].[1]}\n"
+            + "{[Time].[1997].[Q1].[2]}\n"
+            + "{[Time].[1997].[Q1].[3]}\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "{[Time].[1997].[Q2].[4]}\n"
+            + "{[Time].[1997].[Q2].[5]}\n"
+            + "{[Time].[1997].[Q2].[6]}\n"
+            + "{[Time].[1997].[Q3]}\n"
+            + "{[Time].[1997].[Q3].[7]}\n"
+            + "{[Time].[1997].[Q3].[8]}\n"
+            + "{[Time].[1997].[Q3].[9]}\n"
+            + "{[Time].[1997].[Q4]}\n"
+            + "{[Time].[1997].[Q4].[10]}\n"
+            + "{[Time].[1997].[Q4].[11]}\n"
+            + "{[Time].[1997].[Q4].[12]}\n"
+            + "{[Time].[1998]}\n"
+            + "{[Time].[1998].[Q1]}\n"
+            + "{[Time].[1998].[Q1].[1]}\n"
+            + "{[Time].[1998].[Q1].[2]}\n"
+            + "{[Time].[1998].[Q1].[3]}\n"
+            + "{[Time].[1998].[Q2]}\n"
+            + "{[Time].[1998].[Q2].[4]}\n"
+            + "{[Time].[1998].[Q2].[5]}\n"
+            + "{[Time].[1998].[Q2].[6]}\n"
+            + "{[Time].[1998].[Q3]}\n"
+            + "{[Time].[1998].[Q3].[7]}\n"
+            + "{[Time].[1998].[Q3].[8]}\n"
+            + "{[Time].[1998].[Q3].[9]}\n"
+            + "{[Time].[1998].[Q4]}\n"
+            + "{[Time].[1998].[Q4].[10]}\n"
+            + "{[Time].[1998].[Q4].[11]}\n"
+            + "{[Time].[1998].[Q4].[12]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Drink]}\n"
+            + "{[Product].[All Products].[Food]}\n"
+            + "{[Product].[All Products].[Non-Consumable]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #0: 5,976\n"
+            + "Row #0: 1,910\n"
+            + "Row #0: 1,951\n"
+            + "Row #0: 2,115\n"
+            + "Row #0: 5,895\n"
+            + "Row #0: 1,948\n"
+            + "Row #0: 2,039\n"
+            + "Row #0: 1,908\n"
+            + "Row #0: 6,065\n"
+            + "Row #0: 2,205\n"
+            + "Row #0: 1,921\n"
+            + "Row #0: 1,939\n"
+            + "Row #0: 6,661\n"
+            + "Row #0: 1,898\n"
+            + "Row #0: 2,344\n"
+            + "Row #0: 2,419\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #1: 191,940\n"
+            + "Row #1: 47,809\n"
+            + "Row #1: 15,604\n"
+            + "Row #1: 15,142\n"
+            + "Row #1: 17,063\n"
+            + "Row #1: 44,825\n"
+            + "Row #1: 14,393\n"
+            + "Row #1: 15,055\n"
+            + "Row #1: 15,377\n"
+            + "Row #1: 47,440\n"
+            + "Row #1: 17,036\n"
+            + "Row #1: 15,741\n"
+            + "Row #1: 14,663\n"
+            + "Row #1: 51,866\n"
+            + "Row #1: 14,232\n"
+            + "Row #1: 18,278\n"
+            + "Row #1: 19,356\n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #2: 50,236\n"
+            + "Row #2: 12,506\n"
+            + "Row #2: 4,114\n"
+            + "Row #2: 3,864\n"
+            + "Row #2: 4,528\n"
+            + "Row #2: 11,890\n"
+            + "Row #2: 3,838\n"
+            + "Row #2: 3,987\n"
+            + "Row #2: 4,065\n"
+            + "Row #2: 12,343\n"
+            + "Row #2: 4,522\n"
+            + "Row #2: 4,035\n"
+            + "Row #2: 3,786\n"
+            + "Row #2: 13,497\n"
+            + "Row #2: 3,828\n"
+            + "Row #2: 4,648\n"
+            + "Row #2: 5,021\n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n");
     }
 
     // ---------------------
@@ -277,15 +276,15 @@ public class CacheControlTest extends FoodMartTestCase {
             ((CacheControlImpl) cacheControl).normalize(
                 (CacheControlImpl.CellRegionImpl) region);
         assertEquals(
-            "Union(" +
-                "Crossjoin(" +
-                "Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), " +
-                "Member([Time].[1997].[Q1]), " +
-                "Member([Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Sales Count], [Measures].[Customer Count], [Measures].[Promotion Sales])), " +
-                "Crossjoin(" +
-                "Member([Product].[All Products].[Drink].[Dairy]), " +
-                "Member([Time].[1997].[Q1]), " +
-                "Member([Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Sales Count], [Measures].[Customer Count], [Measures].[Promotion Sales])))",
+            "Union("
+            + "Crossjoin("
+            + "Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), "
+            + "Member([Time].[1997].[Q1]), "
+            + "Member([Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Sales Count], [Measures].[Customer Count], [Measures].[Promotion Sales])), "
+            + "Crossjoin("
+            + "Member([Product].[All Products].[Drink].[Dairy]), "
+            + "Member([Time].[1997].[Q1]), "
+            + "Member([Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Sales Count], [Measures].[Customer Count], [Measures].[Promotion Sales])))",
             normalizedRegion.toString());
     }
 
@@ -597,7 +596,8 @@ public class CacheControlTest extends FoodMartTestCase {
 
         final CacheControl.CellRegion region1997 =
             cacheControl.createMemberRegion(member1997, true);
-        assertEquals("Member([Time].[1997])",
+        assertEquals(
+            "Member([Time].[1997])",
             region1997.toString());
 
         final CacheControl.CellRegion measuresRegion =
@@ -633,7 +633,8 @@ public class CacheControlTest extends FoodMartTestCase {
 
         final CacheControl.CellRegion regionProductFoodDrink =
             cacheControl.createMemberRegion(true, memberDrink, true, memberFood, true);
-        assertEquals("Range([Product].[All Products].[Drink] inclusive to [Product].[All Products].[Food] inclusive)",
+        assertEquals(
+            "Range([Product].[All Products].[Drink] inclusive to [Product].[All Products].[Food] inclusive)",
             regionProductFoodDrink.toString());
 
         final CacheControl.CellRegion regionFemale =
@@ -914,10 +915,10 @@ public class CacheControlTest extends FoodMartTestCase {
         final CacheControl.CellRegion normalizedRegion =
             ((CacheControlImpl) cacheControl).normalize((CacheControlImpl.CellRegionImpl) region);
         assertEquals(
-            "Union(" +
-                "Crossjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])), " +
-                "Crossjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[M]), Member([Time].[1997].[Q2])), " +
-                "Crossjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])))",
+            "Union("
+            + "Crossjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])), "
+            + "Crossjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[M]), Member([Time].[1997].[Q2])), "
+            + "Crossjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])))",
             normalizedRegion.toString());
     }
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2007 Julian Hyde
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -45,8 +45,9 @@ public class I18nTest extends FoodMartTestCase {
 
         // Currency too
         Format currencyFormat = new Format("Currency", spanish);
-        assertEquals("1.234.567,79 " + Euro,
-                currencyFormat.format(new Double(1234567.789)));
+        assertEquals(
+            "1.234.567,79 " + Euro,
+            currencyFormat.format(new Double(1234567.789)));
 
         // Dates
         Format dateFormat = new Format("Medium Date", spanish);
@@ -86,19 +87,19 @@ public class I18nTest extends FoodMartTestCase {
         Connection connection =
             DriverManager.getConnection(properties, null);
         Query query = connection.parseQuery(
-            "WITH MEMBER [Measures].[Foo] AS ' 12345.67 ',\n" +
-                " FORMAT_STRING='#,###.00'\n" +
-                "SELECT {[Measures].[Foo]} ON COLUMNS\n" +
-                "FROM [Sales]");
+            "WITH MEMBER [Measures].[Foo] AS ' 12345.67 ',\n"
+            + " FORMAT_STRING='#,###.00'\n"
+            + "SELECT {[Measures].[Foo]} ON COLUMNS\n"
+            + "FROM [Sales]");
         Result result = connection.execute(query);
         String actual = TestContext.toString(result);
-        assertEquals(fold("Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Foo]}\n" +
-            "Row #0: " +
-            resultString +
-            "\n"), actual);
+        TestContext.assertEqualsVerbose(
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: " + resultString + "\n",
+            actual);
     }
 }
 

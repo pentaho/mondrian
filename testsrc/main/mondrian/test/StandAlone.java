@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2008 Julian Hyde and others
+// Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -29,14 +29,11 @@ public class StandAlone {
 
     private static BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
 
-//    public static final String ConnectionString = "Provider=mondrian;" +
-//        "Jdbc=jdbc:JSQLConnect://gjlaptop:1433/database=RDBPerformance/user=galt/password=password;" +
-//        "Catalog=file:demo\\RdbCubePerformance.xml;" +
-//        "JdbcDrivers=com.jnetdirect.jsql.JSQLDriver;";
-    public static final String ConnectionString = "Provider=mondrian;" +
-        "Jdbc=jdbc:JSQLConnect://engdb04:1433/database=MondrianFoodmart/user=mondrian/password=password;" +
-        "Catalog=file:demo\\FoodMart.xml;" +
-        "JdbcDrivers=com.jnetdirect.jsql.JSQLDriver;";
+    public static final String ConnectionString =
+        "Provider=mondrian;"
+        + "Jdbc=jdbc:JSQLConnect://engdb04:1433/database=MondrianFoodmart/user=mondrian/password=password;"
+        + "Catalog=file:demo\\FoodMart.xml;"
+        + "JdbcDrivers=com.jnetdirect.jsql.JSQLDriver;";
 
     public static void main(String[] args) {
         long now = System.currentTimeMillis();
@@ -264,8 +261,9 @@ public class StandAlone {
                         }
                         Property prop = props[idx];
 
-                        System.out.print(prop.getName() + ": " +
-                            member.getPropertyValue(prop.getName()));
+                        System.out.print(
+                            prop.getName() + ": "
+                            + member.getPropertyValue(prop.getName()));
                     }
                     System.out.print("}");
                 }

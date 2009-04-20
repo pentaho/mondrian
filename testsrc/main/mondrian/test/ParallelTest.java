@@ -65,9 +65,9 @@ public class ParallelTest extends FoodMartTestCase {
                 private void cycle() {
                     Connection connection = getConnection();
                     Query query = connection.parseQuery(
-                        "select {[Measures].[Unit Sales]} on columns," +
-                            " {[Product].Members} on rows " +
-                            "from [Sales]");
+                        "select {[Measures].[Unit Sales]} on columns,"
+                        + " {[Product].Members} on rows "
+                        + "from [Sales]");
                     Result result = connection.execute(query);
                     String s = result.toString();
                     assertNotNull(s);

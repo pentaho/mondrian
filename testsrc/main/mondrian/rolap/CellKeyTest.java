@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde and others.
+// Copyright (C) 2005-2009 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -274,48 +274,48 @@ public class CellKeyTest extends FoodMartTestCase {
             return;
         }
         String cubeDef =
-            "<Cube name = \"SalesTest\" defaultMeasure=\"Unit Sales\">\n" +
-            "  <Table name=\"sales_fact_1997\"/>\n" +
-            "  <Dimension name=\"City\" foreignKey=\"customer_id\">\n" +
-            "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n" +
-            "      <Table name=\"customer\"/>\n" +
-            "      <Level name=\"city\" column=\"city\" uniqueMembers=\"true\"/>\n" +
-            "    </Hierarchy>\n" +
-            "  </Dimension>\n" +
-            "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n" +
-            "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n" +
-            "      <Table name=\"customer\"/>\n" +
-            "      <Level name=\"gender\" column=\"gender\" uniqueMembers=\"true\"/>\n" +
-            "    </Hierarchy>\n" +
-            "  </Dimension>\n" +
-            "  <Dimension name=\"Address2\" foreignKey=\"customer_id\">\n" +
-            "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n" +
-            "      <Table name=\"customer\"/>\n" +
-            "      <Level name=\"addr\" column=\"address2\" uniqueMembers=\"true\"/>\n" +
-            "    </Hierarchy>\n" +
-            "  </Dimension>\n" +
-            "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n" +
-            "</Cube>";
+            "<Cube name = \"SalesTest\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Dimension name=\"City\" foreignKey=\"customer_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
+            + "      <Table name=\"customer\"/>\n"
+            + "      <Level name=\"city\" column=\"city\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
+            + "      <Table name=\"customer\"/>\n"
+            + "      <Level name=\"gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Address2\" foreignKey=\"customer_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
+            + "      <Table name=\"customer\"/>\n"
+            + "      <Level name=\"addr\" column=\"address2\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n"
+            + "</Cube>";
 
         String query =
-            "With Set [*NATIVE_CJ_SET] as NonEmptyCrossJoin([Gender].Children, [Address2].Children) " +
-            "Select Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember, [Address2].CurrentMember)}) on columns " +
-            "From [SalesTest] where ([City].[Redwood City])";
+            "With Set [*NATIVE_CJ_SET] as NonEmptyCrossJoin([Gender].Children, [Address2].Children) "
+            + "Select Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember, [Address2].CurrentMember)}) on columns "
+            + "From [SalesTest] where ([City].[Redwood City])";
 
         String result =
-            "Axis #0:\n" +
-            "{[City].[All Citys].[Redwood City]}\n" +
-            "Axis #1:\n" +
-            "{[Gender].[All Genders].[F], [Address2].[All Address2s].[#null]}\n" +
-            "{[Gender].[All Genders].[F], [Address2].[All Address2s].[#2]}\n" +
-            "{[Gender].[All Genders].[F], [Address2].[All Address2s].[Unit H103]}\n" +
-            "{[Gender].[All Genders].[M], [Address2].[All Address2s].[#null]}\n" +
-            "{[Gender].[All Genders].[M], [Address2].[All Address2s].[#208]}\n" +
-            "Row #0: 71\n" +
-            "Row #0: 10\n" +
-            "Row #0: 3\n" +
-            "Row #0: 52\n" +
-            "Row #0: 8\n";
+            "Axis #0:\n"
+            + "{[City].[All Citys].[Redwood City]}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[All Genders].[F], [Address2].[All Address2s].[#null]}\n"
+            + "{[Gender].[All Genders].[F], [Address2].[All Address2s].[#2]}\n"
+            + "{[Gender].[All Genders].[F], [Address2].[All Address2s].[Unit H103]}\n"
+            + "{[Gender].[All Genders].[M], [Address2].[All Address2s].[#null]}\n"
+            + "{[Gender].[All Genders].[M], [Address2].[All Address2s].[#208]}\n"
+            + "Row #0: 71\n"
+            + "Row #0: 10\n"
+            + "Row #0: 3\n"
+            + "Row #0: 52\n"
+            + "Row #0: 8\n";
 
         /*
          * Make sure ExpandNonNative is not set. Otherwise, the query is evaluated
@@ -336,7 +336,7 @@ public class CellKeyTest extends FoodMartTestCase {
                 null,
                 null);
 
-        testContext.assertQueryReturns(query, fold(result));
+        testContext.assertQueryReturns(query, result);
         MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
     }
 }

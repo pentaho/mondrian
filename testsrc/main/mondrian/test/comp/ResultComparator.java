@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2008 Julian Hyde and others
+// Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -63,10 +63,10 @@ class ResultComparator {
             return;
         }
 
-        final Element tuples = (Element)
-            slicerTuple.getElementsByTagName("tuples").item(0);
-        final Element tuple = (Element)
-            tuples.getElementsByTagName("tuple").item(0);
+        final Element tuples =
+            (Element) slicerTuple.getElementsByTagName("tuples").item(0);
+        final Element tuple =
+            (Element) tuples.getElementsByTagName("tuple").item(0);
         NodeList expectedTuple = tuple.getElementsByTagName("member");
 
         // For each of the expected members, make sure that it's either in the
@@ -87,11 +87,13 @@ class ResultComparator {
 
         _assertEquals(
             "The query returned more slicer members than were expected",
-            members.size(), seenMembers);
+            members.size(),
+            seenMembers);
     }
 
-    private boolean resultMembersContainsExpected(String expectedMemberName,
-            List<Member> members) {
+    private boolean resultMembersContainsExpected(
+        String expectedMemberName, List<Member> members)
+    {
         for (Member member : members) {
             if (member.getUniqueName().equals(expectedMemberName)) {
                 return true;
@@ -109,8 +111,8 @@ class ResultComparator {
         if (axes.length >= 1) {
             compareTuples("Column", columnList, axes[0].getPositions());
         } else {
-            Assert.assertTrue("Must be no columns",
-                columnList.getLength() == 0);
+            Assert.assertTrue(
+                "Must be no columns", columnList.getLength() == 0);
         }
     }
 
@@ -131,26 +133,35 @@ class ResultComparator {
 
         default:
             Assert.fail(
-                "Too many axes returned. " +
-                "Expected 0, 1 or 2 but got " + axes.length);
+                "Too many axes returned. "
+                + "Expected 0, 1 or 2 but got "
+                + axes.length);
             break;
         }
     }
 
-    private void _failNotEquals(String message, Object expected, Object actual)
+    private void _failNotEquals(
+        String message, Object expected, Object actual)
     {
         if (message != null) {
             message += "; ";
         } else {
             message = "";
         }
-        message += "; expected=" + expected + "; actual=" + actual + Util.nl +
-                "Query: " + Util.unparse(result.getQuery()) + Util.nl;
+        message += "; expected="
+                   + expected
+                   + "; actual="
+                   + actual
+                   + Util.nl
+                   + "Query: "
+                   + Util.unparse(result.getQuery())
+                   + Util.nl;
         TestContext.assertEqualsVerbose(
-                XMLUtility.toString(xmlRoot),
-                toString(result),
-                false,
-                message);
+            TestContext.fold(
+                XMLUtility.toString(xmlRoot)),
+            toString(result),
+            false,
+            message);
     }
 
     private String toString(Result result) {
@@ -159,8 +170,8 @@ class ResultComparator {
     }
 
     private Element toXml(Result result) {
-        DocumentBuilder db =
-                XMLUtility.createDomParser(false, true, false, new XMLUtility.UtilityErrorHandler());
+        DocumentBuilder db = XMLUtility.createDomParser(
+            false, true, false, new XMLUtility.UtilityErrorHandler());
         final Document document = db.newDocument();
         final Element dataResultXml = document.createElement("dataResult");
         slicerAxisToXml(document, dataResultXml, result);
@@ -168,8 +179,8 @@ class ResultComparator {
         for (int i = 0; i < axes.length; i++) {
             Axis axis = axes[i];
             String axisName =
-                AxisOrdinal.StandardAxisOrdinal.forLogicalOrdinal(i)
-                    .name().toLowerCase();
+                AxisOrdinal.StandardAxisOrdinal.forLogicalOrdinal(i).name()
+                    .toLowerCase();
             axisToXml(document, dataResultXml, axis, axisName);
         }
         final Element dataXml = document.createElement("data");
@@ -181,11 +192,12 @@ class ResultComparator {
     }
 
     private void cellsToXml(
-            Document document,
-            Result result,
-            Element parentXml,
-            int[] pos,
-            int axisOrdinal) {
+        Document document,
+        Result result,
+        Element parentXml,
+        int[] pos,
+        int axisOrdinal)
+    {
         Axis axis = result.getAxes()[axisOrdinal];
         for (int i = 0; i < axis.getPositions().size(); i++) {
             pos[axisOrdinal] = i;
@@ -193,7 +205,8 @@ class ResultComparator {
                 Cell cell = result.getCell(pos);
                 final Element cellXml = document.createElement("cell");
                 parentXml.appendChild(cellXml);
-                final Text textXml = document.createTextNode(String.valueOf(cell.getValue()));
+                final Text textXml =
+                    document.createTextNode(String.valueOf(cell.getValue()));
                 cellXml.appendChild(textXml);
             } else {
                 final Element drowXml = document.createElement("drow");
@@ -204,10 +217,12 @@ class ResultComparator {
     }
 
     private void slicerAxisToXml(
-            final Document document,
-            final Element dataResultXml,
-            final Result result) {
-        final Dimension[] dimensions = result.getQuery().getCube().getDimensions();
+        final Document document,
+        final Element dataResultXml,
+        final Result result)
+    {
+        final Dimension[] dimensions =
+            result.getQuery().getCube().getDimensions();
         String axisName = "slicer";
         final Axis slicerAxis = result.getSlicerAxis();
         final Element axisXml = document.createElement(axisName);
@@ -242,15 +257,14 @@ class ResultComparator {
     /**
      * Returns which member of a given dimension appears in the slicer
      * axis.<p/>
-     *
+     * <p/>
      * If the dimension occurs on one of the other axes, the answer is null.
      * If the dimension occurs in the slicer axis, the answer is that member.
      * Otherwise it is the default member of the dimension.
      */
     private Member findSlicerAxisMember(Result result, Dimension dimension) {
         final Axis slicerAxis = result.getSlicerAxis();
-        if (slicerAxis != null &&
-                slicerAxis.getPositions().size() == 1) {
+        if (slicerAxis != null && slicerAxis.getPositions().size() == 1) {
             final List<Member> members = slicerAxis.getPositions().get(0);
             for (Member member : members) {
                 if (member.getDimension() == dimension) {
@@ -275,10 +289,11 @@ class ResultComparator {
     }
 
     private void axisToXml(
-            final Document document,
-            final Element dataResultXml,
-            final Axis axis,
-            final String axisName) {
+        final Document document,
+        final Element dataResultXml,
+        final Axis axis,
+        final String axisName)
+    {
         final Element axisXml = document.createElement(axisName);
         dataResultXml.appendChild(axisXml);
         if (axis.getPositions().size() > 0) {
@@ -309,15 +324,15 @@ class ResultComparator {
     }
 
 
-    private void _assertEquals(String message, int expected, int actual)
-    {
+    private void _assertEquals(String message, int expected, int actual) {
         if (expected != actual) {
             _failNotEquals(message, expected, actual);
         }
     }
 
     private void _assertEquals(
-            String message, Object expected, Object actual) {
+        String message, Object expected, Object actual)
+    {
         if (expected == null) {
             if (actual == null) {
                 return;
@@ -331,7 +346,8 @@ class ResultComparator {
     }
 
     private void _assertEquals(
-            String message, double expected, double actual, double delta) {
+        String message, double expected, double actual, double delta)
+    {
         if (Double.isInfinite(expected)) {
             if (!(expected == actual)) {
                 _failNotEquals(message, expected, actual);
@@ -343,53 +359,69 @@ class ResultComparator {
     }
 
     private void compareTuples(
-            String message,
-            NodeList axisValues,
-            List<Position> resultTuples) {
+        String message, NodeList axisValues, List<Position> resultTuples)
+    {
         NodeList expectedTuples = null;
         NodeList expectedDims = null;
 
         if (axisValues.getLength() != 0) {
             Element axisNode = (Element) axisValues.item(0);
-            final Element dims = (Element)
-                axisNode.getElementsByTagName("dimensions").item(0);
+            final Element dims =
+                (Element) axisNode.getElementsByTagName("dimensions").item(0);
             expectedDims = dims.getElementsByTagName("dim");
-            final Element tuples = (Element)
-                axisNode.getElementsByTagName("tuples").item(0);
+            final Element tuples =
+                (Element) axisNode.getElementsByTagName("tuples").item(0);
             expectedTuples = tuples.getElementsByTagName("tuple");
         }
 
-        int numExpectedTuples = expectedTuples == null ? 0 : expectedTuples.getLength();
-        _assertEquals(message + " number of tuples", numExpectedTuples,
-                resultTuples.size());
+        int numExpectedTuples = expectedTuples == null
+            ? 0
+            : expectedTuples.getLength();
+        _assertEquals(
+            message + " number of tuples",
+            numExpectedTuples,
+            resultTuples.size());
 
         if (numExpectedTuples != 0) {
-            _assertEquals("Invalid test case. Number of dimensions does not match tuple lengths",
-                    expectedDims.getLength(), ((Element)expectedTuples.item(0)).getElementsByTagName("member").getLength());
+            _assertEquals(
+                "Invalid test case. Number of dimensions does not match tuple lengths",
+                expectedDims.getLength(),
+                ((Element) expectedTuples.item(0))
+                    .getElementsByTagName("member").getLength());
         }
 
         for (int idx = 0; idx < numExpectedTuples; idx++) {
-            compareTuple(message + " tuple " + idx, (Element) expectedTuples.item(idx), resultTuples.get(idx));
+            compareTuple(
+                message + " tuple " + idx,
+                (Element) expectedTuples.item(idx),
+                resultTuples.get(idx));
         }
     }
 
-    private void compareTuple(String message, Element expectedTuple, Position resultTuple) {
+    private void compareTuple(
+        String message, Element expectedTuple, Position resultTuple)
+    {
         // expectedTuple is a <tuple> definition, containing members
         NodeList expectedMembers = expectedTuple.getElementsByTagName("member");
         int numExpectedMembers = expectedMembers.getLength();
 
-        _assertEquals(message + " number of members", numExpectedMembers, resultTuple.size());
+        _assertEquals(
+            message + " number of members",
+            numExpectedMembers,
+            resultTuple.size());
 
         for (int idx = 0; idx < numExpectedMembers; idx++) {
             String resultName = resultTuple.get(idx).getUniqueName();
-            String expectedName = expectedMembers.item(idx).getFirstChild().getNodeValue();
+            String expectedName =
+                expectedMembers.item(idx).getFirstChild().getNodeValue();
 
             _assertEquals(message + " member " + idx, expectedName, resultName);
         }
     }
 
     private void compareData() {
-        Element dataElement = (Element) xmlRoot.getElementsByTagName("data").item(0);
+        Element dataElement =
+            (Element) xmlRoot.getElementsByTagName("data").item(0);
         NodeList expectedRows = dataElement.getElementsByTagName("drow");
         Axis[] axes = result.getAxes();
         int numAxes = axes.length;
@@ -415,7 +447,8 @@ class ResultComparator {
 
         _assertEquals("Unexpected number of rows", 1, numRows);
 
-        NodeList cellList = ((Element)expectedRow.item(0)).getElementsByTagName("cell");
+        NodeList cellList =
+            ((Element) expectedRow.item(0)).getElementsByTagName("cell");
 
         int numColumns = cellList.getLength();
 
@@ -433,11 +466,15 @@ class ResultComparator {
 
         _assertEquals("Unexpected number of rows", 1, numRows);
 
-        NodeList cellList = ((Element) expectedRow.item(0)).getElementsByTagName("cell");
+        NodeList cellList =
+            ((Element) expectedRow.item(0)).getElementsByTagName("cell");
 
         int numColumns = cellList.getLength();
 
-        _assertEquals("Unexpected number of columns", numColumns, axes[0].getPositions().size());
+        _assertEquals(
+            "Unexpected number of columns",
+            numColumns,
+            axes[0].getPositions().size());
 
         int[] coord = new int[1];
 
@@ -445,7 +482,8 @@ class ResultComparator {
             coord[0] = colIdx;
             Cell cell = result.getCell(coord);
 
-            String expectedValue = cellList.item(colIdx).getFirstChild().getNodeValue();
+            String expectedValue =
+                cellList.item(colIdx).getFirstChild().getNodeValue();
             compareCell(coord, expectedValue, cell);
         }
     }
@@ -454,26 +492,33 @@ class ResultComparator {
         int numRows = expectedRows.getLength();
         int[] coord = new int[2];
 
-        _assertEquals("Number of row tuples must match", numRows,
-                axes[1].getPositions().size());
+        _assertEquals(
+            "Number of row tuples must match",
+            numRows,
+            axes[1].getPositions().size());
 
         for (int rowIdx = 0; rowIdx < numRows; rowIdx++) {
             Element drow = (Element) expectedRows.item(rowIdx);
             NodeList cellList = drow.getElementsByTagName("cell");
 
             if (rowIdx == 0) {
-                _assertEquals("Number of data columns: ",
-                    cellList.getLength(), axes[0].getPositions().size());
+                _assertEquals(
+                    "Number of data columns: ",
+                    cellList.getLength(),
+                    axes[0].getPositions().size());
             }
 
             coord[1] = rowIdx;
 
-            for (int colIdx = 0; colIdx < axes[0].getPositions().size(); colIdx++) {
+            for (int colIdx = 0; colIdx < axes[0].getPositions()
+                .size(); colIdx++)
+            {
                 coord[0] = colIdx;
 
                 Cell cell = result.getCell(coord);
 
-                String expectedValue = cellList.item(colIdx).getFirstChild().getNodeValue();
+                String expectedValue =
+                    cellList.item(colIdx).getFirstChild().getNodeValue();
                 compareCell(coord, expectedValue, cell);
             }
         }
@@ -483,21 +528,25 @@ class ResultComparator {
         if (expectedValue.equalsIgnoreCase("#Missing")) {
             if (!cell.isNull()) {
                 _failNotEquals(
-                        getErrorMessage(
-                                "Expected missing value but got " + cell.getValue() + " at ",
-                                coord),
-                        null,
-                        null);
+                    getErrorMessage(
+                        "Expected missing value but got "
+                        + cell.getValue()
+                        + " at ", coord), null, null);
             }
         } else if (cell.getValue() instanceof Number) {
             Number cellValue = (Number) cell.getValue();
             double expectedDouble = Double.parseDouble(expectedValue);
 
-            _assertEquals(getErrorMessage("Values don't match at ", coord),
-                    expectedDouble, cellValue.doubleValue(), 0.001);
+            _assertEquals(
+                getErrorMessage("Values don't match at ", coord),
+                expectedDouble,
+                cellValue.doubleValue(),
+                0.001);
         } else {
-            _assertEquals(getErrorMessage("Values don't match at ", coord),
-                    expectedValue, cell.getValue());
+            _assertEquals(
+                getErrorMessage("Values don't match at ", coord),
+                expectedValue,
+                cell.getValue());
         }
     }
 

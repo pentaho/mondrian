@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2007-2008 Bart Pappyn
-// Copyright (C) 2007-2008 Julian Hyde
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -268,160 +268,166 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             + "from [Sales] "
             + "where ([Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink])  ",
 
-            "with member [Measures].[Shipped per Ordered] as ' [Measures].[Units Shipped] / [Measures].[Unit Sales] ', format_string='#.00%'\n" +
-            " member [Measures].[Profit per Unit Shipped] as ' [Measures].[Profit] / [Measures].[Units Shipped] '\n" +
-            "select\n" +
-            " {[Measures].[Unit Sales], \n" +
-            "  [Measures].[Units Shipped],\n" +
-            "  [Measures].[Shipped per Ordered],\n" +
-            "  [Measures].[Profit per Unit Shipped]} on 0,\n" +
-            " NON EMPTY Crossjoin([Product].Children, [Time].[1997].Children) on 1\n" +
-            "from [Warehouse and Sales]",
+            "with member [Measures].[Shipped per Ordered] as ' [Measures].[Units Shipped] / [Measures].[Unit Sales] ', format_string='#.00%'\n"
+            + " member [Measures].[Profit per Unit Shipped] as ' [Measures].[Profit] / [Measures].[Units Shipped] '\n"
+            + "select\n"
+            + " {[Measures].[Unit Sales], \n"
+            + "  [Measures].[Units Shipped],\n"
+            + "  [Measures].[Shipped per Ordered],\n"
+            + "  [Measures].[Profit per Unit Shipped]} on 0,\n"
+            + " NON EMPTY Crossjoin([Product].Children, [Time].[1997].Children) on 1\n"
+            + "from [Warehouse and Sales]",
 
-            "select {[Measures].[Profit Per Unit Shipped]} ON COLUMNS, " +
-            "{[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR], [Store].[All Stores].[USA].[WA]} ON ROWS " +
-            "from [Warehouse and Sales Format Expression Cube No Cache] " +
-            "where [Time].[1997]",
+            "select {[Measures].[Profit Per Unit Shipped]} ON COLUMNS, "
+            + "{[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR], [Store].[All Stores].[USA].[WA]} ON ROWS "
+            + "from [Warehouse and Sales Format Expression Cube No Cache] "
+            + "where [Time].[1997]",
 
             "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]"
-            };
-        final String[] results = {
-            fold(
-                "Axis #0:\n" +
-                "{[Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink]}\n" +
-                "Axis #1:\n" +
-                "{[Time].[1997]}\n" +
-                "Axis #2:\n" +
-                "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
-                "Row #0: 1,945\n" +
-                "Row #1: 2,422\n" +
-                "Row #2: 2,560\n" +
-                "Row #3: 175\n"),
-
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Unit Sales]}\n" +
-                "{[Measures].[Units Shipped]}\n" +
-                "{[Measures].[Shipped per Ordered]}\n" +
-                "{[Measures].[Profit per Unit Shipped]}\n" +
-                "Axis #2:\n" +
-                "{[Product].[All Products].[Drink], [Time].[1997].[Q1]}\n" +
-                "{[Product].[All Products].[Drink], [Time].[1997].[Q2]}\n" +
-                "{[Product].[All Products].[Drink], [Time].[1997].[Q3]}\n" +
-                "{[Product].[All Products].[Drink], [Time].[1997].[Q4]}\n" +
-                "{[Product].[All Products].[Food], [Time].[1997].[Q1]}\n" +
-                "{[Product].[All Products].[Food], [Time].[1997].[Q2]}\n" +
-                "{[Product].[All Products].[Food], [Time].[1997].[Q3]}\n" +
-                "{[Product].[All Products].[Food], [Time].[1997].[Q4]}\n" +
-                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q1]}\n" +
-                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q2]}\n" +
-                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q3]}\n" +
-                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q4]}\n" +
-                "Row #0: 5,976\n" +
-                "Row #0: 4637.0\n" +
-                "Row #0: 77.59%\n" +
-                "Row #0: $1.50\n" +
-                "Row #1: 5,895\n" +
-                "Row #1: 4501.0\n" +
-                "Row #1: 76.35%\n" +
-                "Row #1: $1.60\n" +
-                "Row #2: 6,065\n" +
-                "Row #2: 6258.0\n" +
-                "Row #2: 103.18%\n" +
-                "Row #2: $1.15\n" +
-                "Row #3: 6,661\n" +
-                "Row #3: 5802.0\n" +
-                "Row #3: 87.10%\n" +
-                "Row #3: $1.38\n" +
-                "Row #4: 47,809\n" +
-                "Row #4: 37153.0\n" +
-                "Row #4: 77.71%\n" +
-                "Row #4: $1.64\n" +
-                "Row #5: 44,825\n" +
-                "Row #5: 35459.0\n" +
-                "Row #5: 79.11%\n" +
-                "Row #5: $1.62\n" +
-                "Row #6: 47,440\n" +
-                "Row #6: 41545.0\n" +
-                "Row #6: 87.57%\n" +
-                "Row #6: $1.47\n" +
-                "Row #7: 51,866\n" +
-                "Row #7: 34706.0\n" +
-                "Row #7: 66.91%\n" +
-                "Row #7: $1.91\n" +
-                "Row #8: 12,506\n" +
-                "Row #8: 9161.0\n" +
-                "Row #8: 73.25%\n" +
-                "Row #8: $1.76\n" +
-                "Row #9: 11,890\n" +
-                "Row #9: 9227.0\n" +
-                "Row #9: 77.60%\n" +
-                "Row #9: $1.65\n" +
-                "Row #10: 12,343\n" +
-                "Row #10: 9986.0\n" +
-                "Row #10: 80.90%\n" +
-                "Row #10: $1.59\n" +
-                "Row #11: 13,497\n" +
-                "Row #11: 9291.0\n" +
-                "Row #11: 68.84%\n" +
-                "Row #11: $1.86\n"),
-
-            fold("Axis #0:\n" +
-                "{[Time].[1997]}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Profit Per Unit Shipped]}\n" +
-                "Axis #2:\n" +
-                "{[Store].[All Stores].[USA].[CA]}\n" +
-                "{[Store].[All Stores].[USA].[OR]}\n" +
-                "{[Store].[All Stores].[USA].[WA]}\n" +
-                "Row #0: |1.6|style=red\n" +
-                "Row #1: |2.1|style=green\n" +
-                "Row #2: |1.5|style=red\n"),
-
-            fold("Axis #0:\n" +
-                "{}\n" +
-                 "Axis #1:\n" +
-                 "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
-                 "Row #0: 2,117\n")
         };
-        final TestContext testContext = TestContext.create(
+        final String[] results = {
+            "Axis #0:\n"
+            + "{[Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink]}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 1,945\n"
+            + "Row #1: 2,422\n"
+            + "Row #2: 2,560\n"
+            + "Row #3: 175\n",
+
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Units Shipped]}\n"
+            + "{[Measures].[Shipped per Ordered]}\n"
+            + "{[Measures].[Profit per Unit Shipped]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Drink], [Time].[1997].[Q1]}\n"
+            + "{[Product].[All Products].[Drink], [Time].[1997].[Q2]}\n"
+            + "{[Product].[All Products].[Drink], [Time].[1997].[Q3]}\n"
+            + "{[Product].[All Products].[Drink], [Time].[1997].[Q4]}\n"
+            + "{[Product].[All Products].[Food], [Time].[1997].[Q1]}\n"
+            + "{[Product].[All Products].[Food], [Time].[1997].[Q2]}\n"
+            + "{[Product].[All Products].[Food], [Time].[1997].[Q3]}\n"
+            + "{[Product].[All Products].[Food], [Time].[1997].[Q4]}\n"
+            + "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q1]}\n"
+            + "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q2]}\n"
+            + "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q3]}\n"
+            + "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q4]}\n"
+            + "Row #0: 5,976\n"
+            + "Row #0: 4637.0\n"
+            + "Row #0: 77.59%\n"
+            + "Row #0: $1.50\n"
+            + "Row #1: 5,895\n"
+            + "Row #1: 4501.0\n"
+            + "Row #1: 76.35%\n"
+            + "Row #1: $1.60\n"
+            + "Row #2: 6,065\n"
+            + "Row #2: 6258.0\n"
+            + "Row #2: 103.18%\n"
+            + "Row #2: $1.15\n"
+            + "Row #3: 6,661\n"
+            + "Row #3: 5802.0\n"
+            + "Row #3: 87.10%\n"
+            + "Row #3: $1.38\n"
+            + "Row #4: 47,809\n"
+            + "Row #4: 37153.0\n"
+            + "Row #4: 77.71%\n"
+            + "Row #4: $1.64\n"
+            + "Row #5: 44,825\n"
+            + "Row #5: 35459.0\n"
+            + "Row #5: 79.11%\n"
+            + "Row #5: $1.62\n"
+            + "Row #6: 47,440\n"
+            + "Row #6: 41545.0\n"
+            + "Row #6: 87.57%\n"
+            + "Row #6: $1.47\n"
+            + "Row #7: 51,866\n"
+            + "Row #7: 34706.0\n"
+            + "Row #7: 66.91%\n"
+            + "Row #7: $1.91\n"
+            + "Row #8: 12,506\n"
+            + "Row #8: 9161.0\n"
+            + "Row #8: 73.25%\n"
+            + "Row #8: $1.76\n"
+            + "Row #9: 11,890\n"
+            + "Row #9: 9227.0\n"
+            + "Row #9: 77.60%\n"
+            + "Row #9: $1.65\n"
+            + "Row #10: 12,343\n"
+            + "Row #10: 9986.0\n"
+            + "Row #10: 80.90%\n"
+            + "Row #10: $1.59\n"
+            + "Row #11: 13,497\n"
+            + "Row #11: 9291.0\n"
+            + "Row #11: 68.84%\n"
+            + "Row #11: $1.86\n",
+
+            "Axis #0:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Profit Per Unit Shipped]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "{[Store].[All Stores].[USA].[OR]}\n"
+            + "{[Store].[All Stores].[USA].[WA]}\n"
+            + "Row #0: |1.6|style=red\n"
+            + "Row #1: |2.1|style=green\n"
+            + "Row #2: |1.5|style=red\n",
+
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 2,117\n"
+        };
+        final TestContext testContext =
+            TestContext.create(
                 null, null,
-                "<Cube name=\"Warehouse No Cache\" cache=\"false\">\n" +
-                    "  <Table name=\"inventory_fact_1997\"/>\n" +
-                    "\n" +
-                    "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
-                    "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n" +
-                    "  <Measure name=\"Units Shipped\" column=\"units_shipped\" aggregator=\"sum\" formatString=\"#.0\"/>\n" +
-                    "</Cube>\n" +
-                "<VirtualCube name=\"Warehouse and Sales Format Expression Cube No Cache\">\n" +
-                    "  <VirtualCubeDimension name=\"Store\"/>\n" +
-                    "  <VirtualCubeDimension name=\"Time\"/>\n" +
-                    "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Cost]\"/>\n" +
-                    "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n" +
-                    "  <VirtualCubeMeasure cubeName=\"Warehouse No Cache\" name=\"[Measures].[Units Shipped]\"/>\n" +
-                    "  <CalculatedMember name=\"Profit\" dimension=\"Measures\">\n" +
-                    "    <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>\n" +
-                    "  </CalculatedMember>\n" +
-                    "  <CalculatedMember name=\"Profit Per Unit Shipped\" dimension=\"Measures\">\n" +
-                    "    <Formula>[Measures].[Profit] / [Measures].[Units Shipped]</Formula>\n" +
-                    "    <CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"IIf(([Measures].[Profit Per Unit Shipped] > 2.0), '|0.#|style=green', '|0.#|style=red')\"/>\n" +
-                    "  </CalculatedMember>\n" +
-                    "</VirtualCube>",
+                "<Cube name=\"Warehouse No Cache\" cache=\"false\">\n"
+                + "  <Table name=\"inventory_fact_1997\"/>\n"
+                + "\n"
+                + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+                + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
+                + "  <Measure name=\"Units Shipped\" column=\"units_shipped\" aggregator=\"sum\" formatString=\"#.0\"/>\n"
+                + "</Cube>\n"
+                + "<VirtualCube name=\"Warehouse and Sales Format Expression Cube No Cache\">\n"
+                + "  <VirtualCubeDimension name=\"Store\"/>\n"
+                + "  <VirtualCubeDimension name=\"Time\"/>\n"
+                + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Cost]\"/>\n"
+                + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
+                + "  <VirtualCubeMeasure cubeName=\"Warehouse No Cache\" name=\"[Measures].[Units Shipped]\"/>\n"
+                + "  <CalculatedMember name=\"Profit\" dimension=\"Measures\">\n"
+                + "    <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>\n"
+                + "  </CalculatedMember>\n"
+                + "  <CalculatedMember name=\"Profit Per Unit Shipped\" dimension=\"Measures\">\n"
+                + "    <Formula>[Measures].[Profit] / [Measures].[Units Shipped]</Formula>\n"
+                + "    <CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"IIf(([Measures].[Profit Per Unit Shipped] > 2.0), '|0.#|style=green', '|0.#|style=red')\"/>\n"
+                + "  </CalculatedMember>\n"
+                + "</VirtualCube>",
                 null, null, null);
 
-        SmartMemberReader smrStore = getSmartMemberReader(testContext.getConnection(), "Store");
-        MemberCacheHelper smrStoreCacheHelper = (MemberCacheHelper)smrStore.getMemberCache();
-        SmartMemberReader smrProduct = getSmartMemberReader(testContext.getConnection(), "Product");
-        MemberCacheHelper smrProductCacheHelper = (MemberCacheHelper)smrProduct.getMemberCache();
+        SmartMemberReader smrStore =
+            getSmartMemberReader(testContext.getConnection(), "Store");
+        MemberCacheHelper smrStoreCacheHelper =
+            (MemberCacheHelper) smrStore.getMemberCache();
+        SmartMemberReader smrProduct =
+            getSmartMemberReader(testContext.getConnection(), "Product");
+        MemberCacheHelper smrProductCacheHelper =
+            (MemberCacheHelper) smrProduct.getMemberCache();
 
         // 1/500 of the time, the hierarchies are flushed
         // 1/50 of the time, the aggregates are flushed
-        smrStoreCacheHelper.changeListener = new DataSourceChangeListenerImpl4(500,50);
-        smrProductCacheHelper.changeListener = smrStoreCacheHelper.changeListener;
+        smrStoreCacheHelper.changeListener =
+            new DataSourceChangeListenerImpl4(500, 50);
+        smrProductCacheHelper.changeListener =
+            smrStoreCacheHelper.changeListener;
 
         RolapStar star = getStar(testContext.getConnection(), "Sales");
         star.setChangeListener(smrStoreCacheHelper.changeListener);

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde and others.
+// Copyright (C) 2006-2009 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -287,9 +287,10 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         // A query that refers to a single leaf Member fetches the Member.
         // Changing Member properties does not affect Cell boundaries, so we
         // check that the MDX results are invariant.
-        String mdx = "SELECT {[Measures].[Unit Sales]} ON COLUMNS," +
-            " {[Store].[USA].[CA].[San Francisco].[Store 14]}" +
-            " ON ROWS FROM [Sales]";
+        String mdx =
+            "SELECT {[Measures].[Unit Sales]} ON COLUMNS,"
+            + " {[Store].[USA].[CA].[San Francisco].[Store 14]}"
+            + " ON ROWS FROM [Sales]";
         Query q = conn.parseQuery(mdx);
         Result r = conn.execute(q);
         dr.assertEquals(
@@ -423,11 +424,11 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                 null);
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
-            fold("[Retail].[All Retails].[CA].[Alameda]\n" +
-                "[Retail].[All Retails].[CA].[Beverly Hills]\n" +
-                "[Retail].[All Retails].[CA].[Los Angeles]\n" +
-                "[Retail].[All Retails].[CA].[San Diego]\n" +
-                "[Retail].[All Retails].[CA].[San Francisco]"));
+            "[Retail].[All Retails].[CA].[Alameda]\n"
+            + "[Retail].[All Retails].[CA].[Beverly Hills]\n"
+            + "[Retail].[All Retails].[CA].[Los Angeles]\n"
+            + "[Retail].[All Retails].[CA].[San Diego]\n"
+            + "[Retail].[All Retails].[CA].[San Francisco]");
         final MemberReader memberReader = hierarchy.getMemberReader();
         final MemberCache memberCache =
             ((SmartMemberReader) memberReader).getMemberCache();
@@ -478,11 +479,11 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
-            fold("[Retail].[All Retails].[CA].[Alameda]\n" +
-                "[Retail].[All Retails].[CA].[Beverly Hills]\n" +
-                "[Retail].[All Retails].[CA].[Los Angeles]\n" +
-                "[Retail].[All Retails].[CA].[San Diego]\n" +
-                "[Retail].[All Retails].[CA].[San Francisco]"));
+            "[Retail].[All Retails].[CA].[Alameda]\n"
+            + "[Retail].[All Retails].[CA].[Beverly Hills]\n"
+            + "[Retail].[All Retails].[CA].[Los Angeles]\n"
+            + "[Retail].[All Retails].[CA].[San Diego]\n"
+            + "[Retail].[All Retails].[CA].[San Francisco]");
         final MemberReader memberReader = hierarchy.getMemberReader();
         final MemberCache memberCache =
             ((SmartMemberReader) memberReader).getMemberCache();

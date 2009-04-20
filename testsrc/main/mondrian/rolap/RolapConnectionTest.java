@@ -225,13 +225,11 @@ public class RolapConnectionTest extends TestCase {
                 + " FORMAT_STRING = '#,##.#' \n"
                 + "SELECT {[MEasures].[Foo]} ON COLUMNS FROM [Sales]";
             String expected2 =
-                TestContext.fold("Axis #0:\n" +
-                    "{}\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Foo]}\n" +
-                    "Row #0: "
-                    + expected
-                    + "\n");
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Foo]}\n"
+                + "Row #0: " + expected + "\n";
             testContextSpain.assertQueryReturns(query, expected2);
         } else {
             testContextSpain.assertExprReturns(expr, expected);

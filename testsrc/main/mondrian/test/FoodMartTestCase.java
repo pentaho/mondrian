@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,7 +29,6 @@ import java.util.Arrays;
  * @version $Id$
  */
 public class FoodMartTestCase extends TestCase {
-    protected static final String nl = Util.nl;
 
     /**
      * Access properties via this object and their values will be reset on
@@ -180,13 +179,6 @@ public class FoodMartTestCase extends TestCase {
      */
     public void assertExprReturns(String expression, String expected) {
         getTestContext().assertExprReturns(expression, expected);
-    }
-
-    /**
-     * Converts a string constant into locale-specific line endings.
-     */
-    public static String fold(String string) {
-        return TestContext.fold(string);
     }
 
     /**
@@ -369,11 +361,12 @@ public class FoodMartTestCase extends TestCase {
     }
 
     static class QueryAndResult {
-        String query;
-        String result;
+        final String query;
+        final String result;
+
         QueryAndResult(String query, String result) {
             this.query = query;
-            this.result = fold(result);
+            this.result = result;
         }
     }
 }

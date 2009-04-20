@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde and others
+// Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -72,15 +72,16 @@ public class XmlaTestServletRequestWrapper extends HttpServletRequestWrapper {
          * Make a SOAP message
          */
         String request =
-                "<?xml version=\"1.0\"?>\r\n" +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"" +
-                XmlaServlet.NS_SOAP_ENV_1_1 +
-                "\" SOAP-ENV:encodingStyle=\"" +
-                XmlaServlet.NS_SOAP_ENC_1_1 + "\">\r\n" +
-                "<SOAP-ENV:Header/>\r\n" +
-                "<SOAP-ENV:Body>\r\n" +
-                soapRequest +
-        "</SOAP-ENV:Body>\r\n</SOAP-ENV:Envelope>\r\n";
+            "<?xml version=\"1.0\"?>\r\n"
+            + "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\""
+            + XmlaServlet.NS_SOAP_ENV_1_1
+            + "\" SOAP-ENV:encodingStyle=\""
+            + XmlaServlet.NS_SOAP_ENC_1_1
+            + "\">\r\n"
+            + "<SOAP-ENV:Header/>\r\n"
+            + "<SOAP-ENV:Body>\r\n"
+            + soapRequest
+            + "</SOAP-ENV:Body>\r\n</SOAP-ENV:Envelope>\r\n";
 
         servletInStream = new XmlaTestServletInputStream(request);
     }

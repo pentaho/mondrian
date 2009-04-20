@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2008 Julian Hyde and others
+// Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -92,12 +92,12 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternsWithGsets = {
             new SqlPattern(
                 ORACLE_TERADATA,
-                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
-                "grouping(\"customer\".\"gender\") as \"g0\" " +
-                "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
-                "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                "group by grouping sets ((\"customer\".\"gender\"),())",
-            26)
+                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", "
+                + "grouping(\"customer\".\"gender\") as \"g0\" "
+                + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by grouping sets ((\"customer\".\"gender\"),())",
+                26)
         };
 
         // If aggregates are enabled, mondrian should use them. Results should
@@ -120,16 +120,18 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS,
-                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\" " +
-                    "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                    "group by \"customer\".\"gender\"", 26),
+                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" "
+                + "from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by \"customer\".\"gender\"",
+                26),
             new SqlPattern(
                 ORACLE_TERADATA,
-                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
-                    "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                    "group by \"customer\".\"gender\"", 26)
+                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" "
+                + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by \"customer\".\"gender\"",
+                26)
         };
 
         prop.EnableGroupingSets.set(true);
@@ -176,17 +178,17 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS,
-                "select \"agg_g_ms_pcat_sales_fact_1997\".\"gender\" as \"c0\", " +
-                    "sum(\"agg_g_ms_pcat_sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"agg_g_ms_pcat_sales_fact_1997\" as \"agg_g_ms_pcat_sales_fact_1997\" " +
-                    "group by \"agg_g_ms_pcat_sales_fact_1997\".\"gender\"",
+                "select \"agg_g_ms_pcat_sales_fact_1997\".\"gender\" as \"c0\", "
+                + "sum(\"agg_g_ms_pcat_sales_fact_1997\".\"unit_sales\") as \"m0\" "
+                + "from \"agg_g_ms_pcat_sales_fact_1997\" as \"agg_g_ms_pcat_sales_fact_1997\" "
+                + "group by \"agg_g_ms_pcat_sales_fact_1997\".\"gender\"",
                 26),
             new SqlPattern(
                 ORACLE_TERADATA,
-                "select \"agg_g_ms_pcat_sales_fact_1997\".\"gender\" as \"c0\", " +
-                    "sum(\"agg_g_ms_pcat_sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"agg_g_ms_pcat_sales_fact_1997\" \"agg_g_ms_pcat_sales_fact_1997\" " +
-                    "group by \"agg_g_ms_pcat_sales_fact_1997\".\"gender\"",
+                "select \"agg_g_ms_pcat_sales_fact_1997\".\"gender\" as \"c0\", "
+                + "sum(\"agg_g_ms_pcat_sales_fact_1997\".\"unit_sales\") as \"m0\" "
+                + "from \"agg_g_ms_pcat_sales_fact_1997\" \"agg_g_ms_pcat_sales_fact_1997\" "
+                + "group by \"agg_g_ms_pcat_sales_fact_1997\".\"gender\"",
                 26)
         };
         assertRequestSql(
@@ -208,10 +210,10 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternsWithGsets = {
             new SqlPattern(
                 ORACLE_TERADATA,
-                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
-                    "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                    "group by \"customer\".\"gender\"", 72)
+                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" "
+                + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by \"customer\".\"gender\"", 72)
             };
         assertRequestSql(
             new CellRequest[] {request1, request2},
@@ -222,16 +224,16 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS,
-                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\" " +
-                    "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                    "group by \"customer\".\"gender\"", 72),
+                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" "
+                + "from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by \"customer\".\"gender\"", 72),
             new SqlPattern(
                 ORACLE_TERADATA,
-                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
-                    "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                    "group by \"customer\".\"gender\"", 72)
+                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" "
+                + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by \"customer\".\"gender\"", 72)
         };
         assertRequestSql(
             new CellRequest[] {request1, request2},
@@ -260,11 +262,11 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternsWithGsets = {
             new SqlPattern(
                 ORACLE_TERADATA,
-                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
-                    "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\", grouping(\"customer\".\"gender\") as \"g0\" " +
-                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
-                    "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                    "group by grouping sets ((\"customer\".\"gender\"),())",
+                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", "
+                + "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\", grouping(\"customer\".\"gender\") as \"g0\" "
+                + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by grouping sets ((\"customer\".\"gender\"),())",
                 26)
         };
         assertRequestSql(
@@ -277,18 +279,18 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS,
-                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
-                    "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\" " +
-                    "from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\" " +
-                    "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                    "group by \"customer\".\"gender\"", 26),
+                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", "
+                + "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\" "
+                + "from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by \"customer\".\"gender\"", 26),
             new SqlPattern(
                 ORACLE_TERADATA,
-                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
-                    "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\" " +
-                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
-                    "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                    "group by \"customer\".\"gender\"", 26)
+                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", "
+                + "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\" "
+                + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by \"customer\".\"gender\"", 26)
         };
         assertRequestSql(
             new CellRequest[] {
@@ -317,19 +319,19 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternWithGsets = {
             new SqlPattern(
                 ORACLE_TERADATA,
-                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", " +
-                    "grouping(\"customer\".\"gender\") as \"g0\" " +
-                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
-                    "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                    "group by grouping sets ((\"customer\".\"gender\"),())",
+                "select \"customer\".\"gender\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", "
+                + "grouping(\"customer\".\"gender\") as \"g0\" "
+                + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by grouping sets ((\"customer\".\"gender\"),())",
                 26),
 
             new SqlPattern(
                 ORACLE_TERADATA,
-                "select \"customer\".\"marital_status\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" " +
-                    "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                    "group by \"customer\".\"marital_status\"",
+                "select \"customer\".\"marital_status\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" "
+                + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by \"customer\".\"marital_status\"",
                 26),
             };
 
@@ -343,13 +345,13 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternWithoutGsets = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS,
-                "select sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"sales_fact_1997\" as \"sales_fact_1997\"",
+                "select sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" "
+                + "from \"sales_fact_1997\" as \"sales_fact_1997\"",
                 40),
             new SqlPattern(
                 ORACLE_TERADATA,
-                "select sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"sales_fact_1997\" =as= \"sales_fact_1997\"",
+                "select sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" "
+                + "from \"sales_fact_1997\" =as= \"sales_fact_1997\"",
                 40)
         };
 
@@ -380,12 +382,12 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternsWithGsets = {
             new SqlPattern(
                 ORACLE_TERADATA,
-                "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
-                "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", grouping(\"customer\".\"gender\") as \"g0\" " +
-                "from \"time_by_day\" =as= \"time_by_day\", \"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\" " +
-                "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 " +
-                "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                "group by grouping sets ((\"time_by_day\".\"the_year\",\"customer\".\"gender\"),(\"time_by_day\".\"the_year\"))",
+                "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", "
+                + "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\", grouping(\"customer\".\"gender\") as \"g0\" "
+                + "from \"time_by_day\" =as= \"time_by_day\", \"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\" "
+                + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 "
+                + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by grouping sets ((\"time_by_day\".\"the_year\",\"customer\".\"gender\"),(\"time_by_day\".\"the_year\"))",
             150)
         };
 
@@ -407,25 +409,25 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS,
-                "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
-                    "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                    "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
-                    "\"customer\" as \"customer\" " +
-                    "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and " +
-                    "\"time_by_day\".\"the_year\" = 1997 and " +
-                    "\"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                    "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"",
+                "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", "
+                + "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" "
+                + "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", "
+                + "\"customer\" as \"customer\" "
+                + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and "
+                + "\"time_by_day\".\"the_year\" = 1997 and "
+                + "\"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"",
                 50),
             new SqlPattern(
                 ORACLE_TERADATA,
-                    "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
-                        "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" " +
-                        "from \"time_by_day\" =as= \"time_by_day\", \"sales_fact_1997\" =as= \"sales_fact_1997\", " +
-                        "\"customer\" =as= \"customer\" " +
-                        "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and " +
-                        "\"time_by_day\".\"the_year\" = 1997 " +
-                        "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" " +
-                        "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"",
+                "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", "
+                + "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" "
+                + "from \"time_by_day\" =as= \"time_by_day\", \"sales_fact_1997\" =as= \"sales_fact_1997\", "
+                + "\"customer\" =as= \"customer\" "
+                + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and "
+                + "\"time_by_day\".\"the_year\" = 1997 "
+                + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"",
                     50)
             };
         assertRequestSql(
@@ -457,15 +459,15 @@ public class GroupingSetQueryTest extends BatchTestCase {
             measureCustomerCount, tableTime, fieldYear, "1997", constraint);
 
         String sqlWithoutGS =
-            "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", " +
-            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" from \"time_by_day\" =as= \"time_by_day\", " +
-            "\"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\", \"store\" =as= \"store\" " +
-            "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 " +
-            "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and " +
-            "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and " +
-            "((\"store\".\"store_country\" = 'USA' and \"store\".\"store_state\" = 'OR') or " +
-            "(\"store\".\"store_country\" = 'CANADA' and \"store\".\"store_state\" = 'BC')) " +
-            "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"";
+            "select \"time_by_day\".\"the_year\" as \"c0\", \"customer\".\"gender\" as \"c1\", "
+            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" from \"time_by_day\" =as= \"time_by_day\", "
+            + "\"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\", \"store\" =as= \"store\" "
+            + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 "
+            + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and "
+            + "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and "
+            + "((\"store\".\"store_country\" = 'USA' and \"store\".\"store_state\" = 'OR') or "
+            + "(\"store\".\"store_country\" = 'CANADA' and \"store\".\"store_state\" = 'BC')) "
+            + "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"";
 
         SqlPattern[] patternsGSDisabled = {
             new SqlPattern(ORACLE_TERADATA, sqlWithoutGS, sqlWithoutGS)
@@ -491,75 +493,75 @@ public class GroupingSetQueryTest extends BatchTestCase {
     public void testBug2004202() {
         assertQueryReturns(
             "with member store.allbutwallawalla as\n"
-                + " 'aggregate(\n"
-                + "    except(\n"
-                + "        store.[store name].members,\n"
-                + "        { [Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}))'\n"
-                + "select {\n"
-                + "          store.[store name].members,\n"
-                + "         store.allbutwallawalla,\n"
-                + "         store.[all stores]} on 0,\n"
-                + "  {measures.[customer count]} on 1\n"
-                + "from sales",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Store].[All Stores].[Canada].[BC].[Vancouver].[Store 19]}\n" +
-                "{[Store].[All Stores].[Canada].[BC].[Victoria].[Store 20]}\n" +
-                "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n" +
-                "{[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]}\n" +
-                "{[Store].[All Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]}\n" +
-                "{[Store].[All Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]}\n" +
-                "{[Store].[All Stores].[Mexico].[Veracruz].[Orizaba].[Store 10]}\n" +
-                "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n" +
-                "{[Store].[All Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]}\n" +
-                "{[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 12]}\n" +
-                "{[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 18]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}\n" +
-                "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n" +
-                "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n" +
-                "{[Store].[allbutwallawalla]}\n" +
-                "{[Store].[All Stores]}\n" +
-                "Axis #2:\n" +
-                "{[Measures].[Customer Count]}\n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: 1,059\n" +
-                "Row #0: 1,147\n" +
-                "Row #0: 962\n" +
-                "Row #0: 296\n" +
-                "Row #0: 563\n" +
-                "Row #0: 474\n" +
-                "Row #0: 190\n" +
-                "Row #0: 179\n" +
-                "Row #0: 906\n" +
-                "Row #0: 84\n" +
-                "Row #0: 278\n" +
-                "Row #0: 96\n" +
-                "Row #0: 95\n" +
-                "Row #0: 5,485\n" +
-                "Row #0: 5,581\n"));
+            + " 'aggregate(\n"
+            + "    except(\n"
+            + "        store.[store name].members,\n"
+            + "        { [Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}))'\n"
+            + "select {\n"
+            + "          store.[store name].members,\n"
+            + "         store.allbutwallawalla,\n"
+            + "         store.[all stores]} on 0,\n"
+            + "  {measures.[customer count]} on 1\n"
+            + "from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores].[Canada].[BC].[Vancouver].[Store 19]}\n"
+            + "{[Store].[All Stores].[Canada].[BC].[Victoria].[Store 20]}\n"
+            + "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n"
+            + "{[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]}\n"
+            + "{[Store].[All Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]}\n"
+            + "{[Store].[All Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]}\n"
+            + "{[Store].[All Stores].[Mexico].[Veracruz].[Orizaba].[Store 10]}\n"
+            + "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
+            + "{[Store].[All Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]}\n"
+            + "{[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 12]}\n"
+            + "{[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 18]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n"
+            + "{[Store].[allbutwallawalla]}\n"
+            + "{[Store].[All Stores]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 1,059\n"
+            + "Row #0: 1,147\n"
+            + "Row #0: 962\n"
+            + "Row #0: 296\n"
+            + "Row #0: 563\n"
+            + "Row #0: 474\n"
+            + "Row #0: 190\n"
+            + "Row #0: 179\n"
+            + "Row #0: 906\n"
+            + "Row #0: 84\n"
+            + "Row #0: 278\n"
+            + "Row #0: 96\n"
+            + "Row #0: 95\n"
+            + "Row #0: 5,485\n"
+            + "Row #0: 5,581\n");
     }
 }
 

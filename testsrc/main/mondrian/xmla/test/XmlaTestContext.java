@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde and others
+// Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -84,24 +84,22 @@ public class XmlaTestContext {
         String catalogUrl = connectProperties.get(
             RolapConnectionProperties.Catalog.name());
 
-        StringReader dsConfigReader =
-                new StringReader("<?xml version=\"1.0\"?>" +
-                        "<DataSources>" +
-                        "   <DataSource>" +
-                        "       <DataSourceName>" + DATASOURCE_INFO + "</DataSourceName>" +
-                        "       <DataSourceDescription>" + DATASOURCE_DESCRIPTION + "</DataSourceDescription>" +
-                        "       <URL>http://localhost:8080/mondrian/xmla</URL>" +
-                        "       <DataSourceInfo>" + getConnectString() + "</DataSourceInfo>" +
-                        "       <ProviderName>Mondrian</ProviderName>" +
-                        "       <ProviderType>MDP</ProviderType>" +
-                        "       <AuthenticationMode>Unauthenticated</AuthenticationMode>" +
-                        "       <Catalogs>" +
-                        "          <Catalog name='FoodMart'><Definition>" +
-                        catalogUrl +
-                        "</Definition></Catalog>" +
-                        "       </Catalogs>" +
-                        "   </DataSource>" +
-                        "</DataSources>");
+        StringReader dsConfigReader = new StringReader(
+            "<?xml version=\"1.0\"?>"
+            + "<DataSources>"
+            + "   <DataSource>"
+            + "       <DataSourceName>" + DATASOURCE_INFO + "</DataSourceName>"
+            + "       <DataSourceDescription>" + DATASOURCE_DESCRIPTION + "</DataSourceDescription>"
+            + "       <URL>http://localhost:8080/mondrian/xmla</URL>"
+            + "       <DataSourceInfo>" + getConnectString() + "</DataSourceInfo>"
+            + "       <ProviderName>Mondrian</ProviderName>"
+            + "       <ProviderType>MDP</ProviderType>"
+            + "       <AuthenticationMode>Unauthenticated</AuthenticationMode>"
+            + "       <Catalogs>"
+            + "          <Catalog name='FoodMart'><Definition>" + catalogUrl + "</Definition></Catalog>"
+            + "       </Catalogs>"
+            + "   </DataSource>"
+            + "</DataSources>");
         try {
             final Parser xmlParser = XOMUtil.createDefaultParser();
             final DOMWrapper def = xmlParser.parse(dsConfigReader);

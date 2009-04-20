@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2008 Julian Hyde
+// Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -37,12 +37,13 @@ public class ParameterTest extends FoodMartTestCase {
         Query q = getConnection().parseQuery("select from [Sales]");
         try {
             q.setParameter(propName, "foo");
-            fail("expected exception, trying to set " +
-                "non-overrideable property '" + propName + "'");
+            fail(
+                "expected exception, trying to set "
+                + "non-overrideable property '" + propName + "'");
         } catch (Exception e) {
             assertTrue(e.getMessage().indexOf(
-                "Parameter '" + propName + "' (defined at '" +
-                    scope + "' scope) is not modifiable") >= 0);
+                "Parameter '" + propName + "' (defined at '"
+                + scope + "' scope) is not modifiable") >= 0);
         }
     }
 
@@ -61,50 +62,52 @@ public class ParameterTest extends FoodMartTestCase {
         p.setValue(m);
         assertEquals(m, p.getValue());
         mdx = query.toString();
-        assertEquals("select {Parameter(\"Foo\", [Time], [Time].[1997].[Q2].[5], \"Foo\")} ON COLUMNS" + nl +
-        "from [Sales]" + nl,  mdx);
+        TestContext.assertEqualsVerbose(
+            "select {Parameter(\"Foo\", [Time], [Time].[1997].[Q2].[5], \"Foo\")} ON COLUMNS\n"
+            + "from [Sales]\n",
+            mdx);
     }
 
     public void testParameterInFormatString() {
-      assertQueryReturns(
-          "with member [Measures].[X] as '[Measures].[Store Sales]'," + nl +
-          "format_string = Parameter(\"fmtstrpara\", STRING, \"#\")" + nl +
-          "select {[Measures].[X]} ON COLUMNS" + nl +
-          "from [Sales]",
+        assertQueryReturns(
+            "with member [Measures].[X] as '[Measures].[Store Sales]',\n"
+            + "format_string = Parameter(\"fmtstrpara\", STRING, \"#\")\n"
+            + "select {[Measures].[X]} ON COLUMNS\n"
+            + "from [Sales]",
 
-          "Axis #0:" + nl +
-          "{}" + nl +
-          "Axis #1:" + nl +
-          "{[Measures].[X]}" + nl +
-          "Row #0: 565238" + nl);
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[X]}\n"
+            + "Row #0: 565238\n");
     }
 
     public void testParameterInFormatString_Bug1584439() {
-      String queryString =
-        "with member [Measures].[X] as '[Measures].[Store Sales]'," + nl +
-        "format_string = Parameter(\"fmtstrpara\", STRING, \"#\")" + nl +
-        "select {[Measures].[X]} ON COLUMNS" + nl +
-        "from [Sales]";
+        String queryString =
+            "with member [Measures].[X] as '[Measures].[Store Sales]',\n"
+            + "format_string = Parameter(\"fmtstrpara\", STRING, \"#\")\n"
+            + "select {[Measures].[X]} ON COLUMNS\n"
+            + "from [Sales]";
 
-      // this used to crash
-      Connection connection = getConnection();
-      Query query = connection.parseQuery(queryString);
-      query.toString();
+        // this used to crash
+        Connection connection = getConnection();
+        Query query = connection.parseQuery(queryString);
+        query.toString();
     }
 
     public void testParameterOnAxis() {
         assertQueryReturns(
-                "select {[Measures].[Unit Sales]} on rows," + nl +
-                " {Parameter(\"GenderParam\",[Gender],[Gender].[M],\"Which gender?\")} on columns" + nl +
-                "from Sales",
+            "select {[Measures].[Unit Sales]} on rows,\n"
+            + " {Parameter(\"GenderParam\",[Gender],[Gender].[M],\"Which gender?\")} on columns\n"
+            + "from Sales",
 
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "{[Gender].[All Gender].[M]}" + nl +
-                "Axis #2:" + nl +
-                "{[Measures].[Unit Sales]}" + nl +
-                "Row #0: 135,215" + nl);
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: 135,215\n");
     }
 
     public void testNumericParameter() {
@@ -118,78 +121,95 @@ public class ParameterTest extends FoodMartTestCase {
     }
 
     public void testNumericParameterStringValueFails() {
-        assertExprThrows("Parameter(\"S\",NUMERIC,\"x\" || \"y\",\"A string parameter\")",
-                "Default value of parameter 'S' is inconsistent with its type, NUMERIC");
+        assertExprThrows(
+            "Parameter(\"S\",NUMERIC,\"x\" || \"y\",\"A string parameter\")",
+            "Default value of parameter 'S' is inconsistent with its type, NUMERIC");
     }
 
     public void testParameterDimension() {
-        assertExprReturns("Parameter(\"Foo\",[Time],[Time].[1997],\"Foo\").Name",
-                "1997");
-        assertExprReturns("Parameter(\"Foo\",[Time],[Time].[1997].[Q2].[5],\"Foo\").Name",
-                "5");
+        assertExprReturns(
+            "Parameter(\"Foo\",[Time],[Time].[1997],\"Foo\").Name", "1997");
+        assertExprReturns(
+            "Parameter(\"Foo\",[Time],[Time].[1997].[Q2].[5],\"Foo\").Name",
+            "5");
         // wrong dimension
-        assertExprThrows("Parameter(\"Foo\",[Time],[Product].[All Products],\"Foo\").Name",
-                "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<dimension=[Time]>");
+        assertExprThrows(
+            "Parameter(\"Foo\",[Time],[Product].[All Products],\"Foo\").Name",
+            "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<dimension=[Time]>");
         // non-existent member
-        assertExprThrows("Parameter(\"Foo\",[Time],[Time].[1997].[Q5],\"Foo\").Name",
-                "MDX object '[Time].[1997].[Q5]' not found in cube 'Sales'");
+        assertExprThrows(
+            "Parameter(\"Foo\",[Time],[Time].[1997].[Q5],\"Foo\").Name",
+            "MDX object '[Time].[1997].[Q5]' not found in cube 'Sales'");
     }
 
     public void testParameterHierarchy() {
-        assertExprReturns("Parameter(\"Foo\", [Time.Weekly], [Time.Weekly].[1997].[40],\"Foo\").Name",
-                "40");
+        assertExprReturns(
+            "Parameter(\"Foo\", [Time.Weekly], [Time.Weekly].[1997].[40],\"Foo\").Name",
+            "40");
         // right dimension, wrong hierarchy
         final String levelName =
             MondrianProperties.instance().SsasCompatibleNaming.get()
                 ? "[Time].[Weekly]"
                 : "[Time.Weekly]";
-        assertExprThrows("Parameter(\"Foo\",[Time.Weekly],[Time].[1997].[Q1],\"Foo\").Name",
-                "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<hierarchy=" + levelName + ">");
+        assertExprThrows(
+            "Parameter(\"Foo\",[Time.Weekly],[Time].[1997].[Q1],\"Foo\").Name",
+            "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<hierarchy="
+            + levelName
+            + ">");
         // wrong dimension
-        assertExprThrows("Parameter(\"Foo\",[Time.Weekly],[Product].[All Products],\"Foo\").Name",
-                "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<hierarchy=" + levelName + ">");
+        assertExprThrows(
+            "Parameter(\"Foo\",[Time.Weekly],[Product].[All Products],\"Foo\").Name",
+            "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<hierarchy="
+            + levelName
+            + ">");
         // garbage
-        assertExprThrows("Parameter(\"Foo\",[Time.Weekly],[Widget].[All Widgets],\"Foo\").Name",
-                "MDX object '[Widget].[All Widgets]' not found in cube 'Sales'");
+        assertExprThrows(
+            "Parameter(\"Foo\",[Time.Weekly],[Widget].[All Widgets],\"Foo\").Name",
+            "MDX object '[Widget].[All Widgets]' not found in cube 'Sales'");
     }
 
     public void testParameterLevel() {
-        assertExprReturns("Parameter(\"Foo\",[Time].[Quarter], [Time].[1997].[Q3], \"Foo\").Name",
-                "Q3");
-        assertExprThrows("Parameter(\"Foo\",[Time].[Quarter], [Time].[1997].[Q3].[8], \"Foo\").Name",
-                "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<level=[Time].[Quarter]>");
+        assertExprReturns(
+            "Parameter(\"Foo\",[Time].[Quarter], [Time].[1997].[Q3], \"Foo\").Name",
+            "Q3");
+        assertExprThrows(
+            "Parameter(\"Foo\",[Time].[Quarter], [Time].[1997].[Q3].[8], \"Foo\").Name",
+            "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<level=[Time].[Quarter]>");
     }
 
     public void testParameterMemberFails() {
         // type of a param can be dimension, hierarchy, level but not member
-        assertExprThrows("Parameter(\"Foo\",[Time].[1997].[Q2],[Time].[1997],\"Foo\")",
-                "Invalid type for parameter 'Foo'; expecting NUMERIC, STRING or a hierarchy");
+        assertExprThrows(
+            "Parameter(\"Foo\",[Time].[1997].[Q2],[Time].[1997],\"Foo\")",
+            "Invalid type for parameter 'Foo'; expecting NUMERIC, STRING or a hierarchy");
     }
 
     public void testParameterWithExpressionForHierarchyFails() {
-        assertExprThrows("Parameter(\"Foo\",[Gender].DefaultMember.Hierarchy,[Gender].[M],\"Foo\")",
-                "Invalid parameter 'Foo'. Type must be a NUMERIC, STRING, or a dimension, hierarchy or level");
+        assertExprThrows(
+            "Parameter(\"Foo\",[Gender].DefaultMember.Hierarchy,[Gender].[M],\"Foo\")",
+            "Invalid parameter 'Foo'. Type must be a NUMERIC, STRING, or a dimension, hierarchy or level");
     }
 
     public void _testDerivedParameterFails() {
-        assertExprThrows("Parameter(\"X\",NUMERIC,Parameter(\"Y\",NUMERIC,1)+2)",
-                "Parameter may not be derived from another parameter");
+        assertExprThrows(
+            "Parameter(\"X\",NUMERIC,Parameter(\"Y\",NUMERIC,1)+2)",
+            "Parameter may not be derived from another parameter");
     }
 
     public void testParameterInSlicer() {
         assertQueryReturns(
-                "select {[Measures].[Unit Sales]} on rows," + nl +
-                " {[Marital Status].children} on columns" + nl +
-                "from Sales where Parameter(\"GenderParam\",[Gender],[Gender].[M],\"Which gender?\")",
-                "Axis #0:" + nl +
-                "{[Gender].[All Gender].[M]}" + nl +
-                "Axis #1:" + nl +
-                "{[Marital Status].[All Marital Status].[M]}" + nl +
-                "{[Marital Status].[All Marital Status].[S]}" + nl +
-                "Axis #2:" + nl +
-                "{[Measures].[Unit Sales]}" + nl +
-                "Row #0: 66,460" + nl +
-                "Row #0: 68,755" + nl);
+            "select {[Measures].[Unit Sales]} on rows,\n"
+            + " {[Marital Status].children} on columns\n"
+            + "from Sales where Parameter(\"GenderParam\",[Gender],[Gender].[M],\"Which gender?\")",
+            "Axis #0:\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Axis #1:\n"
+            + "{[Marital Status].[All Marital Status].[M]}\n"
+            + "{[Marital Status].[All Marital Status].[S]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: 66,460\n"
+            + "Row #0: 68,755\n");
     }
 
     /**
@@ -198,21 +218,21 @@ public class ParameterTest extends FoodMartTestCase {
      */
     public void _testParameterDuplicateDimensionFails() {
         assertThrows(
-                "select {[Measures].[Unit Sales]} on rows," + nl +
-                " {[Gender].[F]} on columns" + nl +
-                "from Sales where Parameter(\"GenderParam\",[Gender],[Gender].[M],\"Which gender?\")",
-                "Invalid hierarchy for parameter 'GenderParam'");
+            "select {[Measures].[Unit Sales]} on rows,\n"
+            + " {[Gender].[F]} on columns\n"
+            + "from Sales where Parameter(\"GenderParam\",[Gender],[Gender].[M],\"Which gender?\")",
+            "Invalid hierarchy for parameter 'GenderParam'");
     }
 
     /** Mondrian can not handle forward references */
     public void dontTestParamRef() {
         String s = executeExpr(
-                "Parameter(\"X\",STRING,\"x\",\"A string\") || " +
-                "ParamRef(\"Y\") || " +
-                "\".\" ||" +
-                "ParamRef(\"X\") || " +
-                "Parameter(\"Y\",STRING,\"y\" || \"Y\",\"Other string\")");
-        Assert.assertEquals("xyY.xyY",s);
+            "Parameter(\"X\",STRING,\"x\",\"A string\") || "
+            + "ParamRef(\"Y\") || "
+            + "\".\" ||"
+            + "ParamRef(\"X\") || "
+            + "Parameter(\"Y\",STRING,\"y\" || \"Y\",\"Other string\")");
+        Assert.assertEquals("xyY.xyY", s);
     }
 
     public void testParamRefWithoutParamFails() {
@@ -221,43 +241,43 @@ public class ParameterTest extends FoodMartTestCase {
 
     public void testParamDefinedTwiceFails() {
         assertThrows(
-                "select {[Measures].[Unit Sales]} on rows," + nl +
-                " {Parameter(\"P\",[Gender],[Gender].[M],\"Which gender?\")," + nl +
-                "  Parameter(\"P\",[Gender],[Gender].[F],\"Which gender?\")} on columns" + nl +
-                "from Sales",
-                "Parameter 'P' is defined more than once");
+            "select {[Measures].[Unit Sales]} on rows,\n"
+            + " {Parameter(\"P\",[Gender],[Gender].[M],\"Which gender?\"),\n"
+            + "  Parameter(\"P\",[Gender],[Gender].[F],\"Which gender?\")} on columns\n"
+            + "from Sales", "Parameter 'P' is defined more than once");
     }
 
     public void testParamBadTypeFails() {
-        assertExprThrows("Parameter(\"P\", 5)",
+        assertExprThrows(
+            "Parameter(\"P\", 5)",
             "No function matches signature 'Parameter(<String>, <Numeric Expression>)'");
     }
 
     public void testParamCyclicOk() {
         assertExprReturns(
-            "Parameter(\"P\", NUMERIC, ParamRef(\"Q\") + 1) + " +
-                "Parameter(\"Q\", NUMERIC, Iif(1 = 0, ParamRef(\"P\"), 2))",
+            "Parameter(\"P\", NUMERIC, ParamRef(\"Q\") + 1) + "
+            + "Parameter(\"Q\", NUMERIC, Iif(1 = 0, ParamRef(\"P\"), 2))",
             "5");
     }
 
     public void testParamCyclicFails() {
         assertExprThrows(
-            "Parameter(\"P\", NUMERIC, ParamRef(\"Q\") + 1) + " +
-                "Parameter(\"Q\", NUMERIC, Iif(1 = 1, ParamRef(\"P\"), 2))",
+            "Parameter(\"P\", NUMERIC, ParamRef(\"Q\") + 1) + "
+            + "Parameter(\"Q\", NUMERIC, Iif(1 = 1, ParamRef(\"P\"), 2))",
             "Cycle occurred while evaluating parameter 'P'");
     }
 
     public void testParameterMetadata() {
         Connection connection = getConnection();
         Query query = connection.parseQuery(
-                "with member [Measures].[A string] as " + nl +
-                "   Parameter(\"S\",STRING,\"x\" || \"y\",\"A string parameter\")" + nl +
-                " member [Measures].[A number] as " + nl +
-                "   Parameter(\"N\",NUMERIC,2+3,\"A numeric parameter\")" + nl +
-                "select {[Measures].[Unit Sales]} on rows," + nl +
-                " {Parameter(\"P\",[Gender],[Gender].[F],\"Which gender?\")," + nl +
-                "  Parameter(\"Q\",[Gender],[Gender].DefaultMember,\"Another gender?\")} on columns" + nl +
-                "from Sales");
+            "with member [Measures].[A string] as \n"
+            + "   Parameter(\"S\",STRING,\"x\" || \"y\",\"A string parameter\")\n"
+            + " member [Measures].[A number] as \n"
+            + "   Parameter(\"N\",NUMERIC,2+3,\"A numeric parameter\")\n"
+            + "select {[Measures].[Unit Sales]} on rows,\n"
+            + " {Parameter(\"P\",[Gender],[Gender].[F],\"Which gender?\"),\n"
+            + "  Parameter(\"Q\",[Gender],[Gender].DefaultMember,\"Another gender?\")} on columns\n"
+            + "from Sales");
         Parameter[] parameters = query.getParameters();
         Assert.assertEquals(4, parameters.length);
         Assert.assertEquals("S", parameters[0].getName());
@@ -268,61 +288,62 @@ public class ParameterTest extends FoodMartTestCase {
             query.getSchemaReader(true).getMemberByUniqueName(
                 Id.Segment.toList("Gender", "M"), true);
         parameters[2].setValue(member);
-        Assert.assertEquals("with member [Measures].[A string] as 'Parameter(\"S\", STRING, (\"x\" || \"y\"), \"A string parameter\")'" + nl +
-                "  member [Measures].[A number] as 'Parameter(\"N\", NUMERIC, (2.0 + 3.0), \"A numeric parameter\")'" + nl +
-                "select {Parameter(\"P\", [Gender], [Gender].[All Gender].[M], \"Which gender?\"), Parameter(\"Q\", [Gender], [Gender].DefaultMember, \"Another gender?\")} ON COLUMNS," + nl +
-                "  {[Measures].[Unit Sales]} ON ROWS" + nl +
-                "from [Sales]" + nl,
-                Util.unparse(query));
+        TestContext.assertEqualsVerbose(
+            "with member [Measures].[A string] as 'Parameter(\"S\", STRING, (\"x\" || \"y\"), \"A string parameter\")'\n"
+            + "  member [Measures].[A number] as 'Parameter(\"N\", NUMERIC, (2.0 + 3.0), \"A numeric parameter\")'\n"
+            + "select {Parameter(\"P\", [Gender], [Gender].[All Gender].[M], \"Which gender?\"), Parameter(\"Q\", [Gender], [Gender].DefaultMember, \"Another gender?\")} ON COLUMNS,\n"
+            + "  {[Measures].[Unit Sales]} ON ROWS\n"
+            + "from [Sales]\n",
+            Util.unparse(query));
     }
 
     public void testTwoParametersBug1425153() {
         Connection connection = getTestContext().getConnection();
-        Query query = connection.parseQuery("select \n" +
-                "{[Measures].[Unit Sales]} on columns, \n" +
-                "{Parameter(\"ProductMember\", [Product], [Product].[All Products].[Food], \"wat willste?\").children} ON rows \n" +
-                "from Sales where Parameter(\"Time\",[Time],[Time].[1997].[Q1])");
+        Query query = connection.parseQuery(
+            "select \n"
+            + "{[Measures].[Unit Sales]} on columns, \n"
+            + "{Parameter(\"ProductMember\", [Product], [Product].[All Products].[Food], \"wat willste?\").children} ON rows \n"
+            + "from Sales where Parameter(\"Time\",[Time],[Time].[1997].[Q1])");
 
         // Execute before setting parameters.
         Result result = connection.execute(query);
         String resultString = TestContext.toString(result);
         TestContext.assertEqualsVerbose(
-            fold(
-                "Axis #0:\n" +
-                    "{[Time].[1997].[Q1]}\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Unit Sales]}\n" +
-                    "Axis #2:\n" +
-                    "{[Product].[All Products].[Food].[Baked Goods]}\n" +
-                    "{[Product].[All Products].[Food].[Baking Goods]}\n" +
-                    "{[Product].[All Products].[Food].[Breakfast Foods]}\n" +
-                    "{[Product].[All Products].[Food].[Canned Foods]}\n" +
-                    "{[Product].[All Products].[Food].[Canned Products]}\n" +
-                    "{[Product].[All Products].[Food].[Dairy]}\n" +
-                    "{[Product].[All Products].[Food].[Deli]}\n" +
-                    "{[Product].[All Products].[Food].[Eggs]}\n" +
-                    "{[Product].[All Products].[Food].[Frozen Foods]}\n" +
-                    "{[Product].[All Products].[Food].[Meat]}\n" +
-                    "{[Product].[All Products].[Food].[Produce]}\n" +
-                    "{[Product].[All Products].[Food].[Seafood]}\n" +
-                    "{[Product].[All Products].[Food].[Snack Foods]}\n" +
-                    "{[Product].[All Products].[Food].[Snacks]}\n" +
-                    "{[Product].[All Products].[Food].[Starchy Foods]}\n" +
-                    "Row #0: 1,932\n" +
-                    "Row #1: 5,045\n" +
-                    "Row #2: 820\n" +
-                    "Row #3: 4,737\n" +
-                    "Row #4: 400\n" +
-                    "Row #5: 3,262\n" +
-                    "Row #6: 2,985\n" +
-                    "Row #7: 918\n" +
-                    "Row #8: 6,624\n" +
-                    "Row #9: 391\n" +
-                    "Row #10: 9,499\n" +
-                    "Row #11: 412\n" +
-                    "Row #12: 7,750\n" +
-                    "Row #13: 1,718\n" +
-                    "Row #14: 1,316\n"),
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Food].[Baked Goods]}\n"
+            + "{[Product].[All Products].[Food].[Baking Goods]}\n"
+            + "{[Product].[All Products].[Food].[Breakfast Foods]}\n"
+            + "{[Product].[All Products].[Food].[Canned Foods]}\n"
+            + "{[Product].[All Products].[Food].[Canned Products]}\n"
+            + "{[Product].[All Products].[Food].[Dairy]}\n"
+            + "{[Product].[All Products].[Food].[Deli]}\n"
+            + "{[Product].[All Products].[Food].[Eggs]}\n"
+            + "{[Product].[All Products].[Food].[Frozen Foods]}\n"
+            + "{[Product].[All Products].[Food].[Meat]}\n"
+            + "{[Product].[All Products].[Food].[Produce]}\n"
+            + "{[Product].[All Products].[Food].[Seafood]}\n"
+            + "{[Product].[All Products].[Food].[Snack Foods]}\n"
+            + "{[Product].[All Products].[Food].[Snacks]}\n"
+            + "{[Product].[All Products].[Food].[Starchy Foods]}\n"
+            + "Row #0: 1,932\n"
+            + "Row #1: 5,045\n"
+            + "Row #2: 820\n"
+            + "Row #3: 4,737\n"
+            + "Row #4: 400\n"
+            + "Row #5: 3,262\n"
+            + "Row #6: 2,985\n"
+            + "Row #7: 918\n"
+            + "Row #8: 6,624\n"
+            + "Row #9: 391\n"
+            + "Row #10: 9,499\n"
+            + "Row #11: 412\n"
+            + "Row #12: 7,750\n"
+            + "Row #13: 1,718\n"
+            + "Row #14: 1,316\n",
             resultString);
 
         // Set one parameter and execute again.
@@ -330,14 +351,13 @@ public class ParameterTest extends FoodMartTestCase {
         result = connection.execute(query);
         resultString = TestContext.toString(result);
         TestContext.assertEqualsVerbose(
-            fold(
-                "Axis #0:\n" +
-                    "{[Time].[1997].[Q1]}\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Unit Sales]}\n" +
-                    "Axis #2:\n" +
-                    "{[Product].[All Products].[Food].[Eggs].[Eggs]}\n" +
-                    "Row #0: 918\n"),
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Food].[Eggs].[Eggs]}\n"
+            + "Row #0: 918\n",
             resultString);
 
         // Now set both parameters and execute again.
@@ -346,16 +366,15 @@ public class ParameterTest extends FoodMartTestCase {
         result = connection.execute(query);
         resultString = TestContext.toString(result);
         TestContext.assertEqualsVerbose(
-            fold(
-                "Axis #0:\n" +
-                    "{[Time].[1997].[Q2].[4]}\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Unit Sales]}\n" +
-                    "Axis #2:\n" +
-                    "{[Product].[All Products].[Food].[Deli].[Meat]}\n" +
-                    "{[Product].[All Products].[Food].[Deli].[Side Dishes]}\n" +
-                    "Row #0: 621\n" +
-                    "Row #1: 187\n"),
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q2].[4]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Food].[Deli].[Meat]}\n"
+            + "{[Product].[All Products].[Food].[Deli].[Side Dishes]}\n"
+            + "Row #0: 621\n"
+            + "Row #1: 187\n",
             resultString);
     }
 
@@ -407,8 +426,9 @@ public class ParameterTest extends FoodMartTestCase {
     public void testSystemPropsGet() {
         for (Property property : MondrianProperties.instance().getPropertyList()) {
             assertExprReturns(
-                "ParamRef(" +
-                    Util.singleQuoteString(property.getPath()) + ")",
+                "ParamRef("
+                + Util.singleQuoteString(property.getPath())
+                + ")",
                 property.stringValue());
         }
     }
@@ -460,30 +480,44 @@ public class ParameterTest extends FoodMartTestCase {
      */
     public void testSchemaPropDupFails() {
         final TestContext tc = TestContext.create(
-            "<Parameter name=\"foo\" type=\"Numeric\" defaultValue=\"1\" />\n" +
-                "<Parameter name=\"bar\" type=\"Numeric\" defaultValue=\"2\" />\n" +
-                "<Parameter name=\"foo\" type=\"Numeric\" defaultValue=\"3\" />\n",
-            null, null, null, null, null);
-        tc.assertExprThrows("ParamRef(\"foo\")",
+            "<Parameter name=\"foo\" type=\"Numeric\" defaultValue=\"1\" />\n"
+            + "<Parameter name=\"bar\" type=\"Numeric\" defaultValue=\"2\" />\n"
+            + "<Parameter name=\"foo\" type=\"Numeric\" defaultValue=\"3\" />\n",
+            null,
+            null,
+            null,
+            null,
+            null);
+        tc.assertExprThrows(
+            "ParamRef(\"foo\")",
             "Duplicate parameter 'foo' in schema");
     }
 
     public void testSchemaPropIllegalTypeFails() {
         final TestContext tc = TestContext.create(
-            "<Parameter name=\"foo\" type=\"Bad type\" defaultValue=\"1\" />", null,
-            null, null, null, null);
+            "<Parameter name=\"foo\" type=\"Bad type\" defaultValue=\"1\" />",
+            null,
+            null,
+            null,
+            null,
+            null);
         tc.assertExprThrows(
             "1",
-            "In Schema: In Parameter: " +
-                "Value 'Bad type' of attribute 'type' has illegal value 'Bad type'.  " +
-                "Legal values: {String, Numeric, Integer, Boolean, Date, Time, Timestamp, Member}");
+            "In Schema: In Parameter: "
+            + "Value 'Bad type' of attribute 'type' has illegal value 'Bad type'.  "
+            + "Legal values: {String, Numeric, Integer, Boolean, Date, Time, Timestamp, Member}");
     }
 
     public void testSchemaPropInvalidDefaultExpFails() {
         final TestContext tc = TestContext.create(
-            "<Parameter name=\"Product Current Member\" type=\"Member\" defaultValue=\"[Product].DefaultMember.Children(2) \" />", null,
-            null, null, null, null);
-        tc.assertExprThrows("ParamRef(\"Product Current Member\")",
+            "<Parameter name=\"Product Current Member\" type=\"Member\" defaultValue=\"[Product].DefaultMember.Children(2) \" />",
+            null,
+            null,
+            null,
+            null,
+            null);
+        tc.assertExprThrows(
+            "ParamRef(\"Product Current Member\")",
             "No function matches signature '<Member>.Children(<Numeric Expression>)'");
     }
 
@@ -493,23 +527,27 @@ public class ParameterTest extends FoodMartTestCase {
      */
     public void testSchemaPropContext() {
         final TestContext tc = TestContext.create(
-            "<Parameter name=\"Customer Current Member\" type=\"Member\" defaultValue=\"[Customers].DefaultMember.Children.Item(2) \" />", null,
-            null, null, null, null);
+            "<Parameter name=\"Customer Current Member\" type=\"Member\" defaultValue=\"[Customers].DefaultMember.Children.Item(2) \" />",
+            null,
+            null,
+            null,
+            null,
+            null);
 
         tc.assertQueryReturns(
-            "with member [Measures].[Foo] as ' ParamRef(\"Customer Current Member\").Name '\n" +
-                "select {[Measures].[Foo]} on columns\n" +
-                "from [Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Foo]}\n" +
-                "Row #0: USA\n"));
+            "with member [Measures].[Foo] as ' ParamRef(\"Customer Current Member\").Name '\n"
+            + "select {[Measures].[Foo]} on columns\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: USA\n");
 
         tc.assertThrows(
-            "with member [Measures].[Foo] as ' ParamRef(\"Customer Current Member\").Name '\n" +
-                "select {[Measures].[Foo]} on columns\n" +
-                "from [Warehouse]",
+            "with member [Measures].[Foo] as ' ParamRef(\"Customer Current Member\").Name '\n"
+            + "select {[Measures].[Foo]} on columns\n"
+            + "from [Warehouse]",
             "MDX object '[Customers]' not found in cube 'Warehouse'");
     }
 

@@ -90,34 +90,35 @@ public class Checkin_7634 extends CsvDBTestCase {
 
     protected String getCubeDescription() {
         // defines [Product].[Class2] as default (implicit) member
-        return "<Cube name='Checkin_7634'>\n" +
-            "<Table name='table7634'/>\n" +
-            "<Dimension name='Geography' foreignKey='cust_loc_id'>\n" +
-                "<Hierarchy hasAll='true' allMemberName='All Regions' defaultMember='' primaryKey='cust_loc_id'>\n" +
-                "<Table name='geography7631'/>\n" +
-                "<Level column='state_cd' name='State' type='String' uniqueMembers='true'/>\n" +
-                "<Level column='city_nm' name='City' type='String' uniqueMembers='true'/>\n" +
-                "<Level column='zip_cd' name='Zip Code' type='String' uniqueMembers='true'/>\n" +
-                "</Hierarchy>\n" +
-            "</Dimension>\n" +
-            "<Dimension name='Product' foreignKey='prod_id'>\n" +
-                "<Hierarchy hasAll='true' allMemberName='All Products' defaultMember='' primaryKey='prod_id'>\n" +
-                "<Table name='prod7631'/>\n" +
-                "<Level column='class' name='Class' type='String' uniqueMembers='true'/>\n" +
-                "<Level column='brand' name='Brand' type='String' uniqueMembers='true'/>\n" +
-                "<Level column='item' name='Item' type='String' uniqueMembers='true'/>\n" +
-                "</Hierarchy>\n" +
-            "</Dimension>\n" +
-            "<Measure name='First Measure' \n" +
-            "    column='first' aggregator='sum'\n" +
-            "   formatString='#,###'/>\n" +
-            "<Measure name='Requested Value' \n" +
-            "    column='request_value' aggregator='sum'\n" +
-            "   formatString='#,###'/>\n" +
-            "<Measure name='Shipped Value' \n" +
-            "    column='shipped_value' aggregator='sum'\n" +
-            "   formatString='#,###'/>\n" +
-            "</Cube>";
+        return
+            "<Cube name='Checkin_7634'>\n"
+            + "<Table name='table7634'/>\n"
+            + "<Dimension name='Geography' foreignKey='cust_loc_id'>\n"
+            + "    <Hierarchy hasAll='true' allMemberName='All Regions' defaultMember='' primaryKey='cust_loc_id'>\n"
+            + "    <Table name='geography7631'/>\n"
+            + "    <Level column='state_cd' name='State' type='String' uniqueMembers='true'/>\n"
+            + "    <Level column='city_nm' name='City' type='String' uniqueMembers='true'/>\n"
+            + "    <Level column='zip_cd' name='Zip Code' type='String' uniqueMembers='true'/>\n"
+            + "    </Hierarchy>\n"
+            + "</Dimension>\n"
+            + "<Dimension name='Product' foreignKey='prod_id'>\n"
+            + "    <Hierarchy hasAll='true' allMemberName='All Products' defaultMember='' primaryKey='prod_id'>\n"
+            + "    <Table name='prod7631'/>\n"
+            + "    <Level column='class' name='Class' type='String' uniqueMembers='true'/>\n"
+            + "    <Level column='brand' name='Brand' type='String' uniqueMembers='true'/>\n"
+            + "    <Level column='item' name='Item' type='String' uniqueMembers='true'/>\n"
+            + "    </Hierarchy>\n"
+            + "</Dimension>\n"
+            + "<Measure name='First Measure' \n"
+            + "    column='first' aggregator='sum'\n"
+            + "   formatString='#,###'/>\n"
+            + "<Measure name='Requested Value' \n"
+            + "    column='request_value' aggregator='sum'\n"
+            + "   formatString='#,###'/>\n"
+            + "<Measure name='Shipped Value' \n"
+            + "    column='shipped_value' aggregator='sum'\n"
+            + "   formatString='#,###'/>\n"
+            + "</Cube>";
     }
 }
 

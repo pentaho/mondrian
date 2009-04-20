@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde and others
+// Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -124,18 +124,18 @@ System.out.println("password=" + password);
                 if (! isEquals(userid, XmlaErrorTest.user)) {
                     throw XmlaRequestCallback.Helper.authorizationException(
                         new Exception(
-                          "Authorization: bad userid: " +
-                            userid +
-                            " should be: " +
-                            XmlaErrorTest.user));
+                            "Authorization: bad userid: "
+                            + userid
+                            + " should be: "
+                            + XmlaErrorTest.user));
                 }
                 if (! isEquals(password, XmlaErrorTest.password)) {
                     throw XmlaRequestCallback.Helper.authorizationException(
                         new Exception(
-                          "Authorization: bad password: " +
-                            password +
-                            " should be: " +
-                            XmlaErrorTest.password));
+                            "Authorization: bad password: "
+                            + password
+                            + " should be: "
+                            + XmlaErrorTest.password));
                 }
             }
 
@@ -230,8 +230,8 @@ System.out.println("password=" + password);
 
         Fault(Node[] faultNodes) throws Exception {
             if (faultNodes.length < 3 || faultNodes.length > 4) {
-                throw new Exception("SOAP Fault node has " +
-                    faultNodes.length + " children");
+                throw new Exception(
+                    "SOAP Fault node has " + faultNodes.length + " children");
             }
             // fault code element
             Node node = faultNodes[0];
@@ -250,16 +250,20 @@ System.out.println("password=" + password);
                 node = faultNodes[3];
                 faultNodes = getChildElements(node);
                 if (faultNodes.length != 1) {
-                    throw new Exception("SOAP Fault detail node has " +
-                        faultNodes.length + " children");
+                    throw new Exception(
+                        "SOAP Fault detail node has "
+                        + faultNodes.length
+                        + " children");
                 }
                 // error element
                 node = faultNodes[0];
                 errorNS = node.getNamespaceURI();
                 faultNodes = getChildElements(node);
                 if (faultNodes.length != 2) {
-                    throw new Exception("SOAP Fault detail error node has " +
-                        faultNodes.length + " children");
+                    throw new Exception(
+                        "SOAP Fault detail error node has "
+                        + faultNodes.length
+                        + " children");
                 }
                 // error code element
                 node = faultNodes[0];
@@ -327,11 +331,12 @@ System.out.println("password=" + password);
                 notSame("faultactor", this.faultActor, expectedFault.faultActor);
             }
             if (! isEquals(this.errorNS, expectedFault.errorNS)) {
-                throw new Exception("For error element namespace " +
-                    " Expected " +
-                    this.errorNS +
-                    " but Got " +
-                    expectedFault.errorNS);
+                throw new Exception(
+                    "For error element namespace "
+                    + " Expected "
+                    + this.errorNS
+                    + " but Got "
+                    + expectedFault.errorNS);
             }
             if (! isEquals(this.errorCode, expectedFault.errorCode)) {
                 notSame("error.code", this.errorCode, expectedFault.errorCode);
@@ -341,12 +346,13 @@ System.out.println("password=" + password);
         private void notSame(String elementName, String expected, String got)
             throws Exception
         {
-            throw new Exception("For element " +
-                elementName +
-                " Expected " +
-                expected +
-                " but Got " +
-                got);
+            throw new Exception(
+                "For element "
+                + elementName
+                + " Expected "
+                + expected
+                + " but Got "
+                + got);
         }
     }
 

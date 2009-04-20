@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2008 Julian Hyde and others.
+// Copyright (C) 2004-2009 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -56,8 +56,10 @@ public class ParserTest extends FoodMartTestCase {
         QueryAxis[] axes = ((TestParser) p).getAxes();
 
         assertEquals("Number of axes must be 1", 1, axes.length);
-        assertEquals("Axis index name must be correct",
-                expectedName, axes[0].getAxisName());
+        assertEquals(
+            "Axis index name must be correct",
+            expectedName,
+            axes[0].getAxisName());
     }
 
     public void testNegativeCases() throws Exception {
@@ -68,48 +70,46 @@ public class ParserTest extends FoodMartTestCase {
         // used to be an error, no longer
         assertParseQuery(
             "select [member] on axis(5) from sales",
-            fold("select [member] ON AXIS(5)\n" +
-                "from [sales]\n"));
+            "select [member] ON AXIS(5)\n"
+            + "from [sales]\n");
         assertParseQueryFails("select [member] on axes(0) from sales", "Syntax error at line");
         assertParseQueryFails(
             "select [member] on 0.5 from sales",
             "Invalid axis specification. The axis number must be non-negative integer, but it was 0.5.");
         assertParseQuery(
             "select [member] on 555 from sales",
-            fold("select [member] ON AXIS(555)\n" +
-                "from [sales]\n"));
+            "select [member] ON AXIS(555)\n"
+            + "from [sales]\n");
     }
 
     public void testScannerPunc() {
         // '$' is OK inside brackets but not outside
         assertParseQuery(
-                "select [measures].[$foo] on columns from sales",
-                TestContext.fold(
-                    "select [measures].[$foo] ON COLUMNS\n" +
-                    "from [sales]\n"));
+            "select [measures].[$foo] on columns from sales",
+            "select [measures].[$foo] ON COLUMNS\n"
+            + "from [sales]\n");
         assertParseQueryFails(
             "select [measures].$foo on columns from sales",
-                "Unexpected character '$'");
+            "Unexpected character '$'");
 
         // ']' unexcpected
-        assertParseQueryFails("select { Customers].Children } on columns from [Sales]",
-                "Unexpected character ']'");
+        assertParseQueryFails(
+            "select { Customers].Children } on columns from [Sales]",
+            "Unexpected character ']'");
     }
 
     public void testUnparse() {
         checkUnparse(
-                TestContext.fold(
-                    "with member [Measures].[Foo] as ' 123 '\n" +
-                    "select {[Measures].members} on columns,\n" +
-                    " CrossJoin([Product].members, {[Gender].Children}) on rows\n" +
-                    "from [Sales]\n" +
-                    "where [Marital Status].[S]"),
-                TestContext.fold(
-                    "with member [Measures].[Foo] as '123.0'\n" +
-                    "select {[Measures].Members} ON COLUMNS,\n" +
-                    "  Crossjoin([Product].Members, {[Gender].Children}) ON ROWS\n" +
-                    "from [Sales]\n" +
-                    "where [Marital Status].[All Marital Status].[S]\n"));
+            "with member [Measures].[Foo] as ' 123 '\n"
+            + "select {[Measures].members} on columns,\n"
+            + " CrossJoin([Product].members, {[Gender].Children}) on rows\n"
+            + "from [Sales]\n"
+            + "where [Marital Status].[S]",
+            "with member [Measures].[Foo] as '123.0'\n"
+            + "select {[Measures].Members} ON COLUMNS,\n"
+            + "  Crossjoin([Product].Members, {[Gender].Children}) ON ROWS\n"
+            + "from [Sales]\n"
+            + "where [Marital Status].[All Marital Status].[S]\n");
     }
 
     private void checkUnparse(String queryString, final String expected) {
@@ -149,30 +149,36 @@ public class ParserTest extends FoodMartTestCase {
         String query = "select {[axis0mbr]} on axis(0), "
                 + "{[axis1mbr]} on axis(1) from cube";
 
-        assertNull("Test parser should return null query",
+        assertNull(
+            "Test parser should return null query",
             p.parseInternal(null, query, false, funTable, false, false));
 
         QueryAxis[] axes = ((TestParser) p).getAxes();
 
         assertEquals("Number of axes", 2, axes.length);
-        assertEquals("Axis index name must be correct",
+        assertEquals(
+            "Axis index name must be correct",
             AxisOrdinal.StandardAxisOrdinal.forLogicalOrdinal(0).name(),
             axes[0].getAxisName());
-        assertEquals("Axis index name must be correct",
+        assertEquals(
+            "Axis index name must be correct",
             AxisOrdinal.StandardAxisOrdinal.forLogicalOrdinal(1).name(),
             axes[1].getAxisName());
 
         query = "select {[axis1mbr]} on aXiS(1), "
                 + "{[axis0mbr]} on AxIs(0) from cube";
 
-        assertNull("Test parser should return null query",
+        assertNull(
+            "Test parser should return null query",
             p.parseInternal(null, query, false, funTable, false, false));
 
         assertEquals("Number of axes", 2, axes.length);
-        assertEquals("Axis index name must be correct",
+        assertEquals(
+            "Axis index name must be correct",
             AxisOrdinal.StandardAxisOrdinal.forLogicalOrdinal(0).name(),
             axes[0].getAxisName());
-        assertEquals("Axis index name must be correct",
+        assertEquals(
+            "Axis index name must be correct",
             AxisOrdinal.StandardAxisOrdinal.forLogicalOrdinal(1).name(),
             axes[1].getAxisName());
 
@@ -197,119 +203,124 @@ public class ParserTest extends FoodMartTestCase {
     public void testMemberOnAxis() {
         assertParseQuery(
             "select [Measures].[Sales Count] on 0, non empty [Store].[Store State].members on 1 from [Sales]",
-            TestContext.fold(
-                "select [Measures].[Sales Count] ON COLUMNS,\n" +
-                    "  NON EMPTY [Store].[Store State].members ON ROWS\n" +
-                    "from [Sales]\n"));
+            "select [Measures].[Sales Count] ON COLUMNS,\n"
+            + "  NON EMPTY [Store].[Store State].members ON ROWS\n"
+            + "from [Sales]\n");
     }
 
     public void testCaseTest() {
         assertParseQuery(
-                "with member [Measures].[Foo] as " +
-                " ' case when x = y then \"eq\" when x < y then \"lt\" else \"gt\" end '" +
-                "select {[foo]} on axis(0) from cube",
-                TestContext.fold(
-                    "with member [Measures].[Foo] as 'CASE WHEN (x = y) THEN \"eq\" WHEN (x < y) THEN \"lt\" ELSE \"gt\" END'\n" +
-                    "select {[foo]} ON COLUMNS\n" +
-                    "from [cube]\n"));
+            "with member [Measures].[Foo] as "
+            + " ' case when x = y then \"eq\" when x < y then \"lt\" else \"gt\" end '"
+            + "select {[foo]} on axis(0) from cube",
+            "with member [Measures].[Foo] as 'CASE WHEN (x = y) THEN \"eq\" WHEN (x < y) THEN \"lt\" ELSE \"gt\" END'\n"
+            + "select {[foo]} ON COLUMNS\n"
+            + "from [cube]\n");
     }
 
     public void testCaseSwitch() {
         assertParseQuery(
-                "with member [Measures].[Foo] as " +
-                " ' case x when 1 then 2 when 3 then 4 else 5 end '" +
-                "select {[foo]} on axis(0) from cube",
-                TestContext.fold(
-                    "with member [Measures].[Foo] as 'CASE x WHEN 1.0 THEN 2.0 WHEN 3.0 THEN 4.0 ELSE 5.0 END'\n" +
-                    "select {[foo]} ON COLUMNS\n" +
-                    "from [cube]\n"));
+            "with member [Measures].[Foo] as "
+            + " ' case x when 1 then 2 when 3 then 4 else 5 end '"
+            + "select {[foo]} on axis(0) from cube",
+            "with member [Measures].[Foo] as 'CASE x WHEN 1.0 THEN 2.0 WHEN 3.0 THEN 4.0 ELSE 5.0 END'\n"
+            + "select {[foo]} ON COLUMNS\n"
+            + "from [cube]\n");
     }
 
     public void testSetExpr() {
         // bug 1751352: parser does not recognize ':' range operator in WITH SET
-        assertParseQuery("with set [Set1] as '[Product].[Drink]:[Product].[Food]' \n" +
-            "select [Set1] on columns, {[Measures].defaultMember} on rows \n" +
-            "from Sales",
-            TestContext.fold(
-                "with set [Set1] as '([Product].[Drink] : [Product].[Food])'\n" +
-                    "select [Set1] ON COLUMNS,\n" +
-                    "  {[Measures].defaultMember} ON ROWS\n" +
-                    "from [Sales]\n"));
+        assertParseQuery(
+            "with set [Set1] as '[Product].[Drink]:[Product].[Food]' \n"
+            + "select [Set1] on columns, {[Measures].defaultMember} on rows \n"
+            + "from Sales",
+            "with set [Set1] as '([Product].[Drink] : [Product].[Food])'\n"
+            + "select [Set1] ON COLUMNS,\n"
+            + "  {[Measures].defaultMember} ON ROWS\n"
+            + "from [Sales]\n");
 
         // set expr in axes
-        assertParseQuery("select [Product].[Drink]:[Product].[Food] on columns,\n" +
-            " {[Measures].defaultMember} on rows \n" +
-            "from Sales",
-            TestContext.fold(
-                "select ([Product].[Drink] : [Product].[Food]) ON COLUMNS,\n" +
-                    "  {[Measures].defaultMember} ON ROWS\n" +
-                    "from [Sales]\n"));
+        assertParseQuery(
+            "select [Product].[Drink]:[Product].[Food] on columns,\n"
+            + " {[Measures].defaultMember} on rows \n"
+            + "from Sales",
+            "select ([Product].[Drink] : [Product].[Food]) ON COLUMNS,\n"
+            + "  {[Measures].defaultMember} ON ROWS\n"
+            + "from [Sales]\n");
     }
 
     public void testDimensionProperties() {
         assertParseQuery(
                 "select {[foo]} properties p1,   p2 on columns from [cube]",
-                TestContext.fold(
-                    "select {[foo]} DIMENSION PROPERTIES p1, p2 ON COLUMNS\n" +
-                    "from [cube]\n"));
+                "select {[foo]} DIMENSION PROPERTIES p1, p2 ON COLUMNS\n"
+                + "from [cube]\n");
     }
 
     public void testCellProperties() {
         assertParseQuery(
                 "select {[foo]} on columns from [cube] CELL PROPERTIES FORMATTED_VALUE",
-                TestContext.fold(
-                    "select {[foo]} ON COLUMNS\n" +
-                    "from [cube]\n" +
-                    "[FORMATTED_VALUE]"));
+                "select {[foo]} ON COLUMNS\n"
+                + "from [cube]\n"
+                + "[FORMATTED_VALUE]");
     }
 
     public void testIsEmpty() {
-        assertParseExpr("[Measures].[Unit Sales] IS EMPTY",
+        assertParseExpr(
+            "[Measures].[Unit Sales] IS EMPTY",
             "([Measures].[Unit Sales] IS EMPTY)");
 
-        assertParseExpr("[Measures].[Unit Sales] IS EMPTY AND 1 IS NULL",
+        assertParseExpr(
+            "[Measures].[Unit Sales] IS EMPTY AND 1 IS NULL",
             "(([Measures].[Unit Sales] IS EMPTY) AND (1.0 IS NULL))");
 
         // FIXME: "NULL" should associate as "IS NULL" rather than "NULL + 56.0"
-        assertParseExpr("- x * 5 is empty is empty is null + 56",
+        assertParseExpr(
+            "- x * 5 is empty is empty is null + 56",
             "(((((- x) * 5.0) IS EMPTY) IS EMPTY) IS (NULL + 56.0))");
     }
 
     public void testIs() {
-        assertParseExpr("[Measures].[Unit Sales] IS [Measures].[Unit Sales] AND [Measures].[Unit Sales] IS NULL",
+        assertParseExpr(
+            "[Measures].[Unit Sales] IS [Measures].[Unit Sales] AND [Measures].[Unit Sales] IS NULL",
             "(([Measures].[Unit Sales] IS [Measures].[Unit Sales]) AND ([Measures].[Unit Sales] IS NULL))");
     }
 
     public void testIsNull() {
-        assertParseExpr("[Measures].[Unit Sales] IS NULL",
+        assertParseExpr(
+            "[Measures].[Unit Sales] IS NULL",
             "([Measures].[Unit Sales] IS NULL)");
 
-        assertParseExpr("[Measures].[Unit Sales] IS NULL AND 1 <> 2",
+        assertParseExpr(
+            "[Measures].[Unit Sales] IS NULL AND 1 <> 2",
             "(([Measures].[Unit Sales] IS NULL) AND (1.0 <> 2.0))");
 
-        assertParseExpr("x is null or y is null and z = 5",
+        assertParseExpr(
+            "x is null or y is null and z = 5",
             "((x IS NULL) OR ((y IS NULL) AND (z = 5.0)))");
 
-        assertParseExpr("(x is null) + 56 > 6",
-            "((((x IS NULL)) + 56.0) > 6.0)");
+        assertParseExpr(
+            "(x is null) + 56 > 6", "((((x IS NULL)) + 56.0) > 6.0)");
 
         // FIXME: Should be
         //  "(((((x IS NULL) AND (a = b)) OR ((c = (d + 5.0))) IS NULL) + 5.0)");
-        assertParseExpr("x is null and a = b or c = d + 5 is null + 5",
+        assertParseExpr(
+            "x is null and a = b or c = d + 5 is null + 5",
             "(((x IS NULL) AND (a = b)) OR ((c = (d + 5.0)) IS (NULL + 5.0)))");
     }
 
     public void testNull() {
-        assertParseExpr("Filter({[Measures].[Foo]}, Iif(1 = 2, NULL, 'X'))",
+        assertParseExpr(
+            "Filter({[Measures].[Foo]}, Iif(1 = 2, NULL, 'X'))",
             "Filter({[Measures].[Foo]}, Iif((1.0 = 2.0), NULL, \"X\"))");
     }
 
     public void testCast() {
-        assertParseExpr("Cast([Measures].[Unit Sales] AS Numeric)",
+        assertParseExpr(
+            "Cast([Measures].[Unit Sales] AS Numeric)",
             "CAST([Measures].[Unit Sales] AS Numeric)");
 
-        assertParseExpr("Cast(1 + 2 AS String)",
-            "CAST((1.0 + 2.0) AS String)");
+        assertParseExpr(
+            "Cast(1 + 2 AS String)", "CAST((1.0 + 2.0) AS String)");
     }
 
     /**
@@ -347,10 +358,10 @@ public class ParserTest extends FoodMartTestCase {
     public void testCloneQuery() {
         Connection connection = TestContext.instance().getFoodMartConnection();
         Query query = connection.parseQuery(
-            "select {[Measures].Members} on columns,\n" +
-                " {[Store].Members} on rows\n" +
-                "from [Sales]\n" +
-                "where ([Gender].[M])");
+            "select {[Measures].Members} on columns,\n"
+            + " {[Store].Members} on rows\n"
+            + "from [Sales]\n"
+            + "where ([Gender].[M])");
 
         Object queryClone = query.clone();
         assertTrue(queryClone instanceof Query);
@@ -401,27 +412,26 @@ public class ParserTest extends FoodMartTestCase {
         // Now, a query with several numeric literals. This is the original
         // testcase for the bug.
         assertParseQuery(
-            "with member [Measures].[Small Number] as '[Measures].[Store Sales] / 9000'\n" +
-            "select\n" +
-            "{[Measures].[Small Number]} on columns,\n" +
-            "{Filter([Product].[Product Department].members, [Measures].[Small Number] >= 0.3\n" +
-            "and [Measures].[Small Number] <= 0.5000001234)} on rows\n" +
-            "from Sales\n" +
-            "where ([Time].[1997].[Q2].[4])",
-            TestContext.fold("with member [Measures].[Small Number] as '([Measures].[Store Sales] / 9000.0)'\n" +
-                "select {[Measures].[Small Number]} ON COLUMNS,\n" +
-                "  {Filter([Product].[Product Department].members, (([Measures].[Small Number] >= 0.3) AND ([Measures].[Small Number] <= 0.5000001234)))} ON ROWS\n" +
-                "from [Sales]\n" +
-                "where ([Time].[1997].[Q2].[4])\n"));
+            "with member [Measures].[Small Number] as '[Measures].[Store Sales] / 9000'\n"
+            + "select\n"
+            + "{[Measures].[Small Number]} on columns,\n"
+            + "{Filter([Product].[Product Department].members, [Measures].[Small Number] >= 0.3\n"
+            + "and [Measures].[Small Number] <= 0.5000001234)} on rows\n"
+            + "from Sales\n"
+            + "where ([Time].[1997].[Q2].[4])",
+            "with member [Measures].[Small Number] as '([Measures].[Store Sales] / 9000.0)'\n"
+            + "select {[Measures].[Small Number]} ON COLUMNS,\n"
+            + "  {Filter([Product].[Product Department].members, (([Measures].[Small Number] >= 0.3) AND ([Measures].[Small Number] <= 0.5000001234)))} ON ROWS\n"
+            + "from [Sales]\n"
+            + "where ([Time].[1997].[Q2].[4])\n");
     }
 
     public void testEmptyExpr() {
         assertParseQuery(
             "SELECT NON EMPTY HIERARCHIZE({DrillDownLevelTop({[Product].[All Products]},\n"
                 + "3, , [Measures].[Unit Sales])}) on columns from [Sales]",
-            TestContext.fold(
-                "select NON EMPTY HIERARCHIZE({DrillDownLevelTop({[Product].[All Products]}, 3.0, , [Measures].[Unit Sales])}) ON COLUMNS\n" +
-                    "from [Sales]\n"));
+            "select NON EMPTY HIERARCHIZE({DrillDownLevelTop({[Product].[All Products]}, 3.0, , [Measures].[Unit Sales])}) ON COLUMNS\n"
+            + "from [Sales]\n");
     }
 
     /**
@@ -456,9 +466,10 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     private String wrapExpr(String expr) {
-        return "with member [Measures].[Foo] as " +
-            expr +
-            "\n select from [Sales]";
+        return
+            "with member [Measures].[Foo] as "
+            + expr
+            + "\n select from [Sales]";
     }
 
     public static class TestParser extends Parser {

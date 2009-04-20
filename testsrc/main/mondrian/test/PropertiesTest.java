@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde and others
+// Copyright (C) 2005-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -161,33 +161,34 @@ public class PropertiesTest extends FoodMartTestCase {
      */
     public void testPropertiesMDX() {
         Result result = executeQuery(
-            "SELECT {[Customers].[All Customers].[USA].[CA]} DIMENSION PROPERTIES \n" +
-                " CATALOG_NAME, SCHEMA_NAME, CUBE_NAME, DIMENSION_UNIQUE_NAME, \n" +
-                " HIERARCHY_UNIQUE_NAME, LEVEL_UNIQUE_NAME, LEVEL_NUMBER, MEMBER_UNIQUE_NAME, \n" +
-                " MEMBER_NAME, MEMBER_TYPE, MEMBER_GUID, MEMBER_CAPTION, MEMBER_ORDINAL, CHILDREN_CARDINALITY,\n" +
-                " PARENT_LEVEL, PARENT_UNIQUE_NAME, PARENT_COUNT, DESCRIPTION ON COLUMNS\n" +
-                "FROM [Sales]");
+            "SELECT {[Customers].[All Customers].[USA].[CA]} DIMENSION PROPERTIES \n"
+            + " CATALOG_NAME, SCHEMA_NAME, CUBE_NAME, DIMENSION_UNIQUE_NAME, \n"
+            + " HIERARCHY_UNIQUE_NAME, LEVEL_UNIQUE_NAME, LEVEL_NUMBER, MEMBER_UNIQUE_NAME, \n"
+            + " MEMBER_NAME, MEMBER_TYPE, MEMBER_GUID, MEMBER_CAPTION, MEMBER_ORDINAL, CHILDREN_CARDINALITY,\n"
+            + " PARENT_LEVEL, PARENT_UNIQUE_NAME, PARENT_COUNT, DESCRIPTION ON COLUMNS\n"
+            + "FROM [Sales]");
         QueryAxis[] axes = result.getQuery().getAxes();
         Id[] axesProperties = axes[0].getDimensionProperties();
         String[] props = {
-        "CATALOG_NAME",
-        "SCHEMA_NAME",
-        "CUBE_NAME",
-        "DIMENSION_UNIQUE_NAME",
-        "HIERARCHY_UNIQUE_NAME",
-        "LEVEL_UNIQUE_NAME",
-        "LEVEL_NUMBER",
-        "MEMBER_UNIQUE_NAME",
-        "MEMBER_NAME",
-        "MEMBER_TYPE",
-        "MEMBER_GUID",
-        "MEMBER_CAPTION",
-        "MEMBER_ORDINAL",
-        "CHILDREN_CARDINALITY",
-        "PARENT_LEVEL",
-        "PARENT_UNIQUE_NAME",
-        "PARENT_COUNT",
-        "DESCRIPTION"};
+            "CATALOG_NAME",
+            "SCHEMA_NAME",
+            "CUBE_NAME",
+            "DIMENSION_UNIQUE_NAME",
+            "HIERARCHY_UNIQUE_NAME",
+            "LEVEL_UNIQUE_NAME",
+            "LEVEL_NUMBER",
+            "MEMBER_UNIQUE_NAME",
+            "MEMBER_NAME",
+            "MEMBER_TYPE",
+            "MEMBER_GUID",
+            "MEMBER_CAPTION",
+            "MEMBER_ORDINAL",
+            "CHILDREN_CARDINALITY",
+            "PARENT_LEVEL",
+            "PARENT_UNIQUE_NAME",
+            "PARENT_COUNT",
+            "DESCRIPTION"
+        };
 
         assertEquals(axesProperties.length, props.length);
         int i = 0;
@@ -199,10 +200,10 @@ public class PropertiesTest extends FoodMartTestCase {
     public void testMandatoryCellProperties() {
         Connection connection = getConnection();
         Query salesCube = connection.parseQuery(
-                "select \n" +
-                " {[Measures].[Store Sales], [Measures].[Unit Sales]} on columns, \n" +
-                " {[Gender].members} on rows \n" +
-                "from [Sales]");
+            "select \n"
+            + " {[Measures].[Store Sales], [Measures].[Unit Sales]} on columns, \n"
+            + " {[Gender].members} on rows \n"
+            + "from [Sales]");
         Result result = connection.execute(salesCube);
         int x = 1;
         int y = 2;

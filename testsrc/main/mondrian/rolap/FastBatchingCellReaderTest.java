@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde and others
+// Copyright (C) 2007-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -35,65 +35,57 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testMissingSubtotalBugMetricFilter() {
-        String query =
-            "With " +
-            "Set [*NATIVE_CJ_SET] as " +
-            "'NonEmptyCrossJoin({[Time].[Year].[1997]}," +
-            "                   NonEmptyCrossJoin({[Product].[All Products].[Drink]},{[Education Level].[All Education Levels].[Bachelors Degree]}))' " +
-            "Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Unit Sales_SEL~SUM] > 1000.0)' "+
-            "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' " +
-            "Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],[Time].CurrentMember,[Product].CurrentMember,[Education Level].CurrentMember)', SOLVE_ORDER=200 " +
-            "Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Education Level],[Measures].[*Unit Sales_SEL~SUM] > 1000.0))', SOLVE_ORDER=-102 " +
-            "Select " +
-            "{[Measures].[Unit Sales]} on columns, " +
-            "Non Empty Union(CrossJoin(Generate([*METRIC_CJ_SET], {([Time].CurrentMember,[Product].CurrentMember)}),{[Education Level].[*CTX_MEMBER_SEL~SUM]})," +
-            "                Generate([*METRIC_CJ_SET], {([Time].CurrentMember,[Product].CurrentMember,[Education Level].CurrentMember)})) on rows " +
-            "From [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Unit Sales]}\n"+
-            "Axis #2:\n" +
-            "{[Time].[1997], [Product].[All Products].[Drink], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n" +
-            "{[Time].[1997], [Product].[All Products].[Drink], [Education Level].[All Education Levels].[Bachelors Degree]}\n" +
-            "Row #0: 6,423\n" +
-            "Row #1: 6,423\n";
-
-        assertQueryReturns(query, fold(result));
+        assertQueryReturns(
+            "With "
+            + "Set [*NATIVE_CJ_SET] as "
+            + "'NonEmptyCrossJoin({[Time].[Year].[1997]},"
+            + "                   NonEmptyCrossJoin({[Product].[All Products].[Drink]},{[Education Level].[All Education Levels].[Bachelors Degree]}))' "
+            + "Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Unit Sales_SEL~SUM] > 1000.0)' "
+            + "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' "
+            + "Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],[Time].CurrentMember,[Product].CurrentMember,[Education Level].CurrentMember)', SOLVE_ORDER=200 "
+            + "Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Education Level],[Measures].[*Unit Sales_SEL~SUM] > 1000.0))', SOLVE_ORDER=-102 "
+            + "Select "
+            + "{[Measures].[Unit Sales]} on columns, "
+            + "Non Empty Union(CrossJoin(Generate([*METRIC_CJ_SET], {([Time].CurrentMember,[Product].CurrentMember)}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),"
+            + "                Generate([*METRIC_CJ_SET], {([Time].CurrentMember,[Product].CurrentMember,[Education Level].CurrentMember)})) on rows "
+            + "From [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997], [Product].[All Products].[Drink], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n"
+            + "{[Time].[1997], [Product].[All Products].[Drink], [Education Level].[All Education Levels].[Bachelors Degree]}\n"
+            + "Row #0: 6,423\n"
+            + "Row #1: 6,423\n");
     }
 
     public void testMissingSubtotalBugMultiLevelMetricFilter() {
-        String query =
-            "With " +
-            "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])' " +
-            "Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Store Cost_SEL~SUM] > 1000.0)' " +
-            "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink].[Beverages],[Product].[All Products].[Food].[Baked Goods]}' " +
-            "Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})' " +
-            "Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[High School Degree],[Education Level].[All Education Levels].[Partial High School]}' " +
-            "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' " +
-            "Member [Measures].[*Store Cost_SEL~SUM] as '([Measures].[Store Cost],[Product].CurrentMember,[Education Level].CurrentMember)', SOLVE_ORDER=200 " +
-            "Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Drink]))', SOLVE_ORDER=-100 " +
-            "Member [Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Food]))', SOLVE_ORDER=-100 " +
-            "Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Education Level],[Measures].[*Store Cost_SEL~SUM] > 1000.0))', SOLVE_ORDER=-101 " +
-            "Select " +
-            "{[Measures].[Store Cost]} on columns, " +
-            "NonEmptyCrossJoin({[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}) " +
-            "on rows From [Sales]";
-
-        String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Store Cost]}\n" +
-            "Axis #2:\n" +
-            "{[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n" +
-            "{[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n" +
-            "Row #0: 6,535.30\n" +
-            "Row #1: 3,860.89\n";
-
-        assertQueryReturns(query, fold(result));
+        assertQueryReturns(
+            "With "
+            + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])' "
+            + "Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Store Cost_SEL~SUM] > 1000.0)' "
+            + "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink].[Beverages],[Product].[All Products].[Food].[Baked Goods]}' "
+            + "Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})' "
+            + "Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[High School Degree],[Education Level].[All Education Levels].[Partial High School]}' "
+            + "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' "
+            + "Member [Measures].[*Store Cost_SEL~SUM] as '([Measures].[Store Cost],[Product].CurrentMember,[Education Level].CurrentMember)', SOLVE_ORDER=200 "
+            + "Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Drink]))', SOLVE_ORDER=-100 "
+            + "Member [Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Food]))', SOLVE_ORDER=-100 "
+            + "Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Education Level],[Measures].[*Store Cost_SEL~SUM] > 1000.0))', SOLVE_ORDER=-101 "
+            + "Select "
+            + "{[Measures].[Store Cost]} on columns, "
+            + "NonEmptyCrossJoin({[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}) "
+            + "on rows From [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Cost]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n"
+            + "{[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n"
+            + "Row #0: 6,535.30\n"
+            + "Row #1: 3,860.89\n");
     }
 
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnSupportedDB() {
@@ -998,47 +990,47 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         }
 
         String cube =
-            "<Cube name=\"Warehouse2\">" +
-            "   <Table name=\"warehouse\"/>" +
-            "   <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"stores_id\"/>" +
-            "   <Measure name=\"Count Distinct of Warehouses (Large Owned)\" aggregator=\"distinct count\" formatString=\"#,##0\">" +
-            "       <MeasureExpression>" +
-            "       <SQL dialect=\"generic\">(select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Owned')</SQL>" +
-            "       </MeasureExpression>" +
-            "   </Measure>" +
-            "   <Measure name=\"Count Distinct of Warehouses (Large Independent)\" aggregator=\"distinct count\" formatString=\"#,##0\">" +
-            "       <MeasureExpression>" +
-            "       <SQL dialect=\"generic\">(select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Independent')</SQL>" +
-            "       </MeasureExpression>" +
-            "   </Measure>" +
-            "   <Measure name=\"Count All of Warehouses (Large Independent)\" aggregator=\"count\" formatString=\"#,##0\">" +
-            "       <MeasureExpression>" +
-            "           <SQL dialect=\"generic\">(select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Independent')</SQL>" +
-            "       </MeasureExpression>" +
-            "   </Measure>" +
-            "   <Measure name=\"Count Distinct Store+Warehouse\" aggregator=\"distinct count\" formatString=\"#,##0\">" +
-            "       <MeasureExpression><SQL dialect=\"generic\">`store_id`+`warehouse_id`</SQL></MeasureExpression>" +
-            "   </Measure>" +
-            "   <Measure name=\"Count All Store+Warehouse\" aggregator=\"count\" formatString=\"#,##0\">" +
-            "       <MeasureExpression><SQL dialect=\"generic\">`store_id`+`warehouse_id`</SQL></MeasureExpression>" +
-            "   </Measure>" +
-            "   <Measure name=\"Store Count\" column=\"stores_id\" aggregator=\"count\" formatString=\"#,###\"/>" +
-            "</Cube>";
+            "<Cube name=\"Warehouse2\">"
+            + "   <Table name=\"warehouse\"/>"
+            + "   <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"stores_id\"/>"
+            + "   <Measure name=\"Count Distinct of Warehouses (Large Owned)\" aggregator=\"distinct count\" formatString=\"#,##0\">"
+            + "       <MeasureExpression>"
+            + "       <SQL dialect=\"generic\">(select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Owned')</SQL>"
+            + "       </MeasureExpression>"
+            + "   </Measure>"
+            + "   <Measure name=\"Count Distinct of Warehouses (Large Independent)\" aggregator=\"distinct count\" formatString=\"#,##0\">"
+            + "       <MeasureExpression>"
+            + "       <SQL dialect=\"generic\">(select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Independent')</SQL>"
+            + "       </MeasureExpression>"
+            + "   </Measure>"
+            + "   <Measure name=\"Count All of Warehouses (Large Independent)\" aggregator=\"count\" formatString=\"#,##0\">"
+            + "       <MeasureExpression>"
+            + "           <SQL dialect=\"generic\">(select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Independent')</SQL>"
+            + "       </MeasureExpression>"
+            + "   </Measure>"
+            + "   <Measure name=\"Count Distinct Store+Warehouse\" aggregator=\"distinct count\" formatString=\"#,##0\">"
+            + "       <MeasureExpression><SQL dialect=\"generic\">`store_id`+`warehouse_id`</SQL></MeasureExpression>"
+            + "   </Measure>"
+            + "   <Measure name=\"Count All Store+Warehouse\" aggregator=\"count\" formatString=\"#,##0\">"
+            + "       <MeasureExpression><SQL dialect=\"generic\">`store_id`+`warehouse_id`</SQL></MeasureExpression>"
+            + "   </Measure>"
+            + "   <Measure name=\"Store Count\" column=\"stores_id\" aggregator=\"count\" formatString=\"#,###\"/>"
+            + "</Cube>";
         cube = cube.replaceAll("`", dialect.getQuoteIdentifierString());
         if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
             cube = cube.replaceAll(" AS ", " ");
         }
 
         String query =
-            "select " +
-            "   [Store Type].Children on rows, " +
-            "   {[Measures].[Count Distinct of Warehouses (Large Owned)]," +
-            "    [Measures].[Count Distinct of Warehouses (Large Independent)]," +
-            "    [Measures].[Count All of Warehouses (Large Independent)]," +
-            "    [Measures].[Count Distinct Store+Warehouse]," +
-            "    [Measures].[Count All Store+Warehouse]," +
-            "    [Measures].[Store Count]} on columns " +
-            "from [Warehouse2]";
+            "select "
+            + "   [Store Type].Children on rows, "
+            + "   {[Measures].[Count Distinct of Warehouses (Large Owned)],"
+            + "    [Measures].[Count Distinct of Warehouses (Large Independent)],"
+            + "    [Measures].[Count All of Warehouses (Large Independent)],"
+            + "    [Measures].[Count Distinct Store+Warehouse],"
+            + "    [Measures].[Count All Store+Warehouse],"
+            + "    [Measures].[Store Count]} on columns "
+            + "from [Warehouse2]";
 
         TestContext testContext =
             TestContext.create(
@@ -1051,103 +1043,108 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
         testContext.assertQueryReturns(
             query,
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Count Distinct of Warehouses (Large Owned)]}\n" +
-                "{[Measures].[Count Distinct of Warehouses (Large Independent)]}\n" +
-                "{[Measures].[Count All of Warehouses (Large Independent)]}\n" +
-                "{[Measures].[Count Distinct Store+Warehouse]}\n" +
-                "{[Measures].[Count All Store+Warehouse]}\n" +
-                "{[Measures].[Store Count]}\n" +
-                "Axis #2:\n" +
-                "{[Store Type].[All Store Types].[Deluxe Supermarket]}\n" +
-                "{[Store Type].[All Store Types].[Gourmet Supermarket]}\n" +
-                "{[Store Type].[All Store Types].[HeadQuarters]}\n" +
-                "{[Store Type].[All Store Types].[Mid-Size Grocery]}\n" +
-                "{[Store Type].[All Store Types].[Small Grocery]}\n" +
-                "{[Store Type].[All Store Types].[Supermarket]}\n" +
-                "Row #0: 1\n" +
-                "Row #0: 0\n" +
-                "Row #0: 0\n" +
-                "Row #0: 6\n" +
-                "Row #0: 6\n" +
-                "Row #0: 6\n" +
-                "Row #1: 1\n" +
-                "Row #1: 0\n" +
-                "Row #1: 0\n" +
-                "Row #1: 2\n" +
-                "Row #1: 2\n" +
-                "Row #1: 2\n" +
-                "Row #2: \n" +
-                "Row #2: \n" +
-                "Row #2: \n" +
-                "Row #2: \n" +
-                "Row #2: \n" +
-                "Row #2: \n" +
-                "Row #3: 0\n" +
-                "Row #3: 1\n" +
-                "Row #3: 1\n" +
-                "Row #3: 4\n" +
-                "Row #3: 4\n" +
-                "Row #3: 4\n" +
-                "Row #4: 0\n" +
-                "Row #4: 1\n" +
-                "Row #4: 1\n" +
-                "Row #4: 4\n" +
-                "Row #4: 4\n" +
-                "Row #4: 4\n" +
-                "Row #5: 0\n" +
-                "Row #5: 1\n" +
-                "Row #5: 3\n" +
-                "Row #5: 8\n" +
-                "Row #5: 8\n" +
-                "Row #5: 8\n"));
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Count Distinct of Warehouses (Large Owned)]}\n"
+            + "{[Measures].[Count Distinct of Warehouses (Large Independent)]}\n"
+            + "{[Measures].[Count All of Warehouses (Large Independent)]}\n"
+            + "{[Measures].[Count Distinct Store+Warehouse]}\n"
+            + "{[Measures].[Count All Store+Warehouse]}\n"
+            + "{[Measures].[Store Count]}\n"
+            + "Axis #2:\n"
+            + "{[Store Type].[All Store Types].[Deluxe Supermarket]}\n"
+            + "{[Store Type].[All Store Types].[Gourmet Supermarket]}\n"
+            + "{[Store Type].[All Store Types].[HeadQuarters]}\n"
+            + "{[Store Type].[All Store Types].[Mid-Size Grocery]}\n"
+            + "{[Store Type].[All Store Types].[Small Grocery]}\n"
+            + "{[Store Type].[All Store Types].[Supermarket]}\n"
+            + "Row #0: 1\n"
+            + "Row #0: 0\n"
+            + "Row #0: 0\n"
+            + "Row #0: 6\n"
+            + "Row #0: 6\n"
+            + "Row #0: 6\n"
+            + "Row #1: 1\n"
+            + "Row #1: 0\n"
+            + "Row #1: 0\n"
+            + "Row #1: 2\n"
+            + "Row #1: 2\n"
+            + "Row #1: 2\n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #3: 0\n"
+            + "Row #3: 1\n"
+            + "Row #3: 1\n"
+            + "Row #3: 4\n"
+            + "Row #3: 4\n"
+            + "Row #3: 4\n"
+            + "Row #4: 0\n"
+            + "Row #4: 1\n"
+            + "Row #4: 1\n"
+            + "Row #4: 4\n"
+            + "Row #4: 4\n"
+            + "Row #4: 4\n"
+            + "Row #5: 0\n"
+            + "Row #5: 1\n"
+            + "Row #5: 3\n"
+            + "Row #5: 8\n"
+            + "Row #5: 8\n"
+            + "Row #5: 8\n");
 
         String loadCountDistinct_luciddb1 =
-            "select " +
-            "\"store\".\"store_type\" as \"c0\", " +
-            "count(distinct " +
-            "(select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" " +
-            "from \"warehouse_class\" AS \"warehouse_class\" " +
-            "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Owned')) as \"m0\" " +
-            "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" " +
-            "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" " +
-            "group by \"store\".\"store_type\"";
+            "select "
+            + "\"store\".\"store_type\" as \"c0\", "
+            + "count(distinct "
+            + "(select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" "
+            + "from \"warehouse_class\" AS \"warehouse_class\" "
+            + "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Owned')) as \"m0\" "
+            + "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" "
+            + "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" "
+            + "group by \"store\".\"store_type\"";
 
         String loadCountDistinct_luciddb2 =
-            "select " +
-            "\"store\".\"store_type\" as \"c0\", " +
-            "count(distinct " +
-            "(select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" " +
-            "from \"warehouse_class\" AS \"warehouse_class\" " +
-            "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent')) as \"m0\" " +
-            "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" " +
-            "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" " +
-            "group by \"store\".\"store_type\"";
+            "select "
+            + "\"store\".\"store_type\" as \"c0\", "
+            + "count(distinct "
+            + "(select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" "
+            + "from \"warehouse_class\" AS \"warehouse_class\" "
+            + "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent')) as \"m0\" "
+            + "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" "
+            + "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" "
+            + "group by \"store\".\"store_type\"";
 
         String loadOtherAggs_luciddb =
-            "select " +
-            "\"store\".\"store_type\" as \"c0\", " +
-            "count(" +
-            "(select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" " +
-            "from \"warehouse_class\" AS \"warehouse_class\" " +
-            "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent')) as \"m0\", " +
-            "count(distinct \"store_id\"+\"warehouse_id\") as \"m1\", " +
-            "count(\"store_id\"+\"warehouse_id\") as \"m2\", " +
-            "count(\"warehouse\".\"stores_id\") as \"m3\" " +
-            "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" " +
-            "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" " +
-            "group by \"store\".\"store_type\"";
+            "select "
+            + "\"store\".\"store_type\" as \"c0\", "
+            + "count("
+            + "(select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" "
+            + "from \"warehouse_class\" AS \"warehouse_class\" "
+            + "where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent')) as \"m0\", "
+            + "count(distinct \"store_id\"+\"warehouse_id\") as \"m1\", "
+            + "count(\"store_id\"+\"warehouse_id\") as \"m2\", "
+            + "count(\"warehouse\".\"stores_id\") as \"m3\" "
+            + "from \"store\" as \"store\", \"warehouse\" as \"warehouse\" "
+            + "where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" "
+            + "group by \"store\".\"store_type\"";
 
         // Derby splits into multiple statements.
-        String loadCountDistinct_derby1 = "select \"store\".\"store_type\" as \"c0\", count(distinct (select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" from \"warehouse_class\" AS \"warehouse_class\" where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Owned')) as \"m0\" from \"store\" as \"store\", \"warehouse\" as \"warehouse\" where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
-            String loadCountDistinct_derby2 = "select \"store\".\"store_type\" as \"c0\", count(distinct (select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" from \"warehouse_class\" AS \"warehouse_class\" where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent')) as \"m0\" from \"store\" as \"store\", \"warehouse\" as \"warehouse\" where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
-            String loadCountDistinct_derby3 = "select \"store\".\"store_type\" as \"c0\", count(distinct \"store_id\"+\"warehouse_id\") as \"m0\" from \"store\" as \"store\", \"warehouse\" as \"warehouse\" where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
-            String loadOtherAggs_derby = "select \"store\".\"store_type\" as \"c0\", count((select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" from \"warehouse_class\" AS \"warehouse_class\" where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent')) as \"m0\", count(\"store_id\"+\"warehouse_id\") as \"m1\", count(\"warehouse\".\"stores_id\") as \"m2\" from \"store\" as \"store\", \"warehouse\" as \"warehouse\" where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
+        String loadCountDistinct_derby1 =
+            "select \"store\".\"store_type\" as \"c0\", count(distinct (select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" from \"warehouse_class\" AS \"warehouse_class\" where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Owned')) as \"m0\" from \"store\" as \"store\", \"warehouse\" as \"warehouse\" where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
+        String loadCountDistinct_derby2 =
+            "select \"store\".\"store_type\" as \"c0\", count(distinct (select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" from \"warehouse_class\" AS \"warehouse_class\" where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent')) as \"m0\" from \"store\" as \"store\", \"warehouse\" as \"warehouse\" where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
+        String loadCountDistinct_derby3 =
+            "select \"store\".\"store_type\" as \"c0\", count(distinct \"store_id\"+\"warehouse_id\") as \"m0\" from \"store\" as \"store\", \"warehouse\" as \"warehouse\" where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
+        String loadOtherAggs_derby =
+            "select \"store\".\"store_type\" as \"c0\", count((select \"warehouse_class\".\"warehouse_class_id\" AS \"warehouse_class_id\" from \"warehouse_class\" AS \"warehouse_class\" where \"warehouse_class\".\"warehouse_class_id\" = \"warehouse\".\"warehouse_class_id\" and \"warehouse_class\".\"description\" = 'Large Independent')) as \"m0\", count(\"store_id\"+\"warehouse_id\") as \"m1\", count(\"warehouse\".\"stores_id\") as \"m2\" from \"store\" as \"store\", \"warehouse\" as \"warehouse\" where \"warehouse\".\"stores_id\" = \"store\".\"store_id\" group by \"store\".\"store_type\"";
 
         // MySQL does it in one statement.
-        String load_mysql = "select"
+        String load_mysql =
+            "select"
             + " `store`.`store_type` as `c0`,"
             + " count(distinct (select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Owned')) as `m0`,"
             + " count(distinct (select `warehouse_class`.`warehouse_class_id` AS `warehouse_class_id` from `warehouse_class` AS `warehouse_class` where `warehouse_class`.`warehouse_class_id` = `warehouse`.`warehouse_class_id` and `warehouse_class`.`description` = 'Large Independent')) as `m1`,"
@@ -1180,22 +1177,22 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         // solve_order=1 says to aggregate [CA] and [OR] before computing their
         // sums
         assertQueryReturns(
-            "WITH MEMBER [Time].[1997 Q1 plus Q2] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q2]})', solve_order=1\n" +
-                "SELECT {[Measures].[Customer Count]} ON COLUMNS,\n" +
-                "      {[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997 Q1 plus Q2]} ON ROWS\n" +
-                "FROM Sales\n" +
-                "WHERE ([Store].[USA].[CA])",
-            fold("Axis #0:\n" +
-                "{[Store].[All Stores].[USA].[CA]}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Customer Count]}\n" +
-                "Axis #2:\n" +
-                "{[Time].[1997].[Q1]}\n" +
-                "{[Time].[1997].[Q2]}\n" +
-                "{[Time].[1997 Q1 plus Q2]}\n" +
-                "Row #0: 1,110\n" +
-                "Row #1: 1,173\n" +
-                "Row #2: 1,854\n"));
+            "WITH MEMBER [Time].[1997 Q1 plus Q2] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q2]})', solve_order=1\n"
+            + "SELECT {[Measures].[Customer Count]} ON COLUMNS,\n"
+            + "      {[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997 Q1 plus Q2]} ON ROWS\n"
+            + "FROM Sales\n"
+            + "WHERE ([Store].[USA].[CA])",
+            "Axis #0:\n"
+            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "{[Time].[1997 Q1 plus Q2]}\n"
+            + "Row #0: 1,110\n"
+            + "Row #1: 1,173\n"
+            + "Row #2: 1,854\n");
     }
 
     /**
@@ -1204,33 +1201,37 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
      */
     public void testAggregateDistinctCount2() {
         assertQueryReturns(
-            "WITH MEMBER [Time].[1997 Q1 plus July] AS\n" +
-                " 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n" +
-                "SELECT {[Measures].[Unit Sales], [Measures].[Customer Count]} ON COLUMNS,\n" +
-                "      {[Time].[1997].[Q1],\n" +
-                "       [Time].[1997].[Q2],\n" +
-                "       [Time].[1997].[Q3].[7],\n" +
-                "       [Time].[1997 Q1 plus July]} ON ROWS\n" +
-                "FROM Sales\n" +
-                "WHERE ([Store].[USA].[CA])",
-            fold("Axis #0:\n" +
-                "{[Store].[All Stores].[USA].[CA]}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Unit Sales]}\n" +
-                "{[Measures].[Customer Count]}\n" +
-                "Axis #2:\n" +
-                "{[Time].[1997].[Q1]}\n" +
-                "{[Time].[1997].[Q2]}\n" +
-                "{[Time].[1997].[Q3].[7]}\n" +
-                "{[Time].[1997 Q1 plus July]}\n" +
-                "Row #0: 16,890\n" +
-                "Row #0: 1,110\n" +
-                "Row #1: 18,052\n" +
-                "Row #1: 1,173\n" +
-                "Row #2: 5,403\n" +
-                "Row #2: 412\n" + // !!!
-                "Row #3: 22,293\n" + // = 16,890 + 5,403
-                "Row #3: 1,386\n")); // between 1,110 and 1,110 + 412
+            "WITH MEMBER [Time].[1997 Q1 plus July] AS\n"
+            + " 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n"
+            + "SELECT {[Measures].[Unit Sales], [Measures].[Customer Count]} ON COLUMNS,\n"
+            + "      {[Time].[1997].[Q1],\n"
+            + "       [Time].[1997].[Q2],\n"
+            + "       [Time].[1997].[Q3].[7],\n"
+            + "       [Time].[1997 Q1 plus July]} ON ROWS\n"
+            + "FROM Sales\n"
+            + "WHERE ([Store].[USA].[CA])",
+            "Axis #0:\n"
+            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "{[Time].[1997].[Q3].[7]}\n"
+            + "{[Time].[1997 Q1 plus July]}\n"
+            + "Row #0: 16,890\n"
+            + "Row #0: 1,110\n"
+            + "Row #1: 18,052\n"
+            + "Row #1: 1,173\n"
+            + "Row #2: 5,403\n"
+            + "Row #2: 412\n"
+            +
+            // !!!
+            "Row #3: 22,293\n"
+            +
+            // = 16,890 + 5,403
+            "Row #3: 1,386\n"); // between 1,110 and 1,110 + 412
     }
 
     /**
@@ -1238,39 +1239,37 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
      * simultaneously.
      */
     public void testAggregateDistinctCount3() {
-        String mdxQuery = "WITH\n" +
-            "  MEMBER [Promotion Media].[TV plus Radio] AS 'AGGREGATE({[Promotion Media].[TV], [Promotion Media].[Radio]})', solve_order=1\n" +
-            "  MEMBER [Time].[1997 Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n" +
-            "SELECT {[Promotion Media].[TV plus Radio],\n" +
-            "        [Promotion Media].[TV],\n" +
-            "        [Promotion Media].[Radio]} ON COLUMNS,\n" +
-            "       {[Time].[1997],\n" +
-            "        [Time].[1997].[Q1],\n" +
-            "        [Time].[1997 Q1 plus July]} ON ROWS\n" +
-            "FROM Sales\n" +
-            "WHERE [Measures].[Customer Count]";
-
         assertQueryReturns(
-            mdxQuery,
-            fold("Axis #0:\n" +
-                "{[Measures].[Customer Count]}\n" +
-                "Axis #1:\n" +
-                "{[Promotion Media].[TV plus Radio]}\n" +
-                "{[Promotion Media].[All Media].[TV]}\n" +
-                "{[Promotion Media].[All Media].[Radio]}\n" +
-                "Axis #2:\n" +
-                "{[Time].[1997]}\n" +
-                "{[Time].[1997].[Q1]}\n" +
-                "{[Time].[1997 Q1 plus July]}\n" +
-                "Row #0: 455\n" +
-                "Row #0: 274\n" +
-                "Row #0: 186\n" +
-                "Row #1: 139\n" +
-                "Row #1: 99\n" +
-                "Row #1: 40\n" +
-                "Row #2: 139\n" +
-                "Row #2: 99\n" +
-                "Row #2: 40\n"));
+            "WITH\n"
+            + "  MEMBER [Promotion Media].[TV plus Radio] AS 'AGGREGATE({[Promotion Media].[TV], [Promotion Media].[Radio]})', solve_order=1\n"
+            + "  MEMBER [Time].[1997 Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n"
+            + "SELECT {[Promotion Media].[TV plus Radio],\n"
+            + "        [Promotion Media].[TV],\n"
+            + "        [Promotion Media].[Radio]} ON COLUMNS,\n"
+            + "       {[Time].[1997],\n"
+            + "        [Time].[1997].[Q1],\n"
+            + "        [Time].[1997 Q1 plus July]} ON ROWS\n"
+            + "FROM Sales\n"
+            + "WHERE [Measures].[Customer Count]",
+            "Axis #0:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #1:\n"
+            + "{[Promotion Media].[TV plus Radio]}\n"
+            + "{[Promotion Media].[All Media].[TV]}\n"
+            + "{[Promotion Media].[All Media].[Radio]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997]}\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997 Q1 plus July]}\n"
+            + "Row #0: 455\n"
+            + "Row #0: 274\n"
+            + "Row #0: 186\n"
+            + "Row #1: 139\n"
+            + "Row #1: 99\n"
+            + "Row #1: 40\n"
+            + "Row #2: 139\n"
+            + "Row #2: 99\n"
+            + "Row #2: 40\n");
 
         // There are 9 cells in the result. 6 sql statements have to be issued to fetch all
         // of them, with each loading these cells:
@@ -1288,60 +1287,75 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         //
         // (6) ([1997 Q1 Plus July], [TV])
         //     ([1997 Q1 Plus July], [radio])
-        final String oracleSql = "select " +
-            "\"time_by_day\".\"the_year\" as \"c0\", \"time_by_day\".\"quarter\" as \"c1\", " +
-            "\"promotion\".\"media_type\" as \"c2\", " +
-            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from " +
-            "\"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", " +
-            "\"promotion\" \"promotion\" " +
-            "where " +
-            "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and " +
-            "\"time_by_day\".\"the_year\" = 1997 and " +
-            "\"time_by_day\".\"quarter\" = 'Q1' and " +
-            "\"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" and " +
-            "\"promotion\".\"media_type\" in ('Radio', 'TV') " +
-            "group by " +
-            "\"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", " +
-            "\"promotion\".\"media_type\"";
+        final String oracleSql =
+            "select "
+            + "\"time_by_day\".\"the_year\" as \"c0\", \"time_by_day\".\"quarter\" as \"c1\", "
+            + "\"promotion\".\"media_type\" as \"c2\", "
+            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
+            + "from "
+            + "\"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", "
+            + "\"promotion\" \"promotion\" "
+            + "where "
+            + "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and "
+            + "\"time_by_day\".\"the_year\" = 1997 and "
+            + "\"time_by_day\".\"quarter\" = 'Q1' and "
+            + "\"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" and "
+            + "\"promotion\".\"media_type\" in ('Radio', 'TV') "
+            + "group by "
+            + "\"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", "
+            + "\"promotion\".\"media_type\"";
 
         final String mysqlSql =
-            "select " +
-            "`time_by_day`.`the_year` as `c0`, `time_by_day`.`quarter` as `c1`, " +
-            "`promotion`.`media_type` as `c2`, count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
-            "from " +
-            "`time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, " +
-            "`promotion` as `promotion` " +
-            "where " +
-            "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and " +
-            "`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `" +
-            "sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` and " +
-            "`promotion`.`media_type` in ('Radio', 'TV') " +
-            "group by " +
-            "`time_by_day`.`the_year`, `time_by_day`.`quarter`, `promotion`.`media_type`";
+            "select "
+            + "`time_by_day`.`the_year` as `c0`, `time_by_day`.`quarter` as `c1`, "
+            + "`promotion`.`media_type` as `c2`, count(distinct `sales_fact_1997`.`customer_id`) as `m0` "
+            + "from "
+            + "`time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, "
+            + "`promotion` as `promotion` "
+            + "where "
+            + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and "
+            + "`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `"
+            + "sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` and "
+            + "`promotion`.`media_type` in ('Radio', 'TV') "
+            + "group by "
+            + "`time_by_day`.`the_year`, `time_by_day`.`quarter`, `promotion`.`media_type`";
 
         final String derbySql =
-            "select " +
-            "\"time_by_day\".\"the_year\" as \"c0\", \"time_by_day\".\"quarter\" as \"c1\", " +
-            "\"promotion\".\"media_type\" as \"c2\", " +
-            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from " +
-            "\"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
-            "\"promotion\" as \"promotion\" " +
-            "where " +
-            "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and " +
-            "\"time_by_day\".\"the_year\" = 1997 and \"time_by_day\".\"quarter\" = 'Q1' and " +
-            "\"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" and " +
-            "\"promotion\".\"media_type\" in ('Radio', 'TV') " +
-            "group by " +
-            "\"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", " +
-            "\"promotion\".\"media_type\"";
+            "select "
+            + "\"time_by_day\".\"the_year\" as \"c0\", \"time_by_day\".\"quarter\" as \"c1\", "
+            + "\"promotion\".\"media_type\" as \"c2\", "
+            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
+            + "from "
+            + "\"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", "
+            + "\"promotion\" as \"promotion\" "
+            + "where "
+            + "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and "
+            + "\"time_by_day\".\"the_year\" = 1997 and \"time_by_day\".\"quarter\" = 'Q1' and "
+            + "\"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" and "
+            + "\"promotion\".\"media_type\" in ('Radio', 'TV') "
+            + "group by "
+            + "\"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", "
+            + "\"promotion\".\"media_type\"";
 
-        assertQuerySql(mdxQuery, new SqlPattern[] {
-            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oracleSql, oracleSql),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql),
-            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
-        });
+        assertQuerySql(
+            "WITH\n"
+            + "  MEMBER [Promotion Media].[TV plus Radio] AS 'AGGREGATE({[Promotion Media].[TV], [Promotion Media].[Radio]})', solve_order=1\n"
+            + "  MEMBER [Time].[1997 Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n"
+            + "SELECT {[Promotion Media].[TV plus Radio],\n"
+            + "        [Promotion Media].[TV],\n"
+            + "        [Promotion Media].[Radio]} ON COLUMNS,\n"
+            + "       {[Time].[1997],\n"
+            + "        [Time].[1997].[Q1],\n"
+            + "        [Time].[1997 Q1 plus July]} ON ROWS\n"
+            + "FROM Sales\n"
+            + "WHERE [Measures].[Customer Count]", new SqlPattern[]{
+                new SqlPattern(
+                    Dialect.DatabaseProduct.ORACLE, oracleSql, oracleSql),
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql),
+                new SqlPattern(
+                    Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
+            });
     }
 
     /**
@@ -1353,41 +1367,41 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testAggregateDistinctCount4() {
         // CA and USA are overlapping members
         final String mdxQuery =
-            "WITH\n" +
-            "  MEMBER [Store].[CA plus USA] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA]})', solve_order=1\n" +
-            "  MEMBER [Time].[Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n" +
-            "SELECT {[Measures].[Customer Count], [Measures].[Unit Sales]} ON COLUMNS,\n" +
-            "      Union({[Store].[CA plus USA]} * {[Time].[Q1 plus July]}, " +
-            "      Union({[Store].[USA].[CA]} * {[Time].[Q1 plus July]}," +
-            "      Union({[Store].[USA]} * {[Time].[Q1 plus July]}," +
-            "      Union({[Store].[CA plus USA]} * {[Time].[1997].[Q1]}," +
-            "            {[Store].[CA plus USA]} * {[Time].[1997].[Q3].[7]})))) ON ROWS\n" +
-            "FROM Sales";
+            "WITH\n"
+            + "  MEMBER [Store].[CA plus USA] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA]})', solve_order=1\n"
+            + "  MEMBER [Time].[Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n"
+            + "SELECT {[Measures].[Customer Count], [Measures].[Unit Sales]} ON COLUMNS,\n"
+            + "      Union({[Store].[CA plus USA]} * {[Time].[Q1 plus July]}, "
+            + "      Union({[Store].[USA].[CA]} * {[Time].[Q1 plus July]},"
+            + "      Union({[Store].[USA]} * {[Time].[Q1 plus July]},"
+            + "      Union({[Store].[CA plus USA]} * {[Time].[1997].[Q1]},"
+            + "            {[Store].[CA plus USA]} * {[Time].[1997].[Q3].[7]})))) ON ROWS\n"
+            + "FROM Sales";
 
         String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Customer Count]}\n" +
-            "{[Measures].[Unit Sales]}\n" +
-            "Axis #2:\n" +
-            "{[Store].[CA plus USA], [Time].[Q1 plus July]}\n" +
-            "{[Store].[All Stores].[USA].[CA], [Time].[Q1 plus July]}\n" +
-            "{[Store].[All Stores].[USA], [Time].[Q1 plus July]}\n" +
-            "{[Store].[CA plus USA], [Time].[1997].[Q1]}\n" +
-            "{[Store].[CA plus USA], [Time].[1997].[Q3].[7]}\n" +
-            "Row #0: 3,505\n" +
-            "Row #0: 112,347\n" +
-            "Row #1: 1,386\n" +
-            "Row #1: 22,293\n" +
-            "Row #2: 3,505\n" +
-            "Row #2: 90,054\n" +
-            "Row #3: 2,981\n" +
-            "Row #3: 83,181\n" +
-            "Row #4: 1,462\n" +
-            "Row #4: 29,166\n";
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[CA plus USA], [Time].[Q1 plus July]}\n"
+            + "{[Store].[All Stores].[USA].[CA], [Time].[Q1 plus July]}\n"
+            + "{[Store].[All Stores].[USA], [Time].[Q1 plus July]}\n"
+            + "{[Store].[CA plus USA], [Time].[1997].[Q1]}\n"
+            + "{[Store].[CA plus USA], [Time].[1997].[Q3].[7]}\n"
+            + "Row #0: 3,505\n"
+            + "Row #0: 112,347\n"
+            + "Row #1: 1,386\n"
+            + "Row #1: 22,293\n"
+            + "Row #2: 3,505\n"
+            + "Row #2: 90,054\n"
+            + "Row #3: 2,981\n"
+            + "Row #3: 83,181\n"
+            + "Row #4: 1,462\n"
+            + "Row #4: 29,166\n";
 
-        assertQueryReturns(mdxQuery, fold(result));
+        assertQueryReturns(mdxQuery, result);
     }
 
     /**
@@ -1396,39 +1410,39 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
      */
     public void testAggregateDistinctCount5() {
         String query =
-            "With " +
-            "Set [Products] as " +
-            " '{[Product].[All Products].[Drink], " +
-            "   [Product].[All Products].[Food], " +
-            "   [Product].[All Products].[Non-Consumable]}' " +
-            "Member [Product].[Selected Products] as " +
-            " 'Aggregate([Products])', SOLVE_ORDER=2 " +
-            "Select " +
-            " {[Store].[Store State].Members} on rows, " +
-            " {[Measures].[Customer Count]} on columns " +
-            "From [Sales] " +
-            "Where ([Product].[Selected Products])";
+            "With "
+            + "Set [Products] as "
+            + " '{[Product].[All Products].[Drink], "
+            + "   [Product].[All Products].[Food], "
+            + "   [Product].[All Products].[Non-Consumable]}' "
+            + "Member [Product].[Selected Products] as "
+            + " 'Aggregate([Products])', SOLVE_ORDER=2 "
+            + "Select "
+            + " {[Store].[Store State].Members} on rows, "
+            + " {[Measures].[Customer Count]} on columns "
+            + "From [Sales] "
+            + "Where ([Product].[Selected Products])";
 
         String derbySql =
-            "select \"store\".\"store_state\" as \"c0\", " +
-            "\"time_by_day\".\"the_year\" as \"c1\", " +
-            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from \"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
-            "\"time_by_day\" as \"time_by_day\" " +
-            "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-            "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-            "and \"time_by_day\".\"the_year\" = 1997 " +
-            "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
+            "select \"store\".\"store_state\" as \"c0\", "
+            + "\"time_by_day\".\"the_year\" as \"c1\", "
+            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
+            + "from \"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", "
+            + "\"time_by_day\" as \"time_by_day\" "
+            + "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
+            + "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+            + "and \"time_by_day\".\"the_year\" = 1997 "
+            + "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
 
         String mysqlSql =
-            "select `store`.`store_state` as `c0`, `time_by_day`.`the_year` as `c1`, " +
-            "count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
-            "from `store` as `store`, `sales_fact_1997` as `sales_fact_1997`, " +
-            "`time_by_day` as `time_by_day` " +
-            "where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
-            "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-            "and `time_by_day`.`the_year` = 1997 " +
-            "group by `store`.`store_state`, `time_by_day`.`the_year`";
+            "select `store`.`store_state` as `c0`, `time_by_day`.`the_year` as `c1`, "
+            + "count(distinct `sales_fact_1997`.`customer_id`) as `m0` "
+            + "from `store` as `store`, `sales_fact_1997` as `sales_fact_1997`, "
+            + "`time_by_day` as `time_by_day` "
+            + "where `sales_fact_1997`.`store_id` = `store`.`store_id` "
+            + "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
+            + "and `time_by_day`.`the_year` = 1997 "
+            + "group by `store`.`store_state`, `time_by_day`.`the_year`";
 
         SqlPattern[] patterns = {
             new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
@@ -1443,136 +1457,139 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testAggregateDistinctCount6() {
         // CA and USA are overlapping members
         final String mdxQuery =
-            "WITH " +
-            " MEMBER [Store].[Select Region] AS " +
-            " 'AGGREGATE({[Store].[USA].[CA], [Store].[Mexico], [Store].[Canada], [Store].[USA].[OR]})', solve_order=1\n" +
-            " MEMBER [Time].[Select Time Period] AS " +
-            " 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7], [Time].[1997].[Q4], [Time].[1997]})', solve_order=1\n" +
-            "SELECT {[Measures].[Customer Count], [Measures].[Unit Sales]} ON COLUMNS,\n" +
-            "      Union({[Store].[Select Region]} * {[Time].[Select Time Period]}," +
-            "      Union({[Store].[Select Region]} * {[Time].[1997].[Q1]}," +
-            "      Union({[Store].[Select Region]} * {[Time].[1997].[Q3].[7]}," +
-            "      Union({[Store].[Select Region]} * {[Time].[1997].[Q4]}," +
-            "            {[Store].[Select Region]} * {[Time].[1997]})))) " +
-            "ON ROWS\n" +
-            "FROM Sales";
+            "WITH "
+            + " MEMBER [Store].[Select Region] AS "
+            + " 'AGGREGATE({[Store].[USA].[CA], [Store].[Mexico], [Store].[Canada], [Store].[USA].[OR]})', solve_order=1\n"
+            + " MEMBER [Time].[Select Time Period] AS "
+            + " 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7], [Time].[1997].[Q4], [Time].[1997]})', solve_order=1\n"
+            + "SELECT {[Measures].[Customer Count], [Measures].[Unit Sales]} ON COLUMNS,\n"
+            + "      Union({[Store].[Select Region]} * {[Time].[Select Time Period]},"
+            + "      Union({[Store].[Select Region]} * {[Time].[1997].[Q1]},"
+            + "      Union({[Store].[Select Region]} * {[Time].[1997].[Q3].[7]},"
+            + "      Union({[Store].[Select Region]} * {[Time].[1997].[Q4]},"
+            + "            {[Store].[Select Region]} * {[Time].[1997]})))) "
+            + "ON ROWS\n"
+            + "FROM Sales";
 
         String result =
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Customer Count]}\n" +
-            "{[Measures].[Unit Sales]}\n" +
-            "Axis #2:\n" +
-            "{[Store].[Select Region], [Time].[Select Time Period]}\n" +
-            "{[Store].[Select Region], [Time].[1997].[Q1]}\n" +
-            "{[Store].[Select Region], [Time].[1997].[Q3].[7]}\n" +
-            "{[Store].[Select Region], [Time].[1997].[Q4]}\n" +
-            "{[Store].[Select Region], [Time].[1997]}\n" +
-            "Row #0: 3,753\n" +
-            "Row #0: 229,496\n" +
-            "Row #1: 1,877\n" +
-            "Row #1: 36,177\n" +
-            "Row #2: 845\n" +
-            "Row #2: 13,123\n" +
-            "Row #3: 2,073\n" +
-            "Row #3: 37,789\n" +
-            "Row #4: 3,753\n" +
-            "Row #4: 142,407\n";
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Select Region], [Time].[Select Time Period]}\n"
+            + "{[Store].[Select Region], [Time].[1997].[Q1]}\n"
+            + "{[Store].[Select Region], [Time].[1997].[Q3].[7]}\n"
+            + "{[Store].[Select Region], [Time].[1997].[Q4]}\n"
+            + "{[Store].[Select Region], [Time].[1997]}\n"
+            + "Row #0: 3,753\n"
+            + "Row #0: 229,496\n"
+            + "Row #1: 1,877\n"
+            + "Row #1: 36,177\n"
+            + "Row #2: 845\n"
+            + "Row #2: 13,123\n"
+            + "Row #3: 2,073\n"
+            + "Row #3: 37,789\n"
+            + "Row #4: 3,753\n"
+            + "Row #4: 142,407\n";
 
-        assertQueryReturns(mdxQuery, fold(result));
+        assertQueryReturns(mdxQuery, result);
     }
 
     /*
      * Test case for bug 1785406 to fix "query already contains alias" exception.
      *
-     * Note: 1785406 is a regression from checkin 9710. Code changes made in 9710 is no longer
-     * in use(and removed). So this bug will not occur; however, keeping the test case here to
-     * get some coverage for a query with a slicer.
+     * <p>Note: 1785406 is a regression from checkin 9710. Code changes made in
+     * 9710 is no longer in use (and removed). So this bug will not occur;
+     * however, keeping the test case here to get some coverage for a query with
+     * a slicer.
      */
     public void testDistinctCountBug1785406() {
-        String query = "With \n" +
-                "Set [*BASE_MEMBERS_Product] as {[Product].[All Products].[Food].[Deli]}\n" +
-                "Set [*BASE_MEMBERS_Store] as {[Store].[All Stores].[USA].[WA]}\n" +
-                "Member [Product].[*CTX_MEMBER_SEL~SUM] As Aggregate([*BASE_MEMBERS_Product])\n" +
-                "Select\n" +
-                "{[Measures].[Customer Count]} on columns,\n" +
-                "NonEmptyCrossJoin([*BASE_MEMBERS_Store],{([Product].[*CTX_MEMBER_SEL~SUM])})\n" +
-                "on rows\n" +
-                "From [Sales]\n" +
-                "where ([Time].[1997])";
+        String query =
+            "With \n"
+            + "Set [*BASE_MEMBERS_Product] as {[Product].[All Products].[Food].[Deli]}\n"
+            + "Set [*BASE_MEMBERS_Store] as {[Store].[All Stores].[USA].[WA]}\n"
+            + "Member [Product].[*CTX_MEMBER_SEL~SUM] As Aggregate([*BASE_MEMBERS_Product])\n"
+            + "Select\n"
+            + "{[Measures].[Customer Count]} on columns,\n"
+            + "NonEmptyCrossJoin([*BASE_MEMBERS_Store],{([Product].[*CTX_MEMBER_SEL~SUM])})\n"
+            + "on rows\n"
+            + "From [Sales]\n"
+            + "where ([Time].[1997])";
 
-        String expectedResult = "Axis #0:\n" +
-                "{[Time].[1997]}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Customer Count]}\n" +
-                "Axis #2:\n" +
-                "{[Store].[All Stores].[USA].[WA], [Product].[*CTX_MEMBER_SEL~SUM]}\n" +
-                "Row #0: 889\n";
-
-        assertQueryReturns(query, fold(expectedResult));
+        assertQueryReturns(
+            query,
+            "Axis #0:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[USA].[WA], [Product].[*CTX_MEMBER_SEL~SUM]}\n"
+            + "Row #0: 889\n");
 
         String mysqlSql =
-            "select " +
-            "`store`.`store_state` as `c0`, `time_by_day`.`the_year` as `c1`, " +
-            "count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
-            "from " +
-            "`store` as `store`, `sales_fact_1997` as `sales_fact_1997`, " +
-            "`time_by_day` as `time_by_day`, `product_class` as `product_class`, " +
-            "`product` as `product` " +
-            "where " +
-            "`sales_fact_1997`.`store_id` = `store`.`store_id` " +
-            "and `store`.`store_state` = 'WA' " +
-            "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-            "and `time_by_day`.`the_year` = 1997 " +
-            "and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
-            "and `product`.`product_class_id` = `product_class`.`product_class_id` " +
-            "and (`product_class`.`product_department` = 'Deli' " +
-            "and `product_class`.`product_family` = 'Food') " +
-            "group by `store`.`store_state`, `time_by_day`.`the_year`";
+            "select "
+            + "`store`.`store_state` as `c0`, `time_by_day`.`the_year` as `c1`, "
+            + "count(distinct `sales_fact_1997`.`customer_id`) as `m0` "
+            + "from "
+            + "`store` as `store`, `sales_fact_1997` as `sales_fact_1997`, "
+            + "`time_by_day` as `time_by_day`, `product_class` as `product_class`, "
+            + "`product` as `product` "
+            + "where "
+            + "`sales_fact_1997`.`store_id` = `store`.`store_id` "
+            + "and `store`.`store_state` = 'WA' "
+            + "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
+            + "and `time_by_day`.`the_year` = 1997 "
+            + "and `sales_fact_1997`.`product_id` = `product`.`product_id` "
+            + "and `product`.`product_class_id` = `product_class`.`product_class_id` "
+            + "and (`product_class`.`product_department` = 'Deli' "
+            + "and `product_class`.`product_family` = 'Food') "
+            + "group by `store`.`store_state`, `time_by_day`.`the_year`";
 
-        String accessSql = "select `d0` as `c0`," +
-                " `d1` as `c1`," +
-                " count(`m0`) as `c2` " +
-                "from (select distinct `store`.`store_state` as `d0`," +
-                " `time_by_day`.`the_year` as `d1`," +
-                " `sales_fact_1997`.`customer_id` as `m0` " +
-                "from `store` as `store`," +
-                " `sales_fact_1997` as `sales_fact_1997`," +
-                " `time_by_day` as `time_by_day`," +
-                " `product_class` as `product_class`," +
-                " `product` as `product` " +
-                "where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
-                "and `store`.`store_state` = 'WA' " +
-                "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-                "and `time_by_day`.`the_year` = 1997 " +
-                "and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
-                "and `product`.`product_class_id` = `product_class`.`product_class_id` " +
-                "and (`product_class`.`product_department` = 'Deli' " +
-                "and `product_class`.`product_family` = 'Food')) as `dummyname` " +
-                "group by `d0`, `d1`";
+        String accessSql =
+            "select `d0` as `c0`,"
+            + " `d1` as `c1`,"
+            + " count(`m0`) as `c2` "
+            + "from (select distinct `store`.`store_state` as `d0`,"
+            + " `time_by_day`.`the_year` as `d1`,"
+            + " `sales_fact_1997`.`customer_id` as `m0` "
+            + "from `store` as `store`,"
+            + " `sales_fact_1997` as `sales_fact_1997`,"
+            + " `time_by_day` as `time_by_day`,"
+            + " `product_class` as `product_class`,"
+            + " `product` as `product` "
+            + "where `sales_fact_1997`.`store_id` = `store`.`store_id` "
+            + "and `store`.`store_state` = 'WA' "
+            + "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
+            + "and `time_by_day`.`the_year` = 1997 "
+            + "and `sales_fact_1997`.`product_id` = `product`.`product_id` "
+            + "and `product`.`product_class_id` = `product_class`.`product_class_id` "
+            + "and (`product_class`.`product_department` = 'Deli' "
+            + "and `product_class`.`product_family` = 'Food')) as `dummyname` "
+            + "group by `d0`, `d1`";
 
         String derbySql =
-            "select " +
-            "\"store\".\"store_state\" as \"c0\", " +
-            "\"time_by_day\".\"the_year\" as \"c1\", " +
-            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from " +
-            "\"store\" as \"store\", " +
-            "\"sales_fact_1997\" as \"sales_fact_1997\", " +
-            "\"time_by_day\" as \"time_by_day\", " +
-            "\"product_class\" as \"product_class\", " +
-            "\"product\" as \"product\" " +
-            "where " +
-            "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" " +
-            "and \"store\".\"store_state\" = 'WA' " +
-            "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-            "and \"time_by_day\".\"the_year\" = 1997 " +
-            "and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" " +
-            "and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" " +
-            "and (\"product_class\".\"product_department\" = 'Deli' " +
-            "and \"product_class\".\"product_family\" = 'Food') " +
-            "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
+            "select "
+            + "\"store\".\"store_state\" as \"c0\", "
+            + "\"time_by_day\".\"the_year\" as \"c1\", "
+            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
+            + "from "
+            + "\"store\" as \"store\", "
+            + "\"sales_fact_1997\" as \"sales_fact_1997\", "
+            + "\"time_by_day\" as \"time_by_day\", "
+            + "\"product_class\" as \"product_class\", "
+            + "\"product\" as \"product\" "
+            + "where "
+            + "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
+            + "and \"store\".\"store_state\" = 'WA' "
+            + "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+            + "and \"time_by_day\".\"the_year\" = 1997 "
+            + "and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" "
+            + "and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" "
+            + "and (\"product_class\".\"product_department\" = 'Deli' "
+            + "and \"product_class\".\"product_family\" = 'Food') "
+            + "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
             new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
@@ -1584,55 +1601,56 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
     public void testDistinctCountBug1785406_2() {
         String query =
-            "With " +
-            "Member [Product].[x] as 'Aggregate({Gender.CurrentMember})'\n" +
-            "member [Measures].[foo] as '([Product].[x],[Measures].[Customer Count])'\n" +
-            "select Filter([Gender].members,(Not IsEmpty([Measures].[foo]))) on 0 " +
-            "from Sales";
+            "With "
+            + "Member [Product].[x] as 'Aggregate({Gender.CurrentMember})'\n"
+            + "member [Measures].[foo] as '([Product].[x],[Measures].[Customer Count])'\n"
+            + "select Filter([Gender].members,(Not IsEmpty([Measures].[foo]))) on 0 "
+            + "from Sales";
 
-        String expectedResult = "Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Gender].[All Gender]}\n" +
-                "{[Gender].[All Gender].[F]}\n" +
-                "{[Gender].[All Gender].[M]}\n" +
-                "Row #0: 266,773\n" +
-                "Row #0: 131,558\n" +
-                "Row #0: 135,215\n";
-
-        assertQueryReturns(query, fold(expectedResult));
+        assertQueryReturns(
+            query,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 131,558\n"
+            + "Row #0: 135,215\n");
 
         String mysqlSql =
-            "select " +
-            "`time_by_day`.`the_year` as `c0`, " +
-            "count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
-            "from " +
-            "`time_by_day` as `time_by_day`, " +
-            "`sales_fact_1997` as `sales_fact_1997` " +
-            "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-            "and `time_by_day`.`the_year` = 1997 " +
-            "group by `time_by_day`.`the_year`";
+            "select "
+            + "`time_by_day`.`the_year` as `c0`, "
+            + "count(distinct `sales_fact_1997`.`customer_id`) as `m0` "
+            + "from "
+            + "`time_by_day` as `time_by_day`, "
+            + "`sales_fact_1997` as `sales_fact_1997` "
+            + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
+            + "and `time_by_day`.`the_year` = 1997 "
+            + "group by `time_by_day`.`the_year`";
 
-        String accessSql = "select `d0` as `c0`," +
-             " count(`m0`) as `c1` " +
-             "from (select distinct `time_by_day`.`the_year` as `d0`," +
-             " `sales_fact_1997`.`customer_id` as `m0` " +
-             "from `time_by_day` as `time_by_day`, " +
-             "`sales_fact_1997` as `sales_fact_1997` " +
-             "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-             "and `time_by_day`.`the_year` = 1997) as `dummyname` group by `d0`";
+        String accessSql =
+            "select `d0` as `c0`,"
+            + " count(`m0`) as `c1` "
+            + "from (select distinct `time_by_day`.`the_year` as `d0`,"
+            + " `sales_fact_1997`.`customer_id` as `m0` "
+            + "from `time_by_day` as `time_by_day`, "
+            + "`sales_fact_1997` as `sales_fact_1997` "
+            + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
+            + "and `time_by_day`.`the_year` = 1997) as `dummyname` group by `d0`";
 
         String derbySql =
-            "select " +
-            "\"time_by_day\".\"the_year\" as \"c0\", " +
-            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from " +
-            "\"time_by_day\" as \"time_by_day\", " +
-            "\"sales_fact_1997\" as \"sales_fact_1997\" " +
-            "where " +
-            "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" " +
-            "and \"time_by_day\".\"the_year\" = 1997 " +
-            "group by \"time_by_day\".\"the_year\"";
+            "select "
+            + "\"time_by_day\".\"the_year\" as \"c0\", "
+            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
+            + "from "
+            + "\"time_by_day\" as \"time_by_day\", "
+            + "\"sales_fact_1997\" as \"sales_fact_1997\" "
+            + "where "
+            + "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+            + "and \"time_by_day\".\"the_year\" = 1997 "
+            + "group by \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
             new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
@@ -1644,66 +1662,65 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
 
     public void testAggregateDistinctCountInDimensionFilter() {
         String query =
-            "With " +
-            "Set [Products] as '{[Product].[All Products].[Drink], [Product].[All Products].[Food]}' " +
-            "Set [States] as '{[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR]}' " +
-            "Member [Product].[Selected Products] as 'Aggregate([Products])', SOLVE_ORDER=2 " +
-            "Select " +
-            "Filter([States], not IsEmpty([Measures].[Customer Count])) on rows, " +
-            "{[Measures].[Customer Count]} on columns " +
-            "From [Sales] " +
-            "Where ([Product].[Selected Products])";
+            "With "
+            + "Set [Products] as '{[Product].[All Products].[Drink], [Product].[All Products].[Food]}' "
+            + "Set [States] as '{[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR]}' "
+            + "Member [Product].[Selected Products] as 'Aggregate([Products])', SOLVE_ORDER=2 "
+            + "Select "
+            + "Filter([States], not IsEmpty([Measures].[Customer Count])) on rows, "
+            + "{[Measures].[Customer Count]} on columns "
+            + "From [Sales] "
+            + "Where ([Product].[Selected Products])";
 
-        String result =
-            "Axis #0:\n" +
-            "{[Product].[Selected Products]}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Customer Count]}\n" +
-            "Axis #2:\n" +
-            "{[Store].[All Stores].[USA].[CA]}\n" +
-            "{[Store].[All Stores].[USA].[OR]}\n" +
-            "Row #0: 2,692\n" +
-            "Row #1: 1,036\n";
-
-        assertQueryReturns(query, fold(result));
+        assertQueryReturns(
+            query,
+            "Axis #0:\n"
+            + "{[Product].[Selected Products]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "{[Store].[All Stores].[USA].[OR]}\n"
+            + "Row #0: 2,692\n"
+            + "Row #1: 1,036\n");
 
         String mysqlSql =
-            "select " +
-            "`store`.`store_state` as `c0`, `time_by_day`.`the_year` as `c1`, " +
-            "count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
-            "from " +
-            "`store` as `store`, `sales_fact_1997` as `sales_fact_1997`, " +
-            "`time_by_day` as `time_by_day`, `product_class` as `product_class`, " +
-            "`product` as `product` " +
-            "where " +
-            "`sales_fact_1997`.`store_id` = `store`.`store_id` and " +
-            "`store`.`store_state` in ('CA', 'OR') and " +
-            "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and " +
-            "`time_by_day`.`the_year` = 1997 and " +
-            "`sales_fact_1997`.`product_id` = `product`.`product_id` and " +
-            "`product`.`product_class_id` = `product_class`.`product_class_id` and " +
-            "`product_class`.`product_family` in ('Drink', 'Food') " +
-            "group by " +
-            "`store`.`store_state`, `time_by_day`.`the_year`";
+            "select "
+            + "`store`.`store_state` as `c0`, `time_by_day`.`the_year` as `c1`, "
+            + "count(distinct `sales_fact_1997`.`customer_id`) as `m0` "
+            + "from "
+            + "`store` as `store`, `sales_fact_1997` as `sales_fact_1997`, "
+            + "`time_by_day` as `time_by_day`, `product_class` as `product_class`, "
+            + "`product` as `product` "
+            + "where "
+            + "`sales_fact_1997`.`store_id` = `store`.`store_id` and "
+            + "`store`.`store_state` in ('CA', 'OR') and "
+            + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and "
+            + "`time_by_day`.`the_year` = 1997 and "
+            + "`sales_fact_1997`.`product_id` = `product`.`product_id` and "
+            + "`product`.`product_class_id` = `product_class`.`product_class_id` and "
+            + "`product_class`.`product_family` in ('Drink', 'Food') "
+            + "group by "
+            + "`store`.`store_state`, `time_by_day`.`the_year`";
 
         String derbySql =
-            "select " +
-            "\"store\".\"store_state\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", " +
-            "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" " +
-            "from " +
-            "\"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", " +
-            "\"time_by_day\" as \"time_by_day\", \"product_class\" as \"product_class\", " +
-            "\"product\" as \"product\" " +
-            "where " +
-            "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and " +
-            "\"store\".\"store_state\" in ('CA', 'OR') and " +
-            "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and " +
-            "\"time_by_day\".\"the_year\" = 1997 and " +
-            "\"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and " +
-            "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and " +
-            "\"product_class\".\"product_family\" in ('Drink', 'Food') " +
-            "group by " +
-            "\"store\".\"store_state\", \"time_by_day\".\"the_year\"";
+            "select "
+            + "\"store\".\"store_state\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", "
+            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
+            + "from "
+            + "\"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", "
+            + "\"time_by_day\" as \"time_by_day\", \"product_class\" as \"product_class\", "
+            + "\"product\" as \"product\" "
+            + "where "
+            + "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and "
+            + "\"store\".\"store_state\" in ('CA', 'OR') and "
+            + "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and "
+            + "\"time_by_day\".\"the_year\" = 1997 and "
+            + "\"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and "
+            + "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and "
+            + "\"product_class\".\"product_family\" in ('Drink', 'Food') "
+            + "group by "
+            + "\"store\".\"store_state\", \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
             new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),

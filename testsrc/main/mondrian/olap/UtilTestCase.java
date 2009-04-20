@@ -38,18 +38,19 @@ public class UtilTestCase extends TestCase {
     }
 
     public void testParseConnectStringComplex() {
-        Util.PropertyList properties = Util.parseConnectString(
-                "normalProp=value;" +
-                "emptyValue=;" +
-                " spaceBeforeProp=abc;" +
-                " spaceBeforeAndAfterProp =def;" +
-                " space in prop = foo bar ;" +
-                "equalsInValue=foo=bar;" +
-                "semiInProp;Name=value;" +
-                " singleQuotedValue = 'single quoted value ending in space ' ;" +
-                " doubleQuotedValue = \"=double quoted value preceded by equals\" ;" +
-                " singleQuotedValueWithSemi = 'one; two';" +
-                " singleQuotedValueWithSpecials = 'one; two \"three''four=five'");
+        Util.PropertyList properties =
+            Util.parseConnectString(
+                "normalProp=value;"
+                + "emptyValue=;"
+                + " spaceBeforeProp=abc;"
+                + " spaceBeforeAndAfterProp =def;"
+                + " space in prop = foo bar ;"
+                + "equalsInValue=foo=bar;"
+                + "semiInProp;Name=value;"
+                + " singleQuotedValue = 'single quoted value ending in space ' ;"
+                + " doubleQuotedValue = \"=double quoted value preceded by equals\" ;"
+                + " singleQuotedValueWithSemi = 'one; two';"
+                + " singleQuotedValueWithSpecials = 'one; two \"three''four=five'");
         assertEquals(11, properties.list.size());
         String value;
         value = properties.get("normalProp");
@@ -245,7 +246,8 @@ public class UtilTestCase extends TestCase {
     public void testQuoteMdxIdentifier() {
         assertEquals("[San Francisco]", Util.quoteMdxIdentifier("San Francisco"));
         assertEquals("[a [bracketed]] string]", Util.quoteMdxIdentifier("a [bracketed] string"));
-        assertEquals("[Store].[USA].[California]",
+        assertEquals(
+            "[Store].[USA].[California]",
             Util.quoteMdxIdentifier(
                 Arrays.asList(
                     new Id.Segment("Store", Id.Quoting.QUOTED),
@@ -311,7 +313,8 @@ public class UtilTestCase extends TestCase {
             new Id.Segment("string", Id.Quoting.UNQUOTED),
             new Id.Segment("with", Id.Quoting.UNQUOTED),
             new Id.Segment("a [bracket] in it", Id.Quoting.UNQUOTED));
-        assertEquals("[string].[with].[a [bracket]] in it]",
+        assertEquals(
+            "[string].[with].[a [bracket]] in it]",
             Util.implode(nasty));
     }
 
@@ -619,44 +622,42 @@ USA CA Los Angeles           12        34.5         13       35.60
         assertFormat(
             queryString,
             TestContext.Format.TRADITIONAL,
-            TestContext.fold(
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Time].[1997].[Q1], [Measures].[Unit Sales]}\n"
-                + "{[Time].[1997].[Q1], [Measures].[Store Sales]}\n"
-                + "{[Time].[1997].[Q2].[4], [Measures].[Unit Sales]}\n"
-                + "{[Time].[1997].[Q2].[4], [Measures].[Store Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
-                + "{[Store].[All Stores].[USA].[WA].[Seattle]}\n"
-                + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
-                + "Row #0: 6,373\n"
-                + "Row #0: 13,736.97\n"
-                + "Row #0: 1,865\n"
-                + "Row #0: 3,917.49\n"
-                + "Row #1: 6,098\n"
-                + "Row #1: 12,760.64\n"
-                + "Row #1: 2,121\n"
-                + "Row #1: 4,444.06\n"
-                + "Row #2: 439\n"
-                + "Row #2: 936.51\n"
-                + "Row #2: 149\n"
-                + "Row #2: 327.33\n"));
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997].[Q1], [Measures].[Unit Sales]}\n"
+            + "{[Time].[1997].[Q1], [Measures].[Store Sales]}\n"
+            + "{[Time].[1997].[Q2].[4], [Measures].[Unit Sales]}\n"
+            + "{[Time].[1997].[Q2].[4], [Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Seattle]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 6,373\n"
+            + "Row #0: 13,736.97\n"
+            + "Row #0: 1,865\n"
+            + "Row #0: 3,917.49\n"
+            + "Row #1: 6,098\n"
+            + "Row #1: 12,760.64\n"
+            + "Row #1: 2,121\n"
+            + "Row #1: 4,444.06\n"
+            + "Row #2: 439\n"
+            + "Row #2: 936.51\n"
+            + "Row #2: 149\n"
+            + "Row #2: 327.33\n");
 
         // Same query, Rectangular format
         assertFormat(
             queryString,
             TestContext.Format.COMPACT_RECTANGULAR,
-            TestContext.fold(
-                "                     1997       1997        1997       1997\n"
-                + "                     Q1         Q1          Q2         Q2\n"
-                + "                                            4          4\n"
-                + "                     Unit Sales Store Sales Unit Sales Store Sales\n"
-                + "=== == ============= ========== =========== ========== ===========\n"
-                + "USA CA Los Angeles   6,373      13,736.97   1,865      3,917.49\n"
-                + "USA WA Seattle       6,098      12,760.64   2,121      4,444.06\n"
-                + "USA CA San Francisco 439        936.51      149        327.33\n"));
+            "                     1997       1997        1997       1997\n"
+            + "                     Q1         Q1          Q2         Q2\n"
+            + "                                            4          4\n"
+            + "                     Unit Sales Store Sales Unit Sales Store Sales\n"
+            + "=== == ============= ========== =========== ========== ===========\n"
+            + "USA CA Los Angeles   6,373      13,736.97   1,865      3,917.49\n"
+            + "USA WA Seattle       6,098      12,760.64   2,121      4,444.06\n"
+            + "USA CA San Francisco 439        936.51      149        327.33\n");
 
         // Similar query with an 'all' member on rows. Need an extra column.
         assertFormat(
@@ -671,17 +672,16 @@ USA CA Los Angeles           12        34.5         13       35.60
             + "   [Store].[USA].[WA]} on 1\n"
             + "FROM [Sales]",
             TestContext.Format.COMPACT_RECTANGULAR,
-            TestContext.fold(
-                "                              1997       1997        1997       1997\n"
-                + "                              Q1         Q1          Q2         Q2\n"
-                + "                                                     4          4\n"
-                + "                              Unit Sales Store Sales Unit Sales Store Sales\n"
-                + "========== === == =========== ========== =========== ========== ===========\n"
-                + "All Stores                    66,291     139,628.35  20,179     42,878.25\n"
-                + "All Stores USA                66,291     139,628.35  20,179     42,878.25\n"
-                + "All Stores USA CA             16,890     36,175.20   6,382      13,605.89\n"
-                + "All Stores USA CA Los Angeles 6,373      13,736.97   1,865      3,917.49\n"
-                + "All Stores USA WA             30,114     63,282.86   9,896      20,926.37\n"));
+            "                              1997       1997        1997       1997\n"
+            + "                              Q1         Q1          Q2         Q2\n"
+            + "                                                     4          4\n"
+            + "                              Unit Sales Store Sales Unit Sales Store Sales\n"
+            + "========== === == =========== ========== =========== ========== ===========\n"
+            + "All Stores                    66,291     139,628.35  20,179     42,878.25\n"
+            + "All Stores USA                66,291     139,628.35  20,179     42,878.25\n"
+            + "All Stores USA CA             16,890     36,175.20   6,382      13,605.89\n"
+            + "All Stores USA CA Los Angeles 6,373      13,736.97   1,865      3,917.49\n"
+            + "All Stores USA WA             30,114     63,282.86   9,896      20,926.37\n");
 
         // TODO: test with rows axis empty
         // TODO: test with cols axis empty

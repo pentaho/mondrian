@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2005-2005 SAS Institute, Inc.
-// Copyright (C) 2006-2008 Julian Hyde and others
+// Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -41,8 +41,12 @@ public class CompatibilityTest extends FoodMartTestCase {
      */
     public void testCubeCase() {
         String queryFrom = "select {[Measures].[Unit Sales]} on columns from ";
-        String result = "Axis #0:" + nl + "{}" + nl + "Axis #1:" + nl + "{[Measures].[Unit Sales]}"
-                + nl + "Row #0: 266,773" + nl;
+        String result =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: 266,773\n";
 
         assertQueryReturns(queryFrom + "[Sales]", result);
         assertQueryReturns(queryFrom + "[SALES]", result);
@@ -55,8 +59,12 @@ public class CompatibilityTest extends FoodMartTestCase {
      */
     public void testCubeBrackets() {
         String queryFrom = "select {[Measures].[Unit Sales]} on columns from ";
-        String result = "Axis #0:" + nl + "{}" + nl + "Axis #1:" + nl + "{[Measures].[Unit Sales]}"
-                + nl + "Row #0: 266,773" + nl;
+        String result =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: 266,773\n";
 
         assertQueryReturns(queryFrom + "Sales", result);
         assertQueryReturns(queryFrom + "SALES", result);
@@ -68,11 +76,16 @@ public class CompatibilityTest extends FoodMartTestCase {
      * See how we are at diagnosing reserved words.
      */
     public void testReservedWord() {
-        assertAxisThrows("with member [Measures].ordinal as '1'" + nl
+        assertAxisThrows("with member [Measures].ordinal as '1'\n"
                     + " select {[Measures].ordinal} on columns from Sales", "Syntax error");
-        assertQueryReturns("with member [Measures].[ordinal] as '1'" + nl
-                + " select {[Measures].[ordinal]} on columns from Sales", "Axis #0:" + nl + "{}"
-                + nl + "Axis #1:" + nl + "{[Measures].[ordinal]}" + nl + "Row #0: 1" + nl);
+        assertQueryReturns(
+            "with member [Measures].[ordinal] as '1'\n"
+            + " select {[Measures].[ordinal]} on columns from Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[ordinal]}\n"
+            + "Row #0: 1\n");
     }
 
     /**
@@ -133,15 +146,30 @@ public class CompatibilityTest extends FoodMartTestCase {
      * Calculated member names are case insensitive.
      */
     public void testCalculatedMemberCase() {
-        assertQueryReturns("with member [Measures].[CaLc] as '1'" + nl
-                + " select {[Measures].[CaLc]} on columns from Sales", "Axis #0:" + nl + "{}" + nl
-                + "Axis #1:" + nl + "{[Measures].[CaLc]}" + nl + "Row #0: 1" + nl);
-        assertQueryReturns("with member [Measures].[CaLc] as '1'" + nl
-                + " select {[Measures].[cAlC]} on columns from Sales", "Axis #0:" + nl + "{}" + nl
-                + "Axis #1:" + nl + "{[Measures].[CaLc]}" + nl + "Row #0: 1" + nl);
-        assertQueryReturns("with member [mEaSuReS].[CaLc] as '1'" + nl
-                + " select {[MeAsUrEs].[cAlC]} on columns from Sales", "Axis #0:" + nl + "{}" + nl
-                + "Axis #1:" + nl + "{[Measures].[CaLc]}" + nl + "Row #0: 1" + nl);
+        assertQueryReturns(
+            "with member [Measures].[CaLc] as '1'\n"
+            + " select {[Measures].[CaLc]} on columns from Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[CaLc]}\n"
+            + "Row #0: 1\n");
+        assertQueryReturns(
+            "with member [Measures].[CaLc] as '1'\n"
+            + " select {[Measures].[cAlC]} on columns from Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[CaLc]}\n"
+            + "Row #0: 1\n");
+        assertQueryReturns(
+            "with member [mEaSuReS].[CaLc] as '1'\n"
+            + " select {[MeAsUrEs].[cAlC]} on columns from Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[CaLc]}\n"
+            + "Row #0: 1\n");
     }
 
     /**
@@ -155,21 +183,21 @@ public class CompatibilityTest extends FoodMartTestCase {
 
     private void checkSolveOrder(String keyword) {
         assertQueryReturns(
-                "WITH" + nl +
-                "   MEMBER [Store].[StoreCalc] as '0', " + keyword + "=0" + nl +
-                "   MEMBER [Product].[ProdCalc] as '1', " + keyword + "=1" + nl +
-                "SELECT" + nl +
-                "   { [Product].[ProdCalc] } ON columns," + nl +
-                "   { [Store].[StoreCalc] } ON rows" + nl +
-                "FROM Sales",
+            "WITH\n"
+            + "   MEMBER [Store].[StoreCalc] as '0', " + keyword + "=0\n"
+            + "   MEMBER [Product].[ProdCalc] as '1', " + keyword + "=1\n"
+            + "SELECT\n"
+            + "   { [Product].[ProdCalc] } ON columns,\n"
+            + "   { [Store].[StoreCalc] } ON rows\n"
+            + "FROM Sales",
 
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "{[Product].[ProdCalc]}" + nl +
-                "Axis #2:" + nl +
-                "{[Store].[StoreCalc]}" + nl +
-                "Row #0: 1" + nl);
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[ProdCalc]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[StoreCalc]}\n"
+            + "Row #0: 1\n");
     }
 
     /**
@@ -222,50 +250,53 @@ public class CompatibilityTest extends FoodMartTestCase {
         final String cubeName = "Sales_inline";
         TestContext testContext = TestContext.create(
             null,
-            "<Cube name=\"" + cubeName + "\">\n" +
-                "  <Table name=\"sales_fact_1997\"/>\n" +
-                "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
-                "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">\n" +
-                "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">\n" +
-                "      <InlineTable alias=\"alt_promotion\">\n" +
-                "        <ColumnDefs>\n" +
-                "          <ColumnDef name=\"promo_id\" type=\"Numeric\"/>\n" +
-                "          <ColumnDef name=\"promo_name\" type=\"String\"/>\n" +
-                "        </ColumnDefs>\n" +
-                "        <Rows>\n" +
-                "          <Row>\n" +
-                "            <Value column=\"promo_id\">0</Value>\n" +
-                "            <Value column=\"promo_name\">Promo0</Value>\n" +
-                "          </Row>\n" +
-                "          <Row>\n" +
-                "            <Value column=\"promo_id\">1</Value>\n" +
-                "          </Row>\n" +
-                "        </Rows>\n" +
-                "      </InlineTable>\n" +
-                "      <Level name=\"Alternative Promotion\" column=\"promo_name\" uniqueMembers=\"true\"/> \n" +
-                "    </Hierarchy>\n" +
-                "  </Dimension>\n" +
-                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
-                "      formatString=\"Standard\" visible=\"false\"/>\n" +
-                "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
-                "      formatString=\"#,###.00\"/>\n" +
-                "</Cube>",
-            null, null, null, null);
+            "<Cube name=\"" + cubeName + "\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">\n"
+            + "      <InlineTable alias=\"alt_promotion\">\n"
+            + "        <ColumnDefs>\n"
+            + "          <ColumnDef name=\"promo_id\" type=\"Numeric\"/>\n"
+            + "          <ColumnDef name=\"promo_name\" type=\"String\"/>\n"
+            + "        </ColumnDefs>\n"
+            + "        <Rows>\n"
+            + "          <Row>\n"
+            + "            <Value column=\"promo_id\">0</Value>\n"
+            + "            <Value column=\"promo_name\">Promo0</Value>\n"
+            + "          </Row>\n"
+            + "          <Row>\n"
+            + "            <Value column=\"promo_id\">1</Value>\n"
+            + "          </Row>\n"
+            + "        </Rows>\n"
+            + "      </InlineTable>\n"
+            + "      <Level name=\"Alternative Promotion\" column=\"promo_name\" uniqueMembers=\"true\"/> \n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\" visible=\"false\"/>\n"
+            + "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
 
         // This test should work irrespective of the case-sensitivity setting.
         Util.discard(props.CaseSensitive.get());
 
         testContext.assertQueryReturns(
-            "select {[Measures].[Unit Sales]} ON COLUMNS,\n" +
-                "  {[Alternative Promotion].[All Alternative Promotions].[#null]} ON ROWS \n" +
-                "  from [Sales_inline]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Unit Sales]}\n" +
-                "Axis #2:\n" +
-                "{[Alternative Promotion].[All Alternative Promotions].[#null]}\n" +
-                "Row #0: \n"));
+            "select {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            + "  {[Alternative Promotion].[All Alternative Promotions].[#null]} ON ROWS \n"
+            + "  from [Sales_inline]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Alternative Promotion].[All Alternative Promotions].[#null]}\n"
+            + "Row #0: \n");
     }
 
     /**
@@ -285,48 +316,47 @@ public class CompatibilityTest extends FoodMartTestCase {
         final String cubeName = "Sales_inline";
         TestContext testContext = TestContext.create(
             null,
-            "<Cube name=\"" + cubeName + "\">\n" +
-                "  <Table name=\"sales_fact_1997\"/>\n" +
-                "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
-                "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">\n" +
-                "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">\n" +
-                "      <InlineTable alias=\"alt_promotion\">\n" +
-                "        <ColumnDefs>\n" +
-                "          <ColumnDef name=\"promo_id\" type=\"Numeric\"/>\n" +
-                "          <ColumnDef name=\"promo_name\" type=\"String\"/>\n" +
-                "        </ColumnDefs>\n" +
-                "        <Rows>\n" +
-                "          <Row>\n" +
-                "            <Value column=\"promo_id\">0</Value>\n" +
-                "          </Row>\n" +
-                "          <Row>\n" +
-                "            <Value column=\"promo_id\">1</Value>\n" +
-                "            <Value column=\"promo_name\">Promo1</Value>\n" +
-                "          </Row>\n" +
-                "        </Rows>\n" +
-                "      </InlineTable>\n" +
-                "      <Level name=\"Alternative Promotion\" column=\"promo_id\" nameColumn=\"promo_name\" uniqueMembers=\"true\"/> \n" +
-                "    </Hierarchy>\n" +
-                "  </Dimension>\n" +
-                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
-                "      formatString=\"Standard\" visible=\"false\"/>\n" +
-                "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
-                "      formatString=\"#,###.00\"/>\n" +
-                "</Cube>",
-            null, null, null, null);
+            "<Cube name=\"" + cubeName + "\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">\n"
+            + "      <InlineTable alias=\"alt_promotion\">\n"
+            + "        <ColumnDefs>\n"
+            + "          <ColumnDef name=\"promo_id\" type=\"Numeric\"/>\n"
+            + "          <ColumnDef name=\"promo_name\" type=\"String\"/>\n"
+            + "        </ColumnDefs>\n"
+            + "        <Rows>\n"
+            + "          <Row>\n"
+            + "            <Value column=\"promo_id\">0</Value>\n"
+            + "          </Row>\n"
+            + "          <Row>\n"
+            + "            <Value column=\"promo_id\">1</Value>\n"
+            + "            <Value column=\"promo_name\">Promo1</Value>\n"
+            + "          </Row>\n"
+            + "        </Rows>\n"
+            + "      </InlineTable>\n"
+            + "      <Level name=\"Alternative Promotion\" column=\"promo_id\" nameColumn=\"promo_name\" uniqueMembers=\"true\"/> \n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\" visible=\"false\"/>\n"
+            + "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "</Cube>", null, null, null, null);
 
         testContext.assertQueryReturns(
-            "select {" +
-                "[Alternative Promotion].[All Alternative Promotions].[#null], " +
-                "[Alternative Promotion].[All Alternative Promotions].[Promo1]} ON COLUMNS\n" +
-                "from [" + cubeName + "] ",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Alternative Promotion].[All Alternative Promotions].[#null]}\n" +
-                "{[Alternative Promotion].[All Alternative Promotions].[Promo1]}\n" +
-                "Row #0: 195,448\n" +
-                "Row #0: \n"));
+            "select {"
+            + "[Alternative Promotion].[All Alternative Promotions].[#null], "
+            + "[Alternative Promotion].[All Alternative Promotions].[Promo1]} ON COLUMNS\n"
+            + "from [" + cubeName + "] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Alternative Promotion].[All Alternative Promotions].[#null]}\n"
+            + "{[Alternative Promotion].[All Alternative Promotions].[Promo1]}\n"
+            + "Row #0: 195,448\n"
+            + "Row #0: \n");
     }
 
     /**
@@ -344,62 +374,62 @@ public class CompatibilityTest extends FoodMartTestCase {
         final String cubeName = "Store_NullsCollation";
         TestContext testContext = TestContext.create(
             null,
-            "<Cube name=\"" + cubeName + "\">\n" +
-                "  <Table name=\"store\"/>\n" +
-                "  <Dimension name=\"Store\" foreignKey=\"store_id\">\n" +
-                "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n" +
-                "      <Level name=\"Store Name\" column=\"store_name\"  uniqueMembers=\"true\">\n" +
-                "       <OrdinalExpression>\n" +
-                "        <SQL dialect=\"access\">\n" +
-                "           Iif(store_name = 'HQ', null, store_name)\n" +
-                "       </SQL>\n" +
-                "        <SQL dialect=\"oracle\">\n" +
-                "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n" +
-                "       </SQL>\n" +
-                "        <SQL dialect=\"db2\">\n" +
-                "           case \"store\".\"store_name\" when 'HQ' then null else \"store\".\"store_name\" end\n" +
-                "       </SQL>\n" +
-                "        <SQL dialect=\"luciddb\">\n" +
-                "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n" +
-                "       </SQL>\n" +
-                "        <SQL dialect=\"netezza\">\n" +
-                "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n" +
-                "       </SQL>\n" +
-                "        <SQL dialect=\"generic\">\n" +
-                "           case store_name when 'HQ' then null else store_name end\n" +
-                "       </SQL>\n" +
-                "       </OrdinalExpression>\n" +
-                "        <Property name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\"/>\n" +
-                "      </Level>\n" +
-                "    </Hierarchy>\n" +
-                "  </Dimension>\n" +
-                "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n" +
-                "      formatString=\"#,###\"/>\n" +
-                "</Cube>",
+            "<Cube name=\"" + cubeName + "\">\n"
+            + "  <Table name=\"store\"/>\n"
+            + "  <Dimension name=\"Store\" foreignKey=\"store_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "      <Level name=\"Store Name\" column=\"store_name\"  uniqueMembers=\"true\">\n"
+            + "       <OrdinalExpression>\n"
+            + "        <SQL dialect=\"access\">\n"
+            + "           Iif(store_name = 'HQ', null, store_name)\n"
+            + "       </SQL>\n"
+            + "        <SQL dialect=\"oracle\">\n"
+            + "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n"
+            + "       </SQL>\n"
+            + "        <SQL dialect=\"db2\">\n"
+            + "           case \"store\".\"store_name\" when 'HQ' then null else \"store\".\"store_name\" end\n"
+            + "       </SQL>\n"
+            + "        <SQL dialect=\"luciddb\">\n"
+            + "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n"
+            + "       </SQL>\n"
+            + "        <SQL dialect=\"netezza\">\n"
+            + "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n"
+            + "       </SQL>\n"
+            + "        <SQL dialect=\"generic\">\n"
+            + "           case store_name when 'HQ' then null else store_name end\n"
+            + "       </SQL>\n"
+            + "       </OrdinalExpression>\n"
+            + "        <Property name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\"/>\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###\"/>\n"
+            + "</Cube>",
             null, null, null, null);
 
         testContext.assertQueryReturns(
-            "select { [Measures].[Store Sqft] } on columns,\n" +
-                " NON EMPTY topcount(\n" +
-                "    {[Store].[Store Name].members},\n" +
-                "    5,\n" +
-                "    [measures].[store sqft]) on rows\n" +
-                "from [" + cubeName + "] ",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Store Sqft]}\n" +
-                "Axis #2:\n" +
-                "{[Store].[All Stores].[Store 3]}\n" +
-                "{[Store].[All Stores].[Store 18]}\n" +
-                "{[Store].[All Stores].[Store 9]}\n" +
-                "{[Store].[All Stores].[Store 10]}\n" +
-                "{[Store].[All Stores].[Store 20]}\n" +
-                "Row #0: 39,696\n" +
-                "Row #1: 38,382\n" +
-                "Row #2: 36,509\n" +
-                "Row #3: 34,791\n" +
-                "Row #4: 34,452\n"));
+            "select { [Measures].[Store Sqft] } on columns,\n"
+            + " NON EMPTY topcount(\n"
+            + "    {[Store].[Store Name].members},\n"
+            + "    5,\n"
+            + "    [measures].[store sqft]) on rows\n"
+            + "from [" + cubeName + "] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sqft]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[Store 3]}\n"
+            + "{[Store].[All Stores].[Store 18]}\n"
+            + "{[Store].[All Stores].[Store 9]}\n"
+            + "{[Store].[All Stores].[Store 10]}\n"
+            + "{[Store].[All Stores].[Store 20]}\n"
+            + "Row #0: 39,696\n"
+            + "Row #1: 38,382\n"
+            + "Row #2: 36,509\n"
+            + "Row #3: 34,791\n"
+            + "Row #4: 34,452\n");
     }
 
     /**
@@ -444,9 +474,9 @@ public class CompatibilityTest extends FoodMartTestCase {
 
         // Cell properties.
         Result result = executeQuery(
-            "select {[Measures].[Unit Sales],[Measures].[Store Sales]} on columns,\n" +
-                " {[Gender].[M]} on rows\n" +
-                "from Sales");
+            "select {[Measures].[Unit Sales],[Measures].[Store Sales]} on columns,\n"
+            + " {[Gender].[M]} on rows\n"
+            + "from Sales");
         Cell cell = result.getCell(new int[]{0, 0});
         assertEquals("135,215", cell.getPropertyValue("FORMATTED_VALUE"));
         if (caseSensitive) {

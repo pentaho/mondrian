@@ -2,14 +2,11 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 */
 package mondrian.test;
-
-import mondrian.test.ConcurrentMdxTest;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -31,7 +28,7 @@ public class ConcurrentValidatingQueryRunner extends Thread {
     private long mRunTime;
     private long mStartTime;
     private long mStopTime;
-    private volatile List mExceptions = new ArrayList();
+    private volatile List<Throwable> mExceptions = new ArrayList<Throwable>();
     private String threadName;
     private int mRunCount;
     private int mSuccessCount;
@@ -61,9 +58,11 @@ public class ConcurrentValidatingQueryRunner extends Thread {
      *        the runner will circle through queries sequentially
      * @param queriesAndResults The array of pairs of query and expected result
      */
-    public ConcurrentValidatingQueryRunner(int numSeconds,
-                                           boolean useRandomQuery,
-                                           FoodMartTestCase.QueryAndResult[] queriesAndResults) {
+    public ConcurrentValidatingQueryRunner(
+        int numSeconds,
+        boolean useRandomQuery,
+        FoodMartTestCase.QueryAndResult[] queriesAndResults)
+    {
         this.mdxQueries = queriesAndResults;
         mRunTime = numSeconds * 1000;
         mRandomQueries = useRandomQuery;
@@ -84,10 +83,11 @@ public class ConcurrentValidatingQueryRunner extends Thread {
      * @param queriesAndResults The array of pairs of query and expected result
      */
     public ConcurrentValidatingQueryRunner(
-            int numSeconds,
-            boolean useRandomQuery,
-            boolean randomCacheFlush,
-            FoodMartTestCase.QueryAndResult[] queriesAndResults) {
+        int numSeconds,
+        boolean useRandomQuery,
+        boolean randomCacheFlush,
+        FoodMartTestCase.QueryAndResult[] queriesAndResults)
+    {
         this.mdxQueries = queriesAndResults;
         mRunTime = numSeconds * 1000;
         mRandomQueries = useRandomQuery;
@@ -138,9 +138,8 @@ public class ConcurrentValidatingQueryRunner extends Thread {
                 } catch (Exception e) {
                     mExceptions.add(
                         new Exception(
-                            "Exception occurred in iteration " +
-                            mRunCount + " of thread " +
-                            Thread.currentThread().getName(),
+                            "Exception occurred in iteration " + mRunCount
+                            + " of thread " + Thread.currentThread().getName(),
                             e));
                 }
             }
@@ -155,12 +154,15 @@ public class ConcurrentValidatingQueryRunner extends Thread {
     /**
      * Prints result of this test run.
      *
-     * @param out
+     * @param out Output stream
      */
     private void report(PrintStream out) {
         String message = MessageFormat.format(
-                " {0} ran {1} queries, {2} successfully in {3} milliseconds",
-                threadName, mRunCount, mSuccessCount, mStopTime - mStartTime);
+            " {0} ran {1} queries, {2} successfully in {3} milliseconds",
+            threadName,
+            mRunCount,
+            mSuccessCount,
+            mStopTime - mStartTime);
 
         out.println(message);
 
@@ -185,10 +187,13 @@ public class ConcurrentValidatingQueryRunner extends Thread {
      * @param queriesAndResults Array of pairs of query and expected result
      * @return The list of failures
      */
-    static List<Exception> runTest(int numThreads, int runTimeInSeconds,
-                                          boolean randomQueries,
-                                          boolean printReport,
-                                          FoodMartTestCase.QueryAndResult[] queriesAndResults) {
+    static List<Throwable> runTest(
+        int numThreads,
+        int runTimeInSeconds,
+        boolean randomQueries,
+        boolean printReport,
+        FoodMartTestCase.QueryAndResult[] queriesAndResults)
+    {
         return runTest(
             numThreads,
             runTimeInSeconds,
@@ -209,16 +214,17 @@ public class ConcurrentValidatingQueryRunner extends Thread {
      * @param queriesAndResults Array of pairs of query and expected result
      * @return The list of failures
      */
-    static List<Exception> runTest(
-            int numThreads,
-            int runTimeInSeconds,
-            boolean randomQueries,
-            boolean randomCacheFlush,
-            boolean printReport,
-            FoodMartTestCase.QueryAndResult[] queriesAndResults) {
+    static List<Throwable> runTest(
+        int numThreads,
+        int runTimeInSeconds,
+        boolean randomQueries,
+        boolean randomCacheFlush,
+        boolean printReport,
+        FoodMartTestCase.QueryAndResult[] queriesAndResults)
+    {
         ConcurrentValidatingQueryRunner[] runners =
-        new ConcurrentValidatingQueryRunner[numThreads];
-        List<Exception> allExceptions = new ArrayList<Exception>();
+            new ConcurrentValidatingQueryRunner[numThreads];
+        List<Throwable> allExceptions = new ArrayList<Throwable>();
 
         for (int idx = 0; idx < runners.length; idx++) {
             runners[idx] = new ConcurrentValidatingQueryRunner(

@@ -84,104 +84,103 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // 3. Dimnsion [Time] has hierarchies [Time2] and [Time by Week]
         //    (intentionally named hierarchy differently from dimension)
         return TestContext.create(
-            "<Schema name=\"FoodMart\">\n" +
-                "<Cube name=\"Warehouse and Sales\" defaultMeasure=\"Unit Sales\">\n" +
-                "  <Table name=\"sales_fact_1997\" />\n" +
-                "  <Dimension name=\"Store\" foreignKey=\"store_id\">\n" +
-                "    <Hierarchy name=\"Stores\" hasAll=\"true\" primaryKey=\"store_id\">\n" +
-                "      <Table name=\"store\"/>\n" +
-                "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n" +
-                "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\"/>\n" +
-                "      <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\"/>\n" +
-                "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\">\n" +
-                "        <Property name=\"Store Type\" column=\"store_type\"/>\n" +
-                "        <Property name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\"/>\n" +
-                "      </Level>\n" +
-                "    </Hierarchy>\n" +
-                "  </Dimension>\n" +
-                "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n" +
-                "    <Hierarchy hasAll=\"true\" name=\"Time By Week\" primaryKey=\"time_id\" >\n" +
-                "      <Table name=\"time_by_day\"/>\n" +
-                "      <Level name=\"Year2\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n" +
-                "          levelType=\"TimeYears\"/>\n" +
-                "      <Level name=\"Week\" column=\"week_of_year\" type=\"Numeric\" uniqueMembers=\"false\"\n" +
-                "          levelType=\"TimeWeeks\"/>\n" +
-                "      <Level name=\"Date2\" column=\"day_of_month\" uniqueMembers=\"false\" type=\"Numeric\"\n" +
-                "          levelType=\"TimeDays\"/>\n" +
-                "    </Hierarchy>\n" +
-                "    <Hierarchy name=\"Time2\" hasAll=\"false\" primaryKey=\"time_id\">\n" +
-                "      <Table name=\"time_by_day\"/>\n" +
-                "      <Level name=\"Year2\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n" +
-                "          levelType=\"TimeYears\"/>\n" +
-                "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n" +
-                "          levelType=\"TimeQuarters\"/>\n" +
-                "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n" +
-                "          levelType=\"TimeMonths\"/>\n" +
-                "    </Hierarchy>\n" +
-                "  </Dimension>\n" +
-                "  <Dimension name=\"Product\" foreignKey=\"product_id\">\n" +
-                "    <Hierarchy name=\"Products\" hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n" +
-                "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n" +
-                "        <Table name=\"product\"/>\n" +
-                "        <Table name=\"product_class\"/>\n" +
-                "      </Join>\n" +
-                "      <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n" +
-                "          uniqueMembers=\"true\"/>\n" +
-                "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n" +
-                "          uniqueMembers=\"false\"/>\n" +
-                "      <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n" +
-                "          uniqueMembers=\"false\"/>\n" +
-                "      <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n" +
-                "          uniqueMembers=\"false\"/>\n" +
-                "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n" +
-                "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n" +
-                "          uniqueMembers=\"true\"/>\n" +
-                "    </Hierarchy>\n" +
-                "    <Hierarchy name=\"Product Name\" hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n" +
-                "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n" +
-                "        <Table name=\"product\"/>\n" +
-                "        <Table name=\"product_class\"/>\n" +
-                "      </Join>\n" +
-                "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n" +
-                "          uniqueMembers=\"true\"/>\n" +
-                "    </Hierarchy>\n" +
-                "  </Dimension>\n" +
-                "  <Dimension name=\"Promotion\" foreignKey=\"promotion_id\">\n" +
-                "    <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n" +
-                "      <Table name=\"promotion\"/>\n" +
-                "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/>\n" +
-                "    </Hierarchy>\n" +
-                "  </Dimension>\n" +
-                "  <Dimension name=\"Currency\" foreignKey=\"promotion_id\">\n" +
-                "    <Hierarchy hasAll=\"true\" primaryKey=\"promotion_id\">\n" +
-                "      <Table name=\"promotion\"/>\n" +
-                "      <Level name=\"Currency\" column=\"media_type\" uniqueMembers=\"true\"/>\n" +
-                "    </Hierarchy>\n" +
-                "  </Dimension>" +
-//                "  <Dimension name=\"Customer2\" foreignKey=\"promotion_id\">\n" +
-//                "    <Hierarchy hasAll=\"true\" primaryKey=\"promotion_id\">\n" +
-//                "      <Table name=\"promotion\"/>\n" +
-//                "      <Level name=\"Customer\" column=\"media_type\" uniqueMembers=\"true\"/>\n" +
-//                "    </Hierarchy>\n" +
-//                "  </Dimension>" +
-                "  <Dimension name=\"Customer\" foreignKey=\"customer_id\">\n" +
-                "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\">\n" +
-                "      <Table name=\"customer\"/>\n" +
-                "      <Level name=\"Country\" column=\"country\" uniqueMembers=\"true\"/>\n" +
-                "      <Level name=\"State Province\" column=\"state_province\" uniqueMembers=\"true\"/>\n" +
-                "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/>\n" +
-                "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n" +
-                "    </Hierarchy>\n" +
-//                "    <Hierarchy name=\"Gender\" hasAll=\"true\" primaryKey=\"customer_id\">\n" +
-//                "      <Table name=\"customer\"/>\n" +
-//                "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n" +
-//                "    </Hierarchy>\n" +
-                "  </Dimension>" +
-                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
-                "      formatString=\"Standard\"/>\n" +
-                "</Cube>\n" +
-                "</Schema>")
-            .withCube("Warehouse and Sales");
+            "<Schema name=\"FoodMart\">\n"
+            + "<Cube name=\"Warehouse and Sales\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\" />\n"
+            + "  <Dimension name=\"Store\" foreignKey=\"store_id\">\n"
+            + "    <Hierarchy name=\"Stores\" hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "      <Table name=\"store\"/>\n"
+            + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\">\n"
+            + "        <Property name=\"Store Type\" column=\"store_type\"/>\n"
+            + "        <Property name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\"/>\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" name=\"Time By Week\" primaryKey=\"time_id\" >\n"
+            + "      <Table name=\"time_by_day\"/>\n"
+            + "      <Level name=\"Year2\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+            + "          levelType=\"TimeYears\"/>\n"
+            + "      <Level name=\"Week\" column=\"week_of_year\" type=\"Numeric\" uniqueMembers=\"false\"\n"
+            + "          levelType=\"TimeWeeks\"/>\n"
+            + "      <Level name=\"Date2\" column=\"day_of_month\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+            + "          levelType=\"TimeDays\"/>\n"
+            + "    </Hierarchy>\n"
+            + "    <Hierarchy name=\"Time2\" hasAll=\"false\" primaryKey=\"time_id\">\n"
+            + "      <Table name=\"time_by_day\"/>\n"
+            + "      <Level name=\"Year2\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+            + "          levelType=\"TimeYears\"/>\n"
+            + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+            + "          levelType=\"TimeQuarters\"/>\n"
+            + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+            + "          levelType=\"TimeMonths\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Product\" foreignKey=\"product_id\">\n"
+            + "    <Hierarchy name=\"Products\" hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + "        <Table name=\"product\"/>\n"
+            + "        <Table name=\"product_class\"/>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+            + "          uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+            + "          uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "    <Hierarchy name=\"Product Name\" hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + "        <Table name=\"product\"/>\n"
+            + "        <Table name=\"product_class\"/>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+            + "          uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Promotion\" foreignKey=\"promotion_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
+            + "      <Table name=\"promotion\"/>\n"
+            + "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Currency\" foreignKey=\"promotion_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"promotion_id\">\n"
+            + "      <Table name=\"promotion\"/>\n"
+            + "      <Level name=\"Currency\" column=\"media_type\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>"
+            //              + "  <Dimension name=\"Customer2\" foreignKey=\"promotion_id\">\n"
+            //              + "    <Hierarchy hasAll=\"true\" primaryKey=\"promotion_id\">\n"
+            //              + "      <Table name=\"promotion\"/>\n"
+            //              + "      <Level name=\"Customer\" column=\"media_type\" uniqueMembers=\"true\"/>\n"
+            //              + "    </Hierarchy>\n"
+            //              + "  </Dimension>"
+            + "  <Dimension name=\"Customer\" foreignKey=\"customer_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\">\n"
+            + "      <Table name=\"customer\"/>\n"
+            + "      <Level name=\"Country\" column=\"country\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"State Province\" column=\"state_province\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            //              + "    <Hierarchy name=\"Gender\" hasAll=\"true\" primaryKey=\"customer_id\">\n"
+            //              + "      <Table name=\"customer\"/>\n"
+            //              + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
+            //              + "    </Hierarchy>\n"
+            + "  </Dimension>"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube>\n"
+            + "</Schema>").withCube("Warehouse and Sales");
     }
 
     public void testUniqueName() {
@@ -276,8 +275,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // hierarchies;
         // SSAS2005 succeeds
         runQ(
-            "select [Time].[Time by Week].[Week].MEMBERS on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Time].[Time by Week].[Week].MEMBERS on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testDimensionDotHierarchyDotLevel() {
@@ -288,31 +287,31 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // hierarchy
         // SSAS2005 succeeds
         assertQueryReturns(
-            "select [Store].[Stores].[Store State].MEMBERS on 0\n" +
-                "from [Warehouse and Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Store].[Stores].[All Storess].[Canada].[BC]}\n" +
-                "{[Store].[Stores].[All Storess].[Mexico].[DF]}\n" +
-                "{[Store].[Stores].[All Storess].[Mexico].[Guerrero]}\n" +
-                "{[Store].[Stores].[All Storess].[Mexico].[Jalisco]}\n" +
-                "{[Store].[Stores].[All Storess].[Mexico].[Veracruz]}\n" +
-                "{[Store].[Stores].[All Storess].[Mexico].[Yucatan]}\n" +
-                "{[Store].[Stores].[All Storess].[Mexico].[Zacatecas]}\n" +
-                "{[Store].[Stores].[All Storess].[USA].[CA]}\n" +
-                "{[Store].[Stores].[All Storess].[USA].[OR]}\n" +
-                "{[Store].[Stores].[All Storess].[USA].[WA]}\n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #0: 74,748\n" +
-                "Row #0: 67,659\n" +
-                "Row #0: 124,366\n"));
+            "select [Store].[Stores].[Store State].MEMBERS on 0\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Stores].[All Storess].[Canada].[BC]}\n"
+            + "{[Store].[Stores].[All Storess].[Mexico].[DF]}\n"
+            + "{[Store].[Stores].[All Storess].[Mexico].[Guerrero]}\n"
+            + "{[Store].[Stores].[All Storess].[Mexico].[Jalisco]}\n"
+            + "{[Store].[Stores].[All Storess].[Mexico].[Veracruz]}\n"
+            + "{[Store].[Stores].[All Storess].[Mexico].[Yucatan]}\n"
+            + "{[Store].[Stores].[All Storess].[Mexico].[Zacatecas]}\n"
+            + "{[Store].[Stores].[All Storess].[USA].[CA]}\n"
+            + "{[Store].[Stores].[All Storess].[USA].[OR]}\n"
+            + "{[Store].[Stores].[All Storess].[USA].[WA]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 67,659\n"
+            + "Row #0: 124,366\n");
     }
 
     public void testNamingDimensionDotLevel() {
@@ -324,22 +323,22 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // [Time].[Time by Week]; here is no attribute [Time].[Week].)
         // SSAS2005 succeeds
         runQ(
-            "select [Time].[Week].MEMBERS on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Time].[Week].MEMBERS on 0\n"
+            + "from [Warehouse and Sales]");
 
         // [dimension].[level] is valid if level name is unique within all
         // hierarchies. (Note that [Week] is a level in hierarchy
         // [Time].[Time by Week]; here is no attribute [Time].[Week].)
         // SSAS returns "[Time].[Time By Week].[Year2]".
         assertQueryReturns(
-            "with member [Measures].[Foo] as ' [Time].[Year2].UniqueName '\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Foo]}\n" +
-                "Row #0: [Time].[Time By Week].[Year2]\n"));
+            "with member [Measures].[Foo] as ' [Time].[Year2].UniqueName '\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: [Time].[Time By Week].[Year2]\n");
     }
 
     public void testNamingDimensionDotLevel2() {
@@ -353,9 +352,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
 
         // SSAS returns [Time].[Time By Week].[Date2]
         runQ(
-            "with member [Measures].[Foo] as ' [Time].[Date2].UniqueName '\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]");
+            "with member [Measures].[Foo] as ' [Time].[Date2].UniqueName '\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testNamingDimensionDotLevelNotUnique() {
@@ -372,9 +371,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // SSAS2005 returns [Time].[Time By Week].[Year2]
         // (Presumably because it comes first.)
         runQ(
-            "with member [Measures].[Foo] as ' [Time].[Year2].UniqueName '\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]");
+            "with member [Measures].[Foo] as ' [Time].[Year2].UniqueName '\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testDimensionMembersOnSingleHierarchyDimension() {
@@ -382,41 +381,41 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // (and no attributes)
         // SSAS2005 succeeds
         assertQueryReturns(
-            "select [Currency].Members on 0\n" +
-                "from [Warehouse and Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Currency].[All Currencys]}\n" +
-                "{[Currency].[All Currencys].[Bulk Mail]}\n" +
-                "{[Currency].[All Currencys].[Cash Register Handout]}\n" +
-                "{[Currency].[All Currencys].[Daily Paper]}\n" +
-                "{[Currency].[All Currencys].[Daily Paper, Radio]}\n" +
-                "{[Currency].[All Currencys].[Daily Paper, Radio, TV]}\n" +
-                "{[Currency].[All Currencys].[In-Store Coupon]}\n" +
-                "{[Currency].[All Currencys].[No Media]}\n" +
-                "{[Currency].[All Currencys].[Product Attachment]}\n" +
-                "{[Currency].[All Currencys].[Radio]}\n" +
-                "{[Currency].[All Currencys].[Street Handout]}\n" +
-                "{[Currency].[All Currencys].[Sunday Paper]}\n" +
-                "{[Currency].[All Currencys].[Sunday Paper, Radio]}\n" +
-                "{[Currency].[All Currencys].[Sunday Paper, Radio, TV]}\n" +
-                "{[Currency].[All Currencys].[TV]}\n" +
-                "Row #0: 266,773\n" +
-                "Row #0: 4,320\n" +
-                "Row #0: 6,697\n" +
-                "Row #0: 7,738\n" +
-                "Row #0: 6,891\n" +
-                "Row #0: 9,513\n" +
-                "Row #0: 3,798\n" +
-                "Row #0: 195,448\n" +
-                "Row #0: 7,544\n" +
-                "Row #0: 2,454\n" +
-                "Row #0: 5,753\n" +
-                "Row #0: 4,339\n" +
-                "Row #0: 5,945\n" +
-                "Row #0: 2,726\n" +
-                "Row #0: 3,607\n"));
+            "select [Currency].Members on 0\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Currency].[All Currencys]}\n"
+            + "{[Currency].[All Currencys].[Bulk Mail]}\n"
+            + "{[Currency].[All Currencys].[Cash Register Handout]}\n"
+            + "{[Currency].[All Currencys].[Daily Paper]}\n"
+            + "{[Currency].[All Currencys].[Daily Paper, Radio]}\n"
+            + "{[Currency].[All Currencys].[Daily Paper, Radio, TV]}\n"
+            + "{[Currency].[All Currencys].[In-Store Coupon]}\n"
+            + "{[Currency].[All Currencys].[No Media]}\n"
+            + "{[Currency].[All Currencys].[Product Attachment]}\n"
+            + "{[Currency].[All Currencys].[Radio]}\n"
+            + "{[Currency].[All Currencys].[Street Handout]}\n"
+            + "{[Currency].[All Currencys].[Sunday Paper]}\n"
+            + "{[Currency].[All Currencys].[Sunday Paper, Radio]}\n"
+            + "{[Currency].[All Currencys].[Sunday Paper, Radio, TV]}\n"
+            + "{[Currency].[All Currencys].[TV]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 4,320\n"
+            + "Row #0: 6,697\n"
+            + "Row #0: 7,738\n"
+            + "Row #0: 6,891\n"
+            + "Row #0: 9,513\n"
+            + "Row #0: 3,798\n"
+            + "Row #0: 195,448\n"
+            + "Row #0: 7,544\n"
+            + "Row #0: 2,454\n"
+            + "Row #0: 5,753\n"
+            + "Row #0: 4,339\n"
+            + "Row #0: 5,945\n"
+            + "Row #0: 2,726\n"
+            + "Row #0: 3,607\n");
     }
 
     public void testMultipleHierarchyRequiresQualification() {
@@ -429,8 +428,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //   Query (1, 8) The 'Product' dimension contains more than one hierarchy,
         //   therefore the hierarchy must be explicitly specified.
         assertThrows(
-            "select [Product].Members on 0\n" +
-                "from [Warehouse and Sales]",
+            "select [Product].Members on 0\n"
+            + "from [Warehouse and Sales]",
             "The 'Product' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
     }
 
@@ -444,21 +443,21 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // SSAS2005 succeeds
         // Note that 'Product' is the dimension, 'Products' is the hierarchy
         runQ(
-            "select [Products].Members on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Products].Members on 0\n"
+            + "from [Warehouse and Sales]");
 
         runQ(
-            "select {[Products]} on 0\n" +
-                "from [Warehouse and Sales]");
+            "select {[Products]} on 0\n"
+            + "from [Warehouse and Sales]");
 
         // TODO: run this in SSAS
         // [Measures] is both a dimension and a hierarchy;
         // [Products] is just a hierarchy.
         // SSAS returns 557863
         runQ(
-            "select [Measures].[Unit Sales] on 0,\n" +
-                "  [Products].[Food] on 1\n" +
-                "from [Warehouse and Sales]");
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "  [Products].[Food] on 1\n"
+            + "from [Warehouse and Sales]");
     }
 
     /**
@@ -488,20 +487,20 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // TODO: run this in SSAS
         // Ssas2000 disallowed out-of-order axes. Don't know about Ssas2005.
         assertQueryReturns(
-            "select [Measures].[Unit Sales] on 1,\n" +
-                "[Products].Children on 0\n" +
-                "from [Warehouse and Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Product].[Products].[All Productss].[Drink]}\n" +
-                "{[Product].[Products].[All Productss].[Food]}\n" +
-                "{[Product].[Products].[All Productss].[Non-Consumable]}\n" +
-                "Axis #2:\n" +
-                "{[Measures].[Unit Sales]}\n" +
-                "Row #0: 24,597\n" +
-                "Row #0: 191,940\n" +
-                "Row #0: 50,236\n"));
+            "select [Measures].[Unit Sales] on 1,\n"
+            + "[Products].Children on 0\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[Products].[All Productss].[Drink]}\n"
+            + "{[Product].[Products].[All Productss].[Food]}\n"
+            + "{[Product].[Products].[All Productss].[Non-Consumable]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #0: 191,940\n"
+            + "Row #0: 50,236\n");
     }
 
     public void testDimensionMembersRequiresHierarchyQualification() {
@@ -513,8 +512,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //    Query (1, 8) The 'Time' dimension contains more than one hierarchy,
         //    therefore the hierarchy must be explicitly specified.
         assertThrows(
-            "select [Time].Members on 0\n" +
-                "from [Warehouse and Sales]",
+            "select [Time].Members on 0\n"
+            + "from [Warehouse and Sales]",
             "The 'Time' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
     }
 
@@ -538,8 +537,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         };
         for (String s : exprs) {
             assertThrows(
-                "select " + s + " on 0\n" +
-                    "from [Warehouse and Sales]",
+                "select " + s + " on 0\n"
+                + "from [Warehouse and Sales]",
                 "The 'Product' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
         }
     }
@@ -553,19 +552,19 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //   Query (1, 8) The 'Product' dimension contains more than one hierarchy,
         //   therefore the hierarchy must be explicitly specified.
         assertThrows(
-            "select Ascendants([Product]) on 0\n" +
-                "from [Warehouse and Sales]",
+            "select Ascendants([Product]) on 0\n"
+            + "from [Warehouse and Sales]",
             "The 'Product' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
         // Works for [Store], which has only one hierarchy.
         // TODO: check SSAS
         assertQueryReturns(
-            "select Ascendants([Store]) on 0\n" +
-                "from [Warehouse and Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Store].[Stores].[All Storess]}\n" +
-                "Row #0: 266,773\n"));
+            "select Ascendants([Store]) on 0\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Stores].[All Storess]}\n"
+            + "Row #0: 266,773\n");
     }
 
     public void testUnqualifiedHierarchyCurrentMember() {
@@ -575,8 +574,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // [hierarchy].CurrentMember
         // SSAS2005 succeeds
         runQ(
-            "select [Products].CurrentMember on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Products].CurrentMember on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testCannotDistinguishMdxFromSql() {
@@ -584,8 +583,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // SSAS2005 gives error:
         //   Parser: The statement dialect could not be resolved due to ambiguity.
         assertThrows(
-            "select [Time].Members\n" +
-                "from [Warehouse and Sales]",
+            "select [Time].Members\n"
+            + "from [Warehouse and Sales]",
             "Syntax error at line 2, column 2, token 'FROM'");
     }
 
@@ -608,8 +607,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // preference.)
         // SSAS2005 succeeds
         runQ(
-            "select [Store].[Store City].Members on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Store].[Store City].Members on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testAttrHierarchyMemberParent() {
@@ -619,9 +618,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // parent of member of attribute hierarchy
         // SSAS2005 returns "[Store].[Store City].[All]"
         runQ(
-            "with member [Measures].[Foo] as ' [Store].[Store City].[San Francisco].Parent.UniqueName '\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]");
+            "with member [Measures].[Foo] as ' [Store].[Store City].[San Francisco].Parent.UniqueName '\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testAttrHierarchyMemberChildren() {
@@ -631,8 +630,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // children of member of attribute hierarchy
         // SSAS2005 returns empty set
         runQ(
-            "select [Store].[Store City].[San Francisco].Children on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Store].[Store City].[San Francisco].Children on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testAttrHierarchyAllMemberChildren() {
@@ -642,8 +641,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // children of all member of attribute hierarchy
         // SSAS2005 succeeds
         runQ(
-            "select [Store].[Store City].Children on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Store].[Store City].Children on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testAttrHierarchyMemberLevel() {
@@ -653,9 +652,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // level of member of attribute hierarchy
         // SSAS2005 returns "[Store].[Store City].[Store City]"
         runQ(
-            "with member [Measures].[Foo] as [Store].[Store City].[San Francisco].Level.UniqueName\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]");
+            "with member [Measures].[Foo] as [Store].[Store City].[San Francisco].Level.UniqueName\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testAttrHierarchyUniqueName() {
@@ -664,9 +663,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // Returns [Store].[Store City]
         runQ(
-            "with member [Measures].[Foo] as [Store].[Store City].UniqueName\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]");
+            "with member [Measures].[Foo] as [Store].[Store City].UniqueName\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testMemberAddressedByLevelAndKey() {
@@ -676,8 +675,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // [dimension].[hierarchy].[level].&[key]
         // (Returns 31, 5368)
         runQ(
-            "select {[Time].[Time By Week].[Week].[31]} on 0\n" +
-                "from [Warehouse and Sales]");
+            "select {[Time].[Time By Week].[Week].[31]} on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testMemberAddressedByCompoundKey() {
@@ -687,8 +686,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // compound key
         // SSAS2005 returns 1 row
         runQ(
-            "select [Time].[Time By Week].[Year2].[1998].&[30]&[1998] on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Time].[Time By Week].[Year2].[1998].&[30]&[1998] on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testMemberAddressedByPartialCompoundKey() {
@@ -698,8 +697,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // compound key, partially specified
         // SSAS2005 returns 0 rows but no error
         runQ(
-            "select [Time].[Time By Week].[Year2].[1998].&[30] on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Time].[Time By Week].[Year2].[1998].&[30] on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testMemberAddressedByNonUniqueName() {
@@ -710,8 +709,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // [dimension].[hierarchy].[level].[name]
         // SSAS2005 returns first member that matches, 1997.January
         runQ(
-            "select [Time].[Time2].[Month].[January] on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Time].[Time2].[Month].[January] on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testMemberAddressedByLevelAndCompoundKey() {
@@ -720,9 +719,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // SSAS2005 returns [Time].[Time2].[Month].&[1]&[1997]
         runQ(
-            "with member [Measures].[Foo] as ' [Time].[Time2].[Month].[January].UniqueName '\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]");
+            "with member [Measures].[Foo] as ' [Time].[Time2].[Month].[January].UniqueName '\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testMemberAddressedByLevelAndName() {
@@ -732,9 +731,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // similarly
         // [dimension].[level].[member name]
         runQ(
-            "with member [Measures].[Foo] as ' [Store].[Store City].[Month].[January].UniqueName '\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]");
+            "with member [Measures].[Foo] as ' [Store].[Store City].[Month].[January].UniqueName '\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testFoo31() {
@@ -746,8 +745,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //   [Product].[Food].[Dairy]
         //   [Product].[Food].[Dairy].[Dairy]
         runQ(
-            "select Measures on 0,[Product].[Product Department].Members on 1\n" +
-                "from [Warehouse and Sales]");
+            "select Measures on 0,[Product].[Product Department].Members on 1\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testFoo32() {
@@ -759,11 +758,11 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // Food.Dairy and a Drink.Dairy. But behavior is consistent with
         // returning first member that matches.
         runQ(
-            "with member [Measures].[U] as ' [Product].UniqueName '\n" +
-                "    member [Measures].[PU] as ' [Product].Parent.UniqueName '\n" +
-                "select {[Measures].[U], [Measures].[PU]} on 0,\n" +
-                "  [Product].[Dairy] on 1\n" +
-                "from [Warehouse and Sales]");
+            "with member [Measures].[U] as ' [Product].UniqueName '\n"
+            + "    member [Measures].[PU] as ' [Product].Parent.UniqueName '\n"
+            + "select {[Measures].[U], [Measures].[PU]} on 0,\n"
+            + "  [Product].[Dairy] on 1\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testNamingAttrVsLevel() {
@@ -773,16 +772,15 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // [attribute] vs. [level]
         // SSAS2005 succeeds
         runQ(
-            "select [Store City].Members on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Store City].Members on 0\n"
+            + "from [Warehouse and Sales]");
 
         // the attribute hierarchy wins over the level
         // SSAS2005 returns [Store].[Store City]
         assertQueryReturns(
-            "with member [Measures].[Foo] as [Store City].UniqueName\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]",
-            "xxxxx");
+            "with member [Measures].[Foo] as [Store City].UniqueName\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]", "xxxxx");
     }
 
     public void testUnqualifiedLevel() {
@@ -792,8 +790,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // [level]
         // SSAS2005 succeeds
         runQ(
-            "select [Week].Members on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Week].Members on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testDimensionAsScalarExpression() {
@@ -805,9 +803,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //   The  function expects a string or numeric expression for the  argument.
         //    A level expression was used.
         runQ(
-            "with member [Measures].[Foo] as [Date2]\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]");
+            "with member [Measures].[Foo] as [Date2]\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testDimensionWithMultipleHierarchiesDotParent() {
@@ -819,10 +817,10 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //   The 'Product' dimension contains more than one hierarchy, therefore the
         //   hierarchy must be explicitly specified.
         assertThrows(
-            "with member [Measures].[Foo] as ' [Product].Parent.UniqueName '\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]\n" +
-                "where [Product].[Drink].[Beverages]",
+            "with member [Measures].[Foo] as ' [Product].Parent.UniqueName '\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]\n"
+            + "where [Product].[Drink].[Beverages]",
             "The 'Product' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
     }
 
@@ -830,8 +828,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // [dimension.hierarchy] is valid
         // SSAS2005 succeeds
         runQ(
-            "select {[Time.Time By Week].Members} on 0\n" +
-                "from [Warehouse and Sales]");
+            "select {[Time.Time By Week].Members} on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     /**
@@ -852,22 +850,21 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         testContext.assertQueryReturns(
             "select [Store Type 2.Store Type 2].[Store Type].members ON columns "
             + "from [Sales] where [Time].[1997]",
-            fold(
-                "Axis #0:\n"
-                + "{[Time].[1997]}\n"
-                + "Axis #1:\n"
-                + "{[Store Type 2].[All Store Type 2s].[Deluxe Supermarket]}\n"
-                + "{[Store Type 2].[All Store Type 2s].[Gourmet Supermarket]}\n"
-                + "{[Store Type 2].[All Store Type 2s].[HeadQuarters]}\n"
-                + "{[Store Type 2].[All Store Type 2s].[Mid-Size Grocery]}\n"
-                + "{[Store Type 2].[All Store Type 2s].[Small Grocery]}\n"
-                + "{[Store Type 2].[All Store Type 2s].[Supermarket]}\n"
-                + "Row #0: 76,837\n"
-                + "Row #0: 21,333\n"
-                + "Row #0: \n"
-                + "Row #0: 11,491\n"
-                + "Row #0: 6,557\n"
-                + "Row #0: 150,555\n"));
+            "Axis #0:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #1:\n"
+            + "{[Store Type 2].[All Store Type 2s].[Deluxe Supermarket]}\n"
+            + "{[Store Type 2].[All Store Type 2s].[Gourmet Supermarket]}\n"
+            + "{[Store Type 2].[All Store Type 2s].[HeadQuarters]}\n"
+            + "{[Store Type 2].[All Store Type 2s].[Mid-Size Grocery]}\n"
+            + "{[Store Type 2].[All Store Type 2s].[Small Grocery]}\n"
+            + "{[Store Type 2].[All Store Type 2s].[Supermarket]}\n"
+            + "Row #0: 76,837\n"
+            + "Row #0: 21,333\n"
+            + "Row #0: \n"
+            + "Row #0: 11,491\n"
+            + "Row #0: 6,557\n"
+            + "Row #0: 150,555\n");
     }
 
     public void testDimensionDotLevelDotHierarchyInBrackets() {
@@ -876,8 +873,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //   Query (1, 8) The dimension '[Time.Time2.Quarter]' was not found in the
         //   cube when the string, [Time.Time2.Quarter], was parsed.
         assertThrows(
-            "select [Time.Time2.Quarter].Members on 0\n" +
-                "from [Warehouse and Sales]",
+            "select [Time.Time2.Quarter].Members on 0\n"
+            + "from [Warehouse and Sales]",
             "MDX object '[Time.Time2.Quarter]' not found in cube 'Warehouse and Sales'");
     }
 
@@ -887,8 +884,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //  Query (1, 9) The dimension '[Time.Time By Week55]' was not found in the
         //  cube when the string, [Time.Time By Week55], was parsed.
         assertThrows(
-            "select {[Time.Time By Week55].Members} on 0\n" +
-                "from [Warehouse and Sales]",
+            "select {[Time.Time By Week55].Members} on 0\n"
+            + "from [Warehouse and Sales]",
             "MDX object '[Time.Time By Week55]' not found in cube 'Warehouse and Sales'");
     }
 
@@ -897,8 +894,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // SSAS2005 gives similar error to above
         // (The Time dimension has hierarchies called [Time2] and [Time By Day]. but no hierarchy [Time].)
         assertThrows(
-            "select {[Time.Time].Members} on 0\n" +
-                "from [Warehouse and Sales]",
+            "select {[Time.Time].Members} on 0\n"
+            + "from [Warehouse and Sales]",
             "MDX object '[Time.Time]' not found in cube 'Warehouse and Sales'");
     }
 
@@ -915,8 +912,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //  MDX object '[Time].[Time By Week].[Month]' not found in cube 'Warehouse and Sales'
         // which is not good enough.
         runQ(
-            "select [Time].[Time By Week].[Month].Members on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Time].[Time By Week].[Month].Members on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testDimensionDotHierarchyDotLevelMembers() {
@@ -925,8 +922,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // SSAS2005 returns 8 quarters.
         runQ(
-            "select [Time].[Time2].[Quarter].Members on 0\n" +
-                "from [Warehouse and Sales]");
+            "select [Time].[Time2].[Quarter].Members on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testDupHierarchyOnAxes() {
@@ -941,9 +938,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //     [Products] on 1
         //   from [Warehouse and Sales]
         assertThrows(
-            "select {[Products]} on 0,\n" +
-                "  {[Products]} on 1\n" +
-                "from [Warehouse and Sales]",
+            "select {[Products]} on 0,\n"
+            + "  {[Products]} on 1\n"
+            + "from [Warehouse and Sales]",
             "Dimension '[Product]' appears in more than one independent axis.");
     }
 
@@ -962,9 +959,10 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // Dimension is implicitly converted to member
         // so is OK on axis.
-        runQ("select [Product].[Products] on 0,\n" +
-            "[Customer].[Customer] on 1\n" +
-            "from [Warehouse and Sales]");
+        runQ(
+            "select [Product].[Products] on 0,\n"
+            + "[Customer].[Customer] on 1\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testHierarchiesFromSameDimensionOnAxes() {
@@ -974,9 +972,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // different hierarchies from same dimension
         // SSAS2005 succeeds
         runQ(
-            "select [Time].[Time2] on 0,\n" +
-                "  [Time].[Time By Week] on 1\n" +
-                "from [Warehouse and Sales]");
+            "select [Time].[Time2] on 0,\n"
+            + "  [Time].[Time By Week] on 1\n"
+            + "from [Warehouse and Sales]");
     }
 
     // TODO:
@@ -988,10 +986,10 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // SSAS2005 succeeds
         // Note that [Time].[1997] resolves to [Time].[Time2].[1997]
         runQ(
-            "select [Time].[Time2] on 0,\n" +
-                "  [Time].[Time By Week] on 1\n" +
-                "from [Warehouse and Sales]\n" +
-                "where [Time].[1997]");
+            "select [Time].[Time2] on 0,\n"
+            + "  [Time].[Time By Week] on 1\n"
+            + "from [Warehouse and Sales]\n"
+            + "where [Time].[1997]");
     }
 
     // TODO:
@@ -1002,8 +1000,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // crossjoin different hierarchies from same dimension
         // SSAS2005 succeeds
         runQ(
-            "select Crossjoin([Time].[Time By Week].Children, [Time].[Time2].Members) on 0\n" +
-                "from [Warehouse and Sales]");
+            "select Crossjoin([Time].[Time By Week].Children, [Time].[Time2].Members) on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testHierarchyUsedTwiceInCrossjoin() {
@@ -1014,11 +1012,11 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //   Query (2, 4) The Time By Week hierarchy is used more than once in the
         //   Crossjoin function.
         runQ(
-            "select \n" +
-                "   [Time].[Time By Week].Children\n" +
-                "     * [Time].[Time2].Children\n" +
-                "     * [Time].[Time By Week].Children on 0\n" +
-                "from [Warehouse and Sales]");
+            "select \n"
+            + "   [Time].[Time By Week].Children\n"
+            + "     * [Time].[Time2].Children\n"
+            + "     * [Time].[Time By Week].Children on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testAttributeHierarchyUsedTwiceInCrossjoin() {
@@ -1030,12 +1028,12 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //   Query (2, 4) The SKU hierarchy is used more than once in the Crossjoin
         //   function.
         runQ(
-            "select \n" +
-                "   [Product].[SKU].Children\n" +
-                "     * [Product].[Products].Members\n" +
-                "     * [Time].[Time By Week].Children\n" +
-                "     * [Product].[SKU].Members on 0\n" +
-                "from [Warehouse and Sales]");
+            "select \n"
+            + "   [Product].[SKU].Children\n"
+            + "     * [Product].[Products].Members\n"
+            + "     * [Time].[Time By Week].Children\n"
+            + "     * [Product].[SKU].Members on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testFoo50() {
@@ -1046,8 +1044,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // SSAS2005 gives error:
         //    Members belong to different hierarchies in the  function.
         runQ(
-            "select {[Store].[Store Country].[USA], [Store].[Stores].[Store Country].[USA]} on 0\n" +
-                "from [Warehouse and Sales]");
+            "select {[Store].[Store Country].[USA], [Store].[Stores].[Store Country].[USA]} on 0\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testQuoteInStringInQuotedFormula() {
@@ -1055,27 +1053,27 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // Single quote in string
         // SSAS2005 returns 5
         assertQueryReturns(
-            "with member [Measures].[Foo] as ' len(\"can''t\") '\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Foo]}\n" +
-                "Row #0: 5\n"));
+            "with member [Measures].[Foo] as ' len(\"can''t\") '\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: 5\n");
     }
 
     public void testQuoteInStringInUnquotedFormula() {
         // SSAS2005 returns 6
         assertQueryReturns(
-            "with member [Measures].[Foo] as len(\"can''t\")\n" +
-                "select [Measures].[Foo] on 0\n" +
-                "from [Warehouse and Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Foo]}\n" +
-                "Row #0: 6\n"));
+            "with member [Measures].[Foo] as len(\"can''t\")\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: 6\n");
     }
 
     public void testMemberIdentifiedByDimensionAndKey() {
@@ -1086,9 +1084,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // works on SSAS
         // gives {[Washington Berry Juice], 231}
         runQ(
-            "select [Measures].[Unit Sales] on 0,\n" +
-                "[Product].[Products].&[1] on 1\n" +
-                "from [Warehouse and Sales]");
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Product].[Products].&[1] on 1\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testDimensionHierarchyKey() {
@@ -1099,9 +1097,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // works on SSAS
         // gives {[Washington Berry Juice], 231}
         runQ(
-            "select [Measures].[Unit Sales] on 0,\n" +
-                "[Product].[Products].&[1] on 1\n" +
-                "from [Warehouse and Sales]");
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Product].[Products].&[1] on 1\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testCompoundKey() {
@@ -1111,9 +1109,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // compound key
         // succeeds on SSAS
         runQ(
-            "select [Measures].[Unit Sales] on 0,\n" +
-                "[Product].[Products].[Brand].&[43]&[Walrus] on 1\n" +
-                "from [Warehouse and Sales]");
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Product].[Products].[Brand].&[43]&[Walrus] on 1\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testCompoundKeySyntaxError() {
@@ -1122,9 +1120,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // without [] fails on SSAS (syntax error because a number)
         runQ(
-            "select [Measures].[Unit Sales] on 0,\n" +
-                "[Product].[Products].[Brand].&43&[Walrus] on 1\n" +
-                "from [Warehouse and Sales]");
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Product].[Products].[Brand].&43&[Walrus] on 1\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testCompoundKeyString() {
@@ -1133,9 +1131,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // succeeds on SSAS (gives 1 row)
         runQ(
-            "select [Measures].[Unit Sales] on 0,\n" +
-                "[Product].[Products].[Brand].&[43]&Walrus on 1\n" +
-                "from [Warehouse and Sales]");
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Product].[Products].[Brand].&[43]&Walrus on 1\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testFoo56() {
@@ -1144,9 +1142,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // succeeds on SSAS (gives 1 row)
         runQ(
-            "select [Measures].[Unit Sales] on 0,\n" +
-                "[Product].[Products].[Brand].[Walrus] on 1\n" +
-                "from [Warehouse and Sales]");
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Product].[Products].[Brand].[Walrus] on 1\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testKeyNonExistent() {
@@ -1155,9 +1153,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // SSAS gives 0 rows
         runQ(
-            "select [Measures].[Unit Sales] on 0,\n" +
-                "[Product].[Products].[Brand].&[43] on 1\n" +
-                "from [Warehouse and Sales]");
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Product].[Products].[Brand].&[43] on 1\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testAxesLabelsOutOfSequence() {
@@ -1166,16 +1164,16 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // succeeds on SSAS
         assertQueryReturns(
-            "select [Measures].[Unit Sales] on 1,\n" +
-                "[Product].[Products] on 0\n" +
-                "from [Warehouse and Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Product].[Products].[All Productss]}\n" +
-                "Axis #2:\n" +
-                "{[Measures].[Unit Sales]}\n" +
-                "Row #0: 266,773\n"));
+            "select [Measures].[Unit Sales] on 1,\n"
+            + "[Product].[Products] on 0\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[Products].[All Productss]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: 266,773\n");
     }
 
     public void testAxisLabelsNotContiguousFails() {
@@ -1186,11 +1184,11 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //   Query (1, 8) Axis numbers specified in a query must be sequentially
         //   specified, and cannot contain gaps.
         assertThrows(
-            "select [Measures].[Unit Sales] on 1,\n" +
-                "[Product].[Products].Children on 2\n" +
-                "from [Warehouse and Sales]",
-            "Axis numbers specified in a query must be sequentially " +
-                "specified, and cannot contain gaps. Axis 0 (COLUMNS) is missing.");
+            "select [Measures].[Unit Sales] on 1,\n"
+            + "[Product].[Products].Children on 2\n"
+            + "from [Warehouse and Sales]",
+            "Axis numbers specified in a query must be sequentially "
+            + "specified, and cannot contain gaps. Axis 0 (COLUMNS) is missing.");
     }
 
     public void testLotsOfAxes() {
@@ -1204,14 +1202,14 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // SSAS succeeds, although Studio says:
         //   Results cannot be displayed for cellsets with more than two axes.
         runQ(
-            "select [Measures].[Unit Sales] on axis(0),\n" +
-                "[Product].[Products] on rows,\n" +
-                "[Customer].[Customer] on pages,\n" +
-                "[Currency] on 3,\n" +
-                "[Promotion] on axis(4),\n" +
-                "[Time].[Time2] on 5,\n" +
-                "[Time].[Time by Week] on 6\n" +
-                "from [Warehouse and Sales]");
+            "select [Measures].[Unit Sales] on axis(0),\n"
+            + "[Product].[Products] on rows,\n"
+            + "[Customer].[Customer] on pages,\n"
+            + "[Currency] on 3,\n"
+            + "[Promotion] on axis(4),\n"
+            + "[Time].[Time2] on 5,\n"
+            + "[Time].[Time by Week] on 6\n"
+            + "from [Warehouse and Sales]");
     }
 
     public void testOnAxesFails() {
@@ -1219,26 +1217,26 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // SSAS gives:
         //   Query (1, 35) Parser: The syntax for 'axes' is incorrect.
         assertThrows(
-            "select [Measures].[Unit Sales] on axes(0)\n" +
-                "from [Warehouse and Sales]",
+            "select [Measures].[Unit Sales] on axes(0)\n"
+            + "from [Warehouse and Sales]",
             "Syntax error at line 1, column 35, token 'axes'");
     }
 
     public void testOnExpression() {
         // SSAS gives syntax error
         assertThrows(
-            "select [Measures].[Unit Sales] on 0 + 1\n" +
-                "from [Warehouse and Sales]",
+            "select [Measures].[Unit Sales] on 0 + 1\n"
+            + "from [Warehouse and Sales]",
             "Syntax error at line 1, column 37, token '+'");
     }
 
     public void testOnFractionFails() {
         // SSAS gives syntax error
         assertThrows(
-            "select [Measures].[Unit Sales] on 0.4\n" +
-                "from [Warehouse and Sales]",
-            "Invalid axis specification. The axis number must be non-negative" +
-                " integer, but it was 0.4.");
+            "select [Measures].[Unit Sales] on 0.4\n"
+            + "from [Warehouse and Sales]",
+            "Invalid axis specification. The axis number must be non-negative"
+            + " integer, but it was 0.4.");
     }
 
     public void testAxisFunction() {
@@ -1248,11 +1246,11 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             return;
         }
         runQ(
-            "WITH MEMBER MEASURES.AXISDEMO AS\n" +
-                "  SUM(AXIS(1), [Measures].[Unit Sales])\n" +
-                "SELECT {[Measures].[Unit Sales],MEASURES.AXISDEMO} ON 0,\n" +
-                "{[Time].[Time by Week].Children} ON 1\n" +
-                "FROM [Warehouse and Sales]");
+            "WITH MEMBER MEASURES.AXISDEMO AS\n"
+            + "  SUM(AXIS(1), [Measures].[Unit Sales])\n"
+            + "SELECT {[Measures].[Unit Sales],MEASURES.AXISDEMO} ON 0,\n"
+            + "{[Time].[Time by Week].Children} ON 1\n"
+            + "FROM [Warehouse and Sales]");
     }
 
     public void testAxisAppliedToExpr() {
@@ -1264,11 +1262,11 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             return;
         }
         assertQueryReturns(
-            "WITH MEMBER MEASURES.AXISDEMO AS\n" +
-                "  SUM(AXIS(1), [Measures].[Unit Sales])\n" +
-                "SELECT {[Measures].[Unit Sales],MEASURES.AXISDEMO} ON 0,\n" +
-                "{[Time].[Time by Week].Children} ON 1\n" +
-                "FROM [Warehouse and Sales]",
+            "WITH MEMBER MEASURES.AXISDEMO AS\n"
+            + "  SUM(AXIS(1), [Measures].[Unit Sales])\n"
+            + "SELECT {[Measures].[Unit Sales],MEASURES.AXISDEMO} ON 0,\n"
+            + "{[Time].[Time by Week].Children} ON 1\n"
+            + "FROM [Warehouse and Sales]",
             "xxx");
     }
 
@@ -1279,11 +1277,11 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             return;
         }
         assertQueryReturns(
-            "WITH MEMBER MEASURES.AXISDEMO AS\n" +
-                "  SUM(AXIS(0), [Measures].CurrentMember)\n" +
-                "SELECT {[Measures].[Store Sales],MEASURES.AXISDEMO} ON 0,\n" +
-                "{Filter([Time].[Time by Week].Members, Measures.AxisDemo > 0)} ON 1\n" +
-                "FROM [Warehouse and Sales]",
+            "WITH MEMBER MEASURES.AXISDEMO AS\n"
+            + "  SUM(AXIS(0), [Measures].CurrentMember)\n"
+            + "SELECT {[Measures].[Store Sales],MEASURES.AXISDEMO} ON 0,\n"
+            + "{Filter([Time].[Time by Week].Members, Measures.AxisDemo > 0)} ON 1\n"
+            + "FROM [Warehouse and Sales]",
             "xxx");
     }
 
@@ -1296,11 +1294,11 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             return;
         }
         assertThrows(
-            "WITH MEMBER MEASURES.AXISDEMO AS\n" +
-                "  SUM(AXIS(1), [Measures].CurrentMember)\n" +
-                "SELECT {[Measures].[Store Sales],MEASURES.AXISDEMO} ON 0,\n" +
-                "{Filter([Time].[Time by Week].Members, Measures.AxisDemo > 0)} ON 1\n" +
-                "FROM [Warehouse and Sales]",
+            "WITH MEMBER MEASURES.AXISDEMO AS\n"
+            + "  SUM(AXIS(1), [Measures].CurrentMember)\n"
+            + "SELECT {[Measures].[Store Sales],MEASURES.AXISDEMO} ON 0,\n"
+            + "{Filter([Time].[Time by Week].Members, Measures.AxisDemo > 0)} ON 1\n"
+            + "FROM [Warehouse and Sales]",
             "xxx");
     }
 
@@ -1313,11 +1311,11 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             return;
         }
         assertThrows(
-            "WITH MEMBER MEASURES.AXISDEMO AS\n" +
-                "  SUM(AXIS(0), [Measures].CurrentMember)\n" +
-                "SELECT {[Measures].[Store Sales],MEASURES.AXISDEMO} ON 1,\n" +
-                "{Filter([Time].[Time by Week].Members, Measures.AxisDemo > 0)} ON 0\n" +
-                "FROM [Warehouse and Sales]",
+            "WITH MEMBER MEASURES.AXISDEMO AS\n"
+            + "  SUM(AXIS(0), [Measures].CurrentMember)\n"
+            + "SELECT {[Measures].[Store Sales],MEASURES.AXISDEMO} ON 1,\n"
+            + "{Filter([Time].[Time by Week].Members, Measures.AxisDemo > 0)} ON 0\n"
+            + "FROM [Warehouse and Sales]",
             "xxx");
     }
 
@@ -1332,11 +1330,11 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             return;
         }
         assertQueryReturns(
-            "WITH MEMBER MEASURES.AXISDEMO AS\n" +
-                "  SUM(AXIS(1), [Measures].CurrentMember)\n" +
-                "SELECT {[Measures].[Store Sales],MEASURES.AXISDEMO} ON 1,\n" +
-                "{Filter([Time].[Time by Week].Members, Measures.AxisDemo > 0)} ON 0\n" +
-                "FROM [Warehouse and Sales]",
+            "WITH MEMBER MEASURES.AXISDEMO AS\n"
+            + "  SUM(AXIS(1), [Measures].CurrentMember)\n"
+            + "SELECT {[Measures].[Store Sales],MEASURES.AXISDEMO} ON 1,\n"
+            + "{Filter([Time].[Time by Week].Members, Measures.AxisDemo > 0)} ON 0\n"
+            + "FROM [Warehouse and Sales]",
             "xxx");
     }
 
@@ -1350,9 +1348,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             return;
         }
         assertThrows(
-            "SELECT [Measures].[Store Sales] ON 1,\n" +
-                "{Filter([Time].[Time by Week].Members, SUM(AXIS(0), [Measures].CurrentMember) > 0)} ON 0\n" +
-                "FROM [Warehouse and Sales]",
+            "SELECT [Measures].[Store Sales] ON 1,\n"
+            + "{Filter([Time].[Time by Week].Members, SUM(AXIS(0), [Measures].CurrentMember) > 0)} ON 0\n"
+            + "FROM [Warehouse and Sales]",
             "xxx cyclic something");
     }
 

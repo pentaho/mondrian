@@ -91,42 +91,50 @@ public class BitKeyTest extends TestCase {
     public void testSizeTypes() {
         int size = 0;
         BitKey bitKey = BitKey.Factory.makeBitKey(size);
-        assertTrue("BitKey size " + size + " not BitKey.Small",
+        assertTrue(
+            "BitKey size " + size + " not BitKey.Small",
             (bitKey.getClass() == BitKey.Small.class));
 
         size = 63;
         bitKey = BitKey.Factory.makeBitKey(size);
-        assertTrue("BitKey size " + size + " not BitKey.Small",
+        assertTrue(
+            "BitKey size " + size + " not BitKey.Small",
             (bitKey.getClass() == BitKey.Small.class));
 
         size = 64;
         bitKey = BitKey.Factory.makeBitKey(size);
-        assertTrue("BitKey size " + size + " not BitKey.Mid128",
+        assertTrue(
+            "BitKey size " + size + " not BitKey.Mid128",
             (bitKey.getClass() == BitKey.Mid128.class));
 
         size = 65;
         bitKey = BitKey.Factory.makeBitKey(size);
-        assertTrue("BitKey size " + size + " not BitKey.Mid128",
+        assertTrue(
+            "BitKey size " + size + " not BitKey.Mid128",
             (bitKey.getClass() == BitKey.Mid128.class));
 
         size = 127;
         bitKey = BitKey.Factory.makeBitKey(size);
-        assertTrue("BitKey size " + size + " not BitKey.Mid128",
+        assertTrue(
+            "BitKey size " + size + " not BitKey.Mid128",
             (bitKey.getClass() == BitKey.Mid128.class));
 
         size = 128;
         bitKey = BitKey.Factory.makeBitKey(size);
-        assertTrue("BitKey size " + size + " not BitKey.Big",
+        assertTrue(
+            "BitKey size " + size + " not BitKey.Big",
             (bitKey.getClass() == BitKey.Big.class));
 
         size = 129;
         bitKey = BitKey.Factory.makeBitKey(size);
-        assertTrue("BitKey size " + size + " not BitKey.Big",
+        assertTrue(
+            "BitKey size " + size + " not BitKey.Big",
             (bitKey.getClass() == BitKey.Big.class));
 
         size = 1280;
         bitKey = BitKey.Factory.makeBitKey(size);
-        assertTrue("BitKey size " + size + " not BitKey.Big",
+        assertTrue(
+            "BitKey size " + size + " not BitKey.Big",
             (bitKey.getClass() == BitKey.Big.class));
     }
 
@@ -280,12 +288,14 @@ public class BitKeyTest extends TestCase {
         BitKey bitKey0 = makeAndSet(size0, positions0);
         bitKey0.clear();
 
-        assertTrue("BitKey 0 not equals after clear to 0",
-                (bitKey0.equals(bitKey_0)));
-        assertTrue("BitKey 0 not equals after clear to 64",
-                (bitKey0.equals(bitKey_64)));
-        assertTrue("BitKey 0 not equals after clear to 128",
-                (bitKey0.equals(bitKey_128)));
+        assertTrue(
+            "BitKey 0 not equals after clear to 0", (bitKey0.equals(bitKey_0)));
+        assertTrue(
+            "BitKey 0 not equals after clear to 64",
+            (bitKey0.equals(bitKey_64)));
+        assertTrue(
+            "BitKey 0 not equals after clear to 128",
+            (bitKey0.equals(bitKey_128)));
 
         int size1 = 68;
         int[] positions1 = {
@@ -294,12 +304,14 @@ public class BitKeyTest extends TestCase {
         BitKey bitKey1 = makeAndSet(size1, positions1);
         bitKey1.clear();
 
-        assertTrue("BitKey 1 not equals after clear to 0",
-                (bitKey1.equals(bitKey_0)));
-        assertTrue("BitKey 1 not equals after clear to 64",
-                (bitKey1.equals(bitKey_64)));
-        assertTrue("BitKey 1 not equals after clear to 128",
-                (bitKey1.equals(bitKey_128)));
+        assertTrue(
+            "BitKey 1 not equals after clear to 0", (bitKey1.equals(bitKey_0)));
+        assertTrue(
+            "BitKey 1 not equals after clear to 64",
+            (bitKey1.equals(bitKey_64)));
+        assertTrue(
+            "BitKey 1 not equals after clear to 128",
+            (bitKey1.equals(bitKey_128)));
 
         int size2 = 400;
         int[] positions2 = {
@@ -308,12 +320,14 @@ public class BitKeyTest extends TestCase {
         BitKey bitKey2 = makeAndSet(size2, positions2);
         bitKey2.clear();
 
-        assertTrue("BitKey 2 not equals after clear to 0",
-                (bitKey2.equals(bitKey_0)));
-        assertTrue("BitKey 2 not equals after clear to 64",
-                (bitKey2.equals(bitKey_64)));
-        assertTrue("BitKey 2 not equals after clear to 128",
-                (bitKey2.equals(bitKey_128)));
+        assertTrue(
+            "BitKey 2 not equals after clear to 0", (bitKey2.equals(bitKey_0)));
+        assertTrue(
+            "BitKey 2 not equals after clear to 64",
+            (bitKey2.equals(bitKey_64)));
+        assertTrue(
+            "BitKey 2 not equals after clear to 128",
+            (bitKey2.equals(bitKey_128)));
     }
 
     public void testNewBitKeyIsTheSameAsAClearedBitKey() {
@@ -345,11 +359,11 @@ public class BitKeyTest extends TestCase {
         };
         BitKey bitKey1 = makeAndSet(size1, positions1);
 
-        assertTrue("BitKey 1 not subset of 0",
-                (bitKey0.isSuperSetOf(bitKey1)));
+        assertTrue(
+            "BitKey 1 not subset of 0", (bitKey0.isSuperSetOf(bitKey1)));
 
-        assertTrue("BitKey 0 is subset of 1",
-                (! bitKey1.isSuperSetOf(bitKey0)));
+        assertTrue(
+            "BitKey 0 is subset of 1", (!bitKey1.isSuperSetOf(bitKey0)));
 
         int size2 = 65;
         int[] positions2 = {
@@ -357,15 +371,15 @@ public class BitKeyTest extends TestCase {
         };
         BitKey bitKey2 = makeAndSet(size2, positions2);
 
-        assertTrue("BitKey 0 not subset of 2",
-                (bitKey2.isSuperSetOf(bitKey0)));
-        assertTrue("BitKey 1 not subset of 2",
-                (bitKey2.isSuperSetOf(bitKey1)));
+        assertTrue(
+            "BitKey 0 not subset of 2", (bitKey2.isSuperSetOf(bitKey0)));
+        assertTrue(
+            "BitKey 1 not subset of 2", (bitKey2.isSuperSetOf(bitKey1)));
 
-        assertTrue("BitKey 2 is subset of 0",
-                (! bitKey0.isSuperSetOf(bitKey2)));
-        assertTrue("BitKey 2 is subset of 1",
-                (! bitKey1.isSuperSetOf(bitKey2)));
+        assertTrue(
+            "BitKey 2 is subset of 0", (!bitKey0.isSuperSetOf(bitKey2)));
+        assertTrue(
+            "BitKey 2 is subset of 1", (!bitKey1.isSuperSetOf(bitKey2)));
 
 
         int size3 = 213;
@@ -374,19 +388,19 @@ public class BitKeyTest extends TestCase {
         };
         BitKey bitKey3 = makeAndSet(size3, positions3);
 
-        assertTrue("BitKey 0 not subset of 3",
-                (bitKey3.isSuperSetOf(bitKey0)));
-        assertTrue("BitKey 1 not subset of 3",
-                (bitKey3.isSuperSetOf(bitKey1)));
-        assertTrue("BitKey 2 not subset of 3",
-                (bitKey3.isSuperSetOf(bitKey2)));
+        assertTrue(
+            "BitKey 0 not subset of 3", (bitKey3.isSuperSetOf(bitKey0)));
+        assertTrue(
+            "BitKey 1 not subset of 3", (bitKey3.isSuperSetOf(bitKey1)));
+        assertTrue(
+            "BitKey 2 not subset of 3", (bitKey3.isSuperSetOf(bitKey2)));
 
-        assertTrue("BitKey 3 is subset of 0",
-                (! bitKey0.isSuperSetOf(bitKey3)));
-        assertTrue("BitKey 3 is subset of 1",
-                (! bitKey1.isSuperSetOf(bitKey3)));
-        assertTrue("BitKey 3 is subset of 2",
-                (! bitKey2.isSuperSetOf(bitKey3)));
+        assertTrue(
+            "BitKey 3 is subset of 0", (!bitKey0.isSuperSetOf(bitKey3)));
+        assertTrue(
+            "BitKey 3 is subset of 1", (!bitKey1.isSuperSetOf(bitKey3)));
+        assertTrue(
+            "BitKey 3 is subset of 2", (!bitKey2.isSuperSetOf(bitKey3)));
     }
 
     /**
@@ -764,9 +778,9 @@ public class BitKeyTest extends TestCase {
             BitKey bitKey0 = makeAndSet(size0, positions);
             BitKey bitKey1 = makeAndSet(size1, positions);
 
-            assertTrue("BitKey not equals size0=" + size0 +
-                ", size1=" + size1 +
-                ", i=" + i,
+            assertTrue(
+                "BitKey not equals size0=" + size0 + ", size1=" + size1 + ", i="
+                + i,
                 (bitKey0.equals(bitKey1)));
         }
     }
@@ -780,9 +794,9 @@ public class BitKeyTest extends TestCase {
         BitKey bitKey0 = makeAndSet(size0, positions0);
         BitKey bitKey1 = makeAndSet(size1, positions1);
 
-        assertTrue("BitKey not equals size0=" + size0 +
-                ", size1=" + size1,
-                (! bitKey0.equals(bitKey1)));
+        assertTrue(
+            "BitKey not equals size0=" + size0 + ", size1=" + size1,
+            (!bitKey0.equals(bitKey1)));
     }
 
     private static BitKey makeAndSet(int size, int[] positions) {

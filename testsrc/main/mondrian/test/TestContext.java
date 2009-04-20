@@ -340,8 +340,9 @@ public class TestContext {
 
         // Add virtual cube definitions, if specified.
         if (virtualCubeDefs != null) {
-            int i = s.indexOf("<VirtualCube name=\"Warehouse and Sales\" " +
-                    "defaultMeasure=\"Store Sales\">");
+            int i = s.indexOf(
+                "<VirtualCube name=\"Warehouse and Sales\" "
+                + "defaultMeasure=\"Store Sales\">");
             s = s.substring(0, i) +
                 virtualCubeDefs +
                 s.substring(i);
@@ -593,10 +594,10 @@ public class TestContext {
             }
             expression = Util.replace(expression, "'", "''");
             Result result = executeQuery(
-                "with member [Measures].[Foo] as '" +
-                    expression +
-                    "' select {[Measures].[Foo]} on columns from " +
-                    cubeName);
+                "with member [Measures].[Foo] as '"
+                + expression
+                + "' select {[Measures].[Foo]} on columns from "
+                + cubeName);
             Cell cell = result.getCell(new int[]{0});
             if (cell.isError()) {
                 throwable = (Throwable) cell.getValue();
@@ -643,9 +644,10 @@ public class TestContext {
         if (cubeName.indexOf(' ') >= 0) {
             cubeName = Util.quoteMdxIdentifier(cubeName);
         }
-        final String queryString = "with member [Measures].[Foo] as " +
-            Util.singleQuoteString(expression) +
-            " select {[Measures].[Foo]} on columns from " + cubeName;
+        final String queryString =
+            "with member [Measures].[Foo] as "
+            + Util.singleQuoteString(expression)
+            + " select {[Measures].[Foo]} on columns from " + cubeName;
         Result result = executeQuery(queryString);
         return result.getCell(new int[]{0});
     }
@@ -787,9 +789,10 @@ public class TestContext {
         }
         final String queryString;
         if (scalar) {
-            queryString = "with member [Measures].[Foo] as " +
-                    Util.singleQuoteString(expression) +
-                    " select {[Measures].[Foo]} on columns from " + cubeName;
+            queryString =
+                "with member [Measures].[Foo] as "
+                + Util.singleQuoteString(expression)
+                + " select {[Measures].[Foo]} on columns from " + cubeName;
         } else {
             queryString = "SELECT {" + expression + "} ON COLUMNS FROM " + cubeName;
         }
@@ -839,8 +842,8 @@ public class TestContext {
             return member;
         default:
             throw Util.newInternal(
-                    "expression " + expression + " yielded " +
-                    axis.getPositions().size() + " positions");
+                "expression " + expression
+                + " yielded " + axis.getPositions().size() + " positions");
         }
     }
 
@@ -850,8 +853,8 @@ public class TestContext {
      */
     public Axis executeAxis(String expression) {
         Result result = executeQuery(
-                "select {" + expression + "} on columns from " +
-                getDefaultCubeName());
+            "select {" + expression
+            + "} on columns from " + getDefaultCubeName());
         return result.getAxes()[0];
     }
 
@@ -919,16 +922,17 @@ public class TestContext {
     public void assertSimpleQuery() {
         assertQueryReturns(
             "select from [Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "266,773"));
+            "Axis #0:\n"
+            + "{}\n"
+            + "266,773");
     }
 
     /**
      * Checks that an actual string matches an expected string.
-     * If they do not, throws a {@link junit.framework.ComparisonFailure} and prints the
-     * difference, including the actual string as an easily pasted Java string
-     * literal.
+     *
+     * <p>If they do not, throws a {@link junit.framework.ComparisonFailure} and
+     * prints the difference, including the actual string as an easily pasted
+     * Java string literal.
      */
     public static void assertEqualsVerbose(
         String expected,
@@ -939,9 +943,16 @@ public class TestContext {
 
     /**
      * Checks that an actual string matches an expected string.
-     * If they do not, throws a {@link ComparisonFailure} and prints the
+     *
+     * <p>If they do not, throws a {@link ComparisonFailure} and prints the
      * difference, including the actual string as an easily pasted Java string
      * literal.
+     *
+     * @param expected Expected string
+     * @param actual Actual string
+     * @param java Whether to generate actual string as a Java string literal
+     * if the values are not equal
+     * @param message Message to display, optional
      */
     public static void assertEqualsVerbose(
         String expected,
@@ -949,6 +960,31 @@ public class TestContext {
         boolean java,
         String message)
     {
+        assertEqualsVerbose(
+            fold(expected), actual, java, message);
+    }
+
+    /**
+     * Checks that an actual string matches an expected string.
+     *
+     * <p>If they do not, throws a {@link ComparisonFailure} and prints the
+     * difference, including the actual string as an easily pasted Java string
+     * literal.
+     *
+     * @param safeExpected Expected string, where all line endings have been
+     * converted into platform-specific line endings
+     * @param actual Actual string
+     * @param java Whether to generate actual string as a Java string literal
+     * if the values are not equal
+     * @param message Message to display, optional
+     */
+    public static void assertEqualsVerbose(
+        SafeString safeExpected,
+        String actual,
+        boolean java,
+        String message)
+    {
+        String expected = safeExpected == null ? null : safeExpected.s;
         if ((expected == null) && (actual == null)) {
             return;
         }
@@ -1119,34 +1155,54 @@ public class TestContext {
     }
 
     /**
-     * Converts an array of strings, each representing a line, into a single
-     * string with line separators. There is no line separator after the
-     * last string.
+     * Wrapper around a string that indicates that all line endings have been
+     * converted to platform-specific line endings.
      *
-     * <p>This function exists because line separators are platform dependent,
-     * and IDEs such as Intellij handle large string arrays much better than
-     * they handle concatenations of large numbers of string fragments.
+     * @see TestContext#fold
      */
-    public static String fold(String[] strings) {
-        StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < strings.length; i++) {
-            if (i > 0) {
-                buf.append(nl);
-            }
-            String string = strings[i];
-            buf.append(string);
+    public static class SafeString {
+        public final String s;
+
+        private SafeString(String s) {
+            this.s = s;
         }
-        return buf.toString();
     }
 
     /**
-     * Converts a string constant into locale-specific line endings.
+     * Converts a string constant into platform-specific line endings.
+     *
+     * @param string String where line endings are represented as linefeed "\n"
+     * @return String where all linefeeds have been converted to
+     * platform-specific (CR+LF on Windows, LF on Unix/Linux)
      */
-    public static String fold(String string) {
+    public static SafeString fold(String string) {
         if (!nl.equals("\n")) {
             string = Util.replace(string, "\n", nl);
         }
-        return string;
+        if (string == null) {
+            return null;
+        } else {
+            return new SafeString(string);
+        }
+    }
+
+    /**
+     * Reverses the effect of {@link #fold}; converts platform-specific line
+     * endings in a string info linefeeds.
+     *
+     * @param string String where all linefeeds have been converted to
+     * platform-specific (CR+LF on Windows, LF on Unix/Linux)
+     * @return String where line endings are represented as linefeed "\n"
+     */
+    public static String unfold(String string) {
+        if (!nl.equals("\n")) {
+            string = Util.replace(string, nl, "\n");
+        }
+        if (string == null) {
+            return null;
+        } else {
+            return string;
+        }
     }
 
     public synchronized Dialect getDialect() {
@@ -1411,9 +1467,9 @@ public class TestContext {
         // Use a fresh connection, because some tests define their own dims.
         final Connection connection = getFoodMartConnection();
         final String queryString =
-                "WITH MEMBER [Measures].[Foo] AS " +
-                Util.singleQuoteString(expr) +
-                " SELECT FROM [Sales]";
+            "WITH MEMBER [Measures].[Foo] AS "
+            + Util.singleQuoteString(expr)
+            + " SELECT FROM [Sales]";
         final Query query = connection.parseQuery(queryString);
         query.resolve();
         final Formula formula = query.getFormulas()[0];
