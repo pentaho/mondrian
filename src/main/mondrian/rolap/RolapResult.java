@@ -359,7 +359,6 @@ public class RolapResult extends ResultBase {
             // small, so who cares.
             switch (this.slicerAxis.getPositions().size()) {
             case 0:
-                throw MondrianResource.instance().EmptySlicer.ex();
             case 1:
                 break;
             default:
@@ -1389,6 +1388,12 @@ public class RolapResult extends ResultBase {
      */
     interface ValueFormatter {
         String format(Object value, String formatString);
+        public static final ValueFormatter EMPTY =
+            new ValueFormatter() {
+            public String format(Object value, String formatString) {
+                return "";
+            }
+        };
     }
 
     /**
@@ -1519,7 +1524,7 @@ public class RolapResult extends ResultBase {
          * @param key Ordinal representing the position of a cell
          */
         CellInfo(long key) {
-            this(key, null, null, null);
+            this(key, null, null, ValueFormatter.EMPTY);
         }
 
         /**
