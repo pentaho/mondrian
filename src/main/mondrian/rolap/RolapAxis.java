@@ -706,6 +706,44 @@ public abstract class RolapAxis implements Axis {
         protected PositionBase() {
         }
 
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof List)) {
+                return false;
+            }
+            List that = (List) o;
+            final int size = this.size();
+            if (size != that.size()) {
+                return false;
+            }
+            for (int i = 0; i < size; i++) {
+                final Member m1 = get(i);
+                final Object m2 = that.get(i);
+                if (!(m1 == null
+                    ? m2 == null
+                    : m1.equals(m2)))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public int hashCode() {
+            int hashCode = 1;
+            int size = size();
+            for (int i = 0; i < size; i++) {
+                Member obj = get(i);
+                hashCode =
+                    31 * hashCode + (obj == null
+                        ? 0
+                        : obj.hashCode());
+            }
+            return hashCode;
+        }
+
         public ListIterator<Member> listIterator() {
             return new ListItr(0);
         }

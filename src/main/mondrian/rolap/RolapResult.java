@@ -582,16 +582,21 @@ public class RolapResult extends ResultBase {
             }
         }
     }
-    Axis evalExecute(List<List<Member>> nonAllMembers, int cnt,
-            RolapEvaluator evaluator, QueryAxis axis, Calc calc) {
-        Axis axisResult = null;
+
+    Axis evalExecute(
+        List<List<Member>> nonAllMembers,
+        int cnt,
+        RolapEvaluator evaluator,
+        QueryAxis axis,
+        Calc calc)
+    {
         if (cnt < 0) {
             evaluator.setCellReader(aggregatingReader);
-            axisResult =
-                    executeAxis(evaluator.push(), axis, calc, true, null);
+            return executeAxis(evaluator.push(), axis, calc, true, null);
             // No need to clear expression cache here as no new aggregates are
             // loaded(aggregatingReader reads from cache).
         } else {
+            Axis axisResult = null;
             for (Member m : nonAllMembers.get(cnt)) {
                 evaluator.setContext(m);
                 Axis a = evalExecute(nonAllMembers, cnt - 1, evaluator, axis, calc);
@@ -601,8 +606,8 @@ public class RolapResult extends ResultBase {
                 }
                 axisResult = mergeAxes(axisResult, a, evaluator, ordered);
             }
+            return axisResult;
         }
-        return axisResult;
     }
 
     /**
@@ -1807,19 +1812,23 @@ public class RolapResult extends ResultBase {
         }
     }
 
-    static Axis mergeAxes(Axis axis1, Axis axis2, RolapEvaluator evaluator,
-                            boolean ordered) {
+    static Axis mergeAxes(
+        Axis axis1,
+        Axis axis2,
+        RolapEvaluator evaluator,
+        boolean ordered)
+    {
         if (axis1 == null) {
             return axis2;
         }
-        List<Position> pl1 = axis1.getPositions();
-        List<Position> pl2 = axis2.getPositions();
+        List<Position> posList1 = axis1.getPositions();
+        List<Position> posList2 = axis2.getPositions();
         int arrayLen = -1;
-        if (pl1 instanceof RolapAxis.PositionListBase) {
-            if (pl1.isEmpty()) {
+        if (posList1 instanceof RolapAxis.PositionListBase) {
+            if (posList1.isEmpty()) {
                 return axis2;
             }
-            arrayLen = pl1.get(0).size();
+            arrayLen = posList1.get(0).size();
         }
         if (axis1 instanceof RolapAxis.SingleEmptyPosition) {
             return axis2;
@@ -1827,11 +1836,11 @@ public class RolapResult extends ResultBase {
         if (axis1 instanceof RolapAxis.NoPosition) {
             return axis2;
         }
-        if (pl2 instanceof RolapAxis.PositionListBase) {
-            if (pl2.isEmpty()) {
+        if (posList2 instanceof RolapAxis.PositionListBase) {
+            if (posList2.isEmpty()) {
                 return axis1;
             }
-            arrayLen = pl2.get(0).size();
+            arrayLen = posList2.get(0).size();
         }
         if (axis2 instanceof RolapAxis.SingleEmptyPosition) {
             return axis1;
@@ -1842,70 +1851,66 @@ public class RolapResult extends ResultBase {
         if (arrayLen == -1) {
             // Avoid materialization of axis
             arrayLen = 0;
-            for (Position p1 : pl1) {
-                for (Member m1 : p1) {
-                    arrayLen++;
-                }
+            for (Position p1 : posList1) {
+                arrayLen += p1.size();
                 break;
             }
             // reset to start of List
-            pl1 = axis1.getPositions();
+            posList1 = axis1.getPositions();
         }
         if (arrayLen == 1) {
             // single Member per position
-            List<Member> list = new ArrayList<Member>();
-            for (Position p1 : pl1) {
+
+            // LinkedHashSet gives O(n log n) additions (versus O(n ^ 2) for
+            // ArrayList, and preserves order (versus regular HashSet).
+            LinkedHashSet<Member> orderedSet = new LinkedHashSet<Member>();
+            for (Position p1 : posList1) {
                 for (Member m1 : p1) {
-                    list.add(m1);
+                    orderedSet.add(m1);
                 }
             }
-            for (Position p2 : pl2) {
+            for (Position p2 : posList2) {
                 for (Member m2 : p2) {
-                    if (! list.contains(m2)) {
-                        list.add(m2);
-                    }
+                    orderedSet.add(m2);
                 }
             }
-            return new RolapAxis.MemberList(list);
+            return new RolapAxis.MemberList(
+                Arrays.asList(
+                    orderedSet.toArray(new Member[orderedSet.size()])));
         } else {
             // array of Members per position
+
+            Set<List<Member>> set = new HashSet<List<Member>>();
             List<Member[]> list = new ArrayList<Member[]>();
-            for (Position p1 : pl1) {
-                Member[] members = new Member[arrayLen];
-                int i = 0;
-                for (Member m1 : p1) {
-                    members[i++] = m1;
-                }
-                list.add(members);
-            }
-            List<Member[]> extras = new ArrayList<Member[]>();
-            for (Position p2 : pl2) {
-                int i = 0;
-                Member[] members = new Member[arrayLen];
-                for (Member m2 : p2) {
-                    members[i++] = m2;
-                }
-                Iterator<Member[]> it1 = list.iterator();
-                boolean found = false;
-                while (it1.hasNext()) {
-                    Member[] m1 = it1.next();
-                    if (java.util.Arrays.equals(members, m1)) {
-                        found = true;
-                        break;
+            for (Position p1 : posList1) {
+                if (set.add(p1)) {
+                    Member[] members = new Member[arrayLen];
+                    for (int i = 0; i < p1.size(); i++) {
+                        members[i] = p1.get(i);
                     }
-                }
-                if (! found) {
-                    extras.add(members);
+                    list.add(members);
                 }
             }
-            list.addAll(extras);
+            int halfWay = list.size();
+            for (Position p2 : posList2) {
+                if (set.add(p2)) {
+                    Member[] members = new Member[arrayLen];
+                    for (int i = 0; i < p2.size(); i++) {
+                        Member m2 = p2.get(i);
+                        members[i] = m2;
+                    }
+                    list.add(members);
+                }
+            }
 
             // if there are unique members on both axes and no order function,
             //  sort the list to ensure default order
-            if (!list.isEmpty() && !extras.isEmpty() && !ordered) {
+            if (halfWay > 0 && halfWay < list.size() && !ordered) {
                 Member[] membs = list.get(0);
                 int membsSize = membs.length;
-                ValueCalc valCalc = new ValueCalc(new DummyExp(new ScalarType()));
+                ValueCalc valCalc =
+                    new ValueCalc(
+                        new DummyExp(new ScalarType()));
                 FunUtil.sortTuples(
                     evaluator,
                     list,
