@@ -27,6 +27,7 @@ import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 import mondrian.util.DelegatingInvocationHandler;
+import mondrian.util.CoordinateIterator;
 
 import javax.sql.DataSource;
 import java.io.*;
@@ -39,7 +40,6 @@ import java.lang.reflect.*;
 
 import org.olap4j.OlapWrapper;
 import org.olap4j.OlapConnection;
-import org.olap4j.impl.CoordinateIterator;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information
@@ -1079,12 +1079,51 @@ public class TestContext {
      * @return Result as text
      */
     public static String toString(Result result) {
+        return toString(result, Format.TRADITIONAL);
+    }
+
+    /**
+     * Converts a {@link mondrian.olap.Result} to text.
+     *
+     * @param result Query result
+     * @param format Format
+     * @return Result as text
+     */
+    public static String toString(Result result, Format format) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        result.print(pw);
+        switch (format) {
+        case TRADITIONAL:
+            result.print(pw);
+            break;
+        case COMPACT_RECTANGULAR:
+        case RECTANGULAR:
+            new RectangularResultFormatter(
+                result,
+                format == Format.COMPACT_RECTANGULAR).format(pw);
+            break;
+        }
         pw.flush();
         return sw.toString();
     }
+
+    public enum Format {
+        /**
+         * Traditional format, one row per cell.
+         */
+        TRADITIONAL,
+
+        /**
+         * Rectangular format that is similar to {@link #RECTANGULAR} but omits
+         * vertical bars and is therefore more compact.
+         */
+        COMPACT_RECTANGULAR,
+
+        /**
+         * Rectangular format that uses vertical bars and hyphens to draw a grid.
+         */
+        RECTANGULAR
+    };
 
     /**
      * Converts a set of positions into a string. Useful if you want to check
