@@ -1,15 +1,12 @@
-Mondrian 3.1.0.12477 production release notes
+Mondrian 3.1.1.12687 production release notes
 =============================================
 
 Introduction
 ------------
 
-Mondrian 3.1 is a minor release version of the leading
+Mondrian 3.1.1.12687 is a minor release version of the leading
 open-source OLAP engine. To find out more about mondrian, go
 to http://mondrian.pentaho.org.
-
-Mondrian-3.1.0.12477 is the first release candidate for
-release Mondrian 3.1.
 
 Contents
 --------
@@ -52,8 +49,10 @@ Main functionality in this release
    this is a minor release, we wish to avoid breaking
    changes, so this functionality is off by default. To
    enable, set mondrian.olap.SsasCompatibleNaming=true.
+ - Netezza Dialect (3.1.1)
+ - Various Workbench changes (3.1.1) 
 
-API changes in this release
+API changes from 3.0 to 3.1
 ---------------------------
  - High cardinality related array to list changes
  - Database dialect changes
@@ -62,13 +61,21 @@ API changes in this release
    depends on this class will need to be recompiled.
  - Upgrade to olap4-0.9.7.145.
 
-
-Other changes
--------------
- - 
-
 See CHANGES.txt for a list of all source code changes
 since the previous release.
+
+Bugs and feature requests fixed since mondrian-3.1.0-12477-RC1
+--------------------------------------------------------------
+
+Bugs:
+MONDRIAN-7   - Heterogeneous axis gives wrong results
+MONDRIAN-473 - Performance bug in RolapEvaluator.setContext (partial fix)
+MONDRIAN-519 - ClassCastException: parent/child and no closure
+MONDRIAN-524 - VB functions: expected primitive type, got java.lang.Object
+MONDRIAN-528 - MySQL database identified as INFOBRIGHT
+MONDRIAN-539 - Problem with the MID function getting last character in a string.
+MONDRIAN-540 - Netezza is an UNKNOWN Dialect
+MONDRIAN-550 - Performance bug with NON EMPTY and large axes
 
 Bugs and feature requests fixed since mondrian-3.0.3
 ----------------------------------------------------
@@ -121,7 +128,7 @@ Bugs:
           in Workbench
 2208219 - Workbench fails if the Mondrian schema has a
           <view> <sql> element
-2208312 - Mouse right click doesn’t work on MAC OS X or
+2208312 - Mouse right click doesnï¿½t work on MAC OS X or
           Linux
 
 Feature Requests:
