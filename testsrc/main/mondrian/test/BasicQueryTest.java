@@ -5486,14 +5486,18 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "from [Sales]";
 
         String mdx3 =
-          "select {[Measures].[Unit Sales]} on columns\n" +
-          "from [Sales]\n" +
-          "where ([Time].[1997].[QTOO])";
+            "select {[Measures].[Unit Sales]} on columns\n"
+            + "from [Sales]\n"
+            + "where ([Time].[1997].[QTOO])";
 
         // By default, reference to invalid member should cause
         // query failure.
         assertThrows(
             mdx, "MDX object '[Time].[1997].[QTOO]' not found in cube 'Sales'");
+
+        assertThrows(
+            mdx3,
+            "MDX object '[Time].[1997].[QTOO]' not found in cube 'Sales'");
 
         // Now set property
 
@@ -5514,10 +5518,10 @@ public class BasicQueryTest extends FoodMartTestCase {
             // Illegal member in slicer
             assertQueryReturns(
                 mdx3,
-                    "Axis #0:\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Unit Sales]}\n" +
-                    "Row #0: \n");
+                "Axis #0:\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Row #0: \n");
 
             // Verify that invalid members in query do NOT prevent
             // usage of native NECJ (LER-5165).

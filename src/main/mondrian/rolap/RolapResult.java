@@ -928,7 +928,8 @@ public class RolapResult extends ResultBase {
                     if (cf != null) {
                         valueFormatter = cellFormatters.get(cf);
                         if (valueFormatter == null) {
-                            valueFormatter = new CellFormatterValueFormatter(cf);
+                            valueFormatter =
+                                new CellFormatterValueFormatter(cf);
                             cellFormatters.put(cf, valueFormatter);
                         }
                     } else {
@@ -1392,9 +1393,19 @@ public class RolapResult extends ResultBase {
      * </ul>
      */
     interface ValueFormatter {
+        /**
+         * Formats a value according to a format string.
+         *
+         * @param value Value
+         * @param formatString Format string
+         * @return Formatted value
+         */
         String format(Object value, String formatString);
-        public static final ValueFormatter EMPTY =
-            new ValueFormatter() {
+
+        /**
+         * Formatter that always returns the empty string.
+         */
+        public static final ValueFormatter EMPTY = new ValueFormatter() {
             public String format(Object value, String formatString) {
                 return "";
             }
