@@ -30,11 +30,12 @@ import mondrian.olap.Query;
  */
 class FactoryJdbc4Impl implements Factory {
     public Connection newConnection(
+        MondrianOlap4jDriver driver,
         String url,
         Properties info)
         throws SQLException
     {
-        return new MondrianOlap4jConnectionJdbc4(this, url, info);
+        return new MondrianOlap4jConnectionJdbc4(this, driver, url, info);
     }
 
     public EmptyResultSet newEmptyResultSet(
@@ -324,10 +325,11 @@ class FactoryJdbc4Impl implements Factory {
     {
         MondrianOlap4jConnectionJdbc4(
             Factory factory,
+            MondrianOlap4jDriver driver,
             String url,
             Properties info) throws SQLException
         {
-            super(factory, url, info);
+            super(factory, driver, url, info);
         }
 
         public OlapStatement createStatement() {

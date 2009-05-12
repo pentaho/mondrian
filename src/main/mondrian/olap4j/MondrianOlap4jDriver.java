@@ -62,10 +62,6 @@ import java.util.Map;
  * @since May 22, 2007
  */
 public class MondrianOlap4jDriver implements Driver {
-    public static final String NAME = "Mondrian olap4j driver";
-    public static final String VERSION = "2.4";
-    public static final int MAJOR_VERSION = 2;
-    public static final int MINOR_VERSION = 4;
     private final Factory factory;
 
     static {
@@ -76,6 +72,9 @@ public class MondrianOlap4jDriver implements Driver {
         }
     }
 
+    /**
+     * Creates a MondrianOlap4jDriver.
+     */
     MondrianOlap4jDriver() {
         String factoryClassName;
         try {
@@ -98,6 +97,14 @@ public class MondrianOlap4jDriver implements Driver {
         }
     }
 
+    /**
+     * Registers an instance of MondrianOlap4jDriver.
+     *
+     * <p>Called implicitly on class load, and implements the traditional
+     * 'Class.forName' way of registering JDBC drivers.
+     *
+     * @throws SQLException on error
+     */
     private static void register() throws SQLException {
         DriverManager.registerDriver(new MondrianOlap4jDriver());
     }
@@ -106,7 +113,7 @@ public class MondrianOlap4jDriver implements Driver {
         if (!MondrianOlap4jConnection.acceptsURL(url)) {
             return null;
         }
-        return factory.newConnection(url, info);
+        return factory.newConnection(this, url, info);
     }
 
     public boolean acceptsURL(String url) throws SQLException {
@@ -138,12 +145,28 @@ public class MondrianOlap4jDriver implements Driver {
         return list.toArray(new DriverPropertyInfo[list.size()]);
     }
 
+    /**
+     * Returns the driver name. Not in the JDBC API.
+     * @return Driver name
+     */
+    String getName() {
+        return MondrianOlap4jDriverVersion.NAME;
+    }
+
+    /**
+     * Returns the driver version. Not in the JDBC API.
+     * @return Driver version
+     */
+    String getVersion() {
+        return MondrianOlap4jDriverVersion.VERSION;
+    }
+
     public int getMajorVersion() {
-        return MAJOR_VERSION;
+        return MondrianOlap4jDriverVersion.MAJOR_VERSION;
     }
 
     public int getMinorVersion() {
-        return MINOR_VERSION;
+        return MondrianOlap4jDriverVersion.MINOR_VERSION;
     }
 
     public boolean jdbcCompliant() {

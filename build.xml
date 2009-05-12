@@ -25,6 +25,10 @@
   <property name="name" value="mondrian"/>
   <property name="version" value="3.1-SNAPSHOT"/>
   <property name="vendor" value="Pentaho"/>
+  <property name="driver.name" value="Mondrian olap4j driver"/>
+  <property name="driver.version" value="3.1.2"/>
+  <property name="driver.version.major" value="3"/>
+  <property name="driver.version.minor" value="102"/>
   <!--
     ===================================================================
     Set the properties related to paths
@@ -882,6 +886,21 @@ in {mondrian.foodmart.jdbcURL}.">
 Version: ${version}
 Vendor: ${vendor}
 </echo>
+   <echo file="${java.dir}/mondrian/olap4j/MondrianOlap4jDriverVersion.java">/*
+ * Project version information. Generated - do not modify.
+ */
+package mondrian.olap4j;
+/**
+ * Version information for the Mondrian olap4j driver. (Generated.)
+ */
+class MondrianOlap4jDriverVersion {
+    static final String NAME = "${driver.name}";
+    static final String VERSION = "${driver.version}";
+    static final int MAJOR_VERSION = ${driver.version.major};
+    static final int MINOR_VERSION = ${driver.version.minor};
+}
+
+// End MondrianOlap4jDriverVersion.java</echo>
   </target>
 
   <target name="srczip" depends="version">

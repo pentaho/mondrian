@@ -71,6 +71,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     private static final String CONNECT_STRING_PREFIX = "jdbc:mondrian:";
 
     final Factory factory;
+    final MondrianOlap4jDriver driver;
     private Locale locale;
     private String roleName;
     private boolean autoCommit;
@@ -86,17 +87,20 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
      * @pre acceptsURL(url)
      *
      * @param factory Factory
+     * @param driver Driver
      * @param url Connect-string URL
      * @param info Additional properties
      * @throws SQLException if there is an error
      */
     MondrianOlap4jConnection(
         Factory factory,
+        MondrianOlap4jDriver driver,
         String url,
         Properties info)
         throws SQLException
     {
         this.factory = factory;
+        this.driver = driver;
         if (!acceptsURL(url)) {
             // This is not a URL we can handle.
             // DriverManager should not have invoked us.

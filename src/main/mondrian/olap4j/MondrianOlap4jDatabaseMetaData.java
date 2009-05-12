@@ -42,6 +42,11 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     private final MondrianOlap4jCatalog olap4jCatalog =
         new MondrianOlap4jCatalog(this);
 
+    /**
+     * Creates a MondrianOlap4jDatabaseMetaData.
+     *
+     * @param olap4jConnection Connection
+     */
     MondrianOlap4jDatabaseMetaData(
         MondrianOlap4jConnection olap4jConnection)
     {
@@ -91,12 +96,26 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
             olap4jConnection, rowset.headerList, rowset.rowList);
     }
 
+    /**
+     * Wraps a string in an object that indicates that it is to be treated as
+     * a wildcard pattern, not a literal match.
+     *
+     * @param pattern Pattern
+     * @return Wildcard, or null if pattern is null
+     */
     private XmlaUtil.Wildcard wildcard(String pattern) {
         return pattern == null
             ? null
             : new XmlaUtil.Wildcard(pattern);
     }
 
+    /**
+     * Returns the catalogs in this database.
+     *
+     * Intentionally package-protected; not part of the JDBC or olap4j API.
+     *
+     * @return List of catalogs in this database
+     */
     // package-protected
     NamedList<Catalog> getCatalogObjects() {
         NamedList<MondrianOlap4jCatalog> list =
@@ -154,19 +173,19 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     }
 
     public String getDriverName() throws SQLException {
-        return MondrianOlap4jDriver.NAME;
+        return olap4jConnection.driver.getName();
     }
 
     public String getDriverVersion() throws SQLException {
-        return MondrianOlap4jDriver.VERSION;
+        return olap4jConnection.driver.getVersion();
     }
 
     public int getDriverMajorVersion() {
-        return MondrianOlap4jDriver.MAJOR_VERSION;
+        return olap4jConnection.driver.getMajorVersion();
     }
 
     public int getDriverMinorVersion() {
-        return MondrianOlap4jDriver.MINOR_VERSION;
+        return olap4jConnection.driver.getMinorVersion();
     }
 
     public boolean usesLocalFiles() throws SQLException {

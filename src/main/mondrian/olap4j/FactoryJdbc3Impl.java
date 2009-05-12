@@ -23,11 +23,12 @@ import java.util.*;
  */
 class FactoryJdbc3Impl implements Factory {
     public Connection newConnection(
+        MondrianOlap4jDriver driver,
         String url,
         Properties info)
         throws SQLException
     {
-        return new MondrianOlap4jConnectionJdbc3(url, info);
+        return new MondrianOlap4jConnectionJdbc3(driver, url, info);
     }
 
     public EmptyResultSet newEmptyResultSet(
@@ -104,10 +105,11 @@ class FactoryJdbc3Impl implements Factory {
         extends MondrianOlap4jConnection
     {
         public MondrianOlap4jConnectionJdbc3(
+            MondrianOlap4jDriver driver,
             String url,
             Properties info) throws SQLException
         {
-            super(FactoryJdbc3Impl.this, url, info);
+            super(FactoryJdbc3Impl.this, driver, url, info);
         }
     }
 
