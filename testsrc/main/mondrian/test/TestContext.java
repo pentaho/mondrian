@@ -27,7 +27,6 @@ import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 import mondrian.util.DelegatingInvocationHandler;
-import mondrian.util.CoordinateIterator;
 
 import javax.sql.DataSource;
 import java.io.*;
@@ -40,6 +39,7 @@ import java.lang.reflect.*;
 
 import org.olap4j.OlapWrapper;
 import org.olap4j.OlapConnection;
+import org.olap4j.impl.CoordinateIterator;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information
@@ -119,7 +119,7 @@ public class TestContext {
      * FoodMart database.
      *
      * <p>In the base class, the result is the same as the static method
-     * {@link #getConnectString}. If a derived class overrides
+     * {@link #getDefaultConnectString}. If a derived class overrides
      * {@link #getFoodMartConnectionProperties()}, the result of this method
      * will change also.
      */

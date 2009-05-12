@@ -786,7 +786,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 new ArrayList<IdentifierNode.Segment>();
             for (Id.Segment segment : id.getSegments()) {
                 list.add(
-                    new IdentifierNode.Segment(
+                    new IdentifierNode.NameSegment(
                         null,
                         segment.name,
                         toOlap4j(segment.quoting)));
