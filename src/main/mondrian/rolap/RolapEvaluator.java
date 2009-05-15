@@ -78,12 +78,6 @@ public class RolapEvaluator implements Evaluator {
 
     private final List<Member> slicerMembers;
 
-    private final MondrianProperties.SolveOrderModeEnum solveOrderMode =
-        Util.lookup(
-            MondrianProperties.SolveOrderModeEnum.class,
-            MondrianProperties.instance().SolveOrderMode.get().toUpperCase(),
-            MondrianProperties.SolveOrderModeEnum.ABSOLUTE);
-
     /**
      * States of the finite state machine for determining the max solve order
      * for the "scoped" behavior.
@@ -772,13 +766,13 @@ public class RolapEvaluator implements Evaluator {
             // TODO Consider revising employing the Strategy architectural pattern
             // for setting up solve order mode handling.
 
-            switch (solveOrderMode) {
+            switch (root.solveOrderMode) {
             case ABSOLUTE:
-                return getAbsoluteMaxSolveOrder(calcMembers);
+                return getAbsoluteMaxSolveOrder();
             case SCOPED:
-                return getScopedMaxSolveOrder(calcMembers);
+                return getScopedMaxSolveOrder();
             default:
-                throw Util.unexpected(solveOrderMode);
+                throw Util.unexpected(root.solveOrderMode);
             }
         }
     }
@@ -793,7 +787,7 @@ public class RolapEvaluator implements Evaluator {
      *
      * <p>No special consideration is given to the aggregate function.
      */
-    private Member getAbsoluteMaxSolveOrder(Member [] calcMembers) {
+    private Member getAbsoluteMaxSolveOrder() {
         // Find member with the highest solve order.
         Member maxSolveMember = calcMembers[0];
         int maxSolve = maxSolveMember.getSolveOrder();
@@ -828,7 +822,7 @@ public class RolapEvaluator implements Evaluator {
      * SOLVE_ORDER was defined to be the lowest value in a given evaluation in a
      * SSAS2000 sense.
      */
-    private Member getScopedMaxSolveOrder(Member [] calcMembers) {
+    private Member getScopedMaxSolveOrder() {
         // Finite state machine that determines the member with the highest
         // solve order.
         Member maxSolveMember = null;

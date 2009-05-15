@@ -47,6 +47,12 @@ class RolapEvaluatorRoot {
      */
     final RolapMember[] defaultMembers;
 
+    final MondrianProperties.SolveOrderModeEnum solveOrderMode =
+        Util.lookup(
+            MondrianProperties.SolveOrderModeEnum.class,
+            MondrianProperties.instance().SolveOrderMode.get().toUpperCase(),
+            MondrianProperties.SolveOrderModeEnum.ABSOLUTE);
+
     /**
      * Creates a RolapEvaluatorRoot.
      *
