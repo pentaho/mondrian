@@ -2,9 +2,9 @@
 setlocal
 
 rem $Id$
-rem This software is subject to the terms of the Common Public License
+rem This software is subject to the terms of the Eclipse Public License v1.0
 rem Agreement, available at the following URL:
-rem http://www.opensource.org/licenses/cpl.html.
+rem http://www.eclipse.org/legal/epl-v10.html.
 rem (C) Copyright 2001-2005 Kana Software, Inc. and others.
 rem All Rights Reserved.
 rem You must accept the terms of that agreement to use this software.

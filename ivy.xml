@@ -2,9 +2,9 @@
 <?xml-stylesheet type="text/xsl" href="http://ivyrep.jayasoft.org/ivy-doc.xsl"?>
 <!--
   == $Id$
-  == This software is subject to the terms of the Common Public License
+  == This software is subject to the terms of the Eclipse Public License v1.0
   == Agreement, available at the following URL:
-  == http://www.opensource.org/licenses/cpl.html.
+  == http://www.eclipse.org/legal/epl-v10.html.
   == Copyright (C) 2008-2009 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
@@ -16,7 +16,7 @@
     xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
 
     <info organisation="pentaho" module="mondrian" revision="3.1.0">
-        <license name="CPL" url="http://www.opensource.org/licenses/cpl.html"/>
+        <license name="EPL" url="http://www.eclipse.org/legal/epl-v10.html"/>
         <ivyauthor name="Julian Hyde" />
         <repository name="pentaho-rep" url="http://repo.pentaho.org"/>
         <description homepage="http://mondrian.pentaho.org">

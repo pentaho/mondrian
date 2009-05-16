@@ -1,6 +1,6 @@
 #!/bin/bash
 # $Id$
-# Copyright (C) 2006-2008 Julian Hyde
+# Copyright (C) 2006-2009 Julian Hyde
 #
 # Script to run the Mondrian test suite under various JDKs, with parameter
 # settings, against various RDBMSes. Customize it with your environment -
@@ -13,6 +13,7 @@
 
 ANT_FLAGS=
 CLEAN=clean
+CLEAN=
 
 # The script's path is $OPEN_DIR/mondrian/bin/megatest; deduce OPEN_DIR.
 OPEN_DIR=$(cd $(dirname $0)/../..; pwd)
@@ -90,8 +91,24 @@ doTest() {
 
 doTest2() {
   olap4j=
+  mondrian=true
+  if [ "$1" = --mondrian ]; then
+    mondrian=true
+    shift
+  fi
+
+  if [ "$1" = --nomondrian ]; then
+    mondrian=
+    shift
+  fi
+
   if [ "$1" = --olap4j ]; then
     olap4j=true
+    shift
+  fi
+
+  if [ "$1" = --noolap4j ]; then
+    olap4j=
     shift
   fi
 
@@ -168,7 +185,7 @@ doTest2() {
   mysql)
     (
       jdbcDrivers=com.mysql.jdbc.Driver
-      export jdbcURL='jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart&characterEncoding=UTF-8'
+      export jdbcURL='jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart&characterEncoding=latin1'
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo driver.classpath=/usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar
@@ -239,15 +256,22 @@ doTest2() {
         $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} all retroweave
         ;;
       esac
-      $ANT_HOME/bin/ant $ANT_FLAGS -Dmondrian.retroweave=true test-nobuild
+      if [ "$mondrian" ]; then
+        $ANT_HOME/bin/ant $ANT_FLAGS -Dmondrian.retroweave=true test-nobuild
+      fi
     else
       export ANT_HOME=$(chooseAntHome $jdk)
+      if [ "$mondrian" ]; then
+        TEST_TARGET=test-nobuild
+      else
+        TEST_TARGET=
+      fi
       case $database in
       (derby|access)
-        $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} compile compile.tests unzip-databases test-nobuild
+        $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} compile compile.tests unzip-databases ${TEST_TARGET}
         ;;
       (*)
-        $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} compile compile.tests test-nobuild
+        $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} compile compile.tests ${TEST_TARGET}
         ;;
       esac
     fi
@@ -666,7 +690,15 @@ doRandom() {
 }
 
 doQuick() {
-  doTest --olap4j jdk1.6 access
+  doTest jdk1.6 oracle
+# doTest --olap4j jdk1.6 oracle
+  if false; then
+  for db in mysql derby oracle; do
+    for tf in true false; do
+      doTest jdk1.6 $db mondrian.olap.SsasCompatibleNaming=$tf
+    done
+  done
+  fi
 }
 
 doAllTests() {
