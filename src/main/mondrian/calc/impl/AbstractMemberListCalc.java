@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,7 +11,6 @@ package mondrian.calc.impl;
 
 import mondrian.olap.*;
 import mondrian.olap.type.SetType;
-import mondrian.olap.type.Type;
 import mondrian.calc.*;
 
 import java.util.List;
@@ -34,7 +33,6 @@ public abstract class AbstractMemberListCalc
     extends AbstractCalc
     implements MemberListCalc
 {
-    private final Calc[] calcs;
     private final boolean mutable;
 
     /**
@@ -59,8 +57,7 @@ public abstract class AbstractMemberListCalc
      * @param mutable Whether the list is mutable
      */
     protected AbstractMemberListCalc(Exp exp, Calc[] calcs, boolean mutable) {
-        super(exp);
-        this.calcs = calcs;
+        super(exp, calcs);
         this.mutable = mutable;
         assert type instanceof SetType : "expecting a set: " + getType();
         assert getType().getArity() == 1;
@@ -76,10 +73,6 @@ public abstract class AbstractMemberListCalc
         return memberList;
     }
 
-    public Calc[] getCalcs() {
-        return calcs;
-    }
-
     public ResultStyle getResultStyle() {
         return mutable ?
             ResultStyle.MUTABLE_LIST :
@@ -92,10 +85,6 @@ public abstract class AbstractMemberListCalc
 
     public List<Member> evaluateList(Evaluator evaluator) {
         return evaluateMemberList(evaluator);
-    }
-
-    public List<Member[]> evaluateTupleList(Evaluator evaluator) {
-        throw new UnsupportedOperationException();
     }
 }
 

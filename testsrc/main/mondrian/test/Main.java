@@ -229,6 +229,7 @@ public class Main extends TestSuite {
             if (isRunOnce()) {
                 addTest(suite, TestCalculatedMembers.class);
             }
+            addTest(suite, CompoundSlicerTest.class);
             addTest(suite, RaggedHierarchyTest.class);
             addTest(suite, NonEmptyPropertyForAllAxisTest.class);
             addTest(suite, InlineTableTest.class);

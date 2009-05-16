@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -28,14 +28,16 @@ import mondrian.olap.Evaluator;
  * @version $Id$
  * @since Nov 10, 2008
  */
-public class MemberOrderKeyFunDef extends FunDefBase {
+public final class MemberOrderKeyFunDef extends FunDefBase {
     static final MemberOrderKeyFunDef instance =
-            new MemberOrderKeyFunDef();
+        new MemberOrderKeyFunDef();
 
+    /**
+     * Creates the singleton MemberOrderKeyFunDef.
+     */
     private MemberOrderKeyFunDef() {
-        super("OrderKey",
-                "Returns the member order key.",
-                "pvm");
+        super(
+            "OrderKey", "Returns the member order key.", "pvm");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
@@ -47,8 +49,14 @@ public class MemberOrderKeyFunDef extends FunDefBase {
     public static class CalcImpl extends AbstractCalc {
         private final MemberCalc memberCalc;
 
+        /**
+         * Creates a CalcImpl.
+         *
+         * @param exp Source expression
+         * @param memberCalc Compiled expression to calculate member
+         */
         public CalcImpl(Exp exp, MemberCalc memberCalc) {
-            super(exp);
+            super(exp, new Calc[] {memberCalc});
             this.memberCalc = memberCalc;
         }
 
@@ -58,10 +66,6 @@ public class MemberOrderKeyFunDef extends FunDefBase {
 
         protected String getName() {
             return "OrderKey";
-        }
-
-        public Calc[] getCalcs() {
-            return new Calc[] {memberCalc};
         }
     }
 }

@@ -521,7 +521,8 @@ public class SetFunDef extends FunDefBase {
             iterCalcs = calcList.toArray(new MemberIterCalc[calcList.size()]);
         }
 
-        public Calc[] getCalcs() {
+        // override return type
+        public MemberIterCalc[] getCalcs() {
             return iterCalcs;
         }
 

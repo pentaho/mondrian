@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,10 +13,8 @@
 
 package mondrian.rolap;
 import mondrian.calc.*;
-import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
-import mondrian.olap.fun.AggregateFunDef;
 import mondrian.resource.MondrianResource;
 import mondrian.util.Format;
 import mondrian.spi.Dialect;
@@ -66,7 +64,7 @@ public class RolapEvaluator implements Evaluator {
     private int iterationLength;
     private boolean evalAxes;
 
-    private final Member[] calcMembers;
+    private final RolapCalculation[] calcMembers;
     private int calcMemberCount;
 
     /**
@@ -97,8 +95,9 @@ public class RolapEvaluator implements Evaluator {
      * @param parent Parent evaluator, or null if this is the root
      */
     protected RolapEvaluator(
-            RolapEvaluatorRoot root,
-            RolapEvaluator parent) {
+        RolapEvaluatorRoot root,
+        RolapEvaluator parent)
+    {
         this.iterationLength = 1;
         this.root = root;
         this.parent = parent;
@@ -108,8 +107,9 @@ public class RolapEvaluator implements Evaluator {
             nonEmpty = false;
             evalAxes = false;
             cellReader = null;
-            currentMembers = new RolapMember[root.cube.getDimensions().length];
-            calcMembers = new Member[this.currentMembers.length];
+            final int dimensionCount = root.cube.getDimensions().length;
+            currentMembers = new RolapMember[dimensionCount];
+            calcMembers = new RolapCalculation[dimensionCount];
             calcMemberCount = 0;
             slicerMembers = new ArrayList<Member>();
             aggregationLists = null;
@@ -167,7 +167,7 @@ public class RolapEvaluator implements Evaluator {
 
             currentMembers[ordinal] = member;
             if (member.isEvaluated()) {
-                addCalcMember(member);
+                addCalcMember(new RolapMemberCalculation(member));
             }
         }
 
@@ -199,6 +199,7 @@ public class RolapEvaluator implements Evaluator {
      * If IgnoreMeasureForNonJoiningDimension is set to true and one or more
      * members are on unrelated dimension for the measure in current context
      * then returns true.
+     *
      * @param members
      * dimensions for the members need to be checked whether
      * related or unrelated
@@ -289,6 +290,12 @@ public class RolapEvaluator implements Evaluator {
         return _push();
     }
 
+    public RolapEvaluator push(RolapCalculation calc) {
+        RolapEvaluator evaluator = push();
+        evaluator.addCalcMember(calc);
+        return evaluator;
+    }
+
     /**
      * Creates a clone of the current validator.
      */
@@ -365,16 +372,16 @@ public class RolapEvaluator implements Evaluator {
     public final Member setContext(Member member) {
         final RolapMember m = (RolapMember) member;
         final int ordinal = m.getDimension().getOrdinal(root.cube);
-        final Member previous = currentMembers[ordinal];
+        final RolapMember previous = currentMembers[ordinal];
         if (m.equals(previous)) {
             return m;
         }
         if (previous.isEvaluated()) {
-            removeCalcMember(previous);
+            removeCalcMember(new RolapMemberCalculation(previous));
         }
         currentMembers[ordinal] = m;
         if (m.isEvaluated()) {
-            addCalcMember(m);
+            addCalcMember(new RolapMemberCalculation(m));
         }
         return previous;
     }
@@ -420,26 +427,35 @@ public class RolapEvaluator implements Evaluator {
 
     public final Object evaluateCurrent() {
         // Get the member in the current context which is (a) calculated, and
-        // (b) has the highest solve order; returns null if there are no
-        // calculated members.
-        final Member maxSolveMember = peekCalcMember();
-        if (maxSolveMember == null) {
+        // (b) has the highest solve order. If there are no calculated members,
+        // go ahead and compute the cell.
+        RolapCalculation maxSolveMember;
+        switch (calcMemberCount) {
+        case 0:
             final Object o = cellReader.get(this);
             if (o == Util.nullValue) {
                 return null;
             }
             return o;
-        }
-        // REVIEW this operation is executed frequently, and computing the
-        // default member of a hierarchy for a given role is not cheap
-        final RolapMember defaultMember =
-            root.defaultMembers[
-                maxSolveMember.getDimension().getOrdinal(root.cube)];
 
-        final RolapEvaluator evaluator = push(defaultMember);
-        evaluator.setExpanding(maxSolveMember);
-        final Exp exp = maxSolveMember.getExpression();
-        final Calc calc = root.getCompiled(exp, true, null);
+        case 1:
+            maxSolveMember = calcMembers[0];
+            break;
+
+        default:
+            switch (root.solveOrderMode) {
+            case ABSOLUTE:
+                maxSolveMember = getAbsoluteMaxSolveOrder();
+                break;
+            case SCOPED:
+                maxSolveMember = getScopedMaxSolveOrder();
+                break;
+            default:
+                throw Util.unexpected(root.solveOrderMode);
+            }
+        }
+        final RolapEvaluator evaluator = maxSolveMember.pushSelf(this);
+        final Calc calc = maxSolveMember.getCompiledExpression(root);
         final Object o = calc.evaluate(evaluator);
         if (o == Util.nullValue) {
             return null;
@@ -447,7 +463,7 @@ public class RolapEvaluator implements Evaluator {
         return o;
     }
 
-    private void setExpanding(Member member) {
+    void setExpanding(Member member) {
         expandingMember = member;
         final int memberCount = currentMembers.length;
         if (depth > memberCount) {
@@ -748,38 +764,15 @@ public class RolapEvaluator implements Evaluator {
         return root.getParameterValue(slot);
     }
 
-    final void addCalcMember(Member member) {
+    final void addCalcMember(RolapCalculation member) {
         assert member != null;
-        assert member.isEvaluated();
         calcMembers[calcMemberCount++] = member;
     }
 
-    private Member peekCalcMember() {
-        switch (calcMemberCount) {
-        case 0:
-            return null;
-
-        case 1:
-            return calcMembers[0];
-
-        default:
-            // TODO Consider revising employing the Strategy architectural pattern
-            // for setting up solve order mode handling.
-
-            switch (root.solveOrderMode) {
-            case ABSOLUTE:
-                return getAbsoluteMaxSolveOrder();
-            case SCOPED:
-                return getScopedMaxSolveOrder();
-            default:
-                throw Util.unexpected(root.solveOrderMode);
-            }
-        }
-    }
-
-    /*
-     * Returns the member with the highest solve order according to AS2000 rules.
-     * This was the behavior prior to solve order mode being configurable.
+    /**
+     * Returns the member with the highest solve order according to AS2000
+     * rules. This was the behavior prior to solve order mode being
+     * configurable.
      *
      * <p>The SOLVE_ORDER value is absolute regardless of where it is defined;
      * e.g. a query defined calculated member with a SOLVE_ORDER of 1 always takes
@@ -787,29 +780,19 @@ public class RolapEvaluator implements Evaluator {
      *
      * <p>No special consideration is given to the aggregate function.
      */
-    private Member getAbsoluteMaxSolveOrder() {
+    private RolapCalculation getAbsoluteMaxSolveOrder() {
         // Find member with the highest solve order.
-        Member maxSolveMember = calcMembers[0];
-        int maxSolve = maxSolveMember.getSolveOrder();
+        RolapCalculation maxSolveMember = calcMembers[0];
         for (int i = 1; i < calcMemberCount; i++) {
-            Member member = calcMembers[i];
-            int solve = member.getSolveOrder();
-            if (solve >= maxSolve) {
-                // If solve orders tie, the dimension with the lower
-                // ordinal wins.
-                if (solve > maxSolve
-                    || member.getDimension().getOrdinal(root.cube)
-                    < maxSolveMember.getDimension().getOrdinal(root.cube)) {
-                    maxSolve = solve;
-                    maxSolveMember = member;
-                }
+            RolapCalculation member = calcMembers[i];
+            if (expandsBefore(member, maxSolveMember)) {
+                maxSolveMember = member;
             }
         }
-
         return maxSolveMember;
     }
 
-    /*
+    /**
      * Returns the member with the highest solve order according to AS2005
      * scoping rules.
      *
@@ -822,18 +805,18 @@ public class RolapEvaluator implements Evaluator {
      * SOLVE_ORDER was defined to be the lowest value in a given evaluation in a
      * SSAS2000 sense.
      */
-    private Member getScopedMaxSolveOrder() {
+    private RolapCalculation getScopedMaxSolveOrder() {
         // Finite state machine that determines the member with the highest
         // solve order.
-        Member maxSolveMember = null;
+        RolapCalculation maxSolveMember = null;
         ScopedMaxSolveOrderFinderState state =
             ScopedMaxSolveOrderFinderState.START;
         for (int i = 0; i < calcMemberCount; i++) {
-            Member member = calcMembers[i];
+            RolapCalculation member = calcMembers[i];
             switch (state) {
             case START:
                 maxSolveMember = member;
-                if (foundAggregateFunction(maxSolveMember.getExpression())) {
+                if (maxSolveMember.containsAggregateFunction()) {
                     state = ScopedMaxSolveOrderFinderState.AGG_SCOPE;
                 } else if (maxSolveMember.isCalculatedInQuery()) {
                     state = ScopedMaxSolveOrderFinderState.QUERY_SCOPE;
@@ -843,11 +826,8 @@ public class RolapEvaluator implements Evaluator {
                 break;
 
             case AGG_SCOPE:
-                if (foundAggregateFunction(member.getExpression())) {
-                    if (member.getSolveOrder() > maxSolveMember.getSolveOrder() ||
-                        (member.getSolveOrder() == maxSolveMember.getSolveOrder() &&
-                         member.getDimension().getOrdinal(root.cube) <
-                         maxSolveMember.getDimension().getOrdinal(root.cube))) {
+                if (maxSolveMember.containsAggregateFunction()) {
+                    if (expandsBefore(member, maxSolveMember)) {
                         maxSolveMember = member;
                     }
                 } else if (member.isCalculatedInQuery()) {
@@ -860,32 +840,25 @@ public class RolapEvaluator implements Evaluator {
                 break;
 
             case CUBE_SCOPE:
-                if (foundAggregateFunction(member.getExpression())) {
+                if (maxSolveMember.containsAggregateFunction()) {
                     continue;
                 }
 
                 if (member.isCalculatedInQuery()) {
                     maxSolveMember = member;
                     state = ScopedMaxSolveOrderFinderState.QUERY_SCOPE;
-                } else if (member.getSolveOrder() > maxSolveMember.getSolveOrder() ||
-                        (member.getSolveOrder() == maxSolveMember.getSolveOrder() &&
-                         member.getDimension().getOrdinal(root.cube) <
-                         maxSolveMember.getDimension().getOrdinal(root.cube)))
-                {
+                } else if (expandsBefore(member, maxSolveMember)) {
                     maxSolveMember = member;
                 }
                 break;
 
             case QUERY_SCOPE:
-                if (foundAggregateFunction(member.getExpression())) {
+                if (maxSolveMember.containsAggregateFunction()) {
                     continue;
                 }
 
                 if (member.isCalculatedInQuery()) {
-                    if (member.getSolveOrder() > maxSolveMember.getSolveOrder() ||
-                       (member.getSolveOrder() == maxSolveMember.getSolveOrder() &&
-                        member.getDimension().getOrdinal(root.cube) <
-                        maxSolveMember.getDimension().getOrdinal(root.cube))) {
+                    if (expandsBefore(member, maxSolveMember)) {
                         maxSolveMember = member;
                     }
                 }
@@ -896,26 +869,34 @@ public class RolapEvaluator implements Evaluator {
         return maxSolveMember;
     }
 
-    private boolean foundAggregateFunction(Exp exp) {
-        if (exp instanceof ResolvedFunCall) {
-            ResolvedFunCall resolvedFunCall = (ResolvedFunCall) exp;
-            if (resolvedFunCall.getFunDef() instanceof AggregateFunDef) {
-                return true;
-            } else {
-                for (Exp argExp : resolvedFunCall.getArgs()) {
-                    if (foundAggregateFunction(argExp)) {
-                        return true;
-                    }
-                }
-            }
+    /**
+     * Returns whether a given calculation expands before another.
+     * A calculation expands before another if its solve order is higher,
+     * or if its solve order is the same and its dimension ordinal is lower.
+     *
+     * @param calc1 First calculated member or tuple
+     * @param calc2 Second calculated member or tuple
+     * @return Whether calc1 expands before calc2
+     */
+    private boolean expandsBefore(
+        RolapCalculation calc1,
+        RolapCalculation calc2)
+    {
+        final int solveOrder1 = calc1.getSolveOrder();
+        final int solveOrder2 = calc2.getSolveOrder();
+        if (solveOrder1 > solveOrder2) {
+            return true;
+        } else {
+            return solveOrder1 == solveOrder2
+                && calc1.getDimensionOrdinal(root.cube)
+                   < calc2.getDimensionOrdinal(root.cube);
         }
-        return false;
     }
 
-    private void removeCalcMember(Member previous) {
+    void removeCalcMember(RolapCalculation previous) {
         for (int i = 0; i < calcMemberCount; i++) {
-            final Member calcMember = calcMembers[i];
-            if (calcMember == previous) {
+            final RolapCalculation calcMember = calcMembers[i];
+            if (calcMember.equals(previous)) {
                 // overwrite this member with the end member
                 --calcMemberCount;
                 calcMembers[i] = calcMembers[calcMemberCount];

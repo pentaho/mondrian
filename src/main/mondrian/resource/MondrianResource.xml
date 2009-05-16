@@ -196,10 +196,6 @@
     <text>WHERE clause expression returned set with more than one element.</text>
 </exception>
 
-<exception id="350475" name="EmptySlicer">
-    <text>WHERE clause expression returned NULL or empty set.</text>
-</exception>
-
 <exception id="350490" name="FunctionMbrAndLevelHierarchyMismatch">
     <text>The &lt;level&gt; and &lt;member&gt; arguments to {0} must be from the same hierarchy. The level was from ''{1}'' but the member was from ''{2}''.</text>
 </exception>

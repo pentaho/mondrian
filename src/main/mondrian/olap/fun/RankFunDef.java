@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -321,14 +321,17 @@ public class RankFunDef extends FunDefBase {
         private final ListCalc listCalc;
         private final Calc sortCalc;
 
-        public SortCalc(Exp exp, ListCalc listExp, Calc sortExp) {
-            super(exp);
-            this.listCalc = listExp;
-            this.sortCalc = sortExp;
-        }
-
-        public Calc[] getCalcs() {
-            return new Calc[] {listCalc, sortCalc};
+        /**
+         * Creates a SortCalc.
+         *
+         * @param exp Source expression
+         * @param listCalc Compiled expression to compute the list
+         * @param sortCalc Compiled expression to compute the sort key
+         */
+        public SortCalc(Exp exp, ListCalc listCalc, Calc sortCalc) {
+            super(exp, new Calc[] {listCalc, sortCalc});
+            this.listCalc = listCalc;
+            this.sortCalc = sortCalc;
         }
 
         public boolean dependsOn(Dimension dimension) {
@@ -441,14 +444,17 @@ public class RankFunDef extends FunDefBase {
         private final ListCalc listCalc;
         private final boolean tuple;
 
+        /**
+         * Creates a RankedListCalc.
+         *
+         * @param listCalc Compiled expression to compute the list
+         * @param tuple Whether elements of the list are tuples (as opposed to
+         * members)
+         */
         public RankedListCalc(ListCalc listCalc, boolean tuple) {
-            super(new DummyExp(listCalc.getType()));
+            super(new DummyExp(listCalc.getType()), new Calc[] {listCalc});
             this.listCalc = listCalc;
             this.tuple = tuple;
-        }
-
-        public Calc[] getCalcs() {
-            return new Calc[] {listCalc};
         }
 
         public Object evaluate(Evaluator evaluator) {

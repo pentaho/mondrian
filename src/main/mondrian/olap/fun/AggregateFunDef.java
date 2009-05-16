@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,7 +12,6 @@ package mondrian.olap.fun;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ListCalc;
-import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
@@ -40,6 +39,11 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             new String[]{"fnx", "fnxn"},
             AggregateFunDef.class);
 
+    /**
+     * Creates an AggregateFunDef.
+     *
+     * @param dummyFunDef Dummy function
+     */
     public AggregateFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
     }
@@ -52,7 +56,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         return new AggregateCalc(call, listCalc, calc);
     }
 
-    public static class AggregateCalc extends AbstractDoubleCalc {
+    public static class AggregateCalc extends GenericCalc {
         private final ListCalc listCalc;
         private final Calc calc;
 
@@ -62,7 +66,26 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             this.calc = calc;
         }
 
-        public double evaluateDouble(Evaluator evaluator) {
+        public Object evaluate(Evaluator evaluator) {
+            List list = evaluateCurrentList(listCalc, evaluator);
+            return aggregate(calc, evaluator, list);
+        }
+
+        /**
+         * Computes an expression for each element of a list, and aggregates
+         * the result according to the evaluation context's current aggregation
+         * strategy.
+         *
+         * @param calc Compiled expression to evaluate a scalar
+         * @param evaluator Evaluation context
+         * @param list List of members or tuples
+         * @return Aggregated result
+         */
+        public static Object aggregate(
+            Calc calc,
+            Evaluator evaluator,
+            List list)
+        {
             Aggregator aggregator =
                 (Aggregator) evaluator.getProperty(
                     Property.AGGREGATION_TYPE.name, null);
@@ -77,82 +100,88 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     null,
                     "Don't know how to rollup aggregator '" + aggregator + "'");
             }
-            List list = evaluateCurrentList(listCalc, evaluator);
-            if (aggregator == RolapAggregator.DistinctCount) {
-                // If the list is empty, it means the current context
-                // contains no qualifying cells. The result set is empty.
-                if (list.size() == 0) {
-                    return DoubleNull;
-                }
-
-                // Optimize the list
-                // E.g.
-                // List consists of:
-                //  (Gender.[All Gender], [Product].[All Products]),
-                //  (Gender.[All Gender].[F], [Product].[All Products].[Drink]),
-                //  (Gender.[All Gender].[M], [Product].[All Products].[Food])
-                // Can be optimized to:
-                //  (Gender.[All Gender], [Product].[All Products])
-                //
-                // Similar optimization can also be done for list of members.
-                List<Member[]> tupleList;
-                if (list.get(0) instanceof Member) {
-                    tupleList = makeTupleList((List<Member>)list);
-                } else {
-                    tupleList =  (List<Member[]>) list;
-                }
-
-                RolapEvaluator rolapEvaluator = null;
-                if (evaluator instanceof RolapEvaluator) {
-                    rolapEvaluator = (RolapEvaluator) evaluator;
-                }
-
-                if ((rolapEvaluator != null) &&
-                    rolapEvaluator.getDialect().supportsUnlimitedValueList()) {
-                    // If the DBMS does not have an upper limit on IN list
-                    // predicate size, then don't attempt any list
-                    // optimization, since the current algorithm is
-                    // very slow.  May want to revisit this if someone
-                    // improves the algorithm.
-                } else {
-                    // FIXME: We remove overlapping tuple entries only to pass
-                    // AggregationOnDistinctCountMeasuresTest
-                    // .testOptimizeListWithTuplesOfLength3 on Access. Without
-                    // the optimization, we generate a statement 7000
-                    // characters long and Access gives "Query is too complex".
-                    // The optimization is expensive, so we only want to do it
-                    // if the DBMS can't execute the query otherwise.
-                    if ((rolapEvaluator != null) &&
-                        rolapEvaluator.getDialect().getDatabaseProduct()
-                            == Dialect.DatabaseProduct.ACCESS &&
-                        false) {
-                        tupleList = removeOverlappingTupleEntries(tupleList);
-                    }
-                    if (true) {
-                        tupleList =
-                            optimizeChildren(
-                                tupleList,
-                                evaluator.getSchemaReader(),
-                                evaluator.getMeasureCube());
-                    }
-                    checkIfAggregationSizeIsTooLarge(tupleList);
-                }
-
-                // Can't aggregate distinct-count values in the same way
-                // which is used for other types of aggregations. To evaluate a
-                // distinct-count across multiple members, we need to gather
-                // the members together, then evaluate the collection of
-                // members all at once. To do this, we postpone evaluation,
-                // and create a lambda function containing the members.
-                Evaluator evaluator2 =
-                    evaluator.pushAggregation(tupleList);
-                // cancel nonEmpty context
-                evaluator2.setNonEmpty(false);
-                final Object o = evaluator2.evaluateCurrent();
-                final Number number = (Number) o;
-                return GenericCalc.numberToDouble(number);
+            if (aggregator != RolapAggregator.DistinctCount) {
+                return rollup.aggregate(evaluator.push(false), list, calc);
             }
-            return (Double) rollup.aggregate(evaluator.push(false), list, calc);
+
+            // All that follows is logic for distinct count. It's not like the
+            // other aggregators.
+            if (list.size() == 0) {
+                return DoubleNull;
+            }
+
+            // Optimize the list
+            // E.g.
+            // List consists of:
+            //  (Gender.[All Gender], [Product].[All Products]),
+            //  (Gender.[All Gender].[F], [Product].[All Products].[Drink]),
+            //  (Gender.[All Gender].[M], [Product].[All Products].[Food])
+            // Can be optimized to:
+            //  (Gender.[All Gender], [Product].[All Products])
+            //
+            // Similar optimization can also be done for list of members.
+            List<Member[]> tupleList;
+            if (list.get(0) instanceof Member) {
+                tupleList = makeTupleList((List<Member>)list);
+            } else {
+                tupleList =  (List<Member[]>) list;
+            }
+
+            tupleList = optimizeTupleList(evaluator, tupleList);
+
+            // Can't aggregate distinct-count values in the same way
+            // which is used for other types of aggregations. To evaluate a
+            // distinct-count across multiple members, we need to gather
+            // the members together, then evaluate the collection of
+            // members all at once. To do this, we postpone evaluation,
+            // and create a lambda function containing the members.
+            Evaluator evaluator2 =
+                evaluator.pushAggregation(tupleList);
+            // cancel nonEmpty context
+            evaluator2.setNonEmpty(false);
+            return evaluator2.evaluateCurrent();
+        }
+
+        public static List<Member[]> optimizeTupleList(
+            Evaluator evaluator,
+            List<Member[]> tupleList)
+        {
+            RolapEvaluator rolapEvaluator = null;
+            if (evaluator instanceof RolapEvaluator) {
+                rolapEvaluator = (RolapEvaluator) evaluator;
+            }
+
+            if ((rolapEvaluator != null) &&
+                rolapEvaluator.getDialect().supportsUnlimitedValueList()) {
+                // If the DBMS does not have an upper limit on IN list
+                // predicate size, then don't attempt any list
+                // optimization, since the current algorithm is
+                // very slow.  May want to revisit this if someone
+                // improves the algorithm.
+            } else {
+                // FIXME: We remove overlapping tuple entries only to pass
+                // AggregationOnDistinctCountMeasuresTest
+                // .testOptimizeListWithTuplesOfLength3 on Access. Without
+                // the optimization, we generate a statement 7000
+                // characters long and Access gives "Query is too complex".
+                // The optimization is expensive, so we only want to do it
+                // if the DBMS can't execute the query otherwise.
+                if ((rolapEvaluator != null) &&
+                    rolapEvaluator.getDialect().getDatabaseProduct()
+                        == Dialect.DatabaseProduct.ACCESS &&
+                    false) {
+                    tupleList = removeOverlappingTupleEntries(tupleList);
+                }
+                if (true) {
+                    tupleList =
+                        optimizeChildren(
+                            tupleList,
+                            evaluator.getSchemaReader(),
+                            evaluator.getMeasureCube());
+                }
+                checkIfAggregationSizeIsTooLarge(tupleList);
+            }
+            return tupleList;
         }
 
         /**
@@ -169,10 +198,11 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          * Can be optimized to:
          *  (Gender.[All Gender], [Product].[All Products])
          *
-         * @param list
+         * @param list List of tuples
          */
-
-        public static List<Member[]> removeOverlappingTupleEntries(List<Member[]> list) {
+        public static List<Member[]> removeOverlappingTupleEntries(
+            List<Member[]> list)
+        {
             List<Member[]> trimmedList = new ArrayList<Member[]>();
             for (Member[] tuple1 : list) {
                 if (trimmedList.isEmpty()) {
@@ -199,10 +229,11 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         }
 
         /**
-         * Returns whether tuple1 is a superset of tuple2
-         * @param tuple1
-         * @param tuple2
-         * @return boolean
+         * Returns whether tuple1 is a superset of tuple2.
+         *
+         * @param tuple1 First tuple
+         * @param tuple2 Second tuple
+         * @return boolean Whether tuple1 is a superset of tuple2
          */
         public static boolean isSuperSet(Member[] tuple1, Member[] tuple2) {
             int parentLevelCount = 0;
@@ -233,21 +264,17 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             return tupleList;
         }
 
-        private void checkIfAggregationSizeIsTooLarge(List list) {
+        private static void checkIfAggregationSizeIsTooLarge(List list) {
             final IntegerProperty property =
                 MondrianProperties.instance().MaxConstraints;
             final int maxConstraints = property.get();
             if (list.size() > maxConstraints) {
                 throw newEvalException(
                     null,
-                    "Distinct Count aggregation is not supported over a list"
-                        + " with more than " + maxConstraints + " predicates"
-                        + " (see property " + property.getPath() + ")");
+                    "Aggregation is not supported over a list"
+                    + " with more than " + maxConstraints + " predicates"
+                    + " (see property " + property.getPath() + ")");
             }
-        }
-
-        public Calc[] getCalcs() {
-            return new Calc[] {listCalc, calc};
         }
 
         public boolean dependsOn(Dimension dimension) {

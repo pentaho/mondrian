@@ -116,6 +116,16 @@ public class Bug {
     public static final boolean BugMondrian503Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-555">bug MONDRIAN-555,
+     * "Compound slicer counts cells twice in certain cases"</a> is fixed.
+     * If a set in the slicer contains the same member more than once, or more
+     * generally, if the regions overlap, then mondrian counts the overlaps
+     * twice, whereas SSAS 2005 does not.
+     */
+    public static final boolean BugMondrian555Fixed = false;
+
+    /**
      * Returns whether to avoid a test because the memory monitor may cause it
      * to fail.
      *

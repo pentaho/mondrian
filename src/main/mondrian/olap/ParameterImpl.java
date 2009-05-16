@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -182,16 +182,13 @@ public class ParameterImpl
      * It uses a slot which has a unique id within the execution environment.
      */
     private static class ParameterCalc
-        extends GenericCalc {
+        extends GenericCalc
+    {
         private final ParameterSlot slot;
 
         public ParameterCalc(ParameterSlot slot) {
-            super(new DummyExp(slot.getParameter().getType()));
+            super(new DummyExp(slot.getParameter().getType()), new Calc[0]);
             this.slot = slot;
-        }
-
-        public Calc[] getCalcs() {
-            return new Calc[0];
         }
 
         public Object evaluate(Evaluator evaluator) {

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,7 +13,6 @@
 
 package mondrian.olap;
 
-import java.util.Iterator;
 import java.util.List;
 import org.apache.log4j.Logger;
 import java.io.PrintWriter;
@@ -45,10 +44,12 @@ public abstract class ResultBase implements Result {
     public Axis[] getAxes() {
         return axes;
     }
+
     // implement Result
     public Axis getSlicerAxis() {
         return slicerAxis;
     }
+
     // implement Result
     public void print(PrintWriter pw) {
         for (int i = -1; i < axes.length; i++) {
@@ -61,40 +62,20 @@ public abstract class ResultBase implements Result {
         int[] pos = new int[axes.length];
         printRows(pw, axes.length - 1, pos);
     }
+
     private void printRows(PrintWriter pw, int axis, int[] pos) {
-        Axis _axis = axis < 0 ? slicerAxis : axes[axis];
-        List<Position> positions = _axis.getPositions();
-        int i = 0;
-        for (Position position : positions) {
-            if (axis < 0) {
-                if (i > 0) {
-                    pw.print(", ");
-                }
-                printCell(pw, pos);
-            } else {
+        if (axis < 0) {
+            printCell(pw, pos);
+        } else {
+            Axis _axis = axes[axis];
+            List<Position> positions = _axis.getPositions();
+            for (int i = 0; i < positions.size(); i++) {
                 pos[axis] = i;
                 if (axis == 0) {
-                    int row = axis + 1 < pos.length ? pos[axis + 1] : 0;
-                    pw.print("Row #" + row + ": ");
-                }
-                printRows(pw, axis - 1, pos);
-                if (axis == 0) {
-                    pw.println();
-                }
-            }
-            i++;
-        }
-/*
-        for (int i = 0, count = positions.size(); i < count; i++) {
-            if (axis < 0) {
-                if (i > 0) {
-                    pw.print(", ");
-                }
-                printCell(pw, pos);
-            } else {
-                pos[axis] = i;
-                if (axis == 0) {
-                    int row = axis + 1 < pos.length ? pos[axis + 1] : 0;
+                    int row =
+                        axis + 1 < pos.length
+                            ? pos[axis + 1]
+                            : 0;
                     pw.print("Row #" + row + ": ");
                 }
                 printRows(pw, axis - 1, pos);
@@ -103,8 +84,8 @@ public abstract class ResultBase implements Result {
                 }
             }
         }
-*/
     }
+
     private void printAxis(PrintWriter pw, Axis axis) {
         List<Position> positions = axis.getPositions();
         for (Position position : positions) {
@@ -124,6 +105,7 @@ public abstract class ResultBase implements Result {
             pw.println("}");
         }
     }
+
     private void printCell(PrintWriter pw, int[] pos) {
         Cell cell = getCell(pos);
         pw.print(cell.getFormattedValue());

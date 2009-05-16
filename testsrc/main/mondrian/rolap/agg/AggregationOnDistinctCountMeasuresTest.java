@@ -427,7 +427,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 + "Axis #2:\n"
                 + "{[Product].[X]}\n"
                 + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: "
-                + "Distinct Count aggregation is not supported over a list with more than 7 predicates (see property mondrian.rolap.maxConstraints)\n";
+                + "Aggregation is not supported over a list with more than 7 predicates (see property mondrian.rolap.maxConstraints)\n";
         }
 
         assertQueryReturns(

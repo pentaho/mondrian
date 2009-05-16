@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -28,12 +28,20 @@ import java.util.Collections;
  * @since Sep 27, 2005
  */
 public abstract class AbstractCalc implements Calc {
+    private final Calc[] calcs;
     protected final Type type;
     protected final Exp exp;
 
-    protected AbstractCalc(Exp exp) {
+    /**
+     * Creates an AbstractCalc.
+     *
+     * @param exp Source expression
+     * @param calcs Child compiled expressions
+     */
+    protected AbstractCalc(Exp exp, Calc[] calcs) {
         assert exp != null;
         this.exp = exp;
+        this.calcs = calcs;
         this.type = exp.getType();
     }
 
@@ -93,7 +101,9 @@ public abstract class AbstractCalc implements Calc {
     /**
      * Returns this expression's child expressions.
      */
-    public abstract Calc[] getCalcs();
+    public Calc[] getCalcs() {
+        return calcs;
+    }
 
     public boolean dependsOn(Dimension dimension) {
         return anyDepends(getCalcs(), dimension);

@@ -568,7 +568,7 @@ public class TestContext {
      * @param queryString Query string
      * @param pattern Pattern which exception must match
      */
-    public void assertThrows(String queryString, String pattern) {
+    public void assertQueryThrows(String queryString, String pattern) {
         Throwable throwable;
         try {
             Result result = executeQuery(queryString);
@@ -578,6 +578,13 @@ public class TestContext {
             throwable = e;
         }
         checkThrowable(throwable, pattern);
+    }
+
+    /**
+     * @deprecated Use {@link #assertQueryThrows(String, String)}.
+     */
+    public final void assertThrows(String queryString, String pattern) {
+        assertQueryThrows(queryString, pattern);
     }
 
     /**

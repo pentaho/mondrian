@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -26,23 +26,23 @@ import mondrian.calc.*;
  * @since Sep 26, 2005
  */
 public abstract class AbstractBooleanCalc
-        extends AbstractCalc
-        implements BooleanCalc {
-    private final Calc[] calcs;
-
+    extends AbstractCalc
+    implements BooleanCalc
+{
+    /**
+     * Creates an AbstractBooleanCalc.
+     *
+     * @param exp Source expression
+     * @param calcs Child compiled expressions
+     */
     public AbstractBooleanCalc(Exp exp, Calc[] calcs) {
-        super(exp);
-        this.calcs = calcs;
+        super(exp, calcs);
         // now supports int and double conversion (see AbstractExpCompiler.compileBoolean()
         // assert getType() instanceof BooleanType;
     }
 
     public Object evaluate(Evaluator evaluator) {
         return Boolean.valueOf(evaluateBoolean(evaluator));
-    }
-
-    public Calc[] getCalcs() {
-        return calcs;
     }
 }
 

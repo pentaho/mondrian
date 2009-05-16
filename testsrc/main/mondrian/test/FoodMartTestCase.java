@@ -89,8 +89,15 @@ public class FoodMartTestCase extends TestCase {
      * Runs a query, and asserts that it throws an exception which contains
      * the given pattern.
      */
-    public void assertThrows(String queryString, String pattern) {
-        getTestContext().assertThrows(queryString, pattern);
+    public void assertQueryThrows(String queryString, String pattern) {
+        getTestContext().assertQueryThrows(queryString, pattern);
+    }
+
+    /**
+     * @deprecated Use {@link #assertQueryThrows(String, String)}
+     */
+    public final void assertThrows(String queryString, String pattern) {
+        assertQueryThrows(queryString, pattern);
     }
 
     /**
