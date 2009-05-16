@@ -16,7 +16,6 @@ import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
-import java.util.Collections;
 
 /**
  * Definition of the <code>Sum</code> MDX function.
@@ -92,8 +91,10 @@ class SumFunDef extends AbstractAggregateFunDef {
             return genIterCalc(call, ncalc, calc);
         }
     }
-    protected Calc genIterCalc(final ResolvedFunCall call,
-            final Calc ncalc, final Calc calc) {
+
+    protected Calc genIterCalc(
+        final ResolvedFunCall call, final Calc ncalc, final Calc calc)
+    {
         return new AbstractDoubleCalc(call, new Calc[] {ncalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 IterCalc iterCalc = (IterCalc) ncalc;
@@ -102,27 +103,20 @@ class SumFunDef extends AbstractAggregateFunDef {
                 return sumDouble(evaluator.push(), iterable, calc);
             }
 
-            public Calc[] getCalcs() {
-                return new Calc[] {ncalc, calc};
-            }
-
             public boolean dependsOn(Dimension dimension) {
                 return anyDependsButFirst(getCalcs(), dimension);
             }
         };
     }
 
-    protected Calc genListCalc(final ResolvedFunCall call,
-            final Calc ncalc, final Calc calc) {
+    protected Calc genListCalc(
+        final ResolvedFunCall call, final Calc ncalc, final Calc calc)
+    {
         return new AbstractDoubleCalc(call, new Calc[] {ncalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 ListCalc listCalc = (ListCalc) ncalc;
                 List memberList = evaluateCurrentList(listCalc, evaluator);
                 return sumDouble(evaluator.push(false), memberList, calc);
-            }
-
-            public Calc[] getCalcs() {
-                return new Calc[] {ncalc, calc};
             }
 
             public boolean dependsOn(Dimension dimension) {
