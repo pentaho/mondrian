@@ -71,40 +71,44 @@ class TopBottomCountFunDef extends FunDefBase {
                 compiler.compileScalar(call.getArg(2), true) :
                 null;
         final int arity = ((SetType) call.getType()).getArity();
-        return new AbstractListCalc(call, new Calc[] {listCalc, integerCalc, orderCalc}) {
+        return new AbstractListCalc(
+            call,
+            new Calc[]{listCalc, integerCalc, orderCalc})
+        {
             public List evaluateList(Evaluator evaluator) {
                 // Use a native evaluator, if more efficient.
                 // TODO: Figure this out at compile time.
                 SchemaReader schemaReader = evaluator.getSchemaReader();
                 NativeEvaluator nativeEvaluator =
-                        schemaReader.getNativeSetEvaluator(
-                                call.getFunDef(), call.getArgs(), evaluator, this);
+                    schemaReader.getNativeSetEvaluator(
+                        call.getFunDef(), call.getArgs(), evaluator, this);
                 if (nativeEvaluator != null) {
                     return (List) nativeEvaluator.execute(ResultStyle.LIST);
                 }
 
-                 // REVIEW mberkowitz Is it necessary to eval the list when n is null or zero?
-                 List list = listCalc.evaluateList(evaluator);
-                 if (list.isEmpty()) {
-                     return list;
-                 }
+                // REVIEW mberkowitz Is it necessary to eval the list when n is
+                // null or zero?
+                List list = listCalc.evaluateList(evaluator);
+                if (list.isEmpty()) {
+                    return list;
+                }
 
-                 int n = integerCalc.evaluateInteger(evaluator);
-                 if (n == 0 || n == mondrian.olap.fun.FunUtil.IntegerNull) {
-                     return new java.util.ArrayList();
-                 }
+                int n = integerCalc.evaluateInteger(evaluator);
+                if (n == 0 || n == mondrian.olap.fun.FunUtil.IntegerNull) {
+                    return new java.util.ArrayList();
+                }
 
-                 if (orderCalc == null) {
-                     if (list instanceof AbstractList && list.size() < n) {
-                         return list;
-                     } else {
-                         return list.subList(0, n);
-                     }
-                 }
+                if (orderCalc == null) {
+                    if (list instanceof AbstractList && list.size() < n) {
+                        return list;
+                    } else {
+                        return list.subList(0, n);
+                    }
+                }
 
-                 return partiallySortList(evaluator, list, hasHighCardDimension(list), n, arity);
+                return partiallySortList(
+                    evaluator, list, hasHighCardDimension(list), n, arity);
             }
-
 
             private List partiallySortList(
                 Evaluator evaluator,

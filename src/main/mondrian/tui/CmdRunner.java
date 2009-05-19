@@ -1136,7 +1136,7 @@ public class CmdRunner {
 
                 // line will always contain EOL marker at least, unless at EOF
                 offset = 0;
-               if (line.length() == 0) {
+                if (line.length() == 0) {
                     break;
                 }
             }

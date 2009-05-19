@@ -34,16 +34,16 @@ import java.io.StringReader;
 import java.util.List;
 
 /**
- * transforms a mondrian result into a DOM
+ * Transforms a mondrian result into a DOM (Document Object Model).
  */
-public class DOMBuilder {
-    private static final Logger LOGGER = Logger.getLogger(DOMBuilder.class);
+public class DomBuilder {
+    private static final Logger LOGGER = Logger.getLogger(DomBuilder.class);
 
     Document factory;
     Result result;
     int dimCount;
 
-    protected DOMBuilder(Document factory, Result result) {
+    protected DomBuilder(Document factory, Result result) {
         this.factory = factory;
         this.result = result;
     }
@@ -61,7 +61,7 @@ public class DOMBuilder {
     }
 
     public static Element build(Document factory, Result result) {
-        return new DOMBuilder(factory, result).build();
+        return new DomBuilder(factory, result).build();
     }
 
     private Element build() {
@@ -84,7 +84,7 @@ public class DOMBuilder {
             buildRows2Dim(body, result.getAxes()[1]);
             break;
         default:
-            throw new IllegalArgumentException("DOMBuilder requires 0, 1 or 2 dimensional result");
+            throw new IllegalArgumentException("DomBuilder requires 0, 1 or 2 dimensional result");
         }
         Element slicers = elem("slicers", mdxtable);
         buildSlicer(slicers);
@@ -306,13 +306,13 @@ public class DOMBuilder {
     private void addMemberProperties(Member m, Element e) {
         Property[] props = m.getLevel().getProperties();
         if (props != null) {
-          for (int i = 0; i < props.length; i++) {
-            String propName = props[i].getName();
-            String propValue = "" + m.getPropertyValue(propName);
-            Element propElem = elem("property", e);
-            propElem.setAttribute("name", propName);
-            propElem.setAttribute("value", propValue);
-          }
+            for (int i = 0; i < props.length; i++) {
+                String propName = props[i].getName();
+                String propValue = "" + m.getPropertyValue(propName);
+                Element propElem = elem("property", e);
+                propElem.setAttribute("name", propName);
+                propElem.setAttribute("value", propValue);
+            }
         }
     }
 
@@ -354,4 +354,4 @@ public class DOMBuilder {
 
 }
 
-// End DOMBuilder.java
+// End DomBuilder.java

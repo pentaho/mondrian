@@ -22,9 +22,9 @@ import org.apache.log4j.Logger;
  *
  * @version $Id$
  */
-public class JDBCMetaData {
+public class JdbcMetaData {
 
-    private static final Logger LOGGER = Logger.getLogger(JDBCMetaData.class);
+    private static final Logger LOGGER = Logger.getLogger(JdbcMetaData.class);
 
     String jdbcDriverClassName = null; //"org.postgresql.Driver"
     String jdbcConnectionUrl = null; // "jdbc:postgresql://localhost:5432/hello?user=postgres&password=post"
@@ -43,9 +43,11 @@ public class JDBCMetaData {
     private String errMsg = null;
     private Database db = new Database();
 
-    public JDBCMetaData(Workbench wb, String jdbcDriverClassName,
-            String jdbcConnectionUrl, String jdbcUsername,
-            String jdbcPassword, String jdbcSchema, boolean requireSchema) {
+    public JdbcMetaData(
+        Workbench wb, String jdbcDriverClassName,
+        String jdbcConnectionUrl, String jdbcUsername,
+        String jdbcPassword, String jdbcSchema, boolean requireSchema)
+    {
         this.workbench = wb;
         this.jdbcConnectionUrl = jdbcConnectionUrl;
         this.jdbcDriverClassName = jdbcDriverClassName;
@@ -74,7 +76,12 @@ public class JDBCMetaData {
     /**
      * tests database connection. Called from Preferences dialog button test connection
      */
-    public JDBCMetaData(String jdbcDriverClassName, String jdbcConnectionUrl, String jdbcUsername, String jdbcPassword) {
+    public JdbcMetaData(
+        String jdbcDriverClassName,
+        String jdbcConnectionUrl,
+        String jdbcUsername,
+        String jdbcPassword)
+    {
         this.jdbcConnectionUrl = jdbcConnectionUrl;
         this.jdbcDriverClassName = jdbcDriverClassName;
         this.jdbcUsername = jdbcUsername;
@@ -87,15 +94,16 @@ public class JDBCMetaData {
 
     /* Creates a database connection and initializes the meta data details */
     public String initConnection() {
-        LOGGER.debug("JDBCMetaData: initConnection");
+        LOGGER.debug("JdbcMetaData: initConnection");
 
         try {
             if (jdbcDriverClassName == null || jdbcDriverClassName.trim().length() == 0 ||
                 jdbcConnectionUrl == null || jdbcConnectionUrl.trim().length() == 0)
             {
-                errMsg = getResourceConverter().getFormattedString("jdbcMetaData.blank.exception",
-                        "Driver={0}\nConnection URL={1}\nUse Preferences to set Database Connection parameters first and then open a Schema",
-                        new String[] { jdbcDriverClassName, jdbcConnectionUrl });
+                errMsg = getResourceConverter().getFormattedString(
+                    "jdbcMetaData.blank.exception",
+                    "Driver={0}\nConnection URL={1}\nUse Preferences to set Database Connection parameters first and then open a Schema",
+                    new String[] { jdbcDriverClassName, jdbcConnectionUrl });
                 return errMsg;
             }
 
@@ -132,7 +140,7 @@ public class JDBCMetaData {
             Class.forName("org.postgresql.Driver");
             conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/demo","admin","admin");
              */
-            LOGGER.debug("JDBCMetaData: initConnection - no error");
+            LOGGER.debug("JdbcMetaData: initConnection - no error");
             return null;
         } catch (Exception e) {
             errMsg = e.getClass().getSimpleName() + " : " + e.getLocalizedMessage();
@@ -181,7 +189,7 @@ public class JDBCMetaData {
 
     /* list all schemas in the currently connected database */
     public List<String> listAllSchemas() {
-        LOGGER.debug("JDBCMetaData: listAllSchemas");
+        LOGGER.debug("JdbcMetaData: listAllSchemas");
 
         if (initConnection() != null) {
             return null;
@@ -215,7 +223,7 @@ public class JDBCMetaData {
 
     /* set all schemas in the currently connected database */
     private void setAllSchemas() {
-        LOGGER.debug("JDBCMetaData: setAllSchemas");
+        LOGGER.debug("JdbcMetaData: setAllSchemas");
 
         ResultSet rs = null;
         boolean gotSchema = false;
@@ -232,7 +240,7 @@ public class JDBCMetaData {
                 if (inJdbcSchemas(schemaName)) {
                     DbSchema dbs = new DbSchema();
                     dbs.name = schemaName;
-                    LOGGER.debug("JDBCMetaData: setAllTables - " + dbs.name);
+                    LOGGER.debug("JdbcMetaData: setAllTables - " + dbs.name);
                     setAllTables(dbs);
                     db.addDbSchema(dbs);
                     gotSchema = true;
@@ -249,7 +257,7 @@ public class JDBCMetaData {
         }
 
         if (!gotSchema) {
-            LOGGER.debug("JDBCMetaData: setAllSchemas - tables with no schema name");
+            LOGGER.debug("JdbcMetaData: setAllSchemas - tables with no schema name");
             DbSchema dbs = new DbSchema();
             dbs.name = null;    //tables with no schema name
             setAllTables(dbs);
@@ -259,7 +267,7 @@ public class JDBCMetaData {
 
     /* set all tables in the currently connected database */
     private void setAllTables(DbSchema dbs) {
-        LOGGER.debug("JDBCMetaData: Loading schema: '" + dbs.name + "'");
+        LOGGER.debug("JdbcMetaData: Loading schema: '" + dbs.name + "'");
         ResultSet rs = null;
         try {
             // Tables and views can be used
@@ -287,8 +295,10 @@ public class JDBCMetaData {
                 try {
                     if (rs_fks.next()) {
                         dbt = new FactTable();
-                        do  {
-                            ((FactTable) dbt).addFks(rs_fks.getString("FKCOLUMN_NAME"),rs_fks.getString("pktable_name"));
+                        do {
+                            ((FactTable) dbt).addFks(
+                                rs_fks.getString("FKCOLUMN_NAME"),
+                                rs_fks.getString("pktable_name"));
                         } while (rs_fks.next());
                     } else {
                         dbt = new DbTable();
@@ -399,7 +409,7 @@ public class JDBCMetaData {
     }
 
 /* ===================================================================================================
- *  The following functions provide an interface to JDBCMetaData class to retrieve the meta data details
+ *  The following functions provide an interface to JdbcMetaData class to retrieve the meta data details
  * =================================================================================================== */
 
     public Vector<String> getAllSchemas() {
@@ -599,7 +609,6 @@ public class JDBCMetaData {
         String password = null;
 
         if (args.length > 2) {
-
             if (args.length != 4) {
                 throw new RuntimeException("need 4 args: including user name and password");
             }
@@ -607,7 +616,8 @@ public class JDBCMetaData {
             password = args[3];
         }
 
-        JDBCMetaData sb = new JDBCMetaData(null, driverClass, jdbcUrl, username, password, "", false);
+        JdbcMetaData
+            sb = new JdbcMetaData(null, driverClass, jdbcUrl, username, password, "", false);
 
         Vector<String> foundSchemas = sb.getAllSchemas();
         System.out.println("allSchemas = " + foundSchemas);
@@ -1179,4 +1189,5 @@ public class JDBCMetaData {
         }
     }
 }
-// End JDBCMetaData.java
+
+// End JdbcMetaData.java

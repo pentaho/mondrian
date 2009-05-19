@@ -22,7 +22,9 @@ import javax.swing.text.PlainDocument;
  * @author  sean
  * @version $Id$
  */
-public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCellRenderer {
+public class SchemaPropertyCellRenderer
+    extends javax.swing.table.DefaultTableCellRenderer
+{
 
     Workbench workbench;
 
@@ -47,7 +49,6 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
 
     /** Creates a new instance of SchemaPropertyCellRenderer */
     public SchemaPropertyCellRenderer(Workbench wb) {
-
         workbench = wb;
 
         super.setBackground(attributeBackground);

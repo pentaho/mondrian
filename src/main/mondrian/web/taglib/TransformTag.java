@@ -51,7 +51,7 @@ public class TransformTag extends TagSupport {
             ApplResources ar = ApplResources.getInstance(pageContext.getServletContext());
             ResultCache rc = ResultCache.getInstance(pageContext.getSession(), pageContext.getServletContext(), query);
             Document doc = rc.getDOM();
-            // DOMBuilder.debug(doc);
+            // DomBuilder.debug(doc);
             Transformer transformer = ar.getTransformer(xsltURI, xsltCache);
             transformer.transform(new DOMSource(doc), new StreamResult(pageContext.getOut()));
         } catch (Exception e) {

@@ -526,11 +526,13 @@ public class RolapCube extends CubeBase {
                 new Formula[finalCalcMemberList.size()]);
 
         for (Formula calcMember : finalCalcMemberList) {
-              if (calcMember.getName().
-                  equalsIgnoreCase(xmlVirtualCube.defaultMeasure)) {
-                  this.measuresHierarchy.setDefaultMember(calcMember.getMdxMember());
-                  break;
-              }
+            if (calcMember.getName().equalsIgnoreCase(
+                xmlVirtualCube.defaultMeasure))
+            {
+                this.measuresHierarchy.setDefaultMember(
+                    calcMember.getMdxMember());
+                break;
+            }
         }
 
         // Note: virtual cubes do not get aggregate

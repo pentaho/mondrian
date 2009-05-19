@@ -41,7 +41,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         this.urlTextField.setText(s);
     }
 
-    public String getJDBCConnectionUrl() {
+    public String getJdbcConnectionUrl() {
         return urlTextField.getText();
     }
 
@@ -49,7 +49,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         this.usernameTextField.setText(s);
     }
 
-    public String getJDBCUsername() {
+    public String getJdbcUsername() {
         return usernameTextField.getText();
     }
 
@@ -57,7 +57,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         this.passwordTextField.setText(s);
     }
 
-    public String getJDBCPassword() {
+    public String getJdbcPassword() {
         return passwordTextField.getText();
     }
 
@@ -65,7 +65,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         this.driverClassTextField.setText(s);
     }
 
-    public String getJDBCDriverClassName() {
+    public String getJdbcDriverClassName() {
         return driverClassTextField.getText();
     }
 
@@ -326,7 +326,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
     } //GEN-END:initComponents
 
     private void selectSchemasButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        JDBCMetaData jdbcMetaData = getTestingJDBCMetadata();
+        JdbcMetaData jdbcMetaData = getTestingJdbcMetadata();
         if (jdbcMetaData.getErrMsg() != null) {
             JOptionPane.showMessageDialog(this,
                 getResourceConverter()
@@ -362,13 +362,16 @@ public class PreferencesDialog extends javax.swing.JDialog {
         setVisible(true);
     }
 
-    public JDBCMetaData getTestingJDBCMetadata() {
-        return new JDBCMetaData(getJDBCDriverClassName(),
-                getJDBCConnectionUrl(), getJDBCUsername(), getJDBCPassword());
+    public JdbcMetaData getTestingJdbcMetadata() {
+        return new JdbcMetaData(
+            getJdbcDriverClassName(),
+            getJdbcConnectionUrl(),
+            getJdbcUsername(),
+            getJdbcPassword());
     }
 
     private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testButtonActionPerformed
-        JDBCMetaData jdbcMetaData = getTestingJDBCMetadata();
+        JdbcMetaData jdbcMetaData = getTestingJdbcMetadata();
         if (jdbcMetaData.getErrMsg() != null) {
             JOptionPane.showMessageDialog(this,
                     getResourceConverter()

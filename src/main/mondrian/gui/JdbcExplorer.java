@@ -17,7 +17,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.MutableTreeNode;
-import mondrian.gui.JDBCMetaData.DbColumn;
+import mondrian.gui.JdbcMetaData.DbColumn;
 import org.apache.log4j.Logger;
 
 /**
@@ -25,13 +25,14 @@ import org.apache.log4j.Logger;
  * @author  sean
  * @version $Id$
  */
-public class JDBCExplorer extends javax.swing.JPanel
-        implements TreeWillExpandListener {
+public class JdbcExplorer
+    extends javax.swing.JPanel
+    implements TreeWillExpandListener
+{
+    private static final Logger LOGGER = Logger.getLogger(JdbcExplorer.class);
 
-    private static final Logger LOGGER = Logger.getLogger(JDBCExplorer.class);
-
-    JDBCMetaData jdbcMetaData;
-    JDBCTreeModel model;
+    JdbcMetaData jdbcMetaData;
+    JdbcTreeModel model;
 
     Workbench workbench;
 
@@ -39,19 +40,13 @@ public class JDBCExplorer extends javax.swing.JPanel
 
     DefaultTreeModel treeModel;
 
-    /** Creates new form JDBCExplorer
-    public JDBCExplorer() {
-        initComponents();
-    }
-     */
-
-    public JDBCExplorer(JDBCMetaData jdbcMetaData, Workbench wb) {
+    public JdbcExplorer(JdbcMetaData jdbcMetaData, Workbench wb) {
         workbench = wb;
         initComponents();
         setMetaData(jdbcMetaData);
     }
 
-    public void setMetaData(JDBCMetaData jdbcMetaData) {
+    public void setMetaData(JdbcMetaData jdbcMetaData) {
         try {
             this.jdbcMetaData = jdbcMetaData;
 
@@ -87,7 +82,7 @@ public class JDBCExplorer extends javax.swing.JPanel
         }
     }
 
-    public void resetMetaData(JDBCMetaData jdbcMetaData) {
+    public void resetMetaData(JdbcMetaData jdbcMetaData) {
         setMetaData(jdbcMetaData);
     }
 
@@ -146,7 +141,7 @@ public class JDBCExplorer extends javax.swing.JPanel
         NodeType type;
         boolean gotChildren = false;
         DefaultMutableTreeNode treeNode;
-        JDBCMetaData.DbColumn columnInfo;
+        JdbcMetaData.DbColumn columnInfo;
 
         public Node(String n,
                 NodeType t,
@@ -159,7 +154,7 @@ public class JDBCExplorer extends javax.swing.JPanel
         public Node(String n,
                 NodeType t,
                 DefaultMutableTreeNode tn,
-                JDBCMetaData.DbColumn ci) {
+                JdbcMetaData.DbColumn ci) {
             name = n;
             type = t;
             treeNode = tn;
@@ -271,4 +266,5 @@ public class JDBCExplorer extends javax.swing.JPanel
 
     private JTreeUpdater updater;
 }
-// End JDBCExplorer.java
+
+// End JdbcExplorer.java

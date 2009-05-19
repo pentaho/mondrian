@@ -19,10 +19,8 @@ import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
 import mondrian.gui.validate.ValidationUtils;
-import mondrian.gui.validate.impl.WorkbenchJDBCValidator;
-import mondrian.gui.validate.impl.WorkbenchMessages;
-import mondrian.gui.validate.impl.WorkbenchTreeModel;
-import mondrian.gui.validate.impl.WorkbenchTreeModelPath;
+import mondrian.gui.validate.impl.WorkbenchJdbcValidator;
+import mondrian.gui.validate.impl.*;
 
 import org.eigenbase.xom.ElementDef;
 
@@ -36,12 +34,12 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 
     private final ClassLoader myClassLoader;
     public boolean invalidFlag;
-    private JDBCMetaData jdbcMetaData;
+    private JdbcMetaData jdbcMetaData;
     private Workbench workbench;
 
     /** Creates a new instance of SchemaTreeCellRenderer */
 
-    public SchemaTreeCellRenderer(Workbench wb, JDBCMetaData jdbcMetaData) {
+    public SchemaTreeCellRenderer(Workbench wb, JdbcMetaData jdbcMetaData) {
         this();
         this.workbench = wb;
         this.jdbcMetaData = jdbcMetaData;
@@ -267,7 +265,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 
 
     public String invalid(JTree tree, TreePath tpath, Object value, Object icube, Object iparentDimension, Object iparentHierarchy, Object iparentLevel) {
-        return ValidationUtils.invalid(new WorkbenchMessages(workbench.getResourceConverter()), new WorkbenchJDBCValidator(jdbcMetaData),
+        return ValidationUtils.invalid(new WorkbenchMessages(workbench.getResourceConverter()), new WorkbenchJdbcValidator(jdbcMetaData),
                 new WorkbenchTreeModel((SchemaTreeModel) tree.getModel()), new WorkbenchTreeModelPath(tpath), value, icube, iparentDimension,
                 iparentHierarchy, iparentLevel, jdbcMetaData.getRequireSchema());
     }
@@ -287,9 +285,9 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
         setText(myText);
     }
 
-    public void setMetaData(JDBCMetaData aMetaData) {
+    public void setMetaData(JdbcMetaData aMetaData) {
         //EC: Called from the SchemaExplorer.resetMetadata(). A call to the updateUI() should be
-        //made on the owning SchemaFrame to reflect the use of the JDBCMetaData being set.
+        //made on the owning SchemaFrame to reflect the use of the JdbcMetaData being set.
         this.jdbcMetaData = aMetaData;
     }
 }

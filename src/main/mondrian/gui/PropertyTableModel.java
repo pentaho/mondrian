@@ -183,7 +183,7 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                     (target instanceof MondrianGuiDef.Level && pName.equals("table")))  {
                 // updating all table values
                 if (aValue != null) {   // split and save only if value exists
-                    String[] aValues = ((String) aValue).split(JDBCMetaData.LEVEL_SEPARATOR);
+                    String[] aValues = ((String) aValue).split(JdbcMetaData.LEVEL_SEPARATOR);
                     if (aValues.length == 2)  {
                         if (target instanceof MondrianGuiDef.Table) {
                             ((MondrianGuiDef.Table) target).name = aValues[1];
@@ -214,7 +214,7 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                     (target instanceof MondrianGuiDef.Property && pName.equals("column")))  {
                 // updating all column values
                 if (aValue != null) {   // split and save only if value exists
-                    String[] aValues = ((String) aValue).split(JDBCMetaData.LEVEL_SEPARATOR);
+                    String[] aValues = ((String) aValue).split(JdbcMetaData.LEVEL_SEPARATOR);
                     Field f = target.getClass().getField(propertyNames[rowIndex]);
                     //EC: Avoids *Column="" to be set on schema
                     // Also remove column data type with the final split on a dash

@@ -16,11 +16,9 @@ import java.io.FilenameFilter;
 import java.util.regex.Pattern;
 
 import mondrian.olap.*;
-import mondrian.test.TestContext;
 import mondrian.test.FoodMartTestCase;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
@@ -108,7 +106,8 @@ public class ResultComparatorTest extends FoodMartTestCase {
     }
 
     protected void runTest() throws Exception {
-        DocumentBuilder db = XMLUtility.createDomParser(false, true, false, new XMLUtility.UtilityErrorHandler());
+        DocumentBuilder db = XmlUtility.createDomParser(
+            false, true, false, new XmlUtility.UtilityErrorHandler());
 
         Document doc = db.parse(file);
 
@@ -119,8 +118,8 @@ public class ResultComparatorTest extends FoodMartTestCase {
                 resultHasDefaultNullMemberRepresentation(expectedResult)) {
             return;
         }
-        String queryString = XMLUtility.decodeEncodedString(queryNode.getFirstChild()
-                .getNodeValue());
+        String queryString = XmlUtility.decodeEncodedString(
+            queryNode.getFirstChild().getNodeValue());
 
         Connection cxn = getConnection();
         try {
@@ -135,8 +134,10 @@ public class ResultComparatorTest extends FoodMartTestCase {
         }
     }
 
-    private boolean resultHasDefaultNullMemberRepresentation(Element expectedResult) {
-        return XMLUtility.toString(expectedResult).indexOf("#null") != -1;
+    private boolean resultHasDefaultNullMemberRepresentation(
+        Element expectedResult)
+    {
+        return XmlUtility.toString(expectedResult).indexOf("#null") != -1;
     }
 
     public static TestSuite suite() {
@@ -145,8 +146,14 @@ public class ResultComparatorTest extends FoodMartTestCase {
         String filePattern = properties.QueryFilePattern.get();
         String fileDirectory = properties.QueryFileDirectory.get();
 
-        final Pattern pattern = filePattern == null ? null : Pattern.compile(filePattern);
-        final String directory = fileDirectory == null ? "testsrc" + File.separatorChar + "queryFiles" : fileDirectory;
+        final Pattern pattern =
+            filePattern == null
+                ? null
+                : Pattern.compile(filePattern);
+        final String directory =
+            fileDirectory == null
+                ? "testsrc" + File.separatorChar + "queryFiles"
+                : fileDirectory;
 
         File[] files = new File(directory).listFiles(
             new FilenameFilter() {

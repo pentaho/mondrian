@@ -20,7 +20,7 @@ public class ValidationUtils {
 
     static String[] DEF_LEVEL = {"column", "nameColumn", "parentColumn", "ordinalColumn", "captionColumn" };
 
-    public static String invalid(Messages messages, JDBCValidator jdbcValidator, TreeModel treeModel,
+    public static String invalid(Messages messages, JdbcValidator jdbcValidator, TreeModel treeModel,
             TreeModelPath tpath, Object value, Object icube, Object iparentDimension, Object iparentHierarchy,
             Object iparentLevel, boolean isSchemaRequired) {
         //String errMsg = null;
@@ -176,16 +176,16 @@ public class ValidationUtils {
                 //EC: Enforces validation for all column types against invalid value.
                 String theMessage = null;
                 try {
-                     for (int i = 0; i < DEF_LEVEL.length; i ++) {
+                    for (int i = 0; i < DEF_LEVEL.length; i ++) {
                         Field theField = l.getClass().getDeclaredField(DEF_LEVEL[i]);
                         column = (String) theField.get(l);
                         theMessage = validateColumn(column, DEF_LEVEL[i], messages, l, jdbcValidator, cube, parentHierarchy);
                         if (theMessage != null) {
-                           break;
+                            break;
                         }
-                     }
+                    }
                 } catch (Exception ex) {
-                     LOGGER.error("ValidationUtils", ex);
+                    LOGGER.error("ValidationUtils", ex);
                 }
                 return theMessage;
             }
@@ -520,7 +520,7 @@ public class ValidationUtils {
         String fieldName,
         Messages messages,
         MondrianGuiDef.Level l,
-        JDBCValidator jdbcValidator,
+        JdbcValidator jdbcValidator,
         MondrianGuiDef.Cube cube,
         MondrianGuiDef.Hierarchy parentHierarchy)
     {

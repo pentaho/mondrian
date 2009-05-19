@@ -36,7 +36,6 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -68,7 +67,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
     JTable relationTable;
     JPanel relationRenderer;
 
-    JDBCMetaData jdbcMetaData;
+    JdbcMetaData jdbcMetaData;
     ComboBoxModel allOptions, selOptions;
     String listEditorValue ;
     MouseListener ml;
@@ -80,7 +79,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
 
     Object originalValue;
 
-    public SchemaPropertyCellEditor(Workbench workbench, JDBCMetaData jdbcMetaData) {
+    public SchemaPropertyCellEditor(Workbench workbench, JdbcMetaData jdbcMetaData) {
         this(workbench);
         this.jdbcMetaData = jdbcMetaData;
     }
@@ -1164,13 +1163,15 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
                                             if (s.cubes[i].dimensions[j] instanceof MondrianGuiDef.Dimension) {
                                                d =  (MondrianGuiDef.Dimension)s.cubes[i].dimensions[j];
                                             } else {
-                                               MondrianGuiDef.DimensionUsage d2 = (MondrianGuiDef.DimensionUsage)s.cubes[i].dimensions[j];
-                                               for (int m = 0; m < s.dimensions.length; m++) {
+                                                MondrianGuiDef.DimensionUsage d2 =
+                                                    (MondrianGuiDef.DimensionUsage)
+                                                        s.cubes[i].dimensions[j];
+                                                for (int m = 0; m < s.dimensions.length; m++) {
                                                     if (s.dimensions[m].name.equals(d2.source)) {
                                                         d = s.dimensions[m];
                                                         break;
                                                     }
-                                               }
+                                                }
                                             }
                                             if (d.hierarchies[0] != null) {
                                                 for (int k = 0; k < d.hierarchies[0].levels.length; k++) {
@@ -1195,9 +1196,9 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
         return workbench.getResourceConverter();
     }
 
-    public void setMetaData(JDBCMetaData aMetaData) {
+    public void setMetaData(JdbcMetaData aMetaData) {
         //EC: Called from the SchemaExplorer.resetMetadata(). A call to the updateUI() should be
-        //made on the owning SchemaFrame to reflect the use of the JDBCMetaData being set.
+        //made on the owning SchemaFrame to reflect the use of the JdbcMetaData being set.
         this.jdbcMetaData = aMetaData;
     }
 

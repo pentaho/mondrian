@@ -24,7 +24,8 @@ import org.apache.log4j.Logger;
  * @since 6 August, 2001
  */
 public abstract class OlapElementBase
-        implements OlapElement {
+    implements OlapElement
+{
 
     protected String caption = null;
 
@@ -37,21 +38,22 @@ public abstract class OlapElementBase
     protected abstract Logger getLogger();
 
     public boolean equals(Object o) {
-        return (o == this) ||
-            ((o instanceof OlapElement) && equals((OlapElement) o));
+        return (o == this)
+           || ((o instanceof OlapElement)
+               && equals((OlapElement) o));
     }
 
     public boolean equals(OlapElement mdxElement) {
-        return mdxElement != null &&
-                getClass() == mdxElement.getClass() &&
-                getUniqueName().equalsIgnoreCase(mdxElement.getUniqueName());
+        return mdxElement != null
+           && getClass() == mdxElement.getClass()
+           && getUniqueName().equalsIgnoreCase(mdxElement.getUniqueName());
     }
 
     public int hashCode() {
-       if (hash == 0) {
-           hash = computeHashCode();
-       }
-       return hash;
+        if (hash == 0) {
+            hash = computeHashCode();
+        }
+        return hash;
     }
 
     /**

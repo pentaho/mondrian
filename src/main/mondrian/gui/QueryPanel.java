@@ -21,9 +21,6 @@ import java.awt.event.MouseEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
@@ -253,7 +250,7 @@ public class QueryPanel extends javax.swing.JPanel {
 
             Result r = connection.execute(q);
 
-            //document = DOMBuilder.build(getResult());
+            //document = DomBuilder.build(getResult());
             java.io.StringWriter sw = new java.io.StringWriter();
             java.io.PrintWriter pw = new java.io.PrintWriter(sw);
 

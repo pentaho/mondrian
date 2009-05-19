@@ -43,7 +43,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.util.ResourceBundle;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.plaf.basic.BasicArrowButton;
@@ -60,8 +59,10 @@ import org.eigenbase.xom.XOMException;
  * @author  sean
  * @version $Id$
  */
-public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionListener, CellEditorListener {
-
+public class SchemaExplorer
+    extends javax.swing.JPanel
+    implements TreeSelectionListener, CellEditorListener
+{
     private static final Logger LOGGER = Logger.getLogger(SchemaExplorer.class);
 
     private Workbench workbench;
@@ -76,7 +77,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     private boolean dirty = false;  //indicates file is without changes, dirty=true when some changes are made to the file
     private boolean dirtyFlag = false;  // indicates dirty status shown on title
     private JInternalFrame parentIFrame;
-    private JDBCMetaData jdbcMetaData;
+    private JdbcMetaData jdbcMetaData;
     private boolean editModeXML = false;
     private String errMsg = null;
 
@@ -87,7 +88,13 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         initComponents();
     }
 
-    public SchemaExplorer(Workbench workbench, File f, JDBCMetaData jdbcMetaData, boolean newFile, JInternalFrame parentIFrame) {
+    public SchemaExplorer(
+        Workbench workbench,
+        File f,
+        JdbcMetaData jdbcMetaData,
+        boolean newFile,
+        JInternalFrame parentIFrame)
+    {
         this(workbench);
 
         alert = getResourceConverter().getString("schemaExplorer.alert.title","Alert");
@@ -3630,25 +3637,35 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     public I18n getResourceConverter() {
         return workbench.getResourceConverter();
     }
-    public static void getTableNamesForJoin(MondrianGuiDef.RelationOrJoin aRelOrJoin, Set<String> aTableNames) {
-         //EC: Loops join tree and collects table names.
-         if (aRelOrJoin instanceof MondrianGuiDef.Join) {
-             MondrianGuiDef.RelationOrJoin theRelOrJoin_L = ((MondrianGuiDef.Join) aRelOrJoin).left;
-             MondrianGuiDef.RelationOrJoin theRelOrJoin_R = ((MondrianGuiDef.Join) aRelOrJoin).right;
-             for (int i = 0 ; i < 2; i ++) { // Searches first using the Left Join and then the Right.
-                  MondrianGuiDef.RelationOrJoin theCurrentRelOrJoin =  (i == 0) ? theRelOrJoin_L : theRelOrJoin_R;
-                  if (theCurrentRelOrJoin instanceof MondrianGuiDef.Table) {
-                      MondrianGuiDef.Table theTable = ((MondrianGuiDef.Table) theCurrentRelOrJoin);
-                      String theTableName = (theTable.alias != null && theTable.alias.trim().length() > 0) ? theTable.alias : theTable.name;
-                      aTableNames.add(theTableName);
-                  } else {
-                      //calls recursively collecting all table names down the join tree.
-                      getTableNamesForJoin(theCurrentRelOrJoin, aTableNames);
-                  }
-             }
-         }
+
+    public static void getTableNamesForJoin(
+        MondrianGuiDef.RelationOrJoin aRelOrJoin, Set<String> aTableNames)
+    {
+        //EC: Loops join tree and collects table names.
+        if (aRelOrJoin instanceof MondrianGuiDef.Join) {
+            MondrianGuiDef.RelationOrJoin theRelOrJoin_L = ((MondrianGuiDef.Join) aRelOrJoin).left;
+            MondrianGuiDef.RelationOrJoin theRelOrJoin_R = ((MondrianGuiDef.Join) aRelOrJoin).right;
+            for (int i = 0 ; i < 2; i ++) { // Searches first using the Left Join and then the Right.
+                MondrianGuiDef.RelationOrJoin theCurrentRelOrJoin =  (i == 0) ? theRelOrJoin_L : theRelOrJoin_R;
+                if (theCurrentRelOrJoin instanceof MondrianGuiDef.Table) {
+                    MondrianGuiDef.Table theTable = ((MondrianGuiDef.Table) theCurrentRelOrJoin);
+                    String theTableName =
+                        (theTable.alias != null
+                         && theTable.alias.trim().length() > 0)
+                            ? theTable.alias
+                            : theTable.name;
+                    aTableNames.add(theTableName);
+                } else {
+                    //calls recursively collecting all table names down the join tree.
+                    getTableNamesForJoin(theCurrentRelOrJoin, aTableNames);
+                }
+            }
+        }
     }
-    public static String[] getTableNameForAlias(MondrianGuiDef.RelationOrJoin aRelOrJoin, String anAlias) {
+
+    public static String[] getTableNameForAlias(
+        MondrianGuiDef.RelationOrJoin aRelOrJoin, String anAlias)
+    {
         String theTableName = anAlias;
         String schemaName = null;
 
@@ -3675,8 +3692,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         return new String[] {schemaName, theTableName};
     }
 
-    public void resetMetaData(JDBCMetaData aMetaData) {
-        //EC: Updates the JDBCMetaData in the SchemaExplorer.
+    public void resetMetaData(JdbcMetaData aMetaData) {
+        //EC: Updates the JdbcMetaData in the SchemaExplorer.
         jdbcMetaData = aMetaData;
 
         //EC: Updates the database label.
@@ -3684,10 +3701,10 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         String theLabel = getResourceConverter().getFormattedString("schemaExplorer.database.text","Database - {0} ({1})", theArgs);
         databaseLabel.setText(theLabel);
 
-        //EC: Updates the JDBCMetaData in the SchemaTreeCellRenderer.
+        //EC: Updates the JdbcMetaData in the SchemaTreeCellRenderer.
         renderer.setMetaData(aMetaData);
 
-        //EC: Updates the JDBCMetaData in the SchemaPropertyCellEditor.
+        //EC: Updates the JdbcMetaData in the SchemaPropertyCellEditor.
         TableCellEditor theTableCellEditor = propertyTable.getDefaultEditor(Object.class);
         if (theTableCellEditor instanceof SchemaPropertyCellEditor) {
             ((SchemaPropertyCellEditor) theTableCellEditor).setMetaData(aMetaData);

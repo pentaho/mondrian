@@ -172,9 +172,13 @@ public class ResultLoader {
      * @param message Message to issue on failure
      */
     private void addTargets(
-        int currEnumTargetIdx, int currTargetIdx, int nEnumTargets,
-        int[] srcMemberIdxes, ResultSet resultSet, String message) {
-
+        int currEnumTargetIdx,
+        int currTargetIdx,
+        int nEnumTargets,
+        int[] srcMemberIdxes,
+        ResultSet resultSet,
+        String message)
+    {
         Target currTarget = targets.get(currTargetIdx);
         for (int i = 0; i < currTarget.getSrcMembers().size(); i++) {
             srcMemberIdxes[currEnumTargetIdx] = i;

@@ -110,7 +110,7 @@ enum PropertyDefinition {
 
     MDXSupport(
         RowsetDefinition.Type.EnumString,
-        Util.enumSetAllOf(Enumeration.MDXSupport.class),
+        Util.enumSetAllOf(Enumeration.MdxSupport.class),
         Enumeration.Access.Read,
         "Core",
         Enumeration.Methods.discover,

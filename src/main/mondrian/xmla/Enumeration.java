@@ -126,7 +126,7 @@ class Enumeration {
         SchemaData;
     }
 
-    enum MDXSupport {
+    enum MdxSupport {
         Core
     }
 

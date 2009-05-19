@@ -272,7 +272,7 @@ public class XmlUtil {
     /**
      * Error handler plus helper methods.
      */
-    public static class SAXErrorHandler implements ErrorHandler {
+    public static class SaxErrorHandler implements ErrorHandler {
         public static final String WARNING_STRING        = "WARNING";
         public static final String ERROR_STRING          = "ERROR";
         public static final String FATAL_ERROR_STRING    = "FATAL";
@@ -290,7 +290,7 @@ public class XmlUtil {
             }
         }
 
-        public static String formatErrorInfos(SAXErrorHandler saxEH) {
+        public static String formatErrorInfos(SaxErrorHandler saxEH) {
             if (! saxEH.hasErrors()) {
                 return "";
             }
@@ -342,7 +342,7 @@ public class XmlUtil {
             }
         }
         private List<ErrorInfo> errors;
-        public SAXErrorHandler() {
+        public SaxErrorHandler() {
         }
         public List<ErrorInfo> getErrors() {
             return this.errors;
@@ -402,7 +402,7 @@ public class XmlUtil {
         DOMParser parser = new DOMParser();
 
         parser.setEntityResolver(entityResolver);
-        parser.setErrorHandler(new SAXErrorHandler());
+        parser.setErrorHandler(new SaxErrorHandler());
         parser.setFeature(DEFER_NODE_EXPANSION, false);
         parser.setFeature(NAMESPACES_FEATURE_ID, true);
         parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, doingValidation);
@@ -424,12 +424,12 @@ public class XmlUtil {
     private static void checkForParseError(final DOMParser parser, Throwable t) {
         final ErrorHandler errorHandler = parser.getErrorHandler();
 
-        if (errorHandler instanceof SAXErrorHandler) {
-            final SAXErrorHandler saxEH = (SAXErrorHandler) errorHandler;
-            final List<SAXErrorHandler.ErrorInfo> errors = saxEH.getErrors();
+        if (errorHandler instanceof SaxErrorHandler) {
+            final SaxErrorHandler saxEH = (SaxErrorHandler) errorHandler;
+            final List<SaxErrorHandler.ErrorInfo> errors = saxEH.getErrors();
 
             if (errors != null && errors.size() > 0) {
-                String errorStr = SAXErrorHandler.formatErrorInfos(saxEH);
+                String errorStr = SaxErrorHandler.formatErrorInfos(saxEH);
                 throw new RuntimeException(errorStr, t);
             }
         } else {

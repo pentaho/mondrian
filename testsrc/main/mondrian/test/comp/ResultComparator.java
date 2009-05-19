@@ -158,7 +158,7 @@ class ResultComparator {
                    + Util.nl;
         TestContext.assertEqualsVerbose(
             TestContext.fold(
-                XMLUtility.toString(xmlRoot)),
+                XmlUtility.toString(xmlRoot)),
             toString(result),
             false,
             message);
@@ -166,12 +166,12 @@ class ResultComparator {
 
     private String toString(Result result) {
         Element element = toXml(result);
-        return XMLUtility.toString(element);
+        return XmlUtility.toString(element);
     }
 
     private Element toXml(Result result) {
-        DocumentBuilder db = XMLUtility.createDomParser(
-            false, true, false, new XMLUtility.UtilityErrorHandler());
+        DocumentBuilder db = XmlUtility.createDomParser(
+            false, true, false, new XmlUtility.UtilityErrorHandler());
         final Document document = db.newDocument();
         final Element dataResultXml = document.createElement("dataResult");
         slicerAxisToXml(document, dataResultXml, result);

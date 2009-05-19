@@ -12,7 +12,6 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapCube.CubeComparator;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
@@ -609,7 +608,6 @@ public class SqlTupleReader implements TupleReader {
         ResultSet resultSet,
         String message)
     {
-
         // loop through the list of members for the current enum target
         Target currTarget = targets.get(currTargetIdx);
         for (int i = 0; i < currTarget.srcMembers.size(); i++) {

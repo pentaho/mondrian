@@ -209,7 +209,7 @@ public class MemberTuplePredicate implements StarPredicate {
                 case LE:
                     if (c < 0) {
                         return true;
-                    } if (c == 0) {
+                    } else if (c == 0) {
                         break;
                     } else {
                         return false;

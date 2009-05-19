@@ -86,7 +86,7 @@ public class ResultCache implements HttpSessionBindingListener {
     public Document getDOM() {
         try {
             if (document == null) {
-                document = DOMBuilder.build(getResult());
+                document = DomBuilder.build(getResult());
             }
             return document;
         } catch (ParserConfigurationException e) {

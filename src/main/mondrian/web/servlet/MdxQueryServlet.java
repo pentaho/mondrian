@@ -31,18 +31,19 @@ import mondrian.web.taglib.ResultCache;
 import org.eigenbase.xom.StringEscaper;
 
 /**
- * <code>MDXQueryServlet</code> is a servlet which receives MDX queries,
+ * <code>MdxQueryServlet</code> is a servlet which receives MDX queries,
  * executes them, and formats the results in an HTML table.
  *
  * @author  Sean McCullough
  * @since 13 February, 2002
  * @version $Id$
  */
-public class MDXQueryServlet extends HttpServlet {
+public class MdxQueryServlet extends HttpServlet {
     private String connectString;
     private CatalogLocator locator;
 
-    /** Initializes the servlet.
+    /**
+     * Initializes the servlet.
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -56,17 +57,23 @@ public class MDXQueryServlet extends HttpServlet {
         locator = new ServletContextCatalogLocator(config.getServletContext());
     }
 
-    /** Destroys the servlet.
+    /**
+     * Destroys the servlet.
      */
     public void destroy() {
     }
 
-    /** Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
      * @param request servlet request
      * @param response servlet response
      */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, java.io.IOException {
+    protected void processRequest(
+        HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, java.io.IOException
+    {
         String queryName = request.getParameter("query");
         request.setAttribute("query", queryName);
         if (queryName != null) {
@@ -190,8 +197,10 @@ public class MDXQueryServlet extends HttpServlet {
             "</td>");
     }
 
-    private void processTransform(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    private void processTransform(
+        HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException
+    {
         String queryName = request.getParameter("query");
         ResultCache rc = ResultCache.getInstance(request.getSession(), getServletContext(), queryName);
         Query query = rc.getQuery();
@@ -219,21 +228,29 @@ public class MDXQueryServlet extends HttpServlet {
         getServletContext().getRequestDispatcher(redirect).include(request, response);
     }
 
-    /** Handles the HTTP <code>GET</code> method.
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      */
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, java.io.IOException {
+    protected void doGet(
+        HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, java.io.IOException
+    {
         processRequest(request, response);
     }
 
-    /** Handles the HTTP <code>POST</code> method.
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      */
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, java.io.IOException {
+    protected void doPost(
+        HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, java.io.IOException
+    {
         processRequest(request, response);
     }
 
@@ -245,4 +262,4 @@ public class MDXQueryServlet extends HttpServlet {
 
 }
 
-// End MDXQueryServlet.java
+// End MdxQueryServlet.java

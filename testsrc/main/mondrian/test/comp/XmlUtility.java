@@ -31,12 +31,15 @@ import mondrian.olap.Util;
 /**
  * XML utility methods.
  */
-class XMLUtility {
+class XmlUtility {
     static final Pattern WhitespacePattern = Pattern.compile("\\s*");
 
-    public static DocumentBuilder createDomParser(boolean validate,
-            boolean ignoreIgnorableWhitespace, boolean usingSchema,
-            ErrorHandler handler) {
+    public static DocumentBuilder createDomParser(
+        boolean validate,
+        boolean ignoreIgnorableWhitespace,
+        boolean usingSchema,
+        ErrorHandler handler)
+    {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
         try {
@@ -70,9 +73,10 @@ class XMLUtility {
     }
 
     public static Document getDocument(File file)
-            throws IOException, SAXException {
-        DocumentBuilder builder = createDomParser(true, true, true,
-            new UtilityErrorHandler());
+        throws IOException, SAXException
+    {
+        DocumentBuilder builder = createDomParser(
+            true, true, true, new UtilityErrorHandler());
 
         Document result = builder.parse(file);
 
@@ -80,7 +84,8 @@ class XMLUtility {
     }
 
     public static void save(Writer writer, Document document)
-            throws IOException {
+        throws IOException
+    {
         OutputFormat outputFormat = new OutputFormat(document);
 
         outputFormat.setIndenting(true);
@@ -172,4 +177,4 @@ class XMLUtility {
     }
 }
 
-// End XMLUtility.java
+// End XmlUtility.java

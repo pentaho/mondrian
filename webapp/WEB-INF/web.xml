@@ -31,7 +31,7 @@ You must accept the terms of that agreement to use this software.
 
   <servlet>
     <servlet-name>MDXQueryServlet</servlet-name>
-    <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
+    <servlet-class>mondrian.web.servlet.MdxQueryServlet</servlet-class>
     <init-param>
     <param-name>connectString</param-name>
     <param-value>@mondrian.webapp.connectString@</param-value>

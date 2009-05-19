@@ -18,7 +18,7 @@ import javax.swing.table.TableModel;
 public class PreferencesSchemasDialog extends JDialog {
 
     PreferencesDialog preferences = null;
-    JDBCMetaData jdbcMetadata = null;
+    JdbcMetaData jdbcMetadata = null;
     String selectedSchemaString = null;
     boolean accepted = false;
 
@@ -26,8 +26,10 @@ public class PreferencesSchemasDialog extends JDialog {
         initComponents();
     }
 
-    public PreferencesSchemasDialog(PreferencesDialog preferences,
-            JDBCMetaData jdbcMetadata) {
+    public PreferencesSchemasDialog(
+        PreferencesDialog preferences,
+        JdbcMetaData jdbcMetadata)
+    {
         this.preferences = preferences;
         this.jdbcMetadata = jdbcMetadata;
         initComponents();

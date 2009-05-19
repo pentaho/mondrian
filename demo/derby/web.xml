@@ -78,7 +78,7 @@ database which is exploded in the class path of the WAR.
 
   <servlet>
     <servlet-name>MDXQueryServlet</servlet-name>
-    <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
+    <servlet-class>mondrian.web.servlet.MdxQueryServlet</servlet-class>
     <init-param>
       <param-name>connectString</param-name>
       <param-value>Provider=mondrian;Jdbc='jdbc:derby:classpath:/foodmart';Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;JdbcUser=sa;JdbcPassword=sa;PoolNeeded=false;</param-value>

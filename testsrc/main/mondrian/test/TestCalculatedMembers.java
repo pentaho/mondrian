@@ -883,7 +883,6 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testCalcMemberCustomFormatterInNonMeasureInQuery() {
-
         // CELL_FORMATTER is ignored for calc members which are not measures.
         //
         // We could change this behavior if it makes sense. In fact, we would
@@ -965,7 +964,6 @@ public class TestCalculatedMembers extends BatchTestCase {
      * Testcase for bug 1784617, "Using StrToTuple() in schema errors out".
      */
     public void testStrToSetInCubeCalcMember() {
-
         // calc member defined in schema
         String cubeName = "Sales";
         TestContext testContext =

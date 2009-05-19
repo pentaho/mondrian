@@ -65,12 +65,12 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         assert segments.length > 0;
         for (Segment segment : segments) {
             if (segment.aggregation != segments[0].aggregation) {
-                assert!fail;
+                assert !fail;
                 return false;
             }
             int n = segment.axes.length;
             if (n != segments[0].axes.length) {
-                assert!fail;
+                assert !fail;
                 return false;
             }
             for (int j = 0; j < segment.axes.length; j++) {
@@ -78,8 +78,9 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
                 // contents, we but happen to know they are the same array,
                 // because we constructed them at the same time.
                 if (segment.axes[j].getPredicate() !=
-                    segments[0].axes[j].getPredicate()) {
-                    assert!fail;
+                    segments[0].axes[j].getPredicate())
+                {
+                    assert !fail;
                     return false;
                 }
             }

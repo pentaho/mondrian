@@ -84,7 +84,7 @@ public class Workbench extends javax.swing.JFrame {
     private String jdbcSchema;
     private boolean requireSchema;
 
-    private JDBCMetaData jdbcMetaData;
+    private JdbcMetaData jdbcMetaData;
 
     private final ClassLoader myClassLoader;
 
@@ -936,7 +936,7 @@ public class Workbench extends javax.swing.JFrame {
     private void newJDBCExplorerMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             if (jdbcMetaData == null) {
-                getNewJDBCMetadata();
+                getNewJdbcMetadata();
             }
 
             final JInternalFrame jf = new JInternalFrame();
@@ -961,9 +961,9 @@ public class Workbench extends javax.swing.JFrame {
                 conn = java.sql.DriverManager.getConnection(jdbcConnectionUrl);
             }
 */
-            getNewJDBCMetadata();
+            getNewJdbcMetadata();
 
-            JDBCExplorer jdbce = new JDBCExplorer(jdbcMetaData, this);
+            JdbcExplorer jdbce = new JdbcExplorer(jdbcMetaData, this);
 
             jf.getContentPane().add(jdbce);
             jf.setBounds(0, 0, 500, 480);
@@ -1043,10 +1043,10 @@ public class Workbench extends javax.swing.JFrame {
         pd.setVisible(true);
 
         if (pd.accepted()) {
-            jdbcConnectionUrl = pd.getJDBCConnectionUrl();
-            jdbcDriverClassName = pd.getJDBCDriverClassName();
-            jdbcUsername = pd.getJDBCUsername();
-            jdbcPassword = pd.getJDBCPassword();
+            jdbcConnectionUrl = pd.getJdbcConnectionUrl();
+            jdbcDriverClassName = pd.getJdbcDriverClassName();
+            jdbcUsername = pd.getJdbcUsername();
+            jdbcPassword = pd.getJdbcPassword();
             jdbcSchema = pd.getDatabaseSchema();
             requireSchema = pd.getRequireSchema();
 
@@ -1071,7 +1071,7 @@ public class Workbench extends javax.swing.JFrame {
          */
         File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
         File outputFile;
-        do  {
+        do {
             outputFile = new File(defaultDir, "Schema" + newSchema++ + ".xml");
         } while (outputFile.exists());
 
@@ -1441,7 +1441,7 @@ public class Workbench extends javax.swing.JFrame {
                         "Schema - {0}",
                         new String[] { file.getName() }));
 
-            getNewJDBCMetadata();
+            getNewJdbcMetadata();
 
             schemaFrame.getContentPane().add(
                 new SchemaExplorer(this,
@@ -1610,16 +1610,22 @@ public class Workbench extends javax.swing.JFrame {
         return false;
     }
 
-    private void getNewJDBCMetadata() {
-        jdbcMetaData = new JDBCMetaData(this, jdbcDriverClassName,
-                jdbcConnectionUrl, jdbcUsername, jdbcPassword, jdbcSchema, requireSchema);
+    private void getNewJdbcMetadata() {
+        jdbcMetaData = new JdbcMetaData(
+            this,
+            jdbcDriverClassName,
+            jdbcConnectionUrl,
+            jdbcUsername,
+            jdbcPassword,
+            jdbcSchema,
+            requireSchema);
     }
 
     private void resetWorkbench() {
-        //EC: Updates the JDBCMetaData for each SchemaExplorer contained in each Schema Frame currently opened based
+        //EC: Updates the JdbcMetaData for each SchemaExplorer contained in each Schema Frame currently opened based
         //on the JDBC preferences entered.
 
-        getNewJDBCMetadata();
+        getNewJdbcMetadata();
 
         Iterator theSchemaFrames = schemaWindowMap.keySet().iterator();
         while (theSchemaFrames.hasNext()) {
@@ -1635,7 +1641,8 @@ public class Workbench extends javax.swing.JFrame {
         displayWarningOnFailedConnection();
 
         for (JInternalFrame jdbcFrame : jdbcWindows) {
-            JDBCExplorer explorer = (JDBCExplorer) jdbcFrame.getContentPane().getComponent(0);
+            JdbcExplorer
+                explorer = (JdbcExplorer) jdbcFrame.getContentPane().getComponent(0);
             explorer.resetMetaData(jdbcMetaData);
 
             jdbcFrame.setTitle(getResourceConverter().getFormattedString("workbench.new.JDBCExplorer.title",

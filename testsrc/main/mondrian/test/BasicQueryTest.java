@@ -4579,12 +4579,12 @@ public class BasicQueryTest extends FoodMartTestCase {
      * takes quite long
      */
     public void dont_testParallelMutliple() {
-      for (int i = 0; i < 5; i++) {
-        runParallelQueries(1, 1, false);
-        runParallelQueries(3, 2, false);
-        runParallelQueries(4, 6, true);
-        runParallelQueries(6, 10, false);
-      }
+        for (int i = 0; i < 5; i++) {
+            runParallelQueries(1, 1, false);
+            runParallelQueries(3, 2, false);
+            runParallelQueries(4, 6, true);
+            runParallelQueries(6, 10, false);
+        }
     }
 
     public void dont_testParallelNot() {

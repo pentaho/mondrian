@@ -25,9 +25,9 @@ import org.apache.log4j.Logger;
  * @author  sean
  * @version $Id$
  */
-public class JDBCTreeModel implements javax.swing.tree.TreeModel {
+public class JdbcTreeModel implements javax.swing.tree.TreeModel {
 
-    private static final Logger LOGGER = Logger.getLogger(JDBCTreeModel.class);
+    private static final Logger LOGGER = Logger.getLogger(JdbcTreeModel.class);
 
     private Vector treeModelListeners = new Vector();
     Connection connection;
@@ -36,7 +36,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
     Node root;
 
     /** Creates a new instance of JDBCTreeModel */
-    public JDBCTreeModel(Connection c) {
+    public JdbcTreeModel(Connection c) {
         connection = c;
         try {
             metadata = connection.getMetaData();
@@ -84,7 +84,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
             }
             root = cat;
         } catch (Exception ex) {
-            LOGGER.error("JDBCTreeModel", ex);
+            LOGGER.error("JdbcTreeModel", ex);
         }
     }
 
@@ -147,11 +147,11 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
      *
      */
     public int getIndexOfChild(Object parent, Object child) {
-       if (parent instanceof Node) {
+        if (parent instanceof Node) {
             return ((Node)parent).children.indexOf(child);
-       }
+        }
 
-       return -1;
+        return -1;
     }
 
     /** Returns the root of the tree.  Returns <code>null</code>
@@ -222,4 +222,4 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
     }
 }
 
-// End JDBCTreeModel.java
+// End JdbcTreeModel.java
