@@ -188,7 +188,7 @@ public class SchemaTest extends FoodMartTestCase {
         // FIXME: This should validate the schema, and fail.
         testContext.assertSimpleQuery();
         // FIXME: Should give better error.
-        testContext.assertThrows(
+        testContext.assertQueryThrows(
             "select [Yearly Income3].Children from [Sales]",
             "Error while parsing MDX statement");
     }
@@ -202,7 +202,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "    <Level name=\"Yearly Income\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n"
             + "  </Hierarchy>\n"
             + "</Dimension>");
-        testContext.assertThrows(
+        testContext.assertQueryThrows(
             "select from [Sales]",
             "no table 'customer_not_found' found in hierarchy [Yearly Income4]");
     }
@@ -216,7 +216,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "    <Level name=\"Yearly Income\" table=\"customer_not_found\" column=\"yearly_income\" uniqueMembers=\"true\"/>\n"
             + "  </Hierarchy>\n"
             + "</Dimension>");
-        testContext.assertThrows(
+        testContext.assertQueryThrows(
             "select from [Sales]",
             "Table 'customer_not_found' not found");
     }
@@ -233,7 +233,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\" />\n"
             + "    </Hierarchy>\n"
             + "  </Dimension>");
-        testContext.assertThrows(
+        testContext.assertQueryThrows(
             "select {[Gender with default]} on columns from [Sales]",
             "Can not find Default Member with name \"[Gender with default].[Non].[Existent]\" in Hierarchy \"Gender with default\"");
     }
@@ -1216,7 +1216,7 @@ public class SchemaTest extends FoodMartTestCase {
                              + " {[Time].[1997]} on columns \n"
                              + "From [Sales Two Dimensions]";
         if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            testContext.assertThrows(
+            testContext.assertQueryThrows(
                 query,
                 "In cube \"Sales Two Dimensions\" use of unaliased Dimension name \"[Time]\" rather than the alias name \"Time2\"");
         } else {
@@ -1417,7 +1417,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "      visible=\"false\"\n"
             + "      formula=\"[Measures].[Customer Count2] / 2\">\n"
             + "  </CalculatedMember>");
-        testContext.assertThrows(
+        testContext.assertQueryThrows(
             "select from [Sales]",
             "Unknown aggregator 'invalidAggregator'; valid aggregators are: 'sum', 'count', 'min', 'max', 'avg', 'distinct-count'");
     }
@@ -1581,7 +1581,8 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     /**
-     * Bug 1578545, "ClassCastException in AggQuerySpec" occurs when two cubes
+     * Bug <a href="http://jira.pentaho.com/browse/MONDRIAN-233">MONDRIAN-233,
+     * "ClassCastException in AggQuerySpec"</a> occurs when two cubes
      * have the same fact table, distinct aggregate tables, and measures with
      * the same name.
      *
@@ -1591,7 +1592,7 @@ public class SchemaTest extends FoodMartTestCase {
      * probably the same: when measures are registered in a star, they should
      * be qualified by cube name.
      */
-    public void testBug1578545() {
+    public void testBugMondrian233() {
         final TestContext testContext =
             TestContext.create(
                 null,
@@ -1625,9 +1626,10 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     /**
-     * This tests for bug #1746362 Property column shifting when use captionColumn.
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-303">
+     * MONDRIAN-303, "Property column shifting when use captionColumn"</a>.
      */
-    public void testBug1746362() {
+    public void testBugMondrian303() {
         // In order to reproduce the problem a dimension specifying captionColumn and
         // Properties were required.
         final TestContext testContext = TestContext.createSubstitutingCube(
@@ -1814,7 +1816,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "  </Dimension>\n"
             + "</Cube>",
             null, null, null, null);
-        testContext.assertThrows(
+        testContext.assertQueryThrows(
             "select {[Promotion Media]} on columns from [NoMeasures]",
             "Hierarchy '[Measures]' is invalid (has no members)");
     }
@@ -1840,7 +1842,7 @@ public class SchemaTest extends FoodMartTestCase {
         // We would prefer if this query worked. I think we're hitting the bug
         // which occurs where the default member is calculated. For now, just
         // make sure that we get a reasonable error.
-        testContext.assertThrows(
+        testContext.assertQueryThrows(
             "select {[Measures]} on columns from [OneCalcMeasure] where [Promotion Media].[TV]",
             "Hierarchy '[Measures]' is invalid (has no members)");
     }
@@ -1973,7 +1975,7 @@ public class SchemaTest extends FoodMartTestCase {
                 + "  <SchemaGrant access=\"invalid\"/>\n"
                 + "</Role>")
             .withRole("Role1");
-        testContext.assertThrows(
+        testContext.assertQueryThrows(
             "select from [Sales]",
             "In Schema: In Role: In SchemaGrant: "
                 + "Value 'invalid' of attribute 'access' has illegal value 'invalid'.  "
@@ -2055,7 +2057,7 @@ public class SchemaTest extends FoodMartTestCase {
                 + "    <RoleUsage roleName=\"Role1\"/>\n"
                 + "  </Union>\n"
                 + "</Role>\n").withRole("Role1Plus2");
-        testContext.assertThrows(
+        testContext.assertQueryThrows(
             "select from [Sales]", "Union role must not contain grants");
     }
 
@@ -2074,7 +2076,7 @@ public class SchemaTest extends FoodMartTestCase {
                 + "<Role name=\"Role2\">\n"
                 + "  <SchemaGrant access=\"all\"/>\n"
                 + "</Role>").withRole("Role1Plus2");
-        testContext.assertThrows(
+        testContext.assertQueryThrows(
             "select from [Sales]", "Unknown role 'Role2'");
     }
 
@@ -2181,8 +2183,9 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     /**
-     * Test case for bug 1963913, "RolapMember causes ClassCastException in
-     * compare()", caused by binary column value.
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-413">
+     * MONDRIAN-413, "RolapMember causes ClassCastException in compare()"</a>,
+     * caused by binary column value.
      */
     public void testBinaryLevelKey() {
         switch (TestContext.instance().getDialect().getDatabaseProduct()) {
@@ -2192,7 +2195,7 @@ public class SchemaTest extends FoodMartTestCase {
         default:
             // Not all databases support binary literals (e.g. X'AB01'). Only
             // Derby returns them as byte[] values from its JDBC driver and
-            // therefore experiences bug 1963913.
+            // therefore experiences bug MONDRIAN-413.
             return;
         }
         final TestContext testContext = TestContext.createSubstitutingCube(
@@ -2363,12 +2366,17 @@ public class SchemaTest extends FoodMartTestCase {
             "Alias not unique");
     }
 
-    public void testBug2384825() {
-        // tests fix for [ 2384825 ] ClassCastException when obtaining RolapCubeLevel
-
-        // until bug #2538280 is fixed, this test case only works on MySQL
-        if (TestContext.instance().getDialect().getDatabaseProduct() !=
-            Dialect.DatabaseProduct.MYSQL) {
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-482">
+     * MONDRIAN-482, "ClassCastException when obtaining RolapCubeLevel"</a>.
+     */
+    public void testBugMondrian482() {
+        // until bug MONDRIAN-495, "Table filter concept does not support
+        // dialects." is fixed, this test case only works on MySQL
+        if (!Bug.BugMondrian495Fixed
+            && TestContext.instance().getDialect().getDatabaseProduct() !=
+               Dialect.DatabaseProduct.MYSQL)
+        {
             return;
         }
 
@@ -2438,6 +2446,63 @@ public class SchemaTest extends FoodMartTestCase {
             + "Row #1: 25,663\n"
             + "Row #2: 25,635\n"
             + "Row #3: 2,117\n");
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-355">Bug MONDRIAN-355,
+     * "adding hours/mins as levelType for level of type Dimension"</a>.
+     */
+    public void testBugMondrian355() {
+        final String xml =
+            "<Dimension name=\"Time2\" foreignKey=\"time_id\" type=\"TimeDimension\">\n"
+            + "<Hierarchy hasAll=\"true\" primaryKey=\"time_id\">\n"
+            + "  <Table name=\"time_by_day\"/>\n"
+            + "  <Level name=\"Years\" column=\"the_year\" uniqueMembers=\"true\" type=\"Numeric\" levelType=\"TimeYears\"/>\n"
+            + "  <Level name=\"Half year\" column=\"quarter\" uniqueMembers=\"false\" levelType=\"TimeHalfYear\"/>\n"
+            + "  <Level name=\"Hours\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\" levelType=\"TimeHours\"/>\n"
+            + "  <Level name=\"Quarter hours\" column=\"time_id\" uniqueMembers=\"false\" type=\"Numeric\" levelType=\"TimeUndefined\"/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>";
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales", xml);
+
+        testContext.assertQueryReturns(
+            "select Head([Time2].[Quarter hours].Members, 3) on columns\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time2].[All Time2s].[1997].[Q1].[1].[367]}\n"
+            + "{[Time2].[All Time2s].[1997].[Q1].[1].[368]}\n"
+            + "{[Time2].[All Time2s].[1997].[Q1].[1].[369]}\n"
+            + "Row #0: 348\n"
+            + "Row #0: 635\n"
+            + "Row #0: 589\n");
+
+        // Check that can apply ParallelPeriod to a TimeUndefined level.
+        testContext.assertAxisReturns(
+            "PeriodsToDate([Time2].[Quarter hours], [Time2].[1997].[Q1].[1].[368])",
+            "[Time2].[All Time2s].[1997].[Q1].[1].[368]");
+
+        testContext.assertAxisReturns(
+            "PeriodsToDate([Time2].[Half year], [Time2].[1997].[Q1].[1].[368])",
+            "[Time2].[All Time2s].[1997].[Q1].[1].[367]\n"
+            + "[Time2].[All Time2s].[1997].[Q1].[1].[368]");
+
+        // Check that get an error if give invalid level type
+        try {
+            TestContext
+                .createSubstitutingCube(
+                    "Sales",
+                    Util.replace(xml, "TimeUndefined", "TimeUnspecified"))
+                .assertSimpleQuery();
+            fail("expected error");
+        } catch (Throwable e) {
+            TestContext.checkThrowable(
+                e,
+                "Value 'TimeUnspecified' of attribute 'levelType' has illegal value 'TimeUnspecified'.  Legal values: {Regular, TimeYears, ");
+        }
     }
 }
 

@@ -15,6 +15,8 @@ import org.olap4j.impl.Named;
 
 import java.util.*;
 
+import mondrian.olap.Util;
+
 /**
  * Implementation of {@link Level}
  * for the Mondrian OLAP engine.
@@ -27,6 +29,12 @@ class MondrianOlap4jLevel implements Level, Named {
     private final MondrianOlap4jSchema olap4jSchema;
     private final mondrian.olap.Level level;
 
+    /**
+     * Creates a MondrianOlap4jLevel.
+     *
+     * @param olap4jSchema Schema
+     * @param level Mondrian level
+     */
     MondrianOlap4jLevel(
         MondrianOlap4jSchema olap4jSchema,
         mondrian.olap.Level level)
@@ -56,8 +64,38 @@ class MondrianOlap4jLevel implements Level, Named {
         return new MondrianOlap4jDimension(olap4jSchema, level.getDimension());
     }
 
+    public boolean isCalculated() {
+        return false;
+    }
+
     public Type getLevelType() {
-        throw new UnsupportedOperationException();
+        switch (level.getLevelType()) {
+        case Regular:
+            return Type.REGULAR;
+        case TimeDays:
+            return Type.TIME_DAYS;
+        case TimeHalfYear:
+            return Type.TIME_HALF_YEAR;
+        case TimeHours:
+            return Type.TIME_HOURS;
+        case TimeMinutes:
+            return Type.TIME_MINUTES;
+        case TimeMonths:
+            return Type.TIME_MONTHS;
+        case TimeQuarters:
+            return Type.TIME_QUARTERS;
+        case TimeSeconds:
+            return Type.TIME_SECONDS;
+        case TimeUndefined:
+            return Type.TIME_UNDEFINED;
+        case TimeWeeks:
+            return Type.TIME_WEEKS;
+        case TimeYears:
+            return Type.TIME_YEARS;
+        case Null:
+        default:
+            throw Util.unexpected(level.getLevelType());
+        }
     }
 
     public NamedList<Property> getProperties() {

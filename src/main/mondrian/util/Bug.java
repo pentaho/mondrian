@@ -109,6 +109,13 @@ public class Bug {
     public static final boolean BugMondrian486Fixed = false;
 
     /**
+     * Whether bug <a href="http://jira.pentaho.com/browse/MONDRIAN-495">
+     * MONDRIAN-495, "Table filter concept does not support dialects."</a>
+     * is fixed.
+     */
+    public static final boolean BugMondrian495Fixed = false;
+
+    /**
      * Whether
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-503">bug MONDRIAN-503, "RolapResultTest disabled"</a>
      * is fixed.

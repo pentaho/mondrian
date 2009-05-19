@@ -4924,20 +4924,35 @@ TODO: see above
             case Regular:
                 ret |= MDLEVEL_TYPE_REGULAR;
                 break;
-            case TimeDays:
-                ret |= MDLEVEL_TYPE_TIME_DAYS;
+            case TimeYears:
+                ret |= MDLEVEL_TYPE_TIME_YEARS;
                 break;
-            case TimeMonths:
-                ret |= MDLEVEL_TYPE_TIME_MONTHS;
+            case TimeHalfYear:
+                ret |= MDLEVEL_TYPE_TIME_HALF_YEAR;
                 break;
             case TimeQuarters:
                 ret |= MDLEVEL_TYPE_TIME_QUARTERS;
                 break;
+            case TimeMonths:
+                ret |= MDLEVEL_TYPE_TIME_MONTHS;
+                break;
             case TimeWeeks:
                 ret |= MDLEVEL_TYPE_TIME_WEEKS;
                 break;
-            case TimeYears:
-                ret |= MDLEVEL_TYPE_TIME_YEARS;
+            case TimeDays:
+                ret |= MDLEVEL_TYPE_TIME_DAYS;
+                break;
+            case TimeHours:
+                ret |= MDLEVEL_TYPE_TIME_HOURS;
+                break;
+            case TimeMinutes:
+                ret |= MDLEVEL_TYPE_TIME_MINUTES;
+                break;
+            case TimeSeconds:
+                ret |= MDLEVEL_TYPE_TIME_SECONDS;
+                break;
+            case TimeUndefined:
+                ret |= MDLEVEL_TYPE_TIME_UNDEFINED;
                 break;
             default:
                 ret |= MDLEVEL_TYPE_UNKNOWN;

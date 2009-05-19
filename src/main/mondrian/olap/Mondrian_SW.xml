@@ -633,10 +633,15 @@
             </Doc>
             <Value>Regular</Value>
             <Value>TimeYears</Value>
+            <Value>TimeHalfYear</Value>
             <Value>TimeQuarters</Value>
             <Value>TimeMonths</Value>
             <Value>TimeWeeks</Value>
             <Value>TimeDays</Value>
+            <Value>TimeHours</Value>
+            <Value>TimeMinutes</Value>
+            <Value>TimeSeconds</Value>
+            <Value>TimeUndefined</Value>
         </Attribute>
         <Attribute name="hideMemberIf" default="Never">
             <Doc>
