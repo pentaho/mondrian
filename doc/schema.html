@@ -116,6 +116,84 @@ The dataset to populate this schema is <a href="install.html#2_Set_up_test_data"
 syntax is not too complicated, so this is not as difficult as it sounds, particularly if you use the FoodMart
 schema as a guiding example.</p>
 
+<p>The structure of the XML document is as follows:</p>
+
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px">&lt;<a href="#XML_Schema">Schema</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Cube">Cube</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggName">AggName</a>&gt;</div>
+                        <div style="padding-left:100px;">aggElements</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggPattern">AggPattern</a>&gt;</div>
+                        <div style="padding-left:100px;">aggElements</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Dimension">Dimension</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+                        <div style="padding-left:100px;">relation</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_Closure">Closure</a>/&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_Level">Level</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_KeyExpression">KeyExpression</a>&gt;</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_NameExpression">NameExpression</a>&gt;</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_CaptionExpression">CaptionExpression</a>&gt;</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_OrdinalExpression">OrdinalExpression</a>&gt;</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_ParentExpression">ParentExpression</a>&gt;</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a  href="#XML_Property">Property</a>&gt;</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_PropertyExpression">PropertyExpression</a>&gt;</div>
+                                    <div style="padding-left:160px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_DimensionUsage">DimensionUsage</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Measure">Measure</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_MeasureExpression">MeasureExpression</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_MemberProperty">CalculatedMemberProperty</a>/&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Formula">Formula</a>/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_MemberProperty">CalculatedMemberProperty</a>/&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_NamedSet">NamedSet</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Formula">Formula</a>/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCube">VirtualCube</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_CubeUsages">CubeUsages</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_CubeUsage">CubeUsage</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Role">Role</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_SchemaGrant">SchemaGrant</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_CubeGrant">CubeGrant</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_MemberGrant">MemberGrant</a>/&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Union">Union</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_RoleUsage">RoleUsage</a>/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a>/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Parameter">Parameter</a>/&gt;</div>
+        <br/>
+        relation ::=<br/>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Table">Table</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_View">View</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_InlineTable">InlineTable</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_ColumnDef">ColumnDef</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Rows">Rows</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Row">Row</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_Value">Value</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Join">Join</a>&gt;</div>
+                <div style="padding-left:60px;">relation</div>
+        <br/>
+        aggElement ::=<br/>
+            <div style="padding-left:40px;">&lt;<a href="#XML_AggExclude">AggExclude</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_AggFactCount">AggFactCount</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_AggIgnoreColumn">AggIgnoreColumn</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_AggForeignKey">AggForeignKey</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_AggMeasure">AggMeasure</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_AggLevel">AggLevel</a>&gt;</div>
+    </code>
+</blockquote>
+
 <p><b>NOTE</b>: The order of XML elements is important. For example,
 <code><a href="#XML_UserDefinedFunction">&lt;UserDefinedFunction&gt;</a></code>
 element has to occur inside the <code><a href="#XML_Schema">&lt;Schema&gt;</a></code>
@@ -125,6 +203,10 @@ element after all collections of <code><a href="#XML_Cube">&lt;Cube&gt;</a></cod
 and <code><a href="#XML_Role">&lt;Role&gt;</a></code> elements. If you include it before the first
 <code><a href="#XML_Cube">&lt;Cube&gt;</a></code> element,
 the rest of the schema will be ignored.</p>
+
+<p>The content of each XML element is described in
+<a href="#Appendix_A_XML_elements">Appendix A</a> and in the <a href="xml_schema.html">XML schema</a>.</p>
+
 <!--
 ###########################
 ##  3. Logical model  #####
@@ -140,40 +222,43 @@ the rest of the schema will be ignored.</p>
 	customer, and the store in which the product was sold; color, gender, and store are all dimensions.</li>
 </ul>
 <p>Let's look at the XML definition of a simple schema.</p>
-<blockquote>
+
+<blockquote style="text-indent: -20px">
 	<code>
-  		&lt;<a href="#XML_Schema">Schema</a>&gt;<br>
-			<div style="padding-left:10px">&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;</div>
-				<div style="padding-left:20px">&lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"/&gt;</div>
-				<div style="padding-left:20px">&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;</div>
-					<span style="padding-left:30px">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" allMemberName="All Genders" primaryKey="customer_id"&gt;</span><br>
-						<span style="padding-left:40px">&lt;<a href="#XML_Table">Table</a> name="customer"/&gt;</span><br>
-						<span style="padding-left:40px">&lt;<a href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"/&gt;</span><br>
-					<span style="padding-left:30px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</span><br>
-				<span style="padding-left:20px">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</span><br>
-				<span style="padding-left:20px">&lt;<a href="#XML_Dimension">Dimension</a> name="Time" foreignKey="time_id"&gt;</span><br>
-					<span style="padding-left:30px">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="false" primaryKey="time_id"&gt;</span><br>
-						<span style="padding-left:40px">&lt;<a href="#XML_Table">Table</a> name="time_by_day"/&gt;</span><br>
-						<span style="padding-left:40px">&lt;<a href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric" uniqueMembers="true"/&gt;</span><br>
-						<span style="padding-left:40px">&lt;<a href="#XML_Level">Level</a> name="Quarter" column="quarter" uniqueMembers="false"/&gt;</span><br>
-						<span style="padding-left:40px">&lt;<a href="#XML_Level">Level</a> name="Month" column="month_of_year" type="Numeric" uniqueMembers="false"/&gt;</span><br>
-					<span style="padding-left:30px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</span><br>
-				<span style="padding-left:20px">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</span><br>
-				<span style="padding-left:20px">&lt;<a href="#XML_Measure">Measure</a> name="Unit Sales" column="unit_sales" aggregator="sum" formatString="#,###"/&gt;</span><br>
-				<span style="padding-left:20px">&lt;<a href="#XML_Measure">Measure</a> name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.##"/&gt;</span><br>
-				<span style="padding-left:20px">&lt;<a href="#XML_Measure">Measure</a> name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/&gt;</span><br>
-				<span style="padding-left:20px">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Profit" dimension="Measures" formula="[Measures].</span><br />
-				<span style="padding-left:20px">&nbsp;[Store Sales]-[Measures].[Store Cost]"&gt;</span><br>
-					<span style="padding-left:30px">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name="FORMAT_STRING" value="$#,##0.00"/&gt;</span><br>
-				<span style="padding-left:20px">&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</span><br>
-			<span style="padding-left:10px">&lt;/<a href="#XML_Cube">Cube</a>&gt;</span><br>
-		&lt;/<a href="#XML_Schema">Schema</a>&gt;
+  		<div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a>&gt;</div>
+			<div style="padding-left:40px;;">&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"/&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;</div>
+					<div style="padding-left:80px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" allMemberName="All Genders" primaryKey="customer_id"&gt;</div>
+						<div style="padding-left:100px;">&lt;<a href="#XML_Table">Table</a> name="customer"/&gt;</div>
+						<div style="padding-left:100px;">&lt;<a href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"/&gt;</div>
+					<div style="padding-left:80px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+				<div style="padding-left:60px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Time" foreignKey="time_id"&gt;</div>
+					<div style="padding-left:80px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="false" primaryKey="time_id"&gt;</div>
+						<div style="padding-left:100px;">&lt;<a href="#XML_Table">Table</a> name="time_by_day"/&gt;</div>
+						<div style="padding-left:100px;">&lt;<a href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric" uniqueMembers="true"/&gt;</div>
+						<div style="padding-left:100px;">&lt;<a href="#XML_Level">Level</a> name="Quarter" column="quarter" uniqueMembers="false"/&gt;</div>
+						<div style="padding-left:100px;">&lt;<a href="#XML_Level">Level</a> name="Month" column="month_of_year" type="Numeric" uniqueMembers="false"/&gt;</div>
+					<div style="padding-left:80px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+				<div style="padding-left:60px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Measure">Measure</a> name="Unit Sales" column="unit_sales" aggregator="sum" formatString="#,###"/&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Measure">Measure</a> name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.##"/&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Measure">Measure</a> name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Profit" dimension="Measures" formula="[Measures].[Store Sales] - [Measures].[Store Cost]"&gt;</div>
+					<div style="padding-left:80px;">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name="FORMAT_STRING" value="$#,##0.00"/&gt;</div>
+				<div style="padding-left:60px;">&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
+			<div style="padding-left:40px;">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
+		<div style="padding-left:20px">&lt;/<a href="#XML_Schema">Schema</a>&gt;</div>
 	</code>
 </blockquote>
+
 <p>This schema contains a single cube, called "Sales". The Sales cube has two dimensions,
 "Time", and "Gender", and two measures, "Unit Sales" and "Store Sales".</p>
+
 <p>We can write an MDX query on this schema:</p>
-<blockquote>
+
+<blockquote style="text-indent: -20px">
   	<code>
 		SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS,<br>
 		&nbsp; {descendants([Time].[1997].[Q1])} ON ROWS<br>
@@ -185,6 +270,7 @@ the rest of the schema will be ignored.</p>
 <p>This query refers to the Sales cube (<code>[Sales]</code>), each of the dimensions
 <code>[Measures]</code>, <code>[Time]</code>, <code>[Gender</code>], and various members
 of those dimensions. The results are as follows:</p>
+
 <blockquote>
   	<table class="grayTable" id="AutoNumber1"  >
       	<tr>
@@ -225,35 +311,42 @@ of those dimensions. The results are as follows:</p>
 and dimensions. The one thing the measures and dimensions have in common is the fact table, here
 <code>"sales_fact_1997"</code>. As we shall see, the fact table holds the columns
 from which measures are calculated, and contains references to the tables which hold the dimensions.</p>
-<blockquote>
+
+<blockquote style="text-indent: -20px">
   	<code>
-		&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;<br>
-			<span style="padding-left:10px;">&lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"/&gt;</span><br>
-			<span style="padding-left:10px;">...</span><br>
-		&lt;/<a href="#XML_Cube">Cube</a>&gt;
+        <div style="padding-left:20px;">&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;</div>
+			<div style="padding-left:40px;">&lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"/&gt;</div>
+			<div style="padding-left:40px;">...</div>
+		<div style="padding-left:20px">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
 	</code>
 </blockquote>
+
 <p>The fact table is defined using the <code><a href="#XML_Table">&lt;Table&gt;</a></code> element. If the fact table is not in
 the default schema, you can provide an explicit schema using the "schema" attribute, for example</p>
+
 <blockquote>
-  	<code>&lt;<a href="#XML_Table">Table</a> schema=" dmart" name="sales_fact_1997"/&gt;</code>
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Table">Table</a> schema=" dmart" name="sales_fact_1997"/&gt;</div>
+    </code>
 </blockquote>
+
 <p>You can also use the <code><a href="#XML_View">&lt;View&gt;</a></code> and
 <code><a href="#XML_Join">&lt;Join&gt;</a></code> constructs to build more complicated SQL statements.</p>
+
 <!--
 ########################
 ##  3.2 Measures   #####
 ######################## -->
 <h1>3.2 Measures<a name="Measures">&nbsp;</a></h1>
 <p>The Sales cube defines several measures, including "Unit Sales" and "Store Sales".</p>
-<blockquote>
+
+<blockquote style="text-indent: -20px">
   	<code>
-		&lt;<a href="#XML_Measure">Measure</a> name="Unit Sales" column="unit_sales"<br>
-		<span style="padding-left:10px;">aggregator="sum" datatype="Integer" formatString="#,###"/&gt;</span><br>
-		&lt;<a href="#XML_Measure">Measure</a> name="Store Sales" column="store_sales"<br>
-		<span style="padding-left:10px;">aggregator="sum" datatype="Numeric" formatString="#,###.00"/&gt;</span>
+		<div style="padding-left:20px;">&lt;<a href="#XML_Measure">Measure</a> name="Unit Sales" column="unit_sales" aggregator="sum" datatype="Integer" formatString="#,###"/&gt;</div>
+		<div style="padding-left:20px;">&lt;<a href="#XML_Measure">Measure</a> name="Store Sales" column="store_sales" aggregator="sum" datatype="Numeric" formatString="#,###.00"/&gt;</div>
 	</code>
 </blockquote>
+
 <p>Each measure (see <code><a href="#XML_Measure">&lt;Measure&gt;</a></code>) has a name, a column in the fact table, and an
 <code>aggregator</code>. The aggregator is usually "sum", but "count", "min", "max", "avg", and
 "distinct-count" are also allowed; "distinct-count" has some limitations if your cube contains a
@@ -277,25 +370,26 @@ using <a href="mdx.html#Format_strings">advanced format strings</a>.</p>
 method instead of the name. Defining a specific caption does make sense if special letters (e.g. &#931; or &#928;)
 are to be displayed:</p>
 
-<blockquote>
+<blockquote style="text-indent: -20px">
   	<code>
-		&lt;<a href="#XML_Measure">Measure</a> name="Sum X" column="sum_x" aggregator="sum" caption="&amp;#931; X"/&gt;</code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Measure">Measure</a> name="Sum X" column="sum_x" aggregator="sum" caption="&amp;#931; X"/&gt;</div>
+    </code>
 </blockquote>
 
 <p>Rather than coming from a column, a measure can use a <a href="#Cell_reader">cell reader</a>,
 or a measure can use a SQL expression to calculate its value. The measure "Promotion Sales" is
 an example of this.</p>
 
-<blockquote>
+<blockquote style="text-indent: -20px">
   	<code>
-		&lt;<a href="#XML_Measure">Measure</a> name="Promotion Sales" aggregator="sum" formatString="#,###.00"&gt;<br>
-			<span style="padding-left:10px;">&lt;<a href="#XML_MeasureExpression">MeasureExpression</a>&gt;</span><br>
-				<span style="padding-left:20px;">&lt;<a href="#XML_SQL">SQL</a> dialect="generic"&gt;</span><br />
-					<span style="padding-left:30px;">(case when sales_fact_1997.promotion_id = </span><br />
-					<span style="padding-left:30px;">0 then 0 else sales_fact_1997.store_sales end)</span><br>
-				<span style="padding-left:20px;">&lt;/<a href="#XML_SQL">SQL</a>&gt;</span><br>
-			<span style="padding-left:10px;">&lt;/<a href="#XML_MeasureExpression">MeasureExpression</a>&gt;</span><br>
-		&lt;/<a href="#XML_Measure">Measure</a>&gt;
+		<div style="padding-left:20px">&lt;<a href="#XML_Measure">Measure</a> name="Promotion Sales" aggregator="sum" formatString="#,###.00"&gt;</div>
+			<div style="padding-left:40px;">&lt;<a href="#XML_MeasureExpression">MeasureExpression</a>&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_SQL">SQL</a> dialect="generic"&gt;</div>
+					<div style="padding-left:80px;">(case when sales_fact_1997.promotion_id = </div>
+					<div style="padding-left:80px;">0 then 0 else sales_fact_1997.store_sales end)</div>
+				<div style="padding-left:60px;">&lt;/<a href="#XML_SQL">SQL</a>&gt;</div>
+			<div style="padding-left:40px;">&lt;/<a href="#XML_MeasureExpression">MeasureExpression</a>&gt;</div>
+        <div style="padding-left:20px">&lt;/<a href="#XML_Measure">Measure</a>&gt;</div>
  	</code>
 </blockquote>
 
@@ -333,14 +427,15 @@ between different databases is handled by specifying the dialect in the SQL tag.
 <h1>An example</h1>
 
 <p>Let's look at a simple dimension. </p>
-<blockquote>
+
+<blockquote style="text-indent: -20px">
   	<code>
-&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;<br>
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="customer_id"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name="customer"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"/&gt;<br>
-&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&lt;/<a href="#XML_Dimension">Dimension</a>&gt;
+        <div style="padding-left:20px">&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="customer_id"&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a> name="customer"/&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"/&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+        <div style="padding-left:20px">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
  	</code>
 </blockquote>
 
@@ -372,16 +467,20 @@ attribute. </p>
 the name of a column in the level's table. If the key is an expression, you can 
 instead use the <code>&lt;KeyExpression&gt;</code> element inside the Level. The following is 
 equivalent to the above example:</p>
-<blockquote>
-	<p><code>&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;<br>
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="customer_id"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name="customer" /&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_KeyExpression">KeyExpression</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_SQL">SQL</a> dialect=&quot;generic&quot;&gt;customer.gender&lt;/<a href="#XML_SQL">SQL</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_KeyExpression">KeyExpression</a>&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Level">Level</a>&gt;<br>&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code></p>
+
+<blockquote style="text-indent: -20px">
+	<code>
+        <div style="padding-left:20px">&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;</div>
+            <div style="padding-left:40px">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="customer_id"&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Table">Table</a> name="customer" /&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_KeyExpression">KeyExpression</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_SQL">SQL</a> dialect=&quot;generic&quot;&gt;customer.gender&lt;/<a href="#XML_SQL">SQL</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;/<a href="#XML_KeyExpression">KeyExpression</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;/<a href="#XML_Level">Level</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+        <div style="padding-left:20px">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>Other attributes of <code>&lt;Level&gt;</code>, <code>&lt;Measure&gt;</code>
@@ -478,15 +577,18 @@ names of the all level and all member.</p>
 level is suppressed. The default member of that dimension will now be the first member of the first level; for example,
 in a Time hierarchy, it will be the first year in the hierarchy. Changing the default member can be confusing, so you
 should generally use <code> hasAll="true"</code>.</p>
+
 <p>The <code>&lt;Hierarchy&gt;</code> element also has a <code>defaultMember</code>
 attribute, to override the default member of the hierarchy:</p>
-<blockquote>
-    <p><code>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Time&quot;
-    type=&quot;TimeDimension&quot; foreignKey=&quot;time_id&quot;&gt;<br>
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;false&quot;
-    primaryKey=&quot;time_id&quot; defaultMember=&quot;[Time].[1997].[Q1].[1]&quot;/&gt;<br>
-&nbsp; ...</code></p>
+
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Time&quot; type=&quot;TimeDimension&quot; foreignKey=&quot;time_id&quot;&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;false&quot; primaryKey=&quot;time_id&quot; defaultMember=&quot;[Time].[1997].[Q1].[1]&quot;/&gt;</div>
+                <div style="padding-left:60px;">...</div>
+    </code>
 </blockquote>
+
 <!--
 ###############################
 ##  3.3.3 Time dimensions #####
@@ -538,20 +640,21 @@ indicated by the level's <code>levelType</code> attribute, whose allowable value
 
 <p>Here is an example of a time dimension:</p>
 
-<blockquote>
+<blockquote style="text-indent: -20px">
   	<code>
-		&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Time&quot; type=&quot;TimeDimension&quot;&gt;<br>
-			<span style="padding-left:10px">&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Periods&quot; primaryKey=&quot;dateid&quot;&gt;</span><br>
-				<span style="padding-left:20px">&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;datehierarchy&quot;/&gt;</span><br>
-				<span style="padding-left:20px">&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Year&quot; column=&quot;year&quot; uniqueMembers=&quot;true&quot; levelType=&quot;TimeYears&quot; type=&quot;Numeric&quot;/&gt;</span><br>
-				<span style="padding-left:20px">&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Quarter&quot; column=&quot;quarter&quot; uniqueMembers=&quot;false&quot; levelType=&quot;TimeQuarters&quot; /&gt;</span><br>
-				<span style="padding-left:20px">&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Month&quot; column=&quot;month&quot; uniqueMembers=&quot;false&quot; ordinalColumn=&quot;month&quot; nameColumn=&quot;month_name&quot; levelType=&quot;TimeMonths&quot; type=&quot;Numeric&quot;/&gt;</span><br>
-				<span style="padding-left:20px">&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Week&quot; column=&quot;week_in_month&quot; uniqueMembers=&quot;false&quot; levelType=&quot;TimeWeeks&quot; /&gt;</span><br>
-				<span style="padding-left:20px">&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Day&quot; column=&quot;day_in_month&quot; uniqueMembers=&quot;false&quot; ordinalColumn=&quot;day_in_month&quot; nameColumn=&quot;day_name&quot; levelType=&quot;TimeDays&quot; type=&quot;Numeric&quot;/&gt;</span><br>
-			<span style="padding-left:10px">&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</span><br>
-		&lt;/<a href="#XML_Dimension">Dimension</a>&gt;
+		<div style="padding-left:20px;">&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Time&quot; type=&quot;TimeDimension&quot;&gt;</div>
+			<div style="padding-left:40px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Periods&quot; primaryKey=&quot;dateid&quot;&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a> name=&quot;datehierarchy&quot;/&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Year&quot; column=&quot;year&quot; uniqueMembers=&quot;true&quot; levelType=&quot;TimeYears&quot; type=&quot;Numeric&quot;/&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Quarter&quot; column=&quot;quarter&quot; uniqueMembers=&quot;false&quot; levelType=&quot;TimeQuarters&quot; /&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Month&quot; column=&quot;month&quot; uniqueMembers=&quot;false&quot; ordinalColumn=&quot;month&quot; nameColumn=&quot;month_name&quot; levelType=&quot;TimeMonths&quot; type=&quot;Numeric&quot;/&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Week&quot; column=&quot;week_in_month&quot; uniqueMembers=&quot;false&quot; levelType=&quot;TimeWeeks&quot; /&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Day&quot; column=&quot;day_in_month&quot; uniqueMembers=&quot;false&quot; ordinalColumn=&quot;day_in_month&quot; nameColumn=&quot;day_name&quot; levelType=&quot;TimeDays&quot; type=&quot;Numeric&quot;/&gt;</div>
+			<div style="padding-left:40px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+		<div style="padding-left:20px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
  	</code>
 </blockquote>
+
 <!--
 ##########################################
 ## 3.3.4 Order and display of levels #####
@@ -600,23 +703,23 @@ quotes:</p>
 
 <p>A dimension can contain more than one hierarchy:</p>
 
-<blockquote>
-  <code>
-&lt;<a href="#XML_Dimension">Dimension</a> name="Time" foreignKey="time_id"&gt;<br>
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="false" primaryKey="time_id"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name="time_by_day"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric" uniqueMembers="true"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Quarter" column="quarter" uniqueMembers="false"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Month" column="month_of_year" type="Numeric" uniqueMembers="false"/&gt;<br>
-&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> name="Time Weekly" hasAll="false" primaryKey="time_id"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name="time_by_week"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric"&nbsp;uniqueMembers="true"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Week" column="week" uniqueMembers="false"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Day" column="day_of_week" type="String" uniqueMembers="false"/&gt;<br>
-&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&lt;/<a href="#XML_Dimension">Dimension</a>&gt;
-</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Time" foreignKey="time_id"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="false" primaryKey="time_id"&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a> name="time_by_day"/&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric" uniqueMembers="true"/&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Quarter" column="quarter" uniqueMembers="false"/&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Month" column="month_of_year" type="Numeric" uniqueMembers="false"/&gt;</div>
+            <div style="padding-left:40px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+            <div style="padding-left:40px">&lt;<a href="#XML_Hierarchy">Hierarchy</a> name="Time Weekly" hasAll="false" primaryKey="time_id"&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Table">Table</a> name="time_by_week"/&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric" uniqueMembers="true"/&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Week" column="week" uniqueMembers="false"/&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Day" column="day_of_week" type="String" uniqueMembers="false"/&gt;</div>
+            <div style="padding-left:40px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>Notice that the first hierarchy doesn't have a name. By default, a hierarchy has the
@@ -711,28 +814,20 @@ and incurs the cost of an extra join.</p>
 <p>Instead, you can create a degenerate dimension. To do this, declare a dimension without a
 table, and Mondrian will assume that the columns come from the fact table.</p>
 
-<blockquote>
-
-  <code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Checkout&quot;&gt;<br>
-&nbsp; &lt;!-- The fact table is always necessary. --&gt;<br>
-
-&nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;checkout&quot;&gt;<br>
-&nbsp; &lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Payment method&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a
- href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot;&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- No table element here.<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fact table is
-  assumed. --&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a
- href="#XML_Level">Level</a> name=&quot;Payment method&quot;<br />
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;column=&quot;payment_method&quot; uniqueMembers=&quot;true&quot; /&gt;<br>
-
-&nbsp;&nbsp;&nbsp; &lt;/<a
- href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&nbsp; &lt;/<a href="#XML_Dimension">Dimension</a>&gt;<br>
-&nbsp; &lt;!-- other dimensions and measures --&gt;<br>
-  &lt;/<a href="#XML_Cube">Cube</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Cube">Cube</a> name=&quot;Checkout&quot;&gt;</div>
+            <div style="padding-left:40px">&lt;!-- The fact table is always necessary. --&gt;</div>
+            <div style="padding-left:40px">&lt;<a href="#XML_Table">Table</a> name=&quot;checkout&quot;&gt;</div>
+            <div style="padding-left:40px">&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Payment method&quot;&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot;&gt;</div>
+                    <div style="padding-left:80px">&lt;!-- No table element here. Fact table is assumed. --&gt;</div>
+                    <div style="padding-left:80px">&lt;<a href="#XML_Level">Level</a> name=&quot;Payment method&quot; column=&quot;payment_method&quot; uniqueMembers=&quot;true&quot; /&gt;</div>
+                <div style="padding-left:60px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+            <div style="padding-left:40px">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+            <div style="padding-left:40px">&lt;!-- other dimensions and measures --&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>Note that because there is no join, the <code>foreignKey</code> attribute of
@@ -754,46 +849,34 @@ to refer to the dataset.</p>
 
 <p>Here is an example:</p>
 
-<blockquote>
-
-  <code>&lt;<a href="#XML_Dimension">Dimension</a> name="Severity"&gt;<br>
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true"
-primaryKey="severity_id"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_InlineTable">InlineTable</a> alias="severity"&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_ColumnDef">ColumnDef</a> name=&quot;id&quot; type=&quot;Numeric&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_ColumnDef">ColumnDef</a> name=&quot;desc&quot;
-  type=&quot;String&quot;/&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Rows">Rows</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Row">Row</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Value">Value</a>
-  column=&quot;id&quot;&gt;1&lt;/<a href="#XML_Value">Value</a>&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Value">Value</a> column=&quot;desc&quot;&gt;High&lt;/<a href="#XML_Value">Value</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Row">Row</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Row">Row</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Value">Value</a>
-  column=&quot;id&quot;&gt;2&lt;/<a href="#XML_Value">Value</a>&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Value">Value</a> column=&quot;desc&quot;&gt;Medium&lt;/<a href="#XML_Value">Value</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Row">Row</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Row">Row</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Value">Value</a>
-  column=&quot;id&quot;&gt;3&lt;/<a href="#XML_Value">Value</a>&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Value">Value</a> column=&quot;desc&quot;&gt;Low&lt;/<a href="#XML_Value">Value</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Row">Row</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Rows">Rows</a>&gt;<br>
-
-&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_InlineTable">InlineTable</a>&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Severity"
-column="id" nameColumn=&quot;desc&quot; uniqueMembers="true"/&gt;<br>
-&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code>
-
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px">&lt;<a href="#XML_Dimension">Dimension</a> name="Severity"&gt;</div>
+            <div style="padding-left:40px">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="severity_id"&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_InlineTable">InlineTable</a> alias="severity"&gt;</div>
+                    <div style="padding-left:80px">&lt;<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;</div>
+                        <div style="padding-left:100px">&lt;<a href="#XML_ColumnDef">ColumnDef</a> name=&quot;id&quot; type=&quot;Numeric&quot;/&gt;</div>
+                        <div style="padding-left:100px">&lt;<a href="#XML_ColumnDef">ColumnDef</a> name=&quot;desc&quot; type=&quot;String&quot;/&gt;</div>
+                    <div style="padding-left:80px">&lt;/<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;</div>
+                    <div style="padding-left:80px">&lt;<a href="#XML_Rows">Rows</a>&gt;</div>
+                        <div style="padding-left:100px">&lt;<a href="#XML_Row">Row</a>&gt;</div>
+                            <div style="padding-left:120px">&lt;<a href="#XML_Value">Value</a> column=&quot;id&quot;&gt;1&lt;/<a href="#XML_Value">Value</a>&gt;</div>
+                            <div style="padding-left:120px">&lt;<a href="#XML_Value">Value</a> column=&quot;desc&quot;&gt;High&lt;/<a href="#XML_Value">Value</a>&gt;</div>
+                        <div style="padding-left:100px">&lt;/<a href="#XML_Row">Row</a>&gt;</div>
+                        <div style="padding-left:100px">&lt;<a href="#XML_Row">Row</a>&gt;</div>
+                            <div style="padding-left:120px">&lt;<a href="#XML_Value">Value</a> column=&quot;id&quot;&gt;2&lt;/<a href="#XML_Value">Value</a>&gt;</div>
+                            <div style="padding-left:120px">&lt;<a href="#XML_Value">Value</a> column=&quot;desc&quot;&gt;Medium&lt;/<a href="#XML_Value">Value</a>&gt;</div>
+                        <div style="padding-left:100px">&lt;/<a href="#XML_Row">Row</a>&gt;</div>
+                        <div style="padding-left:100px">&lt;<a href="#XML_Row">Row</a>&gt;</div>
+                            <div style="padding-left:120px">&lt;<a href="#XML_Value">Value</a> column=&quot;id&quot;&gt;3&lt;/<a href="#XML_Value">Value</a>&gt;</div>
+                            <div style="padding-left:120px">&lt;<a href="#XML_Value">Value</a> column=&quot;desc&quot;&gt;Low&lt;/<a href="#XML_Value">Value</a>&gt;</div>
+                        <div style="padding-left:100px">&lt;/<a href="#XML_Row">Row</a>&gt;</div>
+                    <div style="padding-left:80px">&lt;/<a href="#XML_Rows">Rows</a>&gt;</div>
+                <div style="padding-left:60px">&lt;/<a href="#XML_InlineTable">InlineTable</a>&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Severity" column="id" nameColumn=&quot;desc&quot; uniqueMembers="true"/&gt;</div>
+            <div style="padding-left:40px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+        <div style="padding-left:20px">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>This has the same effect as if you had a table called 'severity' in your database:</p>
@@ -819,16 +902,15 @@ column="id" nameColumn=&quot;desc&quot; uniqueMembers="true"/&gt;<br>
 
 <p>and the declaration</p>
 
-<blockquote>
-
-  <code>&lt;<a href="#XML_Dimension">Dimension</a> name="Severity"&gt;<br>
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="severity_id"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_InlineTable">Table</a> name=&quot;severity&quot;/&gt;<br>
-
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Severity"
-column="id" nameColumn=&quot;desc&quot; uniqueMembers="true"/&gt;<br>
-&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+<code>
+    <div style="padding-left:20px">&lt;<a href="#XML_Dimension">Dimension</a> name="Severity"&gt;</div>
+        <div style="padding-left:40px">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="severity_id"&gt;</div>
+            <div style="padding-left:60px">&lt;<a href="#XML_InlineTable">Table</a> name=&quot;severity&quot;/&gt;</div>
+			<div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Severity" column="id" nameColumn=&quot;desc&quot; uniqueMembers="true"/&gt;</div>
+        <div style="padding-left:40px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+    <div style="padding-left:20px">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+</code>
 </blockquote>
 
 <p>To specify a NULL value for a column, omit the <code>&lt;Value&gt;</code>
@@ -857,32 +939,35 @@ and a <a href="#Member_formatter">member formatter</a>.</p>
 ################################################ -->
 <h1>3.3.10 Default Measure Attribute<a name="Default_Measure_Attribute">&nbsp;</a></h1>
 
-<p>The <a
- href="#XML_Cube">&lt;Cube&gt;</a> and <a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a>
- elements allows specifying the optional attribute "defaultMeasure".  </p>
+<p>The <a href="#XML_Cube">&lt;Cube&gt;</a> and <a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a>
+elements allows specifying the optional attribute "defaultMeasure".</p>
+
 <p>Specifying <code>defaultMeasure</code> in <a href="#XML_Cube">&lt;Cube&gt;</a> element allows users
- to explicitly specify any base measure as default Measure.</p>
+to explicitly specify any base measure as default Measure.</p>
+
 <p>Specifying <code>defaultMeasure</code> in <a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a>
- element allows users to explicitly specify any VirtualCube Measure as a default Measure.</p>
- <p>Note that if default measure is not specified it takes the first measure defined in the cube as the default measure. In the case of virtual cube,
-     it would pick up the first base measure of the first cube defined within it as the default.</p>
-<p>
- Specifying the <code>defaultMeasure</code> explicitly would be useful in cases where you would want a calculated member to be picked up as the default measure.
- To facilitate this, the calculated member could be defined in one of the base cubes and specified as the <code>defaultMeasure</code> in the virtual cube.
- </p>
-<blockquote>
-  <code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot; defaultMeasure=&quot;Unit Sales&quot;&gt;<br>
-      &nbsp;...<br>
-      &nbsp; &lt;<span><a href="#XML_CalculatedMember">CalculatedMember</a></span> name=&quot;Profit&quot; dimension=&quot;Measures&quot;&gt;<br>
-      &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Store Sales] - [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;...<br>
-      &nbsp; &lt;/<span><a href="#XML_CalculatedMember">CalculatedMember</a></span>&gt;<br>
-  &lt;/<a href="#XML_Cube">Cube</a>&gt;<br>
-    &lt;<a href="#XML_VirtualCube">VirtualCube</a> name=&quot;Warehouse and Sales&quot; defaultMeasure=&quot;Profit&quot; &gt;<br>
-    &nbsp;&nbsp;... <br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Profit]&quot;/&gt;<br>        
-    &lt;/<a href="#XML_VirtualCube">VirtualCube</a>&gt;
-   </code>
+element allows users to explicitly specify any VirtualCube Measure as a default Measure.</p>
+
+<p>Note that if default measure is not specified it takes the first measure defined in the cube as the default measure. In the case of virtual cube,
+ it would pick up the first base measure of the first cube defined within it as the default.</p>
+
+<p>Specifying the <code>defaultMeasure</code> explicitly would be useful in cases where you would want a calculated member to be picked up as the default measure.
+ To facilitate this, the calculated member could be defined in one of the base cubes and specified as the <code>defaultMeasure</code> in the virtual cube.</p>
+
+<blockquote style="text-indent: -20px">
+<code>
+    <div style="padding-left:20px">&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot; defaultMeasure=&quot;Unit Sales&quot;&gt;</div>
+        <div style="padding-left:40px">...</div>
+        <div style="padding-left:40px">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name=&quot;Profit&quot; dimension=&quot;Measures&quot;&gt;</div>
+            <div style="padding-left:60px;">&lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Store Sales] - [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
+            <div style="padding-left:60px">...</div>
+        <div style="padding-left:40px">&lt;/<span><a href="#XML_CalculatedMember">CalculatedMember</a></span>&gt;</div>
+    <div style="padding-left:20px">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
+    <div style="padding-left:20px">&lt;<a href="#XML_VirtualCube">VirtualCube</a> name=&quot;Warehouse and Sales&quot; defaultMeasure=&quot;Profit&quot; &gt;</div>
+        <div style="padding-left:40px">...</div>
+        <div style="padding-left:40px"><a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Profit]&quot;/&gt;</div>
+    <div style="padding-left:20px">&lt;/<a href="#XML_VirtualCube">VirtualCube</a>&gt;</div>
+</code>
 </blockquote>
 
 <!--
@@ -899,33 +984,24 @@ most common kind of mapping, and is known as a <dfn>star schema</dfn>.</p>
 path to join these tables to the fact table. This kind of dimension is known as a snowflake,
 and is defined using the <code>&lt;<a href="#XML_Join">Join</a>&gt;</code> operator. For example:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;<br>
-
-&nbsp; ...<br>
-&nbsp; &lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Product&quot; foreignKey=&quot;product_id&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot;
-
-  primaryKey=&quot;product_id&quot; primaryKeyTable=&quot;product&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Join">Join</a> leftKey=&quot;product_class_key&quot;
-  rightAlias=&quot;product_class&quot; rightKey=&quot;product_class_id&quot;&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a>
-  name=&quot;product&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Join">Join</a> leftKey=&quot;product_type_id&quot;
-  rightKey=&quot;product_type_id&quot;&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a>
-  name=&quot;product_class&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a>
-  name=&quot;product_type&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Join">Join</a>&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Join">Join</a>&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;!-- Level declarations ... -&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&nbsp; &lt;/<a href="#XML_Dimension">Dimension</a>&gt;<br>
-  &lt;/<a href="#XML_Cube">Cube</a>&gt;</code>
+<blockquote style="text-indent: -20px;">
+<code>
+    <div style="padding-left:20px;">&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;</div>
+        <div style="padding-left:40px;">...</div>
+        <div style="padding-left:40px;"><a href="#XML_Dimension">Dimension</a> name=&quot;Product&quot; foreignKey=&quot;product_id&quot;&gt;</div>
+			<div style="padding-left:60px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; primaryKey=&quot;product_id&quot; primaryKeyTable=&quot;product&quot;&gt;</div>
+                <div style="padding-left:80px;">&lt;<a href="#XML_Join">Join</a> leftKey=&quot;product_class_key&quot; rightAlias=&quot;product_class&quot; rightKey=&quot;product_class_id&quot;&gt;</div>
+				    <div style="padding-left:100px;">&lt;<a href="#XML_Table">Table</a> name=&quot;product&quot;/&gt;</div>
+    				<div style="padding-left:100px;">&lt;<a href="#XML_Join">Join</a> leftKey=&quot;product_type_id&quot; rightKey=&quot;product_type_id&quot;&gt;</div>
+                        <div style="padding-left:120px;">&lt;<a href="#XML_Table">Table</a> name=&quot;product_class&quot;/&gt;</div>
+                        <div style="padding-left:120px;">&lt;<a href="#XML_Table">Table</a> name=&quot;product_type&quot;/&gt;</div>
+				    <div style="padding-left:100px;">&lt;/<a href="#XML_Join">Join</a>&gt;</div>
+                <div style="padding-left:80px;">&lt;/<a href="#XML_Join">Join</a>&gt;</div>
+                <div style="padding-left:80px">&lt;!-- Level declarations ... --&gt;</div>
+            <div style="padding-left:60px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+        <div style="padding-left:40px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+    <div style="padding-left:20px;">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
+</code>
 </blockquote>
 
 <p>This defines a <code>"Product"</code> dimension consisting of three tables. The
@@ -965,35 +1041,29 @@ example shows the <code>Store Type</code> dimension being joined to the
 </code> foreign key, and to the <code>Warehouse</code> cube using the
 <code>warehouse.warehouse_store_id</code> foreign key:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Dimension">Dimension</a> name="Store
-Type"&gt;<br>
-
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true"
-primaryKey="store_id"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name="store"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Store Type"
-column="store_type" uniqueMembers="true"/&gt;<br>
-&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-
-&lt;/<a href="#XML_Dimension">Dimension</a>&gt;<br>
-  <br>
-&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;<br>
-&nbsp; &lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"/&gt;<br>
-&nbsp; ...<br>
-
-&nbsp; &lt;<a href="#XML_DimensionUsage">DimensionUsage</a> name="Store
-Type" source="Store Type" foreignKey="store_id"/&gt;<br>
-&lt;/<a href="#XML_Cube">Cube</a>&gt;<br>
-  <br>
-&lt;<a href="#XML_Cube">Cube</a> name="Warehouse"&gt;<br>
-&nbsp; &lt;<a href="#XML_Table">Table</a> name="warehouse"/&gt;<br>
-
-&nbsp; ...<br>
-&nbsp; &lt;<a href="#XML_DimensionUsage">DimensionUsage</a> name="Store
-Type" source="Store Type" foreignKey="warehouse_store_id"/&gt;<br>
-&lt;/<a href="#XML_Cube">Cube</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Store Type"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="store_id"&gt;</div>
+			    <div style="padding-left:60px">&lt;<a href="#XML_Table">Table</a> name="store"/&gt;</div>
+			    <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Store Type" column="store_type" uniqueMembers="true"/&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+    <br/>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"/&gt;</div>
+            <div style="padding-left:40px;">...</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_DimensionUsage">DimensionUsage</a> name="Store Type" source="Store Type" foreignKey="store_id"/&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
+    <br/>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Cube">Cube</a> name="Warehouse"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Table">Table</a> name="warehouse"/&gt;</div>
+            <div style="padding-left:40px;">...</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_DimensionUsage">DimensionUsage</a> name="Store Type" source="Store Type" foreignKey="warehouse_store_id"/&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
+    </code>
 </blockquote>
+
 <!--
 ###############################
 ##  4.2 Join optimization #####
@@ -1028,40 +1098,42 @@ queries:</p>
 <p>A virtual cube combines two or more regular cubes. It is defined by the <code><a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a></code>
 element:</p>
 
-<blockquote>
-    <p><code>&lt;<a href="#XML_VirtualCube">VirtualCube</a> name=&quot;Warehouse and Sales&quot;&gt;<br>
-    &nbsp; &lt;<a href="#XML_CubeUsages">CubeUsages</a>&gt;<br>
-    &nbsp; &nbsp; &lt;<a href="#XML_CubeUsage">CubeUsage</a> cubeName=&quot;Sales&quot; ignoreUnrelatedDimensions=&quot;true&quot;/&gt;<br>
-    &nbsp; &nbsp; &lt;<a href="#XML_CubeUsage">CubeUsage</a> cubeName=&quot;Warehouse&quot;/&gt;<br>
-    &nbsp; &lt;/<a href="#XML_CubeUsages">CubeUsages</a>&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Customers&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Education Level&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Gender&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Marital Status&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> name=&quot;Product&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Promotion Media&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Promotions&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> name=&quot;Store&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> name=&quot;Time&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Yearly Income&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Warehouse&quot; name=&quot;Warehouse&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Sales Count]&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Store Cost]&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Store Sales]&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Unit Sales]&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Profit Growth]&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Store Invoice]&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Supply Time]&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Units Ordered]&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Units Shipped]&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Warehouse Cost]&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Warehouse Profit]&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Warehouse Sales]&quot;/&gt;<br>
-    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Average Warehouse Sale]&quot;/&gt;<br>
-    &nbsp; &lt;<span><a href="#XML_CalculatedMember">CalculatedMember</a></span> name=&quot;Profit Per Unit Shipped&quot; dimension=&quot;Measures&quot;&gt;<br>
-    &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Profit] / [Measures].[Units Shipped]&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
-    &nbsp; &lt;/<span><a href="#XML_CalculatedMember">CalculatedMember</a></span>&gt;<br>
-    &lt;/<a href="#XML_VirtualCube">VirtualCube</a>&gt;</code></p>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_VirtualCube">VirtualCube</a> name=&quot;Warehouse and Sales&quot;&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_CubeUsages">CubeUsages</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_CubeUsage">CubeUsage</a> cubeName=&quot;Sales&quot; ignoreUnrelatedDimensions=&quot;true&quot;/&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_CubeUsage">CubeUsage</a> cubeName=&quot;Warehouse&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_CubeUsages">CubeUsages</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Customers&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Education Level&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Gender&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Marital Status&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> name=&quot;Product&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Promotion Media&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Promotions&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> name=&quot;Store&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> name=&quot;Time&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Yearly Income&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Warehouse&quot; name=&quot;Warehouse&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Sales Count]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Store Cost]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Store Sales]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Unit Sales]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Profit Growth]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Store Invoice]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Supply Time]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Units Ordered]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Units Shipped]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Warehouse Cost]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Warehouse Profit]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Warehouse Sales]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Average Warehouse Sale]&quot;/&gt;</div>
+            <div style="padding-left:40px;">&lt;<span><a href="#XML_CalculatedMember">CalculatedMember</a></span> name=&quot;Profit Per Unit Shipped&quot; dimension=&quot;Measures&quot;&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Profit] / [Measures].[Units Shipped]&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;/<span><a href="#XML_CalculatedMember">CalculatedMember</a></span>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_VirtualCube">VirtualCube</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>The <code>&lt;<a href="#XML_CubeUsages">CubeUsages</a>&gt;</code>
@@ -1099,7 +1171,7 @@ shared dimension you intend to import.)</p>
 <p>The <code>&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a>&gt;</code>
 element imports a measure from one of the constituent cubes. It is imported with
 the same name. If you want to create a formula, or just to rename a measure as
-you import it, use the&nbsp; <code>&lt;<span><a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</span></code>
+you import it, use the <code>&lt;<span><a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</span></code>
 element.</p>
 
 <p>Virtual cubes occur surprisingly frequently in real-world applications. They
@@ -1141,38 +1213,22 @@ to model real-world data.</p>
 but any member can have parents in the same level. A classic example is the reporting structure
 in the <code>Employees</code> hierarchy:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Dimension">Dimension</a> name="Employees"
-foreignKey="employee_id"&gt;<br>
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true"
-allMemberName="All Employees" primaryKey="employee_id"&gt;<br>
-
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a>
-name="employee"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Employee
-Id" uniqueMembers="true" type="Numeric"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; column="employee_id"
-nameColumn="full_name"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; parentColumn="supervisor_id"
-nullParentValue="0"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-
-name="Marital Status" column="marital_status"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Position Title" column="position_title"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Gender" column="gender"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Salary" column="salary"/&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Education Level" column="education_level"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Management Role" column="management_role"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Level">Level</a>&gt;<br>
-&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-
-&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Employees" foreignKey="employee_id"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" allMemberName="All Employees" primaryKey="employee_id"&gt;</div>
+			    <div style="padding-left:60px">&lt;<a href="#XML_Table">Table</a> name="employee"/&gt;</div>
+			    <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Employee Id" uniqueMembers="true" type="Numeric" column="employee_id" nameColumn="full_name" parentColumn="supervisor_id" nullParentValue="0"&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Property">Property</a> name="Marital Status" column="marital_status"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Property">Property</a> name="Position Title" column="position_title"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Property">Property</a> name="Gender" column="gender"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Property">Property</a> name="Salary" column="salary"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Property">Property</a> name="Education Level" column="education_level"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Property">Property</a> name="Management Role" column="management_role"/&gt;</div>
+                <div style="padding-left:60px">&lt;/<a href="#XML_Level">Level</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>The important attributes here are <code>parentColumn</code> and <code>nullParentValue</code>:</p>
@@ -1362,41 +1418,24 @@ column is not strictly required, but it makes it easier to populate the table.)<
 the level onto a <code>&lt;<a href="#XML_Table">Table</a>&gt;</code>:</p>
 
 <blockquote>
-  <code>&lt;<a href="#XML_Dimension">Dimension</a> name="Employees"
-foreignKey="employee_id"&gt;<br>
-
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true"
-allMemberName="All Employees" primaryKey="employee_id"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a>
-name="employee"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Employee
-Id" uniqueMembers="true" type="Numeric"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; column="employee_id"
-nameColumn="full_name"<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; parentColumn="supervisor_id"
-nullParentValue="0"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Closure">Closure</a>
-parentColumn="supervisor_id" childColumn="employee_id"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a>
-name="employee_closure"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Closure">Closure</a>&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Marital Status" column="marital_status"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Position Title" column="position_title"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Gender" column="gender"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-
-name="Salary" column="salary"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Education Level" column="education_level"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Management Role" column="management_role"/&gt;<br>
-&nbsp;&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code>
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Employees" foreignKey="employee_id"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" allMemberName="All Employees" primaryKey="employee_id"&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a> name="employee"/&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name="Employee Id" uniqueMembers="true" type="Numeric"<br> column="employee_id" nameColumn="full_name" parentColumn="supervisor_id" nullParentValue="0"&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Closure">Closure</a> parentColumn="supervisor_id" childColumn="employee_id"&gt;</div>
+				        <div style="padding-left:100px;">&lt;<a href="#XML_Table">Table</a> name="employee_closure"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;/<a href="#XML_Closure">Closure</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Property">Property</a> name="Marital Status" column="marital_status"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Property">Property</a> name="Position Title" column="position_title"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Property">Property</a> name="Gender" column="gender"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Property">Property</a> name="Salary" column="salary"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Property">Property</a> name="Education Level" column="education_level"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Property">Property</a> name="Management Role" column="management_role"/&gt;</div>
+                <div style="padding-left:60px;">&lt;/<a href="#XML_Level">Level</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>This table allows totals to be evaluated in pure SQL. Even though this introduces an extra
@@ -1407,12 +1446,9 @@ them as follows:</p>
 <blockquote>
   <code>CREATE UNIQUE INDEX employee_closure_pk ON employee_closure (<br>
 &nbsp;&nbsp; supervisor_id,<br>
-&nbsp;&nbsp; employee_id<br>
-
-);<br>
+&nbsp;&nbsp; employee_id);<br>
 CREATE INDEX employee_closure_emp ON employee_closure (<br>
-&nbsp;&nbsp; employee_id<br>
-);</code>
+&nbsp;&nbsp; employee_id);</code>
 </blockquote>
 
 <h1>5.2.3 Populating closure tables<a name="Populating_closure_tables">&nbsp;</a></h1>
@@ -1452,8 +1488,7 @@ BEGIN<br>
 &nbsp; TRUNCATE TABLE employee_closure;<br>
 &nbsp; SET distance = 0;<br>
 &nbsp; <i>-- seed closure with self-pairs (distance 0)</i><br>
-&nbsp; INSERT INTO employee_closure (supervisor_id, employee_id,
-distance)<br>
+&nbsp; INSERT INTO employee_closure (supervisor_id, employee_id, distance)<br>
 &nbsp;&nbsp;&nbsp; SELECT employee_id, employee_id, distance<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FROM employee;<br>
   <br>
@@ -1461,19 +1496,12 @@ distance)<br>
 &nbsp; -- add (root, leaf-&gt;child) from the base table</i><br>
 &nbsp; REPEAT<br>
 &nbsp;&nbsp;&nbsp; SET distance = distance + 1;<br>
-
-&nbsp;&nbsp;&nbsp; INSERT INTO employee_closure (supervisor_id,
-employee_id, distance)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SELECT employee_closure.supervisor_id,
-employee.employee_id, distance<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FROM employee_closure,
-employee<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WHERE
-employee_closure.employee_id = employee.supervisor_id<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AND
-employee_closure.distance = distance - 1;<br>
+&nbsp;&nbsp;&nbsp; INSERT INTO employee_closure (supervisor_id, employee_id, distance)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SELECT employee_closure.supervisor_id, employee.employee_id, distance<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FROM employee_closure, employee<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WHERE employee_closure.employee_id = employee.supervisor_id<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AND employee_closure.distance = distance - 1;<br>
 &nbsp; UNTIL (ROW_COUNT() == 0))<br>
-
 &nbsp; END REPEAT<br>
 END</code>
 </blockquote>
@@ -1486,10 +1514,12 @@ END</code>
 <p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code>
 element within a <code>&lt;<a href="#XML_Level">Level</a>&gt;</code>, like this:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Level">Level</a> name="MyLevel" column="LevelColumn" uniqueMembers="true"&gt;<br>  &nbsp;  &lt;<a
- href="#XML_Property">Property</a> name="MyProp" column="PropColumn" formatter="com.acme.MyPropertyFormatter"/&gt;<br>&lt;<a
- href="#XML_Level">Level</a>/&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Level">Level</a> name="MyLevel" column="LevelColumn" uniqueMembers="true"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Property">Property</a> name="MyProp" column="PropColumn" formatter="com.acme.MyPropertyFormatter"/&gt;</div>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Level">Level</a>/&gt;</div>
+    </code>
 </blockquote>
 
 <p>The <code>formatter</code> attribute defines a <a href="#Property_formatter">property formatter
@@ -1538,28 +1568,23 @@ WHERE [Time].[1997]</code>
 <p>But rather than including this clause in every MDX query of your application, you can define
 the member in your schema, as part of your cube definition:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>
-name="Profit" dimension="Measures"&gt;<br>
-&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Store
-Sales] - [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
-&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
-
-name="FORMAT_STRING" value="$#,##0.00"/&gt;<br>
-&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Profit" dimension="Measures"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Store Sales] - [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name="FORMAT_STRING" value="$#,##0.00"/&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>You can also declare the formula as an XML attribute, if you prefer. The effect is just the same.</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>
-name="Profit" dimension="Measures"<br>
-&nbsp;&nbsp;&nbsp; formula="[Measures].[Store Sales]-[Measures].[Store
-Cost]"&gt;<br>
-
-&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
-name="FORMAT_STRING" value="$#,##0.00"/&gt;<br>
-&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Profit" dimension="Measures" formula="[Measures].[Store Sales]-[Measures].[Store Cost]"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name="FORMAT_STRING" value="$#,##0.00"/&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>Note that the <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>&gt;</code>
@@ -1572,11 +1597,10 @@ When formatting a particular cell, first the expression is evaluated to yield a 
 then the format string is applied to the cell value. Here is the same property with a conditional
 format string:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
-name="FORMAT_STRING"<br>
-&nbsp;&nbsp;&nbsp; expression="Iif(Value &lt; 0,
-'|($#,##0.00)|style=red', '|$#,##0.00|style=green')"/&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name="FORMAT_STRING" expression="Iif(Value &lt; 0, '|($#,##0.00)|style=red', '|$#,##0.00|style=green')"/&gt;</div>
+    </code>
 </blockquote>
 
 <p>For more details about format strings, see the
@@ -1589,16 +1613,20 @@ The DATATYPE property of a calculated member can have values "<code>String</code
 "<code>Numeric</code>":
 </p>
 
-<blockquote>
-<code>&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
-name="DATATYPE" value="Numeric"/&gt;</code></blockquote>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name="DATATYPE" value="Numeric"/&gt;</div>
+    </code>
+</blockquote>
+
 <p>You can specify SOLVE_ORDER for the calculated member property. Solve order
     determines the priority of calculation in the event of competing expressions</p>
-<blockquote>
-<code>&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
-name="SOLVE_ORDER" value="2000"/&gt;</code></blockquote>
 
-
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name="SOLVE_ORDER" value="2000"/&gt;</div>
+    </code>
+</blockquote>
 
 <p>You can make a calculated member or a measure invisible. If you specify <code>visible="false"
 </code> (the default is "true") in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt; or &lt;
@@ -1608,41 +1636,20 @@ calculations in a number of steps, and hide intermediate steps from end-users. F
 here only "Margin per Sqft" is visible, and its factors "Store Cost", "Margin" and "Store Sqft"
 are hidden:</p>
 
-<blockquote>
-
-  <code>&lt;<a href="#XML_Measure">Measure</a><br>
-&nbsp;&nbsp;&nbsp; name="Store Cost"<br>
-&nbsp;&nbsp;&nbsp; column="store_cost"<br>
-&nbsp;&nbsp;&nbsp; aggregator="sum"<br>
-&nbsp;&nbsp;&nbsp; formatString="#,###.00"<br>
-&nbsp;&nbsp;&nbsp; visible="false"/&gt;<br>
-
-&lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
-&nbsp;&nbsp;&nbsp; name="Margin" <br>
-&nbsp;&nbsp;&nbsp; dimension="Measures" <br>
-&nbsp;&nbsp;&nbsp; visible="false"&gt;<br>
-&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;([Measures].[Store
-Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]&lt;/<a
- href="#XML_Formula">Formula</a>&gt;<br>
-
-&lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
-&nbsp;&nbsp;&nbsp; name="Store Sqft" <br>
-&nbsp;&nbsp;&nbsp; dimension="Measures"<br>
-&nbsp;&nbsp;&nbsp; visible="false"&gt;<br>
-&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;[Store].Properties("Sqft")&lt;/<a
- href="#XML_Formula">Formula</a>&gt;<br>
-
-&lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
-&nbsp;&nbsp;&nbsp; name="Margin per Sqft"<br>
-&nbsp;&nbsp;&nbsp; dimension="Measures"<br>
-&nbsp;&nbsp;&nbsp; visible="true"&gt;<br>
-&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Margin] /
-[Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
-
-&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
-name="FORMAT_STRING" value="$#,##0.00"/&gt;<br>
-&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Measure">Measure</a> name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00" visible="false"/&gt;</div>
+        <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Margin" dimension="Measures" visible="false"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Formula">Formula</a>&gt;([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Store Sqft" dimension="Measures" visible="false"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Formula">Formula</a>&gt;[Store].Properties("Sqft")&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Margin per Sqft" dimension="Measures" visible="true"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Margin] / [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name="FORMAT_STRING" value="$#,##0.00"/&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
+    </code>
 </blockquote>
+
 <!--
 ########################
 ##  5.5 Named sets #####
@@ -1671,17 +1678,14 @@ and as you might expect, it has a construct in schema analogous to <code>&lt;
 named set in your schema as part of a cube definition. It is implicitly available for
 any query against that cube:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Cube">Cube</a> name="Warehouse"&gt;<br>
-&nbsp;&nbsp;...<br>
-&nbsp;&nbsp;&lt;<a href="#XML_NamedSet">NamedSet</a> name="Top
-Sellers"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&lt;<a href="#XML_Formula">Formula</a>&gt;TopCount([Warehouse].[Warehouse
-Name].MEMBERS, 5, [Measures].[Warehouse Sales])&lt;/<a
- href="#XML_Formula">Formula</a>&gt;<br>
-&nbsp;&nbsp;&lt;/<a href="#XML_NamedSet">NamedSet</a>&gt;<br>
-
-&lt;/<a href="#XML_Cube">Cube</a>&gt;
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Cube">Cube</a> name="Warehouse"&gt;</div>
+            <div style="padding-left:40px;">...</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_NamedSet">NamedSet</a> name="Top Sellers"&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Formula">Formula</a>&gt;TopCount([Warehouse].[Warehouse Name].MEMBERS, 5, [Measures].[Warehouse Sales])&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_NamedSet">NamedSet</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
 <br />
   SELECT <br>
 &nbsp;&nbsp;&nbsp; {[Measures].[Warehouse Sales]} ON COLUMNS,<br>
@@ -1724,21 +1728,18 @@ that cube. (But you can define a named set against a virtual cube.)</p>
 
 <p>You can also define a named set as global to a schema:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Cube">Schema</a>&gt;<br>
-&nbsp; &lt;<a href="#XML_Cube">Cube</a> name="Sales" ... /&gt;<br>
-
-&nbsp; &lt;<a href="#XML_Cube">Cube</a> name="Warehouse" ... /&gt;<br>
-&nbsp; &lt;<a href="#XML_VirtualCube">VirtualCube</a> name="Warehouse
-and Sales" .../&gt;<br>
-&nbsp; &lt;<a href="#XML_NamedSet">NamedSet</a> name="CA Cities"
-formula="{[Store].[USA].[CA].Children}"/&gt;<br>
-&nbsp; &lt;<a href="#XML_NamedSet">NamedSet</a> name="Top CA Cities"&gt;<br>
-
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;TopCount([CA
-Cities], 2, [Measures].[Unit Sales])&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
-&nbsp; &lt;/<a href="#XML_NamedSet">NamedSet</a>&gt;<br>
-&lt;/<a href="#XML_Cube">Schema</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Cube">Schema</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Cube">Cube</a> name="Sales" ... /&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Cube">Cube</a> name="Warehouse" ... /&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCube">VirtualCube</a> name="Warehouse and Sales" .../&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_NamedSet">NamedSet</a> name="CA Cities" formula="{[Store].[USA].[CA].Children}"/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_NamedSet">NamedSet</a> name="Top CA Cities"&gt;</div>
+    			<div style="padding-left:60px">&lt;<a href="#XML_Formula">Formula</a>&gt;TopCount([CA Cities], 2, [Measures].[Unit Sales])&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_NamedSet">NamedSet</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Cube">Schema</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>A named set defined against a schema is available in all cubes and virtual cubes in that
@@ -1857,12 +1858,13 @@ return null;<br>
 
 <p>Declare it in your schema:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Schema">Schema</a>&gt;<br>
-&nbsp; ...<br>
-&nbsp;&nbsp;&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a>
-name="PlusOne" className="com.acme.PlusOneUdf" /&gt;<br>
-&lt;/<a href="#XML_Schema">Schema</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a>&gt;</div>
+            <div style="padding-left:40px;">...</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a> name="PlusOne" className="com.acme.PlusOneUdf" /&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Schema">Schema</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>And use it in any MDX statement:</p>
@@ -1981,14 +1983,13 @@ return null;<br>
 <p>and register two the functions in your schema:</p>
 
 <blockquote>
-  <code>&lt;<a href="#XML_Schema">Schema</a>&gt;<br>
-
-&nbsp; ...<br>
-&nbsp;&nbsp;&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a>
-name="PlusOne" className="com.acme.PlusOrMinusOneUdf"&gt;<br>
-&nbsp;&nbsp;&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a>
-name="MinusOne" className="com.acme.PlusOrMinusOneUdf"&gt;<br>
-&lt;/<a href="#XML_Schema">Schema</a>&gt;</code>
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a>&gt;</div>
+            <div style="padding-left:40px;">...</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a> name="PlusOne" className="com.acme.PlusOrMinusOneUdf"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a> name="MinusOne" className="com.acme.PlusOrMinusOneUdf"&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Schema">Schema</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>If you're tired of writing duplicated User-defined Function declarations in schema files,
@@ -2051,19 +2052,17 @@ Properties</a>)</code> parameters, and throws no checked exceptions.</p>
 &lt;Parameter&gt;</a></code> child elements are passed via the <code>properties</code>
 constructor parameter. Here is an example:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Dimension">Dimension</a> name="Has bought
-dairy"&gt;<br>
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true"
-memberReaderClass="mondrian.rolap.HasBoughtDairySource"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Has bought
-dairy" uniqueMembers="true"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Parameter">Parameter</a>
-
-name="expression" value="not used"/&gt;<br>
-&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Has bought dairy"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" memberReaderClass="mondrian.rolap.HasBoughtDairySource"&gt;</div>
+			    <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Has bought dairy" uniqueMembers="true"/&gt;</div>
+			    <div style="padding-left:60px">&lt;<a href="#XML_Parameter">Parameter</a> name="expression" value="not used"/&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+    </code>
 </blockquote>
+
 <!--
 #########################
 ##  6.3 Cell reader #####
@@ -2072,13 +2071,16 @@ name="expression" value="not used"/&gt;<br>
 
 <p>Not implemented yet. Syntax would be something like</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Measure">Measure</a> name="name" cellReaderClass=&quot;com.acme.MyCellReader"/&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Measure">Measure</a> name="name" cellReaderClass=&quot;com.acme.MyCellReader"/&gt;</div>
+    </code>
 </blockquote>
 
 <p>and the class "com.acme.MyCellReader" would have to implement the <code>
 <a href="api/mondrian/olap/CellReader.html">
 mondrian.olap.CellReader</a></code> interface.</p>
+
 <!--
 ############################
 ##  6.4 Cell formatter #####
@@ -2091,24 +2093,29 @@ Cell.getFormattedValue()</a></code>. The class must implement the <code>
 <a href="api/mondrian/olap/CellFormatter.html">
 mondrian.olap.CellFormatter</a></code> interface, and is specified like this:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Measure">Measure</a> name="name" formatter="com.acme.MyCellFormatter"&gt;</code>
-	<br>
-&nbsp;&nbsp;&nbsp; &lt;CalculatedMemberProperty /&gt;<br>
-	&lt;/Measure&gt;</blockquote>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Measure">Measure</a> name="name" formatter="com.acme.MyCellFormatter"&gt;</div>
+            <div style="padding-left:40px">&lt;CalculatedMemberProperty /&gt;</div>
+        <div style="padding-left:20px;">&lt;/Measure&gt;</div>
+    </code>
+</blockquote>
 
 <p>For a calculated member that belongs to a cube 
 or virtual cube, you can define a formatter by setting the <code>CELL_FORMATTER</code> 
 property of the member to the name of the formatter class:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="name" formatter="com.acme.MyCellFormatter"&gt;
-	<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;CELL_FORMATTER&quot; value=&quot;<code>com.acme.MyCellFormatter&quot; 
-	/&gt;</code><br>
-	&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></blockquote>
-<p>For a calculated measure defined in the <code>WITH MEMBER</code> clause of an 
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="name" formatter="com.acme.MyCellFormatter"&gt;</div>
+            <div style="padding-left:40px">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;CELL_FORMATTER&quot; value=&quot;com.acme.MyCellFormatter&quot/&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
+    </code>
+</blockquote>
+
+<p>For a calculated measure defined in the <code>WITH MEMBER</code> clause of an
 MDX query, you can set the same property in the MDX to achieve the same effect:</p>
+
 <blockquote>
   <code>WITH MEMBER [Measures].[Foo]<br>
 &nbsp; AS '[Measures].[Unit Sales] * 2',<br>
@@ -2147,11 +2154,14 @@ Property.getPropertyFormattedValue()</a></code>. The class must implement the<co
 <a href="api/mondrian/olap/PropertyFormatter.html">
 mondrian.olap.PropertyFormatter</a></code> interface, and is specified like this:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Level">Level</a> name="MyLevel" column="LevelColumn" uniqueMembers="true"/&gt;<br>  &lt;<a
- href="#XML_Property">Property</a> name="MyProp" column="PropColumn" formatter="com.acme.MyPropertyFormatter"/&gt;<br>&lt;<a
- href="#XML_Level">Level</a>/&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Level">Level</a> name="MyLevel" column="LevelColumn" uniqueMembers="true"/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Property">Property</a> name="MyProp" column="PropColumn" formatter="com.acme.MyPropertyFormatter"/&gt;</div>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Level">Level</a>/&gt;</div>
+    </code>
 </blockquote>
+
 <!--
 ##############################
 ##  6.7 Schema processor #####
@@ -2345,66 +2355,36 @@ substitution on a single schema file.</p>
 <p>First, write your schema using variables as values for <code>caption</code>,
 <code>allMemberCaption</code> and <code>measuresCaption</code> attributes as follows:</p>
 
-<blockquote>
-  <code>
-  &lt;<a href="#XML_Schema">Schema</a> measuresCaption="%{foodmart.measures.caption}"&gt;<br>
-  	<br>
-	&nbsp; &lt;<a href="#XML_Dimension">Dimension</a> name="Store" caption="%{foodmart.dimension.store.caption}"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a>
-
-hasAll="true" allMemberName="All Stores"
-allMemberCaption ="%{foodmart.dimension.store.allmember.caption =All
-Stores}" primaryKey="store_id"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name="store"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a>
-name="Store Country" column="store_country" uniqueMembers="true"
-caption= "%{foodmart.dimension.store.country.caption}"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a>
-name="Store State" column="store_state" uniqueMembers="true"
-caption= "%{foodmart.dimension.store.state.caption}"/&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a>
-name="Store City" column="store_city" uniqueMembers="false"
-caption= "%{foodmart.dimension.store.city.caption}"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a>
-name="Store Name" column="store_name" uniqueMembers="true"
-caption= "%{foodmart.dimension.store.name.caption}"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Store Type" column="store_type"
-caption= "%{foodmart.dimension.store. name.property_type.caption}"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-
-name="Store Manager" column="store_manager"
-caption= "%{foodmart.dimension.store. name.property_manager.caption}"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Store Sqft" column="store_sqft" type="Numeric"
-caption= "%{foodmart.dimension.store. name.property_storesqft.caption}"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Grocery Sqft" column="grocery_sqft" type="Numeric"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Frozen Sqft" column="frozen_sqft" type="Numeric"/&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Meat Sqft" column="meat_sqft" type="Numeric"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Has coffee bar" column="coffee_bar" type="Boolean"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a>
-name="Street address" column="store_street_address" type="String"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Level">Level</a>&gt;<br>
-
-&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&nbsp; &lt;/<a href="#XML_Dimension">Dimension</a>&gt;<br>
-  <br>
-&nbsp; &lt;<a href="#XML_Cube">Cube</a> name="Sales"
-caption="%{foodmart.cube.sales.caption}"&gt;<br>
-&nbsp;&nbsp;&nbsp; ...<br>
-
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_DimensionUsage">DimensionUsage</a>
-name="Store" source="Store" foreignKey="store_id"/&gt;<br>
-&nbsp;&nbsp;&nbsp; ...<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Measure">Measure</a> name="Unit
-Sales" column="unit_sales"
-caption="%{foodmart.cube.sales.measure.unitsales}"&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> measuresCaption="%{foodmart.measures.caption}"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Store" caption="%{foodmart.dimension.store.caption}"&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" allMemberName="All Stores" allMemberCaption="%{foodmart.dimension.store.allmember.caption =All Stores}" primaryKey="store_id"&gt;</div>
+                    <div style="padding-left:80px">&lt;<a href="#XML_Table">Table</a> name="store"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Level">Level</a> name="Store Country" column="store_country" uniqueMembers="true" caption="%{foodmart.dimension.store.country.caption}"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Level">Level</a> name="Store State" column="store_state" uniqueMembers="true" caption="%{foodmart.dimension.store.state.caption}"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Level">Level</a> name="Store City" column="store_city" uniqueMembers="false" caption="%{foodmart.dimension.store.city.caption}"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Level">Level</a> name="Store Name" column="store_name" uniqueMembers="true" caption="%{foodmart.dimension.store.name.caption}"&gt;</div>
+                        <div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Store Type" column="store_type" caption="%{foodmart.dimension.store. name.property_type.caption}"/&gt;</div>
+        				<div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Store Manager" column="store_manager" caption="%{foodmart.dimension.store. name.property_manager.caption}"/&gt;</div>
+                        <div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Store Sqft" column="store_sqft" type="Numeric" caption="%{foodmart.dimension.store. name.property_storesqft.caption}"/&gt;</div>
+        				<div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Grocery Sqft" column="grocery_sqft" type="Numeric"/&gt;</div>
+				        <div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Frozen Sqft" column="frozen_sqft" type="Numeric"/&gt;</div>
+				        <div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Meat Sqft" column="meat_sqft" type="Numeric"/&gt;</div>
+        				<div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Has coffee bar" column="coffee_bar" type="Boolean"/&gt;</div>
+				        <div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Street address" column="store_street_address" type="String"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;/<a href="#XML_Level">Level</a>&gt;</div>
+    			<div style="padding-left:60px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+<br>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Cube">Cube</a> name="Sales" caption="%{foodmart.cube.sales.caption}"&gt;</div>
+                <div style="padding-left:60px;">...</div>
+    			<div style="padding-left:60px">&lt;<a href="#XML_DimensionUsage">DimensionUsage</a> name="Store" source="Store" foreignKey="store_id"/&gt;</div>
+                <div style="padding-left:60px;">...</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Measure">Measure</a> name="Unit Sales" column="unit_sales" caption="%{foodmart.cube.sales.measure.unitsales}"&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
+        <div style="padding-left:10px;">&lt;/<a href="#XML_Schema">Schema</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>As usual, the default caption for any cube, measure, dimension or
@@ -2483,35 +2463,25 @@ the fact table.</p>
 
 <p>Let's look at a simple aggregate table.</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;<br>
-&nbsp; &lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggName">AggName</a>
-name="agg_c_special_sales_fact_1997"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggFactCount">AggFactCount</a>
-column="FACT_COUNT"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a>
-
-name="[Measures].[Store Cost]" column="STORE_COST_SUM"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a>
-name="[Measures].[Store Sales]" column="STORE_SALES_SUM"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
-name="[Product].[Product Family]" column="PRODUCT_FAMILY"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
-name="[Time].[Quarter]" column="TIME_QUARTER"/&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
-name="[Time].[Year]" column="TIME_YEAR"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
-name="[Time].[Quarter]" column="TIME_QUARTER"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
-name="[Time].[Month]" column="TIME_MONTH"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_AggName">AggName</a>&gt;<br>
-
-&nbsp; &lt;/<a href="#XML_Table">Table</a>&gt;<br>
-  <br>
-&nbsp; &lt;!-- Rest of the cube definition --&gt;<br>
-&lt;/<a href="#XML_Cube">Cube</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_AggName">AggName</a> name="agg_c_special_sales_fact_1997"&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggFactCount">AggFactCount</a> column="FACT_COUNT"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggMeasure">AggMeasure</a> name="[Measures].[Store Cost]" column="STORE_COST_SUM"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggMeasure">AggMeasure</a> name="[Measures].[Store Sales]" column="STORE_SALES_SUM"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggLevel">AggLevel</a> name="[Product].[Product Family]" column="PRODUCT_FAMILY"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggLevel">AggLevel</a> name="[Time].[Quarter]" column="TIME_QUARTER"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggLevel">AggLevel</a> name="[Time].[Year]" column="TIME_YEAR"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggLevel">AggLevel</a> name="[Time].[Quarter]" column="TIME_QUARTER"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggLevel">AggLevel</a> name="[Time].[Month]" column="TIME_MONTH"/&gt;</div>
+                <div style="padding-left:60px">&lt;/<a href="#XML_AggName">AggName</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_Table">Table</a>&gt;</div>
+    <br>
+            <div style="padding-left:40px;">&lt;!-- Rest of the cube definition --&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>The <code>&lt;<a href="#XML_AggForeignKey">AggForeignKey</a>&gt;</code>
@@ -2528,36 +2498,25 @@ aggregate table explicitly in the schema XML file, and luckily there is
 a better way. In the following example, Mondrian locates aggregate
 tables by pattern-matching.</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;<br>
-&nbsp; &lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggPattern">AggPattern</a>
-pattern="agg_.*_sales_fact_1997"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggFactCount">AggFactCount</a>
-column="FACT_COUNT"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a>
-
-name="[Measures].[Store Cost]" column="STORE_COST_SUM"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a>
-name="[Measures].[Store Sales]" column="STORE_SALES_SUM"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
-name="[Product].[Product Family]" column="PRODUCT_FAMILY"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
-name="[Time].[Quarter]" column="TIME_QUARTER"/&gt;<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
-name="[Time].[Year]" column="TIME_YEAR"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
-name="[Time].[Quarter]" column="TIME_QUARTER"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
-name="[Time].[Month]" column="TIME_MONTH"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggExclude">AggExclude</a>
-name="agg_c_14_sales_fact_1997"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggExclude">AggExclude</a>
-name="agg_lc_100_sales_fact_1997"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_AggPattern">AggPattern</a>&gt;<br>
-&nbsp; &lt;/<a href="#XML_Table">Table</a>&gt;<br>
-&lt;/<a href="#XML_Cube">Cube</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_AggPattern">AggPattern</a> pattern="agg_.*_sales_fact_1997"&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggFactCount">AggFactCount</a> column="FACT_COUNT"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggMeasure">AggMeasure</a> name="[Measures].[Store Cost]" column="STORE_COST_SUM"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggMeasure">AggMeasure</a> name="[Measures].[Store Sales]" column="STORE_SALES_SUM"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggLevel">AggLevel</a> name="[Product].[Product Family]" column="PRODUCT_FAMILY"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggLevel">AggLevel</a> name="[Time].[Quarter]" column="TIME_QUARTER"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggLevel">AggLevel</a> name="[Time].[Year]" column="TIME_YEAR"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggLevel">AggLevel</a> name="[Time].[Quarter]" column="TIME_QUARTER"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggLevel">AggLevel</a> name="[Time].[Month]" column="TIME_MONTH"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggExclude">AggExclude</a> name="agg_c_14_sales_fact_1997"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_AggExclude">AggExclude</a> name="agg_lc_100_sales_fact_1997"/&gt;</div>
+                <div style="padding-left:60px">&lt;/<a href="#XML_AggPattern">AggPattern</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_Table">Table</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>It tells Mondrian to treat all tables which match the pattern <code>"agg_.*_sales_fact_1997"</code>
@@ -2594,40 +2553,24 @@ which occur as direct children of the <code><a href="#XML_Schema">&lt;Schema&gt;
 element, after the last <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>.
 Here is an example of a role:</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Role">Role</a> name="California
-manager"&gt;<br>
-&nbsp; &lt;<a href="#XML_SchemaGrant">SchemaGrant</a> access="none"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_CubeGrant">CubeGrant</a>
-cube="Sales" access="all"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a>
-
-hierarchy="[Store]" access="custom" topLevel="[Store].[Store
-Country]"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a
- href="#XML_MemberGrant">MemberGrant</a> member="[Store].[USA].[CA]"
-access="all"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a
- href="#XML_MemberGrant">MemberGrant</a>
-member="[Store].[USA].[CA].[Los Angeles]" access="none"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a>
-
-hierarchy="[Customers]" access="custom" topLevel="[Customers].[State
-Province]" bottomLevel="[Customers].[City]"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a
- href="#XML_MemberGrant">MemberGrant</a>
-member="[Customers].[USA].[CA]" access="all"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a
- href="#XML_MemberGrant">MemberGrant</a>
-member="[Customers].[USA].[CA].[Los Angeles]" access="none"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a>
-
-hierarchy="[Gender]" access="none"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_CubeGrant">CubeGrant</a>&gt;<br>
-&nbsp; &lt;/<a href="#XML_SchemaGrant">SchemaGrant</a>&gt;<br>
-&lt;/<a href="#XML_Role">Role</a>&gt;</code>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Role">Role</a> name="California manager"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_SchemaGrant">SchemaGrant</a> access="none"&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_CubeGrant">CubeGrant</a> cube="Sales" access="all"&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy="[Store]" access="custom" topLevel="[Store].[Store Country]"&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_MemberGrant">MemberGrant</a> member="[Store].[USA].[CA]" access="all"/&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_MemberGrant">MemberGrant</a> member="[Store].[USA].[CA].[Los Angeles]" access="none"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy="[Customers]" access="custom" topLevel="[Customers].[State Province]" bottomLevel="[Customers].[City]"&gt;</div>
+                        <div style="padding-left:100px">&lt;<a href="#XML_MemberGrant">MemberGrant</a> member="[Customers].[USA].[CA]" access="all"/&gt;</div>
+                        <div style="padding-left:100px">&lt;<a href="#XML_MemberGrant">MemberGrant</a> member="[Customers].[USA].[CA].[Los Angeles]" access="none"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy="[Gender]" access="none"/&gt;</div>
+                <div style="padding-left:60px">&lt;/<a href="#XML_CubeGrant">CubeGrant</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_SchemaGrant">SchemaGrant</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Role">Role</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>A <code><a href="#XML_SchemaGrant">&lt;SchemaGrant&gt;</a></code>
@@ -2810,38 +2753,24 @@ is not accessible:</p>
 <p>The policy is specified per role and hierarchy. In the following example, the role sees partial totals for the 
 <code>[Store]</code> hierarchy but full totals for <code>[Product]</code>.</p>
 
-<blockquote>
-<p><code>&lt;<a href="#XML_Role">Role</a> name=&quot;South Pacific manager&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;
-&lt;<a href="#XML_SchemaGrant">SchemaGrant</a> access=&quot;none&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;<a href="#XML_CubeGrant">CubeGrant</a> cube=&quot;Sales&quot; access=&quot;all&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Store]&quot; access=&quot;custom&quot; 
-<i><b>rollupPolicy=&quot;partial&quot; </b></i>topLevel=&quot;[Store].[Store Country]&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Store].[USA].[CA]&quot; access=&quot;all&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Store].[USA].[CA].[Los Angeles]&quot; access=&quot;none&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Customers]&quot; access=&quot;custom&quot; 
-<i><b>rollupPolicy=&quot;full&quot;</b></i>
-topLevel=&quot;[Customers].[State Province]&quot; bottomLevel=&quot;[Customers].[City]&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;MemberGrant member=&quot;[Customers].[USA].[CA]&quot; access=&quot;all&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;MemberGrant member=&quot;[Customers].[USA].[CA].[Los Angeles]&quot; access=&quot;none&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Gender]&quot; access=&quot;none&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;/<a href="#XML_CubeGrant">CubeGrant</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;
-&lt;/<a href="#XML_SchemaGrant">SchemaGrant</a>&gt;<br>
-&lt;/<a href="#XML_Role">Role</a>&gt;</code></p>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Role">Role</a> name=&quot;South Pacific manager&quot;&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_SchemaGrant">SchemaGrant</a> access=&quot;none&quot;&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_CubeGrant">CubeGrant</a> cube=&quot;Sales&quot; access=&quot;all&quot;&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Store]&quot; access=&quot;custom&quot; <i><b>rollupPolicy=&quot;partial&quot; </b></i>topLevel=&quot;[Store].[Store Country]&quot;&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Store].[USA].[CA]&quot; access=&quot;all&quot;/&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Store].[USA].[CA].[Los Angeles]&quot; access=&quot;none&quot;/&gt;</div>
+                    <div style="padding-left:80px;">&lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Customers]&quot; access=&quot;custom&quot; <i><b>rollupPolicy=&quot;full&quot;</b></i> topLevel=&quot;[Customers].[State Province]&quot; bottomLevel=&quot;[Customers].[City]&quot;&gt;</div>
+                        <div style="padding-left:100px;">&lt;MemberGrant member=&quot;[Customers].[USA].[CA]&quot; access=&quot;all&quot;/&gt;</div>
+                        <div style="padding-left:100px;">&lt;MemberGrant member=&quot;[Customers].[USA].[CA].[Los Angeles]&quot; access=&quot;none&quot;/&gt;</div>
+                    <div style="padding-left:80px;">&lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Gender]&quot; access=&quot;none&quot;/&gt;</div>
+                <div style="padding-left:60px;">&lt;/<a href="#XML_CubeGrant">CubeGrant</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_SchemaGrant">SchemaGrant</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Role">Role</a>&gt;</div>
+    </code>
 </blockquote>
 
 <p>This example also shows existing features, such as how hierarchy grants can be restricted using 
@@ -2858,17 +2787,19 @@ can be prevented from seeing a hierarchy using access=&quot;none&quot;.</p>
 constituent roles can see it. Similarly, the rollup policy of a union role with
 respect to a particular hierarchy is the least restrictive of all of the roles'
 rollup policies.</p>
+
 <p>Here is an example showing the syntax of a union role.</p>
 
-<blockquote>
-  <code>&lt;<a href="#XML_Role">Role</a> name=&quot;Coastal manager&quot;&gt;<br>
-&nbsp; &lt;<a href="#XML_Union">Union</a>&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_RoleUsage">RoleUsage</a> roleName=&quot;California
-	manager&quot; /&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_RoleUsage">RoleUsage</a> roleName=&quot;Eastern
-	sales manager&quot; /&gt;<br>
-&nbsp; &lt;/<a href="#XML_Union">Union</a>&gt;<br>
-	&lt;/<a href="#XML_Role">Role</a>&gt;</code></blockquote>
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Role">Role</a> name=&quot;Coastal manager&quot;&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Union">Union</a>&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_RoleUsage">RoleUsage</a> roleName=&quot;California manager&quot; /&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_RoleUsage">RoleUsage</a> roleName=&quot;Eastern sales manager&quot; /&gt;</div>
+            <div style="padding-left:40px;">&lt;/<a href="#XML_Union">Union</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Role">Role</a>&gt;</div>
+    </code>
+</blockquote>
 
 <p>The constituent roles &quot;California manager&quot; and &quot;Eastern sales manager&quot; may be
 regular roles, user-defined roles or union roles, but they must be declared
@@ -3159,7 +3090,7 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
 <br />
 <br />
 
-<p>Author: Julian Hyde; last modified December 2008.<br/>
+<p>Author: Julian Hyde; last modified May 2009.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">log</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc..<br/>
