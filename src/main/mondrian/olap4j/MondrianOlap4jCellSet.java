@@ -44,6 +44,12 @@ abstract class MondrianOlap4jCellSet implements CellSet {
         new ArrayList<CellSetAxis>();
     private CellSetAxis filterAxis;
 
+    /**
+     * Creates a MondrianOlap4jCellSet.
+     *
+     * @param olap4jStatement Statement
+     * @param query Mondrian query
+     */
     public MondrianOlap4jCellSet(
         MondrianOlap4jStatement olap4jStatement,
         Query query)
@@ -155,14 +161,18 @@ abstract class MondrianOlap4jCellSet implements CellSet {
             cell = result.getCell(pos);
         } catch (MondrianException e) {
             if (e.getMessage().indexOf("coordinates out of range") >= 0) {
+                int[] dimensions = new int[getAxes().size()];
+                for (int i = 0; i < axisList.size(); i++) {
+                    dimensions[i] = axisList.get(i).getPositions().size();
+                }
                 throw new IndexOutOfBoundsException(
                     "Cell coordinates (" + getCoordsAsString(pos)
                         + ") fall outside CellSet bounds ("
-                        + getCoordsAsString(pos) + ")");
+                        + getCoordsAsString(dimensions) + ")");
             } else if (e.getMessage().indexOf("coordinates should have dimension") >= 0) {
                 throw new IllegalArgumentException(
                     "Cell coordinates should have dimension "
-                        + axisList.size() + ")");
+                        + axisList.size());
             } else {
                 throw e;
             }

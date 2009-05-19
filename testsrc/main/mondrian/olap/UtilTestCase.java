@@ -503,28 +503,6 @@ public class UtilTestCase extends TestCase {
         }
         assertTrue(expectedClassNames.toString(), expectedClassNames.isEmpty());
     }
-
-    /**
-     * Asserts that two integer arrays have equal length and contents.
-     *
-     * @param expected Expected integer array
-     * @param actual Actual integer array
-     */
-    public void assertEqualsArray(int[] expected, int[] actual) {
-        if (expected == null) {
-            assertEquals(expected, actual);
-        } else {
-            List<Integer> expectedList = new ArrayList<Integer>();
-            for (int i : expected) {
-                expectedList.add(i);
-            }
-            List<Integer> actualList = new ArrayList<Integer>();
-            for (int i : actual) {
-                actualList.add(i);
-            }
-            assertEquals(expectedList, actualList);
-        }
-    }
 }
 
 // End UtilTestCase.java
