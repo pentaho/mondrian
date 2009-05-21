@@ -2172,15 +2172,19 @@ public class Util extends XOMUtil {
         // Because of VFS caching, make sure we refresh to get the latest file
         // content.
         // This refresh may possibly solve the following workaround for defect
-        // 2613265, but cannot be tested, so we will leave the work around for now
+        // MONDRIAN-508, but cannot be tested, so we will leave the work
+        // around for now
         file.refresh();
 
-        // Workaround to defect 2613265.  For HttpFileObjects, verifies the URL
+        // Workaround to defect MONDRIAN-508.  For HttpFileObjects, verifies the URL
         // of the file retrieved matches the URL passed in.  A VFS cache bug
         // can cause it to treat URLs with different parameters as the same
         // file (e.g. http://blah.com?param=A, http://blah.com?param=B)
-        if (file instanceof HttpFileObject && !file.getName().getURI().equals(url)) {
-            fsManager.getFilesCache().removeFile(file.getFileSystem(),  file.getName());
+        if (file instanceof HttpFileObject &&
+                !file.getName().getURI().equals(url)) {
+            fsManager.getFilesCache()
+                .removeFile(file.getFileSystem(),  file.getName());
+
             file = fsManager.resolveFile(userDir, url);
         }
 
