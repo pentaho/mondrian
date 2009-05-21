@@ -195,11 +195,11 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     }
 
     public List<Member> getMemberChildren(Member member, Evaluator context) {
-      return schemaReader.getMemberChildren(member, context);
+        return schemaReader.getMemberChildren(member, context);
     }
 
     public List<Member> getMemberChildren(List<Member> members, Evaluator context) {
-      return schemaReader.getMemberChildren(members, context);
+        return schemaReader.getMemberChildren(members, context);
     }
 
     public Member lookupMemberChildByName(

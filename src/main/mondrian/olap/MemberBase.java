@@ -155,7 +155,7 @@ public abstract class MemberBase
     }
 
     public boolean isCalculated() {
-       return (flags & FLAG_CALCULATED) != 0;
+        return (flags & FLAG_CALCULATED) != 0;
     }
 
     public boolean isEvaluated() {

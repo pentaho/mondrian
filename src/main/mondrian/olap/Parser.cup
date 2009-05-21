@@ -217,7 +217,7 @@ parser code {:
      * returns true because there is a "&lt;Level&gt;.Ordinal" property.</p>
      */
     protected boolean isFunCall(String s) {
-       return funTable.isProperty(s);
+        return funTable.isProperty(s);
     }
 
     static Id[] toIdArray(List idList) {

@@ -261,7 +261,7 @@ public class BatchTestCase extends FoodMartTestCase {
         Connection connection = TestContext.instance().getConnection();
         for (Cube cube : connection.getSchema().getCubes()) {
             if (cube.getName().equals(cubeName)) {
-                 return (RolapCube) cube;
+                return (RolapCube) cube;
             }
         }
         return null;

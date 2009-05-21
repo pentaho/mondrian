@@ -717,7 +717,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 } else if (value instanceof String) {
                     return LiteralNode.createString(null, (String) value);
                 } else if (value == null) {
-                   return LiteralNode.createNull(null);
+                    return LiteralNode.createNull(null);
                 } else {
                     throw new RuntimeException("unknown literal " + literal);
                 }

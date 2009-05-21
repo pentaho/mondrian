@@ -235,7 +235,7 @@ public class TypeTest extends TestCase {
     }
 
     private MemberType getStoreMemberType(Member storeChild) {
-       return new MemberType(
+        return new MemberType(
             storeChild.getDimension(),
             storeChild.getDimension().getHierarchy(),
             storeChild.getLevel(),

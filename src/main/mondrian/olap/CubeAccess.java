@@ -145,7 +145,7 @@ public class CubeAccess {
 
     public boolean equals(Object object) {
         if (!(object instanceof CubeAccess)) {
-           return false;
+            return false;
         }
         CubeAccess cubeAccess = (CubeAccess) object;
         List<Hierarchy> hierarchyList = cubeAccess.getNoAccessHierarchyList();
