@@ -2169,6 +2169,12 @@ public class Util extends XOMUtil {
         File userDir = new File("").getAbsoluteFile();
         FileObject file = fsManager.resolveFile(userDir, url);
 
+        // Because of VFS caching, make sure we refresh to get the latest file
+        // content.
+        // This refresh may possibly solve the following workaround for defect
+        // 2613265, but cannot be tested, so we will leave the work around for now
+        file.refresh();
+
         // Workaround to defect 2613265.  For HttpFileObjects, verifies the URL
         // of the file retrieved matches the URL passed in.  A VFS cache bug
         // can cause it to treat URLs with different parameters as the same
