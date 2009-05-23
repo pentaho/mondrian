@@ -79,8 +79,8 @@ public abstract class RolapAggregationManager {
     }
 
     /**
-     * Creates a request to evaluate the cell identified by the context specified
-     * in <code>evaluator</code>.
+     * Creates a request to evaluate the cell identified by the context
+     * specified in <code>evaluator</code>.
      *
      * <p>If any of the members from the context is the null member, returns
      * null, since there is no cell. If the measure is calculated, returns
@@ -120,14 +120,15 @@ public abstract class RolapAggregationManager {
         boolean unsatisfiable;
 
         /*
-         * For each aggregationList, generate the optimal form of compoundPredicate.
-         * These compoundPredicates are AND'ed together when sql is generated for
-         * them.
+         * For each aggregationList, generate the optimal form of
+         * compoundPredicate.  These compoundPredicates are AND'ed together when
+         * sql is generated for them.
          */
         for (List<Member[]> aggregationList : aggregationLists) {
             compoundBitKey = BitKey.Factory.makeBitKey(starColumnCount);
             compoundBitKey.clear();
-            compoundGroupMap = new LinkedHashMap<BitKey, List<RolapCubeMember[]>>();
+            compoundGroupMap =
+                new LinkedHashMap<BitKey, List<RolapCubeMember[]>>();
 
             // Go through the compound members(tuples) once and separete them
             // into groups.
@@ -287,45 +288,48 @@ public abstract class RolapAggregationManager {
         }
     }
 
-    /*
-     * Group members(or tuples) from the same compound(i.e. hierarchy) into groups
-     * that are constrained by the same set of columns.
+    /**
+     * Groups members (or tuples) from the same compound (i.e. hierarchy) into
+     * groups that are constrained by the same set of columns.
      *
-     * E.g.
+     * <p>E.g.
      *
-     * Members
+     * <pre>Members
      *     [USA].[CA],
      *     [Canada].[BC],
      *     [USA].[CA].[San Francisco],
-     *     [USA].[OR].[Portland]
+     *     [USA].[OR].[Portland]</pre>
      *
      * will be grouped into
-     * Group 1:
+     *
+     * <pre>Group 1:
      *     {[USA].[CA], [Canada].[BC]}
      * Group 2:
-     *     {[USA].[CA].[San Francisco], [USA].[OR].[Portland]}
+     *     {[USA].[CA].[San Francisco], [USA].[OR].[Portland]}</pre>
      *
-     * This helps with generating optimal form of sql.
+     * <p>This helps with generating optimal form of sql.
      *
-     * In case of aggregating over a list of tuples, similar logic also
+     * <p>In case of aggregating over a list of tuples, similar logic also
      * applies.
      *
-     * For example:
-     * Tuples:
+     * <p>For example:
+     *
+     * <pre>Tuples:
      *     ([Gender].[M], [Store].[All Stores].[USA].[CA])
      *     ([Gender].[F], [Store].[All Stores].[USA].[CA])
      *     ([Gender].[M], [Store].[All Stores].[USA])
-     *     ([Gender].[F], [Store].[All Stores].[Canada])
+     *     ([Gender].[F], [Store].[All Stores].[Canada])</pre>
      *
      * will be grouped into
-     * Group 1:
+     *
+     * <pre>Group 1:
      *     {([Gender].[M], [Store].[All Stores].[USA].[CA]),
      *      ([Gender].[F], [Store].[All Stores].[USA].[CA])}
      * Group 2:
      *     {([Gender].[M], [Store].[All Stores].[USA]),
-     *      ([Gender].[F], [Store].[All Stores].[Canada])}
+     *      ([Gender].[F], [Store].[All Stores].[Canada])}</pre>
      *
-     * This function returns a boolean value indicating if any constraint
+     * <p>This function returns a boolean value indicating if any constraint
      * can be created from the aggregationList. It is possible that only part
      * of the aggregationList can be applied, which still leads to a (partial)
      * constraint that is represented by the compoundGroupMap.
@@ -458,9 +462,11 @@ public abstract class RolapAggregationManager {
      * (Country=USA AND State=CA AND City=San Francisco)
      *     OR (Country=USA AND State=OR AND City=Portland)
      * </blockquote>
+     *
      * <p>The caller of this method will translate this representation into
-     * appropriate SQL form. For exmaple, if the underlying DB supports multi value
-     * IN-list, the second group will turn into this predicate:
+     * appropriate SQL form. For exmaple, if the underlying DB supports multi
+     * value IN-list, the second group will turn into this predicate:
+     *
      * <blockquote>
      * <p>    where (country, state, city) IN ((USA, CA, San Francisco),
      *                                      (USA, OR, Portland))
@@ -654,7 +660,9 @@ public abstract class RolapAggregationManager {
         if (region instanceof CacheControlImpl.CrossjoinCellRegion) {
             final CacheControlImpl.CrossjoinCellRegion crossjoin =
                 (CacheControlImpl.CrossjoinCellRegion) region;
-            for (CacheControl.CellRegion component : crossjoin.getComponents()) {
+            for (CacheControl.CellRegion component :
+                crossjoin.getComponents())
+            {
                 constrainCacheRegion(cacheRegion, baseCube, component);
             }
         } else {

@@ -51,7 +51,8 @@ public interface Cell {
     Object getValue();
 
     /**
-     * Return the cached formatted string, that survives an aggregate cache clear
+     * Return the cached formatted string, that survives an aggregate cache
+     * clear.
      */
     String getCachedFormatString();
 
@@ -76,20 +77,23 @@ public interface Cell {
     /**
      * Returns a SQL query that, when executed, returns drill through data
      * for this Cell.
-     * If the parameter extendedContext is true, then the
-     * query will include all the levels (i.e. columns) of non-constraining members
-     * (i.e. members which are at the "All" level).
-     * If the parameter extendedContext is false, the query will exclude
-     * the levels (coulmns) of non-constraining members.
-     * The result is null if the cell is based upon a calculated member.
      *
+     * <p>If the parameter {@code extendedContext} is true, then the query will
+     * include all the levels (i.e. columns) of non-constraining members
+     * (i.e. members which are at the "All" level).
+     *
+     * <p>If the parameter {@code extendedContext} is false, the query will
+     * exclude the levels (coulmns) of non-constraining members.
+     *
+     * <p>The result is null if the cell is based upon a calculated member.
      */
     String getDrillThroughSQL(boolean extendedContext);
 
     /**
      * Returns true if drill through is possible for this Cell.
      * Returns false if the Cell is based on a calculated measure.
-     * @return true if can drill through on this cell
+     *
+     * @return Whether can drill through on this cell
      */
     boolean canDrillThrough();
 

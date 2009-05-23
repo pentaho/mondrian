@@ -152,7 +152,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             sqlLogger.clear();
             assertEquals("[]", s2);
 
-            // Attach dummy change listener that tells mondrian the datasource is never changed
+            // Attach dummy change listener that tells mondrian the
+            // datasource is never changed.
             smrch.changeListener = new DataSourceChangeListenerImpl();
             ssmrch.changeListener = new DataSourceChangeListenerImpl();
             rcsmrch.changeListener = new DataSourceChangeListenerImpl();
@@ -180,27 +181,31 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
 
             // Run query again, to make sure only cache is used
             Result r4 = executeQuery(
-                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
+                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} "
+                + "on columns from [Sales]");
             Util.discard(r4);
             s4 = sqlLogger.getSqlQueries().toString();
 
             sqlLogger.clear();
             assertFalse("[]".equals(s4));
 
-            // Attach dummy change listener that tells mondrian the datasource is always changed
+            // Attach dummy change listener that tells mondrian the
+            // datasource is always changed.
             smrch.changeListener = new DataSourceChangeListenerImpl2();
             ssmrch.changeListener = new DataSourceChangeListenerImpl2();
             rcsmrch.changeListener = new DataSourceChangeListenerImpl2();
             // Run query again, to make sure only cache is used
             Result r5 = executeQuery(
-                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
+                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} "
+                + "on columns from [Sales]");
             Util.discard(r5);
             s5 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();
             assertEquals(s4,s5);
 
-            // Attach dummy change listener that tells mondrian the datasource is always changed
-            // and tells that aggregate cache is always cached
+            // Attach dummy change listener that tells mondrian the datasource
+            // is always changed and tells that aggregate cache is always
+            // cached.
             smrch.changeListener = new DataSourceChangeListenerImpl3();
             ssmrch.changeListener = new DataSourceChangeListenerImpl3();
             rcsmrch.changeListener = new DataSourceChangeListenerImpl3();
@@ -209,7 +214,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             star.setChangeListener(smrch.changeListener);
             // Run query again, to make sure only cache is used
             Result r6 = executeQuery(
-                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
+                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} "
+                + "on columns from [Sales]");
             Util.discard(r6);
             s6 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();

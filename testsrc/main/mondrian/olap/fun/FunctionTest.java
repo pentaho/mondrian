@@ -213,7 +213,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #2: 10,545\n"
             + "Row #2: 10,691\n");
 
-        assertThrows(
+        assertQueryThrows(
             "with member Measures.[Prev Unit Sales] as 'parallelperiod(strToMember(\"[Time].[Quarter]\"))'\n"
             + "select {[Measures].[Unit Sales], Measures.[Prev Unit Sales]} ON COLUMNS,\n"
             + "[Gender].members ON ROWS\n"
@@ -1577,7 +1577,8 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testAddCalculatedMembers() {
         //----------------------------------------------------
-        // AddCalculatedMembers: Calc member in dimension based on level included
+        // AddCalculatedMembers: Calc member in dimension based on level
+        // included
         //----------------------------------------------------
         assertQueryReturns(
             "WITH MEMBER [Store].[USA].[CA plus OR] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA].[OR]})' "
@@ -1726,7 +1727,8 @@ public class FunctionTest extends FoodMartTestCase {
         // <Dimension>.CurrentMember
         assertAxisReturns("[Gender].CurrentMember", "[Gender].[All Gender]");
         // <Hierarchy>.CurrentMember
-        assertAxisReturns("[Gender].Hierarchy.CurrentMember", "[Gender].[All Gender]");
+        assertAxisReturns(
+            "[Gender].Hierarchy.CurrentMember", "[Gender].[All Gender]");
 
         // <Level>.CurrentMember
         // MSAS doesn't allow this, but Mondrian does: it implicitly casts
@@ -1739,8 +1741,10 @@ public class FunctionTest extends FoodMartTestCase {
             "[Gender].CurrentMember",
             "{[Gender]}");
 
-        getTestContext().assertExprDependsOn("[Gender].[M].Dimension.Name", "{}");
-        // implcitit call to .CurrentMember when dimension is used as a member expression
+        getTestContext().assertExprDependsOn(
+            "[Gender].[M].Dimension.Name", "{}");
+        // implcitit call to .CurrentMember when dimension is used as a member
+        // expression
         getTestContext().assertMemberExprDependsOn(
             "[Gender].[M].Dimension",
             "{[Gender]}");
@@ -2091,7 +2095,7 @@ public class FunctionTest extends FoodMartTestCase {
     public void testNamedSetCurrentOrdinalWithNonNamedSetFails() {
         // a named set wrapped in {...} is not a named set, so CurrentOrdinal
         // fails
-        assertThrows(
+        assertQueryThrows(
             "with set [Time Members] as [Time].Members\n"
             + "member [Measures].[Foo] as ' {[Time Members]}.CurrentOrdinal '\n"
             + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
@@ -2100,7 +2104,7 @@ public class FunctionTest extends FoodMartTestCase {
             "Not a named set");
 
         // as above for Current function
-        assertThrows(
+        assertQueryThrows(
             "with set [Time Members] as [Time].Members\n"
             + "member [Measures].[Foo] as ' {[Time Members]}.Current.Name '\n"
             + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
@@ -2109,7 +2113,7 @@ public class FunctionTest extends FoodMartTestCase {
             "Not a named set");
 
         // a set expression is not a named set, so CurrentOrdinal fails
-        assertThrows(
+        assertQueryThrows(
             "with member [Measures].[Foo] as\n"
             + " ' Head([Time].Members, 5).CurrentOrdinal '\n"
             + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
@@ -2118,7 +2122,7 @@ public class FunctionTest extends FoodMartTestCase {
             "Not a named set");
 
         // as above for Current function
-        assertThrows(
+        assertQueryThrows(
             "with member [Measures].[Foo] as\n"
             + " ' Crossjoin([Time].Members, [Gender].Members).Current.Name '\n"
             + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
@@ -3351,7 +3355,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testCrossjoinAsteriskTuple() {
         // TODO: Check whether SSAS regards this as an error.
-        assertThrows(
+        assertQueryThrows(
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
             + "NON EMPTY [Store].[All Stores] "
             + " * ([Product].[All Products], [Gender]) "
@@ -3660,21 +3664,21 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testCrossjoinDupDimensionFails() {
-        assertThrows(
+        assertQueryThrows(
             "select [Measures].[Unit Sales] ON COLUMNS,\n"
             + " CrossJoin({[Time].[Quarter].[Q1]}, {[Time].[Month].[5]}) ON ROWS\n"
             + "from [Sales]",
             "Tuple contains more than one member of dimension '[Time]'.");
 
         // now with Item, for kicks
-        assertThrows(
+        assertQueryThrows(
             "select [Measures].[Unit Sales] ON COLUMNS,\n"
             + " CrossJoin({[Time].[Quarter].[Q1]}, {[Time].[Month].[5]}).Item(0) ON ROWS\n"
             + "from [Sales]",
             "Tuple contains more than one member of dimension '[Time]'.");
 
         // same query using explicit tuple
-        assertThrows(
+        assertQueryThrows(
             "select [Measures].[Unit Sales] ON COLUMNS,\n"
             + " ([Time].[Quarter].[Q1], [Time].[Month].[5]) ON ROWS\n"
             + "from [Sales]",
@@ -4055,10 +4059,11 @@ public class FunctionTest extends FoodMartTestCase {
         testContext.assertExprReturns("Count(Descendants([Employees], 4, LEAVES))", "63");
         testContext.assertExprReturns("Count(Descendants([Employees], 999, LEAVES))", "1,044");
 
-        // negative depth acts like +infinity (per MSAS)
-        // Run the test several times because we had a non-deterministic bug here.
+        // Negative depth acts like +infinity (per MSAS).  Run the test several
+        // times because we had a non-deterministic bug here.
         for (int i = 0; i < 100; ++i) {
-            testContext.assertExprReturns("Count(Descendants([Employees], -1, LEAVES))", "1,044");
+            testContext.assertExprReturns(
+                "Count(Descendants([Employees], -1, LEAVES))", "1,044");
         }
     }
 
@@ -4810,8 +4815,9 @@ public class FunctionTest extends FoodMartTestCase {
             "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status]}");
 
         if (isDefaultNullMemberRepresentation()) {
-            // The tuple constructor returns a null tuple if one of its arguments
-            // is null -- and the Item function returns null if the tuple is null.
+            // The tuple constructor returns a null tuple if one of its
+            // arguments is null -- and the Item function returns null if the
+            // tuple is null.
             assertExprReturns(
                 "([Gender].parent, [Marital Status]).Item(0).Name",
                 "#null");
@@ -5247,7 +5253,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void _testParallelPeriodThrowsException() {
-        assertThrows("select {parallelperiod([Time].[Year], 1)} on columns "
+        assertQueryThrows("select {parallelperiod([Time].[Year], 1)} on columns "
                 + "from [Sales] where ([Time].[1998].[Q1].[2])",
                 "This should say something about Time appearing on two different axes (slicer an columns)");
     }
@@ -5429,7 +5435,8 @@ public class FunctionTest extends FoodMartTestCase {
             MondrianProperties.instance().NullDenominatorProducesNull.get();
         try {
             // default behavior
-            MondrianProperties.instance().NullDenominatorProducesNull.set(false);
+            MondrianProperties.instance().NullDenominatorProducesNull.set(
+                false);
 
             assertExprReturns("-2 / " + NullNumericExpr, "Infinity");
             assertExprReturns("0 / 0", "NaN");
@@ -6238,7 +6245,8 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testIntersect() {
-        // Note: duplicates retained from left, not from right; and order is preserved.
+        // Note: duplicates retained from left, not from right; and order is
+        // preserved.
         assertAxisReturns(
             "Intersect({[Time].[1997].[Q2], [Time].[1997], [Time].[1997].[Q1], [Time].[1997].[Q2]}, "
             + "{[Time].[1998], [Time].[1997], [Time].[1997].[Q2], [Time].[1997]}, "
@@ -7460,7 +7468,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testToggleDrillStateRecursive() {
         // We expect this to fail.
-        assertThrows(
+        assertQueryThrows(
             "Select \n"
             + "    ToggleDrillState(\n"
             + "        {[Store].[All Stores].[USA]}, \n"
@@ -7511,8 +7519,9 @@ public class FunctionTest extends FoodMartTestCase {
 
     /**
      * Tests TopCount applied to a large result set.
-     * Before optimizing (see FunUtil.partialSort),
-     * on a 2-core 32-bit 2.4GHz machine, the 1st query took 14.5 secs, the 2nd query took 5.0 secs.
+     *
+     * Before optimizing (see FunUtil.partialSort), on a 2-core 32-bit 2.4GHz
+     * machine, the 1st query took 14.5 secs, the 2nd query took 5.0 secs.
      * After optimizing, who knows?
      */
     public void testTopCountHuge() {
@@ -8156,10 +8165,13 @@ public class FunctionTest extends FoodMartTestCase {
      * expected.
      */
     public void assertExprCompilesTo(
-            String expr, String expectedCalc) {
-        final String actualCalc = getTestContext().compileExpression(expr, true);
+        String expr,
+        String expectedCalc)
+    {
+        final String actualCalc =
+            getTestContext().compileExpression(expr, true);
         final int expDeps =
-                MondrianProperties.instance().TestExpDependencies.get();
+            MondrianProperties.instance().TestExpDependencies.get();
         if (expDeps > 0) {
             // Don't bother checking the compiled output if we are also
             // testing dependencies. The compiled code will have extra
@@ -8174,10 +8186,13 @@ public class FunctionTest extends FoodMartTestCase {
      * expected.
      */
     public void assertAxisCompilesTo(
-            String expr, String expectedCalc) {
-        final String actualCalc = getTestContext().compileExpression(expr, false);
+        String expr,
+        String expectedCalc)
+    {
+        final String actualCalc =
+            getTestContext().compileExpression(expr, false);
         final int expDeps =
-                MondrianProperties.instance().TestExpDependencies.get();
+            MondrianProperties.instance().TestExpDependencies.get();
         if (expDeps > 0) {
             // Don't bother checking the compiled output if we are also
             // testing dependencies. The compiled code will have extra
@@ -9005,7 +9020,8 @@ Intel platforms):
             // Note:
             // [*Subtotal - Food]  = 4513 = 815 + 311 + 3497
             // [*Subtotal - Bread] = 815, does not include muffins
-            // [*Subtotal - Breakfast Foods] = 311 = 110 + 201, includes grandchildren
+            // [*Subtotal - Breakfast Foods] = 311 = 110 + 201, includes
+            //     grandchildren
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -9034,8 +9050,9 @@ Intel platforms):
     }
 
     public void testCalculatedChild() {
-        // Construct calculated children with the same name for both [Drink] and [Non-Consumable]
-        // Then, create a metric to select the calculated child based on current product member
+        // Construct calculated children with the same name for both [Drink] and
+        // [Non-Consumable].  Then, create a metric to select the calculated
+        // child based on current product member.
         assertQueryReturns(
             "with\n"
             + " member [Product].[All Products].[Drink].[Calculated Child] as '[Product].[All Products].[Drink].[Alcoholic Beverages]'\n"
@@ -9060,8 +9077,9 @@ Intel platforms):
     }
 
     public void testCalculatedChildUsingItem() {
-        // Construct calculated children with the same name for both [Drink] and [Non-Consumable]
-        // Then, create a metric to select the first calculated child
+        // Construct calculated children with the same name for both [Drink] and
+        // [Non-Consumable].  Then, create a metric to select the first
+        // calculated child.
         assertQueryReturns(
             "with\n"
             + " member [Product].[All Products].[Drink].[Calculated Child] as '[Product].[All Products].[Drink].[Alcoholic Beverages]'\n"
@@ -9115,16 +9133,24 @@ Intel platforms):
         // To boolean (trivial)
         assertExprReturns("1=1 AND Cast(1 = 1 AND 1 = 2 AS Boolean)", "false");
 
-        // From null : should not throw exceptions since RolapResult.executeBody can receive NULL
-        // values when the cell value is not loaded yet, so should return null instead.
+        // From null : should not throw exceptions since RolapResult.executeBody
+        // can receive NULL values when the cell value is not loaded yet, so
+        // should return null instead.
         // To Integer : Expect to return NULL
-        assertExprReturns("0 * Cast(NULL AS Integer)", "");  // Expect to return NULL
+
+        // Expect to return NULL
+        assertExprReturns("0 * Cast(NULL AS Integer)", "");
+
         // To Numeric : Expect to return NULL
-        assertExprReturns("0 * Cast(NULL AS Numeric)", "");  // Expect to return NULL
+        // Expect to return NULL
+        assertExprReturns("0 * Cast(NULL AS Numeric)", "");
+
         // To String : Expect to return "null"
         assertExprReturns("'' || Cast(NULL AS String)", "null");
-        // To Boolean : Expect to return NULL, but since FunUtil.BooleanNull does not
-        // implement three-valued boolean logic yet, this will return false
+
+        // To Boolean : Expect to return NULL, but since FunUtil.BooleanNull
+        // does not implement three-valued boolean logic yet, this will return
+        // false
         assertExprReturns("1=1 AND Cast(NULL AS Boolean)", "false");
 
         // Double is not allowed as a type
@@ -9163,9 +9189,12 @@ Intel platforms):
         funInfoList.addAll(BuiltinFunTable.instance().getFunInfoList());
 
         // Add some UDFs.
-        funInfoList.add(new FunInfo(new UdfResolver(new CurrentDateMemberExactUdf())));
-        funInfoList.add(new FunInfo(new UdfResolver(new CurrentDateMemberUdf())));
-        funInfoList.add(new FunInfo(new UdfResolver(new CurrentDateStringUdf())));
+        funInfoList.add(
+            new FunInfo(new UdfResolver(new CurrentDateMemberExactUdf())));
+        funInfoList.add(
+            new FunInfo(new UdfResolver(new CurrentDateMemberUdf())));
+        funInfoList.add(
+            new FunInfo(new UdfResolver(new CurrentDateStringUdf())));
         Collections.sort(funInfoList);
 
         final File file = new File("functions.html");
@@ -9320,7 +9349,7 @@ Intel platforms):
     }
 
     public void testLeftFunctionWithNegativeLength() {
-        assertThrows(
+        assertQueryThrows(
             "select filter([Store].MEMBERS,"
             + "Left([Store].CURRENTMEMBER.Name, -20)=\"Bellingham\") "
             + "on 0 from sales",
@@ -9394,7 +9423,7 @@ Intel platforms):
                 + "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n"
                 + "Row #0: 2,237\n");
         } else {
-            assertThrows(
+            assertQueryThrows(
                 "select filter([Store].MEMBERS,"
                 + "[Store].CURRENTMEMBER.Name = \"Bellingham\""
                 + "And Mid(\"Bellingham\", 0, 2) = \"Be\")"
@@ -9418,7 +9447,7 @@ Intel platforms):
     }
 
     public void testMidFunctionWithNegativeStartIndex() {
-        assertThrows(
+        assertQueryThrows(
             "select filter([Store].MEMBERS,"
             + "[Store].CURRENTMEMBER.Name = \"Bellingham\""
             + "And Mid(\"Bellingham\", -20, 2) = \"\")"
@@ -9428,7 +9457,7 @@ Intel platforms):
     }
 
     public void testMidFunctionWithNegativeLength() {
-        assertThrows(
+        assertQueryThrows(
             "select filter([Store].MEMBERS,"
             + "[Store].CURRENTMEMBER.Name = \"Bellingham\""
             + "And Mid(\"Bellingham\", 2, -2) = \"\")"
@@ -9510,7 +9539,9 @@ Intel platforms):
             + "Row #0: 2,237\n");
     }
 
-    public void testIIFWithBooleanBooleanAndNumericParameterForReturningTruePart() {
+    public void
+        testIifFWithBooleanBooleanAndNumericParameterForReturningTruePart()
+    {
         assertQueryReturns(
             "SELECT Filter(Store.allmembers, "
             + "iif(measures.profit < 400000,"
@@ -9522,7 +9553,9 @@ Intel platforms):
             + "Row #0: 266,773\n");
     }
 
-    public void testIIFWithBooleanBooleanAndNumericParameterForReturningFalsePart() {
+    public void
+        testIifWithBooleanBooleanAndNumericParameterForReturningFalsePart()
+    {
         assertQueryReturns(
             "SELECT Filter([Store].[All Stores].[USA].[CA].[Beverly Hills].children, "
             + "iif(measures.profit > 400000,"
@@ -9662,17 +9695,34 @@ Intel platforms):
     }
 
     /**
-     * Test for Bug #1732824, Cube getTimeDimension use when Cube has no Time dimension
+     * Test for bug MONDRIAN-296, "Cube getTimeDimension use when Cube has no
+     * Time dimension".
      */
     public void testCubeTimeDimensionFails() {
-        assertThrows("select LastPeriods(1) on columns from [Store]", "'LastPeriods', no time dimension");
-        assertThrows("select OpeningPeriod() on columns from [Store]", "'OpeningPeriod', no time dimension");
-        assertThrows("select OpeningPeriod([Store Type]) on columns from [Store]", "'OpeningPeriod', no time dimension");
-        assertThrows("select ClosingPeriod() on columns from [Store]", "'ClosingPeriod', no time dimension");
-        assertThrows("select ClosingPeriod([Store Type]) on columns from [Store]", "'ClosingPeriod', no time dimension");
-        assertThrows("select ParallelPeriod() on columns from [Store]", "'ParallelPeriod', no time dimension");
-        assertThrows("select PeriodsToDate() on columns from [Store]", "'PeriodsToDate', no time dimension");
-        assertThrows("select Mtd() on columns from [Store]", "'Mtd', no time dimension");
+        assertQueryThrows(
+            "select LastPeriods(1) on columns from [Store]",
+            "'LastPeriods', no time dimension");
+        assertQueryThrows(
+            "select OpeningPeriod() on columns from [Store]",
+            "'OpeningPeriod', no time dimension");
+        assertQueryThrows(
+            "select OpeningPeriod([Store Type]) on columns from [Store]",
+            "'OpeningPeriod', no time dimension");
+        assertQueryThrows(
+            "select ClosingPeriod() on columns from [Store]",
+            "'ClosingPeriod', no time dimension");
+        assertQueryThrows(
+            "select ClosingPeriod([Store Type]) on columns from [Store]",
+            "'ClosingPeriod', no time dimension");
+        assertQueryThrows(
+            "select ParallelPeriod() on columns from [Store]",
+            "'ParallelPeriod', no time dimension");
+        assertQueryThrows(
+            "select PeriodsToDate() on columns from [Store]",
+            "'PeriodsToDate', no time dimension");
+        assertQueryThrows(
+            "select Mtd() on columns from [Store]",
+            "'Mtd', no time dimension");
     }
 
     public void testFilterEmpty() {

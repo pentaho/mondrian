@@ -30,23 +30,24 @@ import org.apache.log4j.Logger;
  *   anything</i>)</p>
  * </blockquote>
  *
- * <p>All segments over the same set of columns belong to an Aggregation, in this
- * case</p>
+ * <p>All segments over the same set of columns belong to an Aggregation, in
+ * this case:</p>
  *
  * <blockquote>
  *   <p>('Sales' Star, Gender, State, Marital Status)</p>
  * </blockquote>
  *
- * <p>Note that different measures (in the same Star) occupy the same Aggregation.
- * Aggregations belong to the AggregationManager, a singleton.</p>
+ * <p>Note that different measures (in the same Star) occupy the same
+ * Aggregation.  Aggregations belong to the AggregationManager, a singleton.</p>
+ *
  * <p>Segments are pinned during the evaluation of a single MDX query. The query
- * evaluates the expressions twice. The first pass, it finds which cell values it
- * needs, pins the segments containing the ones which are already present (one
- * pin-count for each cell value used), and builds a {@link CellRequest
- * cell request} for those which are not present. It executes
- * the cell request to bring the required cell values into the cache, again,
- * pinned. Then it evalutes the query a second time, knowing that all cell values
- * are available. Finally, it releases the pins.</p>
+ * evaluates the expressions twice. The first pass, it finds which cell values
+ * it needs, pins the segments containing the ones which are already present
+ * (one pin-count for each cell value used), and builds a {@link CellRequest
+ * cell request} for those which are not present. It executes the cell request
+ * to bring the required cell values into the cache, again, pinned. Then it
+ * evalutes the query a second time, knowing that all cell values are
+ * available. Finally, it releases the pins.</p>
  *
  * <p>A Segment may have a list of excluded {@link Region} objects. These are
  * caused by cache flushing. Usually a segment is a hypercube: it is defined by

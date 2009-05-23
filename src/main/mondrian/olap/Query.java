@@ -58,17 +58,20 @@ import java.util.*;
 public class Query extends QueryPart {
 
     /**
-     * public-private: This must be public because it is still accessed in rolap.RolapCube
+     * public-private: This must be public because it is still accessed in
+     * rolap.RolapCube
      */
     public Formula[] formulas;
 
     /**
-     * public-private: This must be public because it is still accessed in rolap.RolapConnection
+     * public-private: This must be public because it is still accessed in
+     * rolap.RolapConnection
      */
     public QueryAxis[] axes;
 
     /**
-     * public-private: This must be public because it is still accessed in rolap.RolapResult
+     * public-private: This must be public because it is still accessed in
+     * rolap.RolapResult
      */
     public QueryAxis slicerAxis;
 
@@ -589,7 +592,8 @@ public class Query extends QueryPart {
 
             // Make sure that there are no gaps. If there are N axes, then axes
             // 0 .. N-1 should exist.
-            int seekOrdinal = AxisOrdinal.StandardAxisOrdinal.COLUMNS.logicalOrdinal();
+            int seekOrdinal =
+                AxisOrdinal.StandardAxisOrdinal.COLUMNS.logicalOrdinal();
             for (QueryAxis axis : axes) {
                 if (!axisNames.contains(seekOrdinal)) {
                     AxisOrdinal axisName =
@@ -761,7 +765,8 @@ public class Query extends QueryPart {
 
         Parameter param = getSchemaReader(false).getParameter(parameterName);
         if (param == null) {
-            throw MondrianResource.instance().UnknownParameter.ex(parameterName);
+            throw MondrianResource.instance().UnknownParameter.ex(
+                parameterName);
         }
         if (!param.isModifiable()) {
             throw MondrianResource.instance().ParameterIsNotModifiable.ex(
@@ -931,8 +936,10 @@ public class Query extends QueryPart {
                         } else if (parent instanceof Formula) {
                             String parentFormulaType =
                                 ((Formula) parent).isMember()
-                                    ? MondrianResource.instance().CalculatedMember.str()
-                                    : MondrianResource.instance().CalculatedSet.str();
+                                    ? MondrianResource.instance()
+                                          .CalculatedMember.str()
+                                    : MondrianResource.instance()
+                                          .CalculatedSet.str();
                             throw MondrianResource.instance().
                                 MdxCalculatedFormulaUsedInFormula.ex(
                                 formulaType, uniqueName, parentFormulaType,
@@ -991,7 +998,9 @@ public class Query extends QueryPart {
                 return false;
             }
             if (queryElement instanceof NamedSetExpr &&
-                ((NamedSetExpr) queryElement).getNamedSet().equals(mdxElement)) {
+                ((NamedSetExpr) queryElement).getNamedSet().equals(
+                    mdxElement))
+            {
                 return false;
             }
         }

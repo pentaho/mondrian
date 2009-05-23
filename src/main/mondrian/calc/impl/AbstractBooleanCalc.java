@@ -37,7 +37,8 @@ public abstract class AbstractBooleanCalc
      */
     public AbstractBooleanCalc(Exp exp, Calc[] calcs) {
         super(exp, calcs);
-        // now supports int and double conversion (see AbstractExpCompiler.compileBoolean()
+        // now supports int and double conversion (see
+        // AbstractExpCompiler.compileBoolean():
         // assert getType() instanceof BooleanType;
     }
 

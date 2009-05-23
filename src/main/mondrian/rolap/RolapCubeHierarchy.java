@@ -68,7 +68,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
         if (!dimension.getCube().isVirtual()) {
             this.usage =
-                new HierarchyUsage(dimension.getCube(), rolapHierarchy, cubeDim);
+                new HierarchyUsage(
+                    dimension.getCube(), rolapHierarchy, cubeDim);
         }
 
         this.rolapHierarchy = rolapHierarchy;
@@ -355,7 +356,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
      RolapCubeMember Caching Approach:
 
      - RolapHierarchy.SmartMemberReader.SmartCacheHelper ->
-       This is the shared cache across shared hierarchies.  This member cache only
+       This is the shared cache across shared hierarchies.  This
+       member cache only
        contains members loaded by non-cube specific member lookups.  This cache
        should only contain RolapMembers, not RolapCubeMembers
 
@@ -364,15 +366,16 @@ public class RolapCubeHierarchy extends RolapHierarchy {
        wrappers of shared members.
 
      - RolapCubeHierarchy.RolapCubeHierarchyMemberReader.SmartCacheHelper ->
-       This is the inherited shared cache from SmartMemberReader, and is used when
-       a join with the fact table is necessary, aka a SqlContextConstraint is used.
-       This cache may be redundant with rolapCubeCacheHelper.
+       This is the inherited shared cache from SmartMemberReader, and
+       is used when a join with the fact table is necessary, aka a
+       SqlContextConstraint is used. This cache may be redundant with
+       rolapCubeCacheHelper.
 
      - A Special note regarding RolapCubeHierarchyMemberReader.cubeSource -
-       This class was required for the special situation getMemberBuilder() method
-       call from RolapNativeSet.  This class utilizes both the rolapCubeCacheHelper
-       class for storing RolapCubeMembers, and also the
-       RolapCubeHierarchyMemberReader's inherited SmartCacheHelper
+       This class was required for the special situation getMemberBuilder()
+       method call from RolapNativeSet.  This class utilizes both the
+       rolapCubeCacheHelper class for storing RolapCubeMembers, and also the
+       RolapCubeHierarchyMemberReader's inherited SmartCacheHelper.
 
 
      ******/
@@ -380,9 +383,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
     /**
      *  member reader wrapper - uses existing member reader,
-     *  but wraps and caches all intermediate members
-     *  <p>Synchronization. Most synchronization takes place within SmartMemberReader.
-     * All synchronization is done on the cacheHelper object.
+     *  but wraps and caches all intermediate members.
+     *
+     *  <p>Synchronization. Most synchronization takes place within
+     * SmartMemberReader.  All synchronization is done on the cacheHelper
+     * object.
       */
     public class CacheRolapCubeHierarchyMemberReader
         extends SmartMemberReader
@@ -484,7 +489,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             boolean joinReq =
                 (constraint instanceof SqlContextConstraint);
             if (joinReq) {
-                super.readMemberChildren(parentMembers, rolapChildren, constraint);
+                super.readMemberChildren(
+                    parentMembers, rolapChildren, constraint);
             } else {
                 rolapHierarchy.getMemberReader().getMemberChildren(
                     rolapParents, rolapChildren, constraint);
@@ -571,7 +577,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 List<RolapMember> missed = new ArrayList<RolapMember>();
                 for (RolapMember parentMember : parentMembers) {
                     List<RolapMember> list =
-                        rolapCubeCacheHelper.getChildrenFromCache(parentMember, constraint);
+                        rolapCubeCacheHelper.getChildrenFromCache(
+                            parentMember, constraint);
                     if (list == null) {
                         // the null member has no children
                         if (!parentMember.isNull()) {
@@ -624,9 +631,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 for (RolapMember member : list) {
                     // note that there is a special case for the all member
 
-                    // REVIEW: disabled, to see what happens. if this code is for
-                    // performance, we should check level.isAll at the top of the
-                    // method; if it is for correctness, leave the code in
+                    // REVIEW: disabled, to see what happens. if this code is
+                    // for performance, we should check level.isAll at the top
+                    // of the method; if it is for correctness, leave the code
+                    // in
                     if (false && member == rolapHierarchy.getAllMember()) {
                         newlist.add(getAllMember());
                     } else {
@@ -694,7 +702,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     if (cubeMember == null) {
                         cubeMember =
                             new RolapCubeMember(
-                                parent, member, level, parentDimension.getCube());
+                                parent,
+                                member,
+                                level,
+                                parentDimension.getCube());
                         rolapCubeCacheHelper.putMember(key, cubeMember);
                     }
                 } else {
@@ -841,7 +852,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             boolean joinReq =
                 (constraint instanceof SqlContextConstraint);
             if (joinReq) {
-                super.readMemberChildren(parentMembers, rolapChildren, constraint);
+                super.readMemberChildren(
+                    parentMembers, rolapChildren, constraint);
             } else {
                 rolapHierarchy.getMemberReader().getMemberChildren(
                     rolapParents, rolapChildren, constraint);

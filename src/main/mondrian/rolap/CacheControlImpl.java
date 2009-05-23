@@ -457,7 +457,7 @@ public class CacheControlImpl implements CacheControl {
     }
 
     public void flush(MemberSet memberSet) {
-        // REVIEW How is flush(s) different to executing createDeleteCommand(s) ?
+        // REVIEW How is flush(s) different to executing createDeleteCommand(s)?
         synchronized (MEMBER_CACHE_LOCK) {
             final List<CellRegion> cellRegionList = new ArrayList<CellRegion>();
             ((MemberSetPlus) memberSet).accept(
@@ -534,9 +534,11 @@ public class CacheControlImpl implements CacheControl {
                 "move member not supported for parent-child hierarchy");
         }
         if (loc == null) {
-            throw new IllegalArgumentException("cannot move member to null location");
+            throw new IllegalArgumentException(
+                "cannot move member to null location");
         }
-        // TODO: check that MEMBER and LOC (its new parent) have appropriate Levels
+        // TODO: check that MEMBER and LOC (its new parent) have appropriate
+        // Levels
         return new MoveMemberCommand((RolapMember) member, (RolapMember) loc);
     }
 
@@ -547,7 +549,8 @@ public class CacheControlImpl implements CacheControl {
         throws IllegalArgumentException
     {
         if (member == null) {
-            throw new IllegalArgumentException("cannot set properties on null member");
+            throw new IllegalArgumentException(
+                "cannot set properties on null member");
         }
         if (((RolapLevel) member.getLevel()).isParentChild()) {
             throw new IllegalArgumentException(
@@ -566,7 +569,8 @@ public class CacheControlImpl implements CacheControl {
         Map<String, Object> propertyValues)
         throws IllegalArgumentException
     {
-        // TODO: check that members all at same Level, and validate that props exist
+        // TODO: check that members all at same Level, and validate that props
+        // exist
         validateSameLevel((MemberSetPlus) members);
         return new ChangeMemberPropsCommand(
             (MemberSetPlus) members,
@@ -1071,7 +1075,8 @@ public class CacheControlImpl implements CacheControl {
      */
     static class SimpleMemberSet implements MemberSetPlus {
         public final List<RolapMember> members;
-        public final boolean descendants; // the set includes the descendants of all members
+        // the set includes the descendants of all members
+        public final boolean descendants;
         public final RolapHierarchy hierarchy;
 
         SimpleMemberSet(List<RolapMember> members, boolean descendants) {

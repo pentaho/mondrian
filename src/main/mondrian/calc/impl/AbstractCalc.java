@@ -78,8 +78,8 @@ public abstract class AbstractCalc implements Calc {
      * Returns the name of this expression type, used when serializing an
      * expression to a string.
      *
-     * <p>The default implementation tries to extract a name from a function call,
-     * if any, then prints the last part of the class name.
+     * <p>The default implementation tries to extract a name from a function
+     * call, if any, then prints the last part of the class name.
      */
     protected String getName() {
         String name;

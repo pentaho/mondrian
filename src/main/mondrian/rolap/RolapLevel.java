@@ -290,10 +290,16 @@ public class RolapLevel extends LevelBase {
         return null;
     }
 
-    RolapLevel(RolapHierarchy hierarchy, int depth, MondrianDef.Level xmlLevel) {
+    RolapLevel(
+        RolapHierarchy hierarchy,
+        int depth,
+        MondrianDef.Level xmlLevel)
+    {
         this(
             hierarchy, depth, xmlLevel.name, xmlLevel.getKeyExp(),
-            xmlLevel.getNameExp(), xmlLevel.getCaptionExp(), xmlLevel.getOrdinalExp(),
+            xmlLevel.getNameExp(),
+            xmlLevel.getCaptionExp(),
+            xmlLevel.getOrdinalExp(),
             xmlLevel.getParentExp(), xmlLevel.nullParentValue,
             xmlLevel.closure, createProperties(xmlLevel),
             (xmlLevel.uniqueMembers ? FLAG_UNIQUE : 0),
@@ -343,7 +349,9 @@ public class RolapLevel extends LevelBase {
         return list.toArray(new RolapProperty[list.size()]);
     }
 
-    private static Property.Datatype convertPropertyTypeNameToCode(String type) {
+    private static Property.Datatype convertPropertyTypeNameToCode(
+        String type)
+    {
         if (type.equals("String")) {
             return Property.Datatype.TYPE_STRING;
         } else if (type.equals("Numeric")) {

@@ -183,12 +183,15 @@ class RolapCell implements Cell {
         final Member[] currentMembers = result.getCellMembers(pos);
 
         // replace member if we're dealing with a trivial formula
-        if (currentMembers[0] instanceof RolapHierarchy.RolapCalculatedMeasure) {
+        if (currentMembers[0]
+            instanceof RolapHierarchy.RolapCalculatedMeasure)
+        {
             RolapHierarchy.RolapCalculatedMeasure measure =
                 (RolapHierarchy.RolapCalculatedMeasure)currentMembers[0];
             if (measure.getFormula().getExpression() instanceof MemberExpr) {
                 currentMembers[0] =
-                    ((MemberExpr)measure.getFormula().getExpression()).getMember();
+                    ((MemberExpr) measure.getFormula().getExpression())
+                    .getMember();
             }
         }
         return currentMembers;
@@ -238,7 +241,8 @@ class RolapCell implements Cell {
      * <ul>
      * <li>Literal 1 is drillable</li>
      * <li>Member [Measures].[Unit Sales] is drillable</li>
-     * <li>Calculated member with expression [Measures].[Unit Sales] + 1 is drillable</li>
+     * <li>Calculated member with expression [Measures].[Unit Sales] +
+     *     1 is drillable</li>
      * <li>Calculated member with expression
      *     ([Measures].[Unit Sales], [Time].PrevMember) is not drillable</li>
      * </ul>
@@ -291,7 +295,9 @@ class RolapCell implements Cell {
                 }
             } else if (member instanceof RolapCubeMember) {
                 handleMember(((RolapCubeMember) member).rolapMember);
-            } else if (member instanceof RolapHierarchy.RolapCalculatedMeasure) {
+            } else if (member
+                instanceof RolapHierarchy.RolapCalculatedMeasure)
+            {
                 RolapHierarchy.RolapCalculatedMeasure measure =
                     (RolapHierarchy.RolapCalculatedMeasure) member;
                 measure.getFormula().getExpression().accept(this);

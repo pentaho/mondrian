@@ -700,17 +700,17 @@ public class FastBatchingCellReader implements CellReader {
                 if (getConstrainedColumnsBitKey().equals(
                     other.getConstrainedColumnsBitKey())) {
                     return hasSameCompoundPredicate(other)
-                        && haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other);
+                        && haveSameValues(other);
                 } else {
                     return hasSameCompoundPredicate(other)
                         || (other.batchKey.getCompoundPredicateList().isEmpty()
                             || equalConstraint(
                                 batchKey.getCompoundPredicateList(),
                                 other.batchKey.getCompoundPredicateList()))
-                        && haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other);
+                        && haveSameValues(other);
                 }
             } else {
-                return haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(other);
+                return haveSameValues(other);
             }
         }
 
@@ -739,7 +739,8 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         private boolean hasNormalMeasures() {
-            return getDistinctMeasureCount(measuresList) !=  measuresList.size();
+            return getDistinctMeasureCount(measuresList)
+                !=  measuresList.size();
         }
 
         private boolean hasSameMeasureList(Batch other) {
@@ -784,7 +785,9 @@ public class FastBatchingCellReader implements CellReader {
                     predicate = predicate.and(orPredicate);
                 }
             }
-            for (StarPredicate starPredicate : this.batchKey.getCompoundPredicateList()) {
+            for (StarPredicate starPredicate :
+                batchKey.getCompoundPredicateList())
+            {
                 if (predicate == null) {
                     predicate = starPredicate;
                 } else {
@@ -798,7 +801,8 @@ public class FastBatchingCellReader implements CellReader {
             boolean rollup[] = {false};
             boolean otherRollup[] = {false};
 
-            boolean hasSameAggregation = getAgg(rollup) == other.getAgg(otherRollup);
+            boolean hasSameAggregation =
+                getAgg(rollup) == other.getAgg(otherRollup);
             boolean hasSameRollupOption = rollup[0] == otherRollup[0];
 
             boolean hasSameStar = getStar().equals(other.getStar());
@@ -827,7 +831,11 @@ public class FastBatchingCellReader implements CellReader {
             return bitKey;
         }
 
-        boolean haveSameValuesForOverlappingColumnsOrHasAllChildrenForOthers(
+        /**
+         * Return whether have same values for overlapping columns or
+         * has all children for others.
+         */
+        boolean haveSameValues(
             Batch other)
         {
             for (int j = 0; j < columns.length; j++) {

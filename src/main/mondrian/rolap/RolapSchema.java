@@ -153,12 +153,14 @@ public class RolapSchema implements Schema {
     private DataSourceChangeListener dataSourceChangeListener;
 
     /**
-     * HashMap containing column cardinality. The combination of
+     * Map containing column cardinality. The combination of
      * Mondrianef.Relation and MondrianDef.Expression uniquely
      * identifies a relational expression(e.g. a column) specified
      * in the xml schema.
      */
-    private final Map<MondrianDef.Relation, Map<MondrianDef.Expression, Integer>>
+    private final Map<
+        MondrianDef.Relation,
+        Map<MondrianDef.Expression, Integer>>
         relationExprCardinalityMap;
 
     /**
@@ -198,7 +200,9 @@ public class RolapSchema implements Schema {
         this.dataSourceChangeListener =
             createDataSourceChangeListener(connectInfo);
         this.relationExprCardinalityMap =
-            new HashMap<MondrianDef.Relation, Map<MondrianDef.Expression, Integer>>();
+            new HashMap<
+                MondrianDef.Relation,
+                Map<MondrianDef.Expression, Integer>>();
     }
 
     /**
@@ -372,7 +376,9 @@ public class RolapSchema implements Schema {
         // function table.
         final Map<String, UserDefinedFunction> mapNameToUdf =
             new HashMap<String, UserDefinedFunction>();
-        for (MondrianDef.UserDefinedFunction udf : xmlSchema.userDefinedFunctions) {
+        for (MondrianDef.UserDefinedFunction udf :
+                 xmlSchema.userDefinedFunctions)
+        {
             defineFunction(mapNameToUdf, udf.name, udf.className);
         }
         final RolapSchemaFunctionTable funTable =
@@ -538,23 +544,32 @@ public class RolapSchema implements Schema {
             for (MondrianDef.CubeGrant cubeGrant : schemaGrant.cubeGrants) {
                 RolapCube cube = lookupCube(cubeGrant.cube);
                 if (cube == null) {
-                    throw Util.newError("Unknown cube '" + cubeGrant.cube + "'");
+                    throw Util.newError(
+                        "Unknown cube '" + cubeGrant.cube + "'");
                 }
                 role.grant(cube, getAccess(cubeGrant.access, cubeAllowed));
                 final SchemaReader schemaReader = cube.getSchemaReader(null);
-                for (MondrianDef.DimensionGrant dimensionGrant : cubeGrant.dimensionGrants) {
+                for (MondrianDef.DimensionGrant dimensionGrant :
+                    cubeGrant.dimensionGrants)
+                {
                     Dimension dimension = (Dimension)
                         schemaReader.lookupCompound(
-                            cube, Util.parseIdentifier(dimensionGrant.dimension), true,
+                            cube,
+                            Util.parseIdentifier(dimensionGrant.dimension),
+                            true,
                             Category.Dimension);
                     role.grant(
                         dimension,
                         getAccess(dimensionGrant.access, dimensionAllowed));
                 }
-                for (MondrianDef.HierarchyGrant hierarchyGrant : cubeGrant.hierarchyGrants) {
+                for (MondrianDef.HierarchyGrant hierarchyGrant :
+                    cubeGrant.hierarchyGrants)
+                {
                     Hierarchy hierarchy = (Hierarchy)
                         schemaReader.lookupCompound(
-                            cube, Util.parseIdentifier(hierarchyGrant.hierarchy), true,
+                            cube,
+                            Util.parseIdentifier(hierarchyGrant.hierarchy),
+                            true,
                             Category.Hierarchy);
                     final Access hierarchyAccess =
                         getAccess(hierarchyGrant.access, hierarchyAllowed);
@@ -562,21 +577,27 @@ public class RolapSchema implements Schema {
                     if (hierarchyGrant.topLevel != null) {
                         if (hierarchyAccess != Access.CUSTOM) {
                             throw Util.newError(
-                                "You may only specify 'topLevel' if access='custom'");
+                                "You may only specify 'topLevel' if "
+                                + "access='custom'");
                         }
                         topLevel = (Level) schemaReader.lookupCompound(
-                            cube, Util.parseIdentifier(hierarchyGrant.topLevel), true,
+                            cube,
+                            Util.parseIdentifier(hierarchyGrant.topLevel),
+                            true,
                             Category.Level);
                     }
                     Level bottomLevel = null;
                     if (hierarchyGrant.bottomLevel != null) {
                         if (hierarchyAccess != Access.CUSTOM) {
                             throw Util.newError(
-                                "You may only specify 'bottomLevel' if access='custom'");
+                                "You may only specify 'bottomLevel' if "
+                                + "access='custom'");
                         }
                         bottomLevel = (Level) schemaReader.lookupCompound(
-                            cube, Util.parseIdentifier(hierarchyGrant.bottomLevel),
-                            true, Category.Level);
+                            cube,
+                            Util.parseIdentifier(hierarchyGrant.bottomLevel),
+                            true,
+                            Category.Level);
                     }
                     Role.RollupPolicy rollupPolicy;
                     if (hierarchyGrant.rollupPolicy != null) {
@@ -585,7 +606,8 @@ public class RolapSchema implements Schema {
                                 Role.RollupPolicy.valueOf(
                                     hierarchyGrant.rollupPolicy.toUpperCase());
                         } catch (IllegalArgumentException e) {
-                            throw Util.newError("Illegal rollupPolicy value '"
+                            throw Util.newError(
+                                "Illegal rollupPolicy value '"
                                 + hierarchyGrant.rollupPolicy
                                 + "'");
                         }
@@ -595,21 +617,20 @@ public class RolapSchema implements Schema {
                     role.grant(
                         hierarchy, hierarchyAccess, topLevel, bottomLevel,
                         rollupPolicy);
-                    for (MondrianDef.MemberGrant memberGrant : hierarchyGrant.memberGrants) {
+                    for (MondrianDef.MemberGrant memberGrant :
+                             hierarchyGrant.memberGrants) {
                         if (hierarchyAccess != Access.CUSTOM) {
                             throw Util.newError(
-                                "You may only specify <MemberGrant> if <Hierarchy> has access='custom'");
+                                "You may only specify <MemberGrant> if "
+                                + "<Hierarchy> has access='custom'");
                         }
                         Member member = schemaReader.getMemberByUniqueName(
                             Util.parseIdentifier(memberGrant.member), true);
                         assert member != null;
                         if (member.getHierarchy() != hierarchy) {
                             throw Util.newError(
-                                "Member '" +
-                                    member +
-                                    "' is not in hierarchy '" +
-                                    hierarchy +
-                                    "'");
+                                "Member '" + member
+                                + "' is not in hierarchy '" + hierarchy + "'");
                         }
                         role.grant(
                                 member,
@@ -709,7 +730,8 @@ public class RolapSchema implements Schema {
      * A collection of schemas, identified by their connection properties
      * (catalog name, JDBC URL, and so forth).
      *
-     * <p>To lookup a schema, call <code>Pool.instance().{@link #get(String, DataSource, Util.PropertyList)}</code>.
+     * <p>To lookup a schema, call <code>Pool.instance().
+     * {@link #get(String, DataSource, Util.PropertyList)}</code>.
      */
     static class Pool {
         private final MessageDigest md;
@@ -872,7 +894,8 @@ public class RolapSchema implements Schema {
                 try {
                     if (catalogStr == null) {
                         // Use VFS to get the content
-                        FileContent fileContent = Util.readVirtualFile(catalogUrl);
+                        FileContent fileContent =
+                            Util.readVirtualFile(catalogUrl);
                         StringBuilder buf = new StringBuilder(1000);
                         InputStream in = fileContent.getInputStream();
                         int n;
@@ -965,7 +988,9 @@ public class RolapSchema implements Schema {
                             dataSource);
                     }
 
-                    mapUrlToSchema.put(key, new SoftReference<RolapSchema>(schema));
+                    mapUrlToSchema.put(
+                        key,
+                        new SoftReference<RolapSchema>(schema));
 
                     if (LOGGER.isDebugEnabled()) {
                         String msg = "Pool.get: create schema \"" +
@@ -1239,21 +1264,6 @@ public class RolapSchema implements Schema {
     }
 
     RolapHierarchy getSharedHierarchy(final String name) {
-/*
-        RolapHierarchy rh = (RolapHierarchy) mapSharedHierarchyNameToHierarchy.get(name);
-        if (rh == null) {
-System.out.println("RolapSchema.getSharedHierarchy: "+
-" name=" + name +
-", hierarchy is NULL"
-);
-        } else {
-System.out.println("RolapSchema.getSharedHierarchy: "+
-" name=" + name +
-", hierarchy=" +  rh.getName()
-);
-        }
-        return rh;
-*/
         return mapSharedHierarchyNameToHierarchy.get(name);
     }
 
@@ -1367,8 +1377,9 @@ System.out.println("RolapSchema.getSharedHierarchy: "+
         // Check that the name is not null or empty.
         final String udfName = udf.getName();
         if (udfName == null || udfName.equals("")) {
-            throw Util.newInternal("User-defined function defined by class '" +
-                    udf.getClass() + "' has empty name");
+            throw Util.newInternal(
+                "User-defined function defined by class '"
+                + udf.getClass() + "' has empty name");
         }
         // It's OK for the description to be null.
         final String description = udf.getDescription();
@@ -1377,9 +1388,9 @@ System.out.println("RolapSchema.getSharedHierarchy: "+
         for (int i = 0; i < parameterTypes.length; i++) {
             Type parameterType = parameterTypes[i];
             if (parameterType == null) {
-                throw Util.newInternal("Invalid user-defined function '" +
-                        udfName + "': parameter type #" + i +
-                        " is null");
+                throw Util.newInternal(
+                    "Invalid user-defined function '"
+                    + udfName + "': parameter type #" + i + " is null");
             }
         }
         // It's OK for the reserved words to be null or empty.
@@ -1434,8 +1445,11 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
                 mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
 }
 */
-                if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
-                    mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
+                if (! mapSharedHierarchyNameToHierarchy.containsKey(
+                    sharedName))
+                {
+                    mapSharedHierarchyNameToHierarchy.put(
+                        sharedName, hierarchy);
                 }
                 //mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
             } else {
@@ -1532,16 +1546,23 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             try {
                 Class<?> clazz = Class.forName(dataSourceChangeListenerStr);
                 Constructor<?> constructor = clazz.getConstructor();
-                changeListener = (DataSourceChangeListener)constructor.newInstance();
+                changeListener =
+                    (DataSourceChangeListener) constructor.newInstance();
 
-/*                final Class<DataSourceChangeListener> clazz =
-                    (Class<DataSourceChangeListener>) Class.forName(dataSourceChangeListenerStr);
+/*
+                final Class<DataSourceChangeListener> clazz =
+                    (Class<DataSourceChangeListener>)
+                        Class.forName(dataSourceChangeListenerStr);
                 final Constructor<DataSourceChangeListener> ctor =
                     clazz.getConstructor();
-                changeListener = ctor.newInstance(); */
-                changeListener = (DataSourceChangeListener) constructor.newInstance();
+                changeListener = ctor.newInstance();
+*/
+                changeListener =
+                    (DataSourceChangeListener) constructor.newInstance();
             } catch (Exception e) {
-                throw Util.newError(e, "loading DataSourceChangeListener "
+                throw Util.newError(
+                    e,
+                    "loading DataSourceChangeListener "
                     + dataSourceChangeListenerStr);
             }
 

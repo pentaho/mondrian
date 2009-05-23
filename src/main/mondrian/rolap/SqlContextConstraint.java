@@ -143,7 +143,8 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         }
         for (Member member : query.getMeasuresMembers()) {
             if (member instanceof RolapStoredMeasure) {
-                addMeasure((RolapStoredMeasure) member, baseCubes, baseCubeList);
+                addMeasure(
+                    (RolapStoredMeasure) member, baseCubes, baseCubeList);
             } else if (member instanceof RolapCalculatedMember) {
                 findMeasures(member.getExpression(), baseCubes, baseCubeList);
             }
@@ -187,7 +188,8 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
             MemberExpr memberExpr = (MemberExpr) exp;
             Member member = memberExpr.getMember();
             if (member instanceof RolapStoredMeasure) {
-                addMeasure((RolapStoredMeasure) member, baseCubes, baseCubeList);
+                addMeasure(
+                    (RolapStoredMeasure) member, baseCubes, baseCubeList);
             } else if (member instanceof RolapCalculatedMember) {
                 findMeasures(member.getExpression(), baseCubes, baseCubeList);
             }
@@ -316,7 +318,9 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
             sqlQuery, baseCube, aggStar, evaluator, (RolapCubeLevel)level);
     }
 
-    public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {
+    public MemberChildrenConstraint getMemberChildrenConstraint(
+        RolapMember parent)
+    {
         return this;
     }
 

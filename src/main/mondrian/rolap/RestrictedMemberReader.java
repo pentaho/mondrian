@@ -125,7 +125,8 @@ class RestrictedMemberReader extends DelegatingMemberReader {
                     } else {
                         grandChildren.clear();
                     }
-                    memberReader.getMemberChildren(member, grandChildren, constraint);
+                    memberReader.getMemberChildren(
+                        member, grandChildren, constraint);
                     fullChildren.addAll(i, grandChildren);
                     // Step back to before the first child we just inserted,
                     // and go through the loop again.

@@ -391,7 +391,8 @@ public class AggGen {
             return false;
         }
 
-        List<JdbcSchema.Table.Column.Usage> list = collapsedColumnUsages.get(rt);
+        List<JdbcSchema.Table.Column.Usage> list =
+            collapsedColumnUsages.get(rt);
         if (list == null) {
             list = new ArrayList<JdbcSchema.Table.Column.Usage>();
             collapsedColumnUsages.put(rt, list);
@@ -669,7 +670,9 @@ public class AggGen {
 
         pw.println("GROUP BY ");
         int k = 0;
-        for (JdbcSchema.Table.Column.Usage notLostColumnUsage : notLostColumnUsages) {
+        for (JdbcSchema.Table.Column.Usage notLostColumnUsage :
+            notLostColumnUsages)
+        {
             if (k++ > 0) {
                 pw.println(",");
             }
@@ -700,7 +703,9 @@ public class AggGen {
         pw.println(" (");
 
         // do foreign keys
-        for (List<JdbcSchema.Table.Column.Usage> list : collapsedColumnUsages.values()) {
+        for (List<JdbcSchema.Table.Column.Usage> list :
+            collapsedColumnUsages.values())
+        {
             for (JdbcSchema.Table.Column.Usage usage : list) {
                 addColumnCreate(pw, prefix, usage);
             }
@@ -735,7 +740,9 @@ public class AggGen {
         pw.println(" (");
 
 
-        for (List<JdbcSchema.Table.Column.Usage> list : collapsedColumnUsages.values()) {
+        for (List<JdbcSchema.Table.Column.Usage> list :
+            collapsedColumnUsages.values())
+        {
             for (JdbcSchema.Table.Column.Usage usage : list) {
                 JdbcSchema.Table.Column c = usage.getColumn();
                 pw.print(prefix);
@@ -762,7 +769,9 @@ public class AggGen {
         pw.println(")");
 
         pw.println("SELECT");
-        for (List<JdbcSchema.Table.Column.Usage> list : collapsedColumnUsages.values()) {
+        for (List<JdbcSchema.Table.Column.Usage> list :
+            collapsedColumnUsages.values())
+        {
             for (JdbcSchema.Table.Column.Usage usage : list) {
                 JdbcSchema.Table.Column c = usage.getColumn();
                 JdbcSchema.Table t = c.getTable();
@@ -862,7 +871,9 @@ public class AggGen {
         pw.println();
         pw.println("GROUP BY ");
         k = 0;
-        for (List<JdbcSchema.Table.Column.Usage> list : collapsedColumnUsages.values()) {
+        for (List<JdbcSchema.Table.Column.Usage> list :
+            collapsedColumnUsages.values())
+        {
             for (JdbcSchema.Table.Column.Usage usage : list) {
                 if (k++ > 0) {
                     pw.println(",");

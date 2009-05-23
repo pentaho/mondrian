@@ -21,7 +21,8 @@ import mondrian.rolap.aggmatcher.AggStar;
  */
 public class DefaultTupleConstraint implements TupleConstraint {
 
-    private static final TupleConstraint instance = new DefaultTupleConstraint();
+    private static final TupleConstraint instance =
+        new DefaultTupleConstraint();
 
     /** we have no state, so all instances are equal */
     private static final Object cacheKey = new Object();
@@ -30,19 +31,23 @@ public class DefaultTupleConstraint implements TupleConstraint {
     }
 
     public void addConstraint(
-            SqlQuery sqlQuery,
-            RolapCube baseCube,
-            AggStar aggStar) {
+        SqlQuery sqlQuery,
+        RolapCube baseCube,
+        AggStar aggStar)
+    {
     }
 
     public void addLevelConstraint(
         SqlQuery query,
         RolapCube baseCube,
         AggStar aggStar,
-        RolapLevel level) {
+        RolapLevel level)
+    {
     }
 
-    public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {
+    public MemberChildrenConstraint getMemberChildrenConstraint(
+        RolapMember parent)
+    {
         return DefaultMemberChildrenConstraint.instance();
     }
 

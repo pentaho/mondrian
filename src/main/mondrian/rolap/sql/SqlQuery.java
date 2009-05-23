@@ -677,7 +677,8 @@ public class SqlQuery {
         }
 
         private static String getBestName(Dialect dialect) {
-            return dialect.getDatabaseProduct().getFamily().name().toLowerCase();
+            return dialect.getDatabaseProduct().getFamily().name()
+                .toLowerCase();
         }
     }
 }

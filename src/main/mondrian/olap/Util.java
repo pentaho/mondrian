@@ -245,7 +245,8 @@ public class Util extends XOMUtil {
         if (s == null) {
             return t == null;
         }
-        boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
+        boolean caseSensitive =
+            MondrianProperties.instance().CaseSensitive.get();
         return caseSensitive ? s.equals(t) : s.equalsIgnoreCase(t);
     }
 
@@ -269,7 +270,8 @@ public class Util extends XOMUtil {
      * Names must not be null.
      */
     public static int caseSensitiveCompareName(String s, String t) {
-        boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
+        boolean caseSensitive =
+            MondrianProperties.instance().CaseSensitive.get();
         if (caseSensitive) {
             return s.compareTo(t);
         } else {
@@ -288,7 +290,8 @@ public class Util extends XOMUtil {
      * Names must not be null.
      */
     public static int compareName(String s, String t) {
-        boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
+        boolean caseSensitive =
+            MondrianProperties.instance().CaseSensitive.get();
         return caseSensitive ? s.compareTo(t) : s.compareToIgnoreCase(t);
     }
 
@@ -436,7 +439,8 @@ public class Util extends XOMUtil {
         while (i < s.length()) {
             char ch = s.charAt(i);
             if (ch == ']') {
-                if (i + 1 < s.length() && s.charAt(i + 1) == ']') { // found ]] => skip
+                if (i + 1 < s.length() && s.charAt(i + 1) == ']') {
+                    // found ]] => skip
                     i += 2;
                 } else {
                     return i;
@@ -665,7 +669,8 @@ public class Util extends XOMUtil {
             if (parent instanceof Member) {
                 return parent;
             } else if (failIfNotFound) {
-                throw MondrianResource.instance().MdxCantFindMember.ex(implode(names));
+                throw MondrianResource.instance().MdxCantFindMember.ex(
+                    implode(names));
             } else {
                 return null;
             }
@@ -761,7 +766,8 @@ public class Util extends XOMUtil {
                 int nameLen = nameParts.size() - 1;
                 olapElement = null;
                 while (nameLen > 0 && olapElement == null) {
-                    List<Id.Segment> partialName = nameParts.subList(0, nameLen);
+                    List<Id.Segment> partialName =
+                        nameParts.subList(0, nameLen);
                     olapElement = schemaReader.lookupCompound(
                         q.getCube(), partialName, false, Category.Unknown);
                     nameLen--;
@@ -791,7 +797,11 @@ public class Util extends XOMUtil {
      * @param fail Whether to fail if not found.
      * @return Cube, or null if not found
      */
-    static Cube lookupCube(SchemaReader schemaReader, String cubeName, boolean fail) {
+    static Cube lookupCube(
+        SchemaReader schemaReader,
+        String cubeName,
+        boolean fail)
+    {
         for (Cube cube : schemaReader.getCubes()) {
             if (Util.compareName(cube.getName(), cubeName) == 0) {
                 return cube;
@@ -1177,7 +1187,9 @@ public class Util extends XOMUtil {
                     }
                     buf.append('.');
                     i = underscore + 1;
-                } else if (percent >= 0 && (percent < underscore || underscore < 0)) {
+                } else if (percent >= 0
+                    && (percent < underscore || underscore < 0))
+                {
                     if (i < percent) {
                     buf.append(
                         quotePattern(value.substring(i, percent)));
@@ -2127,7 +2139,11 @@ public class Util extends XOMUtil {
      * @return Contents of URL with tokens substituted
      * @throws IOException
      */
-    public static String readURL(final URL url, Map<String, String> map) throws IOException {
+    public static String readURL(
+        final URL url,
+        Map<String, String> map)
+        throws IOException
+    {
         final Reader r =
             new BufferedReader(new InputStreamReader(url.openStream()));
         final int BUF_SIZE = 8096;
@@ -2176,10 +2192,10 @@ public class Util extends XOMUtil {
         // around for now
         file.refresh();
 
-        // Workaround to defect MONDRIAN-508.  For HttpFileObjects, verifies the URL
-        // of the file retrieved matches the URL passed in.  A VFS cache bug
-        // can cause it to treat URLs with different parameters as the same
-        // file (e.g. http://blah.com?param=A, http://blah.com?param=B)
+        // Workaround to defect MONDRIAN-508.  For HttpFileObjects, verifies the
+        // URL of the file retrieved matches the URL passed in.  A VFS cache bug
+        // can cause it to treat URLs with different parameters as the same file
+        // (e.g. http://blah.com?param=A, http://blah.com?param=B)
         if (file instanceof HttpFileObject &&
                 !file.getName().getURI().equals(url)) {
             fsManager.getFilesCache()
@@ -2365,13 +2381,15 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Equivalent to {@link java.util.EnumSet#noneOf(Class)} on JDK 1.5 or later.
-     * Otherwise, returns an ordinary set.
+     * Equivalent to {@link java.util.EnumSet#noneOf(Class)} on JDK 1.5 or
+     * later. Otherwise, returns an ordinary set.
      *
      * @param elementType the class object of the element type for this enum
      *     set
      */
-    public static <E extends Enum<E>> Set<E> enumSetNoneOf(Class<E> elementType) {
+    public static <E extends Enum<E>> Set<E> enumSetNoneOf(
+        Class<E> elementType)
+    {
         return compatible.enumSetNoneOf(elementType);
     }
 
@@ -2382,7 +2400,9 @@ public class Util extends XOMUtil {
      * @param elementType the class object of the element type for this enum
      *     set
      */
-    public static <E extends Enum<E>> Set<E> enumSetAllOf(Class<E> elementType) {
+    public static <E extends Enum<E>> Set<E> enumSetAllOf(
+        Class<E> elementType)
+    {
         return compatible.enumSetAllOf(elementType);
     }
 

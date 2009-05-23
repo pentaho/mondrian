@@ -82,7 +82,8 @@ public class NamedSetExpr extends ExpBase implements Exp {
         // the caller can handle it, even if it isn't the caller's first choice.
         // This is because the .current and .currentOrdinal functions only
         // work correctly on iterators.
-        final List<ResultStyle> styleList = compiler.getAcceptableResultStyles();
+        final List<ResultStyle> styleList =
+            compiler.getAcceptableResultStyles();
         if (!styleList.contains(ResultStyle.ITERABLE)
             && !styleList.contains(ResultStyle.ANY)) {
             return null;

@@ -311,8 +311,11 @@ public class RolapCubeMember extends RolapMember {
             for (int i = 0; i < fcall.getArgCount(); i++) {
                 if (fcall.getArg(i) instanceof HierarchyExpr) {
                     HierarchyExpr expr = (HierarchyExpr)fcall.getArg(i);
-                    if (expr.getHierarchy().equals(rolapMember.getHierarchy())) {
-                        fcall.getArgs()[i] = new HierarchyExpr(this.getHierarchy());
+                    if (expr.getHierarchy().equals(
+                        rolapMember.getHierarchy()))
+                    {
+                        fcall.getArgs()[i] =
+                            new HierarchyExpr(this.getHierarchy());
                     }
                 }
             }

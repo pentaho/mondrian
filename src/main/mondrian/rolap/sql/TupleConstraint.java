@@ -64,13 +64,13 @@ public interface TupleConstraint extends SqlConstraint {
      * and the MemberChildrenConstraint#hashKey(). So we need a matching
      * MemberChildrenConstraint to store the parent with its children into
      * the parent/children cache.
-     * <p>
-     * The returned MemberChildrenConstraint must be one that would have returned
-     * the same children for the given parent as the MemberLevel query has found
-     * for that parent.
-     * <p>
-     * If null is returned, the parent/children will not be cached (but
-     * the level/members still will be).
+     *
+     * <p>The returned MemberChildrenConstraint must be one that would have
+     * returned the same children for the given parent as the MemberLevel query
+     * has found for that parent.
+     *
+     * <p>If null is returned, the parent/children will not be cached (but the
+     * level/members still will be).
      */
     MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent);
 

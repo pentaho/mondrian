@@ -27,7 +27,8 @@ public class SqlConstraintFactory {
 
     static boolean enabled;
 
-    private static final SqlConstraintFactory instance = new SqlConstraintFactory();
+    private static final SqlConstraintFactory instance =
+        new SqlConstraintFactory();
 
     /**
      * singleton
@@ -44,7 +45,9 @@ public class SqlConstraintFactory {
         enabled = MondrianProperties.instance().EnableNativeNonEmpty.get();
     }
 
-    public MemberChildrenConstraint getMemberChildrenConstraint(Evaluator context) {
+    public MemberChildrenConstraint getMemberChildrenConstraint(
+        Evaluator context)
+    {
         if (!enabled || !SqlContextConstraint.isValidContext(context, false)) {
             return DefaultMemberChildrenConstraint.instance();
         }
@@ -74,7 +77,9 @@ public class SqlConstraintFactory {
         if (!enabled) {
             return DefaultTupleConstraint.instance();
         }
-        if (!SqlContextConstraint.isValidContext(context, false, levels, false)) {
+        if (!SqlContextConstraint.isValidContext(
+            context, false, levels, false))
+        {
             return DefaultTupleConstraint.instance();
         }
         return new SqlContextConstraint((RolapEvaluator) context, false);

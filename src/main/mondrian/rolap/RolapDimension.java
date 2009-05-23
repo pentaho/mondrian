@@ -141,12 +141,15 @@ class RolapDimension extends DimensionBase {
                         if (dimensionType == DimensionType.TimeDimension &&
                             !lev.getLevelType().isTime() &&
                             !lev.isAll()) {
-                            throw MondrianResource.instance().NonTimeLevelInTimeHierarchy.ex(
+                            throw MondrianResource.instance()
+                                .NonTimeLevelInTimeHierarchy.ex(
                                     getUniqueName());
                         }
-                        if (dimensionType != DimensionType.TimeDimension &&
-                            lev.getLevelType().isTime()) {
-                            throw MondrianResource.instance().TimeLevelInNonTimeHierarchy.ex(
+                        if (dimensionType != DimensionType.TimeDimension
+                            && lev.getLevelType().isTime())
+                        {
+                            throw MondrianResource.instance()
+                                .TimeLevelInNonTimeHierarchy.ex(
                                     getUniqueName());
                         }
                     }

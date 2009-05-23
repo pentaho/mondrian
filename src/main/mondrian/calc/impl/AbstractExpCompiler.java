@@ -596,7 +596,10 @@ public class AbstractExpCompiler implements ExpCompiler {
     public static class DimensionCurrentMemberCalc extends AbstractMemberCalc {
         private final DimensionCalc dimensionCalc;
 
-        public DimensionCurrentMemberCalc(Exp exp, DimensionCalc dimensionCalc) {
+        public DimensionCurrentMemberCalc(
+            Exp exp,
+            DimensionCalc dimensionCalc)
+        {
             super(exp, new Calc[] {dimensionCalc});
             this.dimensionCalc = dimensionCalc;
         }

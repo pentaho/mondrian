@@ -36,10 +36,9 @@ import java.util.*;
  * This class is used to scrape a database and store information about its
  * tables and columnIter.
  *
- * <p>The structure of this information is as follows:
- * A database has tables. A table has columnIter. A column has one or more usages.
- * A usage might be a column being used as a foreign key or as part of a
- * measure.
+ * <p>The structure of this information is as follows: A database has tables. A
+ * table has columnIter. A column has one or more usages.  A usage might be a
+ * column being used as a foreign key or as part of a measure.
  *
  * <p> Tables are created when calling code requests the set of available
  * tables. This call <code>getTables()</code> causes all tables to be loaded.
@@ -902,7 +901,9 @@ public class JdbcSchema {
         public Iterator<JdbcSchema.Table.Column.Usage> getColumnUsages(
             final UsageType usageType)
         {
-            class CTIterator implements Iterator<JdbcSchema.Table.Column.Usage> {
+            class CTIterator
+                implements Iterator<JdbcSchema.Table.Column.Usage>
+            {
                 private final Iterator<Column> columnIter;
                 private final UsageType columnType;
                 private Iterator<JdbcSchema.Table.Column.Usage> usageIter;
@@ -960,7 +961,8 @@ public class JdbcSchema {
          * @param tableUsageType
          */
         public void setTableUsageType(final TableUsageType tableUsageType) {
-            // if usageIter has already been set, then usageIter can NOT be reset
+            // if usageIter has already been set, then usageIter can NOT be
+            // reset
             if ((this.tableUsageType != TableUsageType.UNKNOWN) &&
                     (this.tableUsageType != tableUsageType))
             {
@@ -1101,7 +1103,8 @@ public class JdbcSchema {
      * Tables by name. We use a sorted map so {@link #getTables()}'s output
      * is in deterministic order.
      */
-    private final SortedMap<String, Table> tables = new TreeMap<String, Table>();
+    private final SortedMap<String, Table> tables =
+        new TreeMap<String, Table>();
 
     JdbcSchema(final DataSource dataSource) {
         this.dataSource = dataSource;

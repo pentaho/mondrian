@@ -308,8 +308,11 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
 
     /**
      * Obtain the AggStar instance which corresponds to an aggregate table
-     * which can be used to support the member constraint
-     * @param evaluator the current evaluator to obtain the cube and members to be queried
+     * which can be used to support the member constraint.
+     *
+     * @param evaluator the current evaluator to obtain the cube and members to
+     * be queried
+     *
      * @return AggStar for aggregate table
      */
     private AggStar chooseAggStar(Evaluator evaluator) {
@@ -340,7 +343,8 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
 
         RolapBaseCubeMeasure measure = (RolapBaseCubeMeasure)members[0];
 
-        int bitPosition = ((RolapStar.Measure)measure.getStarMeasure()).getBitPosition();
+        int bitPosition =
+            ((RolapStar.Measure)measure.getStarMeasure()).getBitPosition();
 
         // set a bit for each level which is constrained in the context
         final CellRequest request =
@@ -361,7 +365,8 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         for (Target target : targets) {
             RolapLevel level = target.getLevel();
             if (!level.isAll()) {
-                RolapStar.Column column = ((RolapCubeLevel)level).getStarKeyColumn();
+                RolapStar.Column column =
+                    ((RolapCubeLevel)level).getStarKeyColumn();
                 levelBitKey.set(column.getBitPosition());
             }
         }

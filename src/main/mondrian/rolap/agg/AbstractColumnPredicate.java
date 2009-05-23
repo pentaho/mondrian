@@ -193,7 +193,9 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
          * @return Predicate which tests whether the column's value is equal
          *   to a column predicate's value
          */
-        public static StarColumnPredicate equal(ValueColumnPredicate predicate) {
+        public static StarColumnPredicate equal(
+            ValueColumnPredicate predicate)
+        {
             return equal(
                 predicate.getConstrainedColumn(),
                 predicate.getValue());

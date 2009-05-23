@@ -68,7 +68,8 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 public class RolapConnection extends ConnectionBase {
-    private static final Logger LOGGER = Logger.getLogger(RolapConnection.class);
+    private static final Logger LOGGER =
+        Logger.getLogger(RolapConnection.class);
 
     private final Util.PropertyList connectInfo;
 
@@ -102,7 +103,10 @@ public class RolapConnection extends ConnectionBase {
      * @param connectInfo Connection properties; keywords are described in
      *   {@link RolapConnectionProperties}.
      */
-    public RolapConnection(Util.PropertyList connectInfo, DataSource dataSource) {
+    public RolapConnection(
+        Util.PropertyList connectInfo,
+        DataSource dataSource)
+    {
         this(connectInfo, null, dataSource);
     }
 
@@ -167,9 +171,9 @@ public class RolapConnection extends ConnectionBase {
             // If RolapSchema.Pool.get were to call this with schema == null,
             // we would loop.
             if (dataSource == null) {
-                // If there is no external data source is passed in,
-                // we expect the properties Jdbc, JdbcUser, DataSource to be set,
-                // as they are used to generate the schema cache key.
+                // If there is no external data source is passed in, we expect
+                // the properties Jdbc, JdbcUser, DataSource to be set, as they
+                // are used to generate the schema cache key.
                 final String connectionKey = jdbcConnectString +
                     getJdbcProperties(connectInfo).toString();
 
@@ -318,7 +322,9 @@ public class RolapConnection extends ConnectionBase {
             appendKeyValue(
                 buf, RolapConnectionProperties.JdbcUser.name(), jdbcUser);
             appendKeyValue(
-                buf, RolapConnectionProperties.JdbcPassword.name(), jdbcPassword);
+                buf,
+                RolapConnectionProperties.JdbcPassword.name(),
+                jdbcPassword);
             if (jdbcUser != null || jdbcPassword != null) {
                 dataSource =
                     new UserPasswordDataSource(
@@ -333,7 +339,9 @@ public class RolapConnection extends ConnectionBase {
             appendKeyValue(
                 buf, RolapConnectionProperties.JdbcUser.name(), jdbcUser);
             appendKeyValue(
-                buf, RolapConnectionProperties.JdbcPassword.name(), jdbcPassword);
+                buf,
+                RolapConnectionProperties.JdbcPassword.name(),
+                jdbcPassword);
             String jdbcDrivers =
                 connectInfo.get(RolapConnectionProperties.JdbcDrivers.name());
             if (jdbcDrivers != null) {
@@ -380,11 +388,15 @@ public class RolapConnection extends ConnectionBase {
 
         } else if (dataSourceName != null) {
             appendKeyValue(
-                buf, RolapConnectionProperties.DataSource.name(), dataSourceName);
+                buf,
+                RolapConnectionProperties.DataSource.name(),
+                dataSourceName);
             appendKeyValue(
                 buf, RolapConnectionProperties.JdbcUser.name(), jdbcUser);
             appendKeyValue(
-                buf, RolapConnectionProperties.JdbcPassword.name(), jdbcPassword);
+                buf,
+                RolapConnectionProperties.JdbcPassword.name(),
+                jdbcPassword);
 
             // Data sources are fairly smart, so we assume they look after
             // their own pooling. Therefore the default is false.
@@ -726,18 +738,23 @@ public class RolapConnection extends ConnectionBase {
             int axisCount = underlying.getAxes().length;
             this.pos = new int[axisCount];
             this.slicerAxis = underlying.getSlicerAxis();
-            List<Position> positions = underlying.getAxes()[axis].getPositions();
+            List<Position> positions =
+                underlying.getAxes()[axis].getPositions();
 
             final List<Position> positionsList;
             try {
-                if (positions.get(0).get(0).getDimension().isHighCardinality()) {
-                    positionsList = new FilteredIterableList<Position>(
+                if (positions.get(0).get(0).getDimension()
+                    .isHighCardinality())
+                {
+                    positionsList =
+                        new FilteredIterableList<Position>(
                             positions,
-                            new FilteredIterableList.Filter<Position>() {
-                                public boolean accept(final Position p) {
-                                    return p.get(0) != null;
-                                }
+                            new FilteredIterableList.Filter<Position>()
+                        {
+                            public boolean accept(final Position p) {
+                                return p.get(0) != null;
                             }
+                        }
                     );
                 } else {
                     positionsList = new ArrayList<Position>();
@@ -800,7 +817,8 @@ public class RolapConnection extends ConnectionBase {
         // synchronized because we use 'pos'
         public synchronized Cell getCell(int[] externalPos) {
             try {
-                System.arraycopy(externalPos, 0, this.pos, 0, externalPos.length);
+                System.arraycopy(
+                    externalPos, 0, this.pos, 0, externalPos.length);
                 int offset = externalPos[axis];
                 int mappedOffset = mapOffsetToUnderlying(offset);
                 this.pos[axis] = mappedOffset;
@@ -833,7 +851,11 @@ public class RolapConnection extends ConnectionBase {
             return dataSource.getConnection();
         }
 
-        public Connection getConnection(String username, String password) throws SQLException {
+        public Connection getConnection(
+            String username,
+            String password)
+            throws SQLException
+        {
             return dataSource.getConnection(username, password);
         }
 

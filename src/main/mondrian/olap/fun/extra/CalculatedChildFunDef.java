@@ -21,14 +21,16 @@ import java.util.List;
  * Definition of the <code>CalculatedChild</code> MDX function.
  *
  * <p>Syntax:
- * <blockquote><code>&lt;Member&gt;CalculatedChild(&lt;String&gt;)</code></blockquote>
+ * <blockquote><code>&lt;Member&gt;
+ * CalculatedChild(&lt;String&gt;)</code></blockquote>
  *
  * @author bchow
  * @version $Id$
  * @since 2006/4/12
  */
 public class CalculatedChildFunDef extends FunDefBase {
-    public static final CalculatedChildFunDef instance = new CalculatedChildFunDef();
+    public static final CalculatedChildFunDef instance =
+        new CalculatedChildFunDef();
 
     CalculatedChildFunDef() {
         super("CalculatedChild",
@@ -40,7 +42,10 @@ public class CalculatedChildFunDef extends FunDefBase {
         final MemberCalc memberCalc = compiler.compileMember(call.getArg(0));
         final StringCalc stringCalc = compiler.compileString(call.getArg(1));
 
-        return new AbstractMemberCalc(call,  new Calc[] {memberCalc, stringCalc}) {
+        return new AbstractMemberCalc(
+            call,
+            new Calc[] {memberCalc, stringCalc})
+        {
             public Member evaluateMember(Evaluator evaluator) {
                 Member member = memberCalc.evaluateMember(evaluator);
                 String name = stringCalc.evaluateString(evaluator);

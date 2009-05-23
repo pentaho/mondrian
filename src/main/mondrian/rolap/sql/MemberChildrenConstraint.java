@@ -47,10 +47,11 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * children of <em>all</em> parent members contained in <code>parents</code>
      * will be returned in the result set.
      *
-     * @param sqlQuery the query to modify
-     * @param baseCube base cube for virtual members
+     * @param sqlQuery Query to modify
+     * @param baseCube Base cube for virtual members
      * @param aggStar Aggregate table, or null if query is against fact table
-     * @param parents list of parent members that restrict the returned children.
+     * @param parents List of parent members that restrict the returned
+     *        children
      */
     public void addMemberConstraint(
         SqlQuery sqlQuery,

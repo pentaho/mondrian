@@ -3,6 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,22 +15,26 @@ import mondrian.olap.fun.*;
 import mondrian.rolap.sql.TupleConstraint;
 
 /**
- * creates a {@link mondrian.olap.NativeEvaluator} that evaluates NON EMPTY
+ * Creates a {@link mondrian.olap.NativeEvaluator} that evaluates NON EMPTY
  * CrossJoin in SQL. The generated SQL will join the dimension tables with
  * the fact table and return all combinations that have a
  * corresponding row in the fact table. The current context (slicer) is
  * used for filtering (WHERE clause in SQL). This very effective computes
- * queris like
+ * queries like
+ *
  * <pre>
- *   select ...
- *   NON EMTPY crossjoin([product].[name].members, [customer].[name].members) on rows
- *   froms [Sales]
- *   where ([store].[store #14])
+ *   SELECT ...
+ *   NON EMTPY Crossjoin(
+ *       [product].[name].members,
+ *       [customer].[name].members) ON ROWS
+ *   FROM [Sales]
+ *   WHERE ([store].[store #14])
  * </pre>
- * where both, customer.name and product.name have many members, but the resulting
- * crossjoin only has few.
- * <p>
- * The implementation currently can not handle sets containting
+ *
+ * where both, customer.name and product.name have many members, but the
+ * resulting crossjoin only has few.
+ *
+ * <p>The implementation currently can not handle sets containting
  * parent/child hierarchies, ragged hierarchies, calculated members and
  * the ALL member. Otherwise all
  *
@@ -191,7 +196,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         }
         evaluator.setContext(evalMembers);
 
-        TupleConstraint constraint = new NonEmptyCrossJoinConstraint(cargs, evaluator);
+        TupleConstraint constraint =
+            new NonEmptyCrossJoinConstraint(cargs, evaluator);
         SchemaReader schemaReader = evaluator.getSchemaReader();
         return new SetEvaluator(cargs, schemaReader, constraint);
     }

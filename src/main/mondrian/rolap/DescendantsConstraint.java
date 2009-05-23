@@ -32,7 +32,8 @@ class DescendantsConstraint implements TupleConstraint {
      * Creates a DescendantsConstraint.
      *
      * @param parentMembers list of parents all from the same level
-     * @param mcc the constraint that would return the children for each single parent
+     * @param mcc the constraint that would return the children for each single
+     * parent
      */
     public DescendantsConstraint(
         List<RolapMember> parentMembers,
@@ -59,7 +60,9 @@ class DescendantsConstraint implements TupleConstraint {
         mcc.addLevelConstraint(sqlQuery, baseCube, aggStar, level);
     }
 
-    public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {
+    public MemberChildrenConstraint getMemberChildrenConstraint(
+        RolapMember parent)
+    {
         return mcc;
     }
 

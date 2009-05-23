@@ -30,13 +30,18 @@ import mondrian.rolap.sql.TupleConstraint;
 public class RolapNativeFilter extends RolapNativeSet {
 
     public RolapNativeFilter() {
-        super.setEnabled(MondrianProperties.instance().EnableNativeFilter.get());
+        super.setEnabled(
+            MondrianProperties.instance().EnableNativeFilter.get());
     }
 
     static class FilterConstraint extends SetConstraint {
         Exp filterExpr;
 
-        public FilterConstraint(CrossJoinArg[] args, RolapEvaluator evaluator, Exp filterExpr) {
+        public FilterConstraint(
+            CrossJoinArg[] args,
+            RolapEvaluator evaluator,
+            Exp filterExpr)
+        {
             super(args, evaluator, true);
             this.filterExpr = filterExpr;
         }
@@ -75,11 +80,17 @@ public class RolapNativeFilter extends RolapNativeSet {
         return true;
     }
 
-    NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
+    NativeEvaluator createEvaluator(
+        RolapEvaluator evaluator,
+        FunDef fun,
+        Exp[] args)
+    {
         if (!isEnabled()) {
             return null;
         }
-        if (!FilterConstraint.isValidContext(evaluator, restrictMemberTypes())) {
+        if (!FilterConstraint.isValidContext(
+            evaluator, restrictMemberTypes()))
+        {
             return null;
         }
         // is this "Filter(<set>, <numeric expr>)"
@@ -116,10 +127,12 @@ public class RolapNativeFilter extends RolapNativeSet {
             return null;
         }
 
-        // check to see if evaluator contains a calculated member.
-        // this is necessary due to the SqlConstraintsUtils.addContextConstraint()
-        // method which gets called when generating the native SQL
-        if (SqlConstraintUtils.containsCalculatedMember(evaluator.getMembers())) {
+        // Check to see if evaluator contains a calculated member.  This is
+        // necessary due to the SqlConstraintsUtils.addContextConstraint()
+        // method which gets called when generating the native SQL.
+        if (SqlConstraintUtils.containsCalculatedMember(
+            evaluator.getMembers()))
+        {
             return null;
         }
 
@@ -127,7 +140,8 @@ public class RolapNativeFilter extends RolapNativeSet {
 
         evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
 
-        TupleConstraint constraint = new FilterConstraint(cargs, evaluator, args[1]);
+        TupleConstraint constraint =
+            new FilterConstraint(cargs, evaluator, args[1]);
         return new SetEvaluator(cargs, schemaReader, constraint);
     }
 

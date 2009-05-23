@@ -392,7 +392,8 @@ public class TestContext {
             if (unadulteratedFoodMartSchema == null) {
                 instance().getFoodMartConnection(
                     SnoopingSchemaProcessor.class);
-                unadulteratedFoodMartSchema = SnoopingSchemaProcessor.catalogContent;
+                unadulteratedFoodMartSchema =
+                    SnoopingSchemaProcessor.catalogContent;
             }
         }
 
@@ -406,8 +407,10 @@ public class TestContext {
     public String getFoodMartSchemaSubstitutingCube(
         String cubeName,
         String dimensionDefs,
-        String memberDefs) {
-        return getFoodMartSchemaSubstitutingCube(cubeName, dimensionDefs, memberDefs, null);
+        String memberDefs)
+    {
+        return getFoodMartSchemaSubstitutingCube(
+            cubeName, dimensionDefs, memberDefs, null);
     }
 
     /**
@@ -1331,7 +1334,8 @@ public class TestContext {
 
         try {
             String jdbcDrivers =
-                connectProperties.get(RolapConnectionProperties.JdbcDrivers.name());
+                connectProperties.get(
+                    RolapConnectionProperties.JdbcDrivers.name());
             if (jdbcDrivers != null) {
                 RolapUtil.loadDrivers(jdbcDrivers);
             }
@@ -1341,8 +1345,10 @@ public class TestContext {
 
             jdbcConn = java.sql.DriverManager.getConnection(
                 connectProperties.get(RolapConnectionProperties.Jdbc.name()),
-                connectProperties.get(RolapConnectionProperties.JdbcUser.name()),
-                connectProperties.get(RolapConnectionProperties.JdbcPassword.name()));
+                connectProperties.get(
+                    RolapConnectionProperties.JdbcUser.name()),
+                connectProperties.get(
+                    RolapConnectionProperties.JdbcPassword.name()));
             stmt = jdbcConn.createStatement();
 
             if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
@@ -1570,7 +1576,8 @@ public class TestContext {
         final String dimensionDefs,
         final String memberDefs)
     {
-        return createSubstitutingCube(cubeName, dimensionDefs, memberDefs, null);
+        return createSubstitutingCube(
+            cubeName, dimensionDefs, memberDefs, null);
     }
 
 

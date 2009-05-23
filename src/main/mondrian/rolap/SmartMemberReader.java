@@ -325,8 +325,8 @@ public class SmartMemberReader implements MemberReader {
                     RolapMember sibling = null;
                     while (n-- > 0) {
                         if (!iter.hasNext()) {
-                            return
-                                (RolapMember) member.getHierarchy().getNullMember();
+                            return (RolapMember)
+                                member.getHierarchy().getNullMember();
                         }
                         sibling = iter.nextMember();
                     }
@@ -336,8 +336,8 @@ public class SmartMemberReader implements MemberReader {
                     RolapMember sibling = null;
                     while (n-- > 0) {
                         if (!iter.hasPrevious()) {
-                            return
-                                (RolapMember) member.getHierarchy().getNullMember();
+                            return (RolapMember)
+                                member.getHierarchy().getNullMember();
                         }
                         sibling = iter.previousMember();
                     }

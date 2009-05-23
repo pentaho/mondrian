@@ -5884,7 +5884,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * Test format inheritance to pickup format from second measure when the
      * first does not have one.
      */
-    public void testFormatInheritance() {
+    public void testFormatInheritanceUseSecondIfFirstHasNoFormat() {
         assertQueryReturns(
             "with member measures.foo as 'measures.bar+measures.blah'"
             + " member measures.bar as '10'"
@@ -5894,7 +5894,6 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Measures].[foo]}\n"
             + "$30.00");
     }
-
 
     /**
      * Tests format inheritance with complex expression to assert that the

@@ -43,7 +43,7 @@ import java.sql.SQLException;
  */
 public class AggTableManager {
     private static final Logger LOGGER =
-            Logger.getLogger(AggTableManager.class);
+        Logger.getLogger(AggTableManager.class);
 
     private final RolapSchema schema;
 
@@ -263,7 +263,8 @@ public class AggTableManager {
 
 
                     if (makeAggStar) {
-                        dbTable.setTableUsageType(JdbcSchema.TableUsageType.AGG);
+                        dbTable.setTableUsageType(
+                            JdbcSchema.TableUsageType.AGG);
                         String alias = null;
                         dbTable.table = new MondrianDef.Table(schema,
                             name,
@@ -299,6 +300,7 @@ public class AggTableManager {
             }
         }
     }
+
     private boolean runTrigger() {
         if (RolapSchema.cacheContains(schema)) {
             return true;
@@ -434,9 +436,12 @@ public class AggTableManager {
      * @param star
      * @param msgRecorder
      */
-    void bindToStar(final JdbcSchema.Table dbFactTable,
-                    final RolapStar star,
-                    final MessageRecorder msgRecorder) throws SQLException {
+    void bindToStar(
+        final JdbcSchema.Table dbFactTable,
+        final RolapStar star,
+        final MessageRecorder msgRecorder)
+        throws SQLException
+    {
         msgRecorder.pushContextName("AggTableManager.bindToStar");
         try {
             // load columns
@@ -444,7 +449,8 @@ public class AggTableManager {
 
             dbFactTable.setTableUsageType(JdbcSchema.TableUsageType.FACT);
 
-            MondrianDef.RelationOrJoin relation = star.getFactTable().getRelation();
+            MondrianDef.RelationOrJoin relation =
+                star.getFactTable().getRelation();
             String schema = null;
             if (relation instanceof MondrianDef.Table) {
                 schema = ((MondrianDef.Table) relation).schema;
@@ -453,7 +459,9 @@ public class AggTableManager {
             String alias = null;
             dbFactTable.table = new MondrianDef.Table(schema, tableName, alias);
 
-            for (JdbcSchema.Table.Column factColumn : dbFactTable.getColumns()) {
+            for (JdbcSchema.Table.Column factColumn :
+                dbFactTable.getColumns())
+            {
                 String cname = factColumn.getName();
                 RolapStar.Column[] rcs =
                     star.getFactTable().lookupColumns(cname);
@@ -489,7 +497,8 @@ public class AggTableManager {
                         // (not necessarily) a measure but is also not
                         // a foreign key to an external dimension table.
                         JdbcSchema.Table.Column.Usage usage =
-                            factColumn.newUsage(JdbcSchema.UsageType.FOREIGN_KEY);
+                            factColumn.newUsage(
+                                JdbcSchema.UsageType.FOREIGN_KEY);
                         usage.setSymbolicName("FOREIGN_KEY");
                         usage.rColumn = rColumn;
                     }

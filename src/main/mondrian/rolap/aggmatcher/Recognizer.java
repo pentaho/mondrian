@@ -37,8 +37,8 @@ import org.apache.log4j.Logger;
  * while some specific column category matching and column building must be
  * specified in derived classes.
  *
- * <p>A Recognizer is created per candidate aggregate table. The tables columns are
- * then categorized. All errors and warnings are added to a MessageRecorder.
+ * <p>A Recognizer is created per candidate aggregate table. The tables columns
+ * are then categorized. All errors and warnings are added to a MessageRecorder.
  *
  * <p>This class is less about defining a type and more about code sharing.
  *
@@ -110,7 +110,8 @@ abstract class Recognizer {
         generateImpliedMeasures();
 
         // Check levels
-        List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys = checkForeignKeys();
+        List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys =
+            checkForeignKeys();
 //printNotSeenForeignKeys(notSeenForeignKeys);
         checkLevels(notSeenForeignKeys);
 
@@ -923,7 +924,8 @@ abstract class Recognizer {
                 MondrianDef.Column column = (MondrianDef.Column) expr;
                 return column.getColumnName();
             } else if (expr instanceof MondrianDef.KeyExpression) {
-                MondrianDef.KeyExpression key = (MondrianDef.KeyExpression) expr;
+                MondrianDef.KeyExpression key =
+                    (MondrianDef.KeyExpression) expr;
                 return key.toString();
             }
 

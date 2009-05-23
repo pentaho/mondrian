@@ -81,8 +81,8 @@ public class RolapCubeLevel extends RolapLevel {
             }
             cubeDimension.init(xmlDimension);
             getCube().registerDimension(cubeDimension);
-            closedPeer =
-                (RolapCubeLevel) cubeDimension.getHierarchies()[0].getLevels()[1];
+            closedPeer = (RolapCubeLevel)
+                cubeDimension.getHierarchies()[0].getLevels()[1];
 
             this.levelReader = new ParentChildLevelReaderImpl(closedPeer);
         } else {

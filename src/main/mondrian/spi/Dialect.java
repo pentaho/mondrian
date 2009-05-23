@@ -280,7 +280,8 @@ public interface Dialect {
      * Returns whether this Dialect allows a subquery in the from clause,
      * for example
      *
-     * <blockquote><code>SELECT * FROM (SELECT * FROM t) AS x</code></blockquote>
+     * <blockquote><code>SELECT * FROM (SELECT * FROM t) AS
+     * x</code></blockquote>
      *
      * @see #requiresAliasForFromQuery()
      *

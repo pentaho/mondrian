@@ -270,9 +270,9 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     /**
-     * This result is somewhat peculiar. If two dimensions share a foreign key, what
-     * is the expected result?  Also, in this case, they share the same table without
-     * an alias, and the system doesn't complain.
+     * This result is somewhat peculiar. If two dimensions share a foreign key,
+     * what is the expected result?  Also, in this case, they share the same
+     * table without an alias, and the system doesn't complain.
      */
     public void testDuplicateTableAliasSameForeignKey() {
         final TestContext testContext = TestContext.createSubstitutingCube(
@@ -1630,8 +1630,8 @@ public class SchemaTest extends FoodMartTestCase {
      * MONDRIAN-303, "Property column shifting when use captionColumn"</a>.
      */
     public void testBugMondrian303() {
-        // In order to reproduce the problem a dimension specifying captionColumn and
-        // Properties were required.
+        // In order to reproduce the problem a dimension specifying
+        // captionColumn and Properties were required.
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Store2\" foreignKey=\"store_id\">\n"
@@ -1910,7 +1910,8 @@ public class SchemaTest extends FoodMartTestCase {
             } else {
                 props.DisableCaching.setString("false");
             }
-            // force reloading of aggregates, which currently throws an exception
+            // force reloading of aggregates, which currently throws an
+            // exception
         }
     }
 
@@ -2381,8 +2382,8 @@ public class SchemaTest extends FoodMartTestCase {
         }
 
         // In order to reproduce the problem it was necessary to only have one
-        // non empty member under USA. In the cube definition below we create a cube
-        // with only CA data to achieve this.
+        // non empty member under USA. In the cube definition below we create a
+        // cube with only CA data to achieve this.
         String salesCube1 =
             "<Cube name=\"Sales2\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\" >\n"
@@ -2405,8 +2406,9 @@ public class SchemaTest extends FoodMartTestCase {
             null,
             null);
 
-        // First query all children of the USA. This should only return CA since all the
-        // other states were filtered out. CA will be put in the member cache
+        // First query all children of the USA. This should only return CA since
+        // all the other states were filtered out. CA will be put in the member
+        // cache
         String query1 =
             "WITH SET [#DataSet#] as "
             + "'NonEmptyCrossjoin({[Product].[All Products]}, {[Store].[All Stores].[USA].Children})' "

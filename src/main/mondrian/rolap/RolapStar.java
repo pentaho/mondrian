@@ -146,7 +146,8 @@ public class RolapStar {
 
     private DataSourceChangeListener changeListener;
 
-    // temporary model, should eventually use RolapStar.Table and RolapStar.Column
+    // temporary model, should eventually use RolapStar.Table and
+    // RolapStar.Column
     private StarNetworkNode factNode;
     private Map<String, StarNetworkNode> nodeLookup =
         new HashMap<String, StarNetworkNode>();
@@ -167,7 +168,8 @@ public class RolapStar {
         this.factTable = new RolapStar.Table(this, fact, null, null);
 
         // phase out and replace with Table, Column network
-        this.factNode = new StarNetworkNode(null, factTable.alias, null, null, null);
+        this.factNode =
+            new StarNetworkNode(null, factTable.alias, null, null, null);
 
         this.sharedAggregations = new HashMap<AggregationKey, Aggregation>();
 
@@ -528,7 +530,9 @@ public class RolapStar {
      *
      * @param aggregationKey this is the contrained column bitkey
      */
-    public Aggregation lookupOrCreateAggregation(AggregationKey aggregationKey) {
+    public Aggregation lookupOrCreateAggregation(
+        AggregationKey aggregationKey)
+    {
         Aggregation aggregation = lookupAggregation(aggregationKey);
 
         if (aggregation == null) {
@@ -540,7 +544,8 @@ public class RolapStar {
             // first time the aggregation is used
             if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
                 if (changeListener != null) {
-                    Util.discard(changeListener.isAggregationChanged(aggregation));
+                    Util.discard(
+                        changeListener.isAggregationChanged(aggregation));
                 }
             }
         }
@@ -610,7 +615,8 @@ public class RolapStar {
                             // are finished
                             aggregation = new Aggregation(aggregationKey);
 
-                            localAggregations.get().put(aggregationKey, aggregation);
+                            localAggregations.get().put(
+                                aggregationKey, aggregation);
                         }
                     }
                 }
@@ -1262,7 +1268,8 @@ public class RolapStar {
             // a fake column with all of the information needed by the toSql
             // method, and a copy of the predicate wrapping that fake column.
             if (!Bug.BugMondrian313Fixed ||
-                !Bug.BugMondrian314Fixed && predicate.getConstrainedColumn() == null)
+                !Bug.BugMondrian314Fixed
+                && predicate.getConstrainedColumn() == null)
             {
                 Column column = new Column(datatype) {
                     public String generateExprString(SqlQuery query) {
@@ -1723,7 +1730,7 @@ public class RolapStar {
                             + getStar());
                 }
                 RolapStar.AliasReplacer aliasReplacer =
-                        new RolapStar.AliasReplacer(tableName, table.getAlias());
+                    new RolapStar.AliasReplacer(tableName, table.getAlias());
                 xmlExpr = aliasReplacer.visit(xmlExpr);
             }
             // does the column already exist??
@@ -1783,7 +1790,8 @@ public class RolapStar {
                 return starTable;
             } else if (relationOrJoin instanceof MondrianDef.Join) {
                 MondrianDef.Join join = (MondrianDef.Join) relationOrJoin;
-                RolapStar.Table leftTable = addJoin(cube, join.left, joinCondition);
+                RolapStar.Table leftTable =
+                    addJoin(cube, join.left, joinCondition);
                 String leftAlias = join.leftAlias;
                 if (leftAlias == null) {
                     // REVIEW: is cast to Relation valid?

@@ -145,7 +145,8 @@ public class BatchTestCase extends FoodMartTestCase {
             batch.add(
                 createRequest(
                     cubeName, measure, tableNames, fieldNames,
-                    selectedValues.toArray(new String[selectedValues.size()]), constraint));
+                    selectedValues.toArray(
+                        new String[selectedValues.size()]), constraint));
         }
     }
 
@@ -274,8 +275,12 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param mdxQuery MDX query
      * @param patterns Set of patterns for expected SQL statements
      */
-    protected void assertQuerySql(String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, false, true);
+    protected void assertQuerySql(
+        String mdxQuery,
+        SqlPattern[] patterns)
+    {
+        assertQuerySqlOrNot(
+            getTestContext(), mdxQuery, patterns, false, false, true);
     }
 
     /**
@@ -287,8 +292,12 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param patterns Set of patterns for expected SQL statements
      */
     protected void assertQuerySql(
-        TestContext testContext, String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(testContext, mdxQuery, patterns, false, false, true);
+        TestContext testContext,
+        String mdxQuery,
+        SqlPattern[] patterns)
+    {
+        assertQuerySqlOrNot(
+            testContext, mdxQuery, patterns, false, false, true);
     }
 
     /**
@@ -298,8 +307,12 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param mdxQuery MDX query
      * @param patterns Set of patterns for expected SQL statements
      */
-    protected void assertNoQuerySql(String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, true, false, true);
+    protected void assertNoQuerySql(
+        String mdxQuery,
+        SqlPattern[] patterns)
+    {
+        assertQuerySqlOrNot(
+            getTestContext(), mdxQuery, patterns, true, false, true);
     }
 
     /**
@@ -313,8 +326,10 @@ public class BatchTestCase extends FoodMartTestCase {
     protected void assertQuerySql(
         String mdxQuery,
         SqlPattern[] patterns,
-        boolean clearCache) {
-        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, false, clearCache);
+        boolean clearCache)
+    {
+        assertQuerySqlOrNot(
+            getTestContext(), mdxQuery, patterns, false, false, clearCache);
     }
 
     /**
@@ -661,7 +676,8 @@ public class BatchTestCase extends FoodMartTestCase {
             List<StarPredicate> orPredList = new ArrayList<StarPredicate>();
             for (String[] values : valueList) {
                 assert (values.length == tables.length);
-                List<StarPredicate> andPredList = new ArrayList<StarPredicate>();
+                List<StarPredicate> andPredList =
+                    new ArrayList<StarPredicate>();
                 for (int i = 0; i < values.length; i++) {
                     andPredList.add(
                         new ValueColumnPredicate(starColumn[i], values[i]));

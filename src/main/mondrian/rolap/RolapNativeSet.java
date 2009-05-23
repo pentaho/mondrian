@@ -39,7 +39,8 @@ import javax.sql.DataSource;
  * @version $Id$
  */
 public abstract class RolapNativeSet extends RolapNative {
-    protected static final Logger LOGGER = Logger.getLogger(RolapNativeSet.class);
+    protected static final Logger LOGGER =
+        Logger.getLogger(RolapNativeSet.class);
 
     private SmartCache<Object, List<List<RolapMember>>> cache =
         new SoftSmartCache<Object, List<List<RolapMember>>>();
@@ -66,7 +67,11 @@ public abstract class RolapNativeSet extends RolapNative {
     protected static abstract class SetConstraint extends SqlContextConstraint {
         CrossJoinArg[] args;
 
-        SetConstraint(CrossJoinArg[] args, RolapEvaluator evaluator, boolean strict) {
+        SetConstraint(
+            CrossJoinArg[] args,
+            RolapEvaluator evaluator,
+            boolean strict)
+        {
             super(evaluator, strict);
             this.args = args;
         }
@@ -199,9 +204,11 @@ public abstract class RolapNativeSet extends RolapNative {
             }
             DataSource dataSource = schemaReader.getDataSource();
             if (args.length == 1) {
-                result = (List) tr.readMembers(dataSource, partialResult, newPartialResult);
+                result = (List) tr.readMembers(
+                    dataSource, partialResult, newPartialResult);
             } else {
-                result = (List) tr.readTuples(dataSource, partialResult, newPartialResult);
+                result = (List) tr.readTuples(
+                    dataSource, partialResult, newPartialResult);
             }
 
             if (hasEnumTargets) {
@@ -263,9 +270,6 @@ public abstract class RolapNativeSet extends RolapNative {
     /**
      * "Light version" of a {@link TupleConstraint}, represents one of
      * member.children, level.members, member.descendants, {enumeration}.
-     *
-     * @author av
-     * @since Nov 14, 2005
      */
     protected interface CrossJoinArg {
         RolapLevel getLevel();
@@ -281,15 +285,14 @@ public abstract class RolapNativeSet extends RolapNative {
     }
 
     /**
-     * represents one of
+     * Represents one of:
      * <ul>
      * <li>Level.Members:  member == null and level != null</li>
-     * <li>Member.Children: member != null and level = member.getLevel().getChildLevel() </li>
-     * <li>Member.Descendants: member != null and level == some level below member.getLevel()</li>
+     * <li>Member.Children: member != null and level =
+     *     member.getLevel().getChildLevel()</li>
+     * <li>Member.Descendants: member != null and level == some level below
+     *     member.getLevel()</li>
      * </ul>
-     *
-     * @author av
-     * @since Nov 12, 2005
      */
     protected static class DescendantsCrossJoinArg implements CrossJoinArg {
         RolapMember member;
@@ -357,9 +360,6 @@ public abstract class RolapNativeSet extends RolapNative {
     /**
      * Represents an enumeration {member1, member2, ...}.
      * All members must to the same level and are non-calculated.
-     *
-     * @author av
-     * @since Nov 14, 2005
      */
     protected static class MemberListCrossJoinArg implements CrossJoinArg {
         private List<RolapMember> members;
@@ -370,8 +370,13 @@ public abstract class RolapNativeSet extends RolapNative {
         private boolean hasAllMember;
 
         private MemberListCrossJoinArg(
-            RolapLevel level, List<RolapMember> members, boolean restrictMemberTypes,
-            boolean hasCalcMembers, boolean hasNonCalcMembers, boolean hasAllMember) {
+            RolapLevel level,
+            List<RolapMember> members,
+            boolean restrictMemberTypes,
+            boolean hasCalcMembers,
+            boolean hasNonCalcMembers,
+            boolean hasAllMember)
+        {
             this.level = level;
             this.members = members;
             this.restrictMemberTypes = restrictMemberTypes;
@@ -747,11 +752,12 @@ public abstract class RolapNativeSet extends RolapNative {
                 (((MemberExpr)args[i]).getMember()));
         }
 
-        return MemberListCrossJoinArg.create(evaluator, memberList, restrictMemberTypes());
+        return MemberListCrossJoinArg.create(
+            evaluator, memberList, restrictMemberTypes());
     }
 
     /**
-     * Checks for <code>CrossJoin(&lt;set1&gt;, &lt;set2&gt)</code>, where
+     * Checks for <code>CrossJoin(&lt;set1&gt;, &lt;set2&gt;)</code>, where
      * set1 and set2 are one of
      * <code>member.children</code>, <code>level.members</code> or
      * <code>member.descendants</code>.
@@ -787,9 +793,11 @@ public abstract class RolapNativeSet extends RolapNative {
                 return null;
             }
         }
-        CrossJoinArg[] ret = new CrossJoinArg[argArray[0].length + argArray[1].length];
+        CrossJoinArg[] ret =
+            new CrossJoinArg[argArray[0].length + argArray[1].length];
         System.arraycopy(argArray[0], 0, ret, 0, argArray[0].length);
-        System.arraycopy(argArray[1], 0, ret, argArray[0].length, argArray[1].length);
+        System.arraycopy(
+            argArray[1], 0, ret, argArray[0].length, argArray[1].length);
         return ret;
     }
 
@@ -799,13 +807,15 @@ public abstract class RolapNativeSet extends RolapNative {
         CrossJoinArg[] arg0 = null;
         if (MondrianProperties.instance().ExpandNonNative.get()) {
                 ListCalc listCalc0 = compiler.compileList(exp);
-                List<RolapMember> list0 = Util.cast(listCalc0.evaluateList(evaluator));
+                List<RolapMember> list0 =
+                    Util.cast(listCalc0.evaluateList(evaluator));
                 // Prevent the case when the second argument size is too large
                 if (list0 != null) {
                     Util.checkCJResultLimit(list0.size());
                 }
                 CrossJoinArg arg =
-                    MemberListCrossJoinArg.create(evaluator, list0, restrictMemberTypes());
+                    MemberListCrossJoinArg.create(
+                        evaluator, list0, restrictMemberTypes());
                 if (arg != null) {
                     arg0 = new CrossJoinArg[] {arg};
                 }
@@ -941,7 +951,9 @@ public abstract class RolapNativeSet extends RolapNative {
     }
 
 
-    public interface SchemaReaderWithMemberReaderAvailable extends SchemaReader {
+    public interface SchemaReaderWithMemberReaderAvailable
+        extends SchemaReader
+    {
         MemberReader getMemberReader(Hierarchy hierarchy);
     }
 

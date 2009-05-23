@@ -230,7 +230,8 @@ public class SqlTupleReader implements TupleReader {
                                 constraint.getMemberChildrenConstraint(
                                     members.get(i));
                             if (mcc != null) {
-                                cache.putChildren(members.get(i), mcc, children);
+                                cache.putChildren(
+                                    members.get(i), mcc, children);
                             }
                         }
                         // Start a new list, if the cache needs one. (We don't
@@ -305,7 +306,10 @@ public class SqlTupleReader implements TupleReader {
          * Adds <code>member</code> just before the first element in
          * <code>list</code> which has the same parent.
          */
-        private void addAsOldestSibling(List<RolapMember> list, RolapMember member) {
+        private void addAsOldestSibling(
+            List<RolapMember> list,
+            RolapMember member)
+        {
             int i = list.size();
             while (--i >= 0) {
                 RolapMember sibling = list.get(i);
@@ -639,7 +643,8 @@ public class SqlTupleReader implements TupleReader {
                         }
                     } else {
                         RolapMember member =
-                            target.srcMembers.get(srcMemberIdxes[enumTargetIdx++]);
+                            target.srcMembers.get(
+                                srcMemberIdxes[enumTargetIdx++]);
                         target.list.add(member);
                     }
                 }
@@ -691,8 +696,10 @@ public class SqlTupleReader implements TupleReader {
             Query query = constraint.getEvaluator().getQuery();
 
             // Make fact table appear in fixed sequence
-            RolapCube.CubeComparator cubeComparator = new RolapCube.CubeComparator();
-            TreeSet<RolapCube> baseCubes = new TreeSet<RolapCube>(cubeComparator);
+            RolapCube.CubeComparator cubeComparator =
+                new RolapCube.CubeComparator();
+            TreeSet<RolapCube> baseCubes =
+                new TreeSet<RolapCube>(cubeComparator);
             baseCubes.addAll(query.getBaseCubes());
 
             // generate sub-selects, each one joining with one of
@@ -886,7 +893,8 @@ public class SqlTupleReader implements TupleReader {
                 // an earlier check was made in chooseAggStar() to verify
                 // that this is a single column level
 
-                RolapStar.Column starColumn = ((RolapCubeLevel)currLevel).getStarKeyColumn();
+                RolapStar.Column starColumn =
+                    ((RolapCubeLevel) currLevel).getStarKeyColumn();
                 int bitPos = starColumn.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 String q = aggColumn.generateExprString(sqlQuery);
@@ -979,9 +987,11 @@ public class SqlTupleReader implements TupleReader {
     }
 
     /**
-     * Obtain the AggStar instance which corresponds to an aggregate table
-     * which can be used to support the member constraint
-     * @param evaluator the current evaluator to obtain the cube and members to be queried
+     * Obtains the AggStar instance which corresponds to an aggregate table
+     * which can be used to support the member constraint.
+     *
+     * @param evaluator the current evaluator to obtain the cube and members to
+     *        be queried
      * @return AggStar for aggregate table
      */
     private AggStar chooseAggStar(Evaluator evaluator) {
@@ -1012,7 +1022,8 @@ public class SqlTupleReader implements TupleReader {
 
         RolapBaseCubeMeasure measure = (RolapBaseCubeMeasure)members[0];
 
-        int bitPosition = ((RolapStar.Measure)measure.getStarMeasure()).getBitPosition();
+        int bitPosition =
+            ((RolapStar.Measure) measure.getStarMeasure()).getBitPosition();
 
         // set a bit for each level which is constrained in the context
         final CellRequest request =
@@ -1033,7 +1044,8 @@ public class SqlTupleReader implements TupleReader {
         for (Target target : targets) {
             RolapLevel level = target.level;
             if (!level.isAll()) {
-                RolapStar.Column column = ((RolapCubeLevel)level).getStarKeyColumn();
+                RolapStar.Column column =
+                    ((RolapCubeLevel)level).getStarKeyColumn();
                 levelBitKey.set(column.getBitPosition());
             }
         }

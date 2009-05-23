@@ -379,9 +379,10 @@ RME TODO
                 // Why, because no table with the exclude's name will
                 // ever match the pattern, so the exclude is superfluous.
                 // This is best effort.
-                Pattern pattern = ExplicitRules.PatternTableDef.this.getPattern();
+                Pattern pattern =
+                    ExplicitRules.PatternTableDef.this.getPattern();
                 boolean patternIgnoreCase =
-                            ExplicitRules.PatternTableDef.this.isIgnoreCase();
+                    ExplicitRules.PatternTableDef.this.isIgnoreCase();
                 boolean ignoreCase = isIgnoreCase();
 
                 // If pattern is ignoreCase and name is any case or pattern
@@ -508,7 +509,8 @@ RME TODO
             final MondrianDef.AggTable aggTable)
         {
             if (aggTable.getAggFactCount() != null) {
-                tableDef.setFactCountName(aggTable.getAggFactCount().getColumnName());
+                tableDef.setFactCountName(
+                    aggTable.getAggFactCount().getColumnName());
             }
 
             MondrianDef.AggIgnoreColumn[] ignores =
@@ -610,11 +612,11 @@ RME TODO
             /**
              * Validates a level's name.
              *
-             * <p>The level name must be of the form
-             * <blockquote><code>[hierarchy usage name].[level name]</code></blockquote>
+             * <p>The level name must be of the form <code>[hierarchy usage
+             * name].[level name]</code>.
              *
-             * This method checks that is of length 2, starts with a hierarchy and
-             * the "level name" exists.
+             * <p>This method checks that is of length 2, starts with a
+             * hierarchy and the "level name" exists.
              */
             public void validate(final MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName("Level");

@@ -29,7 +29,8 @@ import mondrian.spi.Dialect;
 public class RolapNativeTopCount extends RolapNativeSet {
 
     public RolapNativeTopCount() {
-        super.setEnabled(MondrianProperties.instance().EnableNativeTopCount.get());
+        super.setEnabled(
+            MondrianProperties.instance().EnableNativeTopCount.get());
     }
 
     static class TopCountConstraint extends SetConstraint {
@@ -91,13 +92,19 @@ public class RolapNativeTopCount extends RolapNativeSet {
         return true;
     }
 
-    NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
+    NativeEvaluator createEvaluator(
+        RolapEvaluator evaluator,
+        FunDef fun,
+        Exp[] args)
+    {
         boolean ascending;
 
         if (!isEnabled()) {
             return null;
         }
-        if (!TopCountConstraint.isValidContext(evaluator, restrictMemberTypes())) {
+        if (!TopCountConstraint.isValidContext(
+            evaluator, restrictMemberTypes()))
+        {
             return null;
         }
 
@@ -150,7 +157,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
         evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
 
         TupleConstraint constraint =
-            new TopCountConstraint(count, cargs, evaluator, orderByExpr, ascending);
+            new TopCountConstraint(
+                count, cargs, evaluator, orderByExpr, ascending);
         SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);
         sev.setMaxRows(count);
         return sev;

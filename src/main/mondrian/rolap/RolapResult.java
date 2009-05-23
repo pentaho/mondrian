@@ -608,7 +608,8 @@ public class RolapResult extends ResultBase {
             Axis axisResult = null;
             for (Member m : nonAllMembers.get(cnt)) {
                 evaluator.setContext(m);
-                Axis a = evalExecute(nonAllMembers, cnt - 1, evaluator, axis, calc);
+                Axis a =
+                    evalExecute(nonAllMembers, cnt - 1, evaluator, axis, calc);
                 boolean ordered = false;
                 if (axis != null) {
                     ordered = axis.isOrdered();
@@ -647,7 +648,8 @@ public class RolapResult extends ResultBase {
                 continue;
             }
             if (!em.isAll()) {
-                List<Member> rootMembers = schemaReader.getHierarchyRootMembers(h);
+                List<Member> rootMembers =
+                    schemaReader.getHierarchyRootMembers(h);
                 if (em.isMeasure()) {
                     for (Member mm : rootMembers) {
                         measureMembers.add(mm);
@@ -755,7 +757,8 @@ public class RolapResult extends ResultBase {
                                 new RolapAxis.MemberList((List<Member>)value);
                         } else {
                             axisResult =
-                                new RolapAxis.MemberArrayList((List<Member[]>)value);
+                                new RolapAxis.MemberArrayList(
+                                    (List<Member[]>)value);
                         }
                     } else if (axisMembers != null) {
                         if (arity == 1) {
@@ -1516,8 +1519,9 @@ public class RolapResult extends ResultBase {
      * Should these be a WeakHashMap?
      */
     protected static final Map<CellFormatter, ValueFormatter>
-            cellFormatters =
-            Collections.synchronizedMap(new HashMap<CellFormatter, ValueFormatter>());
+        cellFormatters =
+            Collections.synchronizedMap(
+                new HashMap<CellFormatter, ValueFormatter>());
 
     /**
      * A CellInfo contains all of the information that a Cell requires.
@@ -1767,7 +1771,8 @@ public class RolapResult extends ResultBase {
                 long l = pos[0];
                 l += (MAX_AXIS_SIZE_4 * (long) pos[1]);
                 l += (MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * (long) pos[2]);
-                l += (MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * (long) pos[3]);
+                l += (MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4
+                      * (long) pos[3]);
                 return l;
             }
         }
