@@ -143,7 +143,9 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getElementChild(parent, name, matchType);
     }
 
-    public List<Member> getLevelMembers(Level level, boolean includeCalculated) {
+    public List<Member> getLevelMembers(
+        Level level, boolean includeCalculated)
+    {
         return schemaReader.getLevelMembers(level, includeCalculated);
     }
 
@@ -191,14 +193,16 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     }
 
     public List<Member> getLevelMembers(Level level, Evaluator context) {
-      return schemaReader.getLevelMembers(level, context);
+        return schemaReader.getLevelMembers(level, context);
     }
 
     public List<Member> getMemberChildren(Member member, Evaluator context) {
         return schemaReader.getMemberChildren(member, context);
     }
 
-    public List<Member> getMemberChildren(List<Member> members, Evaluator context) {
+    public List<Member> getMemberChildren(
+        List<Member> members, Evaluator context)
+    {
         return schemaReader.getMemberChildren(members, context);
     }
 

@@ -241,7 +241,10 @@ public abstract class LinReg extends FunDefBase {
      * Definition of the <code>LinRegIntercept</code> MDX function.
      *
      * <p>Synopsis:
-     * <blockquote><code>LinRegIntercept(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric  Expression&gt;])</code></blockquote>
+     *
+     * <blockquote><code>LinRegIntercept(&lt;Numeric Expression&gt;,
+     * &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric
+     * Expression&gt;])</code></blockquote>
      */
     public static class InterceptFunDef extends LinReg {
         public InterceptFunDef(FunDef funDef) {
@@ -253,7 +256,10 @@ public abstract class LinReg extends FunDefBase {
      * Definition of the <code>LinRegPoint</code> MDX function.
      *
      * <p>Synopsis:
-     * <blockquote><code>LinRegPoint(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric  Expression&gt;])</code></blockquote>
+     *
+     * <blockquote><code>LinRegPoint(&lt;Numeric Expression&gt;,
+     * &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric
+     * Expression&gt;])</code></blockquote>
      */
     public static class PointFunDef extends LinReg {
         public PointFunDef(FunDef funDef) {
@@ -261,7 +267,8 @@ public abstract class LinReg extends FunDefBase {
         }
 
         public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-            final DoubleCalc xPointCalc = compiler.compileDouble(call.getArg(0));
+            final DoubleCalc xPointCalc =
+                compiler.compileDouble(call.getArg(0));
             final ListCalc listCalc = compiler.compileList(call.getArg(1));
             final DoubleCalc yCalc = compiler.compileDouble(call.getArg(2));
             final DoubleCalc xCalc = call.getArgCount() > 3 ?
@@ -270,7 +277,8 @@ public abstract class LinReg extends FunDefBase {
             final boolean isTuples =
                     ((SetType) listCalc.getType()).getElementType() instanceof
                     TupleType;
-            return new PointCalc(call, xPointCalc, listCalc, yCalc, xCalc, isTuples);
+            return new PointCalc(
+                call, xPointCalc, listCalc, yCalc, xCalc, isTuples);
         }
     }
 
@@ -312,7 +320,10 @@ public abstract class LinReg extends FunDefBase {
      * Definition of the <code>LinRegSlope</code> MDX function.
      *
      * <p>Synopsis:
-     * <blockquote><code>LinRegSlope(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric  Expression&gt;])</code></blockquote>
+     *
+     * <blockquote><code>LinRegSlope(&lt;Numeric Expression&gt;,
+     * &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric
+     * Expression&gt;])</code></blockquote>
      */
     public static class SlopeFunDef extends LinReg {
         public SlopeFunDef(FunDef funDef) {
@@ -324,7 +335,10 @@ public abstract class LinReg extends FunDefBase {
      * Definition of the <code>LinRegR2</code> MDX function.
      *
      * <p>Synopsis:
-     * <blockquote><code>LinRegR2(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric  Expression&gt;])</code></blockquote>
+     *
+     * <blockquote><code>LinRegR2(&lt;Numeric Expression&gt;,
+     * &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric
+     * Expression&gt;])</code></blockquote>
      */
     public static class R2FunDef extends LinReg {
         public R2FunDef(FunDef funDef) {
@@ -336,7 +350,10 @@ public abstract class LinReg extends FunDefBase {
      * Definition of the <code>LinRegVariance</code> MDX function.
      *
      * <p>Synopsis:
-     * <blockquote><code>LinRegVariance(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric  Expression&gt;])</code></blockquote>
+     *
+     * <blockquote><code>LinRegVariance(&lt;Numeric Expression&gt;,
+     * &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric
+     * Expression&gt;])</code></blockquote>
      */
     public static class VarianceFunDef extends LinReg {
         public VarianceFunDef(FunDef funDef) {

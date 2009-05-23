@@ -77,14 +77,16 @@ public class MondrianResultPrinter implements TestListener {
         }
     }
 
-    public void printDefect(TestFailure booBoo, int count) { // only public for testing purposes
+    // only public for testing purposes
+    public void printDefect(TestFailure booBoo, int count) {
         printDefectHeader(booBoo, count);
         printDefectTrace(booBoo);
     }
 
     protected void printDefectHeader(TestFailure booBoo, int count) {
-        // I feel like making this a println, then adding a line giving the throwable a chance to print something
-        // before we get to the stack trace.
+        // I feel like making this a println, then adding a line
+        // giving the throwable a chance to print something before we
+        // get to the stack trace.
         getWriter().print(count + ") " + booBoo.failedTest());
     }
 

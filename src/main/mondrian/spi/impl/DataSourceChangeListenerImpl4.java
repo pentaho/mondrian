@@ -32,7 +32,8 @@ import mondrian.rolap.agg.Aggregation;
  * It is specified in the connection string, like this:
  *
  * <blockquote><code>
- * Jdbc=jdbc:odbc:MondrianFoodMart; JdbcUser=ziggy; JdbcPassword=stardust; DataSourceChangeListener=com.acme.MyChangeListener;
+ * Jdbc=jdbc:odbc:MondrianFoodMart; JdbcUser=ziggy; JdbcPassword=stardust;
+ * DataSourceChangeListener=com.acme.MyChangeListener;
  * </code></blockquote>
  *
  * This class should be called in mondrian before any data is read, so
@@ -53,10 +54,14 @@ public class DataSourceChangeListenerImpl4 implements DataSourceChangeListener {
     public DataSourceChangeListenerImpl4() {
         this(0,0);
     }
-    public DataSourceChangeListenerImpl4(int flushInverseFrequencyHierarchy,
-            int flushInverseFrequencyAggregation) {
+
+    public DataSourceChangeListenerImpl4(
+        int flushInverseFrequencyHierarchy,
+        int flushInverseFrequencyAggregation)
+    {
         this.flushInverseFrequencyHierarchy = flushInverseFrequencyHierarchy;
-        this.flushInverseFrequencyAggregation = flushInverseFrequencyAggregation;
+        this.flushInverseFrequencyAggregation =
+            flushInverseFrequencyAggregation;
     }
 
     public synchronized boolean isHierarchyChanged(RolapHierarchy hierarchy) {

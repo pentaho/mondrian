@@ -81,7 +81,8 @@ public class MondrianProperties extends TriggerableProperties {
     }
 
     public MondrianProperties() {
-        this.propertySource = new FilePropertySource(new File(mondrianDotProperties));
+        this.propertySource =
+            new FilePropertySource(new File(mondrianDotProperties));
     }
 
     public boolean triggersAreEnabled() {
@@ -361,7 +362,9 @@ public class MondrianProperties extends TriggerableProperties {
      * {@code public [static] junit.framework.Test suite()}.</p>
      *
      * <p>Example:
-     * <blockquote><code>mondrian.test.Class=mondrian.test.FoodMartTestCase</code></blockquote>
+     * <blockquote><code>
+     * mondrian.test.Class=mondrian.test.FoodMartTestCase
+     * </code></blockquote>
      *
      * @see #TestName
      */
@@ -465,8 +468,9 @@ public class MondrianProperties extends TriggerableProperties {
      * <code>query<i>whatever</i>.xml</code> in the directory.
      *
      * <p>Example:
-     * <blockquote><code>mondrian.test.QueryFilePattern=queryTest_fec[A-Za-z0-9_]*.xml</code></blockquote>
-     *
+     * <blockquote><code>
+     * mondrian.test.QueryFilePattern=queryTest_fec[A-Za-z0-9_]*.xml
+     * </code></blockquote>
      */
     public transient final StringProperty QueryFilePattern =
             new StringProperty(
@@ -1011,14 +1015,14 @@ public class MondrianProperties extends TriggerableProperties {
      * <p>With mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension=true
      * Warehouse Sales gets eliminated and is ignored in the aggregate value.
      * <blockquote>
-     * <p>                                        [Store Sales] + [Warehouse Sales]
+     * <p>                                    [Store Sales] + [Warehouse Sales]
      * SUM({Product.members * Gender.members})    7,913,333.82
      * </blockquote>
      * <p>With mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension=false
      * Warehouse Sales with Gender All level member contributes to the aggregate
      * value.
      * <blockquote>
-     * <p>                                        [Store Sales] + [Warehouse Sales]
+     * <p>                                     [Store Sales] + [Warehouse Sales]
      * SUM({Product.members * Gender.members})    9,290,730.03
      * </blockquote>
      * <p>On a report where Gender M, F and All members exist a user will see a
@@ -1034,9 +1038,10 @@ public class MondrianProperties extends TriggerableProperties {
                     false);
 
     /**
-     * Property determines if elements of dimension (levels, hierarchies, members)
-     * need to be prefixed with dimension name in MDX query.
-     * For example when the property is true, the following queries
+     * Property determines if elements of dimension (levels, hierarchies,
+     * members) need to be prefixed with dimension name in MDX query.
+     *
+     * <p>For example when the property is true, the following queries
      * will error out. The same queries will work when this property
      * is set to false.
      * <blockquote>
@@ -1068,13 +1073,14 @@ public class MondrianProperties extends TriggerableProperties {
      * <p>
      * [Gender].[All Gender].[M]
      * </blockquote>
-     * <p>
-     * In a scenario where the schema is very large and dimensions have large
-     * number of members a MDX query that has a invalid member in it will cause
-     * mondrian to to go through all the dimensions, levels, hierarchies, members
-     * and properties trying to resolve the element name. This behaviour consumes
-     * considerable time and resources on the server. Setting this property to
-     * true will make it fail fast in a scenario where it is desirable
+     *
+     * <p> In a scenario where the schema is very large and dimensions have
+     * large number of members a MDX query that has a invalid member in it will
+     * cause mondrian to to go through all the dimensions, levels, hierarchies,
+     * members and properties trying to resolve the element name. This behavior
+     * consumes considerable time and resources on the server. Setting this
+     * property to true will make it fail fast in a scenario where it is
+     * desirable.
      */
     public transient final BooleanProperty NeedDimensionPrefix =
         new BooleanProperty(

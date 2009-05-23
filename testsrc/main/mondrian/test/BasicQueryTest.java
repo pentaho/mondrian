@@ -1194,12 +1194,12 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     /**
      * Test what happens when the solve orders are the same. According to
-     * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/olapdmad/agmdxadvanced_6jn7.asp
-     * and http://dev.hyperion.com/download_files/resource_library/white_papers/mdx.pdf,
-     * if solve orders are the same then the dimension specified first when defining the cube wins.
+     * http://msdn.microsoft.com/library/en-us/olapdmad/agmdxadvanced_6jn7.asp
+     * if solve orders are the same then the dimension specified first
+     * when defining the cube wins.
      *
-     * In the first test, the answer should be 1 because Promotions comes before
-     * Customers in the FoodMart.xml schema.
+     * <p>In the first test, the answer should be 1 because Promotions
+     * comes before Customers in the FoodMart.xml schema.
      */
     public void testSolveOrderAmbiguous1() {
         assertQueryReturns(
@@ -2290,27 +2290,33 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "7,786.21"));
 
     public void testTaglib0() {
-        assertQueryReturns(taglibQueries.get(0).query, taglibQueries.get(0).result);
+        assertQueryReturns(
+            taglibQueries.get(0).query, taglibQueries.get(0).result);
     }
 
     public void testTaglib1() {
-        assertQueryReturns(taglibQueries.get(1).query, taglibQueries.get(1).result);
+        assertQueryReturns(
+            taglibQueries.get(1).query, taglibQueries.get(1).result);
     }
 
     public void testTaglib2() {
-        assertQueryReturns(taglibQueries.get(2).query, taglibQueries.get(2).result);
+        assertQueryReturns(
+            taglibQueries.get(2).query, taglibQueries.get(2).result);
     }
 
     public void testTaglib3() {
-        assertQueryReturns(taglibQueries.get(3).query, taglibQueries.get(3).result);
+        assertQueryReturns(
+            taglibQueries.get(3).query, taglibQueries.get(3).result);
     }
 
     public void testTaglib4() {
-        assertQueryReturns(taglibQueries.get(4).query, taglibQueries.get(4).result);
+        assertQueryReturns(
+            taglibQueries.get(4).query, taglibQueries.get(4).result);
     }
 
     public void testTaglib5() {
-        assertQueryReturns(taglibQueries.get(5).query, taglibQueries.get(5).result);
+        assertQueryReturns(
+            taglibQueries.get(5).query, taglibQueries.get(5).result);
     }
 
     public void testCellValue() {
@@ -3096,15 +3102,18 @@ public class BasicQueryTest extends FoodMartTestCase {
      *
      * [Store Size in SQFT].[All Store Size in SQFTs]
      * [Store Size in SQFT].[All Store Size in SQFTs].[null]
-     * [Store Size in SQFT].[All Store Size in SQFTs].[<each distinct store size>]
+     * [Store Size in SQFT].[All Store Size in SQFTs].[<each distinct store
+     * size>]
      *
      * Postgres shows:
      *
      * [Store Size in SQFT].[All Store Size in SQFTs]
-     * [Store Size in SQFT].[All Store Size in SQFTs].[<each distinct store size>]
+     * [Store Size in SQFT].[All Store Size in SQFTs].[<each distinct store
+     * size>]
      * [Store Size in SQFT].[All Store Size in SQFTs].[null]
      *
-     * The test failure is due to some inherent differences in the way Postgres orders NULLs in a result set,
+     * The test failure is due to some inherent differences in the way
+     * Postgres orders NULLs in a result set,
      * compared with MySQL and Access.
      *
      * From the MySQL 4.X manual:
@@ -3329,9 +3338,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * <p>Basket analysis is a topic better suited to data mining discussions, but
-     * some basic forms of basket analysis can be handled through the use of MDX
-     * queries.
+     * <p>Basket analysis is a topic better suited to data mining discussions,
+     * but some basic forms of basket analysis can be handled through the use of
+     * MDX queries.
      *
      * <p>For example, one method of basket analysis groups customers based on
      * qualification. In the following example, a qualified customer is one who
@@ -3348,10 +3357,10 @@ public class BasicQueryTest extends FoodMartTestCase {
      * Count column, while the second calculated member uses the MDX Sum,
      * Filter, and Descendants functions to create the Qualified Sales column.
      *
-     * <p>The key to this MDX query is the use of Filter and Descendants together
-     * to screen out non-qualified customers. Once screened out, the Sum and
-     * Count MDX functions can then be used to provide aggregation data only on
-     * qualified customers.
+     * <p>The key to this MDX query is the use of Filter and Descendants
+     * together to screen out non-qualified customers. Once screened out, the
+     * Sum and Count MDX functions can then be used to provide aggregation data
+     * only on qualified customers.
      */
     public void testBasketAnalysis() {
         assertQueryReturns(
@@ -3688,7 +3697,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * above example using the Aggregate function, replace the definition for
      * the calculated member with this definition:
      *
-     * <blockquote><pre>'Aggregate({[Product].[Food], [Product].[Drink]})'</pre></blockquote>
+     * <blockquote>
+     * <code>'Aggregate({[Product].[Food], [Product].[Drink]})'</code>
+     * </blockquote>
      */
     public void testLogicalOps() {
         assertQueryReturns(
@@ -4227,7 +4238,8 @@ public class BasicQueryTest extends FoodMartTestCase {
      * basic cases involve aggregating a single dimension using a different
      * aggregation function than the one used for other dimensions.<ul>
      *
-     * <li>Aggregating minimums, maximums, or averages along a time dimension</li>
+     * <li>Aggregating minimums, maximums, or averages along a time
+     * dimension</li>
      *
      * <li>Aggregating opening and closing period values along a time
      * dimension</li></ul>
@@ -4395,8 +4407,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * forecast of warehouse sales, from the Warehouse cube in the FoodMart 2000
      * database, for drink products. The standard forecast is double the
      * warehouse sales of the previous year, while the dynamic forecast varies
-     * from month to month -- the forecast for January is 120 percent of previous
-     * sales, while the forecast for July is 260 percent of previous sales.
+     * from month to month -- the forecast for January is 120 percent of
+     * previous sales, while the forecast for July is 260 percent of previous
+     * sales.
      *
      * <p>The most flexible way of handling this type of report is the use of
      * nested MDX IIf functions to return a multiplier to be used on the members
@@ -4608,7 +4621,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         final int iterationCount,
         final boolean flush)
     {
-        long timeoutMs = (long) threadCount * iterationCount * 600 * 1000; // 10 minute per query
+        // 10 minute per query
+        long timeoutMs = (long) threadCount * iterationCount * 600 * 1000;
         final int[] executeCount = new int[] {0};
         final List<QueryAndResult> queries = new ArrayList<QueryAndResult>();
         queries.addAll(Arrays.asList(sampleQueries));
@@ -4652,7 +4666,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     /**
      * Makes sure that the expression <code>
      *
-     * [Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])
+     * [Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All
+     * Products])
      *
      * </code> depends on the current member of the Product dimension, although
      * [Product].[All Products] is referenced from the expression.
@@ -5220,7 +5235,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         // evaluated at in the context: [Product].[Drink], [Gender].[M]
         testContext.assertExprReturns(
             "([Gender].[M], [Measures].[Unit Sales])", "12,395");
-        // evaluated at in the context: [Product].[Food].[Canned Foods], [Gender].[F]
+        // evaluated in the context:
+        // [Product].[Food].[Canned Foods], [Gender].[F]
         testContext.assertExprReturns(
             "([Product].[Food].[Canned Foods], [Measures].[Unit Sales])",
             "9,407");
@@ -5806,9 +5822,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * For a calulated member picks up the format of first member that has a format.
-     * in this particular case foo will use profit's format,
-     * i.e neither [unit sales] nor [customer count] format is used.
+     * For a calulated member picks up the format of first member that has a
+     * format.  In this particular case foo will use profit's format, i.e
+     * neither [unit sales] nor [customer count] format is used.
      */
     public void testFormatInheritanceWorksWithFirstFormatItFinds() {
         assertQueryReturns(
@@ -5864,7 +5880,11 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #0: $958.00\n");
     }
 
-    public void testFormatInheritanceToPickupFormatFromSecondMeasureWhenTheFirstDoesNotHaveOne() {
+    /**
+     * Test format inheritance to pickup format from second measure when the
+     * first does not have one.
+     */
+    public void testFormatInheritance() {
         assertQueryReturns(
             "with member measures.foo as 'measures.bar+measures.blah'"
             + " member measures.bar as '10'"
@@ -5876,7 +5896,11 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
 
-    public void testFormatInheritanceWithComplexExpressionToAssertThatTheFormatOfTheFisrtMemberThatHasAValidFormatIsUsed() {
+    /**
+     * Tests format inheritance with complex expression to assert that the
+     * format of the first member that has a valid format is used.
+     */
+    public void testFormatInheritanceUseFirstValid() {
         assertQueryReturns(
             "with member measures.foo as '13+31*measures.[Unit Sales]/"
             + "iif(measures.profit>0,measures.profit,measures.[Customer Count])'"
@@ -6222,15 +6246,15 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * This tests for bug #1630754. In Mondrian 2.2.2 the SqlTupleReader.readTuples
-     * method would create a SQL having an in-clause with more that 1000 entities
-     * under some circumstances. This exceeded the limit for Oracle resulting in an
-     * ORA-01795 error.
+     * Tests for bug #1630754. In Mondrian 2.2.2 the SqlTupleReader.readTuples
+     * method would create a SQL having an in-clause with more that 1000
+     * entities under some circumstances. This exceeded the limit for Oracle
+     * resulting in an ORA-01795 error.
      */
     public void testBug1630754() {
         // In order to reproduce this bug a dimension with 2 levels with more
-        // than 1000 member each was necessary. The customer_id column has more than
-        // 1000 distinct members so it was used for this test.
+        // than 1000 member each was necessary. The customer_id column has more
+        // than 1000 distinct members so it was used for this test.
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Customer_2\" foreignKey=\"customer_id\">\n"

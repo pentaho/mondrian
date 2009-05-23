@@ -75,7 +75,7 @@ public class MondrianInprocProxy
         final String request)
     {
         return singleThreadExecutor.submit(
-            new Callable<byte[] >() {
+            new Callable<byte[]>() {
                 public byte[] call() throws Exception {
                     return get(url, request);
                 }

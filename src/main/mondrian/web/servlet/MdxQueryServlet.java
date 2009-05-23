@@ -189,7 +189,8 @@ public class MdxQueryServlet extends HttpServlet {
 
         request.setAttribute("result", html.toString());
         response.setHeader("Content-Type", "text/html");
-        getServletContext().getRequestDispatcher("/adhoc.jsp").include(request, response);
+        getServletContext().getRequestDispatcher("/adhoc.jsp").include(
+            request, response);
     }
 
     private void showCell(StringBuilder out, Cell cell) {
@@ -202,7 +203,9 @@ public class MdxQueryServlet extends HttpServlet {
         throws ServletException, IOException
     {
         String queryName = request.getParameter("query");
-        ResultCache rc = ResultCache.getInstance(request.getSession(), getServletContext(), queryName);
+        ResultCache rc =
+            ResultCache.getInstance(
+                request.getSession(), getServletContext(), queryName);
         Query query = rc.getQuery();
         query = query.safeClone();
         rc.setDirty();
@@ -225,7 +228,8 @@ public class MdxQueryServlet extends HttpServlet {
             redirect = "/adhoc.jsp";
         }
         response.setHeader("Content-Type", "text/html");
-        getServletContext().getRequestDispatcher(redirect).include(request, response);
+        getServletContext().getRequestDispatcher(redirect).include(
+            request, response);
     }
 
     /**
@@ -257,7 +261,8 @@ public class MdxQueryServlet extends HttpServlet {
     /** Returns a short description of the servlet.
      */
     public String getServletInfo() {
-        return "Process an MDX query and return the result formatted as an HTML table";
+        return "Process an MDX query and return the result formatted as an "
+            + "HTML table";
     }
 
 }

@@ -45,7 +45,10 @@ public class AggGenTest extends FoodMartTestCase {
         super(name);
     }
 
-    public void testCallingLoadColumnsInAddCollapsedColumnOrAddzSpecialCollapsedColumn() throws Exception {
+    public void
+        testCallingLoadColumnsInAddCollapsedColumnOrAddzSpecialCollapsedColumn()
+        throws Exception
+    {
         Logger logger = Logger.getLogger(AggGen.class);
         StringWriter writer = new StringWriter();
         Appender myAppender = new WriterAppender(new SimpleLayout(), writer);
@@ -58,7 +61,8 @@ public class AggGenTest extends FoodMartTestCase {
         // test run
 
         MondrianProperties props = MondrianProperties.instance();
-        props.AggregateRules.setString("DefaultRules.xml"); // If run in Ant and with mondrian.jar, please comment out this line
+        // If run in Ant and with mondrian.jar, please comment out this line:
+        props.AggregateRules.setString("DefaultRules.xml");
         props.UseAggregates.setString(trueValue);
         props.ReadAggregates.setString(trueValue);
         props.GenerateAggregateSql.setString(trueValue);

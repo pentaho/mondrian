@@ -235,7 +235,14 @@ class Enumeration {
         DBLITERAL_QUOTE_SUFFIX  = 28;
 */
 
-        Literal(int ordinal, String literalValue, int literalMaxLength, String literalInvalidChars, String literalInvalidStartingChars, String description) {
+        Literal(
+            int ordinal,
+            String literalValue,
+            int literalMaxLength,
+            String literalInvalidChars,
+            String literalInvalidStartingChars,
+            String description)
+        {
             this.literalValue = literalValue;
             this.literalMaxLength = literalMaxLength;
             this.literalInvalidChars = literalInvalidChars;

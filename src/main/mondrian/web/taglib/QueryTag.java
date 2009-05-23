@@ -46,8 +46,13 @@ public class QueryTag extends BodyTagSupport {
 
     public int doAfterBody() throws JspException {
         try {
-            ApplResources ar = ApplResources.getInstance(pageContext.getServletContext());
-            ResultCache rc = ResultCache.getInstance(pageContext.getSession(), pageContext.getServletContext(), name);
+            ApplResources ar =
+                ApplResources.getInstance(pageContext.getServletContext());
+            ResultCache rc =
+                ResultCache.getInstance(
+                    pageContext.getSession(),
+                    pageContext.getServletContext(),
+                    name);
             // if this is the first call, we have to parse the mdx query
             if (!resultCache || rc.getQuery() == null) {
                 String mdx = getBodyContent().getString();

@@ -289,9 +289,9 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * must not use native sql optimization because it chooses the wrong RolapStar
-     * in SqlContextConstraint/SqlConstraintUtils.
-     * Test ensures that no exception is thrown.
+     * Must not use native sql optimization because it chooses the wrong
+     * RolapStar in SqlContextConstraint/SqlConstraintUtils.  Test ensures that
+     * no exception is thrown.
      */
     public void testVirtualCube() throws Exception {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
@@ -562,7 +562,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Verify that CrossJoins with two non native inputs can be natively evaluated.
+     * Verifies that CrossJoins with two non native inputs can be natively
+     * evaluated.
      */
     public void testExpandAllNonNativeInputs() {
         // This query will not run natively unless the <Dimension>.Children
@@ -595,7 +596,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Verify that CrossJoins with one non native inputs can be natively evaluated.
+     * Verifies that CrossJoins with one non native inputs can be natively
+     * evaluated.
      */
     public void testExpandOneNonNativeInput() {
         // This query will not be evaluated natively unless the Filter
@@ -673,8 +675,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Verify that the presence of calculated member in all the inputs disables native
-     * evaluation, even when ExpandNonNative is true.
+     * Verifies that the presence of calculated member in all the inputs
+     * disables native evaluation, even when ExpandNonNative is true.
      */
     public void testExpandCalcMembersInAllInputs() {
         // This query will not be evaluated natively, even if the Hierarchize
@@ -1040,7 +1042,8 @@ public class NonEmptyTest extends BatchTestCase {
         // non "All" member.
         //
         // It can also be rewritten to use
-        // Filter([Product].[All Products].Children, Is NotEmpty([Measures].[Unit Sales]))
+        // Filter([Product].[All Products].Children, Is
+        // NotEmpty([Measures].[Unit Sales]))
         // which can be natively evaluated
         propSaver.set(
             MondrianProperties.instance().EnableNativeCrossJoin, true);
@@ -1208,37 +1211,44 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Calc Member in TopCount: this topcount can not be calculated native because
-     * its set contains calculated members.
+     * Calc Member in TopCount: this topcount can not be calculated native
+     * because its set contains calculated members.
      */
     public void testCmInTopCount() {
-        checkNotNative(1, "with member [Time].[Jan] as  "
-                + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
-                + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
-                + "NON EMPTY TopCount({[Time].[Jan]}, 2) ON rows from [Sales] ");
+        checkNotNative(
+            1,
+            "with member [Time].[Jan] as  "
+            + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
+            + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
+            + "NON EMPTY TopCount({[Time].[Jan]}, 2) ON rows from [Sales] ");
     }
 
     /**
      * Calc member in slicer cannot be executed natively.
      */
     public void testCmInSlicer() {
-        checkNotNative(3, "with member [Time].[Jan] as  "
-                + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
-                + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
-                + "NON EMPTY [Product].[All Products].Children ON rows from [Sales] "
-                + "where ([Time].[Jan]) ");
+        checkNotNative(
+            3,
+            "with member [Time].[Jan] as  "
+            + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
+            + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
+            + "NON EMPTY [Product].[All Products].Children ON rows from [Sales] "
+            + "where ([Time].[Jan]) ");
     }
 
     public void testCjMembersMembersMembers() {
-        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY Crossjoin("
-                + "    Crossjoin("
-                + "        [Customers].[Name].Members,"
-                + "        [Product].[Product Name].Members), "
-                + "    [Promotions].[Promotion Name].Members) ON rows "
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+        checkNative(
+            67,
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+            + "  NON EMPTY Crossjoin("
+            + "    Crossjoin("
+            + "        [Customers].[Name].Members,"
+            + "        [Product].[Product Name].Members), "
+            + "    [Promotions].[Promotion Name].Members) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     /**
@@ -1247,8 +1257,11 @@ public class NonEmptyTest extends BatchTestCase {
     public void testCjEnumEnum() {
         // Make sure maxConstraint settting is high enough
         int minConstraints = 2;
-        if (MondrianProperties.instance().MaxConstraints.get() < minConstraints) {
-            propSaver.set(MondrianProperties.instance().MaxConstraints, minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get()
+            < minConstraints)
+        {
+            propSaver.set(
+                MondrianProperties.instance().MaxConstraints, minConstraints);
         }
         checkNative(
             4,
@@ -1262,7 +1275,9 @@ public class NonEmptyTest extends BatchTestCase {
      * Set containing only null member should not prevent usage of native.
      */
     public void testCjNullInEnum() {
-        propSaver.set(MondrianProperties.instance().IgnoreInvalidMembersDuringQuery, true);
+        propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
+            true);
         checkNative(
             20,
             0,
@@ -1289,8 +1304,12 @@ public class NonEmptyTest extends BatchTestCase {
     public void testCjDescendantsEnum() {
         // Make sure maxConstraint settting is high enough
         int minConstraints = 2;
-        if (MondrianProperties.instance().MaxConstraints.get() < minConstraints) {
-            propSaver.set(MondrianProperties.instance().MaxConstraints, minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get()
+            < minConstraints)
+        {
+            propSaver.set(
+                MondrianProperties.instance().MaxConstraints,
+                minConstraints);
         }
         checkNative(
             11,
@@ -1307,8 +1326,12 @@ public class NonEmptyTest extends BatchTestCase {
         // Make sure maxConstraint settting is high enough
         // Make sure maxConstraint settting is high enough
         int minConstraints = 2;
-        if (MondrianProperties.instance().MaxConstraints.get() < minConstraints) {
-            propSaver.set(MondrianProperties.instance().MaxConstraints, minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get()
+            < minConstraints)
+        {
+            propSaver.set(
+                MondrianProperties.instance().MaxConstraints,
+                minConstraints);
         }
         checkNative(
             3,
@@ -1401,7 +1424,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Check that multi-level member list generates compact form of SQL where clause:
+     * Checks that multi-level member list generates compact form of SQL where
+     * clause:
      * (1) Use IN list if possible
      * (2) Group members sharing the same parent
      * (3) Only need to compare up to the first unique parent level.
@@ -1458,19 +1482,23 @@ public class NonEmptyTest extends BatchTestCase {
         }
 
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
+            new SqlPattern(
+                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
 
         assertQuerySql(query, patterns);
     }
 
     /**
-     * Check that multi-level member list generates compact form of SQL where clause:
+     * Checks that multi-level member list generates compact form of SQL where
+     * clause:
      * (1) Use IN list if possible(not possible if there are null values because
      *     NULLs in IN lists do not match)
      * (2) Group members sharing the same parent, including parents with NULLs.
-     * (3) If parent levels include NULLs, comparision includes any unique level.
+     * (3) If parent levels include NULLs, comparision includes any unique
+     * level.
      */
     public void testMultiLevelMemberConstraintNullParent() {
         if (!isDefaultNullMemberRepresentation()) {
@@ -1537,19 +1565,23 @@ public class NonEmptyTest extends BatchTestCase {
                 null);
 
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
+            new SqlPattern(
+                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
 
         assertQuerySql(testContext, query, patterns);
     }
 
     /**
-     * Check that multi-level member list generates compact form of SQL where clause:
+     * Check that multi-level member list generates compact form of SQL where
+     * clause:
      * (1) Use IN list if possible(not possible if there are null values because
      *     NULLs in IN lists do not match)
      * (2) Group members sharing the same parent, including parents with NULLs.
-     * (3) If parent levels include NULLs, comparision includes any unique level.
+     * (3) If parent levels include NULLs, comparision includes any unique
+     *     level.
      * (4) Can handle predicates correctly if the member list contains both NULL
      * and non NULL parent levels.
      */
@@ -1623,15 +1655,18 @@ public class NonEmptyTest extends BatchTestCase {
                 null);
 
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
+            new SqlPattern(
+                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
 
         assertQuerySql(testContext, query, patterns);
     }
 
     /**
-     * Check that multi-level member list generates compact form of SQL where clause:
+     * Check that multi-level member list generates compact form of SQL where
+     * clause:
      * (1) Use IN list if possible(not possible if there are null values because
      *     NULLs in IN lists do not match)
      * (2) Group members sharing the same parent
@@ -1707,8 +1742,10 @@ public class NonEmptyTest extends BatchTestCase {
                 null);
 
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
+            new SqlPattern(
+                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
 
         assertQuerySql(testContext, query, patterns);
@@ -1744,11 +1781,13 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
 
-        // there currently isn't a cube member to children cache, only a shared cache
-        // so use the shared smart member reader
+        // there currently isn't a cube member to children cache, only
+        // a shared cache so use the shared smart member reader
         SmartMemberReader smr = getSmartMemberReader("Store");
         MemberCacheHelper smrch = smr.cacheHelper;
-        MemberCacheHelper rcsmrch = ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) smr).getRolapCubeMemberCacheHelper();
+        MemberCacheHelper rcsmrch =
+            ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) smr)
+            .getRolapCubeMemberCacheHelper();
         SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(smrch);
@@ -1762,27 +1801,31 @@ public class NonEmptyTest extends BatchTestCase {
             "no additional members should be read:"
             + ssmrch.mapKeyToMember.size(),
             ssmrch.mapKeyToMember.size() <= 5);
-        RolapMember sf = (RolapMember) result.getAxes()[0].getPositions().get(0).get(0);
+        RolapMember sf =
+            (RolapMember) result.getAxes()[0].getPositions().get(0).get(0);
         RolapMember ca = sf.getParentMember();
 
         // convert back to shared members
         ca = ((RolapCubeMember) ca).getRolapMember();
         sf = ((RolapCubeMember) sf).getRolapMember();
 
-        List list = ssmrch.mapMemberToChildren.get(ca, scf.getMemberChildrenConstraint(null));
+        List list = ssmrch.mapMemberToChildren.get(
+            ca, scf.getMemberChildrenConstraint(null));
         assertNull("children of [CA] are not in cache", list);
-        list = ssmrch.mapMemberToChildren.get(ca, scf.getChildByNameConstraint(ca,
+        list = ssmrch.mapMemberToChildren.get(
+            ca, scf.getChildByNameConstraint(
+                ca,
                 new Id.Segment("San Francisco", Id.Quoting.QUOTED)));
         assertNotNull("child [San Francisco] of [CA] is in cache", list);
         assertEquals("[San Francisco] expected", sf, list.get(0));
     }
 
     /**
-     * When looking for [Month] Mondrian generates SQL that tries to find 'Month'
-     * as a member of the time dimension. This resulted in an SQLException because
-     * the year level is numeric and the constant  'Month' in the WHERE condition is not.
-     * Its probably a bug that Mondrian does not take into account [Time].[1997]
-     * when looking up [Month].
+     * When looking for [Month] Mondrian generates SQL that tries to find
+     * 'Month' as a member of the time dimension. This resulted in an
+     * SQLException because the year level is numeric and the constant 'Month'
+     * in the WHERE condition is not.  Its probably a bug that Mondrian does not
+     * take into account [Time].[1997] when looking up [Month].
      */
     public void testLookupMember() {
         // ok if no exception occurs
@@ -1791,17 +1834,23 @@ public class NonEmptyTest extends BatchTestCase {
 
 
     /**
-     * Non Empty CrossJoin (A,B) gets turned into CrossJoin (Non Empty(A), Non Empty(B))
-     * Verify that there is no crash when the length of B could be non-zero length before the non emptyy
-     * and 0 after the non empty.
+     * Non Empty CrossJoin (A,B) gets turned into CrossJoin (Non Empty(A), Non
+     * Empty(B)).  Verify that there is no crash when the length of B could be
+     * non-zero length before the non empty and 0 after the non empty.
      */
     public void testNonEmptyCrossJoinList() {
-        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, false);
-        boolean oldEnableNativeNonEmpty = MondrianProperties.instance().EnableNativeNonEmpty.get();
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, false);
+        boolean oldEnableNativeNonEmpty =
+            MondrianProperties.instance().EnableNativeNonEmpty.get();
         MondrianProperties.instance().EnableNativeNonEmpty.set(false);
 
-        executeQuery("select non empty CrossJoin([Customers].[Name].Members, {[Promotions].[All Promotions].[Fantastic Discounts]}) ON COLUMNS FROM [Sales]");
-        MondrianProperties.instance().EnableNativeNonEmpty.set(oldEnableNativeNonEmpty);
+        executeQuery(
+            "select non empty CrossJoin([Customers].[Name].Members, "
+            + "{[Promotions].[All Promotions].[Fantastic Discounts]}) "
+            + "ON COLUMNS FROM [Sales]");
+        MondrianProperties.instance().EnableNativeNonEmpty.set(
+            oldEnableNativeNonEmpty);
     }
 
     /**
@@ -1832,8 +1881,9 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * runs a MDX query with a predefined resultLimit and checks the number of positions
-     * of the row axis. The reduces resultLimit ensures that the optimization is present.
+     * Runs an MDX query with a predefined resultLimit and checks the number of
+     * positions of the row axis. The reduces resultLimit ensures that the
+     * optimization is present.
      */
     class TestCase {
         /**
@@ -1861,7 +1911,9 @@ public class NonEmptyTest extends BatchTestCase {
             this.query = query;
         }
 
-        public TestCase(Connection con, int resultLimit, int rowCount, String query) {
+        public TestCase(
+            Connection con, int resultLimit, int rowCount, String query)
+        {
             this.con = con;
             this.resultLimit = resultLimit;
             this.rowCount = rowCount;
@@ -1870,7 +1922,8 @@ public class NonEmptyTest extends BatchTestCase {
 
         private Result run() {
             getConnection().getCacheControl(null).flushSchemaCache();
-            IntegerProperty monLimit = MondrianProperties.instance().ResultLimit;
+            IntegerProperty monLimit =
+                MondrianProperties.instance().ResultLimit;
             int oldLimit = monLimit.get();
             try {
                 monLimit.set(this.resultLimit);
@@ -1894,7 +1947,9 @@ public class NonEmptyTest extends BatchTestCase {
         }
         SmartMemberReader smr = getSmartMemberReader("Customers");
         // use the RolapCubeHierarchy's member cache for levels
-        MemberCacheHelper smrch = ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader) smr).rolapCubeCacheHelper;
+        MemberCacheHelper smrch =
+            ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader) smr)
+            .rolapCubeCacheHelper;
         clearAndHardenCache(smrch);
         MemberCacheHelper smrich = smr.cacheHelper;
         clearAndHardenCache(smrich);
@@ -1905,13 +1960,13 @@ public class NonEmptyTest extends BatchTestCase {
         clearAndHardenCache(ssmrch);
 
         TestCase c = new TestCase(
-                50,
-                21,
-                "select \n"
-                        + "{[Measures].[Unit Sales]} ON columns,\n"
-                        + "NON EMPTY {[Customers].[All Customers], [Customers].[Name].Members} ON rows\n"
-                        + "from [Sales]\n"
-                        + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
+            50,
+            21,
+            "select \n"
+            + "{[Measures].[Unit Sales]} ON columns,\n"
+            + "NON EMPTY {[Customers].[All Customers], [Customers].[Name].Members} ON rows\n"
+            + "from [Sales]\n"
+            + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
         Result r = c.run();
         Level[] levels = smr.getHierarchy().getLevels();
         Level nameLevel = levels[levels.length - 1];
@@ -1951,7 +2006,9 @@ public class NonEmptyTest extends BatchTestCase {
     public void testLevelMembersWithoutNonEmpty() {
         SmartMemberReader smr = getSmartMemberReader("Customers");
 
-        MemberCacheHelper smrch = ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader) smr).rolapCubeCacheHelper;
+        MemberCacheHelper smrch =
+            ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader) smr)
+            .rolapCubeCacheHelper;
         clearAndHardenCache(smrch);
 
         MemberCacheHelper smrich = smr.cacheHelper;
@@ -2052,8 +2109,8 @@ public class NonEmptyTest extends BatchTestCase {
      * Tests non empty children of All member w/o WHERE clause
      */
     public void testMemberChildrenNoWhere() {
-        // the time dimension is joined because there is no (All) level in the Time
-        // hierarchy:
+        // The time dimension is joined because there is no (All) level in the
+        // Time hierarchy:
         //
         //      select
         //        `promotion`.`promotion_name` as `c0`
@@ -2063,14 +2120,20 @@ public class NonEmptyTest extends BatchTestCase {
         //        `promotion` as `promotion`
         //      where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
         //        and `time_by_day`.`the_year` = 1997
-        //        and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`
+        //        and `sales_fact_1997`.`promotion_id`
+        //                = `promotion`.`promotion_id`
         //      group by
         //        `promotion`.`promotion_name`
         //      order by
         //        `promotion`.`promotion_name`
 
-        TestCase c = new TestCase(50, 48, "select {[Measures].[Unit Sales]} ON columns,\n"
-                + "NON EMPTY [Promotions].[All Promotions].Children ON rows from [Sales]\n");
+        TestCase c =
+            new TestCase(
+                50,
+                48,
+                "select {[Measures].[Unit Sales]} ON columns,\n"
+                + "NON EMPTY [Promotions].[All Promotions].Children ON rows "
+                + "from [Sales]\n");
         c.run();
     }
 
@@ -2097,9 +2160,11 @@ public class NonEmptyTest extends BatchTestCase {
     /**
      * When a member is expanded in JPivot with mulitple hierarchies visible it
      * generates a
-     *   <code>CrossJoin({[member from left hierarchy]}, [member to expand].Children)</code>
-     * This should behave the same as if <code>[member from left hierarchy]</code> was
-     * put into the slicer.
+     *   <code>CrossJoin({[member from left hierarchy]}, [member to
+     * expand].Children)</code>
+     *
+     * <p>This should behave the same as if <code>[member from left
+     * hierarchy]</code> was put into the slicer.
      */
     public void testCrossjoin() {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
@@ -2108,13 +2173,16 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
 
-        TestCase c = new TestCase(
+        TestCase c =
+            new TestCase(
                 45,
                 4,
                 "select \n"
-                        + "{[Measures].[Unit Sales]} ON columns,\n"
-                        + "NON EMPTY Crossjoin({[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}, [Customers].[All Customers].[USA].[CA].[Palo Alto].Children) ON rows\n"
-                        + "from [Sales] where ([Time].[1997].[Q1].[1])");
+                + "{[Measures].[Unit Sales]} ON columns,\n"
+                + "NON EMPTY Crossjoin("
+                + "{[Store].[USA].[CA].[San Francisco].[Store 14]},"
+                + " [Customers].[USA].[CA].[Palo Alto].Children) ON rows\n"
+                + "from [Sales] where ([Time].[1997].[Q1].[1])");
         c.run();
     }
 
@@ -2140,18 +2208,20 @@ public class NonEmptyTest extends BatchTestCase {
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(ssmrch);
 
-        TestCase c = new TestCase(
+        TestCase c =
+            new TestCase(
                 con,
                 45,
                 21,
                 "select \n"
-                        + "{[Measures].[Unit Sales]} ON columns, "
-                        + "NON EMPTY {[Customers].[All Customers], Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name])} on rows "
-                        + "from [Sales] "
-                        + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
+                + "{[Measures].[Unit Sales]} ON columns, "
+                + "NON EMPTY {[Customers].[All Customers], Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name])} on rows "
+                + "from [Sales] "
+                + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
         Result result = c.run();
         // [Customers].[All Customers].[USA].[CA].[Burlingame].[Peggy Justice]
-        RolapMember peggy = (RolapMember) result.getAxes()[1].getPositions().get(1).get(0);
+        RolapMember peggy =
+            (RolapMember) result.getAxes()[1].getPositions().get(1).get(0);
         RolapMember burlingame = peggy.getParentMember();
 
         peggy = ((RolapCubeMember) peggy).getRolapMember();
@@ -2167,7 +2237,8 @@ public class NonEmptyTest extends BatchTestCase {
         assertNotNull(list);
         assertTrue(list.contains(peggy));
 
-        // now we run the same query again, this time everything must come out of the cache
+        // now we run the same query again, this time everything must come out
+        // of the cache
         RolapNativeRegistry reg = getRegistry(con);
         reg.setListener(new Listener() {
             public void foundEvaluator(NativeEvent e) {
@@ -3284,8 +3355,10 @@ public class NonEmptyTest extends BatchTestCase {
                     + "Row #1: 263,793.22\n");
             }
         } finally {
-            MondrianProperties.instance().EnableNativeNonEmpty.set(currentNativeNonEmpty);
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(currentNonEmptyOnAllAxis);
+            MondrianProperties.instance().EnableNativeNonEmpty.set(
+                currentNativeNonEmpty);
+            MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(
+                currentNonEmptyOnAllAxis);
         }
     }
 
@@ -3438,7 +3511,9 @@ public class NonEmptyTest extends BatchTestCase {
             if (!listener.isExecuteSql()) {
                 fail("cache is empty: expected SQL query to be executed");
             }
-            if (MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
+            if (MondrianProperties.instance().EnableRolapCubeMemberCache
+                .get())
+            {
                 // run once more to make sure that the result comes from cache
                 // now
                 listener.setExecuteSql(false);
@@ -3527,9 +3602,12 @@ public class NonEmptyTest extends BatchTestCase {
 
     SmartMemberReader getSmartMemberReader(Connection con, String hierName) {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
-        RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
-        RolapHierarchy hierarchy = (RolapHierarchy) cube.lookupHierarchy(
-                new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
+        RolapSchemaReader schemaReader =
+            (RolapSchemaReader) cube.getSchemaReader();
+        RolapHierarchy hierarchy =
+            (RolapHierarchy) cube.lookupHierarchy(
+                new Id.Segment(hierName, Id.Quoting.UNQUOTED),
+                false);
         assertNotNull(hierarchy);
         return (SmartMemberReader)
             hierarchy.createMemberReader(schemaReader.getRole());
@@ -3540,13 +3618,18 @@ public class NonEmptyTest extends BatchTestCase {
         return getSharedSmartMemberReader(con, hierName);
     }
 
-    SmartMemberReader getSharedSmartMemberReader(Connection con, String hierName) {
+    SmartMemberReader getSharedSmartMemberReader(
+        Connection con, String hierName)
+    {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
-        RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
-        RolapCubeHierarchy hierarchy = (RolapCubeHierarchy) cube.lookupHierarchy(
+        RolapSchemaReader schemaReader =
+            (RolapSchemaReader) cube.getSchemaReader();
+        RolapCubeHierarchy hierarchy =
+            (RolapCubeHierarchy) cube.lookupHierarchy(
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
-        return (SmartMemberReader) hierarchy.getRolapHierarchy().createMemberReader(schemaReader.getRole());
+        return (SmartMemberReader) hierarchy.getRolapHierarchy()
+            .createMemberReader(schemaReader.getRole());
     }
 
 

@@ -28,7 +28,8 @@ import mondrian.rolap.agg.Aggregation;
  * It is specified in the connection string, like this :
  *
  * <blockquote><code>
- * Jdbc=jdbc:odbc:MondrianFoodMart; JdbcUser=ziggy; JdbcPassword=stardust; DataSourceChangeListener=com.acme.MyChangeListener;
+ * Jdbc=jdbc:odbc:MondrianFoodMart; JdbcUser=ziggy; JdbcPassword=stardust;
+ * DataSourceChangeListener=com.acme.MyChangeListener;
  * </code></blockquote>
  *
  * This class should be called in mondrian before any data is read, so

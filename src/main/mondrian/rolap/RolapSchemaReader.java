@@ -42,7 +42,9 @@ import org.eigenbase.util.property.Property;
  * @since Feb 24, 2003
  */
 public abstract class RolapSchemaReader
-    implements SchemaReader, RolapNativeSet.SchemaReaderWithMemberReaderAvailable {
+    implements SchemaReader,
+        RolapNativeSet.SchemaReaderWithMemberReaderAvailable
+{
     private final Role role;
     private final Map<Hierarchy, MemberReader> hierarchyReaders =
         new HashMap<Hierarchy, MemberReader>();
@@ -85,7 +87,8 @@ public abstract class RolapSchemaReader
     public synchronized MemberReader getMemberReader(Hierarchy hierarchy) {
         MemberReader memberReader = hierarchyReaders.get(hierarchy);
         if (memberReader == null) {
-            memberReader = ((RolapHierarchy) hierarchy).createMemberReader(role);
+            memberReader =
+                ((RolapHierarchy) hierarchy).createMemberReader(role);
             hierarchyReaders.put(hierarchy, memberReader);
         }
         return memberReader;
@@ -119,7 +122,8 @@ public abstract class RolapSchemaReader
     }
 
     public int getMemberDepth(Member member) {
-        final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(member.getHierarchy());
+        final Role.HierarchyAccess hierarchyAccess =
+            role.getAccessDetails(member.getHierarchy());
         if (hierarchyAccess != null) {
             final int memberDepth = member.getLevel().getDepth();
             final int topLevelDepth = hierarchyAccess.getTopLevelDepth();
@@ -182,7 +186,8 @@ public abstract class RolapSchemaReader
         if (memberReader instanceof
             RolapCubeHierarchy.RolapCubeHierarchyMemberReader) {
             List list =
-                ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) memberReader)
+                ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader)
+                 memberReader)
                     .getRolapCubeMemberCacheHelper()
                     .getChildrenFromCache((RolapMember) member, null);
             if (list == null) {
@@ -407,15 +412,20 @@ public abstract class RolapSchemaReader
                         true);
             }
         } catch (NumberFormatException e) {
-            // this was thrown in SqlQuery#quote(boolean numeric, Object value). This happens when
-            // Mondrian searches for unqualified Olap Elements like [Month], because it tries to look up
-            // a member with that name in all dimensions. Then it generates for example
-            // "select .. from time where year = Month" which will result in a NFE because
-            // "Month" can not be parsed as a number. The real bug is probably, that Mondrian
-            // looks at members at all.
+            // this was thrown in SqlQuery#quote(boolean numeric, Object
+            // value). This happens when Mondrian searches for unqualified Olap
+            // Elements like [Month], because it tries to look up a member with
+            // that name in all dimensions. Then it generates for example
+            // "select .. from time where year = Month" which will result in a
+            // NFE because "Month" can not be parsed as a number. The real bug
+            // is probably, that Mondrian looks at members at all.
             //
             // @see RolapCube#lookupChild()
-            LOGGER.debug("NumberFormatException in lookupMemberChildByName for parent = \"" + parent + "\", childName=\"" + childName + "\", exception: " + e.getMessage());
+            LOGGER.debug(
+                "NumberFormatException in lookupMemberChildByName "
+                + "for parent = \"" + parent
+                + "\", childName=\"" + childName
+                + "\", exception: " + e.getMessage());
         }
         return null;
     }
@@ -434,11 +444,13 @@ public abstract class RolapSchemaReader
     }
 
     public Member getLeadMember(Member member, int n) {
-        final MemberReader memberReader = getMemberReader(member.getHierarchy());
+        final MemberReader memberReader =
+            getMemberReader(member.getHierarchy());
         return memberReader.getLeadMember((RolapMember) member, n);
     }
 
-    public List<Member> getLevelMembers(Level level, boolean includeCalculated) {
+    public List<Member> getLevelMembers(Level level, boolean includeCalculated)
+    {
         List<Member> members = getLevelMembers(level, null);
         if (!includeCalculated) {
             members = SqlConstraintUtils.removeCalculatedMembers(members);
@@ -549,7 +561,8 @@ public abstract class RolapSchemaReader
     {
         RolapEvaluator revaluator = (RolapEvaluator)
             AbstractCalc.simplifyEvaluator(calc, evaluator);
-        return schema.getNativeRegistry().createEvaluator(revaluator, fun, args);
+        return schema.getNativeRegistry().createEvaluator(
+            revaluator, fun, args);
     }
 
     public Parameter getParameter(String name) {
@@ -561,7 +574,8 @@ public abstract class RolapSchemaReader
         }
 
         // Scan through mondrian and system properties.
-        List<Property> propertyList = MondrianProperties.instance().getPropertyList();
+        List<Property> propertyList =
+            MondrianProperties.instance().getPropertyList();
         for (Property property : propertyList) {
             if (property.getPath().equals(name)) {
                 return new SystemPropertyParameter(name, false);
@@ -636,7 +650,8 @@ public abstract class RolapSchemaReader
 
                 public Object evaluate(Evaluator evaluator) {
                     if (system) {
-                        final String name = SystemPropertyParameter.this.getName();
+                        final String name =
+                            SystemPropertyParameter.this.getName();
                         return System.getProperty(name);
                     } else {
                         return propertyDefinition.stringValue();

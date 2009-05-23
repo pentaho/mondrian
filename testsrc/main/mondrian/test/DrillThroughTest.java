@@ -283,7 +283,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "Crossjoin({[Promotion Media].[All Media]}, [Product].[All Products].Children)), Crossjoin({[Promotion Media].[All Media]}, [Product].[All Products].[Drink].Children))) ON ROWS \n"
             + "from [Sales] where [Time].[1997].[Q4].[12]");
 
-        // [Promotion Media].[All Media], [Product].[All Products].[Drink].[Dairy], [Measures].[Store Cost]
+        // [Promotion Media].[All Media], [Product].[All
+        // Products].[Drink].[Dairy], [Measures].[Store Cost]
         Cell cell = result.getCell(new int[]{0, 4});
 
         String sql = cell.getDrillThroughSQL(true);
@@ -359,7 +360,6 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "from [Sales]\n"
             + "where [Time].[Date Range]");
 
-        //String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(true);
         String sql = result.getCell(new int[] {0, 6}).getDrillThroughSQL(true);
 
         String nameExpStr = getNameExp(result, "Customers", "Name");
@@ -499,9 +499,11 @@ public class DrillThroughTest extends FoodMartTestCase {
      */
     public void testDrillThroughDupKeys() throws Exception {
         /*
-         * Note here that the type on the Store Id level is Integer or Numeric. The default, of course, would be String.
+         * Note here that the type on the Store Id level is Integer or
+         * Numeric. The default, of course, would be String.
          *
-         * For DB2 and Derby, we need the Integer type, otherwise the generated SQL will be something like:
+         * For DB2 and Derby, we need the Integer type, otherwise the
+         * generated SQL will be something like:
          *
          *      `store_ragged`.`store_id` = '19'
          *

@@ -48,8 +48,10 @@ public class Test {
     Test(String[] args)
     {
         pw = new PrintWriter(System.out, true);
-        String connectString = "Data Source=LOCALHOST;Provider=msolap;Catalog=Foodmart";
-        connection = (RolapConnection) DriverManager.getConnection(connectString, null);
+        String connectString =
+            "Data Source=LOCALHOST;Provider=msolap;Catalog=Foodmart";
+        connection =
+            (RolapConnection) DriverManager.getConnection(connectString, null);
     }
 
     void convertFoodMart() throws java.sql.SQLException
@@ -140,7 +142,8 @@ public class Test {
         Level[] levels = rootMembers.get(0).getHierarchy().getLevels();
         Level level = levels[levels.length > 1 ? 1 : 0];
         pw.print("Members at level " + level.getUniqueName() + " are ");
-        List<RolapMember> members = reader.getMembersInLevel((RolapLevel)level, 0, Integer.MAX_VALUE);
+        List<RolapMember> members =
+            reader.getMembersInLevel((RolapLevel)level, 0, Integer.MAX_VALUE);
         print(members);
         pw.println();
 

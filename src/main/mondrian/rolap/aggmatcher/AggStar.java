@@ -486,7 +486,9 @@ public class AggStar {
                 pw.print("left=");
                 if (left instanceof MondrianDef.Column) {
                     MondrianDef.Column c = (MondrianDef.Column) left;
-                    mondrian.rolap.RolapStar.Column col = getTable().getAggStar().getStar().getFactTable().lookupColumn(c.name);
+                    mondrian.rolap.RolapStar.Column col =
+                        getTable().getAggStar().getStar().getFactTable()
+                        .lookupColumn(c.name);
                     if (col != null) {
                         pw.print(" (");
                         pw.print(col.getBitPosition());

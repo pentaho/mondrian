@@ -556,7 +556,8 @@ RME is this right
             String q = level.getKeyExp().getExpression(sqlQuery);
             sqlQuery.addSelectGroupBy(q);
 
-            // in non empty mode the level table must be joined to the fact table
+            // in non empty mode the level table must be joined to the fact
+            // table
             constraint.addLevelConstraint(sqlQuery, null, aggStar, level);
 
             if (level.hasCaptionColumn()) {
@@ -621,9 +622,11 @@ RME is this right
             return null;
         }
         RolapBaseCubeMeasure measure = (RolapBaseCubeMeasure)members[0];
-        // we need to do more than this!  we need the rolap star ordinal, not the rolap cube
+        // we need to do more than this!  we need the rolap star ordinal, not
+        // the rolap cube
 
-        int bitPosition = ((RolapStar.Measure)measure.getStarMeasure()).getBitPosition();
+        int bitPosition =
+            ((RolapStar.Measure)measure.getStarMeasure()).getBitPosition();
 
         int ordinal = measure.getOrdinal();
 
@@ -735,8 +738,12 @@ RME is this right
         return levelCollapsed;
     }
 
-    public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children) {
-        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+    public void getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children)
+    {
+        MemberChildrenConstraint constraint =
+            sqlConstraintFactory.getMemberChildrenConstraint(null);
         getMemberChildren(parentMembers, children, constraint);
     }
 
@@ -1156,7 +1163,8 @@ RME is this right
                 list.add(dataMember);
                 RolapHierarchy hierarchy = getHierarchy();
                 if (hierarchy instanceof RolapCubeHierarchy) {
-                    hierarchy = ((RolapCubeHierarchy)hierarchy).getRolapHierarchy();
+                    hierarchy =
+                        ((RolapCubeHierarchy) hierarchy).getRolapHierarchy();
                 }
                 hierarchy.getMemberReader().getMemberChildren(dataMember, list);
                 return list;

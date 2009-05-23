@@ -717,7 +717,8 @@ public class Format {
         FormatLocale locale;
         boolean twelveHourClock;
 
-        DateFormat(int code, String s, FormatLocale locale, boolean twelveHourClock)
+        DateFormat(
+            int code, String s, FormatLocale locale, boolean twelveHourClock)
         {
             super(code, s);
             this.locale = locale;
@@ -1104,8 +1105,10 @@ public class Format {
 //              String strYear = (year.intValue() < 10)
 //                  ? "0" + year.toString() : year.toString();
 //              LocaleResource localeResource = FormatLocale.getResource();
-//              String ret = localeResource.getcalendarQuarter(quarter.toString(), strYear);
-
+//              String ret =
+//                  localeResource.getcalendarQuarter(
+//                      quarter.toString(), strYear);
+//
 //              return ret;
 //          }
 
@@ -1371,14 +1374,16 @@ public class Format {
         // If the format string is empty, use a Java format.
         // Later entries in the formats list default to the first (e.g.
         // "#.00;;Nil"), but the first entry must be set.
-        if (alternateFormatList.size() == 0 || alternateFormatList.get(0) == null) {
+        if (alternateFormatList.size() == 0
+            || alternateFormatList.get(0) == null)
+        {
             format = new JavaFormat(locale.locale);
         } else if (alternateFormatList.size() == 1) {
-            format = (BasicFormat) alternateFormatList.get(0);
+            format = alternateFormatList.get(0);
         } else {
             BasicFormat[] alternateFormats =
-                    (BasicFormat[]) alternateFormatList.toArray(
-                            new BasicFormat[alternateFormatList.size()]);
+                alternateFormatList.toArray(
+                    new BasicFormat[alternateFormatList.size()]);
             format = new AlternateFormat(alternateFormats);
         }
     }
@@ -2111,8 +2116,8 @@ static class FloatingDecimal {
     static final long   fractMask = ~(signMask | expMask);
     static final int    expShift = 52;
     static final int    expBias  = 1023;
-    static final long   fractHOB = (1L<<expShift); // assumed High-Order bit
-    static final long   expOne   = ((long)expBias)<<expShift; // exponent of 1.0
+    static final long   fractHOB = (1L << expShift); // assumed High-Order bit
+    static final long   expOne = ((long)expBias) << expShift; // exponent of 1.0
     static final int    maxSmallBinExp = 62;
     static final int    minSmallBinExp = -(63 / 3);
 
@@ -2124,7 +2129,7 @@ static class FloatingDecimal {
     static final int    singleExpMask  =    0x7f800000;
     static final int    singleFractMask =   ~(singleSignMask | singleExpMask);
     static final int    singleExpShift  =   23;
-    static final int    singleFractHOB  =   1<<singleExpShift;
+    static final int    singleFractHOB  =   1 << singleExpShift;
     static final int    singleExpBias   =   127;
 
     /*
@@ -2243,7 +2248,7 @@ static class FloatingDecimal {
             long residue = lvalue % pow10;
             lvalue /= pow10;
             decExponent += i;
-            if (residue >= (pow10>>1)) {
+            if (residue >= (pow10 >> 1)) {
                 // round up based on the low-order bits we're discarding
                 lvalue++;
             }
@@ -2352,7 +2357,7 @@ static class FloatingDecimal {
         // Discover obvious special cases of NaN and Infinity.
         binExp = (int)((dBits & expMask) >> expShift);
         fractBits = dBits & fractMask;
-        if (binExp == (int)(expMask>>expShift)) {
+        if (binExp == (int)(expMask >> expShift)) {
             isExceptional = true;
             if (fractBits == 0L) {
                 digits =  infinity;
@@ -2380,7 +2385,8 @@ static class FloatingDecimal {
                 fractBits <<= 1;
                 binExp -= 1;
             }
-            nSignificantBits = expShift + binExp; // recall binExp is  - shift count.
+            // recall binExp is  - shift count.
+            nSignificantBits = expShift + binExp;
             binExp += 1;
         } else {
             fractBits |= fractHOB;
@@ -2412,7 +2418,7 @@ static class FloatingDecimal {
         // Discover obvious special cases of NaN and Infinity.
         binExp = ((fBits & singleExpMask) >> singleExpShift);
         fractBits = fBits & singleFractMask;
-        if (binExp == (singleExpMask>>singleExpShift)) {
+        if (binExp == (singleExpMask >> singleExpShift)) {
             isExceptional = true;
             if (fractBits == 0L) {
                 digits =  infinity;
@@ -2440,7 +2446,8 @@ static class FloatingDecimal {
                 fractBits <<= 1;
                 binExp -= 1;
             }
-            nSignificantBits = singleExpShift + binExp; // recall binExp is  - shift count.
+            // recall binExp is  - shift count.
+            nSignificantBits = singleExpShift + binExp;
             binExp += 1;
         } else {
             fractBits |= singleFractHOB;
@@ -2448,7 +2455,10 @@ static class FloatingDecimal {
         }
         binExp -= singleExpBias;
         // call the routine that actually does all the hard work.
-        dtoa(binExp, ((long)fractBits)<<(expShift - singleExpShift), nSignificantBits);
+        dtoa(
+            binExp,
+            ((long)fractBits) << (expShift - singleExpShift),
+            nSignificantBits);
     }
 
     private void
@@ -2467,7 +2477,9 @@ static class FloatingDecimal {
             // Look more closely at the number to decide if,
             // with scaling by 10^nTinyBits, the result will fit in
             // a long.
-            if ((nTinyBits < long5pow.length) && ((nFractBits + n5bits[nTinyBits]) < 64)) {
+            if ((nTinyBits < long5pow.length)
+                && ((nFractBits + n5bits[nTinyBits]) < 64))
+            {
                 /*
                  * We can do this:
                  * take the fraction bits, which are normalized.
@@ -2508,7 +2520,8 @@ static class FloatingDecimal {
                  * else {
                  *     fractBits >>>= expShift + 1-nFractBits;
                  *     fractBits *= long5pow[ nTinyBits ];
-                 *     halfULP = long5pow[ nTinyBits ] >> (1+nSignificantBits-nFractBits);
+                 *     halfULP = long5pow[ nTinyBits ]
+                 *         >> (1 + nSignificantBits - nFractBits);
                  *     developLongDigits(-nTinyBits, fractBits, halfULP);
                  *     return;
                  * }
@@ -2526,7 +2539,9 @@ static class FloatingDecimal {
          *      S      = 10^max(0, decExp) * 2^nTinyBits
          * (noting that nTinyBits has already been forced to non-negative)
          * I am also going to compute a large positive integer
-         *      M      = (1/2^nSignificantBits) * 2^nTinyBits * 10^max(0, -decExp)
+         *      M      = (1/2^nSignificantBits)
+         *               * 2^nTinyBits
+         *               * 10^max(0, -decExp)
          * i.e. M is (1/2) of the ULP of d, scaled like B.
          * When we iterate through dividing B/S and picking off the
          * quotient bits, we will know when to stop when the remainder
@@ -2550,7 +2565,9 @@ static class FloatingDecimal {
         double d2 = Double.longBitsToDouble(
             expOne | (fractBits &~ fractHOB));
         decExp = (int)Math.floor(
-            (d2 - 1.5D) * 0.289529654D + 0.176091259 + (double)binExp * 0.301029995663981);
+            (d2 - 1.5D) * 0.289529654D
+            + 0.176091259
+            + (double)binExp * 0.301029995663981);
         int B2, B5; // powers of 2 and powers of 5, respectively, in B
         int S2, S5; // powers of 2 and powers of 5, respectively, in S
         int M2, M5; // powers of 2 and powers of 5, respectively, in M
@@ -2628,8 +2645,14 @@ static class FloatingDecimal {
          * 26 Sept 96 is not that day.
          * So we use a symmetric test.
          */
-        Bbits = nFractBits + B2 + ((B5 < n5bits.length) ? n5bits[B5] : (B5 * 3));
-        tenSbits = S2 + 1 + (((S5 + 1) < n5bits.length) ? n5bits[(S5 + 1)] : ((S5 + 1) * 3));
+        Bbits =
+            nFractBits
+            + B2
+            + ((B5 < n5bits.length) ? n5bits[B5] : (B5 * 3));
+        tenSbits =
+            S2
+            + 1
+            + (((S5 + 1) < n5bits.length) ? n5bits[(S5 + 1)] : ((S5 + 1) * 3));
         if (Bbits < 64 && tenSbits < 64) {
             if (Bbits < 32 && tenSbits < 32) {
                 // wa-hoo! They're all ints!
@@ -2688,7 +2711,7 @@ static class FloatingDecimal {
                     }
                     digits[ndigit++] = (char)('0' + q);
                 }
-                lowDigitDifference = (b<<1) - tens;
+                lowDigitDifference = (b << 1) - tens;
             } else {
                 // still good! they're all longs!
                 long b = (fractBits * long5pow[B5]) << B2;
@@ -2746,7 +2769,7 @@ static class FloatingDecimal {
                     }
                     digits[ndigit++] = (char)('0' + q);
                 }
-                lowDigitDifference = (b<<1) - tens;
+                lowDigitDifference = (b << 1) - tens;
             }
         } else {
             FDBigInt tenSval;
@@ -3000,7 +3023,8 @@ static class FloatingDecimal {
         //         +maxDigitsRightOfDecimal
         //          + 10  (for decimal point and sign or -Infinity)
         //         +decExponent/3 (for the thousand separators)
-        int resultLen = 10 + Math.abs(decExponent) * 4 / 3 + maxDigitsRightOfDecimal;
+        int resultLen =
+            10 + Math.abs(decExponent) * 4 / 3 + maxDigitsRightOfDecimal;
         char result[] = new char[resultLen];
         int i = toJavaFormatString(
             result, 0, minDigitsLeftOfDecimal, decimalChar,
@@ -3221,14 +3245,22 @@ static class FloatingDecimal {
         5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
         5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
         5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5 * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5 * 5 * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5 * 5 * 5 * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
     };
 
     // approximately ceil(log2(long5pow[i]))
@@ -3262,9 +3294,13 @@ static class FloatingDecimal {
         61,
     };
 
-    private static final char infinity[] = { 'I', 'n', 'f', 'i', 'n', 'i', 't', 'y' };
+    private static final char infinity[] = {
+        'I', 'n', 'f', 'i', 'n', 'i', 't', 'y'
+    };
     private static final char notANumber[] = { 'N', 'a', 'N' };
-    private static final char zero[] = { '0', '0', '0', '0', '0', '0', '0', '0' };
+    private static final char zero[] = {
+        '0', '0', '0', '0', '0', '0', '0', '0'
+    };
 }
 
 /*
@@ -3290,7 +3326,7 @@ static class FDBigInt {
     public FDBigInt(long v) {
         data = new int[2];
         data[0] = (int)v;
-        data[1] = (int)(v>>>32);
+        data[1] = (int)(v >>> 32);
         nWords = (data[1] == 0) ? 1 : 2;
     }
 
@@ -3317,7 +3353,7 @@ static class FDBigInt {
                 throw new IllegalArgumentException("negative shift count");
             }
         }
-        int wordcount = c>>5;
+        int wordcount = c >> 5;
         int bitcount  = c & 0x1f;
         int anticount = 32 - bitcount;
         int t[] = data;
@@ -3333,11 +3369,11 @@ static class FDBigInt {
             System.arraycopy(s, 0, t, wordcount, nWords);
             target = wordcount - 1;
         } else {
-            t[target--] = s[src]>>>anticount;
+            t[target--] = s[src] >>> anticount;
             while (src >= 1) {
-                t[target--] = (s[src]<<bitcount) | (s[--src]>>>anticount);
+                t[target--] = (s[src] << bitcount) | (s[--src] >>> anticount);
             }
-            t[target--] = s[src]<<bitcount;
+            t[target--] = s[src] << bitcount;
         }
         while (target >= 0) {
             t[target--] = 0;
@@ -3421,7 +3457,11 @@ static class FDBigInt {
         long p;
 
         // guess adequate size of r.
-        r = new int[(v * ((long)data[nWords - 1] & 0xffffffffL) > 0xfffffffL) ? nWords + 1 : nWords];
+        r =
+            new int[
+                (v * ((long)data[nWords - 1] & 0xffffffffL) > 0xfffffffL)
+                ? nWords + 1
+                : nWords];
         p = 0L;
         for (int i = 0; i < nWords; i++) {
             p += v * ((long)data[i] & 0xffffffffL);
@@ -3452,7 +3492,10 @@ static class FDBigInt {
             long p = 0L;
             int j;
             for (j = 0; j < other.nWords; j++) {
-                p += ((long)r[i + j] & 0xffffffffL) + v * ((long)other.data[j] & 0xffffffffL); // UNSIGNED CONVERSIONS ALL 'ROUND.
+                // UNSIGNED CONVERSIONS ALL 'ROUND.
+                p +=
+                    ((long)r[i + j] & 0xffffffffL)
+                    + v * ((long)other.data[j] & 0xffffffffL);
                 r[i + j] = (int)p;
                 p >>>= 32;
             }
@@ -3626,7 +3669,9 @@ static class FDBigInt {
         long q = ((long)data[n] & 0xffffffffL) / (long)S.data[n];
         long diff = 0L;
         for (int i = 0; i <= n ; i++) {
-            diff += ((long)data[i] & 0xffffffffL) -  q * ((long)S.data[i] & 0xffffffffL);
+            diff +=
+                ((long)data[i] & 0xffffffffL)
+                -  q * ((long)S.data[i] & 0xffffffffL);
             data[i] = (int)diff;
             diff >>= 32; // N.B. SIGNED shift.
         }
@@ -3638,7 +3683,9 @@ static class FDBigInt {
             while (sum ==  0L) {
                 sum = 0L;
                 for (int i = 0; i <= n; i++) {
-                    sum += ((long)data[i] & 0xffffffffL) +  ((long)S.data[i] & 0xffffffffL);
+                    sum +=
+                        ((long)data[i] & 0xffffffffL)
+                        + ((long)S.data[i] & 0xffffffffL);
                     data[i] = (int) sum;
                     sum >>= 32; // Signed or unsigned, answer is 0 or 1
                 }

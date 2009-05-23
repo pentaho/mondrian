@@ -189,7 +189,8 @@ public class RolapHierarchy extends HierarchyBase {
                 final MondrianDef.Level xmlLevel = xmlHierarchy.levels[i];
                 if (xmlLevel.getKeyExp() == null &&
                         xmlHierarchy.memberReaderClass == null) {
-                    throw MondrianResource.instance().LevelMustHaveNameExpression.ex(xmlLevel.name);
+                    throw MondrianResource.instance()
+                        .LevelMustHaveNameExpression.ex(xmlLevel.name);
                 }
                 levels[i + 1] = new RolapLevel(this, i + 1, xmlLevel);
             }
@@ -366,7 +367,8 @@ public class RolapHierarchy extends HierarchyBase {
         if (defaultMember == null) {
             List rootMembers = memberReader.getRootMembers();
             if (rootMembers.size() == 0) {
-                throw MondrianResource.instance().InvalidHierarchyCondition.ex(this.getUniqueName());
+                throw MondrianResource.instance().InvalidHierarchyCondition.ex(
+                    this.getUniqueName());
             }
             defaultMember = (RolapMember) rootMembers.get(0);
         }
@@ -437,7 +439,8 @@ public class RolapHierarchy extends HierarchyBase {
      *
      * @param query Query to add the hierarchy to
      * @param expression Level to qualify up to; if null, qualifies up to the
-     *    topmost ('all') expression, which may require more columns and more joins
+     *    topmost ('all') expression, which may require more columns and more
+     *    joins
      */
     void addToFrom(SqlQuery query, MondrianDef.Expression expression) {
         if (relation == null) {
@@ -457,7 +460,8 @@ public class RolapHierarchy extends HierarchyBase {
                 //   F left join ((A join B) join C).
                 // Search for the smallest subset of the relation which
                 // uses C.
-                subRelation = relationSubset(relation, expression.getTableAlias());
+                subRelation =
+                    relationSubset(relation, expression.getTableAlias());
             }
         }
         query.addFrom(subRelation, null, failIfExists);
@@ -524,7 +528,8 @@ public class RolapHierarchy extends HierarchyBase {
 
         } else if (relation instanceof MondrianDef.Join) {
             MondrianDef.Join join = (MondrianDef.Join) relation;
-            MondrianDef.RelationOrJoin rightRelation = relationSubset(join.right, alias);
+            MondrianDef.RelationOrJoin rightRelation =
+                relationSubset(join.right, alias);
             return (rightRelation == null)
                 ? relationSubset(join.left, alias)
                 : join;
@@ -697,9 +702,9 @@ public class RolapHierarchy extends HierarchyBase {
      * Returns an expression which will compute a member's value by aggregating
      * its children.
      *
-     * <p>It is efficient to share one expression between all calculated members in
-     * a parent-child hierarchy, so we only need need to validate the expression
-     * once.
+     * <p>It is efficient to share one expression between all calculated members
+     * in a parent-child hierarchy, so we only need need to validate the
+     * expression once.
      */
     synchronized Exp getAggregateChildrenExpression() {
         if (aggregateChildrenExpression == null) {
@@ -902,8 +907,9 @@ public class RolapHierarchy extends HierarchyBase {
                     this.cellFormatter =
                         RolapCube.getCellFormatter(cellFormatterClass);
                 } catch (Exception e) {
-                    throw MondrianResource.instance().CellFormatterLoadFailed.ex(
-                        cellFormatterClass, getUniqueName(), e);
+                    throw MondrianResource.instance().CellFormatterLoadFailed
+                        .ex(
+                            cellFormatterClass, getUniqueName(), e);
                 }
             }
             super.setProperty(name, value);
